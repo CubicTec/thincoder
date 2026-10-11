@@ -321,14 +321,14 @@ test("③ 目录浏览窗：v2（仓库 ⇒ 点行取标签 ∥ 两处过滤 ∥
     assert.equal(lists.length, 2, "两列（仓库 ∥ 标签）各一枚过滤列表")
     assert.equal(fFindAll(dialog, (node) => node.tag === "h4").map((node) => node.textContent).join("|"), [ZH["admin.sandbox.catalogReposTitle"], ZH["admin.sandbox.catalogTagsTitle"]].join("|"), "两列小标题")
     const repoRows = rowsOf(lists[0])
-    assert.deepEqual(repoRows.map((row) => textOf(row)), ["library/nginx", "library/redis", "foo/bar"], "仓库逐行")
+    assert.deepEqual(repoRows.map((row) => textOf(row)), ["library/nginx 拉取", "library/redis 拉取", "foo/bar 拉取"], "仓库逐行（含行尾拉取钮——一键拉取批随正）")
     assert.equal(byText(lists[0], ZH["admin.sandbox.catalogTruncated"]).hidden, false, "truncated 提示在场")
     assert.ok(textOf(lists[1]).includes(ZH["admin.sandbox.catalogTagHint"]), "标签列待命句（未选仓库）")
     // 过滤（仓库列——纯前端）
     const [repoFilter, tagFilter] = filterInputs(dialog)
     repoFilter.value = "nginx"
     await repoFilter.fire("input")
-    assert.deepEqual(rowsOf(lists[0]).map((row) => textOf(row)), ["library/nginx"], "仓库过滤（纯前端）")
+    assert.deepEqual(rowsOf(lists[0]).map((row) => textOf(row)), ["library/nginx 拉取"], "仓库过滤（纯前端）")
     assert.equal(calls.filter(([, path]) => path.endsWith("/catalog")).length, 1, "过滤零新端点")
     repoFilter.value = "zzz"
     await repoFilter.fire("input")
@@ -336,18 +336,18 @@ test("③ 目录浏览窗：v2（仓库 ⇒ 点行取标签 ∥ 两处过滤 ∥
     repoFilter.value = ""
     await repoFilter.fire("input")
     // 点行取标签
-    await rowByText(lists[0], "library/nginx").fire("click")
+    await rowByText(lists[0], "library/nginx 拉取").fire("click")
     await tick()
     assert.deepEqual(calls.find(([method, path]) => method === "GET" && path.includes("/tags")), ["GET", "/api/admin/sandbox/image-sources/2/tags?name=library%2Fnginx", null], "点行 ⇒ 标签读（名转义）")
-    assert.deepEqual(rowsOf(lists[1]).map((row) => textOf(row)), ["1.25", "latest"], "标签逐行")
+    assert.deepEqual(rowsOf(lists[1]).map((row) => textOf(row)), ["1.25 拉取", "latest 拉取"], "标签逐行")
     assert.equal(byText(lists[1], ZH["admin.sandbox.catalogTruncated"]).hidden, true, "无下一页 ⇒ 提示隐藏")
     tagFilter.value = "1."
     await tagFilter.fire("input")
-    assert.deepEqual(rowsOf(lists[1]).map((row) => textOf(row)), ["1.25"], "标签过滤")
+    assert.deepEqual(rowsOf(lists[1]).map((row) => textOf(row)), ["1.25 拉取"], "标签过滤")
     // 键盘同径（Enter）
     tagFilter.value = ""
     await tagFilter.fire("input")
-    await rowByText(lists[0], "foo/bar").fire("keydown", { key: "Enter" })
+    await rowByText(lists[0], "foo/bar 拉取").fire("keydown", { key: "Enter" })
     await tick()
     assert.deepEqual(calls.filter(([, path]) => path.includes("/tags")).at(-1), ["GET", "/api/admin/sandbox/image-sources/2/tags?name=foo%2Fbar", null], "键盘同径（行可聚焦）")
 

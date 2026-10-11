@@ -22,6 +22,8 @@
  * ∥ `proxy` 复选（2026-10-09 清除批：`model` 输入件退场；fix 轮：激活渠 `active` 复选退场）。
  * **#652 增草稿作用域**：表单携 `data-draft-scope`（单骨 `add:provider` —— 写成功径失效声明自读本值；
  * 跨形切换键不换骨 ⇒ 在编输入随重绘复填）。
+ * **首启保存面收正批（2026-10-11 · 台账 #1277）**：两钮参定形 —— 词键 = 既有注入位 `form.submitKey`（缺省 `settings.save`）∥
+ * 钮类 = `form.submitClass`（本批增；缺省 `settings-submit` ⇒ 弹窗径零变；向导步 1 传 `wizard-save`）。
  * 纪律：零 DOM（描述符树）；文案一律经 `t()`、零字形字面；缺 handlers ⇒ `wire` 落 `disabled: true`。
  */
 import { t } from "../i18n.mjs"
@@ -69,14 +71,17 @@ function fetchRowNode(probe, onFetch) {
   }
 }
 
-/** **导出面①** —— 渠道添加单表（纯构树）：`{ shape, presets, formats, submitKey }` +
- *  `handlers.onSubmit`（提交端读 `FormData`——本档零值搬运）。
+/** **导出面①** —— 渠道添加单表（纯构树）：`{ shape, presets, formats, submitKey, submitClass }` +
+ *  `handlers.onSubmit`（提交端读 `FormData`——本档零值搬运）；`submitClass` = 钮类（缺省 `settings-submit` —— 弹窗径零变；
+ *  向导步 1 传 `wizard-save` —— KD-79 ①）。
  *  `shape` = 类型选择现值（预设名 ∥ `"custom"`；表外 ∥ 缺 ⇒ 预设形 + 首项选中）；条件块 A ∕ B 随形。
  *  **fix 轮（2026-10-09 清除批）**：激活渠 `active` 复选 ∥ 其条件参随同退场（无 active 写路 ⇒ 死控净删；向导 ∥ 弹窗全径零节点）。 */
 export function channelFormTree(form, handlers = {}) {
   const shape = form?.shape === CUSTOM_CHOICE ? CUSTOM_CHOICE : "preset"
   const presets = listOf(form?.presets).filter((p) => p && typeof p.name === "string")
   const formats = listOf(form?.formats).filter((f) => typeof f === "string" && f)
+  /** 钮类（KD-79 ①）：向导步 1 传 `wizard-save`；缺 ∥ 空 ⇒ `settings-submit`（弹窗径零变）。 */
+  const submitClass = typeof form?.submitClass === "string" && form.submitClass !== "" ? form.submitClass : "settings-submit"
   const onSubmit = typeof handlers?.onSubmit === "function" ? handlers.onSubmit : undefined
   const onFetch = typeof handlers?.onFetchModels === "function" ? handlers.onFetchModels : undefined
   /** 弹窗体三件（类型切换接线 ∥ 预设信息行 ∥ 自定末项）随 `onAddShape` 在场；取消钮随 `onCloseModal` 在场
@@ -147,7 +152,7 @@ export function channelFormTree(form, handlers = {}) {
   children.push({
     tag: "button",
     props: wire({
-      class: "settings-submit",
+      class: submitClass,
       type: "button",
       "data-action": shape === CUSTOM_CHOICE ? "settings:addCustom" : "settings:addPreset",
     }, onSubmit),
@@ -166,7 +171,7 @@ export function channelFormTree(form, handlers = {}) {
 
 /** **导出面②** —— 校验控件：`name` 给 ⇒ 携标（`data-name`）；缺 ⇒ 提交端自读表单现选。
  *  **state**（null ∥ `"ok"` ∥ `"fail"`——轮六）：渠行给 ⇒ 态词换形（「校验通过」∕「校验失败」短形 + `data-verify-state` 锚），
- *  缺 ∥ null ⇒ 原「校验」词（首启向导径零变）。 */
+ *  缺 ∥ null ⇒ 原「校验」词（首启向导径亦传态参 —— `views/onboarding.mjs` `channelBody` 态归一；三参形既有，零结构改）。 */
 export function verifyControl(name, handlers = {}, state = null) {
   const onClick = typeof handlers?.onVerify === "function" ? () => handlers.onVerify(name ?? null) : undefined
   const word = state === "ok"

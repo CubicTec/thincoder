@@ -14,6 +14,8 @@
  *     代理 ∥ 移除 ∥ 校验暂撤（取消即回 —— 沿既有 `providerRowNode` 换形；输入种子 = `deps.keyDraft`）。
  * ③ **校验反馈就地化（轮六 · 2026-10-02 · 轻通道 · 台账 #819）**：`verify` 结果携行名（`name`）——匹配行 ⇒ **本行呈现**
  *    （校验按钮态短形（`okShort` ∥ `failShort`）+ 结果明细行 = `verifyNode` 形）；段末仅作**无行渲出结果**回退（名不在列表 ∥ kind 表外——向导径等）。
+ * **首启保存面收正批（2026-10-11 · 台账 #1278）**：`verifyNode` 出导出面 —— 向导步 1 校验明细行**同源复用**（`views/onboarding.mjs`，
+ *    非复制）；`fallbackVerifyNode` 仅供段末回退（无行域绑定 —— 向导径不用）。零行为改。
  * 段内按钮（锚名 ∕ 可及名 ∕ 词面三处同源；缺 handler ⇒ `wire` 落 `disabled` —— 诚实非死控）。
  * **三端对齐批增（2026-10-07 · 台账 #1027–#1029 · KD-75 ②）**：段体 = 行族 + 校验回退 + **添加钮**（词键新
  * `settings.addProvider`；原两形常显表单退场 ⇒ 添加入口 = `settings:addProvider` 开专用弹窗）；单表改供
@@ -33,8 +35,8 @@ function keyFaceNode(row) {
   return { tag: "span", props: { class: "settings-key", "data-key": row.hasKey === true ? "masked" : "none" }, children: [word] }
 }
 
-/** 校验结果节点（两态词键；核错误串经 `deps.reasonWord` —— 表内码出词、表外原样）。 */
-function verifyNode(verify, deps) {
+/** 校验结果节点（两态词键；核错误串经 `deps.reasonWord` —— 表内码出词、表外原样）——**导出面**（首启保存面收正批 · #1278：向导步 1 明细行同源复用，零行为改）。 */
+export function verifyNode(verify, deps) {
   if (verify === null) return null
   const word = verify.kind === "ok"
     ? t("settings.providers.verify.ok", { count: Number.isFinite(verify.count) ? verify.count : 0 })

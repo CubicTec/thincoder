@@ -13,9 +13,14 @@
  * 消费即清 = 离步 2 ∥ 退场 —— 接线路 = `mount-onboarding.mjs`）：步 2 体首件 = 段体档 `teamNoticeNode`（零副本）。
  * 步 1 / 2 的表单与候选面**复用 `views/settings.mjs` 导出面**（同一构造 —— 本档零副本）；
  * 步 3 目录选择走 `project:open`（原生对话框，零路径输入）。
- * **零终端可完成**：每步的「下一步」不依赖输入 ⇒ 全流程零动作可走到尾（步 1 保存才写盘）。
+ * **首启向导保存 ∥ 校验面收正批（2026-10-11 · 台账 #1277 ∥ #1278 · KD-79）**：
+ *   ① 步 1 唯一写盘钮提级 = `.wizard-save`（强调形；`channelBody` 两参 = `submitKey` ∥ `submitClass`）；
+ *   ②③ 合并「保存并继续」= 步 1 前向唯一径（两钮并存歧义消 —— `footNode` 步判 `step === 2`，步 1 零「下一步」）；
+ *   ④ 完成护栏 = 未配置点「完成」⇒ 不退场 + 就地护栏（旗 `settings.wizard.finishBlocked` —— 接线归 `mount-onboarding.mjs`）；
+ *   ⑤ 步 1「校验」结果就地可见 = `wizardModel.verify` 投影 + 态归一（表外 kind ⇒ 零假造）+ 明细行（`verifyNode` 同源复用）。
+ * **零输入可走**：步 1 前向钮（「保存并继续」）空 key ⇒ 零写前进、步 2「下一步」不依赖输入 ⇒ 全流程零输入可走到尾（非空 key 才写盘）。
  * 退场 = 容器清空（非 `hidden`）**+ 宿主属性应收**（`views/settings.mjs` `syncHostProps` —— 挂载期所加属性复位回路 · 判据 =
- * `docs/desktop/design/RENDERER.md` §1 退场口径 · 属性面）；退场控件 = **锚名逐字** `settings:close`（锚集合是闭集；会话内
+ * `docs/desktop/design/RENDERER.md` §1 退场口径 · 属性面）；退场控件 = **锚名逐字** `settings:close`（锚集合是闭集 —— 头 ✕ ∥ 护栏「仍要退出」两处同锚，单一 `dismissWizard` 实现；会话内
  * `dismissed` 旗归状态树 —— 下次冷启动重进，幂等可重入）。
  * 纪律：零 DOM（唯一构造点 = `dom.mjs` `build`）；文案一律经 `t()`；零 `node:` / 零裸包；
  * 零 `store.mjs` **状态读**（纯读现态 —— 仅取常量面 `WIZARD_STEPS`，沿 `views/statusline.mjs` 取 `deriveTabBadge` 先例）；
@@ -29,6 +34,8 @@ import { channelFormTree, reasonWord, settingsModel, syncHostProps, verifyContro
 import { modelChoicesTree, modelHeadNode } from "./settings-sections.mjs"
 // 段体两导出面（单一 owner = `views/settings-sections-team.mjs`）：三字段 ∥ 结果行 —— 团队表单零副本。
 import { fieldPair, noticeNode as teamNoticeNode } from "./settings-sections-team.mjs"
+// 校验明细行（单一 owner = `views/settings-sections-providers.mjs`；#1278 出导出面）：向导步 1 **同源复用** —— 零副本。
+import { verifyNode } from "./settings-sections-providers.mjs"
 
 /** 路由屏步值（第一屏）；表外值回落本值（归一在 `wizardModel`）。 */
 export const ROUTE_STEP = "route"
@@ -42,8 +49,9 @@ export const STEPS = Object.freeze([
   { n: 3, word: "wizard.step.dir" },
 ])
 
-/** 导览模型（纯 · 零 DOM）：占槽判据 + 步（闭集归一——表外 ⇒ 路由屏）+ 两复用面 + 团队表单读数 + 失败串。
- *  `team` = 段体投影（`settingsModel` 同源 —— server ∥ member ∥ notice 供团队表单预填与就地提示）。 */
+/** 导览模型（纯 · 零 DOM）：占槽判据 + 步（闭集归一——表外 ⇒ 路由屏）+ 两复用面 + 团队表单读数 + 校验投影 + 护栏旗 + 失败串。
+ *  `team` = 段体投影（`settingsModel` 同源 —— server ∥ member ∥ notice 供团队表单预填与就地提示）；
+ *  `verify` = `settings.verify` 切片投影（同源 = `views/settings.mjs:172` —— 缺 ⇒ `null`）；`finishBlocked` = 完成护栏旗投影。 */
 export function wizardModel(state) {
   const settings = state?.settings ?? {}
   const wizard = settings.wizard !== null && typeof settings.wizard === "object" ? settings.wizard : null
@@ -55,6 +63,8 @@ export function wizardModel(state) {
     presets: face.providers.presets,
     model: face.model,
     team: face.team,
+    verify: face.providers.verify,
+    finishBlocked: wizard?.finishBlocked === true,
     notice: reasonWord(wizard?.notice),
   }
 }
@@ -144,14 +154,18 @@ function teamRouteBody(model, handlers) {
 }
 
 /** 步 1 体 = 渠道表单（预设形——**2026-10-09 清除批 fix 轮**：激活渠 `active` 复选 ∥ 其条件参随同退场
- *  〔无 active 写路 ⇒ 死控——件 ∥ 参双净删；等价路径 = 模型段「采用」〕）+ 校验控件。 */
+ *  〔无 active 写路 ⇒ 死控——件 ∥ 参双净删；等价路径 = 模型段「采用」〕）+ 校验控件 + 校验明细行（#1278）。 */
 function channelBody(model, handlers) {
   const form = channelFormTree({
     shape: "preset",
     presets: model.presets,
-    submitKey: "wizard.save",
+    submitKey: "wizard.saveAndNext", // ②③ 合并（KD-79）：词键 = 既有注入位 `form.submitKey`
+    submitClass: "wizard-save", // ① 提级（KD-79）：唯一写盘钮 = 强调形（弹窗径缺省类零变）
   }, handlers)
-  return [form, verifyControl(null, handlers)]
+  const verify = model.verify ?? null
+  /** 态归一（#1278）：`"ok"` ∥ `"fail"`；kind 表外 ⇒ `null`（零假造 —— 钮词与明细行皆退）。 */
+  const verifyState = verify !== null && (verify.kind === "ok" || verify.kind === "fail") ? verify.kind : null
+  return [form, verifyControl(null, handlers, verifyState), verifyState === null ? null : verifyNode(verify, { reasonWord })]
 }
 
 /** 步 2 体 = **团队一次性提示头行**（登录面补全批——同名冲突：成功径同拍进步 ⇒ 并入本屏头行，判据单源 =
@@ -183,12 +197,12 @@ function stepBody(model, handlers) {
   return dirBody(handlers)
 }
 
-/** 尾控件（步 1 / 2 有「下一步」；「完成」恒在场 —— 提前收尾路）——缺 handler ⇒ `wire` 落 `disabled`。
- *  **只在本地三歩渲染**（路由 / 团队两屏零尾控件：推进 = 卡选取 ∥ 登录成）。 */
+/** 尾控件（步 2 有「下一步」——步 1 前向 = 表单内「保存并继续」（KD-79 ②③：两钮并存歧义消）；「完成」恒在场 —— 提前收尾路）——
+ *  缺 handler ⇒ `wire` 落 `disabled`。**只在本地三歩渲染**（路由 / 团队两屏零尾控件：推进 = 卡选取 ∥ 登录成）。 */
 function footNode(model, handlers) {
   const onNext = typeof handlers?.onNext === "function" ? handlers.onNext : undefined
   const onFinish = typeof handlers?.onFinish === "function" ? handlers.onFinish : undefined
-  const next = model.step < 3
+  const next = model.step === 2
     ? {
       tag: "button",
       props: wire({ class: "wizard-next", type: "button", "data-action": "wizard:next" }, onNext),
@@ -231,8 +245,31 @@ function noticeNode(notice) {
   return { tag: "div", props: { class: "wizard-notice", "data-notice": "" }, children: [notice] }
 }
 
+/** 完成护栏（KD-79 ③/④）：未配置点「完成」⇒ 不退场 + 就地护栏（提示句 + 两钮）——「去保存渠道」回步 1 + 清旗；
+ *  「仍要退出」复用既有 `settings:close` 出口（同一 `dismissWizard` —— 与头 ✕ ∥ 「以后再说」同语义，差异仅在时机）。 */
+function finishGuardNode(handlers) {
+  const onGuardBack = typeof handlers?.onGuardBack === "function" ? handlers.onGuardBack : undefined
+  const onDismiss = typeof handlers?.onDismiss === "function" ? handlers.onDismiss : undefined
+  return {
+    tag: "div",
+    props: { class: "wizard-finish-guard", "data-finish-guard": "" },
+    children: [
+      t("wizard.finishGuard"),
+      {
+        tag: "div",
+        props: { class: "wizard-finish-guard-actions" },
+        children: [
+          { tag: "button", props: wire({ class: "settings-submit", type: "button", "data-action": "wizard:guardBack" }, onGuardBack), children: [t("wizard.finishGuardGo")] },
+          { tag: "button", props: wire({ class: "settings-submit", type: "button", "data-action": "settings:close" }, onDismiss), children: [t("wizard.finishGuardExit")] },
+        ],
+      },
+    ],
+  }
+}
+
 /** 向导树（纯构树 · 零 DOM）：未占槽 ⇒ 零子节点（退场 = 容器清空 —— 非 `hidden`）。
- *  路由 / 团队两屏（`step` 非数）零步标 ∥ 零尾控件；本地三歩照旧（步标 + 尾控件在场）。 */
+ *  路由 / 团队两屏（`step` 非数）零步标 ∥ 零尾控件；本地三歩照旧（步标 + 尾控件在场）；
+ *  完成护栏（`finishBlocked` 旗在场）⇒ 尾控件前插（KD-79 ④）。 */
 export function wizardTree(model, handlers = {}) {
   const active = model?.active === true
   const stepped = typeof model?.step === "number"
@@ -242,6 +279,7 @@ export function wizardTree(model, handlers = {}) {
       ...(stepped ? [stepsNode(model.step)] : []),
       { tag: "div", props: { class: "wizard-body" }, children: stepBody(model, handlers) },
       noticeNode(model.notice),
+      model.finishBlocked === true ? finishGuardNode(handlers) : null,
       ...(stepped ? [footNode(model, handlers)] : []),
     ]
     : []

@@ -7,7 +7,7 @@
    树面锚：`views/settings.mjs`（头 / 段 / 体）· `views/settings-sections*.mjs`（段体 · 行 / 表单——D37 渠道族拆出
    `views/settings-sections-providers.mjs`）· `views/onboarding.mjs`（向导：路由两卡 ∥ 团队表单 ∥ 本地三歩）。字形面 = 关闭 / 退场两控件的 ✕（`content` ——
    **视图档零字形字面**，沿 `pool.css` 折叠控件同纪律）；变量单源 = `theme.css` `:root`（零新变量 · 零断点常量）。
-   **该档越 300 顾问线，在册**（实读 **348** 行——口径 `split("\n").length−1`；2026-10-10 登录面补全批 +两族（路由两卡 ∥ 就地面板）后随正）。 */
+   **该档越 300 顾问线，在册**（实读 **357** 行——口径 `split("\n").length−1`；2026-10-11 首启保存面收正批 +`.wizard-save` 四组 ∥ 完成护栏族后随正）。 */
 
 /* ── ① 设置 / 向导：窗口级覆盖层面 ─────────────────────────────────────── */
 [data-slot="settings"] {
@@ -71,7 +71,8 @@
 .settings-theme-opt[data-active] { color: var(--fg); background: var(--hover-bg); }
 
 /* 控件形（关闭 / 退场 / 提交 / 推进 / 语言 / 主题钮族 —— 同一形；未接线态不另立样式：诚实非死控）。
-   D24：描边归零（保位）+ 四值族——次级 6（关闭 / 退场 / 提交 / 语言 / 主题钮族）生效；强调 2（`.wizard-next` / `.wizard-finish`）accent 框保留（下行 border-color 覆写）。 */
+   D24：描边归零（保位）+ 四值族——次级 6（关闭 / 退场 / 提交 / 推进 / 语言 / 主题钮族）生效；强调 3（`.wizard-next` / `.wizard-finish` /
+   `.wizard-save` —— 首启保存面收正批 · KD-79 ①）accent 框保留（下行 border-color 覆写）。 */
 .settings-lang,
 .settings-close,
 .settings-submit,
@@ -79,6 +80,7 @@
 .wizard-submit,
 .wizard-next,
 .wizard-finish,
+.wizard-save,
 .settings-theme-opt {
   padding: 2px 8px;
   border: 1px solid transparent;
@@ -94,7 +96,8 @@
   color: var(--fg-muted);
 }
 .wizard-next,
-.wizard-finish {
+.wizard-finish,
+.wizard-save {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -105,6 +108,7 @@
 .wizard-submit:not(:disabled),
 .wizard-next:not(:disabled),
 .wizard-finish:not(:disabled),
+.wizard-save:not(:disabled),
 .settings-theme-opt:not(:disabled) {
   cursor: pointer;
 }
@@ -117,7 +121,8 @@
 
 /* 失败面（核错误串直传）：段标 + 串 —— 警示色沿 `pool.css` 错误条目同档。 */
 .settings-notice,
-.wizard-notice {
+.wizard-notice,
+.wizard-finish-guard {
   display: flex;
   gap: 8px;
   padding: 6px 8px;
@@ -129,6 +134,9 @@
   color: var(--fg-muted);
 }
 /* 串体 `.settings-notice-text`：零专规则 —— 承 `.settings-notice` 警示色（核错误串直传，整行同色）。 */
+/* 完成护栏（④ · 首启保存面收正批 · 2026-10-11 · KD-79 ③）：容器承上行失败面同值组 + 纵排（提示句 + 钮行）；钮行 = 两钮同排（钮形 = `.settings-submit` 复用）。 */
+.wizard-finish-guard { flex-direction: column; }
+.wizard-finish-guard-actions { display: flex; gap: 8px; }
 
 /* 段（标题 + 体）与段态词（`none` / `loading` —— 体零节点时单行占位，非空壳）。 */
 .settings-section {
@@ -256,7 +264,8 @@ input.settings-field[type="checkbox"]::after {
 }
 input.settings-field[type="checkbox"]:checked { background: var(--accent); }
 input.settings-field[type="checkbox"]:checked::after { left: 16px; }
-.settings-submit { align-self: flex-start; }
+.settings-submit,
+.wizard-save { align-self: flex-start; }
 /* 原生下拉内部件 `option`（真机全文本判据——承 UA `line-height: normal`）⇒ 行高归基线。
    注：`select` 本体的 computed `line-height` 由 Blink 固定为 `normal`（真机实测：内联 ∥ 表则 ∥ `!important` 均不可达——`select` 行高不由页面 CSS 承载 ⇒ 扫描面按原生控件豁免，见批内探针口径注）。 */
 [data-slot="settings"] option { line-height: var(--lh); }
@@ -331,7 +340,7 @@ input.settings-field[type="checkbox"]:checked::after { left: 16px; }
   font: var(--fs)/var(--lh) var(--font);
 }
 
-/* 交互态组（D24 项 5 · 次级 6 键）：hover `--hover-bg` · 按下 `--hover-bg-strong` · 聚焦三值（强调 2 键保留 accent 框，零动）。 */
+/* 交互态组（D24 项 5 · 次级 6 键）：hover `--hover-bg` · 按下 `--hover-bg-strong` · 聚焦三值（强调 3 键保留 accent 框，零动）。 */
 .settings-lang:not(:disabled):hover, .settings-close:not(:disabled):hover, .settings-submit:not(:disabled):hover,
 .wizard-dismiss:not(:disabled):hover, .wizard-submit:not(:disabled):hover, .settings-theme-opt:not(:disabled):hover {
   background: var(--hover-bg);

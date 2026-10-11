@@ -83,7 +83,8 @@ export function createExits(deps = {}) {
    *  名称：自定形读 `name`；预设形读 `preset`（类型选择现值 = 预设名）。`proxy`：勾选 ⇒ `true`；未勾 ∥ 缺 ⇒ 直连（零键）。
    *  **2026-10-09 清除批**：载荷去 `active` ∥ `model`（渠道单值模型退场——形 = `IPC.md` §2 `provider:save` 行）。
    *  **关·保存**（KD-75 ⑥）：弹窗体提交（成盘回执 `ok`）⇒ 宿主关（KD-68 关径 —— 切片清 + 本组面态复位 + 子确认同清）；
-   *  失败径留框（失败串落框体 —— 零静默）；向导步 1 提交（无弹窗体）零动作。 */
+   *  失败径留框（失败串落框体 —— 零静默）；向导步 1 提交（无弹窗体）零动作；**成功径返回 `true`**（首启保存面收正批 · KD-79 ②③ ——
+   *  向导「保存并继续」消费：成 ⇒ 前进；弹窗径 DOM 监听忽略返回值 ⇒ 零变）。 */
   async function submitChannel(event) {
     const form = formOf(event)
     if (form === null) return
@@ -120,6 +121,7 @@ export function createExits(deps = {}) {
     setSettings({ verify: null, providers: { ...providers, draft: null } })
     await loadProviders()
     onProvidersChanged?.() // 全渠扇出批 · #3：provider 写成功 ⇒ 输入区候选面强制刷新（渠道集已变 —— 首启向导同路）
+    return true // 向导「保存并继续」消费（KD-79 ②③）：成 ⇒ 前进；弹窗径 DOM 监听忽略返回值（零变）
   }
 
   /** 校验出口（`provider:verify`）：`name` 缺（向导步 1）⇒ 自读表单现选；探不通**仍可保存**（只出读数，不拦写）。 */
@@ -287,7 +289,7 @@ export function createExits(deps = {}) {
     onToggleLang: (target) => void toggleLang(target),
     onSetTheme: (target) => setThemeFace(target),
     onCloseSettings: () => closeSettings(),
-    onSubmit: (event) => void submitChannel(event),
+    onSubmit: (event) => submitChannel(event), // 值贯链：向导「保存并继续」消费（KD-79 ②③）；点击径忽略返回值（零变）
     onVerify: (name) => void verifyChannel(name),
     onRemoveProvider: (name) => void removeProvider(name),
     onUseModel: (provider, name) => void useModel(provider, name),

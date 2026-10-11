@@ -120,6 +120,9 @@
  *      **登录面补全批增一键**（2026-10-10 · 台账 #1231）：`status.team.entry`（团队段未登录入口词——zh「登录团队服务器」；
  *      已失效词 `status.team.invalid` 走**核字典投影**零副本——单源 = `thincoder-core/i18n.mjs`）⇒ **实读** `HOST_DICT`
  *      （**合并表**，经合并点随动）**345 ⇒ 346**（两语同拍、键集相等；届盘实读续链——链文前值 338 系滞后值：并行批增键未逐笔续计，本行按盘收正）。
+ *      **首启向导保存面收正批（2026-10-11 · 台账 #1277 ∥ #1278 · KD-79）**：净删 `wizard.save`（消费归零 ⇒ 键面随退，零残键）+ 4 键 × 两语 =
+ *      `wizard.saveAndNext` ∥ `wizard.finishGuard` ∥ `wizard.finishGuardGo` ∥ `wizard.finishGuardExit`（②③ 合并钮 + 完成护栏三词；
+ *      ⑤ 校验面零新键——复用 `settings.providers.verify*` 五键）⇒ 实读 `HOST_DICT`（**合并表**，经合并点随动）**346 ⇒ 349**（两语同拍、键集相等；届盘实读续链）。
  *   ③ `t(key, params)` 解析序 = **宿主 → 核投影 → 键名自身**（缺键回落键名：不静默吞、不抛、
  *      永不返回空 / `undefined`）；插值 = **核同形** `${name}`（键值由核 `projectDictionary`
  *      原样投影 ⇒ 占位方言只能随核 —— `thincoder-core/i18n.mjs:12`「两端同约定」），缺参原样保留；
@@ -148,7 +151,7 @@ import { VIEWS_DICT } from "./i18n-views.mjs"
  *  折叠字形住 `renderer/pool.css`）· `approval.*` = 审批卡两形三出口词面 + 批形计数（`${count}` 占位；
  *  键位闭集住 `renderer/views/approval.mjs`）· `question.*` = 提问卡（文本控件 `aria-label` / 提交键 / 取消键 ——
  *  键位闭集住 `renderer/views/question.mjs`）· `settings.*` = 设置面（**77 键** —— 单源 = `renderer/i18n-settings.mjs`）·
- *  `wizard.*` = 首启向导（标题 / 退场 / 三步名 / 两推进键 / 渠道提交键 / 目录步两词）·
+ *  `wizard.*` = 首启向导（标题 / 退场 / 三步名 / 三推进键（下一步 ∥ 保存并继续 ∥ 完成）/ 完成护栏三词 / 目录步两词）·
  *  `composer.*` = 输入区（**换装后残余两族**：B21 发送失败行 `composer.send.failed`〔住 `renderer/i18n-views.mjs`〕+
  *  B22 降级提示行两键 `composer.attach.nonvision` ∕ `composer.attach.partial`——三键皆端侧自有词，非 VSC 源；
  *  旧三词（输入框 `aria-label` ∕ 中断控件词 ∕ 满队提示行）+ 附件条移除控件名随自建树退场——核件控件词归
@@ -239,7 +242,10 @@ export const HOST_DICT = Object.freeze({
     "wizard.finish": "Finish",
     "wizard.dir.hint": "Pick a working directory — you can change it later.",
     "wizard.dir.pick": "Choose folder…",
-    "wizard.save": "Save provider",
+    "wizard.saveAndNext": "Save & continue",
+    "wizard.finishGuard": "Nothing has been saved yet — save a provider first, or exit and configure later.",
+    "wizard.finishGuardGo": "Save a provider",
+    "wizard.finishGuardExit": "Exit anyway",
     // ── 批 B 面（状态栏读数串 —— 键名本档拟定，登记面即此处）──
     "status.usage": "context ${percent}%${tokens}",
     // ── 状态行（R3a；D22 扩至承载 16 段 —— 增六键：静息词 / 输入提示静息态 / banner 四态〔代号字面 · 两语同形〕）：`views/statusline.mjs` —— 键名本档拟定，登记面即此处）──
@@ -344,7 +350,10 @@ export const HOST_DICT = Object.freeze({
     "wizard.finish": "完成",
     "wizard.dir.hint": "选择工作目录——之后也可以更改。",
     "wizard.dir.pick": "选择目录…",
-    "wizard.save": "保存渠道",
+    "wizard.saveAndNext": "保存并继续",
+    "wizard.finishGuard": "尚未保存任何配置——请先保存渠道，或选择『仍要退出』稍后再配置",
+    "wizard.finishGuardGo": "去保存渠道",
+    "wizard.finishGuardExit": "仍要退出",
     // ── 批 B 面（状态栏读数串 —— 键名本档拟定，登记面即此处）──
     "status.usage": "上下文 ${percent}%${tokens}",
     // ── 状态行（R3a；D22 扩至承载 16 段 —— 增六键：静息词〔词形来源 = CLI 静息值 `Ready`〕/ 输入提示静息态 / banner 四态〔代号字面 · 两语同形〕）：`views/statusline.mjs` —— 键名本档拟定，登记面即此处）──

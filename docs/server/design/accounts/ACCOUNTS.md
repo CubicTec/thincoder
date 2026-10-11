@@ -24,7 +24,7 @@
 - **吊销语义**：立即生效（逐请求查库——KD-SV-11 不变）；幂等（已吊销 ⇒ 200——软删纪律，行保留）；吊销后 key 行离列表（仅列未吊销——KD-SV-16 口径不变；页面行消失 + flash）。
 - **审计**：入既有两型（写作点 = §2.1 表：`key_issue` ∥ `key_revoke`——主体 = 本人）；**型面零增**（批时十型 ⇒ 沙盒批后十二型 ⇒ admin-agent-chat 批后十三型——§2.1）。
 - **数据面**：`api_keys.name`（v8 迁移——`store/STORE.md` §2/§3；存量行回填默认名）；`created_at` 既有（本批起随行下发——§3 行形）。
-- **端点**：`POST /api/me/keys/issue` ∥ `POST /api/me/keys/:keyId/revoke`（§3 表）；轮换端点 `POST /api/me/keys/rotate` = **保留**（既有批内件与审计型零动——页面露出面 = `webui/WEBUI.md` §2.3⑥）；其新签行 `name` = 默认名助手（空名入参——请求/响应形零改）。
+- **端点**：`POST /api/me/keys/issue` ∥ `POST /api/me/keys/:keyId/revoke`（§3 表）；轮换端点 `POST /api/me/keys/rotate` = **保留**（既有批内件与审计型零动——页面露出面 = `webui/ME.md` §2.1）；其新签行 `name` = 默认名助手（空名入参——请求/响应形零改）。
 - **边界**：不做改名 ∥ 不做 key 级有效期/过期 ∥ 不做删除行（软删纪律）∥ CLI 命名参数（后续如需——在案）。
 
 ## 2. 账号与会话（B 案）

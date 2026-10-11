@@ -11,9 +11,9 @@
 - **端标签**：落 `api_keys.name`（如 `CLI@台式机`；端侧生成 ∥ 服务端校验沿用 key 名口径——trim 后 ≤40 字符；缺省/空 ⇒ 默认名助手 `key-N`——单源 = `accounts/ACCOUNTS.md` §1.1）。
 - **不设过期**：`api_keys` 无过期列——天然成立；**逐请求查库**（KD-SV-11 不变——吊销下一次请求即判）。
 - **签发 ∥ 吊销**：每次登录签发一枚（**不受 20 上限**——沿「轮转 ∥ CLI 不受限」先例，`accounts/ACCOUNTS.md` §1.1）；退出 = 吊销该枚（软删——行保留）；不自动清理旧 token（「列表可撤销」= 用户面机制——口径①）。
-- **已认账（token 生命周期——口径①）**：累积可预期（每次登录一枚 ∥ 无过期 ∥ 不自动清理）——清理 = 用户面（key 列表逐把吊销——§1「列表可撤销」面）；换 server 重登（单登录态覆盖）⇒ 旧 server 的 token 不在本机——撤销径 = 旧 server 控制台 key 列表（`webui/WEBUI.md` §2.3⑥ ∥ `GET /api/me` ∥ CLI `key revoke`）。
+- **已认账（token 生命周期——口径①）**：累积可预期（每次登录一枚 ∥ 无过期 ∥ 不自动清理）——清理 = 用户面（key 列表逐把吊销——§1「列表可撤销」面）；换 server 重登（单登录态覆盖）⇒ 旧 server 的 token 不在本机——撤销径 = 旧 server 控制台 key 列表（`webui/ME.md` §2.1 ∥ `GET /api/me` ∥ CLI `key revoke`）。
 - **兼作 `/v1` 凭据**：同一 token 两用——`/api/client/*`（数据面，本档）∥ `/v1/*`（模型面，`gateway/API.md` §2）；校验单源 = `verifyKey`（账号 key 面）；客户端面门面 = 复用 `requireApiKey`（`thincoder-server/src/gateway/routes.mjs:25`）。**无第二校验面**。
-- **列表可撤销**：token 即具名 key——列表/吊销面 = 既有「我的 · key」页（`webui/WEBUI.md` §2.3⑥）∥ `GET /api/me` 成员行 key 清单 ∥ CLI `key list` / `key revoke`（`ops/OPS.md` §3）；**零新列表端点**。
+- **列表可撤销**：token 即具名 key——列表/吊销面 = 既有「我的 · key」页（`webui/ME.md` §2.1）∥ `GET /api/me` 成员行 key 清单 ∥ CLI `key list` / `key revoke`（`ops/OPS.md` §3）；**零新列表端点**。
 - **与控制台会话面关系**：`sessions` 表（浏览器 cookie 面——KD-SV-12）**零改、零复用**——客户端登录不落 `sessions` 表；两族凭证物理分离（cookie ∥ `Authorization: Bearer`）保持（理由 = §5 KD-SV-61 被否候选栏）。
 - **审计**：登录成/败 = 既有 `login_success` / `login_failure`（detail 携 `surface:"client"`）；签发/吊销 = 既有 `key_issue` / `key_revoke`（detail 同携 surface）；**审计零增型**（零迁移——现行型面 = 十三型，不因本面增型）。
 
@@ -76,6 +76,14 @@
 - 不做登录 token 与手工 key 的区分列（登录 token 在既有 key 列表自然可见；如需区分标记 ⇒ 另轮）。
 - 不触 `sessions` 表 ∥ 不触登录守卫/审计机制 ∥ 零迁移。
 
+## 8. 上抛/余项（本域——自板档 §9 迁入；R50 逐字；as-of 2026-10-11）
+
+> 板档 `design/PROJECT.md` §9 同类行 = 保位 stub（指向本节）。
+
+| # | 项 | 类型 | 处置建议 |
+|---|---|---|---|
+| R50 | **team-login-client-access 批（B1——本批）——需求读法披露 + 随正件 + 部署收尾**：① 披露（需求读法——供复核）：§2:31①「复用既有账号/密码散列与会话机制」本设计读法 = 复用散列校验 + 登录守卫 + token 签发（**`sessions` 表不用**——浏览器 cookie 面专属；客户端 token 落 `api_keys`，理由 = token 须兼作 /v1 凭据 ∥ 无过期 ∥ 记账归因——KD-SV-61）；如用户本意 = 复用 `sessions` 表 ⇒ 翻案点（与「不设过期」「模型可用」两条相抵面需重裁）∥ ② 披露（存储面）：token 明文落 `~/.thincoder/config.json`（0600 先例——沿 provider apiKey 口径；keychain 不用）；登录 token 在控制台「我的 · key」页自然可见（不设区分列——如需标记 ⇒ 另轮）∥ ③ 披露（能力面）：CLI 密码隐藏回显 = 新建能力（非 TTY 回落 stdin 行读——脚本化直登径）；端标签自动生成（≤40 裁剪）∥ ④ 随正件（父侧落——实施轮同拍，以当刻盘面为准）：`thincoder-server/package.json`（`prepublishOnly` 38 ⇒ 39——本批件入链）+ 门禁件数断言件随正（39 ⇒ 40）∥ ⑤ 部署收尾（父侧执行）：server 侧零迁移零配置——新代码部署（镜像/进程重建）+ 三端拾新版本；收口轮实走（CLI/VSC/桌面各一轮：登录 → 模型可用 → 退出） | 披露（上抛——如无异议按设计实施；部署收尾 = 父侧） | 评审/用户复核 |
+
 ## 变更记录
 
 - 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212；需求 §2:31 + AC-31）：建档——客户端 token 面（token = 具名成员 key）∥ `/api/client/*` 骨架（login ∥ logout ∥ me）∥ 端点表 ∥ 文件预算 ∥ 验收判据（AC-31）∥ 决策 KD-SV-61/62 ∥ 用例 ∥ 边界。实施 = 本批实施轮。
@@ -83,3 +91,4 @@
 - 2026-10-10（**B1 批 · 评审回笔随动（发现 2 呼应）· eng-designer**——承批档 §3 发现 2（需求档已由主 agent 收正——`docs/server/requirements/PROJECT.md` §2:31③ ∥ AC-31）：§4 AC-31⑤ 行标题随正——「服务端会话撤销」⇒「登录 token 吊销（`api_keys` 行）」（与需求档收正句逐字同拍；机制面零改）。**零新语义**。
 - 2026-10-10（**server-exec-sandbox 批 · 残差对齐（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-server-exec-sandbox.md` §2 残差项 ②；父侧裁定：收口前对齐）：§2 前言补写端点 JSON 门例外括注——**例外** = `POST /api/runner/checkpoint`（octet-stream——`gateway/API.md` §2.6）；与 `accounts/ACCOUNTS.md` §3 ∥ `metering/METERING.md` §3 逐字同拍。**零新语义**（KD-SV-77 路由级豁免的残差对齐）。
 - 2026-10-10（**runner-admin-console 批 · 设计档随正 · eng-designer**——承批档 `docs/batches/2026-10-10-runner-admin-console.md` §1 · 台账 #1252）：§2 前言去端点 JSON 门例外括注（随执行面重定——`gateway/API.md` §2.6 退场）；与 `accounts/ACCOUNTS.md` §3 ∥ `metering/METERING.md` §3 逐字同拍。**零新语义**。
+- 2026-10-11（**server-doc-split 批 · 波 4（域档接收节 + 活面改指）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：**增 §8「上抛/余项」**（板档 §9 迁入——R50 逐字；板档同类行 = 保位 stub）∥ 活面改指（webui 引用 ⇒ `webui/ME.md` §2.1 两处；只改坐标形、零语义）。**产品码零触。**

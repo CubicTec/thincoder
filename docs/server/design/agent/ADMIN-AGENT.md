@@ -3,7 +3,7 @@
 > 板块 = server ∥ 本域 = agent（server 端 agent——管理面唯一 agent）；本档 = 域档。
 > 口径单源 = `docs/server/requirements/PROJECT.md` §5 沙盒块「接入两径」行 + AC-36 ⑨⑩：执行者 = server 端 agent——探明主机实况 → 决定并执行必要操作 → 验证 → 报告（用户 15:00 裁）；能力面由设计轮从实际装机场景反推（15:02 裁——「先知道要干什么，再谈能力」）。
 > 用户 2026-10-10 22:19–22:29 口径（逐字在批档 `docs/batches/2026-10-10-runner-admin-console.md` §1 口径补记 5/6）：工具面要有通用执行能力（bash/ssh 级——「不给bash/ssh会很麻烦」）∥ Docker 操作工具要给（「一些docker的操作工具不给他吗？」）∥ **唯一一个 agent**（「就是同一个agent，就是管里面的那个agent」——能力面 = 整个 server 管理面，逐步长）。
-> 首个活 = 托管加机（机制全文 = `sandbox/SANDBOX.md` §3 托管接入块）；控制台归属 = `webui/WEBUI.md` §2.8①；核复用口径 = `PROJECT.md` §5 KD-SV-78。
+> 首个活 = 托管加机（机制全文 = `sandbox/SANDBOX.md` §3 托管接入块）；控制台归属 = `webui/SANDBOX.md` §2.1①；核复用口径 = `PROJECT.md` §5 KD-SV-78。
 > 建档：2026-10-10（批 `docs/batches/2026-10-10-runner-admin-console.md` §2 · 台账 #1237 + #1236）。
 
 ## 1. 形态与定位
@@ -48,7 +48,7 @@
 
 - **保留**：核 agent 环（多轮工具循环 ∥ 上下文压缩）∥ 工具调用协议 ∥ provider 客户端（模型出口）∥ 审计挂钩。
 - **裁剪**：交互审批/问询面（无人值守——工具不弹问、不自锁）∥ TTY 假面 ∥ 与运维任务无关族（记忆 ∥ 台账 ∥ 子代理 ∥ 浏览器——按任务需要再逐族接）。
-- **模型出口** = provider 注册表现有渠道（server 自持 key——与网关同信任域）；**记账不进成员用量**（服务器运维成本——如实披露）；出口代理旗随 provider 条目（复核点——`PROJECT.md` §9 R53③）。
+- **模型出口** = provider 注册表现有渠道（server 自持 key——与网关同信任域）；**记账不进成员用量**（服务器运维成本——如实披露）；出口代理旗随 provider 条目（复核点——`sandbox/SANDBOX.md` §16 R53③——as-of 2026-10-11）。
 - **模型选择** = 任务提交时选择（下拉源 = 注册表现有模型；缺省 = 最近一次成功所用——机械读法 = `GET /api/admin/agent/chats` 倒序首行 `model`；该模型不在下拉源 ⇒ 空选；「成功」位 = 数据面无（题设近似——如实登记，不引入新位））；无可用模型 ⇒ 提交面明示不可提交（KD-SV-87——父侧提议）。
 
 ## 6. 本域文件与行数预算（本域族行）
@@ -63,7 +63,7 @@
 | `thincoder-server/src/agent/docker-ops.mjs`（拟新增——admin-agent-chat 批） | ≈140 | Docker 十动词执行器（自 `tools.mjs` 提取——任务面/聊天面两驱动单源；客户端 = `sandbox/docker.mjs`） |
 
 - 小计 **≈+872**（本批：新增四档 ≈960 ∥ `tools.mjs` −≈88）；`bin/thincoder-server.mjs` 实读 **187 ⇒ ≈189**（import + 注册两行——本域首经 bin 注册点）。
-- `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `PROJECT.md` §9 R53③。
+- `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `sandbox/SANDBOX.md` §16 R53③（as-of 2026-10-11）。
 - sandbox 域件（`ssh.mjs` ∥ `onboarding.mjs` ∥ `onboarding-routes.mjs`）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 
 ## 7. 验收判据（机检面）
@@ -94,7 +94,7 @@
 
 | # | 决策 | 理由 | 被否候选与何故否 |
 |---|---|---|---|
-| KD-SV-82 | **管理面 agent = server 进程内（核 `@thincoder/core` + 最小壳）+ 无人值守裁剪（§5）+ 工具面五件（无白名单围栏）** | 用户 22:19–22:29 口径 + KD-SV-78（从核引）；进程内 = 直取 server 域件（库/registry/docker 客户端）零 HTTP 回环；执行面机器零驻留延续 19:52 口径 | 独立进程/守护（另一套生命周期 + 通道——否）；自写第四份 agent（KD-SV-78 已否）；白名单围栏（15:02 用户已撤——否） |
+| KD-SV-82 | **管理面 agent = server 进程内（核 `@thincoder/core` + 最小壳）+ 无人值守裁剪（§5）+ 工具面五件（无白名单围栏）；唯一一个 agent（用户 22:29）；驱动器两形 = 任务式 ∥ 聊天式（§11 ∥ KD-SV-88）** | 用户 22:19–22:29 口径 + KD-SV-78（从核引）；进程内 = 直取 server 域件（库/registry/docker 客户端）零 HTTP 回环；执行面机器零驻留延续 19:52 口径 | 独立进程/守护（另一套生命周期 + 通道——否）；自写第四份 agent（KD-SV-78 已否）；白名单围栏（15:02 用户已撤——否） |
 | KD-SV-87 | **模型选择 = 任务提交时选择**（下拉源 = provider 注册表；缺省 = 最近一次成功所用——机械读法 = `GET /api/admin/agent/chats` 倒序首行 `model`；该模型不在下拉源 ⇒ 空选；「成功」位 = 数据面无（题设近似——如实登记，不引入新位）；无模型 ⇒ 不可提交） | 显式可见（零隐藏缺省）∥ 零新配置项（免「每配置项有 UI 写入口」新面）∥ 每次运行留痕 | 配置项 `agent.model`（新配置面 + UI 落点无自然位——否）；固定取首家 provider 首模型（静默任意——否） |
 | KD-SV-88 | **聊天式驱动 = 管理面 chat 会话（§11——本批）**：① 会话（chat）= 模型选定（建会话时——KD-SV-87 同口径）× 消息序（库两表——KD-SV-89）；② 回合（turn）= 用户发一条 ⇒ agent 环跑到自然结束/预算封顶——**执行不依赖浏览器连接**（流 = 视图；断连照跑）；③ 流式通路 = `POST …/messages` 单请求 + `application/x-ndjson` 帧流（`delta` ∥ `call` ∥ `result` ∥ `end`——浏览器 fetch + `ReadableStream` 逐行读）；④ 预算 = 每回合独立（20 分钟 ∥ 60 调用——与任务式同常量）；⑤ 判权 = `requireAdmin` 全族 | 需求 §5「两个 chat 界面」④（形态落点 = 本设计轮）+ 用户「浏览器流式会话通路」点名；单请求 POST = 写入与执行同跳（零孤儿流 ∥ 判权一次）；NDJSON = 每行一帧零壳（较 SSE `data:` + 空行双层无增益）；执行不依赖连接 = 与「读时单源」先例同拍（刷新/换设备不丢回合）；预算常量复用 = 同一环保险丝（KD-SV-83 同源） | `EventSource`（GET-only——不能 POST 报文体 ∥ 自动重连语义无用途）；SSE-over-fetch（可用——`data:` 帧 + 空行分隔 = 无增益壳）；WebSocket（双向机制超需求 ∥ 服务端需自持升级/hub——面外）；轮询（部分 token 不可达——违「流式」点名）；双请求（POST 起跑 + GET 挂流——孤儿流/二次判权面）；任务式复用（run 语义 = 单目标 + `report` 终态——chat 无 report，回合自然结束）；会话内存态（刷新即失——否） |
 | KD-SV-89 | **会话持久化 = v14 两表 + OpenAI 消息形 + notice 行 + `status` 在途标记（重启如实收尾）**：`agent_chats`（`status` = `idle`/`running`——在途标记） + `agent_chat_messages`（`role` = `user`/`assistant`/`tool`/`notice` ∥ `content`（工具结果 = 模型可见形——按任务面口径截断 ≤4000 字：回放逐字一致）∥ `data_json`（`toolCalls` ∥ `toolCallId`/名/摘要）∥ 序）；消息**逐条增量落库**；回放 = 库行装配为模型消息数组（notice 滤除）；**重启** ⇒ `running` ⇒ `idle` + notice 行 + `chat_stop` 审计（KD-SV-86 口径） | 聊天上下文 = 长消息序（单列 JSON 每回合全量重写——写放大）；行式 = 逐条增量 + 读面直取；`role` 枚举落 CHECK（形单源）；在途标记落库 = 刷新/多标签页一致（进程内存态不作判据——KD-SV-80/86） | 单档 JSON 列（写放大 ∥ 并发回合难对齐）；纯内存会话（刷新即失/重启悬挂——否）；复用核会话档（KD-SV-78 引核面 = provider/环——server 专有存储自持；核 = 本地文件面）；复用 `sandbox_onboarding`（域错——沙盒任务 ≠ 管理面 chat）；消息删除/重命名/归档面（未裁——不做） |
@@ -110,7 +110,7 @@
 
 ## 11. 聊天式驱动（管理面 chat——本批）
 
-- **形态**：管理面 chat = 管理面 agent 的第二驱动形态（任务式之外的常设对话面）——浏览器侧 = 控制台页 `#/admin/chat`（`webui/WEBUI.md` §2.10）；用途 = 运维/管理（托管接入 ∥ 机队 ∥ 成员与 provider ∥ 审查排障——**非开发用途**；需求 §5「两个 chat 界面」②）。与任务式同 agent 同源：同一工具面框架（§3 + §12）、同一审计面、同一模型出口（§5）。
+- **形态**：管理面 chat = 管理面 agent 的第二驱动形态（任务式之外的常设对话面）——浏览器侧 = 控制台页 `#/admin/chat`（`webui/CHAT.md` §2.1）；用途 = 运维/管理（托管接入 ∥ 机队 ∥ 成员与 provider ∥ 审查排障——**非开发用途**；需求 §5「两个 chat 界面」②）。与任务式同 agent 同源：同一工具面框架（§3 + §12）、同一审计面、同一模型出口（§5）。
 - **会话（chat）**：`model`（建会话时选定——KD-SV-87 同口径；会话内不换，换 = 新建）+ 消息序（库两表——KD-SV-89）；列表/详情 = 读时读（无后台常驻）。
 - **回合（turn）**：用户发一条 ⇒ 装配 = 系统简报（管理面用途句 + 行动纪律句）+ 历史重放 + 本轮消息 ⇒ agent 环（多轮工具循环——与任务式同一环）跑到自然结束。终止四形：① 模型无工具调用（自然结束——`succeeded`）；② 预算超限（20 分钟 ∥ 60 调用——**每回合独立计**）；③ 模型出口抛错；④ 空回合（无文本无调用）。
   ②③④ ⇒ notice 行（人话；`data.reason` 各点名：② "budget" ∥ ③ "model_error" ∥ ④ "empty_turn"；人话文本 = `content` 面）+ `chat_stop` 审计 + `end` 帧 `failed`；②③ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行），零文本 ⇒ 零 `assistant` 行。
@@ -125,7 +125,7 @@
 
 ### 11.1 呈现面（console-chat-align 批——2026-10-11）
 
-- **渲染面 = 复用渲染核**（本域零新增机制；用户 18:23 指出「第四套 chat」+ 18:30「改」）：管理面 chat 的呈现面（markdown ∥ 代码块高亮 ∥ 工具卡 ∥ 流式增量 ∥ 滚动行为）由 `thincoder-render-core` 承载（取件形 = 控制台静态面第二根 `/rc/*`）；对齐集与做/不做逐项 = `webui/WEBUI.md` §2.10 ∥ 决策 = 该档 KD-SV-101。
+- **渲染面 = 复用渲染核**（本域零新增机制；用户 18:23 指出「第四套 chat」+ 18:30「改」）：管理面 chat 的呈现面（markdown ∥ 代码块高亮 ∥ 工具卡 ∥ 流式增量 ∥ 滚动行为）由 `thincoder-render-core` 承载（取件形 = 控制台静态面第二根 `/rc/*`）；对齐集与做/不做逐项 = `webui/CHAT.md` §2.1 ∥ 决策 = 该档 KD-SV-101。
 - **本域零变化**：会话 ∥ 回合 ∥ 帧流四形 ∥ 消息 role 四值 ∥ 工具面 ∥ 审计面均不动（呈现面 = 控制台侧消费面）；**帧面/落库面无 reasoning 通道** = 呈现面不做思考块的根因（加字段 = 本域面——余项，不在本批）。
 - 工具卡呈现 = 核件 `renderToolCard` ∥ `finishToolCard`（失败判定 = 核 `isToolFailure`）；工具行语义面（§12 表）不变。
 
@@ -140,12 +140,20 @@
 | `models(op, …)` | `list` ∥ `enable` ⟮provider/model——加开放⟯ ∥ `disable` ⟮减项（退役可停）⟯ ∥ `settings` ⟮rpm/tpm/costIn/costOut/note/quotaTokens 键级合并⟯ ∥ `alias` ⟮设置/清除（含唯一性校验）⟯ | 同上写链 + `settings` 合并件（`mergeProviderSettings`） | 服务模型页（功能点 17/29——A/C/D/E/F/G 面） |
 | `usage(op, …)` | `summary` ⟮member/model/endpoint/from/to⟯ ∥ `rows` ⟮同上 + limit ≤100⟯ | `thincoder-server/src/metering/report.mjs`（`usageSummary`）∥ `metering/usage.mjs`（`queryUsage`——与端点同过滤构建器） | 管理·用量页（功能点 15②；端点 = §3） |
 | `audit(op, …)` | `query` ⟮type/member/from/to/limit⟯ | `accounts/audit.mjs`（`queryAudit`——与审计页同过滤件） | 审计页（功能点 15④——`accounts/ACCOUNTS.md` §2.1） |
-| `runners(op, …)` | `list` ∥ `add` ⟮name/address——连通自检 + 落行⟯ ∥ `remove` ⟮id/containers（keep∥remove）/confirm⟯ | `sandbox/registry.mjs`（`insertRunner` ∥ 读行）+ 删除链（容器处置 ∥ 承载确认 ∥ 工作区解绑 + 续放置——与控制台同函数同效） | 沙盒页·运行面（§2.8①——最小切片；端点 = §2.5） |
-| `docker(host, op, args?)` | 同任务面十动词（version ∥ info ∥ ps ∥ images ∥ pull ∥ create ∥ start ∥ stop ∥ rm ∥ logs）——**绑定 = 注册节点**（名 ∥ 地址经 `sandbox_runners` 查行；未在册 ⇒ 工具级错误回灌） | `sandbox/docker.mjs`（`createDockerClient`——与控制台容器面同一客户端）+ `thincoder-server/src/agent/docker-ops.mjs`（拟新增——admin-agent-chat 批；十动词执行器——两驱动单源） | 沙盒页·容器区（§2.8①） |
+| `runners(op, …)` | `list` ∥ `add` ⟮name/address——连通自检 + 落行⟯ ∥ `remove` ⟮id/containers（keep∥remove）/confirm⟯ | `sandbox/registry.mjs`（`insertRunner` ∥ 读行）+ 删除链（容器处置 ∥ 承载确认 ∥ 工作区解绑 + 续放置——与控制台同函数同效） | 沙盒页·运行面（`webui/SANDBOX.md` §2.1①——最小切片；端点 = §2.5） |
+| `docker(host, op, args?)` | 同任务面十动词（version ∥ info ∥ ps ∥ images ∥ pull ∥ create ∥ start ∥ stop ∥ rm ∥ logs）——**绑定 = 注册节点**（名 ∥ 地址经 `sandbox_runners` 查行；未在册 ⇒ 工具级错误回灌） | `sandbox/docker.mjs`（`createDockerClient`——与控制台容器面同一客户端）+ `thincoder-server/src/agent/docker-ops.mjs`（拟新增——admin-agent-chat 批；十动词执行器——两驱动单源） | 沙盒页·容器区（`webui/SANDBOX.md` §2.1①） |
 
 - **不入 chat 面**：`exec`（SSH——凭据 = 任务表单专有，KD-SV-84 面不破）；装机（新主机）= 任务式（沙盒页托管接入弹窗）——chat 侧可读机队/装机成果（`runners.list` ∥ `docker` 读数），不收凭据。
 - **随控制台同批长**（控制台侧未落——不发明）：节点排空/禁用 ∥ 沙盒工作区/规则/待批/设置各面工具（随沙盒余面批）。
 - 工具结果形 = `{ ok, … }`（结构化；错误 ⇒ `ok:false` + 人话 message——回灌模型自纠，回合不停）。
+
+## 13. 上抛/余项（本域——自板档 §9 迁入；R54 逐字；as-of 2026-10-11）
+
+> 板档 `design/PROJECT.md` §9 同类行 = 保位 stub（指向本节）。
+
+| # | 项 | 类型 | 处置建议 |
+|---|---|---|---|
+| R54 | **admin-agent-chat 批（本批）——需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔——§5「两个 chat 界面」②④ 的落点与 AC）：§2 增**功能点 37（管理面 chat——草案：会话/回合模型 ∥ 流式通路 ∥ 工具面七件 ∥ 审计型 ∥ 不做单）** + **AC-37 行**（判据 = §7 本批行——机制/端点/控制台/存储/审计五面指针）+ 标题计数随正 + 变更记录 ∥ AC-28 审计型数随正（十二 ⇒ **十三型**——`agent_event`）∥ AC-12/AC-14 管理项数 8 ⇒ **9** + 静态档目 31∥32 ⇒ **32∥33**（余面批 ⇒ 34∥35）∥ §5 成员面 chat 归属句随正（**#1215**——2026-10-10 16:04 裁）∥ ② 随正件（父侧落——实施轮同拍）：`views-audit` 型面数断言件 ∥ nav 计数件（管理 8 ⇒ **9**）∥ 档目断言件（`views-chat.mjs` 入列表——31∥32 ⇒ **32∥33**）∥ 门禁件数断言件（42 ⇒ **45**——本批三件入链；以实施当刻盘面实读为准）+ `thincoder-server/package.json`（同基数；逐件登记 = §6 注⑲）∥ ③ 披露（不阻塞）：chat 不收 SSH 凭据（装机 = 任务式弹窗——KD-SV-84 不破）∥ 会话无删除/重命名/清理（保留口径未裁——不设清零）∥ 回合无中途中止钮（预算封顶）∥ 破坏性动作「先说明后执行」= 提示词级纪律（机制级确认门未做——如要另裁）∥ 节点排空/禁用工具 = 随控制台同批长（未落——不发明）∥ 跨会话并发未设限（未裁）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（建会话 ⇒ 发一条 ⇒ 帧流 ⇒ 工具调用行 ⇒ 刷新重读） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
 ## 变更记录
 
@@ -156,3 +164,4 @@
 - 2026-10-11：闸面收净（doc-check 行宽/锚读数——本批面）——§11 回合/流式通路两行折行 ∥ §6 档表四行标记收正（「本批新增」⇒「拟新增——admin-agent-chat 批」）∥ §12 三处坐标收正（`thincoder-server/src/…` 全形——`:130`/`:132` 解析面 ∥ `:135` 补拟新增标记）。**零语义**。
 - 2026-10-11（**admin-agent-chat 批 · 实施轮上抛回笔（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-admin-agent-chat.md` §6（实施轮上抛处置 + notice 补裁——④ 空回合单列 · 四值枚举））：§5/§9 KD-SV-87 行补机械读法（四处同词）∥ §11 回合行补 notice `data.reason` 各点名（② "budget" ∥ ③ "model_error" ∥ ④ "empty_turn"）+ 重启行点名 "restart"。**零新语义**（上抛裁决直接导出项）。
 - 2026-10-11（**console-chat-align 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-console-chat-align.md` §1 · 台账 #1282；用户 18:23 ①④ + 18:30「改」）：**增 §11.1 呈现面**（渲染面 = 复用 `thincoder-render-core`——取件形 = 控制台第二根 `/rc/*`；本域零变化（会话/回合/帧四形/role 四值/工具面/审计面不动）；帧面无 reasoning 通道 = 不做思考块的根因——余项）+ 工具卡呈现接线句（`renderToolCard`/`finishToolCard`——§12 语义面不变）。同源随动 = `webui/WEBUI.md` §2.10/§7 KD-SV-101 ∥ `design/PROJECT.md` §2.1/§4/§6/§9 R58。**产品码零触（设计轮）**。
+- 2026-10-11（**server-doc-split 批 · 波 4（域档接收节 + 活面改指）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：**增 §13「上抛/余项」**（板档 §9 迁入——R54 逐字；板档同类行 = 保位 stub）∥ §9 KD-SV-82 行并入驱动器两形句（与板档旧 §5 行对等）∥ 活面改指（webui 引用 ⇒ `webui/CHAT.md` §2.1 ∥ `webui/SANDBOX.md` §2.1①；R53③ 两处 ⇒ `sandbox/SANDBOX.md` §16——as-of）。**产品码零触。**

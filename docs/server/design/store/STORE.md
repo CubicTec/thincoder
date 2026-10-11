@@ -116,7 +116,7 @@ ALTER TABLE providers ADD COLUMN settings_json TEXT NOT NULL DEFAULT '{}';  -- �
 
 - 形 = `{ "<上游模型名>": { rpm ∥ tpm（正整数 ∥ null） ∥ costIn ∥ costOut（≥0 数 ∥ null） ∥ note（≤200 字 ∥ null） ∥ quotaTokens（≥0 整数 ∥ null——每人每月默认用量；v5 批新增） } }`——`null`/缺省 = 未设；键 = 上游模型名（与 `models` 同空间；不在 `models` 的键合法——设置随名保留，停用不丢）。
 - 写面 = PATCH `/api/admin/providers/:id` 的 `settings` 键级合并（`gateway/API.md` §2.2）；校验单源 = `thincoder-server/src/ops/config.mjs`（`validateProviderEntry`/`validateProviderEntries` 扩 settings——未知子字段 ∥ 非法值 ⇒ 400/拒启）；装配载入缺省 = `{}`（配置种子零 settings 字段——控制台单一面）。
-- 消费 = 限流（`gateway/ratelimit.mjs`——KD-SV-35）读 `rpm`/`tpm`；`costIn`/`costOut`/`note` = 展示面（`webui/WEBUI.md` §2.4③）；`quotaTokens` = 配额平台层默认值（`metering/METERING.md` §2——三级之一，KD-SV-38）。
+- 消费 = 限流（`gateway/ratelimit.mjs`——KD-SV-35）读 `rpm`/`tpm`；`costIn`/`costOut`/`note` = 展示面（`webui/ADMIN.md` §2.1③）；`quotaTokens` = 配额平台层默认值（`metering/METERING.md` §2——三级之一，KD-SV-38）。
 
 ### v5 增段（模型标识两字段拆列 + 派生两表 + 成员配额列——metering ∥ accounts 域；配额分模型批）
 
@@ -179,7 +179,7 @@ ALTER TABLE members ADD COLUMN model_disabled_json TEXT NOT NULL DEFAULT '{}';  
 ```
 
 - 形 = `{ "<对外标识（别名 ∥ provider/model）>": true }`——键 = 对外标识（与 `model_quotas_json` 同空间；键形校验同助手——非空 ∥ 无首尾空白 ∥ 含斜杠时两段非空（裸名 = 别名形合法——#1008 收正；2026-10-09 alias 批））；值仅 `true`（禁用）；删键 = 恢复可用；缺省 `{}` = **默认全可用**。
-- 机制全文 = `accounts/ACCOUNTS.md` §2.2；消费面 = 鉴权行携带（`accounts/keys.mjs` `verifyKey`——沿 `model_quotas_json` 零查询口径） ⇒ 网关准入（`gateway/API.md` §2.1）+ `/v1/models` 随动滤除 + 成员弹窗勾选态（`webui/WEBUI.md` §2.4②）。
+- 机制全文 = `accounts/ACCOUNTS.md` §2.2；消费面 = 鉴权行携带（`accounts/keys.mjs` `verifyKey`——沿 `model_quotas_json` 零查询口径） ⇒ 网关准入（`gateway/API.md` §2.1）+ `/v1/models` 随动滤除 + 成员弹窗勾选态（`webui/ADMIN.md` §2.1②）。
 - 与 `model_quotas_json`（v5）并列：两列各管一轴——配额 = 用量限额 ∥ 禁用 = 可用性（优先级判据 = `accounts/ACCOUNTS.md` §2.2）。
 
 ### v7 增段（`providers.model_meta_json`——gateway 域；Provider 模型元数据批）
@@ -190,7 +190,7 @@ ALTER TABLE providers ADD COLUMN model_meta_json TEXT NOT NULL DEFAULT '{}';  --
 
 - 形 = `{ "<上游模型名>": { displayName? ∥ contextWindow?（正整数） ∥ vision?（`true`） ∥ status?（退役状态原文） } }`——**≥1 字段才入键**（缺就空着——零兜底值、零占位）；只含开放清单（`models_json`）模型（写面求交）。
 - 保留集与各上游来源映射 = `gateway/API.md` §2.2「模型元数据」条（逐字）；本列 = **纯展示数据**（转发 ∥ 派发 ∥ `/v1/models` 零涉）。
-- 写面 = 保存路径（POST/PATCH）携 `modelMeta`（键在场 = 期望图——白名单过滤 + 形不符即略 + 求交；缺省 = 现存按求交滑动）；读面 = `rowToEntry` 解码（坏 JSON ⇒ 行数据损坏抛——沿 `models_json`/`settings_json` 口径）；消费 = 控制台 Provider 详情弹窗（`webui/WEBUI.md` §2.4④）。
+- 写面 = 保存路径（POST/PATCH）携 `modelMeta`（键在场 = 期望图——白名单过滤 + 形不符即略 + 求交；缺省 = 现存按求交滑动）；读面 = `rowToEntry` 解码（坏 JSON ⇒ 行数据损坏抛——沿 `models_json`/`settings_json` 口径）；消费 = 控制台 Provider 详情弹窗（`webui/ADMIN.md` §2.1④）。
 
 ### v8 增段（`api_keys.name`——accounts 域；me-keys 批）
 
@@ -200,7 +200,7 @@ UPDATE api_keys SET name = 'key-' || (SELECT COUNT(*) FROM api_keys k2 WHERE k2.
 ```
 
 - 形 = 自由文本标签（≤40 字符——服务层 trim 后校验；空名 ⇒ 服务层生成默认名 `key-N` 落库）；**非标识**——寻址仍按 `id`/提示形（重名允许 ∥ 无唯一索引）。
-- 语义与写面 = `accounts/ACCOUNTS.md` §1.1（命名规则 ∥ 上限 ∥ 自助签发/吊销）；读面 = `memberView` key 行（`name` 随行下发——仅未吊销）；消费 = 控制台「我的·key 与签发」表列（`webui/WEBUI.md` §2.3⑥）。
+- 语义与写面 = `accounts/ACCOUNTS.md` §1.1（命名规则 ∥ 上限 ∥ 自助签发/吊销）；读面 = `memberView` key 行（`name` 随行下发——仅未吊销）；消费 = 控制台「我的·key 与签发」表列（`webui/ME.md` §2.1）。
 - 回填口径：N = 该成员按 `id` 升序的序号（含吊销行——单调不复用；后续签发 = 服务层按同口径续编）；**逐行结果稳定**（子查询只读 `member_id`/`id`——两列不被本 UPDATE 改写，扫描顺序无关）。
 
 ### v9 增段（`providers.proxy`——gateway 域；server 代理批）
@@ -210,7 +210,7 @@ ALTER TABLE providers ADD COLUMN proxy INTEGER NOT NULL DEFAULT 0;  -- 上游代
 ```
 
 - 形 = 布尔旗（SQLite 无布尔——1/0；非布尔 ⇒ 写面 400 ∥ 配置面拒启）；读面解码 = `rowToEntry` 转 boolean（`proxy: row.proxy === 1`——沿 `settings`/`modelMeta` 解码位）。
-- 语义与判定 = `gateway/API.md` §6 KD-SV-55（旗 1 ∧ 顶层 `proxy.uri` 在案 ⇒ 该渠上游请求经代理——chat ∥ 发现同判定）；配置面 = `ops/OPS.md` §1（顶层 `proxy` 段）；控制台面 = `webui/WEBUI.md` §2.4④。
+- 语义与判定 = `gateway/API.md` §6 KD-SV-55（旗 1 ∧ 顶层 `proxy.uri` 在案 ⇒ 该渠上游请求经代理——chat ∥ 发现同判定）；配置面 = `ops/OPS.md` §1（顶层 `proxy` 段）；控制台面 = `webui/ADMIN.md` §2.1④。
 - 圈界：纯路由旗——零计量 ∥ 零展示涉 ∥ 不参与 `/v1/models` 与元数据面。
 
 ### v10 增段（`audit_events.type` CHECK 扩型——accounts 域；配置控制台批）
@@ -237,7 +237,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 ```
 
 - 形 = 十型（九型 + `config_update`——配置写入事件）；`detail.keys` = 变更键名清单（值永不入——密钥/uri 洁癖）；actor = admin 名快照（target = 无——空串）。
-- 语义与写入点 = `accounts/ACCOUNTS.md` §2.1（写入面 = `src/gateway/config-admin.mjs`（已落盘 · 实读 **182** 行）——写盘成功后一条；失败 ⇒ warn，不反噬已落盘事实）；消费 = 审计页类型下拉/文案（`webui/WEBUI.md` §2.3④——型面现状 = 十三型，v14 段）。
+- 语义与写入点 = `accounts/ACCOUNTS.md` §2.1（写入面 = `src/gateway/config-admin.mjs`（已落盘 · 实读 **182** 行）——写盘成功后一条；失败 ⇒ warn，不反噬已落盘事实）；消费 = 审计页类型下拉/文案（`webui/READINGS.md` §2.1④——型面现状 = 十三型，v14 段）。
 - 圈界：重建净零新表/新列——判据 = 行拷贝逐值（含 id 连续）+ 两索引在场。
 
 ### v11 增段（沙盒七表 + 审计 CHECK 再扩——sandbox 域；server-exec-sandbox 批）
@@ -377,7 +377,7 @@ CREATE INDEX IF NOT EXISTS idx_agent_chat_messages ON agent_chat_messages(chat_i
 -- 重建步（建新表（十三型 CHECK） ∥ 拷贝 ∥ DROP ∥ RENAME ∥ 两索引重建——SQL 形同 v10 段，逐字替换型清单）。
 ```
 
-- 语义/对象模型 = `agent/ADMIN-AGENT.md` §11/§12（单源）；端点 = `gateway/API.md` §2.8；控制台面 = `webui/WEBUI.md` §2.10；审计型面 = `accounts/ACCOUNTS.md` §2.1。
+- 语义/对象模型 = `agent/ADMIN-AGENT.md` §11/§12（单源）；端点 = `gateway/API.md` §2.8；控制台面 = `webui/CHAT.md` §2.1；审计型面 = `accounts/ACCOUNTS.md` §2.1。
 - 圈界：`agent_chat_messages.chat_id` 无 FK（沿 `audit_events`/沙盒瞬态表口径）；消息不回写/不归档（保留口径未裁——不设清零——`agent/ADMIN-AGENT.md` §10）。
 - **判据（批内件）**：空库直落 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场（`pragma_table_info`）∥ `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写（CHECK 放行）∥ `role`/`status` CHECK 枚举放行/越值拒。
 

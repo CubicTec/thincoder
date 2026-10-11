@@ -275,6 +275,43 @@
 
 **未做（后段/另轮——§4 派单口径）**：波 4（板档 `design/PROJECT.md` 三分区 + §7/§9 迁域 + 域档接收节 + 全树活面改指）∥ 波 5（需求档 20 活面改指 ∥ `README`/`DOC-SYSTEM`/manifest——父侧）∥ 批内件五腿（`docs/batches/2026-10-11-server-doc-split.test.mjs`——eng-coder 轮）。
 
+### 2.15 波 4–5 落盘记录（板档三分区 + 域档接收节 + 全树活面改指）（eng-designer · 2026-10-11）
+
+**范围**：承 §4 批准 = 后段（波 4–5，板档 `design/PROJECT.md` + 九域档）。**产品码零触**。产出与门读数如下（实读 2026-10-11）。
+
+**一、板档三分区（`docs/server/design/PROJECT.md` · 762 行）**
+
+- 三段落：① 总览段（§1–§3 ∥ §8）② 域指针段（§4 决策索引 ∥ §5 板级 KD（1/2/78） ∥ §6 域账索引 ∥ §7 验收索引 ∥ §9 板级/跨域上抛）③ **历史段（迁移前冻结——≤ 2026-10-11）**（L281 起；`变更记录` 续记档末）。
+- 冻结段逐块叠写：原 §4 决策索引 99 行（档 100 行）∥ 原 §6 总账 + 注①–⑳ 273 行（档 278 行）——**归一化（去空白）比对 = 内容全等 true ∥ true**（差 = 块首注行/尾随空行）。
+- 旧 §5 域内 KD（79–95）17 行逐号复核在域档（`sandbox/SANDBOX.md` §14 ∥ `agent/ADMIN-AGENT.md` §9）——**零内容丢失**。
+- §9：8 行改域档 stub（R50 ⇒ `client/CLIENT.md` §8 ∥ R51–R53/R55–R57 ⇒ `sandbox/SANDBOX.md` §16 ∥ R54 ⇒ `agent/ADMIN-AGENT.md` §13）；R58 板级留驻。
+- 超宽拆行 3 行（仅换行、零改字）：`:11`（活面一句话行）+ 冻结段两行（`style.css` 链行 ∥ 部署随正行）。
+- 变更记录 +1 行（本批）。
+
+**二、域档接收节（3 处——板档 §9 原文逐字迁入）**
+
+- `sandbox/SANDBOX.md` §16（六行：R51 ∥ R52 ∥ R53 ∥ R55 ∥ R56 ∥ R57）∥ `agent/ADMIN-AGENT.md` §13（R54）∥ `client/CLIENT.md` §8（R50）；各档变更记录 +1 行。
+- `agent/ADMIN-AGENT.md` §9 KD-SV-82 行并入驱动器两形句（与板档旧 §5 行对等）。
+
+**三、全树活面改指（43 处——只改坐标形、零语义）**
+
+- 旧 `webui/WEBUI.md` §2.x ⇒ 面档直指（单跳）：sandbox 11 ∥ gateway 11 ∥ store 7 ∥ agent 7（含 R53③ 两处 ⇒ `sandbox/SANDBOX.md` §16）∥ metering 2 ∥ ops 2 ∥ client 2 ∥ accounts 1。
+- 移档溯源行（面档档头「本档迁自 `webui/WEBUI.md` §2.x」）判**保留**（迁移出处注——非「内容所在」指针）。
+- 冻结段与记录面旧坐标**豁免**（记录面零追改：`git diff` 逐 hunk 核——各档记录面变更仅 = 本笔新增行）。
+
+**门读数（`node scripts/doc-check.mjs` 实跑）**
+
+- **OK(行宽)**：源域全部 .md 无 >300 字符单行（区带豁免在效）。本批修 3 行（改前：`PROJECT.md:11/:661/:662`）。
+- 锚：悬空 **25**（闸态阈值 0——全仓既有基线；**本档新增 0**——本档引文均入「迁移期引文/拟新增·列报」类）。
+- 声明源 / 判据项 7 项 / 行数面报告态——同工具口径，未变。
+
+**列报（非阻塞）**
+
+- `docs/server/design/` 内 `sandbox/RUNNER.md` 引（已退役档）残留：`EVOLUTION.md:38/39` ∥ `PROJECT.md:737/740` ∥ `gateway/API.md:379` ∥ `ops/OPS.md:401` ∥ `sandbox/SANDBOX.md:496`——「迁移期引文·列报」类（既有基线，非本批新增；注：PROJECT.md:737/740 在冻结段内 ⇒ 零触）。
+- 工具口径与项目名之别：`PROJECT-MANIFEST.json` `widthExemptZones` 声明名 = **「历史沿革」**；本档冻结段题名 = 「历史段」（沿桌面板档先例「## 三、历史段」）。后果 = 冻结段内超宽行不被区带豁免（本批以拆行处置）。**名之不一为既有面**（manifest/`DOC-DISCIPLINE.md` §O-3 各执一名），报父侧定名（本笔零触他面）。
+
+**未做/另轮（父侧面）**：需求档 20 活面改指 ∥ `docs/README.md`/`docs/core/design/DOC-SYSTEM.md` 注册 ∥ `PROJECT-MANIFEST` 行数面 ∥ 批内件五腿（`docs/batches/2026-10-11-server-doc-split.test.mjs`——eng-coder 轮）。
+
 ## §3 设计评审（评审子代理）
 
 ### 轮次 1（评审子代理）

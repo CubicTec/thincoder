@@ -254,7 +254,7 @@ function openCreateContainerModal(ctx, { runner, reload }) {
   const modal = openModal({
     title: t("admin.sandbox.createContainer"),
     body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
-      field(h, "admin.sandbox.containerName", nameInput), field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput), field(h, "admin.sandbox.volume", volumeInput), note, submitBtn),
+      field(h, "admin.sandbox.containerName", nameInput), field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput), field(h, "admin.sandbox.volume", volumeInput), h("p", { class: "hint", text: t("admin.sandbox.volumeHint") }), note, submitBtn),
   })
 
   // 节点本地镜像 ⇒ 选单（轻通道笔 2——手输改选：选定回填下方镜像（可再改））；读败/空表 ⇒ 仅「自定义（手输）」——手输照常，不反噬窗

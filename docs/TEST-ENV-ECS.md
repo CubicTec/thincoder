@@ -122,6 +122,22 @@ curl -s http://127.0.0.1:2375/version
 - **验收口径（真机）**：控制台「运行面」添加节点 ⇒ 在线；容器区建/启/停/删各走一遍——读数以页面与 `docker ps` 为准（真机 = 10.0.0.6）。
 - **托管接入跑法（R53② 补——实施轮落地后按此走查）**：控制台「沙盒 → 运行面」→「托管接入」填 主机地址 + 登录方式（可选 sudo 口令）⇒ 由 server 端 agent 代做三件（探明 ∥ 执行 ∥ 登记）——成功 = 任务区「已就绪」（三态：装机中 ∥ 已就绪 ∥ 失败原因）；失败 = 停在哪步 + 逐句原因。上文手工接线链 = 降级径。
 
+**镜像源（拉像必读——2026-10-11 实核）**：
+
+| 源 | `.6` 可达 | 实拉 |
+|---|---|---|
+| `docker.1ms.run`（Hub 镜像） | ✓ 401 | **✓ 真拉成**：`docker.1ms.run/library/ubuntu:24.04` ⇒ 200 · 10.4s · 119MB；用其建容器可跑 |
+| `docker.m.daocloud.io`（Hub 镜像） | ✓ 401 | ✗ 实拉 **502**（清单/层皆挂——本机不可用） |
+| `registry.cn-hangzhou.aliyuncs.com`（ACR） | ✓ 401 | 未拉（自建镜像源用） |
+| `ghcr.io` ∥ `quay.io` | ✓ 401 | 未拉 |
+| `registry-1.docker.io`（Hub 本体） | **✗** `i/o timeout`（域名解析被污染：173.252.88.67） | — |
+| 网易 ∥ 中科大 ∥ 百度 镜像 | ✗ `000` | — |
+
+- **拉像两条路**：① 控制台拉取窗直接填**镜像源前缀的引用**（如 `docker.1ms.run/library/ubuntu:24.04`）——今天可用；② 引擎级镜像源（便利径）：`.6` **现无** `/etc/docker/daemon.json`，而 `.5` 已配三源（`docker.1panel.live` ∥ `docker.m.daocloud.io` ∥ `docker.1ms.run`——实读）⇒ `.6` 同配一条即让裸 `ubuntu:24.04` 直通（需 sudo 口令）：
+  `printf '{"registry-mirrors":["https://docker.1ms.run"]}' | sudo tee /etc/docker/daemon.json && sudo systemctl restart docker`
+  （重启不动 2375 监听 override ∥ 盒镜像 `thincoder-sandbox:1` 为本地标，不受影响。）
+- **盒镜像**（坑 8）仍走 `docker save|gzip` ⇒ scp ⇒ `docker load`——那是本机构建件；**日常基础镜像**走上面①/②。
+
 ## 8. 相关档
 
 - 测试环境首部署批（来源 ∥ 授权 ∥ 安全组开放过程）= `batches/2026-10-09-server-test-env-ecs.md` §1。

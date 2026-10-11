@@ -180,4 +180,9 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.readKindBadResponse": "远端响应形不符",
   "admin.sandbox.imageFilterPh": "按名/标签过滤……",
   "admin.sandbox.imagesNoMatch": "无匹配镜像",
+
+  // ── 管理·沙盒·一键拉取（§2.8①——sandbox-image-quick-pull 批） ──────────────────────
+  "admin.sandbox.catalogPull": "拉取",
+  "admin.sandbox.pullPickNodeTitle": "拉取到节点",
+  "admin.sandbox.pullTarget": "目标节点：{name}",
 })

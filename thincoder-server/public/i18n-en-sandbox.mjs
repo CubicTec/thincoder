@@ -180,4 +180,9 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.readKindBadResponse": "Remote response shape mismatch",
   "admin.sandbox.imageFilterPh": "Filter by name/tag…",
   "admin.sandbox.imagesNoMatch": "No matching images",
+
+  // ── Admin · sandbox · quick pull (§2.8① — sandbox-image-quick-pull batch) ─────────
+  "admin.sandbox.catalogPull": "Pull",
+  "admin.sandbox.pullPickNodeTitle": "Pull to node",
+  "admin.sandbox.pullTarget": "Target node: {name}",
 })

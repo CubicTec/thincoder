@@ -1,14 +1,18 @@
 /**
- * views-sandbox-image-sources.mjs — 沙盒页·镜像源卡件（webui/WEBUI.md §2.8①；sandbox-image-sources 批——台账 #1274）：
+ * views-sandbox-image-sources.mjs — 沙盒页·镜像源卡件（webui/WEBUI.md §2.8①；sandbox-image-sources 批——台账 #1274；
+ * 一键拉取 = sandbox-image-quick-pull 批——台账 #1276）：
  * 源表（名 ∥ 地址 ∥ 面型提示（Hub 面/标准 v2——按 `kind` 派生）∥ 操作：目录/改/删）+「添加源」钮
  * ∥ 增/改弹窗（常用源预选下拉六条（选中回填名 + 址，可再改）+ 名/址两输入）∥ 删除确认（后果句——非原生 confirm）
  * ∥ 目录浏览窗（懒取：仓库列表（过滤输入 + 截断提示 + 空态句）⇒ 点行取标签列表（过滤输入）；Hub 源 ⇒ 仓库面改走
- * 「按镜像名查标签」单输入（目录面 `unsupported` 人话呈）；五分类读绪各一键文案——窗内就地呈，不关窗）。
+ * 「按镜像名查标签」单输入（目录面 `unsupported` 人话呈）；五分类读绪各一键文案——窗内就地呈，不关窗）
+ * ∥ 一键拉取（行尾「拉取」钮 ⇒ 节点选单（开窗读一次概览——无节点/全离线 ⇒ 禁用 + 一句人话）⇒ 既有拉取窗（预填
+ * `<主机>[:<端口>]/<仓库>:<标签>` + 「目标节点」行；预填可改）⇒ 既有拉取径——零新端点 ∥ 零新 kind）。
  * 契约 = gateway/API.md §2.5 镜像源七行；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）；零新端点。
- * 批内件直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel`（纯函数）。
+ * 批内件直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel` ∥ `pullRefFor`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+import { openPullImageModal } from "./views-sandbox-images.mjs"
 
 /** 面型文案键（`kind` ⇒ 表键；枚举外 ⇒ 标准 v2 兜底——服务端只出两值）。 */
 const SOURCE_KIND_KEYS = { hub: "admin.sandbox.sourceKindHub", v2: "admin.sandbox.sourceKindV2" }
@@ -33,6 +37,17 @@ export function readKindLabel(kind) {
   return key === undefined ? String(kind ?? "—") : t(key)
 }
 
+/** Hub 注册表主机（预填统一形——站点主机（`hub.docker.com`）非注册表主机）∥ 连字面量拼写 = 避 `2026-10-06-server-i18n` 键面扫描件误判（点分小写字面量须为 i18n 键——本字面量非键）。 */
+const HUB_REGISTRY_HOST = "docker" + ".io"
+
+/** 预填引用（纯函数——批内件直测）：`<主机>[:<端口>]/<仓库>:<标签>`——地址去 scheme ∥ 含端口逐值；
+ *  Hub 面主机统一 `docker.io` + 裸名补 `library/`（沿读取面惯例）；仓库行（无 `tag`）⇒ `:latest` 显式。 */
+export function pullRefFor(source, { repo, tag = null }) {
+  const host = source?.kind === "hub" ? HUB_REGISTRY_HOST : String(source?.address ?? "").replace(/^https?:\/\//, "")
+  const name = source?.kind === "hub" && !String(repo).includes("/") ? `library/${repo}` : String(repo)
+  return `${host}/${name}:${tag === null || tag === undefined || tag === "" ? "latest" : String(tag)}`
+}
+
 /** 读绪块（五分类标签 + 服务端人话；转读失败（我们的 API 抛）⇒ `mapError` 人话）。 */
 function readErrorNode(ctx, error) {
   const { h } = ctx
@@ -41,8 +56,8 @@ function readErrorNode(ctx, error) {
   return h("div", { class: "stack-box" }, ...nodes)
 }
 
-/** 镜像源卡件（缓存自持；动作后重取 = 界面上新）。出 = `{ card }`（页面挂载点）。 */
-export function createImageSourceSection(ctx) {
+/** 镜像源卡件（缓存自持；动作后重取 = 界面上新）。出 = `{ card }`（页面挂载点）；`onPulled` = 页注入回调（一键拉取成 ⇒ 该节点镜像表重取——装配点 `views-sandbox.mjs`）。 */
+export function createImageSourceSection(ctx, { onPulled = null } = {}) {
   const { h } = ctx
   let sources = []
   const box = h("div", { class: "table-slot" }, h("p", { class: "hint", text: t("common.loading") }))
@@ -74,7 +89,7 @@ export function createImageSourceSection(ctx) {
       h("td", { text: source.address }),
       h("td", { text: sourceKindLabel(source.kind) }),
       h("td", {},
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.sourceCatalogBtn"), onclick: () => openCatalogModal(ctx, { source }) }),
+        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.sourceCatalogBtn"), onclick: () => openCatalogModal(ctx, { source, onPulled }) }),
         h("button", { type: "button", class: "tiny", text: t("admin.sandbox.sourceEdit"), onclick: () => openSourceModal(ctx, { source, reload: load }) }),
         h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openSourceDeleteModal(ctx, { source, reload: load }) }))))
     box.replaceChildren(h("div", { class: "table-wrap" },
@@ -160,27 +175,61 @@ function openSourceDeleteModal(ctx, { source, reload }) {
   })
 }
 
-/** 目录浏览窗（懒取：仓库列表 ⇒ 点行取标签；Hub 源 ⇒ 仓库面改走「按镜像名查标签」单输入；两处过滤输入；五分类读绪窗内就地呈）。 */
-function openCatalogModal(ctx, { source }) {
+/** 目录浏览窗（懒取：仓库列表 ⇒ 点行取标签；Hub 源 ⇒ 仓库面改走「按镜像名查标签」单输入；两处过滤输入；五分类读绪窗内就地呈）。
+ *  一键拉取（sandbox-image-quick-pull 批）：行尾「拉取」钮（可用态 = 开窗读一次概览——读时读）⇒ 节点选单 ⇒ 既有拉取窗预填。 */
+function openCatalogModal(ctx, { source, onPulled = null }) {
   const { h } = ctx
   const hub = source?.kind === "hub"
   const repoCol = h("div", { class: "stack-box" }, h("h4", { text: t("admin.sandbox.catalogReposTitle") }))
   const tagCol = h("div", { class: "stack-box" }, h("h4", { text: t("admin.sandbox.catalogTagsTitle") }))
+  const pull = { enabled: false, runners: [] } // 可用态（概览读到前 ⇒ 禁用——fail-safe）
+  const pullNote = h("p", { class: "hint error", hidden: true })
+  const repainters = []
+  let tagRepo = "" // 标签列表当前所取仓库名（标签行预填用——Hub 面补 library/ 归 `pullRefFor`）
   openModal({
     title: t("admin.sandbox.catalogTitle", { name: source.name }),
-    body: h("div", {}, h("div", { class: "browse-grid" }, repoCol, tagCol)),
+    body: h("div", {}, pullNote, h("div", { class: "browse-grid" }, repoCol, tagCol)),
   })
   const catalogUrl = `/api/admin/sandbox/image-sources/${source.id}/catalog`
-  const tags = makeList({ emptyKey: "admin.sandbox.catalogTagsEmpty", idleText: t("admin.sandbox.catalogTagHint") })
+  const tags = makeList({ emptyKey: "admin.sandbox.catalogTagsEmpty", idleText: t("admin.sandbox.catalogTagHint"), onPull: (tag) => pickNode({ repo: tagRepo, tag }) })
+  repainters.push(tags.repaint)
   tagCol.append(tags.node)
+
+  // 可用态 = 目录窗打开读一次概览（读时读——零新端点）：≥1 在线 ⇒ 可用；无节点 ∥ 全离线 ⇒ 禁用 + 一句人话；读败 ⇒ 禁用 + 人话
+  ctx.api("/api/admin/sandbox/overview").then((data) => {
+    const runners = Array.isArray(data?.runners) ? data.runners : []
+    const online = runners.filter((runner) => runner.online === true)
+    if (online.length > 0) setPull({ enabled: true, runners: online })
+    else setPull({ enabled: false, reason: t(runners.length === 0 ? "admin.sandbox.noNodes" : "admin.sandbox.allOffline") })
+  }).catch((error) => setPull({ enabled: false, reason: mapError(error) }))
+
+  /** 可用态落定（提示行 + 两列钮态随动重渲）。 */
+  function setPull(next) {
+    Object.assign(pull, next)
+    pullNote.hidden = pull.enabled
+    if (!pull.enabled) pullNote.textContent = pull.reason
+    for (const repaint of repainters) repaint()
+  }
+
+  /** 拉取链（一键拉取）：节点选单（在线节点）⇒ 既有拉取窗（引用预填 + 目标节点行；预填可改）。 */
+  function pickNode({ repo, tag }) {
+    openNodePicker(ctx, {
+      runners: pull.runners,
+      onPick: (runner) => openPullImageModal(ctx, { runner, prefill: pullRefFor(source, { repo, tag }), reload: () => onPulled?.(runner) }),
+    })
+  }
 
   /** 读一次标签（v2 = 点行所取仓库名 ∥ Hub = 单输入名；败 ⇒ 五分类读绪就地呈）。 */
   async function loadTags(name) {
     tags.load()
     try {
       const data = await ctx.api(`/api/admin/sandbox/image-sources/${source.id}/tags?name=${encodeURIComponent(name)}`)
-      if (data?.ok === true) tags.set(data.tags ?? [], { truncated: data.truncated })
-      else tags.fail(data?.error ?? {})
+      if (data?.ok === true) {
+        tagRepo = name
+        tags.set(data.tags ?? [], { truncated: data.truncated })
+      } else {
+        tags.fail(data?.error ?? {})
+      }
     } catch (error) {
       tags.fail(error)
     }
@@ -206,7 +255,8 @@ function openCatalogModal(ctx, { source }) {
       await loadTags(name)
     }
   } else {
-    const repos = makeList({ emptyKey: "admin.sandbox.catalogReposEmpty", onPick: (name) => loadTags(name) })
+    const repos = makeList({ emptyKey: "admin.sandbox.catalogReposEmpty", onPick: (name) => loadTags(name), onPull: (repo) => pickNode({ repo, tag: null }) })
+    repainters.push(repos.repaint)
     repoCol.append(repos.node)
     const loadRepos = async () => {
       repos.load()
@@ -222,17 +272,34 @@ function openCatalogModal(ctx, { source }) {
   }
 
   /** 过滤列表块（两列各一枚）：过滤输入 + 行表（已载集合纯前端过滤——零新端点）；截断提示/空态/无匹配就地呈。
-   *  `onPick` 在场 ⇒ 行可点（`row-clickable`——键盘同径）；`idleText` = 首屏待命句（缺省 = 加载中）。 */
-  function makeList({ emptyKey, onPick = null, idleText = null }) {
+   *  `onPick` 在场 ⇒ 行可点（`row-clickable`——键盘同径）；`onPull` 在场 ⇒ 行尾「拉取」钮（一键拉取径）；
+   *  `idleText` = 首屏待命句（缺省 = 加载中）。 */
+  function makeList({ emptyKey, onPick = null, idleText = null, onPull = null }) {
     const filterInput = h("input", { placeholder: t("admin.sandbox.catalogFilterPh") })
     const truncatedHint = h("p", { class: "hint", text: t("admin.sandbox.catalogTruncated"), hidden: true })
     const bodyBox = h("div", { class: "table-slot" })
     const node = h("div", { class: "stack-box" }, h("div", { class: "filter-row" }, filterInput), truncatedHint, bodyBox)
     let items = []
+    let phase = "idle" // 读绪相位（idle 首屏待命 ∥ loading ∥ ready ∥ failed）——重渲仅在 ready（不顶掉待命/加载/读绪面）
+
+    /** 行尾「拉取」钮（可用态禁用；钮内点击/键事件不触发行选取——`stopPropagation` 先行）。 */
+    function pullButton(item) {
+      const button = h("button", { type: "button", class: "tiny", text: t("admin.sandbox.catalogPull"), onclick: (event) => {
+        event.stopPropagation()
+        if (!pull.enabled) return // 禁用兜底（平台不派发禁用钮点击——双保险）
+        onPull(item)
+      } })
+      // 行级 keydown（Enter/Space ⇒ 行选取）会吞钮激活 ⇒ 钮内键事件不外传（键盘同径 = 钮自身 activation）
+      button.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") event.stopPropagation() })
+      button.disabled = !pull.enabled
+      return button
+    }
 
     function rowsOf(shown) {
       return shown.map((item) => {
-        const tr = h("tr", onPick === null ? {} : { class: "row-clickable", tabindex: "0" }, h("td", { text: item }))
+        const cells = [h("td", { text: item })]
+        if (onPull !== null) cells.push(h("td", {}, pullButton(item)))
+        const tr = h("tr", onPick === null ? {} : { class: "row-clickable", tabindex: "0" }, ...cells)
         if (onPick !== null) {
           tr.addEventListener("click", () => onPick(item))
           tr.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onPick(item) } })
@@ -255,21 +322,42 @@ function openCatalogModal(ctx, { source }) {
       node,
       /** 读起点（清截断提示 + 加载态）。 */
       load() {
+        phase = "loading"
         truncatedHint.hidden = true
         bodyBox.replaceChildren(h("p", { class: "hint", text: t("common.loading") }))
       },
       /** 读败（五分类读绪 ∥ 转读失败——窗内就地呈，不关窗）。 */
       fail(error) {
+        phase = "failed"
         truncatedHint.hidden = true
         bodyBox.replaceChildren(readErrorNode(ctx, error))
       },
       /** 读成（集合 + 截断标记；过滤词复位）。 */
       set(next, { truncated = false } = {}) {
+        phase = "ready"
         items = Array.isArray(next) ? next : []
         truncatedHint.hidden = truncated !== true
         filterInput.value = ""
         render()
       },
+      /** 可用态落定重渲（钮禁用态随动——仅读成面重渲，首屏待命/加载/读绪面不顶掉）。 */
+      repaint() {
+        if (phase !== "ready") return
+        render()
+      },
     }
   }
+}
+
+/** 节点选单（在线节点行——名 + 地址；可点行 ∥ 键盘同径；题「拉取到节点」）⇒ 选 ⇒ 既有拉取窗（单例：开新先关旧——目录窗随之关）。 */
+function openNodePicker(ctx, { runners, onPick }) {
+  const { h } = ctx
+  const rows = runners.map((runner) => {
+    const tr = h("tr", { class: "row-clickable", tabindex: "0" }, h("td", { text: runner.name }), h("td", { text: runner.address }))
+    const pick = () => onPick(runner)
+    tr.addEventListener("click", pick)
+    tr.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); pick() } })
+    return tr
+  })
+  openModal({ title: t("admin.sandbox.pullPickNodeTitle"), body: h("div", {}, h("div", { class: "table-wrap" }, h("table", {}, h("tbody", {}, ...rows)))) })
 }

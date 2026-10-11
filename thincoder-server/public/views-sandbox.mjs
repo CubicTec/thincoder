@@ -2,7 +2,7 @@
  * views-sandbox.mjs — 管理·沙盒页（webui/WEBUI.md §2/§2.8①——`#/admin/sandbox`）：运行面卡（可用性提示 ∥ 节点表 ∥
  * 添加/删除节点弹窗 ∥ 容器区/镜像区（节点行展开——懒加载；两区件 = `views-sandbox-containers.mjs` ∥ `views-sandbox-images.mjs`，
  * sandbox-docker-admin 批外拆——§2.8①））+ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态
- * 「撤销凭据」钮；在途 3s 读时轮询、定终态停））+ 镜像源卡（本批——全局面；件 = `views-sandbox-image-sources.mjs`）。契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；
+ * 「撤销凭据」钮；在途 3s 读时轮询、定终态停））+ 镜像源卡（sandbox-image-sources 批——全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；
  * 渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
  * 批内件直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
  */
@@ -70,7 +70,7 @@ export async function renderSandbox(ctx, mount) {
   const detailCache = new Map() // 任务 id ⇒ { step, steps }（步骤读数在详情面——列表携步骤无读数，§2.5）
   const containers = createContainerSection(ctx) // 容器区件（本批外拆——§2.8①）
   const images = createImageSection(ctx) // 镜像区件（本批外拆——§2.8①）
-  const sources = createImageSourceSection(ctx) // 镜像源卡件（本批——全局面，非按节点）
+  const sources = createImageSourceSection(ctx, { onPulled: (runner) => { images.reset(runner); loadRunners() } }) // 镜像源卡件（全局面，非按节点）；一键拉取成 ⇒ 该节点镜像表重取（列表上新）
   let runners = []
   let runs = []
   let pollTimer = null

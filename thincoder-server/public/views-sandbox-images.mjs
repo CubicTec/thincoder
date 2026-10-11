@@ -2,8 +2,8 @@
  * views-sandbox-images.mjs — 沙盒页·镜像区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 镜像表（名（多标签逐行 ∥ 无标签 ⇒「无标签」）∥ 大小 ∥ 创建 ∥ 操作：删除）+ 拉取镜像钮 + **本地镜像表过滤**（本批——
  * 表上方关键词输入（名/标签匹配；无匹配 ⇒ 空态句；零新端点））
- * ∥ 拉取窗（单输入 `名[:标签]`；在飞态 + 钮禁用）∥ 删除确认窗（强制删除勾选——缺省不勾）。
- * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection`。
+ * ∥ 拉取窗（单输入 `名[:标签]`；在飞态 + 钮禁用；sandbox-image-quick-pull 批：可选预填参 + 预填在场附「目标节点：{name}」行）∥ 删除确认窗（强制删除勾选——缺省不勾）。
+ * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection` ∥ `openPullImageModal`。
  */
 import { mapError, t } from "./i18n.mjs"
 import { field, openModal, showNote, submitThen } from "./modal.mjs"
@@ -79,15 +79,18 @@ export function createImageSection(ctx) {
   return { area, reset }
 }
 
-/** 拉取镜像弹窗（单输入 `名[:标签]`；在飞态 =「拉取中……（可能持续数分钟）」+ 钮禁用）。 */
-function openPullImageModal(ctx, { runner, reload }) {
+/** 拉取镜像弹窗（单输入 `名[:标签]`；在飞态 =「拉取中……（可能持续数分钟）」+ 钮禁用）。
+ *  一键拉取径（sandbox-image-quick-pull 批）：`prefill` 在场 ⇒ 引用预填（可改——确认值 = 所见值）+「目标节点」行。 */
+export function openPullImageModal(ctx, { runner, reload, prefill = null }) {
   const { h } = ctx
   const input = h("input", { placeholder: t("admin.sandbox.imageRefPh") })
+  if (prefill !== null) input.value = prefill
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.imagePull") })
   const modal = openModal({
     title: t("admin.sandbox.imagePull"),
     body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
+      ...(prefill === null ? [] : [h("p", { class: "hint", text: t("admin.sandbox.pullTarget", { name: runner.name }) })]),
       field(h, "admin.sandbox.imageRef", input), note, submitBtn),
   })
 

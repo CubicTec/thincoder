@@ -1,5 +1,5 @@
 {
-  "_note": "i18n 拆分批（2026-09-29 · 台账 #614）搬前基线：renderer/i18n.mjs HOST_DICT 两语全量条目（保序 [[key,value],...]）——搬前届盘实读冻结；对拍件 = docs/batches/2026-09-29-i18n-split.test.mjs（A2）。【重锚 2026-09-29 18:3x · 父侧收位】#637 增 `session.occupied` 两语（session.deleteConfirm 后位）——条目 294 ⇒ 295。【重锚 2026-10-04 · 台账 #889】HOST_DICT 随后续批条目增殖——条目 295 ⇒ 314（现盘全量重冻；对拍语义 = 现盘全量等值等序 + 三档子序列相对序保）。 【重锚 2026-10-10 · 随正轮（父侧）】HOST_DICT 随后续批条目增殖——条目 314 ⇒ 322（现盘全量重冻；对拍语义 = 现盘全量等值等序 + 三档子序列相对序保）。 【重锚 2026-10-10 · B1 团队登录批随正（父侧）】HOST_DICT 随后续批条目增殖——条目 322 ⇒ 338（现盘全量重冻；B1 团队段 +15 键 ∥ 前批未续计 1 键——`VIEWS_DICT` 实读 150；对拍语义不变 = 现盘全量等值等序 + 三档子序列相对序保）。",
+  "_note": "2026-09-29-i18n-split 批 A2 基线 —— 2026-10-11 全量重冻（349 条两语；随正轮：首启保存面收正批 −1 键 +4 键）。重冻口径 = 现盘 HOST_DICT 两语条目全量、原序；三档（i18n-settings/views/composer）条目 = 本基线子序列。",
   "en": [
     [
       "rail.action.openDir",
@@ -522,6 +522,34 @@
       "Server revocation not delivered"
     ],
     [
+      "wizard.route.teamTitle",
+      "Log in to team server"
+    ],
+    [
+      "wizard.route.teamDesc",
+      "Sign in with an account issued by your team — models come from the server, no API key to fill in"
+    ],
+    [
+      "wizard.route.localTitle",
+      "Configure a local provider"
+    ],
+    [
+      "wizard.route.localDesc",
+      "Fill in your own API key — no team server required"
+    ],
+    [
+      "wizard.route.localAction",
+      "Set up"
+    ],
+    [
+      "wizard.later",
+      "Later"
+    ],
+    [
+      "wizard.backToRoute",
+      "← Choose another way"
+    ],
+    [
       "wizard.title",
       "Initial setup"
     ],
@@ -558,8 +586,20 @@
       "Choose folder…"
     ],
     [
-      "wizard.save",
-      "Save provider"
+      "wizard.saveAndNext",
+      "Save & continue"
+    ],
+    [
+      "wizard.finishGuard",
+      "Nothing has been saved yet — save a provider first, or exit and configure later."
+    ],
+    [
+      "wizard.finishGuardGo",
+      "Save a provider"
+    ],
+    [
+      "wizard.finishGuardExit",
+      "Exit anyway"
     ],
     [
       "status.usage",
@@ -612,6 +652,10 @@
     [
       "status.enter.send",
       "Enter: send"
+    ],
+    [
+      "status.team.entry",
+      "Log in to team server"
     ],
     [
       "status.banner.plan",
@@ -1876,6 +1920,34 @@
       "服务端吊销未达"
     ],
     [
+      "wizard.route.teamTitle",
+      "登录团队服务器"
+    ],
+    [
+      "wizard.route.teamDesc",
+      "用团队发的账号登录——模型由服务器提供，不用自己填 key"
+    ],
+    [
+      "wizard.route.localTitle",
+      "配置本地 provider"
+    ],
+    [
+      "wizard.route.localDesc",
+      "自己填 API key，不依赖团队服务器"
+    ],
+    [
+      "wizard.route.localAction",
+      "开始配置"
+    ],
+    [
+      "wizard.later",
+      "以后再说"
+    ],
+    [
+      "wizard.backToRoute",
+      "← 换一种方式"
+    ],
+    [
       "wizard.title",
       "初始设置"
     ],
@@ -1912,8 +1984,20 @@
       "选择目录…"
     ],
     [
-      "wizard.save",
-      "保存渠道"
+      "wizard.saveAndNext",
+      "保存并继续"
+    ],
+    [
+      "wizard.finishGuard",
+      "尚未保存任何配置——请先保存渠道，或选择『仍要退出』稍后再配置"
+    ],
+    [
+      "wizard.finishGuardGo",
+      "去保存渠道"
+    ],
+    [
+      "wizard.finishGuardExit",
+      "仍要退出"
     ],
     [
       "status.usage",
@@ -1966,6 +2050,10 @@
     [
       "status.enter.send",
       "Enter: send"
+    ],
+    [
+      "status.team.entry",
+      "登录团队服务器"
     ],
     [
       "status.banner.plan",

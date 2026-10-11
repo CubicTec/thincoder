@@ -1,6 +1,7 @@
 /**
  * views-sandbox-images.mjs — 沙盒页·镜像区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
- * 镜像表（名（多标签逐行 ∥ 无标签 ⇒「无标签」）∥ 大小 ∥ 创建 ∥ 操作：删除）+ 拉取镜像钮
+ * 镜像表（名（多标签逐行 ∥ 无标签 ⇒「无标签」）∥ 大小 ∥ 创建 ∥ 操作：删除）+ 拉取镜像钮 + **本地镜像表过滤**（本批——
+ * 表上方关键词输入（名/标签匹配；无匹配 ⇒ 空态句；零新端点））
  * ∥ 拉取窗（单输入 `名[:标签]`；在飞态 + 钮禁用）∥ 删除确认窗（强制删除勾选——缺省不勾）。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection`。
  */
@@ -43,7 +44,7 @@ export function createImageSection(ctx) {
       return box
     }
     const headers = [t("admin.sandbox.image"), t("admin.sandbox.colSize"), t("admin.sandbox.colCreated"), t("admin.sandbox.colActions")]
-    const rows = cached.images.map((image) => {
+    const rowOf = (image) => {
       const tags = Array.isArray(image.tags) ? image.tags : []
       const ref = tags[0] ?? image.id // 删除引用 = 首标签（无标签 ⇒ 镜像 id）
       return h("tr", {},
@@ -51,9 +52,22 @@ export function createImageSection(ctx) {
         h("td", { text: formatBytes(image.size) }),
         h("td", { text: image.created ? ctx.fmtTs(image.created * 1000) : "—" }), // 引擎 `Created` = 秒
         h("td", {}, h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openDeleteImageModal(ctx, { runner, ref, reload: invalidate }) })))
-    })
-    box.append(h("div", { class: "table-wrap" },
-      h("table", {}, h("thead", {}, h("tr", {}, ...headers.map((label) => h("th", { text: label })))), h("tbody", {}, ...rows))))
+    }
+    // 本地镜像表过滤（本批——名/标签关键词；已载集合纯前端过滤 = 零新端点；无匹配 ⇒ 空态句）
+    const filterInput = h("input", { placeholder: t("admin.sandbox.imageFilterPh") })
+    const listBox = h("div", {})
+    const renderRows = () => {
+      const keyword = filterInput.value.trim().toLowerCase()
+      const visible = keyword === ""
+        ? cached.images
+        : cached.images.filter((image) => (Array.isArray(image.tags) ? image.tags : []).some((tag) => String(tag).toLowerCase().includes(keyword)))
+      listBox.replaceChildren(visible.length === 0
+        ? h("p", { class: "hint", text: t("admin.sandbox.imagesNoMatch") })
+        : h("div", { class: "table-wrap" }, h("table", {}, h("thead", {}, h("tr", {}, ...headers.map((label) => h("th", { text: label })))), h("tbody", {}, ...visible.map(rowOf)))))
+    }
+    filterInput.addEventListener("input", renderRows)
+    box.append(h("div", { class: "filter-row" }, filterInput), listBox)
+    renderRows()
     return box
   }
 

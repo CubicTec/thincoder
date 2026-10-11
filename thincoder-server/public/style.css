@@ -208,6 +208,11 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .pre-scroll { max-height: 46vh; overflow-y: auto; } /* 日志码面：纵滚（尺寸字面——非刻度面，同 .chat-list 先例） */
 .row-form > h4 { margin: 0; } /* 行内小标题（详情窗用量块——同 `.row-form h3` 先例） */
 
+/* ── 沙盒·镜像源族与列表过滤（views-sandbox-image-sources.mjs ∥ views-sandbox-images.mjs——§2.8①；零新变量 ∥ 零新悬停规则）── */
+.filter-row { display: flex; flex-wrap: wrap; gap: var(--sp-4); align-items: center; margin-bottom: var(--sp-4); } /* 过滤行（本地镜像表 ∥ 浏览窗两列） */
+.filter-row input { min-width: 240px; } /* 尺寸字面（非刻度面——原值保留，同 `.provider-form` 先例） */
+.browse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); align-items: start; } /* 浏览窗两列（仓库 ∥ 标签） */
+
 /* ── 服务模型配置面（views-models.mjs——§2.4③）：配置区五组（A/C/F/D/E） ∥ 表单网格 ∥ 停用钮行 ∥ 元数据行 ─── */
 .config-group { margin-top: var(--sp-4); }
 .config-group h5 { margin: 0 0 var(--sp-3); font-size: var(--fs); color: var(--muted); }

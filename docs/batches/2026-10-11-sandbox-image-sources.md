@@ -140,4 +140,83 @@ VERDICT: pass
 - **实施派发** = eng-coder（全量文件表 = 批档 §2；随正件（档目断言件 ∥ i18n 键集件 ∥ 门禁件数断言件七件 47 ⇒ 49 ∥ `package.json` `prepublishOnly` 47 ⇒ 49）= 父侧实施轮同拍落）。
 
 ## §5 实施记录（eng-coder）
+**状态行**：实施完成（（13 件落盘：11 产品件 + 两批内件——两件实跑 13/13 ∥ 6/6 pass · 闸面零新增红 · 差异审计 1 轮零偏离 · 代码评审 1 轮（1🔴 父侧裁定归随正件 ∥ 1🟡 ∥ 3🔵）· 域内修复轮 1（址含凭据明拒）· 随正件五组实读清单见 5.4，交父侧同拍落））
+
+
+
+### 5.0 交付面（本段 = 实施舱自写——不靠父侧转述）
+
+**13 件落盘（11 产品件 + 2 批内件）；`src/sandbox/routes.mjs` ±0 ∥ `docker.mjs`/`image-routes.mjs` 零触 ∥ 设计档零触。**
+
+| # | 件 | 动作 | 实读行数（设计估） | 内容一句话 |
+|---|---|---|---|---|
+| 1 | `thincoder-server/src/sandbox/image-sources.mjs` | 新 | 132（≈170） | 形校验（名 trim ≤40 ∥ 址 `[http(s)://]主机[:端口]` 归一——路径/查询/空白/凭据拒）∥ `kind` 按址派生（Hub 四别名，不入库）∥ 预选六条静态表 ∥ 列/取/增/改/删五函数（唯一冲突 ⇒ 人话） |
+| 2 | `thincoder-server/src/sandbox/registry-client.mjs` | 新 | 225（≈230） | v2 两读（`_catalog` ∥ `tags/list`）∥ Hub 标签读（`page_size=min(n,100)`、裸名补 `library/`）∥ 匿名 Bearer 挑战（realm/service/scope ∥ token 键 `token\|access_token` ∥ 复读一次）∥ 有界首页（`n` 1–1000 缺省 200 + `truncated`）∥ 五分类 `RegistryError` |
+| 3 | `thincoder-server/src/sandbox/image-source-routes.mjs` | 新 | 150（≈170） | 七端点注册（列/预选/增/改/删/目录/标签）∥ 读类自含状态形（成/败皆 200 + `ms`）∥ 三 kind 审计（add/update/delete——detail 键集逐值）∥ 形拒 400 零外呼 |
+| 4 | `thincoder-server/src/store/db.mjs` | 改 | 476（458 ⇒ ≈490） | v15 增段（`image_sources` 建表——五列 + 两 UNIQUE + 注，与 `store/STORE.md` §2 v15 段逐字）+ 迁移行 `{ v: 15 }` |
+| 5 | `thincoder-server/bin/thincoder-server.mjs` | 改 | 191（189 ⇒ ≈191） | import + `registerImageSourceRoutes(routes, { db })` 注册行（恰 +2；`routes.mjs` 零触——设计 `routes.mjs` ±0） |
+| 6 | `thincoder-server/public/views-sandbox-image-sources.mjs` | 新 | 275（≈230） | 源卡（源表四列 + 面型文案派生 + 目录/改/删三钮 + 添加源钮）∥ 增/改弹窗（预选回填可再改）∥ 删除确认（后果句，非原生 confirm）∥ 目录浏览窗（v2 仓库⇒点行取标签 ∥ Hub 单输入按名查标签、目录 `unsupported` 人话呈 ∥ 两处过滤 + truncated 提示 + 空态/无匹配 ∥ 五分类读绪窗内就地呈不关窗） |
+| 7 | `thincoder-server/public/views-sandbox-images.mjs` | 改 | 132（118 ⇒ ≈138） | 本地镜像表过滤（表上方关键词输入；tags 匹配；无匹配 ⇒ 空态句；零新端点） |
+| 8 | `thincoder-server/public/views-sandbox.mjs` | 改 | 375（372 ⇒ ≈380） | 源卡挂载（import + `createImageSourceSection` + `mount.append(sources.card)`——全局面新卡） |
+| 9 | `thincoder-server/public/i18n-zh-sandbox.mjs` | 改 | 183（147 ⇒ ≈177） | 键族 +34 键（沙盒面 169 键；源卡/弹窗/浏览窗/五分类/过滤） |
+| 10 | `thincoder-server/public/i18n-en-sandbox.mjs` | 改 | 183（147 ⇒ ≈177） | 同键逐键对位（两表各 169 键、集相等；en 零 CJK） |
+| 11 | `thincoder-server/public/style.css` | 改 | 266（261 ⇒ ≈265） | +2 规则 3 行（`.filter-row` ∥ `.filter-row input` ∥ `.browse-grid`）+ 段注；零新 `:root` 变量（38 不变）∥ 零新悬停（7 不变） |
+| 12 | `docs/batches/2026-10-11-sandbox-image-sources.test.mjs` | 新 | 682（≈420） | 服务面 13 腿：N57–N59 ∥ B52–B56 ∥ E43–E45 ∥ v15 迁移六判据 ∥ 纯函数面（假 registry/Hub = 真 HTTP；Bearer 逐跳在案） |
+| 13 | `docs/batches/2026-10-11-sandbox-image-sources-ui.test.mjs` | 新 | 514（≈280） | 前端面 6 腿：源卡 + 增/改弹窗 ∥ 删除确认 ∥ 目录浏览窗（v2 ∥ Hub）∥ 五分类读绪 ∥ 镜像表过滤 + i18n 34 键 ∥ 静态面（档目 38 ∥ 37 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名闭合 ∥ canon 38/7 ∥ 门禁链） |
+
+### 5.1 验收读数（逐行对批档 §2「验收判据」表）
+
+| 判据 | 读数 | 证据 |
+|---|---|---|
+| ① CRUD + 预选：（形校验 ∥ 名/址唯一 ∥ 400/404）+ 每动作一审计行 + 预选六条 | ✅ | 批内件 N57（行逐值/kind 派生/三 audit detail 键集逐值/预选六条两字段）+ B54（`n` 越界/非数 ∥ `name` 形非法 ⇒ 400 零外呼）+ E43（空名/超 40/撞名/撞址/路径/空白/凭据 ⇒ 400 库零变）+ E45（user 403 ∥ 匿名 401 ∥ 不存在 id 404） |
+| ② 源目录：v2 两读逐值 + Link 截断 + Hub 两读（裸名补 `library/`）+ 匿名 Bearer 逐跳 + 五分类如实 | ✅ | N58 ∥ N59 ∥ B52（挑战⇒token⇒Bearer 复读逐跳 + scope 逐值 + 零 Basic）∥ B53（空目录 = 成 + 空表）∥ B55（405 ⇒ unsupported）∥ B56（200 非 JSON/形不符 ⇒ bad_response）∥ E44（不可达/超时/挑战不可解析/token 401/复读仍 401 ⇒ 三分类） |
+| ③ 过滤：三处（本地镜像表 ∥ 仓库列表 ∥ 标签列表）+ 无匹配空态 + 零新端点 | ✅ | UI ④（名/标签匹配、无匹配句、`calls` 计数不变 ⇒ 纯前端）∥ UI ③（两列过滤 + 无匹配句、目录读仍一次）——**未做新端点**（七端点计数不变） |
+| 边界（拉取零改） | ✅ | `bin` 仅 +2（import + 注册）；`image-routes.mjs`/`docker.mjs`/`registry.mjs` mtime 早于本批写窗；全 `src/` 对 `image_source*` 的引用仅三新件 + `db.mjs`（分歧审计实核） |
+| 存储 v15 六判据 | ✅ | 批内件「v15 迁移」腿：空库直落 15 ∥ v14 升后 15 ∥ 幂等再开零变 ∥ 五列逐值 ∥ 两 UNIQUE 拒重 ∥ 存量表零变（增量恰 `image_sources` 一表） |
+| 审计三 kind + 十三型零增 | ✅ | detail 键集逐值（add/update = kind+sourceId+name+address ∥ delete = kind+sourceId+name）；无审计 CHECK 重建（型面十三型不变） |
+| 收口面（批内件两件） | ⏳ | 两件实跑全绿（服务面 13/13 ∥ UI 6/6）；**浏览器实走 = 收口轮（父侧）**；链内历史件随正件 = 父侧同拍落（见 5.4） |
+
+**闸面读数（`node scripts/doc-check.mjs`——自 `thincoder/` 仓根）**：行宽 **OK**（源域全 `.md` 无 >300 单行）∥ 锚悬空 **25 条**（与本批基线同数——全在 `docs/core` ∥ `docs/desktop` ∥ `docs/render-core` 三域，本批未触）；**本批未写/未改任何 `.md` ⇒ 零新增红**。
+
+### 5.2 决策透明表（实施舱内自决——逐条给依据）
+
+| 号 | 决策点 | 选定 | 依据 | 备选 |
+|---|---|---|---|---|
+| 1 | 址归一裁量 | 尾 `/` **接受并归一去** ∥ 缺省端口归并（`:443` ⇒ 去）∥ 主机名小写 | 归一 = 单源 `address`（零漂移）；`URL` 标准归一化；形拒仍按 §3（路径/查询/空白） | 原样保址（留形状分歧 ⇒ 同源两形） |
+| 2 | 址含凭据 | **明拒 ⇒ 400**（`url.username/password` 非空即拒，人话含"零凭据面"） | 形 = `[http(s)://]主机[:端口]`；本批零凭据面 ⇒ 静默丢弃会读作"已登记凭据"（advisor 🔵4 采纳） | 静默丢弃 userinfo（原实现，已改） |
+| 3 | 预选第六名 | 「Docker Hub 镜像（DaoCloud）」⇒ `https://docker.m.daocloud.io` | 用户 09:19 口径 + §3 :148–149 两档逐值同 | 换址（超用户口径） |
+| 4 | Hub 标签取值 | `results[].name` | Hub API 实测形；`next` 判 `truncated` | 取 `full_size`/`digest` 面（超设计） |
+| 5 | token 端点边界 | 200 无 `token`/`access_token` ⇒ `auth_required`；文本 5 无凭据面 | 分族如实（私有源 ⇒ 需凭据）；不落 `bad_response`（形对、语义为认证） | 归 `bad_response`（会误导成"远端形不符"） |
+| 6 | 非 2xx 分类 | 401/403 ⇒ `auth_required`；405/501 ⇒ `unsupported`；余 ⇒ `bad_response` | §3 五分类语义（实测 DaoCloud 目录 = 405 ⇒ B55 腿形） | 全归 `bad_response` |
+| 7 | 审计 `target` 列 | 源名（add/update/删前名） | 先例同形（`image-routes.mjs` ∥ `container-routes.mjs` 皆 target = 对象名） | target = id 字串（与先例异形） |
+| 8 | 读类预算口径 | **逐调用** 10s（挑战链最多 3 跳） | 节点面先例（`docker.mjs` 逐调用超时）；`readTimeoutMs` 注册参数可覆盖（批内件注 500ms） | 端到端共享 10s（改设计口径——未擅动） |
+| 9 | 镜像表过滤面 | 只匹配 `tags`（无标签行不中） | tags = 表内唯一可见标识（`名:标签` 串）；id（sha256）界面不显示 ⇒ 匹配它 = 不可见的命中 | 并入 `image.id`（无可见价值） |
+| 10 | 批内件不拆 | 两件到底（682 ∥ 514——超 500 建议线） | 设计件表 = **两件入链**（拆 ⇒ 链条目 49 ⇒ 51，改父侧计划）；先例 = 历史件 716 行 | 拆四件（动链计划，越设计） |
+
+### 5.3 审计与代码评审（轮次 + 终态）
+
+- **差异审计（explore · 1 轮 · 只读）**：四类偏离（部分实现 ∥ 静默简化 ∥ 与设计逐字偏离 ∥ 越出批准文件表）**逐类零命中**；§12 全 11 用例号（N57–N59 ∥ B52–B56 ∥ E43–E45）逐号有腿；`routes.mjs` ±0 实核（零引用 + mtime 早于写窗）；DDL 与 STORE §2 v15 段逐字一致；三 kind 键集逐值。审计另报读数差：`views-sandbox-image-sources.mjs` 275（估 ≈230）、`bin` 191（估 ≈191 ✓）、i18n 键实增 **34**（"≈+30"口径）。
+- **代码评审（advisor · 1 轮 · sync）**：发现 = **1 🔴 + 1 🟡 + 3 🔵**。
+  - 🔴 = 「v15 入链后，门禁链内 11 件历史批内件仍断言结构版本 14 ⇒ `prepublishOnly` 必红；且"v15 读点"未登记随正件」——**域外**（跨批档件 + `package.json`）；已上抛，**父侧裁定 ①**：五组随正件（含 v15 读点 11 件 + `-server-gateway` 标题句）由父侧同拍落 ⇒ 本 11 件归 §5.4 随正件（实现者零动，如实披露）。
+  - 🟡 = 批内件两件越 500 建议线（越 800 才硬红）——处置见 5.2 #10（不拆 + 披露）。
+  - 🔵 = ① 读类 10s 为逐调用口径（挑战链最坏 ≈30s）⇒ 处置见 5.2 #8（保逐调用，读数在此明写）；② 址含凭据静默丢弃 ⇒ **域内修复轮 1 采纳**（明拒 400 + 用例）；③ 镜像表过滤只中 tags ⇒ 处置见 5.2 #9（保现状 + 披露）。
+- **域内修复轮 = 1**（🔵②）：`image-sources.mjs` 加 userinfo 明拒（+1 行 + 头注同句）+ 批内件加 3 断言（E43 一行为例 ∥ 纯函数面两例）∥ 尾斜杠归一正例同拍；修后两件重跑仍全绿（13/13 ∥ 6/6）。
+- **终态**：`clean`（域内零必修、零未披露偏离；🔴 已由父侧裁定归随正件，不属于实施舱未决项）。
+
+### 5.4 随正件（父侧实施轮同拍落——实读清单，行号 = 本批现读）
+
+1. **档目计数** `[37, 36] ⇒ [38, 37]`（11 件）：`console-completeness-2:436` ∥ `console-list-style:206` ∥ `console-modals:406` ∥ `console-provider-redo-runtime:294` ∥ `models-config:218` ∥ `me-keys-redo-ui:391` ∥ `provider-model-metadata:482` ∥ `quota-v2-member-models:730` ∥ `runner-admin-console-ui:483` ∥ `admin-agent-chat-ui:518` ∥ `sandbox-docker-admin-ui:373`。
+2. **档目全名名单 +1 档**（8 件）：`console-providers:426` ∥ `server-gateway-webui-deploy:274` ∥ `server-i18n:125`（`JS_FILES`）∥ `console-completeness-2:439` ∥ `console-list-style:209` ∥ `console-modals:409` ∥ `console-provider-redo-runtime:297` ∥ `models-config:221`——逐名名单插 `views-sandbox-image-sources.mjs`。
+3. **i18n 键数** `555/560 ⇒ 589/594`（4 件）：`server-public-structure:67` ∥ `runner-admin-console-ui:475` ∥ `server-small-fixes:74` ∥ `admin-agent-chat-ui:489`。
+4. **门禁链 47 ⇒ 49**（7 件 + `package.json`）：`console-list-style:238` ∥ `server-auto-update:480` ∥ `console-layout:449` ∥ `me-usage-charts:262` ∥ `provider-model-metadata:491` ∥ `quota-per-model:444` ∥ `quota-v2-member-models:428`。
+5. **v15 读点**（11 件——14 ⇒ 15 + `-server-gateway` 标题句/`user_version=14` 字样）：`server-gateway:164/167/168` ∥ `admin-agent-chat:636/637` ∥ `console-completeness-2:152` ∥ `me-keys-redo:120/144` ∥ `provider-model-metadata:151/168` ∥ `quota-per-model:150/180` ∥ `quota-v2-member-models:167/184` ∥ `server-console-config:383/406` ∥ `server-gemini-openai-preset:263/279` ∥ `server-model-alias:408` ∥ `team-login-client-access:284/291`。
+
+### 5.5 披露（越界/裁量——逐条给因）
+
+- **越文件表**：零（13 件 = 批档 §2 表 11 项 + 两批内件；`routes.mjs` 未动——设计要求 ±0）。
+- **读数超设计估**：`views-sandbox-image-sources.mjs` 275（≈230，+45——含五分类文案表 + 两列过滤块）；批内件 682 ∥ 514（≈420 ∥ ≈280——假 registry/Hub 真 HTTP + 全用例号腿）；`style.css` 266（≈265）；i18n 两表 183 ∥ 183（≈177；键 +34 vs "≈+30"——五分类文案 5 键 + 空闲句 1 键为设计句必要面）。产品码全在 500 软线内（`db.mjs` 476——余 24，免拆分预案）。
+- **新增键 34**（非 30）：`sourcesTitle`…`imagesNoMatch`——两表逐键对位（集相等、占位符对位、en 零 CJK），批内件 UI ④ 直测。
+- **读类预算口径**：逐调用 10s（见 5.2 #8/#5.3）——设计句"读类预算 10s"未指逐调用/端到端；本实现沿节点面先例取逐调用，读数在此明写，供设计/评审收正。
+- **零新增红**：本批未写/未改任何 `.md`；doc-check 25 悬空 = 基线同数。
+
 ## §6 验证与收口（父代理）

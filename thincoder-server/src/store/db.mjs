@@ -390,6 +390,23 @@ CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 `
 
+/** v15 增段（`image_sources` 建表——store/STORE.md §2 v15 段逐字；sandbox 域——sandbox-image-sources 批）。
+ *  ① 镜像源表（server 全局清单——非按节点；名 ∥ 址各自唯一 ∥ 五列）；② 无审计 CHECK 变更（三 kind 走 `sandbox_event`——kind 非枚举；十三型不变）。
+ *  语义/机制 = `sandbox/SANDBOX.md` §3（单源）；判据 = `store/STORE.md` §3 v15 行。 */
+const DDL_V15 = `
+-- ① 镜像源表（server 全局清单——非按节点）
+CREATE TABLE IF NOT EXISTS image_sources (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,                         -- 显示名（≤40 字符——应用层校验）
+  address TEXT NOT NULL,                      -- 归一后基址：https://host[:port] ∥ http://host[:port]（无路径/查询）
+  created_at TEXT NOT NULL,
+  created_by INTEGER,                         -- 建源 admin 成员 id（无 FK——沿先例）
+  UNIQUE (name),
+  UNIQUE (address)
+);
+-- ② 无审计 CHECK 变更（三 kind 走 sandbox_event——kind 非枚举；十三型不变）
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -406,6 +423,7 @@ export const MIGRATIONS = [
   { v: 12, up: (db) => db.exec(DDL_V12) },
   { v: 13, up: (db) => db.exec(DDL_V13) },
   { v: 14, up: (db) => db.exec(DDL_V14) },
+  { v: 15, up: (db) => db.exec(DDL_V15) },
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

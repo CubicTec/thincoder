@@ -2,7 +2,7 @@
  * views-sandbox.mjs — 管理·沙盒页（webui/WEBUI.md §2/§2.8①——`#/admin/sandbox`）：运行面卡（可用性提示 ∥ 节点表 ∥
  * 添加/删除节点弹窗 ∥ 容器区/镜像区（节点行展开——懒加载；两区件 = `views-sandbox-containers.mjs` ∥ `views-sandbox-images.mjs`，
  * sandbox-docker-admin 批外拆——§2.8①））+ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态
- * 「撤销凭据」钮；在途 3s 读时轮询、定终态停））。契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；
+ * 「撤销凭据」钮；在途 3s 读时轮询、定终态停））+ 镜像源卡（本批——全局面；件 = `views-sandbox-image-sources.mjs`）。契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；
  * 渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
  * 批内件直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
  */
@@ -11,6 +11,7 @@ import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mj
 import { deriveModels } from "./views-models.mjs"
 import { createContainerSection } from "./views-sandbox-containers.mjs"
 import { createImageSection } from "./views-sandbox-images.mjs"
+import { createImageSourceSection } from "./views-sandbox-image-sources.mjs"
 
 /** 容器态文案（re-export——单源住 `views-sandbox-containers.mjs`；沿旧导出面）。 */
 export { containerStateLabel } from "./views-sandbox-containers.mjs"
@@ -69,6 +70,7 @@ export async function renderSandbox(ctx, mount) {
   const detailCache = new Map() // 任务 id ⇒ { step, steps }（步骤读数在详情面——列表携步骤无读数，§2.5）
   const containers = createContainerSection(ctx) // 容器区件（本批外拆——§2.8①）
   const images = createImageSection(ctx) // 镜像区件（本批外拆——§2.8①）
+  const sources = createImageSourceSection(ctx) // 镜像源卡件（本批——全局面，非按节点）
   let runners = []
   let runs = []
   let pollTimer = null
@@ -85,6 +87,7 @@ export async function renderSandbox(ctx, mount) {
     listBox,
     h("h4", { text: t("admin.sandbox.tasksTitle") }),
     taskBox))
+  mount.append(sources.card) // 镜像源卡（sandbox-image-sources 批——§2.8①：全局面新卡）
 
   /** 离页/重渲即停的存活判据（挂载点被换 ⇒ 停机；桩环境（无 isConnected）⇒ 视为存活）。 */
   const alive = () => generation === pollGeneration && mount.isConnected !== false

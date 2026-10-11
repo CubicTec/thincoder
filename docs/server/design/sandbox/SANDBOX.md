@@ -148,7 +148,7 @@
     清单六条（随设计轮维护——源站关停/换址频繁，需求 ① 原话口径）：Docker Hub（`docker.io`）∥ GitHub Container Registry（`ghcr.io`）∥ Quay（`quay.io`）
     ∥ 阿里云 ACR（`registry.cn-hangzhou.aliyuncs.com`）∥ 华为云 SWR（`swr.cn-north-4.myhuaweicloud.com`）∥ Docker Hub 镜像（DaoCloud——`docker.m.daocloud.io`）。
   **源目录读取（两端点——server 直连源）**：
-  - **仓库目录**（`GET …/image-sources/:id/catalog`）∥ **标签清单**（`GET …/image-sources/:id/tags?name=<仓库>&n=<N>`）：读类预算 **10s**（跨公网——沿探活/发现家族；非节点面 3s）；**与节点零涉**（不查沙盒可用性门）。
+  - **仓库目录**（`GET …/image-sources/:id/catalog`）∥ **标签清单**（`GET …/image-sources/:id/tags?name=<仓库>&n=<N>`）：读类预算 **10s**（跨公网——**逐调用**口径（挑战链逐跳各计）；沿探活/发现家族；非节点面 3s）；**与节点零涉**（不查沙盒可用性门）。
   - **v2 面**：目录 = `GET <base>/v2/_catalog?n=<N>` ∥ 标签 = `GET <base>/v2/<name>/tags/list?n=<N>`；`name` 形 = 仓库名（小写字母数字 + `._-/` 分隔——形非法 ⇒ 400 **零外呼**；`..`/`?`/`#`/空白/大写 ⇒ 拒（防路径穿越））。
   - **Hub 面**（`kind=hub`）：目录 ⇒ **不支持**（`unsupported`——Hub 官方无全站目录 API，如实报）；标签 = `GET https://hub.docker.com/v2/repositories/<ns>/<repo>/tags?page_size=<min(N,100)>`（**API 主机 = `hub.docker.com`**，与登记址无关；该主机不可达 ⇒ 如实 `unreachable`）；**裸名补 `library/`**（`nginx` ⇒ `library/nginx`——Hub 命名空间惯例）。
   - **匿名 Bearer 挑战**（本机实测 2026-10-11：ghcr ∥ quay ∥ ECR Public ∥ ACR ∥ SWR 皆 401 + `WWW-Authenticate: Bearer`）：401 且挑战可解析 ⇒ 取 `realm?service=&scope=`

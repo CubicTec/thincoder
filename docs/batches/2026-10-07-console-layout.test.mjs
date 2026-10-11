@@ -444,9 +444,9 @@ test("腿 F i18n：本批 6 键两表在册（非空 ∥ 占位符一致 ∥ en 
 
 // ── 腿 G（门禁——§6 AC-20 续）───────────────────────────────────────────────
 
-test("腿 G 门禁：`prepublishOnly` 五十一件含本批件 ∥ 清单目标在盘", () => {
+test("腿 G 门禁：`prepublishOnly` 五十二件含本批件 ∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 51, `门禁清单件数（⇒ 五十一——2026-10-11 五批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 52, `门禁清单件数（⇒ 五十二——2026-10-11 六批后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-console-layout.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })
@@ -489,7 +489,8 @@ test("附加 AC-19 canon 不破：`:root` 38 ∥ 悬停清单七条 ∥ 内距 �
   for (const known of ["card", "row-clickable", "secret", "config-field", "modal", "error", "page-head", "table-slot", "data-shell"]) {
     assert.ok(cssClasses.has(known), `样式类扫描失效：${known}`)
   }
-  const STATE = new Set(["active", "ok", "degraded", "down", "error", "modal-open"])
+  const STATE = new Set(["active", "ok", "degraded", "down", "error", "modal-open", "open"])
+  const RENDER_CORE = new Set(["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type"]) // 核件发射类（console-chat-align 批起——随核件类族随正）
   for (const token of usedClasses) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls), `样式类零消费者：.${cls}`)
+  for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls) || RENDER_CORE.has(cls), `样式类零消费者：.${cls}`)
 })

@@ -377,7 +377,7 @@ test("log：单行 JSON（ts ∥ level ∥ event ∥ fields ∥ Error 归一）"
 
 // ── ⑧ 零第三方依赖扫描 ───────────────────────────────────────────────────────
 
-test("依赖面：全树 import 仅 node:/相对 ∥ package.json dependencies 空", () => {
+test("依赖面：全树 import 仅 node:/相对 ∥ package.json dependencies = in-repo 两包", () => {
   const dir = join(ROOT, "thincoder-server")
   const files = readdirSync(dir, { recursive: true }).map(String).filter((rel) => rel.endsWith(".mjs"))
   assert.ok(files.length >= 7, `服务树档数不足：${files.length}`)
@@ -391,10 +391,10 @@ test("依赖面：全树 import 仅 node:/相对 ∥ package.json dependencies �
   }
   assert.ok(specifiers.length >= 7)
   for (const [rel, spec] of specifiers) {
-    assert.ok(spec.startsWith("node:") || spec.startsWith(".") || spec.startsWith("@thincoder/core"), `${rel} 出现非许可 import（仅 node: ∥ 相对 ∥ @thincoder/core——本仓包）：${spec}`)
+    assert.ok(spec.startsWith("node:") || spec.startsWith(".") || spec.startsWith("@thincoder/core") || spec.startsWith("/rc/"), `${rel} 出现非许可 import（仅 node: ∥ 相对 ∥ @thincoder/core ∥ /rc/ 同源第二根——本仓包）：${spec}`)
   }
   const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"))
-  assert.deepEqual(pkg.dependencies ?? {}, { "@thincoder/core": "^0.10.4" }, "dependencies 仅 @thincoder/core（本仓包——KD-SV-78；零第三方）")
+  assert.deepEqual(pkg.dependencies ?? {}, { "@thincoder/core": "^0.10.4", "@thincoder/render-core": "file:../thincoder-render-core" }, "dependencies 仅 in-repo 两包（@thincoder/core 钉版本 ∥ @thincoder/render-core `file:` 形——KD-SV-78 续；零第三方）")
 })
 
 // ── ⑨ 入口冒烟（CLI 真实进程）───────────────────────────────────────────────

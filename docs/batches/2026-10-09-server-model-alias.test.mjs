@@ -683,7 +683,7 @@ test("F3 import 扫描：本批改动面零第三方依赖（`node:` 前缀 ∥ 
     }
   }
   const pkg = JSON.parse(readFileSync(join(ROOT, "thincoder-server", "package.json"), "utf8"))
-  assert.deepEqual(Object.keys(pkg.dependencies ?? {}), ["@thincoder/core"], "dependencies 仅 @thincoder/core（本仓包——KD-SV-78）")
+  assert.deepEqual(Object.keys(pkg.dependencies ?? {}), ["@thincoder/core", "@thincoder/render-core"], "dependencies 仅 in-repo 两包（@thincoder/core ∥ @thincoder/render-core——KD-SV-78 续）")
 })
 
 /** 占位替换（与 `i18n.mjs` `fill` 同式——仅本件断言用）。 */

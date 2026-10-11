@@ -257,10 +257,10 @@ test("N57 增/改/删/列 + 预选：行逐值（址归一 ∥ kind 派生）∥
     assert.equal(deletes.length, 1, "一删一行")
     assert.deepEqual(JSON.parse(deletes[0].detail), { kind: "image_source_delete", sourceId: v2.id, name: "自建源二号" }, "删行 detail 键集逐值（kind+sourceId+name）")
 
-    // 预选六条（名/址两字段——零隐藏语义）
+    // 预选七条（名/址两字段——零隐藏语义）
     const presets = await api(app, "GET", "/api/admin/sandbox/image-sources/presets")
     assert.equal(presets.status, 200)
-    assert.deepEqual(presets.json.presets.map((row) => Object.keys(row).sort().join(",")), Array(6).fill("address,name"), "六条逐条只携名/址")
+    assert.deepEqual(presets.json.presets.map((row) => Object.keys(row).sort().join(",")), Array(7).fill("address,name"), "七条逐条只携名/址")
     assert.deepEqual(presets.json.presets.map((row) => `${row.name}|${row.address}`), [
       "Docker Hub|https://docker.io",
       "GitHub Container Registry|https://ghcr.io",
@@ -268,7 +268,8 @@ test("N57 增/改/删/列 + 预选：行逐值（址归一 ∥ kind 派生）∥
       "阿里云 ACR|https://registry.cn-hangzhou.aliyuncs.com",
       "华为云 SWR|https://swr.cn-north-4.myhuaweicloud.com",
       "Docker Hub 镜像（DaoCloud）|https://docker.m.daocloud.io",
-    ], "预选六条逐值")
+      "Docker Hub 镜像（1ms.run）|https://docker.1ms.run",
+    ], "预选七条逐值")
 
     assert.equal(registry.calls.length, before, "本面零外呼（源清单面不触远端）")
     assert.equal(app.audits("image_source_add").length + app.audits("image_source_update").length + app.audits("image_source_delete").length, 5, "审计恰五枚（读动作零审计）")
@@ -678,5 +679,5 @@ test("纯函数面：形校验 ∥ kind 派生 ∥ 挑战解析 ∥ 有界 n ∥
   assert.deepEqual([...CLIENT.READ_ERROR_KINDS], ["timeout", "unreachable", "auth_required", "unsupported", "bad_response"], "五分类枚举逐值")
   assert.equal(new CLIENT.RegistryError("bogus", "x").kind, "bad_response", "枚举外兜底 bad_response")
   assert.equal(typeof SOURCE_ROUTES.registerImageSourceRoutes, "function", "路由注册面导出")
-  assert.equal(SOURCES.SOURCE_PRESETS.length, 6, "预选六条")
+  assert.equal(SOURCES.SOURCE_PRESETS.length, 7, "预选七条")
 })

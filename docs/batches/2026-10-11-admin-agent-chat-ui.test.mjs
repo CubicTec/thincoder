@@ -4,14 +4,14 @@
  * 运行（自 `thincoder/` 仓根）：`node --test docs/batches/2026-10-11-admin-agent-chat-ui.test.mjs`
  *
  * 射程（腿 ↔ 设计轴对照在括号）：
- *   ① 纯函数（NDJSON 行切分 ∥ 帧解析 ∥ 参数摘要两形 ∥ notice 四形（精确值）∥ 工具参数索引）
+ *   ① 纯函数（NDJSON 行切分 ∥ 帧解析 ∥ 参数摘要两形 ∥ notice 四形（精确值））
  *   ② 会话条（加载/空/失败三态 + 重试 ∥ 活动态 ∥ 在途徽标 ∥ 摘要空值「—」）
  *   ③ 新会话弹窗（模型下拉 `deriveModels` 同源 ∥ 缺省 = 最近一次所用 ∥ 无模型门 ∥ 提交 ⇒ 建会话 ⇒ 选中）
  *   ④ 对话区四形（用户 ∥ 助手 ∥ 工具行（失败红标 + 参数摘要回填）∥ notice）+ 空态
  *   ⑤ 输入区（空值不提交 ∥ 在途禁用 + 运行中指示）
  *   ⑥ 流读取（假流桩：分块跨帧 ∥ delta 追加 ∥ call/result 工具行 ∥ end ⇒ 重读详情——取数序列逐条）
  *   ⑦ 断连（读流中止——零未押异常，部分文本留场）∥ 离页（挂载点断开 ⇒ reader.cancel）∥ 流前错误（信封 ⇒ 就地人话 + 草稿还原）
- *   ⑧ i18n 两表（本批 33 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值）
+ *   ⑧ i18n 两表（本批 29 键逐键在场 ∥ 四退役键零残留 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值）
  *   ⑨ 审计面（`agent_event` 型接 ∥ 详情 `summary` 支 ∥ 枚举外原值兜底）
  *   ⑩ 静态面（档目 +1 ∥ nav 管理 9 ∥ app 接线 ∥ 非壳页 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合 ∥ AC-19 canon）
  *   ⑪ 键消费闭包（本批键零死键）
@@ -36,17 +36,22 @@ const VIEW_SRC = readPublic("views-chat.mjs")
 const AUDIT_SRC = readPublic("views-audit.mjs")
 const CSS = readPublic("style.css")
 
-/** 本批新增键（31 `admin.chat.*` + 1 nav〔shell 部件〕+ 1 `audit.type.agent_event`〔system 部件〕——§2.2 键族登记；两表逐键同步）。 */
+// 核件帧纪律桩（`createStreamRenderer` rAF 节流——桩落宏任务，随 `await tick()` 落帧）
+globalThis.requestAnimationFrame = (fn) => setTimeout(() => fn(Date.now()), 0)
+globalThis.cancelAnimationFrame = (id) => clearTimeout(id)
+
+/** 本批新增键现值（27 `admin.chat.*`〔新增 31 − 退役 4——§2.7-1〕+ 1 nav〔shell 部件〕+ 1 `audit.type.agent_event`〔system 部件〕——§2.2 键族登记；两表逐键同步）。 */
 const NEW_KEYS = [
   "admin.chat.title", "admin.chat.newChat", "admin.chat.newChatHint", "admin.chat.create", "admin.chat.modelLabel",
   "admin.chat.modelPick", "admin.chat.noModels", "admin.chat.modelRequired", "admin.chat.chatsTitle", "admin.chat.chatsEmpty",
   "admin.chat.listFailed", "admin.chat.detailFailed", "admin.chat.retry", "admin.chat.statusRunning", "admin.chat.noChatSelected",
-  "admin.chat.threadEmpty", "admin.chat.running", "admin.chat.reread", "admin.chat.toolCall", "admin.chat.toolResult",
-  "admin.chat.toolCalling", "admin.chat.toolFailed", "admin.chat.inputPh", "admin.chat.send", "admin.chat.messageRequired",
+  "admin.chat.threadEmpty", "admin.chat.running", "admin.chat.reread", "admin.chat.inputPh", "admin.chat.send", "admin.chat.messageRequired",
   "admin.chat.inputHint", "admin.chat.noticeInterrupted", "admin.chat.noticeBudget", "admin.chat.noticeModelError",
   "admin.chat.noticeEmpty", "admin.chat.streamBroken",
   "nav.page.admin.chat", "audit.type.agent_event",
 ]
+/** 退役四键（console-chat-align 批——自持工具行退役；删净断言）。 */
+const RETIRED_KEYS = ["admin.chat.toolCall", "admin.chat.toolResult", "admin.chat.toolCalling", "admin.chat.toolFailed"]
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
 const placeholders = (text) => [...String(text).matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort().join(",")
@@ -54,15 +59,39 @@ const stripComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^
 
 // ── 桩 DOM（`h` 同 app 语义近似；`modal.mjs` 壳面近形：showModal/close/classList/remove）───────────
 
+/** 核件 `innerHTML` 产物 ⇒ 桩节点（最小子集：标签/类/文本——供 `textOf`/`fFind` 遍历）。 */
+function parseHtmlInto(host, html) {
+  host.children = []
+  const stack = [host]
+  const re = /<\/?([a-zA-Z][\w-]*)((?:\s+[^>]*?)?)\/?>|([^<]+)/g
+  let match
+  while ((match = re.exec(html)) !== null) {
+    if (match[3] !== undefined) {
+      stack[stack.length - 1].children.push({ textContent: match[3].replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;/g, "'").replace(/&amp;/g, "&") })
+      continue
+    }
+    if (match[0].startsWith("</")) {
+      if (stack.length > 1) stack.pop()
+      continue
+    }
+    const node = makeNode(match[1])
+    const classAttr = (match[2] ?? "").match(/\bclass\s*=\s*"([^"]*)"/)
+    if (classAttr !== null) node.className = classAttr[1]
+    stack[stack.length - 1].children.push(node)
+    if (!match[0].endsWith("/>") && !["br", "hr", "img", "input"].includes(match[1].toLowerCase())) stack.push(node)
+  }
+}
+
 function makeNode(tag) {
   const classes = new Set()
   return {
     tag, children: [], listeners: {}, attrs: {}, parent: null,
-    open: false, textContent: "", className: "", value: "", hidden: false, disabled: false, scrollTop: 0, scrollHeight: 0,
+    open: false, textContent: "", className: "", value: "", hidden: false, disabled: false, scrollTop: 0, scrollHeight: 0, dataset: {}, style: {},
     classList: {
       add: (...names) => names.forEach((name) => classes.add(name)),
       remove: (...names) => names.forEach((name) => classes.delete(name)),
       contains: (name) => classes.has(name),
+      toggle: (name, force) => { const on = force ?? !classes.has(name); if (on) classes.add(name); else classes.delete(name); return on },
     },
     append(...items) {
       for (const item of items.flat(Infinity)) {
@@ -72,6 +101,10 @@ function makeNode(tag) {
       }
     },
     replaceChildren(...items) { this.children = []; this.append(...items) },
+    appendChild(item) { this.append(item); return item },
+    insertBefore(item, ref) { const index = this.children.indexOf(ref); if (index === -1) { this.append(item); return item } if (item !== null && typeof item === "object") item.parent = this; this.children.splice(index, 0, item); return item },
+    removeChild(item) { this.children = this.children.filter((child) => child !== item); if (item !== null && typeof item === "object") item.parent = null; return item },
+    prepend(...items) { const list = items.flat(Infinity).filter((item) => item !== null && item !== undefined && item !== false); for (const item of list) if (typeof item === "object") item.parent = this; this.children.unshift(...list) },
     addEventListener(type, fn) { (this.listeners[type] ??= []).push(fn) },
     setAttribute(name, value) { this.attrs[name] = String(value) },
     remove() {
@@ -83,12 +116,22 @@ function makeNode(tag) {
       const target = { preventDefault() {}, ...event }
       return Promise.all((this.listeners[type] ?? []).map((fn) => fn(target)))
     },
+    querySelector(selector) {
+      const pred = selector.startsWith(".") ? (node) => String(node.className).split(/\s+/).includes(selector.slice(1)) : (node) => node.tag === selector
+      return fFindAll(this, pred)[0] ?? null
+    },
+    querySelectorAll(selector) {
+      const pred = selector.startsWith(".") ? (node) => String(node.className).split(/\s+/).includes(selector.slice(1)) : (node) => node.tag === selector
+      return fFindAll(this, pred)
+    },
+    get innerHTML() { return this._innerHTML ?? "" },
+    set innerHTML(value) { this._innerHTML = String(value); parseHtmlInto(this, this._innerHTML) },
     showModal() { this.open = true },
     close() { this.open = false; for (const fn of this.listeners.close ?? []) fn({}) },
   }
 }
 
-const stubDocument = () => ({ body: makeNode("body"), createElement: (tag) => makeNode(tag), getElementById: () => null })
+const stubDocument = () => ({ body: makeNode("body"), createElement: (tag) => makeNode(tag), createTextNode: (text) => ({ textContent: String(text) }), getElementById: () => null })
 
 /** `h`（app.mjs 语义近似）：class ∥ text ∥ on 前缀事件 ∥ 受控属性 ∥ 其余 setAttribute + 子节点。 */
 function fH(tag, props = {}, ...children) {
@@ -209,8 +252,6 @@ test("① 纯函数：行切分（跨块/残行）∥ 帧解析（坏行 null）
     [ZH["admin.chat.noticeInterrupted"], ZH["admin.chat.noticeBudget"], ZH["admin.chat.noticeModelError"], ZH["admin.chat.noticeEmpty"],
       "服务端人话句", "人话句", "—"],
     "notice 四形精确值命中（`restart`/`budget`/`model_error`/`empty_turn`）+ 近似值不当命中（`model_error_v2` ⇒ 原文）+ 无 reason/空值兜底")
-  const index = CHAT.toolArgsIndex([{ role: "assistant", data: { toolCalls: [{ id: "t1", name: "members", args: { op: "list" } }, { id: "t2", name: "audit", args: '{"limit":5}' }] } }])
-  assert.deepEqual([index.get("t1"), index.get("t2")], ['{"op":"list"}', '{"limit":5}'], "工具参数索引（对象 ⇒ JSON 串 ∥ 字符串原样）")
 })
 
 // ── ② 会话条（三态 ∥ 活动态 ∥ 在途徽标）──────────────────────────────────────
@@ -306,15 +347,14 @@ test("④ 对话区：四形渲染（用户/助手/工具行/notice）∥ 参数
   const thread = threadOf(mount)
   const user = fFind(thread, (node) => node.className === "chat-msg user")
   const assistants = fFindAll(thread, (node) => node.className === "chat-msg assistant")
-  const tool = fFind(thread, (node) => node.className === "chat-msg tool")
+  const cards = fFindAll(thread, (node) => node.className === "tool-call")
   const notice = fFind(thread, (node) => node.className === "chat-msg notice")
   assert.equal(textOf(user), "看看成员", "用户气泡")
   assert.deepEqual(assistants.map((node) => textOf(node)), ["成员共 3 人"], "助手文本（空文本行 ⇒ 零节点）")
-  assert.equal(tool !== null, true, "工具行在册")
-  assert.ok(textOf(tool).includes(`{"op":"list"}`), "参数摘要自 assistant.toolCalls 回填")
-  assert.ok(textOf(tool).includes("参数缺 username"), "结果摘要")
-  assert.equal(tool.classList.contains("failed"), true, "失败红标（行类）")
-  assert.ok(byText(tool, ZH["admin.chat.toolFailed"]) !== null, "失败徽标")
+  assert.equal(cards.length, 1, "工具卡在册（核件 `renderToolHistory`——回读径）")
+  const [card] = cards
+  assert.ok(textOf(card).includes("参数缺 username"), "结果摘要（回读文本——失败原文零丢）")
+  assert.ok(textOf(fFind(card, (node) => node.className === "tool-call-status")).trim() !== "", "状态位在册（核历史卡现行形——重读恒绿，见批档 §5.5-6 裁决）")
   assert.equal(notice.textContent, ZH["admin.chat.noticeEmpty"], "notice 灰条（四形键映射——精确值判）")
   assert.ok(fFind(mount, (node) => node.textContent === String(chat.model)) !== null, "对话区题 = 会话模型")
   // 线程空态（选中但零消息）
@@ -384,10 +424,12 @@ test("⑥ 流读取：分块跨帧无损 ∥ delta 追加 ∥ call/result 工具
   fFind(form, (node) => node.tag === "textarea").value = "你好"
   await form.fire("submit")
   await tick()
+  await tick()
+  await tick()
   const thread = threadOf(mount)
   assert.equal(textOf(fFind(thread, (node) => node.className === "chat-msg assistant")), "你好——已落库", "end ⇒ 重读替代流式视图（读时单源）")
-  const tool = fFind(thread, (node) => node.className === "chat-msg tool")
-  assert.ok(textOf(tool).includes("缺 username") && tool.classList.contains("failed"), "工具行（失败红标）自存储回读重建")
+  const card = fFind(thread, (node) => node.className === "tool-call")
+  assert.ok(textOf(card).includes("缺 username"), "工具卡自存储回读重建（核件历史卡——失败原文零丢）")
   assert.equal(fFind(thread, (node) => node.className === "chat-msg notice").textContent, ZH["admin.chat.noticeBudget"], "notice 行自存储回读（三形键）")
   assert.deepEqual(log, [
     "api GET /api/admin/agent/chats",
@@ -469,7 +511,7 @@ test("⑦ 断连（读流中止——零未押异常，部分文本留场，草�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 33 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 592 ∥ 597", () => {
+test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 596 ∥ 601", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -477,7 +519,8 @@ test("⑧ i18n：本批 33 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK �
     assert.equal(placeholders(ZH[key]), placeholders(EN[key]), `占位符不对位：${key}`)
     assert.equal(CJK.test(EN[key]), false, `en 值含 CJK：${key}`)
   }
-  assert.equal(NEW_KEYS.length, 33, "本批键数（31 admin.chat + 1 nav + 1 audit 型键）")
+  assert.equal(NEW_KEYS.length, 29, "本批键数（27 admin.chat + 1 nav + 1 audit 型键）")
+  for (const key of RETIRED_KEYS) assert.deepEqual([key in ZH, key in EN], [false, false], `退役键删净：${key}`)
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
   const zhBase = base(ZH)
@@ -486,7 +529,7 @@ test("⑧ i18n：本批 33 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK �
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [592, 597], "键数终值（2026-10-11 四批后）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [596, 601], "键数终值（2026-10-11 批后）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -515,7 +558,7 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
 
 test("⑩ 静态面：档目 36 ∥ 37 ∥ nav 管理 9（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（2026-10-11 三批 + 拆分层后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（2026-10-11 console-chat-align 批后）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
   // nav（管理 9 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
@@ -552,7 +595,7 @@ test("⑩ 静态面：档目 36 ∥ 37 ∥ nav 管理 9（对话位次 2）∥ a
   }
   // （启发式注：上面两条提取优先把模板占位置空再取字面量——本批类名全为字面量故完整；后续批若改拼接类名需同步加固）
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const token of ["chat-list", "chat-row", "chat-thread", "chat-msg", "user", "assistant", "notice", "tool", "failed", "chat-tool-arrow", "chat-form", "active"]) {
+  for (const token of ["chat-list", "chat-row", "chat-thread", "chat-msg", "user", "assistant", "notice", "chat-form", "active"]) {
     assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
   }
   // `:root` 38 ∥ 悬停七条不破（本批零新变量/悬停——AC-19 canon）
@@ -607,6 +650,7 @@ test("⑫ 流归属：流中切到别会话 ⇒ 直播帧不串台 ∥ `end` 不
   const form = fFind(mount, (node) => node.tag === "form")
   fFind(form, (node) => node.tag === "textarea").value = "hi"
   const inFlight = form.fire("submit")
+  await tick()
   await tick()
   assert.ok(textOf(threadOf(mount)).includes("LIVE-A"), "A 在途：本会话直播帧落地")
   await rows()[1].fire("click") // 流中切到 B

@@ -13,8 +13,8 @@
 - **npm 路**（包体就绪——发布动作 = 发布面轮）：`npm i -g @thincoder/server` —— 零依赖 ⇒ 装机无 install 步；
   包内容 = `bin/` ∥ `src/` ∥ `public/` ∥ `config.example.json` ∥ `README.md`（`deploy/` 为仓内部署面，不入包）。
   - 前缀式装机（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议与配置/数据同根——见 §3）；装机与自升同前缀、免 sudo 重写。
-- **Docker 路**：`docker build -t <registry>/thincoder-server:<tag> .`（构建上下文 = 本目录）；镜像 = **壳**
-  （`node:24-slim` + 引导层——App 代码由 npm 取装，镜像不自带版本身份；构建期以上下文包体预装兜底，离线可构建）；
+- **Docker 路**：`docker build -f thincoder-server/Dockerfile -t <registry>/thincoder-server:<tag> .`（构建上下文 = 仓根——含 `thincoder-server/` + `thincoder-render-core/` 双包）；镜像 = **壳**
+  （`node:24-slim` + 引导层——App 代码由 npm 取装，镜像不自带版本身份；构建期以上下文双包体预装兜底，离线可构建）；
   运行样例 = `docker-compose.yml`——版本由 `TC_SERVER_VERSION` 收敛（见 §8）。
 
 ## 2. 配置（`config.json`）
@@ -90,7 +90,7 @@
 ### Docker 路（7 步）
 
 1. 装 Docker
-2. `docker build -t <registry>/thincoder-server:<tag> .`（构建上下文 = `thincoder-server/`；壳 + 构建期预装——离线可构建）
+2. `docker build -f thincoder-server/Dockerfile -t <registry>/thincoder-server:<tag> .`（构建上下文 = 仓根——双包；壳 + 构建期预装——离线可构建）
 3. 备 `config/`（内含 `config.json`——目录须可写：控制台保存落盘须之（`chown 1000:1000 ./config`）；`db` 写绝对形 `/app/data/gateway.db`）
    + `data/`（`chown 1000:1000`——容器内 node 账号）+ `.env`（`TC_SERVER_VERSION` 可选——见 §8）
 4. `docker compose up -d`

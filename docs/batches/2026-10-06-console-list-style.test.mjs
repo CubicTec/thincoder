@@ -174,7 +174,10 @@ test("④ 错态面：`.hint error` 逐面套用（八处 loadFailed + 系统页
 // ── ⑤ 类名双向闭合（AC-19 续）：档面字面类 ↔ style.css 类选择器 ∥ 死类零残留 ─────────────────
 
 /** 态类（动态/交互态——非档面字面类；双向闭合第二向的允许集）。 */
-const STATE_CLASSES = ["active", "ok", "degraded", "down", "error", "modal-open"]
+const STATE_CLASSES = ["active", "ok", "degraded", "down", "error", "modal-open", "open"]
+
+/** 核件发射类（单源 = thincoder-render-core——console-chat-align 批起：核件渲染产物类在控制台样式表内着色；随核件类族随正）。 */
+const RENDER_CORE_CLASSES = ["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type"]
 
 test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）", () => {
   const cssClasses = new Set([...stripComments(CSS).matchAll(/\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]))
@@ -191,21 +194,22 @@ test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）",
   for (const known of ["row-clickable", "table-wrap", "secret", "config-field", "hint", "tiny"]) assert.ok(usedClasses.has(known), `类面扫描失效：${known}`)
   for (const known of ["card", "row-clickable", "secret", "config-field", "modal", "error"]) assert.ok(cssClasses.has(known), `样式类扫描失效：${known}`)
   const STATE = new Set(STATE_CLASSES)
+  const RENDER_CORE = new Set(RENDER_CORE_CLASSES)
   for (const token of usedClasses) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls), `样式类零消费者：.${cls}`)
+  for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls) || RENDER_CORE.has(cls), `样式类零消费者：.${cls}`)
   for (const dead of ["key-line", "stat", "view"]) {
     assert.equal(cssClasses.has(dead), false, `死类规则残留：.${dead}`)
     assert.equal(usedClasses.has(dead), false, `死类字面量残留：${dead}`)
   }
 })
 
-// ── ⑥ 静态面：档目 31 ∥ 32 ∥ 零外链 ∥ 直发（200 ∥ mime ∥ 字节等于磁盘）────────────────────────
+// ── ⑥ 静态面：档目 40 ∥ 39 ∥ 零外链 ∥ 直发（200 ∥ mime ∥ 字节等于磁盘）────────────────────────
 
-test("⑥ 静态面：档目 36 ∥ 37 逐名同拍（2026-10-11 两批 + 拆分层后）∥ `public/**` 零外链 ∥ 直发", async () => {
+test("⑥ 静态面：档目 40 ∥ 39 逐名同拍（2026-10-11 console-chat-align 批后）∥ `public/**` 零外链 ∥ 直发", async () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "全目录 38 ∥ UI 代码档 37（2026-10-11 三批 + 拆分层后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "全目录 40 ∥ UI 代码档 39（2026-10-11 console-chat-align 批后）")
   assert.deepEqual(names, [
-    "app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs",
+    "app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs",
     "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
     "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
   ])
@@ -231,11 +235,11 @@ test("⑥ 静态面：档目 36 ∥ 37 逐名同拍（2026-10-11 两批 + 拆分
   }
 })
 
-// ── ⑦ 门禁清单：`prepublishOnly` 五十一件（含本批件）∥ 清单目标在盘 ─────────────────────────────
+// ── ⑦ 门禁清单：`prepublishOnly` 五十二件（含本批件）∥ 清单目标在盘 ─────────────────────────────
 
-test("⑦ 门禁清单：`prepublishOnly` 五十一件含本批件 ∥ 清单目标在盘", () => {
+test("⑦ 门禁清单：`prepublishOnly` 五十二件含本批件 ∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 51, `门禁清单件数（⇒ 五十一——2026-10-11 五批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 52, `门禁清单件数（⇒ 五十二——2026-10-11 六批后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-06-console-list-style.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

@@ -233,10 +233,39 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .chat-msg.user { background: var(--selected); }
 .chat-msg.assistant { background: var(--fill); }
 .chat-msg.notice { background: var(--fill); color: var(--muted); } /* 灰条（中断/预算/模型错误——§2.10） */
-.chat-msg.tool { background: var(--panel); border: var(--bw) solid var(--border); }
-.chat-msg.tool.failed { border-color: var(--danger); } /* 失败红标（行边 + `.badge off` 徽标） */
-.chat-tool-arrow { color: var(--muted); }
 .chat-form { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+/* ── 对话页·核件族（console-chat-align 批——§2.10）：核件发射类名（tool-call 族/码面/token）与 md 块级产物
+   ——页面补样式（零新变量 ∥ 零新悬停规则 ∥ 类名逐枚见 §6 本批行）；状态色由核件内联（红/绿）——样式面不重复载体 ──── */
+.tool-call { margin: var(--sp-4) 0 0; border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); overflow: hidden; }
+.tool-call-header { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-4); cursor: pointer; }
+.tool-call-icon { width: 0; height: 0; border-left: 5px solid var(--accent); border-top: 4px solid transparent; border-bottom: 4px solid transparent; } /* 播放三角（尺寸字面——非刻度面） */
+.tool-call-icon.open { transform: rotate(90deg); }
+.tool-call-name { color: var(--accent); } /* 名 = 色通道（零粗体⑤） */
+.tool-call-args { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tool-call-status { color: var(--muted); }
+.tool-call-summary { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tool-call-body { display: none; padding: var(--sp-3) var(--sp-4); border-top: var(--bw) solid var(--border); max-height: 180px; overflow-y: auto; font-family: var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; } /* 尺寸字面（同 `.chat-list` 先例） */
+.tool-call-body.open { display: block; }
+.code-block { margin: var(--sp-3) 0 var(--sp-4); padding: 0; background: var(--fill); border: var(--bw) solid var(--border); border-radius: var(--r-2); overflow: hidden; }
+.code-block code { display: block; padding: var(--sp-4); overflow-x: auto; background: none; }
+.code-lang { display: block; padding: 0 var(--sp-4); color: var(--muted); border-bottom: var(--bw) solid var(--border); }
+.tk-comment { color: var(--muted); }
+.tk-keyword { color: var(--accent); }
+.tk-string { color: var(--ok); }
+.tk-number, .tk-type { color: var(--warn); } /* token 取色 = 既有色板（零新变量） */
+.chat-msg p, .chat-msg ul, .chat-msg ol, .chat-msg blockquote, .chat-msg table { margin: var(--sp-3) 0; }
+.chat-msg p:empty { display: none; } /* 核 md 块级置换残影（`<p>` 包 `<pre>` 被解析器隐式闭合——消空段隙） */
+.chat-msg h1, .chat-msg h2, .chat-msg h3, .chat-msg h4, .chat-msg h5, .chat-msg h6 { margin: var(--sp-4) 0 var(--sp-3); font-size: var(--fs); font-weight: 400; } /* 一字号零粗体（⑤——UA 标题字号/字重撤） */
+.chat-msg ul, .chat-msg ol { padding-left: var(--sp-7); }
+.chat-msg li { margin: var(--sp-1) 0; }
+.chat-msg th, .chat-msg td { white-space: normal; } /* 气泡内表格换行（全档 `th/td` 为数据页 `nowrap` 面——气泡内不携横滚壳，沿 VSC `.content th/td` 口径） */
+.chat-msg blockquote { padding: 0 var(--sp-4); border-left: var(--bw-strong) solid var(--border); color: var(--muted); }
+.chat-msg hr { border: none; border-top: var(--bw) solid var(--border); margin: var(--sp-5) 0; }
+.chat-msg a { color: var(--accent); }
+.chat-msg img { max-width: 100%; }
+.chat-msg :is(h1, h2, h3, h4, h5, h6, p, pre, ul, ol, table, blockquote):first-child { margin-top: 0; }
+.chat-msg :is(p, pre, ul, ol, table, blockquote):last-child { margin-bottom: 0; }
 
 /* ── 数据表页视口高壳（§2.6②——高度链声明单源：页头固定 ∥ 表区吃剩高；表尾行计数 = 表内 tfoot〔吸附表底〕；回退见下）────── */
 body.data-shell .content { height: 100dvh; display: flex; flex-direction: column; }

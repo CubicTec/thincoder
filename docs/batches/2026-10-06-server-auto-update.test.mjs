@@ -6,7 +6,7 @@
  *   ③ 档位（false 零检查 ∥ 缺省 notify ∥ 启动即检 ∥ stop 清循环）　④ N14/B10（`update_available` ∥ 静默）
  *   ⑤ 自升/N15/B11（参数形 + 复读 + 回调停机；失败/超时保留旧版——含进程级 `signal:"self-update"` + 退出码 0）
  *   ⑥ B12（钉版抑制）　⑦ E12（非法拒启）∥ ready 含 `version`　⑧ converge 矩阵（七行 + 边界格；B13 回退 ∥ E13 拒启）
- *   ⑨ converge 进程级　⑩ 部署件结构 ∥ prepublishOnly 五十一件　⑪ 零依赖扫描
+ *   ⑨ converge 进程级　⑩ 部署件结构 ∥ prepublishOnly 五十二件　⑪ 零依赖扫描
  * 假 npm 替身 = 临时 `.mjs`（`[node, <档>]` 命令形——跨平台；§5.4(c) 注入口径）；假 registry = 端口随机 `node:http`。
  */
 import test from "node:test"
@@ -436,7 +436,7 @@ test("converge 矩阵：latest（有/无 × 已最新/有新/不可达/装失败
   } finally { rmSync(dir, { recursive: true, force: true }) }
 })
 
-// ── ⑨ converge（进程级） ⑩ 部署件结构 ∥ prepublishOnly 五十一件 ⑪ 零依赖扫描 ────
+// ── ⑨ converge（进程级） ⑩ 部署件结构 ∥ prepublishOnly 五十二件 ⑪ 零依赖扫描 ────
 
 test("converge（进程级）：空+有 ⇒ 退出码 0 + 收敛行 ∥ 空+无 ⇒ 拒启退出码 1 + refused 行", async () => {
   const dir = tmpDir("conv-proc")
@@ -458,7 +458,7 @@ test("部署件结构：Dockerfile 壳形（预装本地 tgz ∥ PATH ∥ USER n
   assert.match(dockerfile, /^USER node$/m)
   assert.match(dockerfile, /^ENV NPM_CONFIG_PREFIX=\/home\/node\/\.npm-global \\$/m)
   assert.match(dockerfile, /^\s+PATH=\/home\/node\/\.npm-global\/bin:\$PATH$/m) // PATH 含前缀 bin（入口 exec 依赖——§5.1）
-  assert.match(dockerfile, /^RUN cd \/tmp\/build && npm pack --silent && npm i -g \.\/thincoder-server-\*\.tgz --no-audit --no-fund && rm -rf \/tmp\/build$/m) // 构建期预装（本地 tgz——零 registry 依赖）
+  assert.match(dockerfile, /^RUN cd \/tmp\/build\/thincoder-server && npm pack --silent && cd \.\.\/thincoder-render-core && npm pack --silent && cd \.\. && npm i -g \.\/thincoder-server\/\*\.tgz \.\/thincoder-render-core\/\*\.tgz --no-audit --no-fund && rm -rf \/tmp\/build$/m) // 构建期预装（双包本地 tgz 一次装两包——零 registry 依赖）
   assert.ok(!/\bnpm i -g @thincoder\/server@/.test(dockerfile), "构建期不得走 registry 装版")
   assert.match(dockerfile, /^ENTRYPOINT \["\/app\/deploy\/docker-entrypoint\.sh"\]$/m)
   assert.match(dockerfile, /^EXPOSE 8787$/m)
@@ -477,11 +477,11 @@ test("部署件结构：Dockerfile 壳形（预装本地 tgz ∥ PATH ∥ USER n
   assert.match(unit, /^ExecStart=\/opt\/thincoder-server\/\.npm-global\/bin\/thincoder-server --config \/opt\/thincoder-server\/config\.json$/m)
   assert.match(unit, /^Restart=always$/m)
   const batchFiles = (PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? [])
-  assert.equal(batchFiles.length, 51, `prepublishOnly 应列五十一件：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 52, `prepublishOnly 应列五十二件：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-06-server-auto-update.test.mjs"), "本批件应入列")
 })
 
-test("依赖面：thincoder-server 全树 import 仅 node:/相对 ∥ package.json dependencies 空 ∥ 新档在扫面", () => {
+test("依赖面：thincoder-server 全树 import 仅 node:/相对 ∥ package.json dependencies = in-repo 两包 ∥ 新档在扫面", () => {
   const files = readdirSync(SERVER_DIR, { recursive: true }).map(String).filter((rel) => rel.endsWith(".mjs"))
   for (const expected of ["src/ops/update.mjs", "deploy/converge.mjs"]) assert.ok(files.map((rel) => rel.replaceAll("\\", "/")).includes(expected), `扫描面缺 ${expected}`)
   const specifiers = []
@@ -493,6 +493,6 @@ test("依赖面：thincoder-server 全树 import 仅 node:/相对 ∥ package.js
     for (const match of text.matchAll(/\brequire\(\s*["']([^"']+)["']\s*\)/g)) specifiers.push([rel, match[1]])
   }
   assert.ok(specifiers.length >= 8)
-  for (const [rel, spec] of specifiers) assert.ok(spec.startsWith("node:") || spec.startsWith(".") || spec.startsWith("@thincoder/core"), `${rel} 出现非许可 import（仅 node: ∥ 相对 ∥ @thincoder/core——本仓包）：${spec}`)
-  assert.deepEqual(PKG.dependencies ?? {}, { "@thincoder/core": "^0.10.4" }, "dependencies 仅 @thincoder/core（本仓包——KD-SV-78；零第三方）")
+  for (const [rel, spec] of specifiers) assert.ok(spec.startsWith("node:") || spec.startsWith(".") || spec.startsWith("@thincoder/core") || spec.startsWith("/rc/"), `${rel} 出现非许可 import（仅 node: ∥ 相对 ∥ @thincoder/core ∥ /rc/ 同源第二根——本仓包）：${spec}`)
+  assert.deepEqual(PKG.dependencies ?? {}, { "@thincoder/core": "^0.10.4", "@thincoder/render-core": "file:../thincoder-render-core" }, "dependencies 仅 in-repo 两包（@thincoder/core 钉版本 ∥ @thincoder/render-core `file:` 形——KD-SV-78 续；零第三方）")
 })

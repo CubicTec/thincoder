@@ -39,39 +39,40 @@ const DOM = await load("thincoder-server/public/dom.mjs")
 const HEALTH = await load("thincoder-server/public/health.mjs")
 
 /** 部件域界（键首段前缀；`admin.sandbox.*` = 二级前缀单列——KD-SV-51）：键集归属 = 机器可判。 */
-const PARTS = ["shell", "me", "admin", "sandbox", "system"]
+const PARTS = ["shell", "me", "admin", "sandbox", "system", "core"]
 const DOMAINS = {
   shell: ["app", "common", "col", "denied", "nav", "lang", "login", "err"],
   me: ["usage", "me"],
   admin: ["admin"],
   sandbox: ["admin.sandbox"],
   system: ["system", "vector", "health", "overview", "usageReport", "audit", "proxy"],
+  core: ["tool"],
 }
 const domainOf = (key) => {
   const base = key.replace(/\.one$/, "")
   const two = base.split(".").slice(0, 2).join(".")
   return PARTS.find((part) => DOMAINS[part].includes(two)) ?? PARTS.find((part) => DOMAINS[part].includes(base.split(".")[0])) ?? null
 }
-/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3——键数 592 ∥ 597；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十部件——结构轮守卫「拆后应回线内」之执行））。 */
+/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3——键数 596 ∥ 601（console-chat-align 批：核件词面 +5 ∥ 退役 `admin.chat.tool*` 四键 −4）；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十二部件——结构轮守卫「拆后应回线内」之执行））。 */
 const ANCHOR = {
-  zh: "46d71957329149d1362c91e63e6abb91d4b90a578232b89de0a781e49c8ac16e",
-  en: "bdd02573de81d88faa68a5ce8c4f3846b0012e991d6d01e44d59fd7eafb10d52",
+  zh: "32981e95d054470fb59ec8c5468b2a9d2c83239f9ff1fe2a45c9a887d0fe821d",
+  en: "3da8fedb122510d9bb3a5e967795858d806cf6c9e0ee6a000d294fd6284f4d45",
 }
 const fingerprint = (TABLE) => createHash("sha256").update(JSON.stringify(Object.keys(TABLE).sort().map((key) => [key, TABLE[key]]))).digest("hex")
 
 // ── ① 键集指纹（拆表 = 纯结构；基线随后续增键批同拍随正）────────────────────────────
 
-test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3）∥ 键数 592 ∥ 597 ∥ 门面冻结", () => {
+test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3）∥ 键数 596 ∥ 601 ∥ 门面冻结", () => {
   assert.equal(fingerprint(ZH), ANCHOR.zh, "zh 指纹漂移（键集/值须逐字同基线）")
   assert.equal(fingerprint(EN), ANCHOR.en, "en 指纹漂移（键集/值须逐字同基线）")
-  assert.equal(Object.keys(ZH).length, 592, "zh 键数 592（拆表 338 + 历批增额 + 2026-10-11 四批：沙盒-docker +54 ∥ chat +33 ∥ 镜像源 +34 ∥ 一键拉取 +3）")
-  assert.equal(Object.keys(EN).length, 597, "en 键数 597（含 `.one` 变体族；2026-10-11 四批后）")
+  assert.equal(Object.keys(ZH).length, 596, "zh 键数 596（拆表 338 + 历批增额 + 2026-10-11 批：沙盒-docker +54 ∥ chat +33 ∥ 镜像源 +34 ∥ 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4）")
+  assert.equal(Object.keys(EN).length, 601, "en 键数 601（含 `.one` 变体族；2026-10-11 批后）")
   assert.ok(Object.isFrozen(ZH) && Object.isFrozen(EN), "门面 `Object.freeze`（聚合门面封闭）")
 })
 
 // ── ② 部件互斥/并集（域界 = 键首段前缀——四部件 × 两语言）─────────────────────
 
-test("② 部件互斥/并集：十部件两两互斥 ∧ 并集 = 门面全键 ∧ 归属 = 剥 `.one`（首段 ∥ `admin.sandbox.*` 二级前缀）", async () => {
+test("② 部件互斥/并集：十二部件两两互斥 ∧ 并集 = 门面全键 ∧ 归属 = 剥 `.one`（首段 ∥ `admin.sandbox.*` 二级前缀）", async () => {
   for (const [lang, FACADE] of [["zh", ZH], ["en", EN]]) {
     const seen = new Map()
     for (const part of PARTS) {
@@ -85,7 +86,7 @@ test("② 部件互斥/并集：十部件两两互斥 ∧ 并集 = 门面全键 
         assert.equal(domainOf(key), part, `${lang} 域界不符：${key} 应属 ${part}`)
       }
     }
-    assert.deepEqual([...seen.keys()].sort(), Object.keys(FACADE).sort(), `${lang} 十部件并集 = 门面全键（无缺无余）`)
+    assert.deepEqual([...seen.keys()].sort(), Object.keys(FACADE).sort(), `${lang} 十二部件并集 = 门面全键（无缺无余）`)
   }
 })
 

@@ -1,7 +1,8 @@
 # Thincoder Server — 容器镜像（壳——ops/OPS.md §5.1）：node:24-slim 基座 + 引导层（deploy/*）。
 # 版本身份 = npm 包（`@thincoder/server`——镜像 tag 不承担版本语义）；构建期以上下文包体预装（npm pack ⇒ 前缀——
 # 零 registry 依赖，发布前亦可构建验证）；运行期由壳引导按 TC_SERVER_VERSION 收敛（§5.4(d)）。
-# 构建（上下文 = 本目录）：docker build -t <registry>/thincoder-server:<tag> .
+# 构建（上下文 = 仓根——console-chat-align 批起）：docker build -f thincoder-server/Dockerfile -t <registry>/thincoder-server:<tag> .
+# 双包（同批）：上下文含两包（`thincoder-server` + `thincoder-render-core`）——构建期一次装两包（`file:` 依赖——核包名解析可达）。
 # 升级/回滚 = 改 TC_SERVER_VERSION + docker compose up -d（重跑壳收敛——§5.4(e)）；重建镜像 = 换 Node 基座/壳时。
 FROM node:24-slim
 
@@ -16,14 +17,15 @@ ENV NPM_CONFIG_PREFIX=/home/node/.npm-global \
     NPM_CONFIG_CACHE=/home/node/.npm-cache \
     PATH=/home/node/.npm-global/bin:$PATH
 
-# 构建期预装：上下文包体（npm pack——files 白名单）⇒ 前缀（本地 tgz——构建零 registry 依赖；离线可构建）
-COPY . /tmp/build/
+# 构建期预装：上下文双包体（npm pack——files 白名单）⇒ 前缀（本地 tgz 一次装两包——构建零 registry 依赖；离线可构建）
+COPY thincoder-server /tmp/build/thincoder-server/
+COPY thincoder-render-core /tmp/build/thincoder-render-core/
 RUN mkdir -p /app/data && chown -R node:node /app /tmp/build /home/node
 USER node
-RUN cd /tmp/build && npm pack --silent && npm i -g ./thincoder-server-*.tgz --no-audit --no-fund && rm -rf /tmp/build
+RUN cd /tmp/build/thincoder-server && npm pack --silent && cd ../thincoder-render-core && npm pack --silent && cd .. && npm i -g ./thincoder-server/*.tgz ./thincoder-render-core/*.tgz --no-audit --no-fund && rm -rf /tmp/build
 
 # 引导层（壳——converge.mjs ∥ docker-entrypoint.sh）
-COPY --chown=node:node deploy/ /app/deploy/
+COPY --chown=node:node thincoder-server/deploy/ /app/deploy/
 RUN chmod +x /app/deploy/docker-entrypoint.sh
 
 EXPOSE 8787

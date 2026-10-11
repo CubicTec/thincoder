@@ -12,7 +12,7 @@
  *     + Hub 面 DOM 径（按名读标签 ⇒ 标签行钮 ⇒ 预填 `docker.io/library/<名>:<标签>`）
  *   ④ 零新端点 ∥ 审计既有 `image_pull`（拉取窗唯一径 = 既有端点；服务端路由 + 审计 kind 在盘零触；两件端点面扫描）
  *   ⑤ i18n +3 键两表（逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 键集双向相等）+ 复用 2 键在盘
- *   ⑥ 静态面（档目 38 ∥ 37 不变（文件集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥
+ *   ⑥ 静态面（档目 40 ∥ 39（文件集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥
  *     canon 不破（`:root` 38 ∥ 悬停 7）∥ 装配接线 ∥ 门禁链零悬空 + 本批件在链）
  */
 import test from "node:test"
@@ -42,9 +42,9 @@ const CSS = readPublic("style.css")
 /** 本批新增键（3——§2.2 键族登记；两表逐键同步）；复用 2 键（零新增——可用态提示条）。 */
 const NEW_KEYS = ["admin.sandbox.catalogPull", "admin.sandbox.pullPickNodeTitle", "admin.sandbox.pullTarget"]
 const REUSED_KEYS = ["admin.sandbox.noNodes", "admin.sandbox.allOffline"]
-/** public/ 档集快照（本批零新档——档目 38 ∥ 37 不变；差集空 = 集合逐名相等）。 */
-const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs",
-  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
+/** public/ 档集快照（本批零新档——档目 40 ∥ 39；差集空 = 集合逐名相等）。 */
+const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs",
+  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
   "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
   "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
   "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
@@ -399,10 +399,10 @@ test("⑤ i18n：本批 3 键两表逐键在场 ∥ 占位符对位 ∥ en 零 C
 
 // ── ⑥ 静态面（档目 ∥ 行数/行宽 ∥ canon ∥ 接线 ∥ 门禁链）─────────────────────────
 
-test("⑥ 静态面：档目 38 ∥ 37（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 接线 ∥ 链", () => {
+test("⑥ 静态面：档目 40 ∥ 39（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 接线 ∥ 链", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（本批零新档——差集空）")
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（test 口径）⇒ 文档口径 37 ∥ 38")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（test 口径）⇒ 文档口径 39 ∥ 40")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
     const lines = source.split("\n").length

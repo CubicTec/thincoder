@@ -9,7 +9,7 @@
  *   ③ 目录浏览窗（v2：仓库列表 ⇒ 点行取标签 ∥ 两处过滤输入 ∥ truncated 提示 ∥ 空态 ∥ Hub：目录 unsupported 人话呈 + 按镜像名查标签）
  *   ∥ 五分类读绪一键文案（窗内就地呈——不关窗）
  *   ④ 本地镜像表过滤（名/标签匹配 ∥ 无匹配空态 ∥ 零新端点）+ i18n 两表（本批 34 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等）
- *   ⑤ 静态面（档目 37 ∥ 38 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整）
+ *   ⑤ 静态面（档目 39 ∥ 40 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -470,10 +470,10 @@ test("④ 本地镜像表过滤：名/标签匹配 ∥ 无匹配空态 ∥ 零�
 
 // ── ⑤ 静态面（档目 ∥ 行数/行宽 ∥ canon ∥ 门禁链）─────────────────────────────
 
-test("⑤ 静态面：档目 37 ∥ 38 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整", () => {
-  // 档目（37 ∥ 38——本批 +1 档 `views-sandbox-image-sources.mjs`；test 口径 = [总档数, 除 favicon 档数]）
+test("⑤ 静态面：档目 39 ∥ 40 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整", () => {
+  // 档目（39 ∥ 40——console-chat-align 批 +2 档后；test 口径 = [总档数, 除 favicon 档数]）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（test 口径）⇒ 文档口径 37 ∥ 38")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（test 口径）⇒ 文档口径 39 ∥ 40")
   assert.ok(names.includes("views-sandbox-image-sources.mjs"), "新档在册：views-sandbox-image-sources.mjs")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {

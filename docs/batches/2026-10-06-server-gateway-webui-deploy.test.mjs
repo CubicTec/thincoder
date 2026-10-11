@@ -10,7 +10,7 @@
  *   ③ 静态面单件：mime 表 ∥ `/` ⇒ index.html ∥ 防路径穿越（编码形 ∥ 反斜杠 ∥ 非法百分号）
  *   ④ 静态面集成：`/` ∥ `/app.mjs` ∥ `/style.css` 直发（mime ∥ no-cache ∥ 字节等于磁盘）∥ 未知 ⇒ 404 JSON ∥ 注册路由优先
  *   ⑤ 部署资产：五件在册 ∥ Dockerfile/unit/compose 结构要点 ∥ package.json `files` 白名单（AC-8 静态面）
- *   ⑥ 前端自洽：`public/**` 零外部引用（无 http(s):// ∥ 无 @import）∥ 三十一档在册（含 favicon 共三十二档——零框架 ∥ 零构建）
+ *   ⑥ 前端自洽：`public/**` 零外部引用（无 http(s):// ∥ 无 @import）∥ 三十九档在册（含 favicon 共四十档——零框架 ∥ 零构建）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -268,10 +268,10 @@ test("静态面：`/` ∥ `/app.mjs` ∥ `/nav.mjs` ∥ `/style.css` 直发（mi
   }
 })
 
-// ── 前端自洽：零外部资源 ∥ 三十一档在册（含 favicon 共三十二档）────────────────────
-test("前端自洽：`public/**` 三十六档在册（含 favicon 共三十七档） ∥ 零外部引用（无 http(s):// ∥ 无 @import——内网自洽，KD-SV-9）", () => {
+// ── 前端自洽：零外部资源 ∥ 三十九档在册（含 favicon 共四十档）────────────────────
+test("前端自洽：`public/**` 三十九档在册（含 favicon 共四十档） ∥ 零外部引用（无 http(s):// ∥ 无 @import——内网自洽，KD-SV-9）", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual(names, ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"])
+  assert.deepEqual(names, ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"])
   for (const name of names) {
     const text = readFileSync(join(PUBLIC_DIR, name), "utf8")
     assert.ok(!/https?:\/\//.test(text), `${name} 含外部链接（CDN/外链字体等——内网不达）`)
@@ -295,7 +295,7 @@ test("部署资产：五件在册 ∥ Dockerfile/unit/compose 结构要点 ∥ p
   assert.match(dockerfile, /^EXPOSE 8787$/m)
   assert.match(dockerfile, /^VOLUME \/app\/data$/m)
   assert.match(dockerfile, /^ENTRYPOINT \["\/app\/deploy\/docker-entrypoint\.sh"\]$/m)
-  assert.match(dockerfile, /^RUN cd \/tmp\/build && npm pack --silent && npm i -g \.\/thincoder-server-\*\.tgz --no-audit --no-fund && rm -rf \/tmp\/build$/m)
+  assert.match(dockerfile, /^RUN cd \/tmp\/build\/thincoder-server && npm pack --silent && cd \.\.\/thincoder-render-core && npm pack --silent && cd \.\. && npm i -g \.\/thincoder-server\/\*\.tgz \.\/thincoder-render-core\/\*\.tgz --no-audit --no-fund && rm -rf \/tmp\/build$/m)
   assert.ok(!/\bnpm i -g @thincoder\/server@/.test(dockerfile), "构建期不得走 registry 装版（预装 = 本地 tgz）")
 
   const ignore = readFileSync(files[2], "utf8").split("\n")
@@ -316,7 +316,7 @@ test("部署资产：五件在册 ∥ Dockerfile/unit/compose 结构要点 ∥ p
 
   const pkg = JSON.parse(readFileSync(join(SERVER_DIR, "package.json"), "utf8"))
   assert.deepEqual(pkg.files, ["bin/", "src/", "public/", "config.example.json", "README.md"])
-  assert.deepEqual(pkg.dependencies ?? {}, { "@thincoder/core": "^0.10.4" }, "dependencies 仅 @thincoder/core（本仓包——KD-SV-78；零第三方）")
+  assert.deepEqual(pkg.dependencies ?? {}, { "@thincoder/core": "^0.10.4", "@thincoder/render-core": "file:../thincoder-render-core" }, "dependencies 仅 in-repo 两包（@thincoder/core 钉版本 ∥ @thincoder/render-core `file:` 形——KD-SV-78 续；零第三方）")
   assert.equal(pkg.bin["thincoder-server"], "bin/thincoder-server.mjs")
   assert.equal(pkg.engines.node, ">=24")
 })

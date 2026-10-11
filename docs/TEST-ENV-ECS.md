@@ -43,7 +43,7 @@ git push origin main ; git push github main     # 箱子的 remote = gitee（ori
 $k = "$env:USERPROFILE\.ssh\thincoder_ecs"          # 本机 PowerShell：密钥路径（一次设定）
 ssh -i $k thincoder@10.0.0.5 "cd ~/thincoder && git pull --ff-only"
 ssh -i $k thincoder@10.0.0.5 "docker tag thincoder-server:0.1.0 thincoder-server:pre-<日期>"
-ssh -i $k thincoder@10.0.0.5 "docker build -t thincoder-server:0.1.0 ~/thincoder/thincoder-server"
+ssh -i $k thincoder@10.0.0.5 "docker build -f ~/thincoder/thincoder-server/Dockerfile -t thincoder-server:0.1.0 ~/thincoder"
 ssh -i $k thincoder@10.0.0.5 "cd ~/thincoder-server-deploy && docker compose up -d --force-recreate && sleep 6 && docker ps"
 ```
 
@@ -51,7 +51,7 @@ ssh -i $k thincoder@10.0.0.5 "cd ~/thincoder-server-deploy && docker compose up 
 
 1. **推在前**——箱子从 gitee 拉；本地没推 = 箱上没有。
 2. **旧镜像先打标**（`thincoder-server:pre-<日期>`）= 回滚锚（见 §5）。
-3. `docker build` 上下文 = `~/thincoder/thincoder-server`（compose **无 build 段**——镜像得手动重建）。
+3. `docker build` 上下文 = `~/thincoder`（**仓根**——console-chat-align 批起双包 `thincoder-server/` + `thincoder-render-core/`；Dockerfile 用 `-f ~/thincoder/thincoder-server/Dockerfile`；compose **无 build 段**——镜像得手动重建）。
 4. `--force-recreate` 必有：tag 同名，靠它确保容器用新镜像重起（停机约数秒）。
 5. 数据库迁移 = **容器启动时自动跑**（无独立迁移步）。
 6. 配置 / 数据 = 卷挂载（`./config` ∥ `./data`），重建容器不动它们。

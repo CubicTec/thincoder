@@ -5,7 +5,7 @@
  * **拉取消费面 = 显式选源**（源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态） ∥ 零自动选源）；**名 ∥ 址各自唯一**（库两 UNIQUE + 本档人话报错）；
  * 址归一 = `[http(s)://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；含路径/查询/空白/凭据 ⇒ 拒）；`kind` = **按地址派生**
  * （`hub` ⇔ 主机 ∈ Hub 四别名；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）。
- * 预选六条 = server 端静态表（沿 provider 预设先例 KD-SV-17——随设计轮维护，非用户可改面）。
+ * 预选七条 = server 端静态表（沿 provider 预设先例 KD-SV-17——随设计轮维护，非用户可改面）。
  * 端点面 = `image-source-routes.mjs`；本档纯函数面（形校验 ∥ kind 派生 ∥ 预选表）= 批内件直测。
  */
 import { HttpError } from "../gateway/errors.mjs"
@@ -16,7 +16,8 @@ export const SOURCE_NAME_MAX = 40
 /** Hub 四别名（§3：`kind = hub` 判据——主机命中即 Hub 面；与登记址端口无关）。 */
 export const HUB_HOSTS = Object.freeze(["docker.io", "index.docker.io", "registry-1.docker.io", "hub.docker.com"])
 
-/** 常用源预选六条（§3——用户 09:19 口径：Docker Hub ∥ ghcr.io ∥ quay.io ∥ 阿里云 ACR ∥ 华为云 SWR ∥ Docker Hub 镜像（DaoCloud））。
+/** 常用源预选七条（§3——用户 09:19 口径：Docker Hub ∥ ghcr.io ∥ quay.io ∥ 阿里云 ACR ∥ 华为云 SWR ∥ Docker Hub 镜像（DaoCloud）∥ Docker Hub 镜像（1ms.run））。
+ *  第 7 条（1ms.run）= 2026-10-11 实走补——用户实走发现实测可用源缺表；实拉实证 `.6` 200·10.4s·119MB（七条——见批档 `docs/batches/2026-10-11-light-walkthrough-fixes.md`）。
  *  表单只回填名 + 址两字段（零隐藏语义）；此为 server 端单源——控制台下拉逐条消费。 */
 export const SOURCE_PRESETS = Object.freeze([
   Object.freeze({ name: "Docker Hub", address: "https://docker.io" }),
@@ -25,6 +26,7 @@ export const SOURCE_PRESETS = Object.freeze([
   Object.freeze({ name: "阿里云 ACR", address: "https://registry.cn-hangzhou.aliyuncs.com" }),
   Object.freeze({ name: "华为云 SWR", address: "https://swr.cn-north-4.myhuaweicloud.com" }),
   Object.freeze({ name: "Docker Hub 镜像（DaoCloud）", address: "https://docker.m.daocloud.io" }),
+  Object.freeze({ name: "Docker Hub 镜像（1ms.run）", address: "https://docker.1ms.run" }),
 ])
 
 /** 源名归一（§3 形：trim 非空 ∥ ≤ 40 字符）；不合 ⇒ 抛（调用面转 400）。 */

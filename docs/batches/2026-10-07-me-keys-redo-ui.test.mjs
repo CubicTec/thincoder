@@ -386,9 +386,9 @@ test("⑤ 静态面：新 25 键两表 ∥ 死键零残留 ∥ 改值 4 键列�
   }
   const hover = [...cssCode.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " "))
   assert.deepEqual(hover.filter((selector) => selector === ".nav-item:hover" || selector.includes("tr:hover")), [".nav-item:hover", "tbody tr:hover"], "行悬停声明 = 2 条（li.key-item:hover 删净）")
-  // 档目 36 ∥ 37（2026-10-11 两批 + 拆分层后）∥ key 页不入壳五页钉表 ∥ 行数硬限
+  // 档目 40 ∥ 39（2026-10-11 console-chat-align 批后）∥ key 页不入壳五页钉表 ∥ 行数硬限
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "全目录 38 ∥ UI 代码档 37（2026-10-11 三批 + 拆分层后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "全目录 40 ∥ UI 代码档 39（2026-10-11 console-chat-align 批后）")
   const shell = readPublic("app.mjs").match(/SHELL_PAGES = new Set\(\[([^\]]*)\]\)/)?.[1] ?? ""
   assert.equal(shell.includes("/me/keys"), false, "key 页非壳（钉表五页不扩——§2.6① 排除面）")
   assert.ok(readPublic("views-me.mjs").split("\n").length <= 800, "views-me 行数 ≤800 硬限")

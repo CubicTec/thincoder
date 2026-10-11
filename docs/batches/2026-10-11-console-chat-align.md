@@ -17,7 +17,7 @@
 - **验收环境**：`.5` 控制台 `http://10.0.0.5:8787`（部署 = push ⇒ 箱上 pull ⇒ 重建镜像，逐轮）；用面 = 管理面 chat（会话创建/发送/流式/工具行/长对话）。
 
 ## §2 批次任务与设计（eng-designer）
-**状态行**：（eng-designer 写入时更新）
+**状态行**：设计完成（fix 轮 2——收口前随正，补记块 = §2.7（2026-10-11））
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
 
 **批次任务与设计（eng-designer · 设计轮 · 2026-10-11）**
@@ -110,6 +110,18 @@ ECS 走查清单（每轮部署 = push ⇒ 箱上 `pull --ff-only` ⇒ 重建镜
 
 **同源随动**：`webui/WEBUI.md` §1/§2.2/§2.10/§3/§5/§6/变更记录 ∥ `design/PROJECT.md` §2.1/§2.3/§6/§9/变更记录。**产品码零触（fix 轮——仅设计档 + 本节）。**
 
+### 2.7 收口前补记（fix 轮——裁决与随正登记；零新语义）
+
+**承**：§5.5 逐条（41 红归因）∥ §5.2 D2 ∥ §5.5-8 两待裁。**本笔 = 收口前随正**——裁决与随正登记，使设计的现状面与实现终态同拍。
+
+1. **四退役键裁决（父侧在案——删）**：`admin.chat.toolCall` ∥ `admin.chat.toolResult` ∥ `admin.chat.toolCalling` ∥ `admin.chat.toolFailed` = **删**（沿「死键零残留」先例；零消费实核——唯存定义面 = `i18n-zh-admin.mjs:161-164` ∥ `i18n-en-admin.mjs:165-168`；§5.5-8① 待裁转裁）；**落 = 执行轮（eng-coder 笔）**。
+2. **未登记两腿登记（父侧已落——实核在盘）**：`-server-gateway-webui-deploy` 依赖集腿 = in-repo 两形（`@thincoder/core` 钉版本 ∥ `@thincoder/render-core` `file:`——零第三方不变；`docs/batches/2026-10-06-server-gateway-webui-deploy.test.mjs:319` 现读同拍）∥ `-server-i18n` 零裸说明符腿 = 白名单加 `/rc/`（同源绝对径；「零裸包名」语义保留——`docs/batches/2026-10-06-server-i18n.test.mjs:182` 现读同拍）。
+3. **D2 口径句（父侧裁——§2.4 走查第 6 条行文收窄）**：「刷新重开会话 ⇒ 历史重读」判行文 = **文本/结构与流式同形；失败卡状态位以核历史卡现行形呈现（D2——重读恒绿）**（失败文本仍携 `Error:` 头——零丢失）。
+4. **`-admin-agent-chat-ui` 桩面随正登记**：stub DOM 面补 `dataset` ∥ `innerHTML` ∥ `appendChild` ∥ `insertBefore` ∥ `removeChild` ∥ `prepend` ∥ `querySelector(All)` ∥ `style` ∥ `requestAnimationFrame`（核件 DOM 面——§5.5-6 逐腿同拍）。
+5. **i18n 键数终值（随正口径——含实测注）**：终值 = **596 ∥ 601**；实测注 = 旧基线 **592 ∥ 597** 未含「一键拉取 +3」——现读 **600 ∥ 605**（两门面载入实测；= 旧基线 +3（一键拉取批）+5（本批核件词面）），删四退役键 −4 ⇒ **596 ∥ 601**；部件并集 **十 ⇒ 十二**（`core` 入 `PARTS`——键 `tool.running`/`tool.initial`/`tool.truncated`/`tool.error`/`tool.done`）；随正基线在盘（`docs/batches/2026-10-08-server-public-structure.test.mjs:56`/`:65`/`:68-69` 断言 **596 ∥ 601** ∥ `:42` `PARTS` 含 `core`——删净后同拍）。
+
+**同源随动（本笔——纯数值、零语义）**：`webui/WEBUI.md` §5 逐行实读回填（`static.mjs` **114** ∥ `views-chat.mjs` **421** ∥ `style.css` **296**（并补本批拟值段——原行未载）∥ 两 i18n core 各 **14** ∥ 两门面各 **15**）+ 小计行实读增量 **+116** + §2.10 Dockerfile 行 **41** ∥ `design/PROJECT.md` §6 本批块逐档回填（webui ≈+154 ⇒ 实读 **+116**；批内件 **451**）+ §9 R58② Dockerfile 回填（39 ⇒ **41**）。**产品码零触（fix 轮——仅设计档 + 本节）。**
+
 ## §3 设计评审（评审子代理）
 
 ### 轮次 1（评审子代理）
@@ -133,6 +145,163 @@ VERDICT: changes-required
 
 计数：🔴×1 ∥ 🟡×6 ∥ 🔵×5（共 12）；🔴 = 第 1 行（node 侧 `/rc/` 取件缝缺失）——未解除前不发 token。
 
+### 轮次 2（评审子代理）
+
+复评（round 2——#226 的 12 项逐条核验；surface = `webui/WEBUI.md` ∥ `design/PROJECT.md` ∥ `requirements/PROJECT.md` ∥ 七件门禁断言件）
+
+| # | Orig# | File | Severity | Status | Notes |
+|---|-------|------|----------|--------|-------|
+| 1 | 🔴1 | WEBUI.md:591/:592/:721 ∥ PROJECT.md:609(R58③) | 🔴 | Fixed | 缝定形 + 既有件随正 + 验收行可执行：WEBUI:591「\*\*`thincoder-server/test/rc-resolve.mjs` 解析钩子\*\*（`/rc/<子路径>` ⇒ `@thincoder/render-core` 包根——包名解析单源 = `package.json`；沿桌面先例：`createRequire` 包名解析 + `registerHooks`）」+ 预载入口 = `prepublishOnly` 链行；WEBUI:592 既有件随正登记（`-admin-agent-chat-ui.test.mjs`——实核其 `:518` 现为 `[38, 37]` ⇒ 随正 `[40, 39]` 与声明同拍）；WEBUI:721「批内件腿可执行口径 = 自仓根 `node --import ./thincoder-server/test/rc-resolve.mjs --test`…」 |
+| 2 | 🟡2 | WEBUI.md:605 ∥ PROJECT.md:609 | 🟡 | Fixed | CSP 列收窄：「现零 CSP 头（不改）；如后加 ⇒ `default-src 'self'` 即足（**控制台自有档**零内联样式/脚本；核件含内联状态色——CSSOM（`flow/tool-card.mjs:111`/`:114`）∥ 回读径 `style=` 属性（`:162` ∥ `flow/tool-card-restore.mjs:44`）⇒ 后加 CSP 而无 `style` 内联豁免则回读卡状态色落空——桌面 `style-src 'self'` 同态…）」+ R58④ 同拍 |
+| 3 | 🟡3 | PROJECT.md:493/:353 ∥ 七件门禁件 | 🟡 | Fixed | 「零门禁件/±0」陈句已删（现文 = 链 **51 ⇒ 52**——本批批内件入链）+ 板级行链同拍；七件实核 = 51：`-console-list-style:238` =「assert.equal(batchFiles.length, 51, `门禁清单件数（⇒ 五十一——2026-10-11 五批后 ∥ 历批入链在案）…`」 ∥ `-server-auto-update:480` =「assert.equal(batchFiles.length, 51, `prepublishOnly 应列五十一件：${batchFiles.length}`)」（+`:9`/`:439` 注同拍） ∥ `-console-layout:449` ∥ `-me-usage-charts:262` ∥ `-provider-model-metadata:489/491` ∥ `-quota-per-model:444` ∥ `-quota-v2-member-models:428` |
+| 4 | 🟡4 | WEBUI.md:151 | 🟡 | Fixed | 域界改述：「首段 ∈ 核件 `t()` 发射段集——**本批消费面 ∪ 预留**（核件现读 ≈21 段…——集随核件实读，不硬编码）；**机器可判** = 批内件扫核件 `t("…")` 字面量取首段集，断言本部件键首段 ⊆ 该集」 |
+| 5 | 🟡5 | WEBUI.md:667/:674/:595 | 🟡 | Fixed | 两门面行补「⇒ 实读 14（2026-10-11 现读）⇒ ≈15（console-chat-align 批：+1 import——展开合体结构不变）」；Dockerfile 行补「**实读 39 ⇒ 增量以实施实读回填**；受影响档在册」 |
+| 6 | 🟡6 | WEBUI.md:596/:597 ∥ PROJECT.md:494/:609(R58②) | 🟡 | Fixed | 部署随正四件套（`TEST-ENV-ECS.md` §3 ∥ `Dockerfile` ∥ `README.md`（`:16`/`:93`）∥ 仓根 `.dockerignore`（新建）∥ `ops/OPS.md` §5.1）；npm 装机径声明在册（核包投递 = 随发布面轮；**装机判据 = 缺包 fail-loud**） |
+| 7 | 🟡7 | WEBUI.md:627 | 🟡 | Fixed | 退役式两分句删净（现行文止于「…核内输入先全量转义——对照表 = §2.10）」，无「原「不拼 HTML 串」…退场」残句；历史 = 变更记录 WEBUI:874） |
+| 8 | 🔵8 | WEBUI.md:144/:721 | 🔵 | Fixed | 「值逐字同 VSC locales——批内件断言：与 `thincoder-vscode/locales/{zh,en}.json` 逐键相等」 |
+| 9 | 🔵9 | WEBUI.md:587/:721 | 🔵 | Fixed | 「**核件词面注册 = 装配期 + 每次语言切换重注册**（…核 `_strings` 为模块级态…）」 |
+| 10 | 🔵10 | WEBUI.md:20/:156/:691 ∥ requirements:229/231 ∥ PROJECT.md:31/:353 | 🔵 | Fixed | JS 链 =「⇒ 三十五档（sandbox-image-sources 批 +1——现盘面）⇒ 三十七档（console-chat-align 批 +2…）」+ 变更记录 34 ⇒ 35 ⇒ 37 同拍；「门面 + 十二部件」（§2.2 ∥ AC-14）；「（现盘面）」挂位收正（WEBUI §6 十七行 ∥ requirements AC-12/AC-14 同在 37 ∥ 38 步）；R58⑥ 陈披露删（残余一处 ⇒ 见 #14） |
+| 11 | 🔵11 | PROJECT.md:73 | 🔵 | Fixed | §2.3 补两核包/两声明形之别句（`@thincoder/render-core` `file:` 形 ∥ `@thincoder/core` 钉版本形 ∥「核」两指以包名别之） |
+| 12 | 🔵12 | WEBUI.md:598 | 🔵 | Fixed | 缺包处置定形（装载期「缺 `@thincoder/render-core` ⇒ **启动 fail-loud**（显式报错拒起）；运行期 `/rc/*` 无档 ⇒ 404（不吞）」——沿桌面先例） |
+| 13 | (new) | PROJECT.md:543 ∥ WEBUI.md:591 | 🔵 | New | 缝件落 `thincoder-server/test/` 与 §8 现存句「- **不设 `test/` 树**：单位测试随批留存（测试纪律——不占仓套件）；收口轮 = 父侧真机（AC 实跑 ∥ 四端任一实际接入一轮 ∥ 仓根 `node scripts/doc-check.mjs`）。」未对表——建议 §8 或缝件条补一句「缝件非用例档——不在该条射程」（沿桌面 `test/` 先例）；缝件亦未见行数估（≈N——沿批内件登记例） |
+| 14 | (new) | WEBUI.md:691 | 🔵 | New | AC-14 行「∥ 十新档静态直发 200（`text/javascript`）∥ 档目随正」未随同行「（门面 + 十二部件）」收正（本批 +2 档）——两数并存宜收齐（或注明族面/批面） |
+
+计数：前账 🔴×1 ∥ 🟡×6 ∥ 🔵×5（12 项）＝ 全部 Fixed；新账 🔵×2（均不阻塞）。
+
+VERDICT: pass
+
+### 轮次 3（评审子代理）
+
+**复评（round 3——token 轮；surface = WEBUI.md ∥ design/PROJECT.md ∥ requirements/PROJECT.md ∥ 七件门禁断言件）**
+
+前账 14 项（🔴1 ∥ 🟡6 ∥ 🔵5 + 上轮新 🔵×2）逐条核验——**全部 Fixed**（逐条 = 本轮 fresh read/grep 证据）：
+
+| # | Orig# | File | Severity | Status | Notes |
+|---|---|---|---|---|---|
+| 1 | 🔴1 | WEBUI.md:591/:592/:721 ∥ PROJECT.md:609（R58③） | 🔴 | Fixed | 缝定形在册：WEBUI.md:591「**`thincoder-server/test/rc-resolve.mjs` 解析钩子**（`/rc/<子路径>` ⇒ `@thincoder/render-core` 包根——包名解析单源 = `package.json`；沿桌面 `thincoder-desktop/test/rc-resolve.mjs` 先例：`createRequire` 包名解析 + `registerHooks`）」+ 预载入口 = `prepublishOnly` 链行（`--import`）；592「**既有件随正 = `docs/batches/2026-10-11-admin-agent-chat-ui.test.mjs`**（链内——`load()` 页面档 ⇒ 缝承零改；其静态面腿上量随正 = 档目 `[38, 37]` ⇒ **[40, 39]**）」；721「批内件腿可执行口径 = 自仓根 `node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-11-console-chat-align.test.mjs`（`--import` 缝——缺则 `/rc/*` 不可解析）」；PROJECT.md:609「**缝件新建** = `thincoder-server/test/rc-resolve.mjs`」 |
+| 2 | 🟡2 | WEBUI.md:605 ∥ PROJECT.md:609（R58④） | 🟡 | Fixed | CSP 收窄：「现零 CSP 头（不改）；如后加 ⇒ `default-src 'self'` 即足（**控制台自有档**零内联样式/脚本；核件含内联状态色……后加 CSP 而无 `style` 内联豁免则回读卡状态色落空——桌面 `style-src 'self'` 同态）」 |
+| 3 | 🟡3 | PROJECT.md:493/:353 ∥ 七件门禁断言件 | 🟡 | Fixed | PROJECT.md:493「`prepublishOnly` 链 **51 ⇒ 52**（本批批内件入链——沿近批先例；链行内加 `--import ./thincoder-server/test/rc-resolve.mjs` 预载——行数零变）」；板级行 :353「sandbox-pull-by-source 批一件入链（**+1 ⇒ 51**）⇒ console-chat-align 批一件入链（**+1 ⇒ 52**）」；七件实核（fresh grep）＝ 51 且措辞同拍：`-console-list-style:238` ∥ `-server-auto-update:480` ∥ `-console-layout:449` ∥ `-me-usage-charts:262` ∥ `-provider-model-metadata:489/491` ∥ `-quota-per-model:444` ∥ `-quota-v2-member-models:428`（「2026-10-11 五批后」） |
+| 4 | 🟡4 | WEBUI.md:151 | 🟡 | Fixed | 域界改述：「首段 ∈ 核件 `t()` 发射段集——**本批消费面 ∪ 预留**（核件现读 ≈21 段……集随核件实读，不硬编码）；**机器可判** = 批内件扫核件 `t("…")` 字面量取首段集，断言本部件键首段 ⊆ 该集」 |
+| 5 | 🟡5 | WEBUI.md:667/:674/:595 | 🟡 | Fixed | 两门面行补「⇒ 实读 14（2026-10-11 现读）⇒ ≈15（console-chat-align 批：+1 import——展开合体结构不变）」；Dockerfile 行「**实读 39 ⇒ 增量以实施实读回填**；受影响档在册」 |
+| 6 | 🟡6 | WEBUI.md:596/:597 ∥ PROJECT.md:494/:609（R58②） | 🟡 | Fixed | 部署随正 = `TEST-ENV-ECS.md` §3 ∥ `Dockerfile` ∥ `README.md`（`:16`/`:93`）∥「**仓根 `.dockerignore`（新建——上下文迁仓根后 `thincoder-server/.dockerignore` 不再生效；清单按仓根重定）**」∥ `ops/OPS.md` §5.1（构建上下文句 ⇒ 仓根 ∥ 门禁链 42 ⇒ 52）；npm 径「**装机判据 = 缺包 fail-loud**（下条——装机后 `/rc/*` 无根不再静默白屏）」 |
+| 7 | 🟡7 | WEBUI.md:627 | 🟡 | Fixed | 退役式两分句删净——现行文止于「**含模型/用户/工具内容的文本面 = 核 `md()` 单源渲 HTML 入 `innerHTML`**（注入点 = 页面唯一；核内输入先全量转义——对照表 = §2.10）」 |
+| 8 | 🔵8 | WEBUI.md:144/:721 | 🔵 | Fixed | 「值逐字同 VSC locales——批内件断言：与 `thincoder-vscode/locales/{zh,en}.json` 逐键相等」 |
+| 9 | 🔵9 | WEBUI.md:587/:721 | 🔵 | Fixed | 「**核件词面注册 = 装配期 + 每次语言切换重注册**（`setStrings(当前语言核件词面)`——核 `_strings` 为模块级态……）」 |
+| 10 | 🔵10 | WEBUI.md:20/:156/:687 ∥ requirements:231 ∥ PROJECT.md:31/:353 | 🔵 | Fixed | JS 链「**⇒ 三十五档**（sandbox-image-sources 批 +1——现盘面）**⇒ 三十七档**（console-chat-align 批 +2——i18n core 两部件；沙盒余面批 ⇒ **三十九档**）」；「（门面 + 十二部件）」（:156/:691）；「（现盘面）」挂位收正（:687 ＝ 37 ∥ 38 步 ∥ requirements:231 同拍）；R58⑥ 陈披露删（残一处 ⇒ #14，已收） |
+| 11 | 🔵11 | PROJECT.md:73 | 🔵 | Fixed | §2.3 补两核包/两声明形之别句：「控制台渲染面（console-chat-align 批）= 从渲染核引——`@thincoder/render-core`（`file:` 声明形 ∥ `private` 永不发布；与 `@thincoder/core` 钉版本形之别）」 |
+| 12 | 🔵12 | WEBUI.md:598 | 🔵 | Fixed | 「缺 `@thincoder/render-core` ⇒ **启动 fail-loud**（显式报错拒起）；运行期 `/rc/*` 无档 ⇒ 404（不吞）」 |
+| 13 | （上轮新） | PROJECT.md:543 | 🔵 | Fixed | §8 缝件例外句已落：「**例外 = 取件缝件**（`thincoder-server/test/rc-resolve.mjs`——非用例档、不入链 ∥ 不入 `files`；见 §9 R58③）」 |
+| 14 | （上轮新） | WEBUI.md:691 | 🔵 | Fixed | AC-14 行「∥ 十二新档静态直发 200（`text/javascript`）∥」——与同行「（门面 + 十二部件）」同数收齐 |
+
+**计数**：前账 14 项（🔴1 ∥ 🟡6 ∥ 🔵5 + 新 🔵×2）＝ 全部 Fixed；本轮新发现 🔴0 ∥ 🟡0 ∥ 🔵0（round-3 边界 = 只核前账）。
+
+VERDICT: pass
+
 ## §4 用户批准（主 agent）
+
+**§4 用户批准（主 agent 代签）**——用户 2026-10-11 18:23 指出（管理面 chat「第四套、且最薄的一套」）+ 18:30「改」+ 18:32「两个任务都自动跑」（全链自动授权——承同日 13:19「好，自动跑完」先例）。
+
+- **条件齐备**：① 设计评审 = pass（轮 1 #226 changes-required → 修正轮 #227 逐号落 → 轮 2 复评实质 pass（12 项全 Fixed + 新 🔵×2）→ 轮 3 复评重发 **Approved**（零未决 🔴；框架层轮次戳错致轮 2 未发 token 的事故已由轮 3 修正））；② 修正全落并经核（含父侧落的两条 🔵：`design/PROJECT.md:543` §8 缝件例外句 ∥ `WEBUI.md:691` 「十二新档」）；③ 设计 token 已随轮 3 通过签发（在册；链未闭合前有效）。
+- **批准范围** = 设计全文（`webui/WEBUI.md` §1/§2.2/§2.10/§3/§5/§6/§7 KD-SV-101 ∥ `agent/ADMIN-AGENT.md` §11.1 ∥ `design/PROJECT.md` §2.1/§2.3/§4/§5/§6/§9 R58 ∥ 需求档 §5⑥/AC-37/AC-12/AC-14）。
+- **实施** = `eng-coder`（initial 轮——任务书 = 本档 §2；文件域 = 产品码九档 + 批内件；**随正件 = 父侧落**：门禁件数断言件七件 + `-admin-agent-chat-ui`（跨批写门禁拒）+ `Dockerfile`/`TEST-ENV-ECS.md` §3/`README.md`/`.dockerignore`（R58② 父侧笔面））。
+- **部署收尾 = 父侧**（镜像重建（**构建上下文 ⇒ 仓根**——R58② 前置）+ `.5` 浏览器实走：会话建档 ⇒ 发一条 ⇒ 流式帧 ⇒ 工具卡 ⇒ 刷新重读 ⇒ 两语言切换）。
+- **代签依据**：三条件齐备 + 用户全链令——承 #830 先例。
+
 ## §5 实施记录（eng-coder）
+**状态行**：实施完成（fix 轮——四退役键删净（2026-10-11））
+
+
+
+**批**：`2026-10-11-console-chat-align`（台账 #1282；任务书 = 本档 §2；设计 = `docs/server/design/webui/WEBUI.md` §2.10 ∥ §1 ∥ §2.2 ∥ §5 ∥ §6 ∥ §7 KD-SV-101）。
+**终态**：**clean**（我侧无未修项；父侧三项另列于「随正移交」——非 stalled）。
+
+### 5.1 改动面（10 件——逐件实读）
+
+| 件 | 改 | 实读（设计 §5 拟值） |
+|---|---|---|
+| `thincoder-server/src/webui/static.mjs` | 双根：`staticRoots()` 根表（前缀序 `/rc/` 先于 `/`）＋ `resolveStaticTarget()`（逐根同走 `resolveStaticPath` 穿越裁决；`/rc/**` 未命中不回落本根）＋ `DEFAULT_RENDER_CORE_DIR`（装载期 `createRequire` 包名解析——缺包 fail-loud）；旧公开面（`DEFAULT_PUBLIC_DIR`/`contentTypeFor`/`resolveStaticPath`/`createStaticSite().root`）零改 | 78 ⇒ **114**（拟 ≈110） |
+| `thincoder-server/public/views-chat.mjs` | 核件消费接线：`md`/`mdInline`（注入点单点 `paintMarkdown`）∥ `renderToolCard`/`finishToolCard`/`renderToolHistory` + `isToolFailure` ∥ `createStreamRenderer`（`markToken` + 回合尾 `flush`）∥ `applyPin`/`createPinWatch` ∥ `setStrings`（装配期 + 语言切换重挂重注册）；自持渲染件去除（`toolRow`/`toolArgsIndex`/`chat-msg tool`/`chat-tool-arrow`）；状态行改并 `modal.mjs` 助手 | 399 ⇒ **421**（拟 ≈430） |
+| `thincoder-server/public/style.css` | 核件发射类族样式（tool-call 族 ∥ `code-block`/`code-lang` ∥ `tk-*` ∥ md 块级产物）；自持行类去净（`.chat-msg.tool`/`.chat-tool-arrow`）；零新 `:root` 变量 ∥ 零新悬停规则 ∥ `:root` 块外零色字面量 ∥ font-size 全 `var(--fs)` ∥ font-weight 400 ∥ 内距 ∈ `--sp-*`（逐条机检在案） | 267 ⇒ **296**（拟 ≈310） |
+| `thincoder-server/public/i18n-zh-core.mjs`（新） | 核件词面 5 键（键 = 核件原名；值逐字同 VSC locales） | 拟 ≈24 ⇒ 实读 **14** |
+| `thincoder-server/public/i18n-en-core.mjs`（新） | 同上（en 族） | 拟 ≈24 ⇒ 实读 **14** |
+| `thincoder-server/public/i18n-{zh,en}.mjs` | 门面 +1 部件（`...ZH_CORE`/`...EN_CORE`）——导出名/取件面零改 | 各 14 ⇒ **15** |
+| `thincoder-server/package.json` | `"@thincoder/render-core": "file:../thincoder-render-core"` ∥ `prepublishOnly` 链行 `--import ./thincoder-server/test/rc-resolve.mjs` 预载 ∥ 链件 51 ⇒ **52** | +1 行 ∥ 链行内改 |
+| `thincoder-server/test/rc-resolve.mjs`（新） | `/rc/**` 解析钩子（`createRequire` 包名解析 + `registerHooks`——沿桌面先例；非用例档、不入链、不入 `files`） | 拟新增 ⇒ **25** |
+| `docs/batches/2026-10-11-console-chat-align.test.mjs`（新） | 批内件 7 腿（供给双根 ∥ 文本面单源 ∥ 工具卡三件+失败判据 ∥ 流式 ∥ 滚动 ∥ 核件词面 ∥ 档面/闭合/残留） | **451** |
+
+**环境面（非档）**：`thincoder-server/node_modules/@thincoder/render-core` junction（= 设计「`npm install` 落 node_modules 链接」的等价落法——`node_modules/` 在 `.gitignore`；仓内解析面因此可达）。
+**实读回填**：本条实读列为准（设计 §5 三处拟值偏差：`style.css` −14 ∥ 两 i18n core 各 −10 ∥ `static.mjs` +4）——回填 = 收口轮（纯数值，零语义）。
+
+### 5.2 决策透明表（自决项——父侧异议 ⇒ 单行可改）
+
+| # | 事实 | 处置 | 依据/代价 |
+|---|---|---|---|
+| D1 | 服务端 tool 结果失败时 summary 为**纯人话**（无 `Error:` 头），而核 `isToolFailure` 按文本判失败（`thincoder-render-core/lib.mjs:116`）⇒ 不映射则失败卡恒绿 | 页面 `resultText()`：`ok === false ∧ 判据不命中 ⇒ 文本立 Error: 头`（核件红 + 自展开的唯一入口） | 判据仍单源（`isToolFailure` + 服务端 `ok` 位）；核件零改/后端零触两约束下无替代；live 与回读两径同用 ⇒ 原文零丢 |
+| D2 | 回读径走核 `renderToolHistory`（设计点名），该件状态位**恒绿 `tool.done`**（`flow/tool-card.mjs:162`）——失败卡重读后无红标 | 照设计用该件；失败文本仍携 `Error:` 头（零丢失）；差异上记录面（本条 + 交付报告） | 设计对齐集③=回读 `renderToolHistory`；页后改核 DOM = 覆写核件语义（更差）。**待裁**：与 ECS 走查第 6 条「同形」措辞相抵（见 5.5-8） |
+| D3 | 回读改核件后 `toolArgsIndex`（旧自持工具行的参数索引）零消费者 | 删除（随自持渲染件同退） | 死码纪律；连带：既有件 `-admin-agent-chat-ui` 腿① 该断言随之失效（父侧随正） |
+| D4 | md 产物进气泡的两处呈现残影：`<p>` 包 `<pre>` 被解析器隐式闭合 ⇒ 空段隙；全档 `th/td` nowrap 在气泡内导致横溢 | `style.css` 补 `.chat-msg p:empty { display: none }` ∥ `.chat-msg th, .chat-msg td { white-space: normal }` | 呈现面补丁（零新变量/零新悬停；沿 VSC `.content th/td` 口径） |
+
+### 5.3 跑读数
+
+- **批内件**：`node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-11-console-chat-align.test.mjs`（cwd = 仓根）⇒ **7/7 绿**（含行为腿：user/assistant `innerHTML` **逐字等于核 `mdInline`/`md` 产物**；失败卡 `错误 (Nms)` + `#f14c4c` + 自展开 + `Error:` 体；上滚不夺位/回底恢复；`end` ⇒ 重读置换；语言切换核件词面重注册）。
+- **全链**（52 件）⇒ 478 例 / **41 红**（`.thincoder/tmp/reg-all.log`）——41 红逐条归因 = 档目计数 16 腿 ∥ 门禁件数 6 腿 ∥ i18n 键数/部件 5 腿 ∥ import 扫描面 6 腿 ∥ 既有件 `-admin-agent-chat-ui` 8 腿；**无一例为实现偏差**（顾问评审独立复核同判）。
+- 仓套件未跑（父侧收口轮 = 唯一跑点）；`node --check` 全档绿。
+
+### 5.4 审计与代码评审轮次
+
+| 轮 | 面 | 结论 | 处置 |
+|---|---|---|---|
+| 1 | 勘察偏差审计（explore，只读） | 无 PARTIAL / 无静默简化 / 无设计漂移 / 无越清单改动；唯一发现 = 本条未落（现已补）+ 观察 1 条（气泡内表格横滚） | 观察项 = 已以 `th/td` 换行收口（D4） |
+| 2 | 内部顾问代码评审（advisor code，1 轮，changes-required） | 🟡×3：① 随正清单**缺两条既有链件腿**（`-server-gateway-webui-deploy` 依赖集断言 ∥ `-server-i18n` 零裸说明符禁令——本批 `file:` 声明与 `/rc/**` 取件必触红，而 R58③ 未登记）② 四枚退役键（`admin.chat.tool{Call,Result,Calling,Failed}`）表侧存废（`public/**` 零消费实核在案）③ 走查第 6 条「同形」措辞 vs 回读恒绿；🔵×4：数值漂移 ∥ §5/§6 ∥ 第二根全域可达（设计已受）∥ `showNote` 重复 | **自修**：🔵4（`showNote` 并入 `modal.mjs` 助手）+ 批内件 ⑦ 补四键档面零消费断言；**父侧**：🟡①②③ 见 5.5；未跑二轮（剩余项全落父侧写权面，我无可修面） |
+
+### 5.5 随正移交（父侧——41 红逐条）
+
+1. **档目断言件**（16 腿红：`-console-completeness-2` ⑥ ∥ `-console-list-style` ⑥ ∥ `-console-modals` ⑤ ∥ `-console-provider-redo-runtime` ⑦ ∥ `-console-providers` ⑧ ∥ `-models-config` ⑨ ∥ `-me-keys-redo-ui` ⑤ ∥ `-provider-model-metadata` ⑥ ∥ `-quota-v2-member-models` ⑫ ∥ `-runner-admin-console-ui` ⑧ ∥ `-admin-agent-chat-ui` ⑩ ∥ `-sandbox-docker-admin-ui` ⑤ ∥ `-sandbox-image-quick-pull` ⑥（集合快照）∥ `-sandbox-image-sources-ui` ⑤ ∥ `-sandbox-pull-by-source` ⑥（集合快照）∥ `-server-gateway-webui-deploy` 前端自洽）——`37 ∥ 38` ⇒ **`39 ∥ 40`**。
+2. **门禁清单件数**（6 腿：`-console-list-style` ⑦ ∥ `-console-layout` 腿G ∥ `-me-usage-charts` 腿D ∥ `-quota-per-model` ⑦ ∥ `-quota-v2-member-models` ⑧ ∥ `-server-auto-update` 部署件结构）——`51` ⇒ **`52`**。
+3. **i18n 键数/指纹/部件**（5 腿：`-server-public-structure` ① 指纹（592 ⇒ 597）与 ② 部件并集（`PARTS` 未含 `core` ⇒ 差 `tool.*` 五键）∥ `-server-small-fixes` 腿A（592 ∥ 597）∥ `-runner-admin-console-ui` ⑦（键数终值）∥ `-admin-agent-chat-ui` ⑧（键数终值））。
+4. **【未登记 · 顾问评审 🟡1】两条腿**（不在 R58③ 登记面）：`-server-gateway-webui-deploy` 依赖集腿（`:319` `assert.deepEqual(pkg.dependencies ?? {}, { "@thincoder/core": "^0.10.4" }`——收正为「in-repo 包两形（`@thincoder/core` 钉版本 ∥ `@thincoder/render-core` `file:`），零第三方不变」）∥ `-server-i18n` 零裸说明符腿（`:182` `if (!spec.startsWith(".")) assert.fail(`——白名单加 `/rc/` 同源绝对径，保留「零裸包名」语义）。**收口前须登记并落**（否则全链不得绿）。
+5. **类名闭合域随正**（`-console-list-style` ⑤ ∥ `-console-layout` 附加 canon 腿）——本批新增类清单（逐枚 ⊆ 核件发射类）：`tool-call` ∥ `tool-call-header` ∥ `tool-call-icon` ∥ `tool-call-name` ∥ `tool-call-args` ∥ `tool-call-status` ∥ `tool-call-summary` ∥ `tool-call-body` ∥ `code-block` ∥ `code-lang` ∥ `tk-comment` ∥ `tk-keyword` ∥ `tk-string` ∥ `tk-number` ∥ `tk-type` ∥ `open`（态类）。
+6. **`-admin-agent-chat-ui`（8 腿红——父侧件）**：①（`toolArgsIndex` 删，D3）∥ ④（四形断言随核件卡改形 + 桩 DOM 需 `innerHTML` 语义）∥ ⑥（stub 需 rAF（`requestAnimationFrame` 桩）——核 `createStreamRenderer` 帧纪律）∥ ⑦（同上）∥ ⑧（键数终值）∥ ⑩（档目 + 类名闭合）∥ ⑪（键闭腿 × 四死键，**待裁**）∥ ⑫（stub rAF 同因）。
+7. **部署链四件套**（Dockerfile ∥ `TEST-ENV-ECS.md` ∥ `README.md` 两处 ∥ 仓根 `.dockerignore`）——设计已登记为父侧笔面，非本批实装面。
+8. **【上抛·待裁】两条**（父侧/设计侧一句话可定）：① 四枚退役键存废（顾问评审建议**删键**——沿「死键零残留」三批先例；`public/**` 零消费实核在案；若裁保留 ⇒ 须明写理由并收窄 ⑪ 腿）② 批档 §2.4 走查第 6 条「历史重读与流式同形」措辞（失败卡重读恒绿/折叠 ⇒ 字面判不过；建议收窄为「文本/结构与流式同形，失败卡状态位以核历史卡现行形呈现」）。
+
+### 5.6 验收判据对照（设计 §2.10 对齐集）
+
+① markdown = 核 `md`/`mdInline`（注入点单点；批内件逐字比产物）✅ ∥ ② 码面 = 随 `md()`（核 `highlight`；`.code-block`/`.code-lang`/`tk-*` 样式在册）✅ ∥ ③ 工具卡 = 核三件 + `isToolFailure`（live 建卡/结算 + 回读历史卡；失败红/展开见 D1）✅ ∥ ④ 流式 = `createStreamRenderer`（增量画件 `paintLiveMd` 经核重渲器消费；delta 支零 `md(`/`innerHTML`）✅ ∥ ⑤ 滚动 = `applyPin`/`createPinWatch`（24px 判据单源；上滚不夺位/回底恢复/`end` 重读照旧）✅ ∥ ⑥–⑪ 不做项 = 取件面白名单六枚、零 `../node_modules`、零核件拷贝副本（批内件机检）✅ ∥ 壳面归属 = 气泡/notice/会话条/输入区自持 + 核类族样式控制台补 ✅ ∥ i18n = 5 键逐字等 VSC locales + 装订/重注册 ✅ ∥ 转义 = 页面零自拼 HTML 串（`innerHTML` 写口恰 1 处）✅。
+
+### 5.7 fix 轮——四退役键删除（收口前最后一笔；eng-coder；2026-10-11）
+
+**任务书** = 本档 §2.7-1 裁决（四退役键 = 删——沿「死键零残留」先例；§5.5-8① 待裁转裁，落 = 本次执行轮）∥ 父侧 spawn 口径（「只删四键（zh/en 同拍）；使按终态预落的链上断言自绿」）。删因 = 自持工具行退役、核件接管 ⇒ 四键零消费者。
+
+**改动面（恰两件——各 −4 行，零其它改动；git diff 实核）**：
+
+| 件 | 改动（file:line） | 实读 |
+|---|---|---|
+| `thincoder-server/public/i18n-zh-admin.mjs` | 原 `:161-164` 四行键项删净（调用 ∥ 结果 ∥ 调用中…… ∥ 失败） | −4 行；`admin.chat.*` 27 键 |
+| `thincoder-server/public/i18n-en-admin.mjs` | 原 `:165-168` 四行键项删净（Call ∥ Result ∥ Calling… ∥ Failed） | −4 行；`admin.chat.*` 27 键 |
+
+四键紧邻无挂注释；两档头注零计数 ⇒ 无「未随正」面（审计同判）。
+
+**跑读数（逐条——cwd = `thincoder/`）**：
+
+- ① `node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-11-admin-agent-chat-ui.test.mjs` ⇒ **12/12 绿**（⑧ 腿「四退役键删净 ∥ 键数终值 596 ∥ 601」= 原唯一红 ⇒ 转绿）。
+- ② `node --test docs/batches/2026-10-08-server-public-structure.test.mjs` ⇒ **6/6 绿**（① 键集指纹 ∥ 键数 596 ∥ 601；② 十二部件互斥/并集）。
+- ③ 自核：两档内四键字面量 = **零命中**；门面直读 = **zh 596 ∥ en 601**（枚举核对 zh 56+58+154+175+148+5 ∥ en 56+59+158+175+148+5——与 §2.7-5 终值同拍）。
+
+**决策透明表（自决项——父侧异议 ⇒ 单行可改）**：
+
+| # | 事实 | 处置 | 依据/代价 |
+|---|---|---|---|
+| D1 | 两档头注载「五部件展开合体」，而门面已六部件（`i18n-zh.mjs:14` 六件展开——core 部件 = 先轮所增） | 不修；列报父侧（doc-hygiene pass） | 本笔射程 = 「只删四键」；该句非本笔所falsify；顾问评审同判「pre-existing」 |
+| D2 | `-admin-agent-chat-ui.test.mjs:43` 注释「31 `admin.chat.*`」与其 `:522`「27 admin.chat + 1 nav + 1 audit」互抵（退役后族值 = 27） | 不修；列报父侧 | spawn 口径「不动测试件」；注释非断言、零功能影响 |
+
+**审计与代码评审（本笔——轮次与终态）**：
+
+| 轮 | 面 | 结论 | 处置 |
+|---|---|---|---|
+| 1 | 勘察偏差审计（explore，只读，1 轮） | 四类偏差零发现（删净属实；零越清单） | 观察 1 条（`WEBUI.md:144` 陈旧）⇒ 列报父侧 |
+| 2 | 内部顾问代码评审（advisor code，1 轮） | **pass**——零 🔴 ∥ 零 must-fix 🟡；🔵×3（头注「五部件」∥ 测试件注释漂移 ∥ 指纹锚只读面不可重算——输入已枚举核实） | 三条全非阻塞；按「不扩面」处置（D1/D2）；余列报 |
+
+**终态 = clean**（本笔无未修项）。**遗列报（父侧裁量——非本笔射程）**：① `docs/server/design/webui/WEBUI.md:144` 登记行「零退役；`admin.chat.*` 31 键留 admin 部件（不迁）」与 §2.7-1 相抵（设计面——随正 ∥ 明标时点快照）∥ ② `-admin-agent-chat-ui.test.mjs:43` 注释「31」陈旧 ∥ ③ 两档头注「五部件」陈旧（六部件已成）。
+
 ## §6 验证与收口（父代理）

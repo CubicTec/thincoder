@@ -179,6 +179,7 @@ test("④ 静态面：t 字面量 ⊆ 表键 ∥ nav labelKey 面 ∥ import 图
       const match = line.match(/["']([^"']+)["']\s*;?\s*$/)
       assert.ok(match, `${name} import 行无法解析：${line}`)
       const spec = match[1]
+      if (spec.startsWith("/rc/")) continue // 同源第二根（核件取件——console-chat-align 批起；非 public/ 相对面）
       if (!spec.startsWith(".")) assert.fail(`${name} 出现裸说明符：${spec}`)
       const target = resolve(PUBLIC_DIR, spec)
       assert.ok(existsSync(target), `${name} import 目标缺档：${spec}`)

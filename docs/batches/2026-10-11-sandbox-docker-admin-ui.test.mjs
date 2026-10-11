@@ -238,7 +238,7 @@ test("① 容器表六钮 ∥ 详情窗：信息段逐值 ∥ 挂载表 ∥ 端�
 test("② 日志窗：`pre` 码面 + tail 选择 + 刷新 ∥ 截断标记 ∥ 空态 ∥ 失败窗内就地", async () => {
   try {
     const routes = {
-      "GET /api/admin/sandbox/runners/1/containers/c1/logs?tail=200": () => ({ logs: "hello stdout\nwarn stderr\n", truncated: false, tail: 200 }),
+      "GET /api/admin/sandbox/runners/1/containers/c1/logs?tail=200": () => ({ logs: "2026-10-11T15:30:00.123456789Z hello stdout\n2026-10-11T15:30:01.5Z warn stderr\n", truncated: false, tail: 200 }),
       "GET /api/admin/sandbox/runners/1/containers/c1/logs?tail=500": () => ({ logs: "big\n", truncated: true, tail: 500 }),
       "GET /api/audit?type=sandbox_event&limit=200": () => ({
         events: [
@@ -254,12 +254,15 @@ test("② 日志窗：`pre` 码面 + tail 选择 + 刷新 ∥ 截断标记 ∥ �
     const dialog = modal()
     assert.ok(dialog !== null, "日志窗开启")
     await tick()
-    // 操作记录块（该容器审计行——容器 id 全等过滤 ∥ 倒序 ∥ kind 人话；他人容器行排除）
-    const ops = fFindAll(dialog, (node) => node.tag === "li").map((node) => node.textContent)
-    assert.deepEqual(ops, [`ts:1791732342896 · ${ZH["audit.sandboxKind.container_stop"]}`, `ts:1791725139915 · ${ZH["audit.sandboxKind.container_create"]}`], "操作记录（过滤 + 倒序 + 人话）")
+    // 单时间线（操作与输出并流——时间升序；他人容器行排除）
     const pre = fFind(dialog, (node) => node.tag === "pre")
     assert.ok(pre.className.split(" ").includes("snippet") && pre.className.split(" ").includes("pre-scroll"), `码面块（.snippet + 纵滚）：${pre.className}`)
-    assert.equal(pre.textContent, "hello stdout\nwarn stderr\n", "日志文本（服务端已解复用）")
+    assert.equal(pre.textContent, [
+      `ts:1791725139915  [${ZH["admin.sandbox.logsOps"]}] ${ZH["audit.sandboxKind.container_create"]}`,
+      `ts:1791732342896  [${ZH["admin.sandbox.logsOps"]}] ${ZH["audit.sandboxKind.container_stop"]}`,
+      `ts:${Date.parse("2026-10-11T15:30:00.123Z")}  hello stdout`,
+      `ts:${Date.parse("2026-10-11T15:30:01.5Z")}  warn stderr`,
+    ].join("\n"), "单时间线（操作与输出并流——时间升序）")
     assert.deepEqual(calls.filter(([, path]) => path.includes("/logs")).map(([, path]) => path), ["/api/admin/sandbox/runners/1/containers/c1/logs?tail=200"], "缺省 tail=200")
     // tail 选择 + 刷新（截断 ⇒ 标记行在场）
     const select = fFind(dialog, (node) => node.tag === "select")

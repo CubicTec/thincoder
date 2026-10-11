@@ -212,10 +212,9 @@ function openKillModal(ctx, { runner, container, invalidate }) {
   })
 }
 
-/** 日志窗（**操作记录**（该容器 `sandbox_event` 审计行——容器身上发生过什么）+ `pre` 码面块 + tail 选择 + 刷新；截断 ⇒ 标记行）。 */
+/** 日志窗（**单条时间线**：容器操作（`sandbox_event` 审计行——容器身上发生过什么）与输出行按引擎时标并流，时间升序；走查轮 2026-10-11 用户指令「日志和操作记录不该分开」）。 */
 export function openContainerLogsModal(ctx, { runner, container }) {
   const { h } = ctx
-  const opsBox = h("div", {}, h("p", { class: "hint", text: t("common.loading") }))
   const pre = h("pre", { class: "snippet pre-scroll" })
   const marker = h("p", { class: "hint", hidden: true, text: t("admin.sandbox.logsTruncated") })
   const note = h("p", { class: "hint error", hidden: true })
@@ -224,23 +223,53 @@ export function openContainerLogsModal(ctx, { runner, container }) {
   const refresh = h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logsRefresh"), onclick: () => { load(); loadOps() } })
   openModal({
     title: t("admin.sandbox.logsTitle", { name: container.name }),
-    body: h("div", {},
-      h("p", { class: "hint", text: t("admin.sandbox.logsOps") }), opsBox,
-      h("div", { class: "row-form" }, field(h, "admin.sandbox.logsTail", tailSelect), refresh), pre, marker, note),
+    body: h("div", {}, h("div", { class: "row-form" }, field(h, "admin.sandbox.logsTail", tailSelect), refresh), pre, marker, note),
   })
   tailSelect.addEventListener("change", () => load())
 
-  /** 读一次操作记录（该容器审计行——倒序；容器 id 全等过滤）。 */
+  /** 输出行（`timestamps=1` 行首时标剥出；无可解析时标 ⇒ 原位呈，不带时间列）。 */
+  function parseLogLines(text) {
+    return String(text).split("\n").filter((raw) => raw !== "").map((raw) => {
+      const match = /^(\S+)\s(.*)$/.exec(raw)
+      const stamp = match !== null && /^\d{4}-\d{2}-\d{2}T/.test(match[1]) ? match[1].replace(/(\.\d{3})\d+/, "$1") : null
+      const ts = stamp === null ? Number.NaN : Date.parse(stamp)
+      return Number.isNaN(ts) ? { ts: null, text: raw } : { ts, text: match[2] }
+    })
+  }
+
+  let outputLines = []
+  let opRows = []
+  /** 并流渲染（时间升序；操作行带 `[操作]` 标；全空 ⇒ 空态文案）。 */
+  function renderStream() {
+    const rows = []
+    let i = 0
+    let j = 0
+    while (i < opRows.length || j < outputLines.length) {
+      const op = opRows[i]
+      const line = outputLines[j]
+      const takeOp = op !== undefined && (line === undefined || (line.ts !== null && op.ts <= line.ts))
+      if (takeOp) {
+        rows.push(`${ctx.fmtTs(op.ts)}  [${t("admin.sandbox.logsOps")}] ${op.text}`)
+        i += 1
+      } else {
+        rows.push(line.ts === null ? line.text : `${ctx.fmtTs(line.ts)}  ${line.text}`)
+        j += 1
+      }
+    }
+    pre.textContent = rows.length === 0 ? t("admin.sandbox.logsEmpty") : rows.join("\n")
+  }
+
+  /** 读一次操作记录（该容器审计行——接口倒序 ⇒ 本地升序；容器 id 全等过滤）。 */
   async function loadOps() {
     try {
       const data = await ctx.api(`/api/audit?type=sandbox_event&limit=200`)
       const events = (data?.events ?? []).filter((event) => event?.detail?.containerId === container.id)
-      opsBox.replaceChildren(events.length === 0
-        ? h("p", { class: "hint", text: t("admin.sandbox.logsOpsEmpty") })
-        : h("ul", {}, ...events.map((event) => h("li", { text: `${ctx.fmtTs(event.ts)} · ${sandboxKindLabel(event.detail?.kind)}` }))))
+      opRows = events.map((event) => ({ ts: Number(event.ts), text: sandboxKindLabel(event.detail?.kind) })).sort((a, b) => a.ts - b.ts)
     } catch (error) {
-      opsBox.replaceChildren(h("p", { class: "hint error", text: mapError(error) }))
+      opRows = []
+      if (note.hidden) showNote(note, mapError(error)) // 不覆主读错（日志失败优先呈）
     }
+    renderStream()
   }
 
   /** 读一次日志（tail = 选择值——服务端界 1–2000）。 */
@@ -250,10 +279,11 @@ export function openContainerLogsModal(ctx, { runner, container }) {
     pre.textContent = t("common.loading")
     try {
       const data = await ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers/${container.id}/logs?tail=${tailSelect.value}`)
-      const text = typeof data?.logs === "string" ? data.logs : ""
-      pre.textContent = text === "" ? t("admin.sandbox.logsEmpty") : text
+      outputLines = parseLogLines(typeof data?.logs === "string" ? data.logs : "")
+      renderStream()
       marker.hidden = data?.truncated !== true
     } catch (error) {
+      outputLines = []
       pre.textContent = ""
       showNote(note, mapError(error))
     }

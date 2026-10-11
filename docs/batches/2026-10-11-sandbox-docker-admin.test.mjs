@@ -257,7 +257,7 @@ test("N53 详情/日志/用量三读：详情逐值（挂载/端口/环境/命�
     assert.deepEqual([logs.status, logs.json.tail, logs.json.truncated], [200, 200, false], "日志尾块（缺省 tail=200）")
     assert.equal(logs.json.logs, "hello stdout\nwarn stderr\n", "解复用后文本（零帧头残渣）")
     const logsCall = engine.calls.find((item) => item.path.endsWith("/logs"))
-    assert.equal(logsCall.query, "?stdout=1&stderr=1&tail=200", "引擎读数参数逐值（tail 有界）")
+    assert.equal(logsCall.query, "?stdout=1&stderr=1&timestamps=1&tail=200", "引擎读数参数逐值（tail 有界 + 行时标单源——走查轮 2026-10-11）")
 
     const usage = await api(app, "GET", `/api/admin/sandbox/runners/${runner.id}/containers/c-1/stats`)
     assert.equal(usage.status, 200)

@@ -116,7 +116,7 @@
   - **详情**（`GET …/containers/:containerId`）：`GET <base>/v<ver>/containers/{id}/json`（读类 3s）⇒ `{ container: { id, name, image, state, status, created, startedAt, finishedAt, restartCount, command: { entrypoint, cmd }, env, mounts, ports } }`
     ——挂载 = `Mounts[]`（type/source/destination/mode/rw）∥ 端口 = `NetworkSettings.Ports` 展开（`{ port, hostIp, hostPort }`——未映射 ⇒ hostIp/hostPort = null）∥ 环境 = `Config.Env` 原文 ∥ 命令 = `Config.Entrypoint`/`Config.Cmd`；**零审计**（读动作）。
   - **日志**（`GET …/containers/:containerId/logs?tail=N`）：`GET <base>/v<ver>/containers/{id}/logs?stdout=1&stderr=1&tail=<N>`（读类 3s）⇒ `{ logs, truncated, tail }`
-    ——**tail 有界**（缺省 200，范围 1–2000；越界/非数 ⇒ 400）；**非 TTY 容器 = 8 字节帧头多路复用流 ⇒ 解复用后输出**（判据 = 首字节 ∈ {0,1,2} ∧ 1–3 字节零 ∧ 帧长 ≤ 余量；判不出 ⇒ 原样透传——TTY 容器）；文本截断 256 KiB（截断 ⇒ `truncated: true` + 尾句标记）；**零审计**（读动作）。
+    ——**tail 有界**（缺省 200，范围 1–2000；越界/非数 ⇒ 400）；**非 TTY 容器 = 8 字节帧头多路复用流 ⇒ 解复用后输出**（判据 = 首字节 ∈ {0,1,2} ∧ 1–3 字节零 ∧ 帧长 ≤ 余量；判不出 ⇒ 原样透传——TTY 容器）；**引擎读数携 `timestamps=1`**（行首时标——日志窗与操作记录并流的排序单源；走查轮 2026-10-11）；文本截断 256 KiB（截断 ⇒ `truncated: true` + 尾句标记）；**零审计**（读动作）。
   - **重启**（`POST …/containers/:containerId/restart`）：`POST <base>/v<ver>/containers/{id}/restart`（动作类 15s；`t` 不带 = 引擎缺省 10s）——204 ⇒ 200；404 ⇒ 404 `not_found`；余 ⇒ 502；审计 `container_restart`。
   - **强杀**（`POST …/containers/:containerId/kill`）：`POST <base>/v<ver>/containers/{id}/kill`（SIGKILL——信号可选不做）——204 ⇒ 200；**引擎 409（未运行）⇒ 400 人话**（「容器未在运行——无需强杀」——≠ stop 的 304 幂等语义）；404 ⇒ 404；余 ⇒ 502；审计 `container_kill`。
   - **用量**（`GET …/containers/:containerId/stats`）：并发两读——`GET <base>/v<ver>/containers/{id}/stats?stream=false&one-shot=true`（CPU/内存）+ `GET …/containers/{id}/json?size=1`（磁盘）⇒ `{ usage: { cpuPercent, memUsed, memLimit, diskRw, diskRoot, sampledAt } }`

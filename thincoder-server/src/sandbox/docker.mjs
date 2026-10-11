@@ -272,9 +272,9 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
       request("DELETE", `${prefix()}/containers/${encodeURIComponent(id)}${force ? "?force=1" : ""}`, { timeoutMs: actionTimeoutMs }),
     /** 容器详情（读时读 inspect——KD-SV-92；`size=1` 兼用量面磁盘读数）。 */
     containerDetail: (id, { size = false } = {}) => request("GET", `${prefix()}/containers/${encodeURIComponent(id)}/json${size ? "?size=1" : ""}`),
-    /** 容器日志（读类；KD-SV-93）：解复用（判不出 ⇒ 原样）⇒ 文本截断 256 KiB（截断 ⇒ 尾句标记）。 */
+    /** 容器日志（读类；KD-SV-93）：携 `timestamps=1`（行首引擎时标——日志窗单时间线与操作记录并流的排序单源）⇒ 解复用（判不出 ⇒ 原样）⇒ 文本截断 256 KiB（截断 ⇒ 尾句标记）。 */
     containerLogs: async (id, tail = LOG_TAIL_DEFAULT) => {
-      const { buffer } = await requestBytes("GET", `${prefix()}/containers/${encodeURIComponent(id)}/logs?stdout=1&stderr=1&tail=${encodeURIComponent(tail)}`)
+      const { buffer } = await requestBytes("GET", `${prefix()}/containers/${encodeURIComponent(id)}/logs?stdout=1&stderr=1&timestamps=1&tail=${encodeURIComponent(tail)}`)
       const payload = demuxDockerLogs(buffer) ?? buffer // 判不出 ⇒ 原样透传（TTY 容器）
       const text = payload.toString("utf8")
       if (Buffer.byteLength(text, "utf8") <= LOG_TEXT_LIMIT_BYTES) return { logs: text, truncated: false }

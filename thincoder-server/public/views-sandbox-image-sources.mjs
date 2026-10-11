@@ -14,8 +14,8 @@ import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
 import { hubLibraryName, openPullImageModal, sourceHost } from "./views-sandbox-images.mjs"
 
-/** 面型文案键（`kind` ⇒ 表键；枚举外 ⇒ 标准 v2 兜底——服务端只出两值）。 */
-const SOURCE_KIND_KEYS = { hub: "admin.sandbox.sourceKindHub", v2: "admin.sandbox.sourceKindV2" }
+/** 面型文案键（`kind` ⇒ 表键；枚举外 ⇒ 标准 v2 兜底——服务端三值：hub ∥ hub-mirror ∥ v2）。 */
+const SOURCE_KIND_KEYS = { hub: "admin.sandbox.sourceKindHub", "hub-mirror": "admin.sandbox.sourceKindHubMirror", v2: "admin.sandbox.sourceKindV2" }
 
 /** 读绪五分类文案键（服务端 `error.kind` ⇒ 表键；枚举外 ⇒ 原文兜底）。 */
 const READ_KIND_KEYS = {
@@ -104,7 +104,7 @@ function openSourceModal(ctx, { source = null, reload }) {
   let presets = []
   const presetSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.sourcePresetPh") }))
   const nameInput = h("input", { placeholder: t("admin.sandbox.namePh") })
-  const addressInput = h("input", { placeholder: t("admin.sandbox.addressPh") })
+  const addressInput = h("input", { placeholder: t("admin.sandbox.sourceAddressPh") })
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: editing ? t("common.save") : t("admin.sandbox.sourceAdd") })
   const modal = openModal({

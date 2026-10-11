@@ -653,6 +653,8 @@ test("纯函数面：形校验 ∥ kind 派生 ∥ 挑战解析 ∥ 有界 n ∥
   assert.equal(SOURCES.sourceKind("https://hub.docker.com:443"), "hub", "带端口归并后仍 hub")
   assert.equal(SOURCES.sourceKind("https://ghcr.io"), "v2", "非别名 ⇒ v2")
   assert.equal(SOURCES.sourceKind("https://registry.cn-hangzhou.aliyuncs.com"), "v2", "ACR ⇒ v2")
+  assert.equal(SOURCES.sourceKind("https://docker.m.daocloud.io"), "hub-mirror", "Hub 镜像（DaoCloud）⇒ hub-mirror（走查轮 2026-10-11 甲）")
+  assert.equal(SOURCES.sourceKind("https://docker.1ms.run"), "hub-mirror", "Hub 镜像（1ms.run）⇒ hub-mirror")
 
   assert.deepEqual(CLIENT.parseBearerChallenge('Bearer realm="https://auth.example/token",service="reg",scope="repository:x:pull"'), { realm: "https://auth.example/token", service: "reg", scope: "repository:x:pull" }, "带引号挑战")
   assert.deepEqual(CLIENT.parseBearerChallenge("Bearer realm=https://auth.example/token"), { realm: "https://auth.example/token", service: null, scope: null }, "无引号 realm")

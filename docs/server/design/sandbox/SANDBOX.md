@@ -142,7 +142,7 @@
   **拉取行为零改**（仍由节点引擎拉取——源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态——见下「拉取认源」块） ∥ 零自动选源）；端点七条 = `gateway/API.md` §2.5（镜像源七行）；存储 = `image_sources`（v15——`store/STORE.md` §2 v15 段）；
   UI 落点 = `webui/SANDBOX.md` §2.1①；审计 kind 单源 = `accounts/ACCOUNTS.md` §2.1（型面计数零增——十三型不变）。
   **源清单（四端点 + 预选一）**：
-  - **列**（`GET /api/admin/sandbox/image-sources`）：`{ sources: [{ id, name, address, kind, createdAt }] }`；`kind` = **按地址派生**（`hub` ⇔ 主机 ∈ Hub 四别名（`docker.io` ∥ `index.docker.io` ∥ `registry-1.docker.io` ∥ `hub.docker.com`）；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）；零审计（读动作）。
+  - **列**（`GET /api/admin/sandbox/image-sources`）：`{ sources: [{ id, name, address, kind, createdAt }] }`；`kind` = **按地址派生**（`hub` ⇔ 主机 ∈ Hub 四别名（`docker.io` ∥ `index.docker.io` ∥ `registry-1.docker.io` ∥ `hub.docker.com`）∥ `hub-mirror` ⇔ 主机 ∈ Hub 镜像两主机（`docker.m.daocloud.io` ∥ `docker.1ms.run`——走查轮 2026-10-11 甲）；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）；零审计（读动作）。
   - **增**（`POST …/image-sources`）∥ **改**（`PATCH …/image-sources/:id`）∥ **删**（`DELETE …/image-sources/:id`）：增/改入参 `{ name, address }`（改 = 键级——出现键 = 应用）；
     ⇒ 200 `{ source }`（删 ⇒ `{ ok: true }`）+ 审计行（`image_source_add` ∥ `image_source_update` ∥ `image_source_delete`——detail 键集 = `accounts/ACCOUNTS.md` §2.1）；不存在 ⇒ 404；形非法/撞名/撞址 ⇒ 400（库零变）。
   - **形**：`name` = 非空（≤40 字符；首尾空白 trim）；`address` = `[http://|https://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；**含路径/查询/空白 ⇒ 400**）；**名与址各自唯一**（撞 ⇒ 400 人话）。
@@ -188,10 +188,10 @@
   **控件形**（`views-sandbox-images.mjs` 拉取窗）：引用输入之上加一行选单（`select`——首项「不选（原样）」+ 各源一项，项文 = 源名）；「目标节点：{name}」行**恒显**且同窗共存（手动径 = 所展开节点；预填径 = 选单所选节点——P1 已裁采纳，用户 2026-10-11 18:33）；源清单**读时读**（开窗读一次 `GET /api/admin/sandbox/image-sources`——零新端点 ∥ 零缓存）。
   **组装逐值**（选定源 ⇒ 对输入原文组装**一次**——纯函数 `pullRefWithSource`（`views-sandbox-images.mjs` 新导出——窗侧；与 `pullRefFor` 值规则同口径）；引用形 = `<主机>/<仓库路径>:<标签>`）：
   - **主机** = 源地址**去 scheme**（`http://`/`https://` 剥除——引擎引用不带 scheme）；**含端口逐值**保留（如 `10.0.0.5:5000`）；**Hub 面（`kind=hub`）主机统一 `docker.io`**（登记址四别名任一 ⇒ 同此形——沿 ④ 预填同口径）。
-  - **仓库路径** = 原文剥除**已带主机段**（判据 = **引擎同口径**：首段含 `.` ∥ 含 `:` ∥ = `localhost`——所见与引擎判读一致）；Hub 面剥后**裸名**（无 `/`）⇒ 补 `library/`；v2 面原样（不自作补——自建/云源命名空间由用户负责）。
+  - **仓库路径** = 原文剥除**已带主机段**（判据 = **引擎同口径**：首段含 `.` ∥ 含 `:` ∥ = `localhost`——所见与引擎判读一致）；Hub 面剥后**裸名**（无 `/`）⇒ 补 `library/`；**Hub 镜像面（`kind=hub-mirror`）同规则**（裸名 ⇒ 补 `library/`——走查轮 2026-10-11 甲；daocloud 裸名 blob 404 ∥ `library/` 10.7s 拉成）；余 v2 面原样（不自作补——自建/云源命名空间由用户负责）。
   - **标签** = 原文有 ⇒ 逐值保留（判据与既有拉取形同口径：**末个 `/` 之后的末个 `:` 起**——含端口源的首段 `:` 属主机段、不误读）；**无 ⇒ 补 `:latest` 显式**（不依赖服务端缺省径——零隐藏）；**覆盖语义** = 已带主机引用的原主机名剥换为源主机（「经由源」直义）；不选 ⇒ 引用原样（现态）。
   - **不动作与透传**：原文含 `@`（digest 形）⇒ 原样透传（不组装——服务端既有 400 径）；原文为空 ⇒ 不动作（提交仍被既有必填门拦）。
-    **实读注**（2026-10-11 本机）：`docker.1ms.run` 裸名与 `library/` 两形清单皆 200（匿名 token 换取后）——Hub 镜像类 v2 源裸名原样可用。
+    **实读注**（2026-10-11 本机）：`docker.1ms.run` 裸名与 `library/` 两形清单皆 200（匿名 token 换取后）——**该结论只对 1ms.run 成立**（daocloud 后续走查实读：裸名 manifest 过、blob 段挂 ⇒ 见 `hub-mirror` 规则；原句「Hub 镜像类 v2 源裸名原样可用」已收窄）。
   **所见即所拉 ∥ 提交零改**：组装 = **输入框内可见改写**（可再改——沿「预填非锁定——确认值 = 所见值」口径）；「不选」= 不组装（**单向**——不逆变换输入；要换回 ⇒ 手改或再选源后改）；**提交恒发输入框当刻文本（组装后可见值）** ⇒ 走既有拉取径（`POST …/runners/:id/images/pull` 体 `{image}`——**零改 ∥ 零新端点 ∥ 拉取径单源**；组装 ≠ 可达保证——节点侧引擎照拉，失败两形如实报——KD-SV-94）。
   **组装施加点**（两处——皆可见施加、一次性、幂等；「选定态」= 选单选中某源——显式选定 ∥ 记忆预选）：① 选单变更（选定某源）；② 选定态在场时的输入完成（失焦）；**开窗与提交两处不改写**（预选态非自动改写 ∥ 提交恒发当刻文本；回车提交径先组装后提交——不隐写）。
   **与 ④ 一键拉取的关系（认源态）**：一键拉取调用点**携源**（`source` 参——`{ id, name, address, kind }`）⇒ 预填在场的窗内选单**呈现该源**（认源态——预填逐值与组装同口径）；改选另一源 ⇒ 剥换主机重组装（换镜像源重拉 = 一次改选）；改选「不选」⇒ 输入不动（原样提交）；源已被删 ∥ id 不在清单 ⇒ 选单留不选态（预填照常——拉取不阻断）。
@@ -393,7 +393,7 @@
 | E40 | 错误 | 控制面 | 拉取：引擎非 2xx ∥ 200 流内 `error` 两形 ∥ 节点不可达 | 400（携引擎原文）∥ 400（携引擎原文）∥ 502 `upstream_error` |
 | E41 | 错误 | 控制面 | `user` ∥ 无会话 打新八端点 | 403 ∥ 401 |
 | E42 | 错误 | 控制面 | 详情/日志/用量/重启/强杀节点不可达（假 Docker 关停——五端点逐打） | 502 `upstream_error`（逐句人话 + 引擎原文） |
-| N57 | 正常 | 控制面 | 镜像源增/改/删/列 + 预选（本面零外呼） | 行落库逐值（`address` = 归一形——缺 scheme 补 `https://`）；`kind` 派生逐值（Hub 四别名 ⇒ `hub` ∥ 余 ⇒ `v2`）；审计三行（detail 键集 = `accounts/ACCOUNTS.md` §2.1）；预选端点回六条（名/址两字段） |
+| N57 | 正常 | 控制面 | 镜像源增/改/删/列 + 预选（本面零外呼） | 行落库逐值（`address` = 归一形——缺 scheme 补 `https://`）；`kind` 派生逐值（Hub 四别名 ⇒ `hub` ∥ Hub 镜像两主机 ⇒ `hub-mirror` ∥ 余 ⇒ `v2`——走查轮 2026-10-11 甲）；审计三行（detail 键集 = `accounts/ACCOUNTS.md` §2.1）；预选端点回七条（名/址两字段） |
 | N58 | 正常 | 控制面 | v2 源两读（假 registry：`/v2/_catalog` 200 + `Link` 下一页 ∥ `/v2/<name>/tags/list` 200） | `repositories` ∥ `tags` 逐值；`truncated` = `Link` 在场 ⇒ true；`n` 缺省（引擎入参逐值：`?n=200`）；**零审计**（读动作） |
 | N59 | 正常 | 控制面 | Hub 源两读（假 hub：`hub.docker.com/v2/repositories/library/nginx/tags` 200 + `next`） | 裸名 `nginx` ⇒ 路径 `library/nginx` 逐值；`page_size` = `min(n,100)`；目录读 ⇒ `{ ok: false, error: { kind: `unsupported` } }`（人话） |
 | B52 | 边界 | 控制面 | 匿名 Bearer 挑战（假 registry：401 + `WWW-Authenticate: Bearer realm=…` ⇒ 假 token 端点 200） | 逐跳命中（挑战解析 ⇒ 换 token ⇒ 携 `Bearer` 复读 ⇒ 200）；scope 逐值（目录 = `registry:catalog:*` ∥ 标签 = `repository:<name>:pull`）；**零凭据**（请求头零 Basic） |
@@ -562,3 +562,4 @@
 - 2026-10-11（**轻通道轮收口评审 #249 发现收正 · 主 agent 直接执行 · 可 revert**——评审 1🔴+2🟡+2🔵；本档两处：① §11 镜像源族行「预选六条在册」⇒ **七条**（发现 4——计数漂移）；② §3 建容器条增**服务镜像面注**（自带启动命令不生效——发现 2 采纳落档）。同拍他档 = `gateway/API.md` §2.5 建容器行体形补 `Cmd`（发现 1——🔴 收正）。
 - 2026-10-11（**console-tabs-component 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §3 轮次 1 之 4（父侧裁定——补指针行）：§14 增 KD-SV-102/103 指针行（console-tabs-component 批——公共标签页组件 ∥ 沙盒页分标签；页级 KD 登记 = `webui/TABS.md` §1——本域不复制）。**零新语义；产品码零触。**
 - 2026-10-11（**sandbox-volumes 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-sandbox-volumes.md` §3 轮次 1 之 2/3/4/5/7（父侧受理）：#2 §16 R59② 翻「已办」（console-tabs-component 批设计定稿轮随卷区落位同步——以 `webui/SANDBOX.md` 现句为准）∥ #3 §12 补卷区表读败腿 B65（§11 卷族行用例链随正 B63–B65）∥ #4 §16 R59 增 ④ 需求档回笔（AC-36 ⑥ 分期链 +1 步 ∥ §5 不做清单「卷删除」改指 §11——写法/计数 = 主 agent 定）∥ #5 §15 卷族余项行增「卷族↔工作区卷关系」登记（待工作区面定形——零新机制）∥ #7 §13 `container-routes.mjs` 读数收正（现读 313——轻通道笔 3 落地后）。**零新语义（评审发现直接导出项）；产品码零触。**
+- 2026-10-11（**控制台实走修复轮（走查轮）· 主 agent 直接执行 · 可 revert**——承 `docs/batches/2026-10-11-console-walkthrough-round.md` §1 · 台账 #1299；用户 2026-10-11 23:55 裁「甲」）：`kind` 派生增第三值 **`hub-mirror`**（Hub 镜像两主机——`MIRROR_HOSTS`；预设两条自带）；拉取组装逐值随正（`hub-mirror` 裸名同补 `library/`）；§3 实读注收窄（1ms.run 结论不外推——daocloud 实走实证）；N57 行随正（三值 + 预选七条——陈值「六条」收正）。**产品码触 = `image-sources.mjs`（派生）+ 客户端组装两档 + i18n 两表。**

@@ -229,7 +229,7 @@ test("① 源卡：表四列逐值 ∥ 面型文案派生 ∥ 操作三钮 ∥ �
     assert.deepEqual(options.map((option) => option.value), ["", ...fPresets().map((preset) => preset.address)], "预选六条（+ 占位项）")
     assert.deepEqual(options.slice(1).map((option) => option.textContent), fPresets().map((preset) => preset.name), "预选项名逐值")
     const inputs = fFindAll(addDialog, (node) => node.tag === "input")
-    assert.deepEqual(inputs.map((input) => input.attrs.placeholder), [ZH["admin.sandbox.namePh"], ZH["admin.sandbox.addressPh"]], "名/址两输入")
+    assert.deepEqual(inputs.map((input) => input.attrs.placeholder), [ZH["admin.sandbox.namePh"], ZH["admin.sandbox.sourceAddressPh"]], "名/址两输入")
     select.value = "https://quay.io"
     await select.fire("change")
     assert.deepEqual([inputs[0].value, inputs[1].value], ["Quay", "https://quay.io"], "选中 ⇒ 回填名 + 址（可再改）")
@@ -459,7 +459,7 @@ test("④ 本地镜像表过滤：名/标签匹配 ∥ 无匹配空态 ∥ 零�
     assert.deepEqual([...zhBase].filter((key) => !enBase.has(key)), [], "仅 zh 键（自称名族除外）")
     assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键")
     // 纯函数面（面型/读绪文案）
-    assert.deepEqual([SOURCE_VIEW.sourceKindLabel("hub"), SOURCE_VIEW.sourceKindLabel("v2"), SOURCE_VIEW.sourceKindLabel("bogus")], [ZH["admin.sandbox.sourceKindHub"], ZH["admin.sandbox.sourceKindV2"], ZH["admin.sandbox.sourceKindV2"]], "面型文案（枚举外兜底 v2）")
+    assert.deepEqual([SOURCE_VIEW.sourceKindLabel("hub"), SOURCE_VIEW.sourceKindLabel("hub-mirror"), SOURCE_VIEW.sourceKindLabel("v2"), SOURCE_VIEW.sourceKindLabel("bogus")], [ZH["admin.sandbox.sourceKindHub"], ZH["admin.sandbox.sourceKindHubMirror"], ZH["admin.sandbox.sourceKindV2"], ZH["admin.sandbox.sourceKindV2"]], "面型文案（枚举外兜底 v2）")
     for (const [kind, key] of [["timeout", "readKindTimeout"], ["unreachable", "readKindUnreachable"], ["auth_required", "readKindAuthRequired"], ["unsupported", "readKindUnsupported"], ["bad_response", "readKindBadResponse"]]) {
       assert.equal(SOURCE_VIEW.readKindLabel(kind), ZH[`admin.sandbox.${key}`], `读绪文案：${kind}`)
     }

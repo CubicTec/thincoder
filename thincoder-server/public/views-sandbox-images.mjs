@@ -25,7 +25,7 @@ export function sourceHost(source) {
 /** Hub 面裸名补 `library/`（无 `/` ⇒ 补——引擎命名空间惯例）；两径同规则。 */
 export function hubLibraryName(source, name) {
   const text = String(name)
-  return source?.kind === "hub" && !text.includes("/") ? `library/${text}` : text
+  return (source?.kind === "hub" || source?.kind === "hub-mirror") && !text.includes("/") ? `library/${text}` : text
 }
 
 /** 组装引用（纯函数——批内件直测；与 `pullRefFor` 值规则同口径）：选定源 ⇒ 对输入原文组装一次（`<主机>/<路径>[:<标签>]`）。

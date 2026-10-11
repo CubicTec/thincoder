@@ -14,6 +14,7 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.address": "Address",
   "admin.sandbox.namePh": "Name (≤ 40 chars)",
   "admin.sandbox.addressPh": "http:\/\/10.0.0.6:2375", // 「\/」转义 = 评估值同设计文案；原文本受 `public/**` 零外部引用扫描限（沿 `proxy.uriPh` 先例）
+  "admin.sandbox.sourceAddressPh": "https:\/\/docker.1ms.run", // 建源窗址例（走查轮 2026-10-11——原共用 addressPh = 建节点例误用）
   "admin.sandbox.checking": "Running the connectivity self-check…",
   "admin.sandbox.added": "Node added: {name}",
   "admin.sandbox.loadFailed": "Failed to load",
@@ -156,6 +157,7 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.sourceKind": "Face",
   "admin.sandbox.sourceKindHub": "Hub face",
   "admin.sandbox.sourceKindV2": "Standard v2",
+  "admin.sandbox.sourceKindHubMirror": "Hub mirror",
   "admin.sandbox.sourceEdit": "Edit",
   "admin.sandbox.sourceCatalogBtn": "Catalog",
   "admin.sandbox.sourcesEmpty": "No image sources",

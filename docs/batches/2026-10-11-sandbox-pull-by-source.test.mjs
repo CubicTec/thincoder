@@ -253,6 +253,8 @@ test("① 组装逐值纯函数（pullRefWithSource）：B59 v2 四支 ∥ B60 H
   assert.equal(PULL.pullRefFor(hub, { repo: "nginx", tag: null }), IMAGES.pullRefWithSource("nginx", hub), "两径同值（Hub 裸名）")
   assert.equal(IMAGES.sourceHost(v2), "10.0.0.5:5000", "源主机导出（去 scheme，v2）")
   assert.equal(IMAGES.hubLibraryName(hub, "nginx"), "library/nginx", "补名导出（Hub 裸名）")
+  assert.equal(IMAGES.hubLibraryName({ kind: "hub-mirror", address: "https://docker.m.daocloud.io" }, "alpine"), "library/alpine", "补名导出（Hub 镜像裸名——走查轮 2026-10-11 甲）")
+  assert.equal(IMAGES.hubLibraryName({ kind: "hub-mirror", address: "https://docker.m.daocloud.io" }, "ns/repo"), "ns/repo", "含 / ⇒ 原样（Hub 镜像）")
 })
 
 // ── ② 可用态两分支（B62 无源 ∥ E47 读败）───────────────────────────────────────

@@ -4,7 +4,7 @@
  * 语义（§3——KD-SV-96）：源清单 = **server 全局**（非按节点——目录读取发生在 server）；持久 = `image_sources`（v15——`store/STORE.md` §2 v15 段）；
  * **拉取消费面 = 显式选源**（源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态） ∥ 零自动选源）；**名 ∥ 址各自唯一**（库两 UNIQUE + 本档人话报错）；
  * 址归一 = `[http(s)://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；含路径/查询/空白/凭据 ⇒ 拒）；`kind` = **按地址派生**
- * （`hub` ⇔ 主机 ∈ Hub 四别名；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）。
+ * （`hub` ⇔ 主机 ∈ Hub 四别名 ∥ `hub-mirror` ⇔ 主机 ∈ Hub 镜像两主机；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移；`hub-mirror` 消费面 = 拉取组装裸名补 `library/`——走查轮 2026-10-11 甲）。
  * 预选七条 = server 端静态表（沿 provider 预设先例 KD-SV-17——随设计轮维护，非用户可改面）。
  * 端点面 = `image-source-routes.mjs`；本档纯函数面（形校验 ∥ kind 派生 ∥ 预选表）= 批内件直测。
  */
@@ -15,6 +15,10 @@ export const SOURCE_NAME_MAX = 40
 
 /** Hub 四别名（§3：`kind = hub` 判据——主机命中即 Hub 面；与登记址端口无关）。 */
 export const HUB_HOSTS = Object.freeze(["docker.io", "index.docker.io", "registry-1.docker.io", "hub.docker.com"])
+
+/** Hub 镜像主机（`kind = hub-mirror` 判据——走查轮 2026-10-11 甲）：预设两条「Docker Hub 镜像（…）」之址；裸名补 `library/` 与 Hub 面同规则。
+ *  实走实证（`.5`→`.6`，user walkthrough）：daocloud 裸名 `alpine` manifest 过、blob 段挂（`unexpected status`）；`library/alpine` 同源 10.7s 拉成——原注「1ms.run 裸名原样可用」只对 1ms.run 成立（源差）。 */
+export const MIRROR_HOSTS = Object.freeze(["docker.m.daocloud.io", "docker.1ms.run"])
 
 /** 常用源预选七条（§3——用户 09:19 口径：Docker Hub ∥ ghcr.io ∥ quay.io ∥ 阿里云 ACR ∥ 华为云 SWR ∥ Docker Hub 镜像（DaoCloud）∥ Docker Hub 镜像（1ms.run））。
  *  第 7 条（1ms.run）= 2026-10-11 实走补——用户实走发现实测可用源缺表；实拉实证 `.6` 200·10.4s·119MB（七条——见批档 `docs/batches/2026-10-11-light-walkthrough-fixes.md`）。
@@ -57,10 +61,12 @@ export function normalizeSourceAddress(raw) {
   return `${url.protocol}//${url.host}`
 }
 
-/** `kind` 派生（§3：Hub 四别名 ⇒ `hub`；余 ⇒ `v2`——派生不入库，单源 = `address`）。 */
+/** `kind` 派生（§3：Hub 四别名 ⇒ `hub` ∥ Hub 镜像两主机 ⇒ `hub-mirror`；余 ⇒ `v2`——派生不入库，单源 = `address`）。 */
 export function sourceKind(address) {
   try {
-    return HUB_HOSTS.includes(new URL(String(address)).hostname) ? "hub" : "v2"
+    const host = new URL(String(address)).hostname
+    if (HUB_HOSTS.includes(host)) return "hub"
+    return MIRROR_HOSTS.includes(host) ? "hub-mirror" : "v2"
   } catch {
     return "v2" // 形已在写面拦；存量/异常值按标准 v2 面如实读（远端裁决）
   }

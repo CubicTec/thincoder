@@ -13,15 +13,17 @@
   `views-system.mjs`（系统——版本/更新 ∥ 接入卡 ∥ 向量服务 ∥ 服务健康；`webui/SYSTEM.md` §2.1）∥ `views-system-config.mjs`（系统配置卡——含代理设置 ∥ 连通测试块；`webui/SYSTEM.md` §2.1 ∥ §2.2）∥
   `views-models.mjs`（已落盘——服务模型：列表 + 详情/配置弹窗——`webui/ADMIN.md` §2.1③）∥ `model-specs-snapshot.mjs`（已落盘——展示元数据快照——`webui/ADMIN.md` §2.1③）∥
   `views-sandbox.mjs`（已落盘——运行面批；沙盒页：运行面卡 + 容器区/镜像区（本批续扩；余五面随沙盒余面批）——`webui/SANDBOX.md` §2.1①）∥ `views-sandbox-containers.mjs` ∥ `views-sandbox-images.mjs`（sandbox-docker-admin 批新建——容器面/镜像族件——`webui/SANDBOX.md` §2.1①）
-  ∥ `views-sandbox-egress.mjs`（拟新增——沙盒出站规则/待批/审计件——`webui/SANDBOX.md` §2.1）∥ `views-me-sandbox.mjs`（拟新增——我的·工作区——`webui/SANDBOX.md` §2.2）∥ `views-chat.mjs`（admin-agent-chat 批新建——管理面对话页——`webui/CHAT.md` §2.1）；公共组件 = `modal.mjs`（已落盘——弹窗 + 窗体助手四件（本批迁入）——`webui/ADMIN.md` §2.1①）。
+  ∥ `views-sandbox-volumes.mjs`（拟新增——卷族件——sandbox-volumes 批——`webui/SANDBOX.md` §2.1①）∥ `views-sandbox-egress.mjs`（拟新增——沙盒出站规则/待批/审计件——`webui/SANDBOX.md` §2.1）∥ `views-me-sandbox.mjs`（拟新增——我的·工作区——`webui/SANDBOX.md` §2.2）∥ `views-chat.mjs`（admin-agent-chat 批新建——管理面对话页——`webui/CHAT.md` §2.1）；
+  公共组件 = `modal.mjs`（已落盘——弹窗 + 窗体助手四件（sandbox-docker-admin 批迁入）——`webui/ADMIN.md` §2.1①）∥ `tabs.mjs`（拟新增——公共标签页组件——`webui/TABS.md` §2.1）。
 - 原 `views.mjs`（三视图单档）**退役拆档**——缘由 = 新页（provider ∥ IA 重排）叠加后单档将破 300 软线；拆分 = 按页归档（每档 ≤300）。
 - 直发 = `thincoder-server/src/webui/static.mjs`（已落盘）：`node:http` 读发 `public/`——mime 表（`.mjs` ⇒ text/javascript） ∥ 防路径穿越 ∥ `Cache-Control: no-cache`（内部工具——改版即见）。
 - 路由：`GET /` ⇒ `index.html`；其余静态档按名直发（同源）；`/v1/*` 与 `/api/*` 优先于静态面（分派 = `gateway/API.md` §1）。
 - 形态钉死（用户 2026-10-06 08:09）：**零框架 ∥ 零构建 ∥ 零外部资源**（无 CDN ∥ 无外链字体——内网自洽）；先例 = 本仓 webview（`thincoder-vscode/webview/`）的 vanilla 口径。
-- JS = **二十八 ⇒ 三十二档**（历批叠加：沙盒运行面批 +1 ∥ admin-agent-chat 批 +1 ∥ sandbox-docker-admin 批 +2）**⇒ 三十四档**（i18n 拆分（#1270）+2）**⇒ 三十五档**（sandbox-image-sources 批 +1——现盘面）**⇒ 三十七档**（console-chat-align 批 +2——i18n core 两部件；沙盒余面批 ⇒ **三十九档**）
+- JS = **二十八 ⇒ 三十二档**（历批叠加：沙盒运行面批 +1 ∥ admin-agent-chat 批 +1 ∥ sandbox-docker-admin 批 +2）**⇒ 三十四档**（i18n 拆分（#1270）+2）**⇒ 三十五档**（sandbox-image-sources 批 +1）**⇒ 三十七档**（console-chat-align 批 +2——i18n core 两部件——现盘面）**⇒ 三十八档**（本批（console-tabs-component）+1——`tabs.mjs`（拟新增））
+  **⇒ 三十九档**（本批（sandbox-volumes）+1——`views-sandbox-volumes.mjs`（拟新增）；沙盒余面批 ⇒ **四十一档**）
   `modal.mjs` ∥ `i18n.mjs` ∥ `i18n-zh.mjs` ∥ `i18n-en.mjs` ∥ i18n 部件**十二档**（`i18n-{zh,en}-{shell,me,admin,sandbox,system,core}.mjs`——`webui/I18N.md` §2.1 拆表） ∥ `model-specs-snapshot.mjs`）+ `style.css`；行标 = ≤500 软线；逐档实读与叠加链 = §5。
 - **档目链（UI 代码档 ∥ 含 favicon 全目录——AC 行口径）单源 = 本节**：i18n 批后 12 ∥ 13 ⇒ 二轮批后 15 ∥ 16 ⇒ 弹窗批后 17 ∥ 18 ⇒ provider 重做批后 18 ∥ 19 ⇒ 配置面批后 19 ∥ 20 ⇒ 结构轮后 29 ∥ 30 ⇒ 配置控制台批后 30 ∥ 31 ⇒ 代理页批后 31 ∥ 32 ⇒ 代理回迁批后 30 ∥ 31 ⇒
-  沙盒运行面批后 31 ∥ 32 ⇒ admin-agent-chat 批后 32 ∥ 33 ⇒ sandbox-docker-admin 批后 34 ∥ 35 ⇒ i18n 拆分（#1270）后 36 ∥ 37 ⇒ sandbox-image-sources 批后 37 ∥ 38（现盘面）⇒ console-chat-align 批后 39 ∥ 40 ⇒ 沙盒余面批后 **41 ∥ 42**（§6 各 AC 行链 2026-10-11 域内拆分时收口至此——链不复述）。
+  沙盒运行面批后 31 ∥ 32 ⇒ admin-agent-chat 批后 32 ∥ 33 ⇒ sandbox-docker-admin 批后 34 ∥ 35 ⇒ i18n 拆分（#1270）后 36 ∥ 37 ⇒ console-chat-align 批后 39 ∥ 40 ⇒ console-tabs-component 批后 40 ∥ 41（现盘面）⇒ 本批（sandbox-volumes）后 **41 ∥ 42** ⇒ 沙盒余面批后 **43 ∥ 44**（§6 各 AC 行链 2026-10-11 域内拆分时收口至此——链不复述）。
 - **静态面双根（console-chat-align 批）**：`public/`（本根）+ **`/rc/*` → `@thincoder/render-core` 包目录**（渲染核供给根——`static.mjs` 前缀表；两先例同形 = 桌面 `app://` 双根 ∥ VSC 相对径）。
 - 此后实读（2026-10-08 结构轮后）：`views-admin.mjs`（实读 331） ∥ `views-providers-modals.mjs`（实读 367）；`app.mjs` 与 i18n 双表两越线条目已由本结构轮拆解（读 = §5）。
 
@@ -43,11 +45,11 @@
 | 管理 | `#/admin/usage` | 全队用量：过滤 + 趋势/聚合/排行 + 导出（`webui/READINGS.md` §2.1②） | admin |
 | 管理 | `#/admin/audit` | 审计事件列表（过滤：类型/成员/时段——`webui/READINGS.md` §2.1④） | admin |
 | 管理 | `#/admin/system` | 版本与更新 ∥ 成员接入 ∥ 向量服务 ∥ 服务配置（含代理设置 ∥ 连通测试块——`webui/SYSTEM.md` §2.2） ∥ 服务健康（数据 = `/api/system` ∥ `webui/SYSTEM.md` §2.1） | admin |
-| 管理 | `#/admin/sandbox` | 沙盒：运行面 ∥ 工作区 ∥ 出站规则 ∥ 待批队列 ∥ 资源与 TTL ∥ 审计可查（六面——`webui/SANDBOX.md` §2.1；非壳页） | admin |
+| 管理 | `#/admin/sandbox` | 沙盒：运行面 ∥ 工作区 ∥ 出站规则 ∥ 待批队列 ∥ 资源与 TTL ∥ 审计可查（六面——`webui/SANDBOX.md` §2.1；非壳页；**本批分标签**：运行面 ∥ 镜像与镜像源 两标签（子段形——`webui/TABS.md` §2.2）） | admin |
 
 - 登录 = `#/login`（无侧栏——登录卡）；`#/` ∥ 未知 ⇒ 角色默认页（admin ⇒ `#/admin/overview` ∥ user ⇒ `#/me/keys`）。
 - **旧链迁移**：`#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒ `#/admin/overview` ∥ `#/admin/proxy` ⇒ `#/admin/system`（重定向——旧书签可达；`#/admin/members` 等页路径仍直达）。
-- **路由解析 = `nav.mjs` 纯函数**（`resolveRoute(path, role)`——无 DOM、批内件直测）：别名重定向 ∥ 角色默认 ∥ admin 面 `denied`（页面级「无权限」块——判据仍在服务端，§3）。
+- **路由解析 = `nav.mjs` 纯函数**（`resolveRoute(path, role)`——无 DOM、批内件直测）：别名重定向 ∥ 角色默认 ∥ admin 面 `denied`（页面级「无权限」块——判据仍在服务端，§3）。**子段容许（console-tabs-component 批——2026-10-11 裁定「进」）**：`#/<组>/<页>/<子段>`——裁末段试前缀（在册 ⇒ 记 `sub` 供页面消费 ∥ 未在册 ⇒ 照旧默认页回落）；既有 hash 形行为逐字不变（`webui/TABS.md` §2.2）。
 - **导航渲染**：侧栏 = 品牌 ∥ 组标题 + 项（活动态高亮）∥ 底部（meta 槽（健康状态灯（`webui/READINGS.md` §2.1⑤） ∥ 版本——`/api/system`，全角色） + 语言切换器 + 退出登录）；admin 组仅 admin 渲染。
 - **窄屏**：`≤760px` 侧栏降级为顶条（单条媒体查询——非移动端适配承诺）。
 - **文案面（多语言——`requirements/PROJECT.md` §2:13）**：全量文案单源 = 文案表（`i18n-zh.mjs` ∥ `i18n-en.mjs`）；`nav.mjs` 数据持 `labelKey`（键——非字面量）；页档/助手经 `t()` 取值——机制全文 = `webui/I18N.md` §2.1。
@@ -105,6 +107,10 @@
 ### 2.10 管理面对话（`#/admin/chat`——admin-agent-chat 批建档 ∥ console-chat-align 批对齐渲染面；机制全文 = `agent/ADMIN-AGENT.md` §11）
 
 ⇒ 见 `webui/CHAT.md` §2.1（as-of 2026-10-11）。
+
+### 2.11 控制台公共标签页组件（功能点 39——console-tabs-component 批；机制全文 = `webui/TABS.md` §2.1）
+
+⇒ 见 `webui/TABS.md` §2.1（as-of 2026-10-11）。
 
 ## 3. 判权与安全
 
@@ -173,7 +179,7 @@
 |---|---|---|
 | 非功能 · 前端自洽 | `public/**` 零外部引用（无 `http(s)://` 外链 ∥ 无 CDN ∥ 无外链字体——扫描断言，扫描面 = 全量新档）；静态直发 mime 正确 ∥ 路径穿越拒；档目断言随正（口径 = UI 代码档 ∥ 含 favicon 全目录——单源 = `webui/WEBUI.md` §1；链不复述；`-webui-deploy` 件） | 批内件 |
 | AC-11（控制台 provider 面——判据全文 = `gateway/API.md` §5 AC-11 行） | ⇒ `webui/ADMIN.md` §4（as-of 2026-10-11） | —— |
-| AC-12（功能点 14——控制台 IA；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | `nav.mjs` 直测：组/项结构（我的 3 ⇒ **4**（沙盒余面批——`webui/SANDBOX.md` §2.2） ∥ 管理 6（二轮批后）⇒ **7**（弹窗批后——§2）⇒ **8**（代理页批——`webui/SYSTEM.md` §2.2）⇒ **7**（代理回迁批——`webui/SYSTEM.md` §2.2 回迁）⇒ **8**（沙盒运行面批——`webui/SANDBOX.md` §2.1①）⇒ **9**（admin-agent-chat 批——`webui/CHAT.md` §2.1） ∥ admin 组仅 admin） ∥ 重定向（`#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒ `#/admin/overview` ∥ `#/admin/proxy` ⇒ `#/admin/system`） ∥ 角色默认 ∥ admin 面 `denied`；静态档目随正（单源 = `webui/WEBUI.md` §1——链不复述）∥ 管理页拆分（成员/用量/总览/审计/服务模型各一页——单页堆叠消失） | 批内件 |
+| AC-12（功能点 14——控制台 IA；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | `nav.mjs` 直测：组/项结构（我的 3 ⇒ **4**（沙盒余面批——`webui/SANDBOX.md` §2.2） ∥ 管理 6（二轮批后）⇒ **7**（弹窗批后——§2）⇒ **8**（代理页批——`webui/SYSTEM.md` §2.2）⇒ **7**（代理回迁批——`webui/SYSTEM.md` §2.2 回迁）⇒ **8**（沙盒运行面批——`webui/SANDBOX.md` §2.1①）⇒ **9**（admin-agent-chat 批——`webui/CHAT.md` §2.1） ∥ admin 组仅 admin） ∥ 重定向（`#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒ `#/admin/overview` ∥ `#/admin/proxy` ⇒ `#/admin/system`） ∥ 角色默认 ∥ admin 面 `denied` ∥ 子段容许（console-tabs-component 批：`#/<组>/<页>/<子段>` 裁末段 + `sub` 回传——`webui/TABS.md` §2.2）；静态档目随正（单源 = `webui/WEBUI.md` §1——链不复述）∥ 管理页拆分（成员/用量/总览/审计/服务模型各一页——单页堆叠消失） | 批内件 |
 | AC-13③④（功能点 12——版本/更新可见 ∥ 成员接入卡） | ⇒ `webui/SYSTEM.md` §4（as-of 2026-10-11） | —— |
 | AC-14（功能点 13——控制台多语言） | ⇒ `webui/I18N.md` §4（as-of 2026-10-11） | —— |
 | AC-15（功能点 15——控制台可见面六面；三拆） | ⇒ ① = `webui/SYSTEM.md` §4（as-of 2026-10-11） ∥ ②–⑤ = `webui/READINGS.md` §4（同刻） ∥ ⑥ = `webui/ME.md` §4（同刻） | —— |
@@ -206,6 +212,8 @@
 | 管理面 agent 会话页（admin-agent-chat 批） | ⇒ `webui/CHAT.md` §4（as-of 2026-10-11） | —— |
 | 成员面（我的·工作区——AC-36 ⑧） | ⇒ `webui/SANDBOX.md` §4（as-of 2026-10-11） | —— |
 | 管理面 chat 对齐（console-chat-align 批——KD-SV-101） | ⇒ `webui/CHAT.md` §4（as-of 2026-10-11） | —— |
+| 控制台公共标签页组件（console-tabs-component 批——功能点 39 ∥ AC-39） | ⇒ `webui/TABS.md` §4（as-of 2026-10-11） | —— |
+| 卷族（sandbox-volumes 批——AC-40） | ⇒ `webui/SANDBOX.md` §4（as-of 2026-10-11） | —— |
 
 ## 7. 关键决策（本域）
 
@@ -222,6 +230,7 @@
 | KD-SV-54 | ⇒ `webui/ADMIN.md` §1（as-of 2026-10-11） | —— | —— |
 | KD-SV-60 | ⇒ `webui/SYSTEM.md` §1（as-of 2026-10-11） | —— | —— |
 | KD-SV-101 | ⇒ `webui/CHAT.md` §1（as-of 2026-10-11） | —— | —— |
+| KD-SV-102 ∥ KD-SV-103 | ⇒ `webui/TABS.md` §1（as-of 2026-10-11） | —— | —— |
 
 ## 8. 本域边界（不做的面）
 
@@ -247,6 +256,7 @@
 - 代理面不做面（2026-10-10 代理回迁批——KD-SV-60） ⇒ 见 `webui/SYSTEM.md` §5（as-of 2026-10-11）。
 
 - 管理面 chat 渲染面不做项（console-chat-align 批——理由逐项 = `webui/CHAT.md` §2.1 对齐集 ⑥–⑪） ⇒ 见 `webui/CHAT.md` §5（as-of 2026-10-11）。
+- 公共标签页组件批不做面（console-tabs-component 批） ⇒ 见 `webui/TABS.md` §5（as-of 2026-10-11）。
 
 ## 变更记录
 
@@ -351,3 +361,6 @@
 - 2026-10-11（**常用源预选表补第 7 条（实走修正 · 轻通道）· 主 agent 直接执行 · 机械 · 可 revert**——承轻通道轮 `docs/batches/2026-10-11-light-walkthrough-fixes.md` §1 pen1；用户 20:14 实走发现）：§2.10 增/改弹窗句 + §6 镜像源族行 预选下拉 六 ⇒ **七条**（+ `Docker Hub 镜像（1ms.run）`——`docker.1ms.run`）。同源随动 = `sandbox/SANDBOX.md` §3 ∥ `gateway/API.md` §2.5 ∥ 代码表 `SOURCE_PRESETS`。零新语义。
 - 2026-10-11（**console-chat-align 批 · §2.2 登记行收正 · 主 agent 直接执行 · 机械 · 可 revert**——实施轮上抛①导出）：`:144` 「零退役；`admin.chat.*` 31 键」⇒「**四键退役**（§2.7-1 裁决）；`admin.chat.*` **27 键**留 admin」（与 §2.7-1 裁决对齐）。零新语义。
 - 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：§2.1–§2.10 按面外拆八档（`webui/SANDBOX.md` ∥ `webui/CHAT.md` ∥ `webui/SYSTEM.md` ∥ `webui/READINGS.md` ∥ `webui/ME.md` ∥ `webui/ADMIN.md` ∥ `webui/STYLE.md` ∥ `webui/I18N.md`——逐字迁入，零语义）；§2/§5/§6/§7/§8 原位保位 stub（粒度 = 节 ∥ 文件行 ∥ AC 号 ∥ KD 号 ∥ 段）+ 文内 § 引用改指（跨档 `webui/新档` 带档名形）；§1 增档目链单源句（§5/§6/§7 行内链删——收口 §1）∥ §1 静态面清单句面随面档；§5 小计冻结为历史（各面自持面小计）；档头增面档导航；超宽行仅拆行（母行 `:144`/`:151`/`:587`/`:591`——拆后落各面档）。**产品码零触。**
+- 2026-10-11（**console-tabs-component 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §1 · 台账 #1286；用户 2026-10-11 21:05 原话；功能点 39 ∥ AC-39）：§1 静态面（公共组件句增 `tabs.mjs`（拟新增）；JS 链 37 ⇒ **38**（本批 +1——`tabs.mjs`）；档目链 39 ∥ 40（现盘面）⇒ **40 ∥ 41**（本批）⇒ 42 ∥ 43（余面批））；§2 沙盒页行增分标签句 + 路由解析句增子段容许（当轮呈用户）；**增 §2.11 stub**（公共标签页组件——⇒ `webui/TABS.md` §2.1）；§6 增本批 AC-39 行 + AC-12 行补子段容许腿；§7 增 KD-SV-102 ∥ KD-SV-103 指针行；§8 增本批不做面指针。同源随动 = `webui/TABS.md`（新档） ∥ `webui/SANDBOX.md` §1/§2.1①/§3/§4 ∥ `webui/STYLE.md` §2.1/§3。**产品码零触（设计轮）。**
+- 2026-10-11（**sandbox-volumes 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-sandbox-volumes.md` §1 · 台账 #1291；用户 2026-10-11 21:18 三件 + 21:22 裁「先按不考虑加挂的原方案开批」；需求 40 ∥ AC-40）：§1 静态面（+ `views-sandbox-volumes.mjs`（拟新增——卷族件）；JS 链 38 ⇒ **39**（本批 +1）；档目链 40 ∥ 41（现盘面）⇒ **41 ∥ 42**（本批）⇒ 43 ∥ 44（余面批））；§6 增本批行（AC-40 ⇒ `webui/SANDBOX.md` §4）。同源随动 = `webui/SANDBOX.md` §2.1①/§3/§4/§6 ∥ `sandbox/SANDBOX.md` §2/§3/§8①/§9/§11/§12/§13/§14/§15/§16 ∥ `gateway/API.md` §2.5 ∥ `accounts/ACCOUNTS.md` §2.1 ∥ `design/PROJECT.md` §2.1/§3/§4/§7。**产品码零触（设计轮）。**
+- 2026-10-11（**console-tabs-component 批 · 设计定稿轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §2 ∥ 用户 2026-10-11 21:24 裁定（四项全取）：§2 路由解析句子段容许收为定稿（裁定「进」——与 `webui/TABS.md` §2.2/§4 同拍）；§6 AC-12 行子段容许腿随正（批名式）；变更记录历史行形式收正（零语义）。**零新语义；产品码零触。**

@@ -193,4 +193,17 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.pullSource": "经由源",
   "admin.sandbox.pullSourceNone": "不选（原样）",
   "admin.sandbox.pullSourceHint": "选定后引用按该源组装（可再改）",
+
+  // ── 管理·沙盒·分标签（§2.8①——console-tabs-component 批） ──────────────────────────
+  "admin.sandbox.tabImages": "镜像与镜像源",
+  "admin.sandbox.imageNode": "节点",
+
+  // ── 管理·沙盒·卷族（§2.8①——sandbox-volumes 批） ─────────────────────────────────
+  "admin.sandbox.volumeFromNode": "节点已有卷（选 ⇒ 回填下方，可再改）",
+  "admin.sandbox.volumeNew": "新建卷（手输）",
+  "admin.sandbox.volumesTitle": "数据卷",
+  "admin.sandbox.volumesEmpty": "暂无数据卷",
+  "admin.sandbox.volumeDeleteTitle": "删除数据卷",
+  "admin.sandbox.volumeDeleteConfirm": "删除数据卷「{name}」？卷内数据会一并消失，且不可恢复。",
+  "admin.sandbox.volumeDeleted": "已删除数据卷：{name}",
 })

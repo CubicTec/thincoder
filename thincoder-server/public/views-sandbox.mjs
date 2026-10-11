@@ -1,15 +1,19 @@
 /**
- * views-sandbox.mjs — 管理·沙盒页（webui/WEBUI.md §2/§2.8①——`#/admin/sandbox`）：运行面卡（可用性提示 ∥ 节点表 ∥
- * 添加/删除节点弹窗 ∥ 容器区/镜像区（节点行展开——懒加载；两区件 = `views-sandbox-containers.mjs` ∥ `views-sandbox-images.mjs`，
- * sandbox-docker-admin 批外拆——§2.8①））+ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态
- * 「撤销凭据」钮；在途 3s 读时轮询、定终态停））+ 镜像源卡（sandbox-image-sources 批——全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；
- * 渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
- * 批内件直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
+ * views-sandbox.mjs — 管理·沙盒页（webui/WEBUI.md §2/§2.8①——`#/admin/sandbox`）：**两标签**（console-tabs-component 批——
+ * 「运行面」∥「镜像与镜像源」；公共件 = `tabs.mjs`；机制全文 = `webui/TABS.md` §2.2；子段形 `#/admin/sandbox/<tab>`）——
+ * 标签① = 可用性提示 ∥ 节点表（节点行展开 ⇒ 容器区 + 卷区——懒加载；件 = `views-sandbox-containers.mjs`（sandbox-docker-admin 批外拆）∥ `views-sandbox-volumes.mjs`（sandbox-volumes 批）
+ * ∥ 添加/删除节点弹窗 ∥ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态「撤销凭据」钮；在途 3s
+ * 读时轮询、定终态停））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
+ * 全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。
+ * 契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；
+ * 窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
+ * 批内件直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表 ∥ 子段 ∥ 两面板划分）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+import { createTabs } from "./tabs.mjs"
 import { deriveModels } from "./views-models.mjs"
-import { createContainerSection } from "./views-sandbox-containers.mjs"
+import { createContainerSection, createVolumeSection } from "./views-sandbox-containers.mjs"
 import { createImageSection } from "./views-sandbox-images.mjs"
 import { createImageSourceSection } from "./views-sandbox-image-sources.mjs"
 
@@ -61,36 +65,97 @@ function stepItem(h, entry) {
   return h("li", {}, typeof entry?.note === "string" && entry.note !== "" ? `${name} — ${entry.note}` : name, ...(lines.length === 0 ? [] : [h("ul", {}, ...lines.map((line) => h("li", { class: "hint", text: line })))]))
 }
 
-/** 管理·沙盒页（非壳页——卡多，沿看板页先例）。 */
-export async function renderSandbox(ctx, mount) {
+/** 管理·沙盒页（非壳页——卡多；console-tabs-component 批：两标签——`sub` = 地址栏子段（不认 ⇒ 首标签回落））。 */
+export async function renderSandbox(ctx, mount, sub = null) {
   const { h } = ctx
   const generation = ++pollGeneration
-  const expandedNodes = new Set() // 展开的节点 id（容器区/镜像区懒加载）
+  const expandedNodes = new Set() // 展开的节点 id（容器区懒加载）
   const expandedTasks = new Set() // 展开的装机任务 id
   const detailCache = new Map() // 任务 id ⇒ { step, steps }（步骤读数在详情面——列表携步骤无读数，§2.5）
   const containers = createContainerSection(ctx) // 容器区件（本批外拆——§2.8①）
-  const images = createImageSection(ctx) // 镜像区件（本批外拆——§2.8①）
-  const sources = createImageSourceSection(ctx, { onPulled: (runner) => { images.reset(runner); loadRunners() } }) // 镜像源卡件（全局面，非按节点）；一键拉取成 ⇒ 该节点镜像表重取（列表上新）
-  let runners = []
+  const images = createImageSection(ctx), volumes = createVolumeSection(ctx) // 镜像区件（本批外拆——§2.8①；console-tabs-component 批迁标签②）∥ 卷区件（sandbox-volumes 批——节点展开内、容器区之后）
+  let runners = [] // 节点清单（**页级单源——两面板共读**；读势 = `runnersPhase`）
   let runs = []
   let pollTimer = null
+  let runnersPhase = "loading" // loading ∥ ready ∥ failed（读势单源——面板建时按态渲）
+  let tasksPhase = "loading"
+  let imageNodeId = null // 标签②节点选单当刻值（缺省 ⇒ 首节点；换选 ⇒ 该节点镜像表重取）
+  const panels = { runners: false, images: false } // 面板建后标志（懒建——首激活建；未建 ⇒ 免渲）
+  const started = { runners: false, tasks: false } // 数据触发（首激活面板触发读取——webui/TABS.md §2.2 读时口径）
+
+  /** 离页/重渲即停的存活判据（挂载点被换 ⇒ 停机；桩环境（无 isConnected）⇒ 视为存活）。 */
+  const alive = () => generation === pollGeneration && mount.isConnected !== false
 
   mount.append(h("h2", { text: t("admin.sandbox.title") }))
   const alert = h("p", { class: "hint error", hidden: true })
   const listBox = h("div", { class: "table-slot" }, h("p", { class: "hint", text: t("common.loading") }))
   const taskBox = h("div", { class: "table-slot" }, h("p", { class: "hint", text: t("common.loading") }))
-  mount.append(h("section", { class: "card" }, h("h3", { text: t("admin.sandbox.runnersTitle") }),
+  const nodeSelect = h("select") // 标签②节点选单（全部注册节点——在线/离线皆列）
+  const imageBox = h("div", { class: "table-slot" }, h("p", { class: "hint", text: t("common.loading") }))
+  // 标签①运行面（卡壳保留——岔口㈡ 裁定；卡题去重：面题入标签 ⇒ h3 去；h4 装机任务保留）
+  const runnerPanel = h("section", { class: "card" },
     h("div", { class: "info-actions" },
       h("button", { type: "button", text: t("admin.sandbox.addRunner"), onclick: () => openAddRunnerModal(ctx, { reload: loadRunners }) }),
       h("button", { type: "button", class: "tiny", text: t("admin.sandbox.onboardingBtn"), onclick: () => openOnboardingModal(ctx, { reload: loadTasks }) })),
     alert,
     listBox,
     h("h4", { text: t("admin.sandbox.tasksTitle") }),
-    taskBox))
-  mount.append(sources.card) // 镜像源卡（sandbox-image-sources 批——§2.8①：全局面新卡）
+    taskBox)
+  // 标签②镜像与镜像源（镜像卡 h3 = imagesTitle——区题行已去重；镜像源卡随建随读）
+  const imagePanel = h("div", {},
+    h("section", { class: "card" }, h("h3", { text: t("admin.sandbox.imagesTitle") }), field(h, "admin.sandbox.imageNode", nodeSelect), imageBox))
+  nodeSelect.addEventListener("change", () => {
+    imageNodeId = nodeSelect.value
+    const runner = imageRunner()
+    if (runner !== null) images.reset(runner) // 换选 ⇒ 该节点镜像表重取（失缓存）
+    renderImages()
+  })
 
-  /** 离页/重渲即停的存活判据（挂载点被换 ⇒ 停机；桩环境（无 isConnected）⇒ 视为存活）。 */
-  const alive = () => generation === pollGeneration && mount.isConnected !== false
+  const tabs = createTabs(ctx, {
+    tabs: [
+      { id: "runners", labelKey: "admin.sandbox.runnersTitle", build: buildRunnerPanel },
+      { id: "images", labelKey: "admin.sandbox.tabImages", build: buildImagePanel },
+    ],
+    initial: sub,
+    onChange: (id) => { history.replaceState(null, "", `#/admin/sandbox/${id}`) }, // 地址栏径（不触发 hashchange——零重渲）
+  })
+  mount.append(tabs.root)
+
+  // ── 标签建（懒——首激活一次；数据随建读）──────────────────────────────────────
+
+  /** 标签①建：触发页级读取 + 现态渲（节点表 ∥ 装机任务）。 */
+  function buildRunnerPanel() {
+    panels.runners = true
+    startRunners()
+    startTasks()
+    renderNodes()
+    renderTasks()
+    return runnerPanel
+  }
+
+  /** 标签②建：镜像源卡随建（夹带读）+ 节点选单 ∥ 镜像区现态渲。 */
+  function buildImagePanel() {
+    panels.images = true
+    startRunners() // 节点清单 = 页级单源（先到者触发——只取一次）
+    imagePanel.append(createImageSourceSection(ctx, { onPulled: (runner) => { images.reset(runner); loadRunners() } }).card) // 镜像源卡（全局面，非按节点）；一键拉取成 ⇒ 该节点镜像表重取
+    renderNodeSelect()
+    renderImages()
+    return imagePanel
+  }
+
+  /** 节点清单读触发（首激活面板触发——两面板共用一次）。 */
+  function startRunners() {
+    if (started.runners) return
+    started.runners = true
+    loadRunners()
+  }
+
+  /** 装机任务读触发（标签①首激活）。 */
+  function startTasks() {
+    if (started.tasks) return
+    started.tasks = true
+    loadTasks()
+  }
 
   // ── 运行面（节点表 ∥ 可用性提示——读时探活，§2.5）────────────────────────────
 
@@ -98,18 +163,32 @@ export async function renderSandbox(ctx, mount) {
     try {
       const data = await ctx.api("/api/admin/sandbox/overview")
       runners = data?.runners ?? []
+      runnersPhase = "ready"
       // 不整页禁用：无节点 ∥ 全离线 ⇒ 提示条 + 原因（互延读：后端总态 ∪ 行态自推——行态即真相）
       const unavailable = data?.status === "unavailable" || runners.every((runner) => runner.online !== true)
       alert.hidden = !unavailable
       alert.textContent = unavailable ? t(runners.length === 0 ? "admin.sandbox.noNodes" : "admin.sandbox.allOffline") : ""
       renderNodes()
+      renderNodeSelect() // 标签②选单 = 节点清单同源（两面板共读）
+      renderImages()
     } catch (error) {
       ctx.fail(error)
-      listBox.replaceChildren(h("p", { class: "hint error", text: t("admin.sandbox.loadFailed") }))
+      runnersPhase = "failed"
+      renderNodes()
     }
   }
 
+  /** 节点表现态渲染（读势三态：loading ∥ failed ∥ ready——面板未建 ⇒ 免渲，建时自渲）。 */
   function renderNodes() {
+    if (!panels.runners) return
+    if (runnersPhase === "loading") {
+      listBox.replaceChildren(h("p", { class: "hint", text: t("common.loading") }))
+      return
+    }
+    if (runnersPhase === "failed") {
+      listBox.replaceChildren(h("p", { class: "hint error", text: t("admin.sandbox.loadFailed") }))
+      return
+    }
     listBox.replaceChildren(runners.length === 0 ? h("p", { class: "hint", text: t("admin.sandbox.empty") }) : nodesTable())
   }
 
@@ -120,7 +199,7 @@ export async function renderSandbox(ctx, mount) {
     for (const runner of runners) {
       const online = runner.online === true
       const counts = runner.containers === null || runner.containers === undefined ? "—" : `${runner.containers.running}/${runner.containers.total}`
-      const toggle = () => { toggleIn(expandedNodes, runner.id); renderNodes() }
+      const toggle = () => { toggleIn(expandedNodes, runner.id); if (!expandedNodes.has(runner.id)) volumes.reset(runner); renderNodes() } // 收起 ⇒ 卷区失缓存（再展开重取可重试——B65）
       body.push(h("tr", { class: online ? "" : "error" }, h("td", { text: runner.name }),
         h("td", { text: runner.address }),
         h("td", {}, h("span", { class: online ? "badge ok" : "badge off", text: t(online ? "admin.sandbox.online" : "admin.sandbox.offline") })),
@@ -130,7 +209,7 @@ export async function renderSandbox(ctx, mount) {
           h("button", { type: "button", class: "tiny", text: t(expandedNodes.has(runner.id) ? "admin.sandbox.collapse" : "admin.sandbox.expand"), onclick: toggle }),
           h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveRunnerModal(ctx, { runner, reload: loadRunners }) }))))
       if (expandedNodes.has(runner.id)) body.push(h("tr", { class: "detail-row" }, h("td", { colspan: String(headers.length) },
-        h("div", { class: "stack-box" }, containerArea(runner), imageArea(runner)))))
+        h("div", { class: "stack-box" }, containerArea(runner), volumes.area(runner, { reload: loadRunners, refresh: refreshOf(runner) }))))) // 展开体 = 容器区 + 卷区（sandbox-volumes 批）
     }
     return h("div", { class: "table-wrap" },
       h("table", {}, h("thead", {}, h("tr", {}, ...headers.map((label) => h("th", { text: label })))), h("tbody", {}, ...body)))
@@ -138,17 +217,52 @@ export async function renderSandbox(ctx, mount) {
 
   /** 容器区（懒加载——件 = `views-sandbox-containers.mjs`；动作后件内失缓存重取）。 */
   function containerArea(runner) {
-    return containers.area(runner, { reload: loadRunners, refresh: refreshOf(runner) })
+    return containers.area(runner, { reload: () => { volumes.reset(runner); return loadRunners() }, refresh: refreshOf(runner) })
   }
 
-  /** 镜像区（同展开懒加载——件 = `views-sandbox-images.mjs`）。 */
-  function imageArea(runner) {
-    return images.area(runner, { reload: loadRunners, refresh: refreshOf(runner) })
-  }
-
-  /** 区数据落定后的立即重渲（页守卫展开态——收起后落定不外渲）。 */
+  /** 容器区数据落定后的立即重渲（页守卫展开态——收起后落定不外渲）。 */
   function refreshOf(runner) {
     return () => { if (expandedNodes.has(runner.id)) renderNodes() }
+  }
+
+  /** 标签②节点选单（全部注册节点——在线/离线皆列；缺省 ∥ 已失效 ⇒ 首节点）。 */
+  function renderNodeSelect() {
+    if (!panels.images) return
+    nodeSelect.replaceChildren(...runners.map((runner) => h("option", { value: String(runner.id), text: runner.name })))
+    const runner = imageRunner()
+    nodeSelect.value = runner === null ? "" : String(runner.id)
+  }
+
+  /** 标签②当刻节点（字段值命中 ⇒ 该节点 ∥ 缺省/已失效 ⇒ 首节点 ∥ 无节点 ⇒ null）。 */
+  function imageRunner() {
+    return runners.find((runner) => String(runner.id) === String(imageNodeId)) ?? runners[0] ?? null
+  }
+
+  /** 镜像区（标签②卡内——懒加载件 = `views-sandbox-images.mjs`；读势三态与节点表同口径：在途 ⇒ loading ∥ 败 ⇒ 人话 ∥ 无节点 ⇒ 空态句）。 */
+  function renderImages() {
+    if (!panels.images) return
+    if (runnersPhase === "loading") {
+      imageBox.replaceChildren(h("p", { class: "hint", text: t("common.loading") }))
+      return
+    }
+    if (runnersPhase === "failed") {
+      imageBox.replaceChildren(h("p", { class: "hint error", text: t("admin.sandbox.loadFailed") }))
+      return
+    }
+    const runner = imageRunner()
+    if (runner === null) {
+      imageBox.replaceChildren(h("p", { class: "hint", text: t("admin.sandbox.empty") }))
+      return
+    }
+    imageBox.replaceChildren(images.area(runner, { reload: loadRunners, refresh: refreshImages(runner) }))
+  }
+
+  /** 镜像区数据落定后的立即重渲（标签②在场且该节点仍为选单当刻值 ⇒ 重渲）。 */
+  function refreshImages(runner) {
+    return () => {
+      const current = imageRunner()
+      if (panels.images && current !== null && String(current.id) === String(runner.id)) renderImages()
+    }
   }
 
   // ── 装机任务区（三态 + 步骤读数展开；在途 3s 读时轮询、定终态停）──────────────
@@ -158,10 +272,12 @@ export async function renderSandbox(ctx, mount) {
     try {
       const data = await ctx.api("/api/admin/sandbox/onboarding")
       runs = data?.runs ?? []
+      tasksPhase = "ready"
       renderTasks()
     } catch (error) {
       ctx.fail(error)
-      taskBox.replaceChildren(h("p", { class: "hint error", text: t("admin.sandbox.loadFailed") }))
+      tasksPhase = "failed"
+      renderTasks()
     }
     if (runs.some((run) => !RUN_TERMINAL.has(run.status))) schedule() // 定终态停
   }
@@ -173,6 +289,15 @@ export async function renderSandbox(ctx, mount) {
   }
 
   function renderTasks() {
+    if (!panels.runners) return // 面板未建 ⇒ 免渲（建时自渲）
+    if (tasksPhase === "loading") {
+      taskBox.replaceChildren(h("p", { class: "hint", text: t("common.loading") }))
+      return
+    }
+    if (tasksPhase === "failed") {
+      taskBox.replaceChildren(h("p", { class: "hint error", text: t("admin.sandbox.loadFailed") }))
+      return
+    }
     if (runs.length === 0) {
       taskBox.replaceChildren(h("p", { class: "hint", text: t("admin.sandbox.tasksEmpty") }))
       return
@@ -216,8 +341,7 @@ export async function renderSandbox(ctx, mount) {
     return h("div", { class: "stack-box" }, ...nodes)
   }
 
-  await loadRunners()
-  await loadTasks()
+  // 数据读取触发 = 首激活面板（buildRunnerPanel ∥ buildImagePanel——webui/TABS.md §2.2 读时口径）；本函数零直读。
 }
 
 /** 添加节点弹窗（名 + 地址）；提交 ⇒ 自检中态；成：关窗 + flash + 刷新；败：窗内就地人话 + 草稿不丢。 */

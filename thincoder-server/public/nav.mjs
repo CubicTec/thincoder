@@ -1,6 +1,6 @@
 /**
  * nav.mjs — 控制台导航单源（webui/WEBUI.md §2 ∥ KD-SV-20）：组/项数据（我的 3 ∥ 管理 9——2026-10-10 代理回迁批去代理项 ∥ 沙盒运行面批 +「沙盒」项 ∥ admin-agent-chat 批 +「对话」项〔总览后〕）∥ `resolveRoute` 纯函数
- * （无 DOM——批内件直测：别名重定向 ∥ 角色默认 ∥ admin 面 `denied`）∥ 侧栏渲染（品牌 ∥ 组标题/项/活动态 ∥
+ * （无 DOM——批内件直测：别名重定向 ∥ 角色默认 ∥ admin 面 `denied` ∥ 子段容许——console-tabs-component 批）∥ 侧栏渲染（品牌 ∥ 组标题/项/活动态 ∥
  * 底部 meta 槽（健康状态灯 + 版本行 + 语言切换器）+ 退出登录）。
  *
  * 文案单源 = 文案表（`i18n-zh.mjs` ∥ `i18n-en.mjs`）——本档数据持 `labelKey`（键——非字面量），渲染经 `t()` 取值
@@ -52,16 +52,24 @@ export function normalizePath(path) {
 
 /**
  * 路由解析（纯函数——无 DOM）：
- * 返回 `{ path }` ＋ 可选 `redirect: true`（别名/未知 ⇒ 调用方替换 hash）∥ `denied: true`（admin 面非 admin——页面级块）。
+ * 返回 `{ path }` ＋ 可选 `sub`（子段——在册页 + 一截末段，供页面消费）∥ `redirect: true`（别名/未知 ⇒ 调用方替换 hash）∥
+ * `denied: true`（admin 面非 admin——页面级块）。
+ * 子段容许（console-tabs-component 批——2026-10-11 裁定「进」）：`#/<组>/<页>/<子段>`——裁末段试前缀（在册 ⇒ 记 `sub`
+ * 供页面消费（页面自判；不认 ⇒ 忽略）∥ 未在册 ⇒ 照旧默认页回落）；登录面（`LOGIN_PATH`）除外——其不经 `PAGES` 分派；
+ * 既有 hash 形行为逐字不变（webui/TABS.md §2.2）。
  */
 export function resolveRoute(path, role) {
   const clean = normalizePath(path)
   if (clean === LOGIN_PATH) return { path: LOGIN_PATH }
   const canonical = ROUTE_ALIASES[clean] ?? clean
-  if (!KNOWN_PAGES.has(canonical)) return { path: defaultPath(role), redirect: true }
-  const resolved = { path: canonical }
+  const cut = canonical.lastIndexOf("/")
+  const head = cut > 0 ? canonical.slice(0, cut) : canonical
+  const sub = KNOWN_PAGES.has(canonical) || !KNOWN_PAGES.has(head) || head === LOGIN_PATH ? null : canonical.slice(cut + 1) // 登录面排除（见上注）
+  const resolved = { path: sub === null ? canonical : head }
+  if (sub !== null) resolved.sub = sub
+  if (!KNOWN_PAGES.has(resolved.path)) return { path: defaultPath(role), redirect: true }
   if (canonical !== clean) resolved.redirect = true
-  if (canonical.startsWith(ADMIN_PREFIX) && role !== "admin") resolved.denied = true
+  if (resolved.path.startsWith(ADMIN_PREFIX) && role !== "admin") resolved.denied = true
   return resolved
 }
 

@@ -165,7 +165,7 @@ async function route() {
     mount.append(h("h2", { text: t("denied.title") }), h("p", { class: "hint", text: t("denied.hint") }))
     return
   }
-  await PAGES[resolved.path](viewCtx(), mount)
+  await PAGES[resolved.path](viewCtx(), mount, resolved.sub ?? null) // 三参：子段透传（console-tabs-component 批——不认子段页面忽略；webui/TABS.md §2.2）
 }
 
 async function logout() {

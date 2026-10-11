@@ -6,6 +6,7 @@
  * ∥ **拉取认源**（sandbox-pull-by-source 批：「经由源」选单（源清单读时读——零新端点）⇒ 选定即按源组装（`pullRefWithSource`——可见改写 ∥
  * 可再改）；不选 = 原样；认源态 ∥ 记忆预选（P2——`localStorage` 单键 `tc_pull_source`）；「目标节点」行恒显（P1）；无源 ∥ 读败 ⇒ 不选态 + 人话——拉取不阻断）
  * ∥ 删除确认窗（强制删除勾选——缺省不勾）。
+ * console-tabs-component 批：本区随沙盒页分标签迁**标签②「镜像与镜像源」**（节点选单当刻节点的镜像表）——题行去重（卡 h3 承担）。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection`
  * ∥ `openPullImageModal` ∥ `pullRefWithSource`（纯函数）。
  */
@@ -68,9 +69,9 @@ export function createImageSection(ctx) {
   const { h } = ctx
   const cache = new Map() // 节点 id ⇒ { images } ∥ { error }
 
-  /** 区渲染（展开行内）。`reload` = 页数据重取 ∥ `refresh` = 立即重渲（页守卫展开态）。 */
+  /** 区渲染（标签②卡内——console-tabs-component 批自节点展开迁出；题行去重 = 卡 h3 `admin.sandbox.imagesTitle`；`reload` = 页数据重取 ∥ `refresh` = 立即重渲——页守卫标签②在场 + 该节点仍选中）。 */
   function area(runner, { reload, refresh }) {
-    const box = h("div", { class: "stack-box" }, h("h4", { text: t("admin.sandbox.imagesTitle") }))
+    const box = h("div", { class: "stack-box" })
     const cached = cache.get(runner.id)
     if (cached === undefined || cached.loading === true) {
       if (cached === undefined) {

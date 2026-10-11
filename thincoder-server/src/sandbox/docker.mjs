@@ -6,6 +6,7 @@
  * 本批增补（sandbox-docker-admin 批——§3 容器面补齐/镜像族 ∥ KD-SV-92/93/94）：容器详情/日志/用量/重启/强杀 + 镜像列表/拉取/删除；
  * 日志 = 非 TTY 8 字节帧头多路复用解复用（`demuxDockerLogs`——判不出 ⇒ 原样透传）+ 文本截断 256 KiB（KD-SV-93）∥
  * 拉取 = 同步 10 分钟超时 + 失败两形皆收（非 2xx ∥ 200 流内 `error`——`findStreamError`；KD-SV-94）∥ 镜像引用形校验（`parseImageRef`/`normalizeImageRef`）。
+ * 本批增补（sandbox-volumes 批——§3 卷族 ∥ KD-SV-104）：卷列表（`GET /volumes`——读时读）∥ 删卷（`DELETE /volumes/<名>`——动作类 15s；名形 = 路由侧前置校验，本档直入路径段）。
  *
  * 消费面 = 控制台节点/容器/镜像面（`routes.mjs` ∥ `container-routes.mjs` ∥ `image-routes.mjs`）与 agent 工具面（`docker-ops.mjs`）——同一套调用（用户 22:25 口径）。
  * 错误映射（`DockerError.kind`）：`unreachable`（连不上/网络败）∥ `timeout`（超预算）∥ `api`（Docker 已到达且非 2xx——携状态码与引擎原文；
@@ -296,6 +297,10 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
     },
     /** 删除镜像（动作类；`ref` 含 `/`/`:` ⇒ 不经 `encodeURIComponent` 直入路径段——字符集已拒 `?`/`#`/`%`/空白；§3 KD-SV-95）。 */
     removeImage: (ref, { force = false } = {}) => request("DELETE", `${prefix()}/images/${ref}?force=${force ? 1 : 0}`, { timeoutMs: actionTimeoutMs }),
+    /** 卷列表（读类——§3 卷族；`Volumes` 缺/null ⇒ 路由侧 `[]`）。 */
+    volumes: () => request("GET", `${prefix()}/volumes`),
+    /** 删卷（动作类；名形已由路由前置校验——`[A-Za-z0-9_.-]` 字符集直入路径段；§3 KD-SV-104）。 */
+    removeVolume: (name) => request("DELETE", `${prefix()}/volumes/${name}`, { timeoutMs: actionTimeoutMs }),
     /** 原动词面（agent `docker` 工具——images ∥ pull ∥ logs ⋯；§3 工具表）。 */
     raw: (method, path, { body = null, timeoutMs = ACTION_TIMEOUT_MS } = {}) => request(method, `${prefix()}${path}`, { body, timeoutMs }),
   }

@@ -193,4 +193,17 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.pullSource": "Pull via source",
   "admin.sandbox.pullSourceNone": "None (as-is)",
   "admin.sandbox.pullSourceHint": "Once a source is selected, the reference is assembled via it (still editable)",
+
+  // ── Admin · sandbox · tabs (§2.8① — console-tabs-component batch) ────────────────
+  "admin.sandbox.tabImages": "Images & sources",
+  "admin.sandbox.imageNode": "Node",
+
+  // ── Admin · sandbox · volumes (§2.8① — sandbox-volumes batch) ─────────────────────
+  "admin.sandbox.volumeFromNode": "Volumes on this node (pick ⇒ fills the field below, still editable)",
+  "admin.sandbox.volumeNew": "New volume (type it)",
+  "admin.sandbox.volumesTitle": "Data volumes",
+  "admin.sandbox.volumesEmpty": "No data volumes",
+  "admin.sandbox.volumeDeleteTitle": "Delete data volume",
+  "admin.sandbox.volumeDeleteConfirm": "Delete data volume «{name}»? Everything inside it is deleted too and cannot be recovered.",
+  "admin.sandbox.volumeDeleted": "Data volume deleted: {name}",
 })

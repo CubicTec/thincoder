@@ -1,13 +1,15 @@
 /**
  * views-sandbox-containers.mjs — 沙盒页·容器区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 容器表（名/镜像/状态/操作：详情/启动/停止/重启/日志/删除）∥ 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块（懒取 + 刷新钮）
- * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗。
+ * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗（建窗卷字段 = 节点已有卷选单 + 「新建卷（手输）」保底——sandbox-volumes 批）。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。
  * 拆档缘由 = `views-sandbox.mjs` 增量将越 500 硬线前外拆；窗体助手四件已迁 `modal.mjs`（避循环 import）。
  * 批内件直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+
+export { createVolumeSection } from "./views-sandbox-volumes.mjs" // 卷区件工厂转出口（页装配单点取件——`views-sandbox.mjs` 行预算 ≤500）
 
 /** 容器态文案（枚举内 ⇒ 表键；枚举外 ⇒ 原值兜底——Docker 新态零遗漏）。 */
 const CONTAINER_STATE_KEYS = { created: "admin.sandbox.stateCreated", running: "admin.sandbox.stateRunning", exited: "admin.sandbox.stateExited" }
@@ -248,13 +250,17 @@ function openCreateContainerModal(ctx, { runner, reload }) {
   const nameInput = h("input")
   const imageInput = h("input", { placeholder: t("admin.sandbox.imagePh") })
   const imageSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.imageCustom") }))
+  const volumeSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.volumeNew") }))
   const volumeInput = h("input", { placeholder: t("admin.sandbox.volumePh") })
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.createContainer") })
   const modal = openModal({
     title: t("admin.sandbox.createContainer"),
     body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
-      field(h, "admin.sandbox.containerName", nameInput), field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput), field(h, "admin.sandbox.volume", volumeInput), h("p", { class: "hint", text: t("admin.sandbox.volumeHint") }), note, submitBtn),
+      field(h, "admin.sandbox.containerName", nameInput),
+      field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput),
+      field(h, "admin.sandbox.volumeFromNode", volumeSelect), field(h, "admin.sandbox.volume", volumeInput),
+      h("p", { class: "hint", text: t("admin.sandbox.volumeHint") }), note, submitBtn),
   })
 
   // 节点本地镜像 ⇒ 选单（轻通道笔 2——手输改选：选定回填下方镜像（可再改））；读败/空表 ⇒ 仅「自定义（手输）」——手输照常，不反噬窗
@@ -271,6 +277,14 @@ function openCreateContainerModal(ctx, { runner, reload }) {
     preselect()
   }).catch(() => {})
   imageSelect.addEventListener("change", () => { if (imageSelect.value !== "") imageInput.value = imageSelect.value })
+
+  // 节点已有卷 ⇒ 选单（sandbox-volumes 批——选定回填下方卷名（可再改）；读败/空表 ⇒ 仅「新建卷（手输）」——手输照常，不反噬窗）
+  ctx.api(`/api/admin/sandbox/runners/${runner.id}/volumes`).then((data) => {
+    const names = (Array.isArray(data?.volumes) ? data.volumes : []).map((volume) => volume?.name).filter((name) => typeof name === "string" && name !== "")
+    if (names.length === 0) return
+    volumeSelect.append(...names.map((name) => h("option", { value: name, text: name })))
+  }).catch(() => {})
+  volumeSelect.addEventListener("change", () => { if (volumeSelect.value !== "") volumeInput.value = volumeSelect.value })
 
   // 镜像预填（设置读面——§2.8①）；取数失败/空值 ⇒ 空输入（用户自填——不反噬窗）
   ctx.api("/api/admin/sandbox/settings").then((data) => {

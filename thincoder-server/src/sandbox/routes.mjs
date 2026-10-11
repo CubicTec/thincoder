@@ -22,6 +22,7 @@ import {
 import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "./docker.mjs"
 import { registerContainerRoutes } from "./container-routes.mjs"
 import { registerImageRoutes } from "./image-routes.mjs"
+import { registerVolumeRoutes } from "./volume-routes.mjs"
 import { registerOnboardingRoutes } from "./onboarding-routes.mjs"
 import { bumpRulesRev, createRule, deleteRule, getRulesRev, listPending, listRules, openPendingOf, resolvePending, updateRule } from "./rules.mjs"
 import { issueWorkspaceKey, rotateWorkspaceKey, revokeWorkspaceKey } from "./credentials.mjs"
@@ -434,6 +435,8 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
 
   // ── 镜像族（拆分档——SANDBOX §13 分族成档；sandbox-docker-admin 批）──────────
   registerImageRoutes(routes, { db, fetchImpl, now })
+
+  registerVolumeRoutes(routes, { db, fetchImpl, now }) // 卷族（拆分档——SANDBOX §13 分族成档；sandbox-volumes 批）
 
   // ── 托管接入面（四端点转注册——`bin` ±0；起跑后立即交回，进度经读时轮询）────
   const onboarding = registerOnboardingRoutes(routes, { db, config, log, now, deps })

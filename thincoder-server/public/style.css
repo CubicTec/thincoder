@@ -37,6 +37,20 @@
   --bw: 1px; --bw-strong: 2px;
   /* 布局（S15——宽值单源：侧栏宽 + 内容缩进 ∥ 弹窗宽三处） */
   --nav-w: 200px; --modal-w: clamp(560px, 78vw, 1200px);
+  /* ── 核件壳族变量桥（chat-shell-align 批——§2.1① 桥例外）：核件变量名 ⇒ 控制台既有变量（逐键 `var(--既有)`——零新值 ∥
+        零颜色字面量；同名键 `--bg`/`--border`/`--accent`/`--muted` 取既有定义，不另列）。必须 `:root` 级：核件浮层/toast 挂 `body` 层。 */
+  --fg: var(--text);
+  --input-bg: var(--panel);
+  --input-fg: var(--text);
+  --btn-fg: var(--accent-contrast);
+  --btn-hover: var(--accent-hover);
+  --hover-bg: var(--hover);
+  --hover-bg-strong: var(--selected);
+  --error-fg: var(--danger);
+  --red: var(--danger);
+  --diff-del-bg: var(--danger-fill);
+  --overlay: var(--backdrop);
+  --shadow: none; /* 核件浮层阴影 ⇒ 平（控制台零阴影族——零新值） */
 }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font); font-size: var(--fs); line-height: var(--lh); background: var(--bg); color: var(--text); }
@@ -91,6 +105,15 @@ button.danger:hover { background: var(--danger-fill); } /* ② 危险悬停 */
 button.link { border: none; background: none; color: var(--accent); padding: 0; }
 button.link:hover { color: var(--accent-hover); } /* ② 链接悬停 = 字色 */
 button:disabled { color: var(--muted); background: var(--fill); cursor: default; } /* ② 禁用中性化（全型） */
+
+/* ── 公共标签页组件（tabs.mjs——webui/TABS.md §2.1；console-tabs-component 批）：页签族 = ② 型扩充 + ① 选中态 ────────── */
+.tabs { display: flex; flex-direction: column; gap: var(--sp-4); }
+.tab-list { display: flex; flex-wrap: wrap; gap: var(--sp-1); border-bottom: var(--bw) solid var(--border); } /* 页签条（底规 = 结构线） */
+button.tab { border: none; background: none; color: var(--text); border-radius: var(--r-2); padding: var(--sp-2) var(--sp-4); } /* ② 页签型（透明底） */
+button.tab:hover { background: var(--hover); } /* ② 页签悬停（② 型表在册——取 --hover 底） */
+button.tab.active { background: var(--selected); color: var(--accent); } /* ① 选中态（同 `.lang-switch .active` 款） */
+.tab-panel { display: flex; flex-direction: column; gap: var(--sp-4); }
+.tab-panel[hidden] { display: none; } /* 非激活面板（显式压过上行 display——`hidden` 切换） */
 
 /* ── 反馈面（⑥ 色板 ∥ ⑨ 空/错/加载态——错 = `.hint error`；`.error` 独立生效）────────────────── */
 .hint { color: var(--muted); font-size: var(--fs); } /* ⑨ 加载/空（静态文案——零动画零 spinner） */
@@ -205,7 +228,7 @@ dialog.modal::backdrop { background: var(--backdrop); }
 
 /* ── 沙盒·容器详情/日志/用量与镜像族（views-sandbox-containers.mjs ∥ views-sandbox-images.mjs——§2.8①；零新变量 ∥ 零新悬停规则）── */
 .snippet.wrap { white-space: pre-wrap; overflow-wrap: anywhere; } /* 环境块：长值折行 */
-.pre-scroll { max-height: 46vh; overflow-y: auto; } /* 日志码面：纵滚（尺寸字面——非刻度面，同 .chat-list 先例） */
+.pre-scroll { max-height: 46vh; overflow-y: auto; } /* 日志码面：纵滚（尺寸字面——非刻度面，同 .quota 先例） */
 .row-form > h4 { margin: 0; } /* 行内小标题（详情窗用量块——同 `.row-form h3` 先例） */
 
 /* ── 沙盒·镜像源族与列表过滤（views-sandbox-image-sources.mjs ∥ views-sandbox-images.mjs——§2.8①；零新变量 ∥ 零新悬停规则）── */
@@ -224,19 +247,35 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .config-field .hint { margin: 0; }
 .config-group > .hint { margin: var(--sp-3) 0 0; }
 
-/* ── 对话页（views-chat.mjs——§2.10）：会话条 ∥ 消息流四形 ∥ 输入区（零新变量 ∥ 零新悬停规则）──────── */
-.chat-list { display: flex; flex-direction: column; gap: var(--sp-3); max-height: 240px; overflow-y: auto; } /* 尺寸字面（非刻度面——原值保留，同 .quota 先例） */
-.chat-row { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-1); width: 100%; padding: var(--sp-3) var(--sp-4); text-align: left; } /* 取用面 = `button.tiny`（悬停沿既有声明） */
-.chat-row.active { background: var(--selected); border-color: var(--accent); color: var(--accent); } /* ① 选中态（.lang-switch .active 同形） */
-.chat-thread { display: flex; flex-direction: column; gap: var(--sp-4); max-height: 52vh; overflow-y: auto; } /* 尺寸字面（同上） */
-.chat-msg { border-radius: var(--r-2); padding: var(--sp-3) var(--sp-4); white-space: pre-wrap; overflow-wrap: anywhere; }
-.chat-msg.user { background: var(--selected); }
-.chat-msg.assistant { background: var(--fill); }
-.chat-msg.notice { background: var(--fill); color: var(--muted); } /* 灰条（中断/预算/模型错误——§2.10） */
-.chat-form { display: flex; flex-direction: column; gap: var(--sp-3); }
+/* ── 对话页四段（views-chat.mjs ∥ views-chat-composer.mjs——§2.1；chat-shell-align 批）：会话条 sticky 顶 ∥ 消息流文档流 ∥
+   状态行 + 输入区 sticky 底（核件 `composer.css` 命中——本档零覆写）；核件发射类族补样式（零新变量值 ∥ 零新悬停规则）── */
+.chat-bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); padding: var(--sp-4) 0; background: var(--panel); border-bottom: var(--bw) solid var(--border); } /* ① 顶会话条（底/边 = 既有族值） */
+.chat-select { min-width: 260px; max-width: 100%; } /* 尺寸字面（非刻度面——同 `.filter-row input` 先例） */
+.chat-thread { display: flex; flex-direction: column; gap: var(--sp-5); padding: var(--sp-6) 0; } /* ② 消息流 = 文档流平铺（无卡无框——滚动归 `document.scrollingElement`） */
+#toolbar { position: sticky; bottom: 0; z-index: 2; } /* ④ 输入区 sticky 底（核件容器——内距/边/底沿核 `composer.css`） */
+#status-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); color: var(--muted); } /* ③ 状态行（输入区上方——`#toolbar` 首子） */
+#status-line:empty { display: none; }
+.status-sep { color: var(--border); }
+.status-seg { white-space: nowrap; }
+.status-warn { color: var(--warn); } /* context ≥80% 警示段（§2.1④） */
 
-/* ── 对话页·核件族（console-chat-align 批——§2.10）：核件发射类名（tool-call 族/码面/token）与 md 块级产物
-   ——页面补样式（零新变量 ∥ 零新悬停规则 ∥ 类名逐枚见 §6 本批行）；状态色由核件内联（红/绿）——样式面不重复载体 ──── */
+/* 消息族（核 `flow/block.mjs` 发射类名——VSC 平铺形：无气泡底 ∥ 标签行 = 色通道 ∥ 时间 = 次级字） */
+.message { display: flex; flex-direction: column; gap: var(--sp-3); }
+.message.notice { padding: var(--sp-3) var(--sp-4); background: var(--fill); border-radius: var(--r-2); color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; } /* notice 灰条（控制台自持面——VSC 无对应） */
+.message.pending { color: var(--muted); } /* 待发泡（核 `markPending`） */
+.msg-label { color: var(--accent); }
+.msg-time { color: var(--muted); margin-left: var(--sp-4); }
+.bubble { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message.assistant .bubble:empty { display: none; }
+
+/* 无源钮收窄（§2.1③④——CSS 隐藏 + 逐条无源实证）：推理（会话级 reasoning 通道无）∥ 四模式位（无人值守裁剪）∥ 设置（开发壳面）∥
+   模型菜单 footer 管理三项（provider 增删/密钥——控制台落点 = Provider 页） */
+#reasoning-btn, #auto-btn, #advisor-btn, #eng-btn, #plan-btn, #settings-btn { display: none; }
+.mm-sep, .mm-manage { display: none; }
+
+/* ── 对话页·核件族（console-chat-align 批——§2.10；chat-shell-align 批：md 块级宿主随消息块换壳 ⇒ `.bubble`）：
+   核件发射类名（tool-call 族/码面/token）与 md 块级产物——页面补样式（零新变量 ∥ 零新悬停规则）；
+   状态色由核件内联（红/绿）——样式面不重复载体 ──── */
 .tool-call { margin: var(--sp-4) 0 0; border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); overflow: hidden; }
 .tool-call-header { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-4); cursor: pointer; }
 .tool-call-icon { width: 0; height: 0; border-left: 5px solid var(--accent); border-top: 4px solid transparent; border-bottom: 4px solid transparent; } /* 播放三角（尺寸字面——非刻度面） */
@@ -245,7 +284,7 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .tool-call-args { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tool-call-status { color: var(--muted); }
 .tool-call-summary { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tool-call-body { display: none; padding: var(--sp-3) var(--sp-4); border-top: var(--bw) solid var(--border); max-height: 180px; overflow-y: auto; font-family: var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; } /* 尺寸字面（同 `.chat-list` 先例） */
+.tool-call-body { display: none; padding: var(--sp-3) var(--sp-4); border-top: var(--bw) solid var(--border); max-height: 180px; overflow-y: auto; font-family: var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; } /* 尺寸字面（同 `.quota` 先例） */
 .tool-call-body.open { display: block; }
 .code-block { margin: var(--sp-3) 0 var(--sp-4); padding: 0; background: var(--fill); border: var(--bw) solid var(--border); border-radius: var(--r-2); overflow: hidden; }
 .code-block code { display: block; padding: var(--sp-4); overflow-x: auto; background: none; }
@@ -254,18 +293,18 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .tk-keyword { color: var(--accent); }
 .tk-string { color: var(--ok); }
 .tk-number, .tk-type { color: var(--warn); } /* token 取色 = 既有色板（零新变量） */
-.chat-msg p, .chat-msg ul, .chat-msg ol, .chat-msg blockquote, .chat-msg table { margin: var(--sp-3) 0; }
-.chat-msg p:empty { display: none; } /* 核 md 块级置换残影（`<p>` 包 `<pre>` 被解析器隐式闭合——消空段隙） */
-.chat-msg h1, .chat-msg h2, .chat-msg h3, .chat-msg h4, .chat-msg h5, .chat-msg h6 { margin: var(--sp-4) 0 var(--sp-3); font-size: var(--fs); font-weight: 400; } /* 一字号零粗体（⑤——UA 标题字号/字重撤） */
-.chat-msg ul, .chat-msg ol { padding-left: var(--sp-7); }
-.chat-msg li { margin: var(--sp-1) 0; }
-.chat-msg th, .chat-msg td { white-space: normal; } /* 气泡内表格换行（全档 `th/td` 为数据页 `nowrap` 面——气泡内不携横滚壳，沿 VSC `.content th/td` 口径） */
-.chat-msg blockquote { padding: 0 var(--sp-4); border-left: var(--bw-strong) solid var(--border); color: var(--muted); }
-.chat-msg hr { border: none; border-top: var(--bw) solid var(--border); margin: var(--sp-5) 0; }
-.chat-msg a { color: var(--accent); }
-.chat-msg img { max-width: 100%; }
-.chat-msg :is(h1, h2, h3, h4, h5, h6, p, pre, ul, ol, table, blockquote):first-child { margin-top: 0; }
-.chat-msg :is(p, pre, ul, ol, table, blockquote):last-child { margin-bottom: 0; }
+.bubble p, .bubble ul, .bubble ol, .bubble blockquote, .bubble table { margin: var(--sp-3) 0; }
+.bubble p:empty { display: none; } /* 核 md 块级置换残影（`<p>` 包 `<pre>` 被解析器隐式闭合——消空段隙） */
+.bubble h1, .bubble h2, .bubble h3, .bubble h4, .bubble h5, .bubble h6 { margin: var(--sp-4) 0 var(--sp-3); font-size: var(--fs); font-weight: 400; } /* 一字号零粗体（⑤——UA 标题字号/字重撤） */
+.bubble ul, .bubble ol { padding-left: var(--sp-7); }
+.bubble li { margin: var(--sp-1) 0; }
+.bubble th, .bubble td { white-space: normal; } /* 块内表格换行（全档 `th/td` 为数据页 `nowrap` 面——块内不携横滚壳，沿 VSC `.content th/td` 口径） */
+.bubble blockquote { padding: 0 var(--sp-4); border-left: var(--bw-strong) solid var(--border); color: var(--muted); }
+.bubble hr { border: none; border-top: var(--bw) solid var(--border); margin: var(--sp-5) 0; }
+.bubble a { color: var(--accent); }
+.bubble img { max-width: 100%; }
+.bubble :is(h1, h2, h3, h4, h5, h6, p, pre, ul, ol, table, blockquote):first-child { margin-top: 0; }
+.bubble :is(p, pre, ul, ol, table, blockquote):last-child { margin-bottom: 0; }
 
 /* ── 数据表页视口高壳（§2.6②——高度链声明单源：页头固定 ∥ 表区吃剩高；表尾行计数 = 表内 tfoot〔吸附表底〕；回退见下）────── */
 body.data-shell .content { height: 100dvh; display: flex; flex-direction: column; }

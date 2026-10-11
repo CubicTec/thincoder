@@ -175,7 +175,8 @@ export function registerContainerRoutes(routes, { db, fetchImpl = fetch, now = D
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message)
     }
-    const createBody = { Image: image, ...(volume ? { HostConfig: { Binds: [`${volume}:/workspace`] } } : {}) }
+    // 待命命令（盒语义——沿盒镜像自身 CMD `sleep infinity`；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 实走报；轻通道笔 3）
+    const createBody = { Image: image, Cmd: ["sleep", "infinity"], ...(volume ? { HostConfig: { Binds: [`${volume}:/workspace`] } } : {}) }
     let response
     try {
       response = await clientOf(runner).createContainer(name, createBody)

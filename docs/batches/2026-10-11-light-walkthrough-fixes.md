@@ -21,6 +21,15 @@
 - **走查读数**：全链 `npm run prepublishOnly` = **478/478 绿 · 0 红**（EXIT=0；本笔无新 `test()` 块——总计数不变）。受影响四档全绿（指纹锚 = 重算值 `ea028ee2…` ∥ `9ebe47ab…`）。
 - **冻结**：待部署 `.5` 后实走复核（用户径）。
 
+- **笔 2 部署读数（2026-10-11 21:1x）**：提交 `ed4aed38` 双推 origin ∥ github ✓；箱 `~/thincoder` fast-forward ✓；镜像重建 `0a91641c52be`（仓根上下文 + 双包）；容器 `--force-recreate` ⇒ `Up (healthy)` ✓；探针：`healthz=200` ∥ 服上 `i18n-zh-sandbox.mjs` 含 `imageFromNode`（命中 1）∥ 服上 `views-sandbox-containers.mjs` 含 `imageCustom`（命中 1）——新件在服 ✓。**待用户实走复核**（沙盒页 → 节点展开 → 创建容器 → 镜像下拉）。
+
+### 笔 3——建容器待命命令：盒一启动就退出（2026-10-11 21:10）
+- **来源**：用户 21:10 实走上报（原话「我创建了一个ubuntu:24.04的容器，然后启动，为啥总是一启动就退出？」）。
+- **根因**（实读）：`ubuntu:24.04` 自带命令 = `/bin/bash`，无终端 ⇒ 读不到输入秒退（exit 0）；最小切片建容器只传镜像+卷、未传待命命令 ⇒ 无长驻进程的镜像一亮即退。盒镜像 `deploy/sandbox/Dockerfile:18` 自带 `CMD ["sleep","infinity"]` ⇒ 真机走查未暴露本缺口。
+- **落点**：① `thincoder-server/src/sandbox/container-routes.mjs`（建容器体恒携 `Cmd: ["sleep","infinity"]`——沿盒镜像自身语义；注一行）∥ ② 批内件断言随正（`2026-10-10-runner-admin-console.test.mjs:302`——请求体逐值含 `Cmd`）∥ ③ `sandbox/SANDBOX.md` §3 建容器条 + §12 N46 + 变更记录。
+- **走查读数**：全链 `npm run prepublishOnly` = **478/478 绿 · 0 红**（EXIT=0）。
+- **用户侧影响**：**旧容器命令已定死 ⇒ 需重新建一个**（新建的才会待命）；既有 `ubuntu:24.04` 镜像可复用。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：（eng-designer 写入时更新）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>

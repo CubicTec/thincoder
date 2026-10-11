@@ -299,7 +299,7 @@ test("N46 建容器三件：引擎请求体逐值（Image ∥ Binds=<卷>:/works
     assert.equal(res.status, 200)
     const create = engine.calls.find((item) => item.path.endsWith("/containers/create"))
     assert.equal(create.query, "?name=box-1", "名经 query 传（`?name=`）")
-    assert.deepEqual(create.body, { Image: "thincoder-sandbox:1", HostConfig: { Binds: ["tc-ws-7:/workspace"] } }, "引擎请求体逐值")
+    assert.deepEqual(create.body, { Image: "thincoder-sandbox:1", Cmd: ["sleep", "infinity"], HostConfig: { Binds: ["tc-ws-7:/workspace"] } }, "引擎请求体逐值（含待命命令——盒语义）")
     assert.equal(res.json.container.id, "ctr-1", "200 {container}（id 逐值）")
     const list = await call(app.base, "GET", `/api/admin/sandbox/runners/${runner.id}/containers`, { cookie: app.adminCookie })
     assert.deepEqual(list.json.containers.map((item) => [item.name, item.state]), [["box-1", "created"]], "列表含（state=created）")

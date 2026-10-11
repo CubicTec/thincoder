@@ -8,6 +8,7 @@
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+import { sandboxKindLabel } from "./views-audit.mjs"
 
 export { createVolumeSection } from "./views-sandbox-volumes.mjs" // 卷区件工厂转出口（页装配单点取件——`views-sandbox.mjs` 行预算 ≤500）
 
@@ -211,20 +212,36 @@ function openKillModal(ctx, { runner, container, invalidate }) {
   })
 }
 
-/** 日志窗（`pre` 码面块 + tail 选择 + 刷新；截断 ⇒ 标记行）。 */
+/** 日志窗（**操作记录**（该容器 `sandbox_event` 审计行——容器身上发生过什么）+ `pre` 码面块 + tail 选择 + 刷新；截断 ⇒ 标记行）。 */
 export function openContainerLogsModal(ctx, { runner, container }) {
   const { h } = ctx
+  const opsBox = h("div", {}, h("p", { class: "hint", text: t("common.loading") }))
   const pre = h("pre", { class: "snippet pre-scroll" })
   const marker = h("p", { class: "hint", hidden: true, text: t("admin.sandbox.logsTruncated") })
   const note = h("p", { class: "hint error", hidden: true })
   const tailSelect = h("select", {}, ...LOG_TAIL_OPTIONS.map((count) => h("option", { value: String(count), text: String(count) })))
   tailSelect.value = "200"
-  const refresh = h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logsRefresh"), onclick: () => load() })
+  const refresh = h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logsRefresh"), onclick: () => { load(); loadOps() } })
   openModal({
     title: t("admin.sandbox.logsTitle", { name: container.name }),
-    body: h("div", {}, h("div", { class: "row-form" }, field(h, "admin.sandbox.logsTail", tailSelect), refresh), pre, marker, note),
+    body: h("div", {},
+      h("p", { class: "hint", text: t("admin.sandbox.logsOps") }), opsBox,
+      h("div", { class: "row-form" }, field(h, "admin.sandbox.logsTail", tailSelect), refresh), pre, marker, note),
   })
   tailSelect.addEventListener("change", () => load())
+
+  /** 读一次操作记录（该容器审计行——倒序；容器 id 全等过滤）。 */
+  async function loadOps() {
+    try {
+      const data = await ctx.api(`/api/audit?type=sandbox_event&limit=200`)
+      const events = (data?.events ?? []).filter((event) => event?.detail?.containerId === container.id)
+      opsBox.replaceChildren(events.length === 0
+        ? h("p", { class: "hint", text: t("admin.sandbox.logsOpsEmpty") })
+        : h("ul", {}, ...events.map((event) => h("li", { text: `${ctx.fmtTs(event.ts)} · ${sandboxKindLabel(event.detail?.kind)}` }))))
+    } catch (error) {
+      opsBox.replaceChildren(h("p", { class: "hint error", text: mapError(error) }))
+    }
+  }
 
   /** 读一次日志（tail = 选择值——服务端界 1–2000）。 */
   async function load() {
@@ -242,6 +259,7 @@ export function openContainerLogsModal(ctx, { runner, container }) {
     }
   }
   load()
+  loadOps()
 }
 
 /** 创建容器弹窗（名 + 镜像（**节点本地镜像选单回填** + 手输保底；预填设置 `image` 值）+ 卷（可空 = 不挂）⇒ POST 三件；卷空 ⇒ 省略键）。 */

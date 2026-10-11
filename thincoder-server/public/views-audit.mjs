@@ -123,12 +123,15 @@ const SANDBOX_KIND_KEYS = {
   approval: "audit.sandboxKind.approval",
 }
 
+/** 沙盒 kind 文案（导出——日志窗「操作记录」块同源消费；走查轮 2026-10-11）。 */
+export function sandboxKindLabel(kind) {
+  return SANDBOX_KIND_KEYS[kind] ? t(SANDBOX_KIND_KEYS[kind]) : String(kind ?? "—")
+}
+
 /** 沙盒事件详情（`sandbox_event`——kind 文案 + 在场字段逐值；走查轮 2026-10-11）。 */
 function sandboxDetailText(detail) {
   const parts = []
-  if (typeof detail?.kind === "string" && detail.kind !== "") {
-    parts.push(SANDBOX_KIND_KEYS[detail.kind] ? t(SANDBOX_KIND_KEYS[detail.kind]) : detail.kind)
-  }
+  if (typeof detail?.kind === "string" && detail.kind !== "") parts.push(sandboxKindLabel(detail.kind))
   if (detail?.name) parts.push(String(detail.name))
   if (detail?.containerId) parts.push(String(detail.containerId).slice(0, 12))
   if (detail?.image) parts.push(String(detail.image))

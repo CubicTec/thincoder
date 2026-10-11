@@ -133,6 +133,8 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.logsTail": "Lines",
   "admin.sandbox.logsRefresh": "Refresh",
   "admin.sandbox.logsEmpty": "No logs",
+  "admin.sandbox.logsOps": "Operations (what happened to this container)",
+  "admin.sandbox.logsOpsEmpty": "(no operations recorded)",
   "admin.sandbox.logsTruncated": "Log truncated — showing the first 256 KiB only",
   "admin.sandbox.imagesTitle": "Images",
   "admin.sandbox.imagePull": "Pull image",

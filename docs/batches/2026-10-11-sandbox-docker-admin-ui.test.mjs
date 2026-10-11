@@ -240,6 +240,13 @@ test("② 日志窗：`pre` 码面 + tail 选择 + 刷新 ∥ 截断标记 ∥ �
     const routes = {
       "GET /api/admin/sandbox/runners/1/containers/c1/logs?tail=200": () => ({ logs: "hello stdout\nwarn stderr\n", truncated: false, tail: 200 }),
       "GET /api/admin/sandbox/runners/1/containers/c1/logs?tail=500": () => ({ logs: "big\n", truncated: true, tail: 500 }),
+      "GET /api/audit?type=sandbox_event&limit=200": () => ({
+        events: [
+          { ts: 1791732342896, type: "sandbox_event", actor: "liwei", target: "box-a", detail: { kind: "container_stop", runnerId: 1, containerId: "c1" } },
+          { ts: 1791725139915, type: "sandbox_event", actor: "liwei", target: "box-a", detail: { kind: "container_create", runnerId: 1, containerId: "c1", name: "workspace-a" } },
+          { ts: 1791725106627, type: "sandbox_event", actor: "liwei", target: "box-a", detail: { kind: "container_delete", runnerId: 1, containerId: "OTHER" } },
+        ],
+      }),
     }
     const { calls, mount, modal } = await fMount({ routes })
     await expand(mount)
@@ -247,6 +254,9 @@ test("② 日志窗：`pre` 码面 + tail 选择 + 刷新 ∥ 截断标记 ∥ �
     const dialog = modal()
     assert.ok(dialog !== null, "日志窗开启")
     await tick()
+    // 操作记录块（该容器审计行——容器 id 全等过滤 ∥ 倒序 ∥ kind 人话；他人容器行排除）
+    const ops = fFindAll(dialog, (node) => node.tag === "li").map((node) => node.textContent)
+    assert.deepEqual(ops, [`ts:1791732342896 · ${ZH["audit.sandboxKind.container_stop"]}`, `ts:1791725139915 · ${ZH["audit.sandboxKind.container_create"]}`], "操作记录（过滤 + 倒序 + 人话）")
     const pre = fFind(dialog, (node) => node.tag === "pre")
     assert.ok(pre.className.split(" ").includes("snippet") && pre.className.split(" ").includes("pre-scroll"), `码面块（.snippet + 纵滚）：${pre.className}`)
     assert.equal(pre.textContent, "hello stdout\nwarn stderr\n", "日志文本（服务端已解复用）")

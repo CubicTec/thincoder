@@ -383,7 +383,7 @@ CREATE INDEX IF NOT EXISTS idx_agent_chat_messages ON agent_chat_messages(chat_i
 
 ### v15 增段（`image_sources` 建表——sandbox 域；sandbox-image-sources 批）
 
-（背景：控制台镜像源清单（增/删/改/列 + 常用源预选）——对象模型/机制 = `sandbox/SANDBOX.md` §3；**与拉取链路零耦合**（不写节点 dockerd 配置——KD-SV-96）。）
+（背景：控制台镜像源清单（增/删/改/列 + 常用源预选）——对象模型/机制 = `sandbox/SANDBOX.md` §3；**拉取机器侧零改；消费面 = 显式选源（KD-SV-96）**。）
 
 ```sql
 -- ① 镜像源表（server 全局清单——非按节点）

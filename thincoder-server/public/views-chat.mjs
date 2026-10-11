@@ -1,29 +1,31 @@
 /**
- * views-chat.mjs — 管理·对话（webui/WEBUI.md §2.10——`#/admin/chat`；机制全文 = agent/ADMIN-AGENT.md §11）：
- * 会话条（会话列表 + 「新会话」钮——空/加载/失败三态）∥ 对话区（消息流四形：用户气泡（核 `mdInline`）∥
- * 助手文本（核 `md`）∥ 工具卡（核件 `renderToolCard`/`finishToolCard`——名 + 参数摘要 → 结果摘要；失败判据 = 核
- * `isToolFailure`）∥ notice 行（灰条））∥ 输入区（多行输入 + 发送钮；空值不提交 ∥ 在途禁用 + 运行中指示）。
- * 非壳页（对话流无上界——`SHELL_PAGES` 五路径不动——§2.10）。
+ * views-chat.mjs — 管理·对话（`webui/CHAT.md` §2.1——`#/admin/chat`；机制全文 = `agent/ADMIN-AGENT.md` §11）：
+ * **页四段**（会话条 sticky 顶 ∥ 消息流文档流 ∥ 状态行 + 输入区 sticky 底）——原三卡（会话卡/对话卡/输入卡）去卡片化（本页零 `.card` 面）。
+ * 会话条（选择器 + 「新会话」 + 「重读」）∥ 消息装配（核 `flow/block.mjs`——回读 ∥ 活流）∥ NDJSON 帧分发
+ * （`delta`/`call`/`result`/`turn`/`usage`/`end`）∥ 队列（待发泡/队首发起——承接归 `views-chat-composer.mjs`）∥ 新会话弹窗 ∥ 取数。
+ * 输入区与状态行 = `views-chat-composer.mjs`（核 `composer/panel.mjs` **全件消费**适配层——§2.1③④）。
  *
- * 呈现面复用渲染核（console-chat-align 批——KD-SV-101）：文本面 = `md.mjs` **单源**（注入点 = `paintMarkdown` 单点）；
- * 流式 = `flow/stream.mjs` `createStreamRenderer`（rAF 节流 + 增量画件——本页零自持重渲）；工具卡 = `flow/tool-card.mjs`；
- * 滚动 = `scroll.mjs` `applyPin`/`createPinWatch`（闸门 = 上滚不夺位 ∥ 回底恢复跟随）；核件词面 = `setStrings` 装订。
+ * 呈现面单源（§2.1②——本页零自持渲染）：文本/块 = 核 `buildUserMessage`/`buildAssistantRestore`/`renderBlock`（md 归核）；
+ * 工具卡 = 核 `renderToolCard`/`finishToolCard`（活）∥ `buildFinishedToolCard`（回读——嵌助手块内）；流式 = 核 `createStreamRenderer`；
+ * 滚动 = 核 `applyPin`/`createPinWatch`（**作用元素 = `document.scrollingElement`**——文档流；`scroll` 事件投 `document` 而非元素
+ * ⇒ 事件桥见下，判定与写口仍走核件）；核件词面 = `setStrings` 装订。
  *
- * 取数 = `GET /api/admin/agent/chats` ∥ `.../:id`（读时读——进页取列表 ∥ 选中取详情）；发送 = `POST .../:id/messages`
- * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`delta` 追加当前气泡 ∥ `call`/`result`
- * 工具卡 ∥ `end` ⇒ 重读详情〔读时单源——与流式视图收口，两径共用核件〕）；断连/离页 = 读流中止（回合照跑——落库单源；
- * 「重读」即全量）；发送失败/流前错误 = 就地人话（`mapError`）。判权全在后端（界面显隐非判据——§3）；文案经 `t()` 取值（§2.2）。
- * 批内件直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`）。
+ * 取数：列表/详情 = `GET /api/admin/agent/chats` ∥ `.../:id`（读时读）；发送 = `POST .../:id/messages`（体 = `{ content, images? }`）
+ * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`delta` 追加当前块 ∥ `call`/`result` 工具卡嵌块内 ∥
+ * `end` ⇒ 重读详情〔读时单源〕）；中止 = `POST .../:id/abort`；换模型 = `PATCH .../:id`（下回合生效）。
+ * 断连/离页 = 读流中止（回合照跑——落库单源；回来「重读」即全量）；发送失败/流前错误 = 就地人话（`ctx.fail`——`mapError` 口径）。
+ * 批内件直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`）。
  */
 import { mapError, t, langTag } from "./i18n.mjs"
 import { openModal, showNote } from "./modal.mjs"
 import { deriveModels } from "./views-models.mjs"
-import { md, mdInline } from "/rc/md.mjs"
-import { renderToolCard, finishToolCard, renderToolHistory } from "/rc/flow/tool-card.mjs"
+import { buildAssistantRestore, buildUserMessage, renderBlock } from "/rc/flow/block.mjs"
+import { finishToolCard, renderToolCard, renderToolHistory } from "/rc/flow/tool-card.mjs"
 import { isToolFailure } from "/rc/lib.mjs"
 import { createStreamRenderer } from "/rc/flow/stream.mjs"
-import { applyPin, createPinWatch } from "/rc/scroll.mjs"
+import { applyPin, createPinWatch, nearBottom } from "/rc/scroll.mjs"
 import { setStrings } from "/rc/i18n.mjs"
+import { createChatComposer } from "./views-chat-composer.mjs"
 import { ZH_CORE } from "./i18n-zh-core.mjs"
 import { EN_CORE } from "./i18n-en-core.mjs"
 
@@ -60,13 +62,14 @@ export function argsText(args) {
   try { return JSON.stringify(args) } catch { return String(args) }
 }
 
-/** notice 行四形（§2.10）：`data.reason` **精确值**判定（契约枚举 = `restart` ∥ `budget` ∥ `model_error` ∥ `empty_turn`——§11/API §2.8）
- *  ⇒ 表键 ∥ 未命中（含人话句）⇒ 服务端原文兜底（零信息丢；档面零 CJK——文案全入两表）；子串匹配会误吞未来新值，故严格判值。 */
+/** notice 行文案映射（§2.1「notice 行文案映射」）：`data.reason` **五值**各一键（`restart` ∥ `budget` ∥ `model_error` ∥
+ *  `empty_turn` ∥ `aborted`）；枚举外/缺位 ⇒ 服务端原文兜底（`content`——零信息丢）。精确值判定（子串匹配会误吞未来新值）。 */
 const NOTICE_KEYS = {
   restart: "admin.chat.noticeInterrupted",
   budget: "admin.chat.noticeBudget",
   model_error: "admin.chat.noticeModelError",
   empty_turn: "admin.chat.noticeEmpty",
+  aborted: "admin.chat.noticeAborted",
 }
 
 /** notice 行文案（纯函数——批内件直测）。 */
@@ -78,14 +81,6 @@ export function noticeText(message) {
   return content === "" ? "—" : content
 }
 
-// ── 呈现面（核件接线——渲染单源；本页零自持渲染实现）─────────────────────────
-
-/** 文本面注入点（**全页唯一** `innerHTML` 写口）：核 `md`/`mdInline` 产物已全量转义，真值自服务端来。 */
-function paintMarkdown(node, html) {
-  node.innerHTML = html
-  return node
-}
-
 /** 工具结果文案（核件入参单点——**失败判据 = 核 `isToolFailure`** 单源：本页零自持判据）。
  *  服务端结构化失败位（`ok:false`——§12「错误 ⇒ `ok:false` + 人话 message」）在文本面无判形（人话 message 不携
  *  `Error:` 头 ∥ 状态位行）⇒ 判据不命中的失败立核判据头（核件红面 ∥ 自动展开的唯一入口；呈现零自持）。 */
@@ -94,19 +89,45 @@ function resultText(summary, ok) {
   return ok === false && !isToolFailure(text) ? `Error: ${text}` : text
 }
 
-/** 消息节点（四形——§2.10）：user 气泡（核 `mdInline`）∥ assistant 文本（核 `md`）∥ tool 卡（核件回读径）∥ notice 灰条；
- *  空助手文本 ⇒ 零节点（§11 部分文本口径）。 */
-function messageNode(ctx, message) {
+/** 回读装配（§2.1②——库行 ⇒ 块模型 ⇒ 核件节点，序 = `seq` 升序）：`user` 行 ⇒ 用户块（核 `buildUserMessage`）∥
+ *  `assistant` 行 + 其 `data.toolCalls` 对应 `tool` 行 ⇒ 助手块（`turnStart` = **本回合首个 assistant 行**——一回合一个助手标签）
+ *  + 嵌套工具卡（核 `buildFinishedToolCard`）∥ `notice` 行 ⇒ 控制台 notice 行（自持灰条——VSC 无对应件）。
+ *  悬空 `tool` 行（无主）⇒ 顶层历史卡兜底（防御——服务端消息序不产此行）。 */
+export function messageNodes(ctx, messages = []) {
   const { h } = ctx
-  const content = String(message?.content ?? "")
-  if (message?.role === "user") return paintMarkdown(h("div", { class: "chat-msg user" }), mdInline(content))
-  if (message?.role === "assistant") return content === "" ? null : paintMarkdown(h("div", { class: "chat-msg assistant" }), md(content))
-  if (message?.role === "tool") {
-    const data = message.data ?? {}
-    return renderToolHistory(String(data.name ?? ""), resultText(data.summary, data.ok))
+  const models = []
+  const byCallId = new Map()
+  let labeled = true // 「本回合标签已用」——初值真：首行即 assistant（无 user 前导）时仍出一枚标签
+  for (const row of messages) {
+    if (row?.role === "user") {
+      labeled = false
+      models.push({ kind: "user", text: String(row.content ?? ""), ts: row.createdAt })
+      continue
+    }
+    if (row?.role === "assistant") {
+      const model = { kind: "assistant", text: String(row.content ?? ""), tools: [], turnStart: labeled === false }
+      labeled = true
+      models.push(model)
+      for (const call of Array.isArray(row.data?.toolCalls) ? row.data.toolCalls : []) byCallId.set(String(call?.id ?? ""), model)
+      continue
+    }
+    if (row?.role === "tool") {
+      const model = byCallId.get(String(row.data?.toolCallId ?? ""))
+      const text = resultText(row.data?.summary, row.data?.ok)
+      if (model === undefined) models.push({ kind: "tool", name: String(row.data?.name ?? "tool"), text })
+      else model.tools.push({ id: row.data?.toolCallId, name: String(row.data?.name ?? "tool"), args: argsText(row.data?.args), result: text })
+      continue
+    }
+    if (row?.role === "notice") models.push({ kind: "notice", text: noticeText(row) })
   }
-  if (message?.role === "notice") return h("div", { class: "chat-msg notice", text: noticeText(message) })
-  return h("div", { class: "chat-msg", text: content }) // 枚举外 role 兜底（防御——服务端 CHECK 四值）
+  const nodes = []
+  for (const model of models) {
+    if (model.kind === "user") nodes.push(buildUserMessage(model.text, model.ts))
+    else if (model.kind === "assistant") nodes.push(buildAssistantRestore(model))
+    else if (model.kind === "tool") nodes.push(renderToolHistory(model.name, model.text))
+    else nodes.push(h("div", { class: "message notice", text: model.text }))
+  }
+  return nodes
 }
 
 /** 新会话弹窗（模型下拉 = `deriveModels` 同源；缺省 = 最近一条会话所用模型——KD-SV-87「最近一次成功所用」的**列表面读法**
@@ -122,7 +143,6 @@ function openNewChatModal(ctx, { chats, created }) {
     body: h("div", {},
       h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
         h("label", {}, h("span", { text: t("admin.chat.modelLabel") }), select),
-        h("p", { class: "hint", text: t("admin.chat.newChatHint") }),
         note, submitBtn)),
   })
   // 模型下拉源（provider 注册表展平——零新端点）；空/失败 ⇒ 提示项 + 提交门（前端先行）
@@ -154,7 +174,7 @@ function openNewChatModal(ctx, { chats, created }) {
 
 // ── 页面 ────────────────────────────────────────────────────────────────────
 
-/** 管理·对话页（非壳页——§2.10；沿视图档先例：先建壳，后异步取数）。 */
+/** 管理·对话页（非壳页——§2.1①；沿视图档先例：先建壳，后异步取数）。 */
 export async function renderChat(ctx, mount) {
   const { h } = ctx
   const generation = ++renderGeneration
@@ -162,124 +182,145 @@ export async function renderChat(ctx, mount) {
   let chats = []
   let activeId = null
   let detail = null
-  let busy = false
-  let liveAssistant = null
+  let liveBlock = null // 活流助手块（核 `renderBlock`）
+  let liveBubble = null // 活流文本泡（核 `paintLiveMd` 目标）
   let liveRaw = ""
   let liveTools = new Map()
-  let emptyShown = false
+  let turnLabeled = false // 一回合一个助手标签（本回合已画 ⇒ 真）
 
   mount.append(h("h2", { text: t("admin.chat.title") }))
 
-  // ── 会话条（会话列表 + 「新会话」钮）────────────────────────────────────────
-  const listBox = h("div", { class: "chat-list" }, h("p", { class: "hint", text: t("common.loading") }))
-  const chatsCard = h("section", { class: "card" },
-    h("div", { class: "toolbar" },
-      h("h3", { text: t("admin.chat.chatsTitle") }),
-      h("button", { type: "button", text: t("admin.chat.newChat"), onclick: () => openNewChatModal(ctx, { chats, created }) })),
-    listBox)
+  // ── ① 会话条（sticky 顶：会话选择器 + 新会话 + 重读）─────────────────────────
+  const selector = h("select", { class: "chat-select", "aria-label": t("admin.chat.selectChat") })
+  selector.addEventListener("change", () => {
+    const picked = Number(selector.value)
+    if (Number.isFinite(picked) && picked !== activeId) selectChat(picked)
+  })
+  const newChatBtn = h("button", { type: "button", text: t("admin.chat.newChat"), onclick: () => openNewChatModal(ctx, { chats, created }) })
+  const rereadBtn = h("button", { type: "button", class: "tiny", text: t("admin.chat.reread"), disabled: true, onclick: () => { if (activeId !== null) { composer.resetTurn(); loadDetail(activeId) } } })
+  mount.append(h("div", { class: "chat-bar" }, selector, newChatBtn, rereadBtn))
 
-  // ── 对话区（消息流 + 「重读」）─────────────────────────────────────────────
-  const threadTitle = h("h3", { text: t("admin.chat.title") })
-  const rereadBtn = h("button", { type: "button", class: "tiny", text: t("admin.chat.reread"), disabled: true, onclick: () => { if (activeId !== null) loadDetail(activeId) } })
+  // ── ② 消息流（文档流平铺——无卡无框）────────────────────────────────────────
   const threadBox = h("div", { class: "chat-thread" }, h("p", { class: "hint", text: t("admin.chat.noChatSelected") }))
-  const threadCard = h("section", { class: "card" }, h("div", { class: "toolbar" }, threadTitle, rereadBtn), threadBox)
+  mount.append(threadBox)
 
-  // ── 输入区（多行输入 + 发送钮；空值不提交 ∥ 在途禁用）───────────────────────
-  const input = h("textarea", { rows: "3", placeholder: t("admin.chat.inputPh") })
-  const sendBtn = h("button", { type: "submit", text: t("admin.chat.send") })
-  const runningHint = h("span", { class: "hint", hidden: true, text: t("admin.chat.running") })
-  const note = h("p", { class: "hint error", hidden: true })
-  const form = h("form", { class: "chat-form", novalidate: true, onsubmit: submit },
-    input,
-    h("div", { class: "info-actions" }, sendBtn, runningHint, h("span", { class: "hint", text: t("admin.chat.inputHint") })),
-    note)
-  mount.append(chatsCard, threadCard, h("section", { class: "card" }, form))
+  // ── ③④ 状态行 + 输入区（核件全件消费——`views-chat-composer.mjs`；`#toolbar` 随建随挂）──
+  const composer = createChatComposer(ctx, {
+    root: mount,
+    currentChat,
+    onProviders: () => ctx.api("/api/admin/providers"),
+    onSend,
+    onAbort,
+    onSelectModel,
+    onEcho,
+    onNewChat,
+    onHelp,
+  })
 
-  /** 输入区态（在途 ⇒ 发送钮禁用 + 运行中指示；无选中会话 ⇒ 禁发）。 */
-  function renderCompose() {
-    const running = busy || detail?.chat?.status === "running"
-    sendBtn.disabled = running || activeId === null
-    runningHint.hidden = !running
-  }
-
-  // ── 滚动（核件单源：`applyPin` 写口 ∥ `createPinWatch` 旗标维护——上滚不夺位）──
-  threadBox[PIN_FLAG] = true // 缺省跟底（直写模式——对话流现行语义）
-  createPinWatch(threadBox, { flagKey: PIN_FLAG }).attach() // 近底 ⇒ 翻真（自愈）；上滚 ⇒ 翻假（本页零滚动自持实现）
+  // ── 滚动（核件单源：`applyPin` 写口 ∥ `createPinWatch` 旗标维护——上滚不夺阅读位）──
+  // 作用元素 = 文档流滚动元素（§2.1①）；`scroll` 事件在文档滚动时投于 `document`（**不投元素**——浏览器实测：
+  // 元素监听零命中）⇒ 补一条事件桥：判定（核 `nearBottom`）与写口（核 handle `set`）仍走核件——单源不破。
+  const scrollEl = document.scrollingElement ?? document.documentElement
+  scrollEl[PIN_FLAG] = true // 缺省跟底（直写模式——对话流现行语义）
+  const pinWatch = createPinWatch(scrollEl, { flagKey: PIN_FLAG })
+  pinWatch.attach() // 近底 ⇒ 翻真（自愈）；上滚 ⇒ 翻假（本页零滚动自持实现）
+  document.addEventListener("scroll", () => { pinWatch.set(nearBottom(scrollEl)) }, { passive: true })
 
   /** 跟底写（旗标门——上滚阅读期间零写；核写口）。 */
-  function followPinned() { applyPin(threadBox, threadBox[PIN_FLAG]) }
+  function followPinned() { applyPin(scrollEl, scrollEl[PIN_FLAG]) }
 
   /** 显式回底（选中会话 ∥ 重读——重 pin；核写口）。 */
-  function pinBottom() { threadBox[PIN_FLAG] = true; applyPin(threadBox, true) }
+  function pinBottom() { scrollEl[PIN_FLAG] = true; applyPin(scrollEl, true) }
 
-  /** 流式重渲器（核 `createStreamRenderer` 单源）：`token()` 帧内现取气泡指针（无气泡 ⇒ null）；
+  /** 流式重渲器（核 `createStreamRenderer` 单源）：`token()` 帧内现取文本泡指针（无泡 ⇒ null）；
    *  帧尾 = 旗标门跟底。本页零自持重渲（禁每帧全量 `md`/整面 `innerHTML`）。 */
   const streamRenderer = createStreamRenderer({
-    token: () => (liveAssistant === null ? null : { el: liveAssistant, raw: liveRaw }),
+    token: () => (liveBubble === null ? null : { el: liveBubble, raw: liveRaw }),
     frameEnd: () => followPinned(),
   })
 
-  /** 会话条重渲（活动态高亮——行 = 模型 ∥ 摘要 ∥ 时间；在途徽标）。 */
-  function renderList() {
-    if (chats.length === 0) { listBox.replaceChildren(h("p", { class: "hint", text: t("admin.chat.chatsEmpty") })); return }
-    listBox.replaceChildren(...chats.map((row) => h("button", {
-      type: "button", class: row.id === activeId ? "chat-row tiny active" : "chat-row tiny", onclick: () => selectChat(row.id),
-    },
-      h("span", { class: "pick-head" }, h("span", { text: String(row.model ?? "") }), row.status === "running" ? h("span", { class: "badge", text: t("admin.chat.statusRunning") }) : null),
-      h("span", { class: "hint", text: String(row.excerpt ?? "") === "" ? "—" : String(row.excerpt) }),
-      h("span", { class: "hint", text: ctx.fmtTs(row.updatedAt) }))))
+  // ── 会话条重渲（选择器行 = 模型 ∥ `excerpt` ∥ 时间；当刻项高亮 = 原生选中态）────────
+  function currentChat() {
+    if (activeId === null) return null
+    return detail?.chat ?? chats.find((row) => row.id === activeId) ?? null
   }
 
-  /** 选中会话（列表高亮 + 取详情——读时读）。 */
+  function renderSelector() {
+    selector.replaceChildren(...(chats.length === 0
+      ? [h("option", { value: "", text: t("admin.chat.chatsEmpty") })]
+      : chats.map((row) => h("option", {
+        value: String(row.id),
+        text: `${String(row.model ?? "")} · ${String(row.excerpt ?? "") === "" ? "—" : String(row.excerpt)} · ${ctx.fmtTs(row.updatedAt)}`,
+      }))))
+    if (activeId !== null) selector.value = String(activeId)
+    rereadBtn.disabled = activeId === null
+    composer.syncModel() // 当刻会话模型 ⇒ 核模型钮面字（显示面重派生——零槽写）
+  }
+
+  /** 选中会话（选择器随正 + 取详情——读时读）。 */
   function selectChat(chatId) {
     activeId = chatId
     detail = null
-    renderList()
-    renderCompose()
+    renderSelector()
     loadDetail(chatId)
+  }
+
+  // ── 活流面（核件装配——块内嵌工具卡 ∥ 一回合一个助手标签）────────────────────
+
+  /** 活流重置（每轮起点 ∥ 重读）：块/泡/工具指针归零 + 标签旗标复位。 */
+  function liveReset() {
+    liveBlock = null
+    liveBubble = null
+    liveRaw = ""
+    liveTools = new Map()
+    turnLabeled = false
+  }
+
+  /** 首块随首帧建（核 `renderBlock`——`withLabel` = 本回合首个块；文本泡 = 核 `paintLiveMd` 目标）。 */
+  function ensureBlock() {
+    if (liveBlock !== null) return liveBlock
+    liveBlock = renderBlock({ withLabel: turnLabeled === false })
+    turnLabeled = true
+    liveBubble = h("div", { class: "bubble content" })
+    liveBlock.append(liveBubble)
+    appendLive(liveBlock)
+    return liveBlock
   }
 
   /** 对话区重渲（读时单源——`end` ⇒ 重读即此；流式视图随重读丢弃）。 */
   function renderThread() {
-    liveAssistant = null
-    liveRaw = ""
-    liveTools = new Map()
-    emptyShown = false
-    threadTitle.textContent = String(detail?.chat?.model ?? t("admin.chat.title"))
-    rereadBtn.disabled = activeId === null
+    liveReset()
     const messages = Array.isArray(detail?.messages) ? detail.messages : []
     if (messages.length === 0) {
-      emptyShown = true
-      threadBox.replaceChildren(h("p", { class: "hint", text: t("admin.chat.threadEmpty") }))
+      threadBox.replaceChildren(h("p", { class: "hint", text: t(activeId === null ? "admin.chat.noChatSelected" : "admin.chat.threadEmpty") }))
       return
     }
-    threadBox.replaceChildren(...messages.map((message) => messageNode(ctx, message)).filter((node) => node !== null))
+    threadBox.replaceChildren(...messageNodes(ctx, messages))
     pinBottom() // 重读径照旧：回底（显式动作——核写口）
   }
 
-  /** 流式行入列（`end` ⇒ 重读整段替代——读时单源；空态提示随首行让位）。 */
+  /** 活流行入列（`end` ⇒ 重读整段替代——读时单源）。 */
   function appendLive(node) {
-    if (emptyShown) { threadBox.replaceChildren(node); emptyShown = false } else threadBox.append(node)
+    if (node === null || node === undefined) return
+    threadBox.append(node)
     followPinned()
   }
 
-  /** `delta` 帧（核流式画件——增量重渲 + 帧尾跟底；气泡行随首块建）。 */
+  /** `delta` 帧（核流式画件——增量重渲 + 帧尾跟底；助手块随首块建）。 */
   function appendDelta(text) {
-    if (liveAssistant === null) {
-      liveAssistant = h("div", { class: "chat-msg assistant" })
-      liveRaw = ""
-      appendLive(liveAssistant)
-    }
+    ensureBlock()
     liveRaw += String(text ?? "")
     streamRenderer.markToken()
   }
 
-  /** `call` 帧（核件建卡——名 + 参数摘要，结果位「执行中…」）。 */
+  /** `call` 帧（核件建卡——名 + 参数摘要，结果位「执行中…」；**嵌助手块内**，不挂顶层——§2.1②）。 */
   function appendCall(frame) {
+    ensureBlock()
     const name = String(frame.name ?? "")
-    const { el, ref } = renderToolCard({ name, args: argsText(frame.args), id: String(frame.id ?? "") })
+    const { el: card, ref } = renderToolCard({ name, args: argsText(frame.args), id: String(frame.id ?? "") })
     liveTools.set(String(frame.id ?? ""), { ref, name })
-    appendLive(el)
+    liveBlock.append(card)
+    followPinned()
   }
 
   /** `result` 帧（核件结算——结果摘要 + 失败判据单源）。 */
@@ -290,58 +331,66 @@ export async function renderChat(ctx, mount) {
     followPinned()
   }
 
-  /** 帧分发（`end` 帧回传——流后重读触发点；未知帧跳过）。 */
-  function applyFrame(frame, ended) {
-    if (frame === null) return ended
-    if (frame.type === "delta") { appendDelta(frame.text); return ended }
-    if (frame.type === "call") { appendCall(frame); return ended }
-    if (frame.type === "result") { applyResult(frame); return ended }
-    if (frame.type === "end") return frame
-    return ended
+  /** 视图帧分发（`turn`/`usage`/`end` 归状态行面——`composer.applyFrame` 恒先收全帧）。 */
+  function applyFrame(frame) {
+    if (frame === null) return
+    if (frame.type === "delta") { appendDelta(frame.text); return }
+    if (frame.type === "call") { appendCall(frame); return }
+    if (frame.type === "result") { applyResult(frame); return }
   }
 
-  /**
-   * 发送一条并读流（单 POST + NDJSON 帧流——§11）：`delta` 追加当前气泡 ∥ `call`/`result` 工具卡 ∥ `end` ⇒ 重读详情。
-   * 断连/离页 = 读流中止（回合照跑——落库单源）；流前错误（判权/形/在途/不存在/模型不可用）= 统一信封 ⇒ 就地人话。
-   * **流归属**：帧只写「本流所向会话 == 当前选中会话」的视图（切走 ⇒ 丢帧不串台）；`end` 重读同卫。
-   * 返回 = 回合是否已受理（`true` ⇒ 落库已起——调用方不还原草稿；`false` ⇒ 零副作用）。
-   */
-  async function streamTurn(chatId, content) {
+  // ── 装配面（composer 回调——输入区 ∥ 队列 ∥ 状态行）──────────────────────────
+
+  /** 本地用户回声块（核 `buildUserMessage`——活流径；`hooks.onUserEcho` 出口）。 */
+  function onEcho(text, ts) {
+    if (activeId === null) return null
+    const node = buildUserMessage(text, ts)
+    appendLive(node)
+    return node
+  }
+
+  /** 发一条并读流（单 POST + NDJSON 帧流——§11）：页面的传输面（`composer` 只给文本与图列）。
+   *  返回 `{ accepted, ended }`：`accepted` = 落库已起（调用方不还原草稿）∥ `ended` = 收到 `end`（队首发起前提）。 */
+  async function onSend(text, images = []) {
+    if (activeId === null) return { accepted: false, ended: false }
+    const chatId = activeId
+    liveReset()
+    const payload = Array.isArray(images) && images.length > 0 ? { content: text, images } : { content: text }
     let response = null
     try {
       response = await fetch(`/api/admin/agent/chats/${chatId}/messages`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(payload),
       })
-    } catch (error) { showNote(note, mapError(error)); return false }
+    } catch (error) { ctx.fail(error); return { accepted: false, ended: false } }
     if (!response.ok) {
-      let payload = null
-      try { payload = await response.json() } catch { /* 无 JSON 体 ⇒ 以状态判 */ }
-      const error = new Error(payload?.error?.message ?? t("app.httpFailed", { status: response.status }))
+      let body = null
+      try { body = await response.json() } catch { /* 无 JSON 体 ⇒ 以状态判 */ }
+      const error = new Error(body?.error?.message ?? t("app.httpFailed", { status: response.status }))
       error.status = response.status
-      error.code = payload?.error?.code ?? null
-      showNote(note, mapError(error))
-      if (response.status === 401 && error.code !== "invalid_credentials") ctx.fail(error) // 会话失效 ⇒ 回登录（api 封装同口径）
-      return false
+      error.code = body?.error?.code ?? null
+      ctx.fail(error)
+      return { accepted: false, ended: false }
     }
     let reader = null
-    try { reader = response.body.getReader() } catch { showNote(note, t("admin.chat.streamBroken")); return false } // 200 无流体（角落）⇒ 就地人话
+    try { reader = response.body.getReader() } catch { ctx.flash(t("admin.chat.streamBroken")); return { accepted: true, ended: false } } // 200 无流体（角落）⇒ 就地人话
     const decoder = new TextDecoder()
     let buffer = ""
     let ended = null
-    /** 帧落地（流归属卫：非当前选中会话 ⇒ 只记 `end`，不写视图）。 */
+    /** 帧落地：状态行恒收（本流所向——读数面）；视图面加卫（切走 ⇒ 丢帧不串台）。 */
     const land = (line) => {
       const frame = parseFrame(line)
       if (frame === null) return
+      composer.applyFrame(frame)
       if (frame.type === "end") { ended = frame; return }
-      if (activeId === chatId) applyFrame(frame, ended) // 切走 ⇒ 丢帧（视图不串台；落库单源——回来重读即全量）
+      if (activeId === chatId) applyFrame(frame)
     }
     try {
       for (;;) {
         if (generation !== renderGeneration || mount.isConnected === false) { // 重渲/离页 ⇒ 读流中止（回合照跑）
           try { await reader.cancel() } catch { /* 已关 */ }
-          return true
+          return { accepted: true, ended: false }
         }
         const { value, done } = await reader.read()
         if (done) break
@@ -352,30 +401,47 @@ export async function renderChat(ctx, mount) {
       for (const line of splitLines(buffer, "").lines) land(line) // 末帧无换行收尾
     } catch {
       streamRenderer.flush() // 断连：已到文本落地（尾帧兜底——已画者零重复）
-      showNote(note, t("admin.chat.streamBroken")) // 断连——读流中止（零未押异常；回合已在服务端）
-      return true
+      ctx.flash(t("admin.chat.streamBroken")) // 断连——读流中止（零未押异常；回合已在服务端）
+      return { accepted: true, ended: false }
     }
     streamRenderer.flush() // 回合尾同步尾帧（rAF 未及——重读置换前必须画出）
     if (ended !== null && activeId === chatId) await loadDetail(chatId) // `end` ⇒ 重读（读时单源；切走 ⇒ 不抳——避免把视图换成另一会话）
+    return { accepted: true, ended: ended !== null }
+  }
+
+  /** 请求中止在途回合（KD-SV-107）：`POST …/abort`；终态经流/重读呈现（本行零副作用）。 */
+  async function onAbort() {
+    if (activeId === null) return
+    try { await ctx.api(`/api/admin/agent/chats/${activeId}/abort`, { method: "POST", body: {} }) }
+    catch (error) { ctx.fail(error) }
+  }
+
+  /** 换模型（KD-SV-108——明选即换、下回合生效）：`PATCH …/:id`；失败 ⇒ 就地人话 + 钮面回退（`composer` 面重派生）。 */
+  async function onSelectModel(model) {
+    if (activeId === null || model === "") return false
+    try {
+      const data = await ctx.api(`/api/admin/agent/chats/${activeId}`, { method: "PATCH", body: { model } })
+      if (detail !== null && data?.chat) detail.chat = data.chat
+      renderSelector()
+      return true
+    } catch (error) { ctx.fail(error); return false }
+  }
+
+  /** 新会话弹窗（斜径 `/new` 同门——`run` 返真 = 已受理）。 */
+  function onNewChat() {
+    openNewChatModal(ctx, { chats, created })
     return true
   }
 
-  /** 发送（空值不提交——就地必填提示；在途禁用；回合未受理 ⇒ 草稿还原——零丢失，沿弹窗体例）。 */
-  async function submit(event) {
-    event.preventDefault()
-    const content = input.value.trim()
-    if (content === "") { showNote(note, t("admin.chat.messageRequired")); return }
-    if (activeId === null || sendBtn.disabled) return
-    note.hidden = true
-    input.value = ""
-    busy = true
-    renderCompose()
-    let accepted = false
-    try { accepted = await streamTurn(activeId, content) }
-    catch (error) { showNote(note, mapError(error)) } // 未押角落（事件兵底）——就地人话，不吞静默
-    finally { busy = false; renderCompose() }
-    if (!accepted && input.value === "") input.value = content // 零副作用失败（网络/信封拒）⇒ 还原；流中/断连不还原（落库已起）
+  /** `/help` 行集就地打印（核 `formatHelp` 产物——本页只落件，零第二清单）。 */
+  function onHelp(rows) {
+    const lines = (Array.isArray(rows) ? rows : []).map((row) => String(row?.text ?? "")).filter((text) => text !== "")
+    if (lines.length === 0) return false
+    appendLive(h("div", { class: "message notice", text: lines.join("\n") }))
+    return true
   }
+
+  // ── 取数 ───────────────────────────────────────────────────────────────────
 
   /** 会话详情（读时读——`detail` 单源：消息流 ∥ 工具卡 ∥ notice 皆自此渲染）。 */
   async function loadDetail(chatId) {
@@ -385,13 +451,13 @@ export async function renderChat(ctx, mount) {
       if (generation !== renderGeneration) return
       detail = data
       renderThread()
+      renderSelector()
     } catch (error) {
       if (generation !== renderGeneration) return
       ctx.fail(error)
       threadBox.replaceChildren(h("p", { class: "hint error" }, t("admin.chat.detailFailed"), " ",
         h("button", { type: "button", class: "tiny", text: t("admin.chat.retry"), onclick: () => loadDetail(chatId) })))
     }
-    if (generation === renderGeneration) renderCompose()
   }
 
   /** 会话列表（读时读——进页一次 ∥ 新会话后刷新；倒序由服务端定）。 */
@@ -400,11 +466,11 @@ export async function renderChat(ctx, mount) {
       const data = await ctx.api("/api/admin/agent/chats")
       if (generation !== renderGeneration) return
       chats = Array.isArray(data?.chats) ? data.chats : []
-      renderList()
+      renderSelector()
     } catch (error) {
       if (generation !== renderGeneration) return
       ctx.fail(error)
-      listBox.replaceChildren(h("p", { class: "hint error" }, t("admin.chat.listFailed"), " ",
+      threadBox.replaceChildren(h("p", { class: "hint error" }, t("admin.chat.listFailed"), " ",
         h("button", { type: "button", class: "tiny", text: t("admin.chat.retry"), onclick: () => loadChats() })))
     }
   }
@@ -415,6 +481,8 @@ export async function renderChat(ctx, mount) {
     if (chat?.id !== undefined && chat?.id !== null) selectChat(chat.id)
   }
 
-  renderCompose()
+  renderSelector()
   await loadChats()
+  void composer.refreshModels() // 模型候选取数（核菜单源——失败零候选，面板留「加载模型…」面）
+  if (activeId === null && chats.length > 0) selectChat(chats[0].id) // 进页即当刻会话（倒序首行 = 最近）
 }

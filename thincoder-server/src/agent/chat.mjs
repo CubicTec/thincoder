@@ -1,11 +1,15 @@
 /**
  * chat.mjs — 聊天式驱动（`agent/ADMIN-AGENT.md` §11 ∥ KD-SV-88/89；admin-agent-chat 批——台账 #1254）：
- * 会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环——与任务式同一环语义）∥ 帧流编解码（`delta`/`call`/`result`/`end`）
- * ∥ 逐条落库（库两表——v14）∥ 终态收尾（成功 ∥ 模型错误 ∥ 预算超限 ∥ 空回合）∥ 重启收尾（`running` ⇒ `idle` + notice）。
+ * 会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环——与任务式同一环语义）∥ 帧流编解码（`turn`/`delta`/`usage`/`call`/`result`/`end`）
+ * ∥ 逐条落库（库两表——v14）∥ 终态收尾（成功 ∥ 模型错误 ∥ 预算超限 ∥ 空回合 ∥ 手动中止）∥ 重启收尾（`running` ⇒ `idle` + notice）。
  *
  * 回合语义（§11）：用户发一条 ⇒ 环跑到**自然结束**（模型无工具调用 = 成功——与任务式的 `report` 终态不同源故本档自持环体；
- * 预算常量/模型出口装配与 `run.mjs` **同源复用**——`DEFAULT_MAX_CALLS`/`DEFAULT_MAX_DURATION_MS`/`loadCoreChat`）。终止四形：
- * ① 自然结束（`succeeded`）∥ ② 预算超限 `budget` ∥ ③ 模型出口抛错 `model_error` ∥ ④ 空回合 `empty_turn`——②③④ ⇒ notice 行 + `chat_stop` 审计 + `end` 帧 `failed`。
+ * 预算常量/模型出口装配与 `run.mjs` **同源复用**——`DEFAULT_MAX_CALLS`/`DEFAULT_MAX_DURATION_MS`/`loadCoreChat`）。终止五形：
+ * ① 自然结束（`succeeded`）∥ ② 预算超限 `budget` ∥ ③ 模型出口抛错 `model_error` ∥ ④ 空回合 `empty_turn` ∥ ⑤ 手动中止 `aborted`（KD-SV-107）——②③④⑤ ⇒ notice 行 + `chat_stop` 审计 + `end` 帧 `failed`。
+ * 中止面（KD-SV-107——chat-shell-align 批）：**进程内登记表**（`Set<chatId>`——`requestChatAbort` ∥ `isChatAbortRequested` ∥ `clearChatAbort`；零持久化，
+ * 重启天然空）+ **双通道生效**：① `AbortSignal` 透传模型出口（在途调用当即中断）∥ ② 环内检查点（每模型调用前 ∥ 每工具调用前）。
+ * 帧面读数（KD-SV-106——§11.3）：`{ type: "turn", n }`（每次模型调用前）∥ `{ type: "usage", … }`（每次模型调用后、有源才发）∥ `end` 增 `durationMs`/`calls`（可字段）；**零落库**（帧面 = 视图面）。
+ * 图片面（KD-SV-109）：`images`（dataURL 串列——两门已过）⇒ user 行 `data_json.imageParts`（parts 数组素形 ∥ 回放 `content` 数组）；详情响应仅 `imageCount`。
  * ②③ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行）；零文本 ⇒ 零 `assistant` 行。
  *
  * 口径：**执行不依赖连接**（断连照跑到终态——落库单源；`emit` 写失败即吞，回合不受影响）；消息逐条增量落库（KD-SV-89）；
@@ -24,8 +28,8 @@ import { maskSecrets } from "./tools.mjs"
 export const CHAT_STATUSES = Object.freeze(["idle", "running"])
 /** 消息角色（库 CHECK 四值——v14 段；notice = 回放滤除的收尾行）。 */
 export const CHAT_ROLES = Object.freeze(["user", "assistant", "tool", "notice"])
-/** notice `data.reason` 枚举（**四值定稿**——重启收尾 ∥ 预算超限 ∥ 模型错误 ∥ 空回合；父侧 2026-10-11 裁）。 */
-export const CHAT_NOTICE_REASONS = Object.freeze(["restart", "budget", "model_error", "empty_turn"])
+/** notice `data.reason` 枚举（**五值**——重启收尾 ∥ 预算超限 ∥ 模型错误 ∥ 空回合 ∥ 手动中止；末位 = chat-shell-align 批 KD-SV-107）。 */
+export const CHAT_NOTICE_REASONS = Object.freeze(["restart", "budget", "model_error", "empty_turn", "aborted"])
 
 /** 工具结果落库上限（模型可见形——KD-SV-89/§11「≤4000 字：回放逐字一致」）。 */
 export const CHAT_TOOL_CONTENT_MAX = 4000
@@ -54,7 +58,34 @@ export function noticeTextOf(reason, detail = null) {
   if (reason === "budget") return detail ?? "预算超限——本轮已停"
   if (reason === "model_error") return detail ? `模型调用失败：${detail}` : "模型调用失败——本轮中断"
   if (reason === "empty_turn") return "模型空回合（无文本无工具调用）——本轮无输出"
+  if (reason === "aborted") return "已手动中止——本轮已停"
   return String(detail ?? reason)
+}
+
+// ── 回合中止登记表（§11.2③/KD-SV-107——进程内，零持久化：重启天然空）────────────────────
+
+/** 已登记中止的会话 id 集（检查点读面；路由 `…/abort` = 写面）。 */
+const abortRequests = new Set()
+/** 在途回合的信号触发口（`chatId ⇒ AbortController`——在途模型调用当即中断；随回合 `finally` 删）。 */
+const abortSignals = new Map()
+
+/** 登记中止（路由面）：置集 + 触发在途信号（无在途 ⇒ 只置集——下一检查点即收尾）。 */
+export function requestChatAbort(id) {
+  const key = Number(id)
+  abortRequests.add(key)
+  abortSignals.get(key)?.abort()
+}
+
+/** 中止是否已登记（环内两检查点读面）。 */
+export function isChatAbortRequested(id) {
+  return abortRequests.has(Number(id))
+}
+
+/** 清登记（回合收尾 `finally` 单点——登记表随回合生命周期，零残留）。 */
+export function clearChatAbort(id) {
+  const key = Number(id)
+  abortRequests.delete(key)
+  abortSignals.delete(key)
 }
 
 // ── 注入缝（§11——模块级；默认 null ⇒ 回落真件）───────────────────────────────
@@ -110,13 +141,24 @@ export function listChats(db, { limit = 100 } = {}) {
   return { chats: rows.map((row) => chatView(db, row)) }
 }
 
-/** 消息读数（§2.8 行形；`data` = 附加形解码；序 = `seq` 升序）。 */
+/** 图片轮附加形（KD-SV-109——dataURL 数组 ⇒ parts 数组素形；空 ⇒ `null` 零键）。 */
+export function imagePartsOf(images = []) {
+  const list = Array.isArray(images) ? images : []
+  if (list.length === 0) return null
+  return { imageParts: list.map((url) => ({ type: "image_url", image_url: { url: String(url) } })) }
+}
+
+/** 消息读数（§2.8 行形；`data` = 附加形解码——**图片只出计数**（user 行 `imageCount`——dataURL 零下发）∥ 序 = `seq` 升序）。 */
 export function messageView(row) {
+  const data = parseJson(row.data_json, null)
+  if (row.role === "user" && Array.isArray(data?.imageParts)) {
+    return { seq: row.seq, role: row.role, content: row.content, data: { imageCount: data.imageParts.length }, createdAt: row.created_at }
+  }
   return {
     seq: row.seq,
     role: row.role,
     content: row.content,
-    data: parseJson(row.data_json, null),
+    data,
     createdAt: row.created_at,
   }
 }
@@ -212,7 +254,12 @@ export function replayMessages(rows = []) {
   const messages = []
   for (const row of rows) {
     if (row.role === "user") {
-      messages.push({ role: "user", content: row.content })
+      const data = parseJson(row.data_json, null)
+      const parts = Array.isArray(data?.imageParts) ? data.imageParts : []
+      // 图片轮 ⇒ `content` 数组（文本素 + parts——KD-SV-109）；无图轮恒字符串形（存量零变）
+      messages.push(parts.length === 0
+        ? { role: "user", content: row.content }
+        : { role: "user", content: [{ type: "text", text: row.content }, ...parts] })
       continue
     }
     if (row.role === "assistant") {
@@ -339,16 +386,29 @@ export async function buildChatExit({ db, ref, chatImpl = null, env = process.en
   const hit = registry.dispatch(ref)
   if (hit.miss) throw new Error(`模型不可用：${String(ref)}（注册表未命中——建会话时已校验，此处为复检）`)
   const chat = chatImpl ?? (await loadCoreChat())
-  return async ({ messages, tools, onToken }) =>
-    chat({ baseURL: hit.provider.baseURL, apiKey: hit.provider.apiKey, model: hit.model, name: hit.provider.name }, { messages, tools, onToken })
+  return async ({ messages, tools, onToken, signal }) => // `signal` 透传核（回合中止——KD-SV-107；缺 ⇒ 核不挂取消链）
+    chat({ baseURL: hit.provider.baseURL, apiKey: hit.provider.apiKey, model: hit.model, name: hit.provider.name }, { messages, tools, onToken, signal })
+}
+
+/** `usage` 帧成形（§11.3——核 `chat()` 返回的 usage 形 ⇒ 帧面短键；入参缺 ∥ 非对象 ⇒ `null` = 无源零帧；单键缺/非数 ⇒ 0）。 */
+export function usageFrameOf(usage) {
+  if (usage === null || typeof usage !== "object") return null
+  const num = (value) => (typeof value === "number" && Number.isFinite(value) ? value : 0)
+  return {
+    type: "usage",
+    prompt: num(usage.prompt_tokens),
+    completion: num(usage.completion_tokens),
+    cacheHit: num(usage.prompt_cache_hit_tokens),
+    cacheMiss: num(usage.prompt_cache_miss_tokens),
+  }
 }
 
 /**
- * 跑一个回合（§11——调用前须 `claimChatTurn` 置在途）：`content` = 本轮用户消息 ∥ `emit` = 帧出口（`{ type, … }` 对象；
- * 断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`）。
- * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）。
+ * 跑一个回合（§11——调用前须 `claimChatTurn` 置在途）：`content` = 本轮用户消息 ∥ `images` = 图片 dataURL 串列（空 = 纯文本轮；
+ * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`）。
+ * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
-export async function runChatTurn({ db, chatId, content, emit = null, deps = {}, now = Date.now, log = null } = {}) {
+export async function runChatTurn({ db, chatId, content, images = [], emit = null, deps = {}, now = Date.now, log = null } = {}) {
   const chat = chatRowOr404(db, chatId)
   const budget = { maxCalls: deps.budget?.maxCalls ?? DEFAULT_MAX_CALLS, maxDurationMs: deps.budget?.maxDurationMs ?? DEFAULT_MAX_DURATION_MS }
   const emitFrame = (frame) => {
@@ -379,7 +439,7 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
     })
 
   try {
-    appendMessage(db, chat.id, { role: "user", content, now }) // 逐条增量落库（本轮消息先落——断连亦留痕）
+    appendMessage(db, chat.id, { role: "user", content, data: imagePartsOf(images), now }) // 逐条增量落库（本轮消息先落——断连亦留痕；图片轮携 parts 形）
     const messages = buildTurnMessages(listMessages(db, chat.id))
     const tools = deps.tools ?? injectedTools ?? createChatTools({
       db,
@@ -404,11 +464,16 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
       const text = capSummary(noticeTextOf(reason, detail), turnSecrets) // 摘要口径（≤300 字 + 掩蔽）——notice 行 ∥ `chat_stop` 审计 ∥ `end` 帧三面同源
       appendMessage(db, chat.id, { role: "notice", content: text, data: { reason }, now })
       auditChatStop(reason, text)
-      emitFrame({ type: "end", status: "failed", reason: text })
-      return { status: "failed", reason: text, calls, durationMs: now() - started }
+      const durationMs = now() - started
+      emitFrame({ type: "end", status: "failed", reason: text, durationMs, calls }) // 帧面读数（§11.3——可字段）
+      return { status: "failed", reason: text, calls, durationMs }
     }
 
-    // 模型出口装配（§5）：注册表缺位/引用缺位 ⇒ 按「模型错误」收尾（四终态不外溢第三形）
+    // 中止信号（KD-SV-107——在途调用当即中断之口）：登记 ⇒ 路由 `…/abort` 即触发；`finally` 清登记。
+    const controller = new AbortController()
+    abortSignals.set(chat.id, controller)
+
+    // 模型出口装配（§5）：注册表缺位/引用缺位 ⇒ 按「模型错误」收尾（五终态不外溢第三形）
     let modelExit
     try {
       modelExit = deps.chat ?? injectedChat ?? (await buildChatExit({ db, ref: chat.model, env: deps.env ?? process.env }))
@@ -416,6 +481,7 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
       return closeFailed("model_error", e?.message ?? String(e), "")
     }
 
+    let modelCalls = 0
     for (;;) {
       const elapsed = now() - started
       if (elapsed > budget.maxDurationMs) {
@@ -424,12 +490,16 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
       if (calls >= budget.maxCalls) {
         return closeFailed("budget", `预算超限（工具调用 ${calls} ≥ 上限 ${budget.maxCalls} 次）——停`)
       }
+      if (isChatAbortRequested(chat.id)) return closeFailed("aborted", null, "") // 检查点①（模型调用前）
       let turn
       let streamed = ""
+      modelCalls += 1
+      emitFrame({ type: "turn", n: modelCalls }) // 帧面读数（§11.3——每次模型调用前）
       try {
         turn = await modelExit({
           messages,
           tools: tools.schemas,
+          signal: controller.signal,
           onToken: (token) => {
             if (typeof token !== "string" || token === "") return
             streamed += token
@@ -437,16 +507,21 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
           },
         })
       } catch (e) {
+        // 中止 ⇒ 第五终态（`AbortError` 与模型错误同形 ⇒ 判决读登记表）
+        if (isChatAbortRequested(chat.id)) return closeFailed("aborted", null, streamed)
         return closeFailed("model_error", e?.message ?? String(e), streamed)
       }
+      const usageFrame = usageFrameOf(turn?.usage)
+      if (usageFrame !== null) emitFrame(usageFrame) // 每次模型调用后（有源才发）
       const text = typeof turn?.content === "string" && turn.content !== "" ? turn.content : streamed // 已生成文本优先（流式增量兜底——如实落库）
       const toolCalls = normalizeToolCalls(turn?.toolCalls)
       if (toolCalls.length === 0) {
         if (text.trim() === "") return closeFailed("empty_turn", null, "")
         appendMessage(db, chat.id, { role: "assistant", content: text, now })
         messages.push({ role: "assistant", content: text })
-        emitFrame({ type: "end", status: "succeeded" })
-        return { status: "succeeded", reason: null, calls, durationMs: now() - started }
+        const durationMs = now() - started
+        emitFrame({ type: "end", status: "succeeded", durationMs, calls }) // 帧面读数（§11.3）
+        return { status: "succeeded", reason: null, calls, durationMs }
       }
       // 有工具调用：assistant 行（文本 + `toolCalls` 摘要——回放据以重建消息数组）
       const pending = toolCalls.map((call) => ({ ...call, args: argsTextOf(call.arguments) }))
@@ -477,6 +552,7 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
             : `预算超限（时长 ${Math.round((now() - started) / 1000)}s > 上限 ${Math.round(budget.maxDurationMs / 1000)}s）——停`
           return closeFailed("budget", detail, "")
         }
+        if (isChatAbortRequested(chat.id)) return closeFailed("aborted", null, "") // 检查点②（工具调用前）
         calls += 1
         emitFrame({ type: "call", id: call.id, name: call.name, args: call.args })
         const args = parseToolArgs(call.arguments)
@@ -493,6 +569,7 @@ export async function runChatTurn({ db, chatId, content, emit = null, deps = {},
       }
     }
   } finally {
+    clearChatAbort(chat.id) // 登记表随回合生命周期（单源——零残留）
     settleChatIdle(db, chat.id, { now })
   }
 }

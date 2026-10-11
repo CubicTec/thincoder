@@ -179,7 +179,7 @@ test("① 运行面：六列在册 ∥ 在线/离线徽标 ∥ 离线行红标 �
     assert.ok(cellsOf(rows[0]).includes(fRunner().version), "版本列")
     assert.equal(fFind(mount, (node) => node.className === "badge ok")?.textContent, ZH["admin.sandbox.online"], "在线徽标")
     assert.ok(fFind(mount, (node) => node.textContent === ZH["admin.sandbox.empty"]) === null, "有节点 ⇒ 空态缺位")
-    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/overview", "GET /api/admin/sandbox/onboarding"], "首读两件（容器区待展开——懒加载）")
+    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/image-sources", "GET /api/admin/sandbox/overview", "GET /api/admin/sandbox/onboarding"], "首读三件（镜像源卡 ∥ 容器区待展开——懒加载）")
     // 全离线（节点面不整页禁用——两钮恒在场）
     const offline = await fMount({ runners: [fRunner({ online: false, version: null, containers: null, status: "unavailable" })] })
     const alert = fFind(offline.mount, (node) => node.tag === "p" && node.textContent === ZH["admin.sandbox.allOffline"])
@@ -471,8 +471,8 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(EN["err.upstream_error"], "Upstream service error: {detail}", "en 改值")
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
-  // 键数终值（实读 2026-10-11：555 ∥ 560——沙盒-docker 批 +54 ∥ chat 批 +33；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [555, 560], "键数终值")
+  // 键数终值（实读 2026-10-11：589 ∥ 594——沙盒-docker 批 +54 ∥ chat 批 +33 ∥ 镜像源批 +34；键集零语义，拆分为文件面）
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [589, 594], "键数终值")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
@@ -480,7 +480,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
 test("⑧ 静态面：档目 36 ∥ 37 ∥ nav 管理 9 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
   // 档目（31 ∥ 32 ⇒ 36 ∥ 37——2026-10-11 两批 + 拆分层后）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [37, 36], "档目 37 ∥ 36（2026-10-11 两批 + 拆分层后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（2026-10-11 三批 + 拆分层后）")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 9 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")

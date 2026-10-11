@@ -370,7 +370,7 @@ test("④ i18n：54 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
 test("⑤ 静态面：档目 36 ∥ 37 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链", () => {
   // 档目（36 ∥ 37——本批 34 ∥ 35 + i18n 沙盒族再拆 +2 档（#1270）；test 口径 = [总档数, 除 favicon 档数]）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [37, 36], "档目 37 ∥ 36（test 口径）⇒ 文档口径 36 ∥ 37")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（test 口径）⇒ 文档口径 37 ∥ 38")
   for (const name of ["views-sandbox-containers.mjs", "views-sandbox-images.mjs", "i18n-zh-sandbox.mjs", "i18n-en-sandbox.mjs"]) assert.ok(names.includes(name), `新档在册：${name}`)
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {

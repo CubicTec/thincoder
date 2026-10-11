@@ -148,7 +148,7 @@ test("① 保留集抽取：deepseek/kimi/vLLM 三形逐字段 ∥ ark 状态命
 test("② v7 迁移：空库直落 10 ∥ v6 库自动升 10（存量行得 '{}'）∥ 幂等 ∥ 新列常量默认在场 + rowToEntry 往返/坏 JSON", () => {
   const fresh = DB.openDatabase(":memory:")
   try {
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [14, 14])
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [15, 15])
     const column = fresh.prepare("PRAGMA table_info(providers)").all().find((item) => item.name === "model_meta_json")
     assert.ok(column, "providers.model_meta_json 缺位")
     assert.deepEqual([column.type, column.notnull, column.dflt_value], ["TEXT", 1, "'{}'"]) // 常量默认 = '{}'（未存 = 无元数据）
@@ -165,10 +165,10 @@ test("② v7 迁移：空库直落 10 ∥ v6 库自动升 10（存量行得 '{}'
     legacy.close()
     const db = DB.openDatabase(file) // 启动自动升
     try {
-      assert.equal(DB.readVersion(db), 14)
+      assert.equal(DB.readVersion(db), 15)
       assert.equal(db.prepare("SELECT model_meta_json FROM providers WHERE name = 'old'").get().model_meta_json, "{}", "存量行即刻得 '{}'")
       // 幂等：再跑迁移链 ⇒ 版本不变 ∥ 存量值不动
-      assert.equal(DB.migrate(db), 14)
+      assert.equal(DB.migrate(db), 15)
       assert.equal(db.prepare("SELECT model_meta_json FROM providers WHERE name = 'old'").get().model_meta_json, "{}")
       // rowToEntry 往返逐值 ∥ 坏 JSON ∥ 非对象 ⇒ 行数据损坏抛（沿 settings_json 口径）
       const spec = { m: { displayName: "M", contextWindow: 8192, vision: true, status: "Shutdown" } }
@@ -479,16 +479,16 @@ test("⑥ i18n + 静态面：两表 7 键在场（en 零 CJK ∥ 占位符一致
   for (const line of modalLines) assert.ok(line.length <= 300, `行宽越界：${line.slice(0, 60)}…`)
   // 档目 36 ∥ 37（2026-10-11 两批 + 拆分层后）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [37, 36], "档目 37 ∥ 36（2026-10-11 两批 + 拆分层后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [38, 37], "档目 38 ∥ 37（2026-10-11 三批 + 拆分层后）")
   // AC-19 canon（`style.css` 零新增）：`:root` 变量族 38 ∥ 悬停声明七条
   const css = readPublic("style.css").replace(/\/\*[\s\S]*?\*\//g, "")
   const rootVars = (css.match(/:root\s*\{[^{}]*\}/)?.[0] ?? "").match(/--[\w-]+\s*:/g) ?? []
   assert.equal(rootVars.length, 38, `:root 变量族计数（零新增）：${rootVars.length}`)
   const hover = [...css.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " ")).sort()
   assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", ".modal-close:hover"].sort(), "悬停声明清单（七条——零新增）")
-  // 门禁链 47 件（历批入链合计——2026-10-11 两批后）∥ 清单目标在盘
+  // 门禁链 49 件（历批入链合计——2026-10-11 三批后）∥ 清单目标在盘
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 47, `门禁清单件数（⇒ 四十七——2026-10-11 两批后）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 49, `门禁清单件数（⇒ 四十九——2026-10-11 三批后）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-provider-model-metadata.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

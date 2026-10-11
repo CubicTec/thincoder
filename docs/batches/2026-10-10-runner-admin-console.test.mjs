@@ -472,9 +472,9 @@ test("v12 重建：列面五行在场 ∥ 旧三列不在 ∥ 存量行弃 ∥ �
   assert.equal(v11.prepare("SELECT COUNT(*) AS n FROM sandbox_runners").get().n, 1, "旧库含存量行")
   v11.close()
 
-  // ② 升（v12 段重建）——空库直落 = 14（v13/v14 同批在场）
+  // ② 升（v12 段重建）——空库直落 = 15（v13/v14/v15 同批在场）
   const upgraded = DB.openDatabase(file)
-  assert.equal(DB.readVersion(upgraded), 14, "空库/v11 库升后读数 = 14（链尾）")
+  assert.equal(DB.readVersion(upgraded), 15, "空库/v11 库升后读数 = 15（链尾）")
   const cols = upgraded.prepare("PRAGMA table_info(sandbox_runners)").all().map((row) => row.name)
   assert.deepEqual(cols, ["id", "name", "address", "status", "runtime_json", "created_at"], "列面五行在场（新形）")
   for (const gone of ["token_hash", "labels_json", "last_heartbeat_at"]) assert.equal(cols.includes(gone), false, `旧列不在：${gone}`)
@@ -484,7 +484,7 @@ test("v12 重建：列面五行在场 ∥ 旧三列不在 ∥ 存量行弃 ∥ �
   // ③ 幂等（再开零变）
   upgraded.close()
   const reopened = DB.openDatabase(file)
-  assert.equal(DB.readVersion(reopened), 14, "再开零变（v12/v13/v14 段幂等）")
+  assert.equal(DB.readVersion(reopened), 15, "再开零变（v12–v15 段幂等）")
   assert.deepEqual(reopened.prepare("PRAGMA table_info(sandbox_runners)").all().map((row) => row.name), cols, "再开列面零变")
   reopened.close()
 })

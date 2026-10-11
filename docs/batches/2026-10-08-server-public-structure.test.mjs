@@ -52,20 +52,20 @@ const domainOf = (key) => {
   const two = base.split(".").slice(0, 2).join(".")
   return PARTS.find((part) => DOMAINS[part].includes(two)) ?? PARTS.find((part) => DOMAINS[part].includes(base.split(".")[0])) ?? null
 }
-/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 两批：chat +33 ∥ 沙盒-docker +54——键数 555 ∥ 560；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十部件——结构轮守卫「拆后应回线内」之执行））。 */
+/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 三批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34——键数 589 ∥ 594；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十部件——结构轮守卫「拆后应回线内」之执行））。 */
 const ANCHOR = {
-  zh: "f2771f02560fb0628aa43ded853b7d4b92f1e4027c6818144a96ef044f8cd690",
-  en: "a2f68ee5dd3cc099723580d32f10e8af86cd1d6c8409b86c7c0f4c140ddcce37",
+  zh: "c88dfd65f4f7d16146588ce62c7305150fc0fc3d340e88339d14be62200d561f",
+  en: "b70d3f7ffadd7c0eeefcb33eb2c34f89b37b4370dfa9bfbb07398018734f31a6",
 }
 const fingerprint = (TABLE) => createHash("sha256").update(JSON.stringify(Object.keys(TABLE).sort().map((key) => [key, TABLE[key]]))).digest("hex")
 
 // ── ① 键集指纹（拆表 = 纯结构；基线随后续增键批同拍随正）────────────────────────────
 
-test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 两批：chat +33 ∥ 沙盒-docker +54）∥ 键数 555 ∥ 560 ∥ 门面冻结", () => {
+test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 三批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34）∥ 键数 589 ∥ 594 ∥ 门面冻结", () => {
   assert.equal(fingerprint(ZH), ANCHOR.zh, "zh 指纹漂移（键集/值须逐字同基线）")
   assert.equal(fingerprint(EN), ANCHOR.en, "en 指纹漂移（键集/值须逐字同基线）")
-  assert.equal(Object.keys(ZH).length, 555, "zh 键数 555（拆表 338 + 历批增额 + 2026-10-11 两批：沙盒-docker +54 ∥ chat +33）")
-  assert.equal(Object.keys(EN).length, 560, "en 键数 560（含 `.one` 变体族；2026-10-11 两批后）")
+  assert.equal(Object.keys(ZH).length, 589, "zh 键数 589（拆表 338 + 历批增额 + 2026-10-11 三批：沙盒-docker +54 ∥ chat +33 ∥ 镜像源 +34）")
+  assert.equal(Object.keys(EN).length, 594, "en 键数 594（含 `.one` 变体族；2026-10-11 三批后）")
   assert.ok(Object.isFrozen(ZH) && Object.isFrozen(EN), "门面 `Object.freeze`（聚合门面封闭）")
 })
 

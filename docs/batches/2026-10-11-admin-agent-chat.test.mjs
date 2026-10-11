@@ -6,7 +6,7 @@
  * 射程（判据源 = 批档 §2.4 ∥ `docs/server/design/agent/ADMIN-AGENT.md` §7/§8/§11 ∥ `gateway/API.md` §2.8 ∥ `store/STORE.md` v14 段）：
  *   ① 四端点判权三态（`user` ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）∥ ② 流帧逐帧序（`delta`… ∥ `call` ∥ `result` ∥ `end(succeeded)`——假模型 ∥ 假工具）
  *   ∥ ③ 会话落库与重放（逐行在场 ∥ notice 回放滤除 ∥ 工具结果截断口径）∥ ④ 在途门（`running` ⇒ 400 人话）
- *   ∥ ⑤ 重启收尾（`running` ⇒ `idle` + notice + `chat_stop` 行）∥ ⑥ v14 三径（空库直落 14 ∥ v13 升后 14 ∥ 幂等 + 两表/索引/CHECK）
+ *   ∥ ⑤ 重启收尾（`running` ⇒ `idle` + notice + `chat_stop` 行）∥ ⑥ v14 三径（空库直落 15 ∥ v13 升后 15 ∥ 幂等 + 两表/索引/CHECK）
  *   ∥ ⑦ `agent_event` 型可写（写一行 ⇒ 读出 ⇒ 零抛）∥ ⑧ 异常终态落库（模型错误 ∥ 预算超限 ∥ 空回合——部分文本如实落库 ∥ 零文本零 assistant 行）
  *   ∥ ⑨ B48 断连（回合照跑到终态——落库不依赖连接）∥ ⑩ E40（404 ∥ 400 空 content ∥ 400 模型不可用）。
  */
@@ -630,11 +630,11 @@ test("在途门先行（§2.8 行序）：`running` + 模型已撤 ⇒ 回「本
 
 // ── ⑥⑦ 存储 v14（三径 ∥ 两表/索引/CHECK ∥ agent_event 可写）────────────────────
 
-test("⑥v14 空库直落 14：两表列面在场 ∥ (chat_id,seq) 索引在场 ∥ role/status CHECK 放行与越值拒", async () => {
+test("⑥v14 空库直落 15：两表列面在场 ∥ (chat_id,seq) 索引在场 ∥ role/status CHECK 放行与越值拒", async () => {
   const db = DB.openDatabase(":memory:")
   try {
-    assert.equal(DB.readVersion(db), 14, "空库直落 14")
-    assert.equal(DB.SCHEMA_VERSION, 14)
+    assert.equal(DB.readVersion(db), 15, "空库直落 15")
+    assert.equal(DB.SCHEMA_VERSION, 15)
     const chatCols = db.prepare("SELECT name FROM pragma_table_info('agent_chats') ORDER BY cid").all().map((row) => row.name)
     assert.deepEqual(chatCols, ["id", "model", "status", "created_by", "created_at", "updated_at"])
     const msgCols = db.prepare("SELECT name FROM pragma_table_info('agent_chat_messages') ORDER BY cid").all().map((row) => row.name)
@@ -656,7 +656,7 @@ test("⑥v14 空库直落 14：两表列面在场 ∥ (chat_id,seq) 索引在场
   }
 })
 
-test("⑥⑦v13 库升后 14：存量审计行逐值保形 + 两索引在场 + `agent_event` 型可写（写一行 ⇒ 读出 ⇒ 零抛）", async () => {
+test("⑥⑦v13 库升后 15：存量审计行逐值保形 + 两索引在场 + `agent_event` 型可写（写一行 ⇒ 读出 ⇒ 零抛）", async () => {
   const file = join(mkdtempSync(join(tempRoot, "mig-")), "gateway.db")
   const legacy = DB.openDatabase(file, { migrations: DB.MIGRATIONS.filter((step) => step.v <= 13) })
   const legacyAudit = AUDIT.recordAudit(legacy, { type: "sandbox_event", actor: "admin", actorId: null, target: "node-1", detail: { kind: "runner_add" }, ts: 1700000000000 })
@@ -665,7 +665,7 @@ test("⑥⑦v13 库升后 14：存量审计行逐值保形 + 两索引在场 + `
 
   const db = DB.openDatabase(file)
   try {
-    assert.equal(DB.readVersion(db), 14, "v13 库升后读数 14")
+    assert.equal(DB.readVersion(db), 15, "v13 库升后读数 15")
     const row = db.prepare("SELECT * FROM audit_events WHERE id = ?").get(legacyAudit)
     assert.deepEqual(
       { ts: row.ts, type: row.type, actor_name: row.actor_name, target_name: row.target_name, detail: row.detail },
@@ -689,7 +689,7 @@ test("⑥⑦v13 库升后 14：存量审计行逐值保形 + 两索引在场 + `
     db.close()
     const again = DB.openDatabase(file)
     try {
-      assert.equal(DB.readVersion(again), 14, "v14 段幂等（再开零变）")
+      assert.equal(DB.readVersion(again), 15, "v14/v15 段幂等（再开零变）")
       assert.equal(again.prepare("SELECT COUNT(*) AS n FROM audit_events").get().n, 2, "行数不变")
     } finally {
       again.close()

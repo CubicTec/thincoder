@@ -256,10 +256,10 @@ test("腿 A 近零点：钉钟 23:59:59.500 ⇒ 日界前日键/窗沿一致 ∥
 
 // ── 腿 D（门禁）─────────────────────────────────────────────────────────────
 
-test("腿 D 门禁：`prepublishOnly` 四十七件含本批两件 ∥ 清单目标在盘", () => {
+test("腿 D 门禁：`prepublishOnly` 四十九件含本批两件 ∥ 清单目标在盘", () => {
   const PKG = JSON.parse(readRepo("thincoder-server/package.json"))
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 47, `门禁清单件数（⇒ 四十七——2026-10-11 两批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 49, `门禁清单件数（⇒ 四十九——2026-10-11 三批后 ∥ 历批入链在案）：${batchFiles.length}`)
   for (const file of BATCH_FILES) assert.ok(batchFiles.includes(file), `本批件应入列：${file}`)
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

@@ -53,20 +53,20 @@ const domainOf = (key) => {
   const two = base.split(".").slice(0, 2).join(".")
   return PARTS.find((part) => DOMAINS[part].includes(two)) ?? PARTS.find((part) => DOMAINS[part].includes(base.split(".")[0])) ?? null
 }
-/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3——键数 596 ∥ 601（console-chat-align 批：核件词面 +5 ∥ 退役 `admin.chat.tool*` 四键 −4）；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十二部件——结构轮守卫「拆后应回线内」之执行））。 */
+/** 键集指纹基线（2026-10-08 拆表零语义基线；… ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3——键数 **596 ∥ 601**（console-chat-align 批：核件词面 +5 ∥ 退役 `admin.chat.tool*` 四键 −4）⇒ **598 ∥ 603**（轻通道笔 2——建容器镜像选单 +2：`imageFromNode` ∥ `imageCustom`）；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs` 独立部件（十二部件——结构轮守卫「拆后应回线内」之执行））。 */
 const ANCHOR = {
-  zh: "32981e95d054470fb59ec8c5468b2a9d2c83239f9ff1fe2a45c9a887d0fe821d",
-  en: "3da8fedb122510d9bb3a5e967795858d806cf6c9e0ee6a000d294fd6284f4d45",
+  zh: "ea028ee2cf9945edc0c8757bdddff2f33352138ea7da3b063e5ae45c826b2383",
+  en: "9ebe47abb3572b680158c5bdfac654f8b86a44ff45d88d3efe74f5d689563920",
 }
 const fingerprint = (TABLE) => createHash("sha256").update(JSON.stringify(Object.keys(TABLE).sort().map((key) => [key, TABLE[key]]))).digest("hex")
 
 // ── ① 键集指纹（拆表 = 纯结构；基线随后续增键批同拍随正）────────────────────────────
 
-test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3）∥ 键数 596 ∥ 601 ∥ 门面冻结", () => {
+test("① 键集指纹：`ZH`/`EN` sorted-key 序列化 sha256 = 基线（拆表 ⊕ 历批随正 ⊕ 2026-10-11 四批：chat +33 ∥ 沙盒-docker +54 ∥ 镜像源 +34 ∥ 一键拉取 +3 ⊕ 轻通道笔 2 +2）∥ 键数 598 ∥ 603 ∥ 门面冻结", () => {
   assert.equal(fingerprint(ZH), ANCHOR.zh, "zh 指纹漂移（键集/值须逐字同基线）")
   assert.equal(fingerprint(EN), ANCHOR.en, "en 指纹漂移（键集/值须逐字同基线）")
-  assert.equal(Object.keys(ZH).length, 596, "zh 键数 596（拆表 338 + 历批增额 + 2026-10-11 批：沙盒-docker +54 ∥ chat +33 ∥ 镜像源 +34 ∥ 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4）")
-  assert.equal(Object.keys(EN).length, 601, "en 键数 601（含 `.one` 变体族；2026-10-11 批后）")
+  assert.equal(Object.keys(ZH).length, 598, "zh 键数 598（拆表 338 + 历批增额 + 2026-10-11 批：沙盒-docker +54 ∥ chat +33 ∥ 镜像源 +34 ∥ 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ∥ 轻通道笔 2 +2）")
+  assert.equal(Object.keys(EN).length, 603, "en 键数 603（含 `.one` 变体族；轻通道笔 2 后）")
   assert.ok(Object.isFrozen(ZH) && Object.isFrozen(EN), "门面 `Object.freeze`（聚合门面封闭）")
 })
 

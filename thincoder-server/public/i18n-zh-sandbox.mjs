@@ -37,6 +37,8 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.createContainer": "创建容器",
   "admin.sandbox.containerName": "容器名",
   "admin.sandbox.image": "镜像",
+  "admin.sandbox.imageCustom": "自定义（手输）",
+  "admin.sandbox.imageFromNode": "节点本地镜像（选 ⇒ 回填下方，可再改）",
   "admin.sandbox.imagePh": "镜像（如 thincoder-sandbox:1）",
   "admin.sandbox.volume": "卷（可选）",
   "admin.sandbox.volumePh": "卷名——留空 = 不挂",

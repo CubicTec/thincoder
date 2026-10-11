@@ -511,7 +511,7 @@ test("⑦ 断连（读流中止——零未押异常，部分文本留场，草�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 596 ∥ 601", () => {
+test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 598 ∥ 603", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -529,7 +529,7 @@ test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [596, 601], "键数终值（2026-10-11 批后）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [598, 603], "键数终值（2026-10-11 批后 ⊕ 轻通道笔 2 +2）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────

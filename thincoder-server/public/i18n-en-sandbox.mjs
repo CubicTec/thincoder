@@ -37,6 +37,8 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.createContainer": "Create container",
   "admin.sandbox.containerName": "Container name",
   "admin.sandbox.image": "Image",
+  "admin.sandbox.imageCustom": "Custom (type it)",
+  "admin.sandbox.imageFromNode": "Images on this node (pick ⇒ fills the field below)",
   "admin.sandbox.imagePh": "Image (e.g. thincoder-sandbox:1)",
   "admin.sandbox.volume": "Volume (optional)",
   "admin.sandbox.volumePh": "Volume name — empty = no mount",

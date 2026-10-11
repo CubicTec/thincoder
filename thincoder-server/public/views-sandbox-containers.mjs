@@ -242,24 +242,40 @@ export function openContainerLogsModal(ctx, { runner, container }) {
   load()
 }
 
-/** 创建容器弹窗（名 + 镜像（预填设置 `image` 值）+ 卷（可空 = 不挂）⇒ POST 三件；卷空 ⇒ 省略键）。 */
+/** 创建容器弹窗（名 + 镜像（**节点本地镜像选单回填** + 手输保底；预填设置 `image` 值）+ 卷（可空 = 不挂）⇒ POST 三件；卷空 ⇒ 省略键）。 */
 function openCreateContainerModal(ctx, { runner, reload }) {
   const { h } = ctx
   const nameInput = h("input")
   const imageInput = h("input", { placeholder: t("admin.sandbox.imagePh") })
+  const imageSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.imageCustom") }))
   const volumeInput = h("input", { placeholder: t("admin.sandbox.volumePh") })
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.createContainer") })
   const modal = openModal({
     title: t("admin.sandbox.createContainer"),
     body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
-      field(h, "admin.sandbox.containerName", nameInput), field(h, "admin.sandbox.image", imageInput), field(h, "admin.sandbox.volume", volumeInput), note, submitBtn),
+      field(h, "admin.sandbox.containerName", nameInput), field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput), field(h, "admin.sandbox.volume", volumeInput), note, submitBtn),
   })
+
+  // 节点本地镜像 ⇒ 选单（轻通道笔 2——手输改选：选定回填下方镜像（可再改））；读败/空表 ⇒ 仅「自定义（手输）」——手输照常，不反噬窗
+  const preselect = () => { if ([...imageSelect.children].some((option) => option.value === imageInput.value)) imageSelect.value = imageInput.value }
+  ctx.api(`/api/admin/sandbox/runners/${runner.id}/images`).then((data) => {
+    const tags = []
+    for (const image of Array.isArray(data?.images) ? data.images : []) {
+      for (const tag of Array.isArray(image?.tags) ? image.tags : []) {
+        if (typeof tag === "string" && tag !== "" && !tag.includes("<none>")) tags.push(tag)
+      }
+    }
+    if (tags.length === 0) return
+    imageSelect.append(...tags.map((tag) => h("option", { value: tag, text: tag })))
+    preselect()
+  }).catch(() => {})
+  imageSelect.addEventListener("change", () => { if (imageSelect.value !== "") imageInput.value = imageSelect.value })
 
   // 镜像预填（设置读面——§2.8①）；取数失败/空值 ⇒ 空输入（用户自填——不反噬窗）
   ctx.api("/api/admin/sandbox/settings").then((data) => {
     const image = data?.settings?.image
-    if (typeof image === "string" && image !== "") imageInput.value = image
+    if (typeof image === "string" && image !== "") { imageInput.value = image; preselect() }
   }).catch(() => {})
 
   async function submit(event) {

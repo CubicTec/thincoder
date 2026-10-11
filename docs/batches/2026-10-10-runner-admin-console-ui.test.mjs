@@ -278,6 +278,7 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
       "POST /api/admin/sandbox/runners/1/containers/c1/stop": () => ({ ok: true }),
       "DELETE /api/admin/sandbox/runners/1/containers/c1": () => ({ ok: true }),
       "GET /api/admin/sandbox/settings": () => ({ settings: { image: "thincoder-sandbox:9" } }),
+      "GET /api/admin/sandbox/runners/1/images": () => ({ images: [{ tags: ["thincoder-sandbox:9", "nginx:1.27"] }, { tags: ["<none>:<none>"] }, {}] }),
     }
     const containers = [fContainer(), fContainer({ id: "c2", name: "workspace-x", state: "created" }), fContainer({ id: "c3", name: "workspace-y", state: "exited" }), fContainer({ id: "c4", name: "workspace-z", state: "paused" })]
     const { calls, mount, modal } = await fMount({ routes, containers })
@@ -309,9 +310,17 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
     assert.equal(inputs.length, 3, "三字段（名 ∥ 镜像 ∥ 卷）")
     await tick()
     assert.equal(inputs[1].value, "thincoder-sandbox:9", "镜像预填 = 设置读面值")
+    // 轻通道笔 2：节点本地镜像 ⇒ 选单（选定回填 ∥ 「自定义（手输）」保底）
+    const selects = fFindAll(dialog, (node) => node.tag === "select")
+    assert.equal(selects.length, 1, "镜像选单在册")
+    assert.deepEqual(optionsOf(selects[0]).map((option) => option.value), ["", "thincoder-sandbox:9", "nginx:1.27"], "选单 = 自定义 + 节点本地镜像（`<none>` ∥ 空 tags 滤除）")
+    assert.equal(selects[0].value, "thincoder-sandbox:9", "设置预填值命中 ⇒ 预选")
+    selects[0].value = "nginx:1.27"
+    await selects[0].fire("change")
+    assert.equal(inputs[1].value, "nginx:1.27", "选定 ⇒ 回填镜像输入（可再改；提交取输入值）")
     inputs[0].value = "workspace-b"
     await fFind(dialog, (node) => node.tag === "form").fire("submit")
-    assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1), ["POST", "/api/admin/sandbox/runners/1/containers", { name: "workspace-b", image: "thincoder-sandbox:9" }], "卷空 ⇒ 省略键")
+    assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1), ["POST", "/api/admin/sandbox/runners/1/containers", { name: "workspace-b", image: "nginx:1.27" }], "卷空 ⇒ 省略键（镜像 = 选单回填值）")
     assert.ok(calls.some(([tag, message]) => tag === "flash" && message === fill(ZH["admin.sandbox.containerCreated"], { name: "workspace-b" })), "建容器 flash")
   } finally { delete globalThis.document }
 })
@@ -471,8 +480,8 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(EN["err.upstream_error"], "Upstream service error: {detail}", "en 改值")
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
-  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [596, 601], "键数终值")
+  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ **598 ∥ 603**（轻通道笔 2 +2：建容器镜像选单）；键集零语义，拆分为文件面）
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [598, 603], "键数终值")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────

@@ -14,6 +14,13 @@
 
 - **追记（pen 1 ⑥ 落 · 2026-10-11 20:2x）**：`docs/server/design/webui/WEBUI.md` §2.10 增/改弹窗句（`:557`）+ §6 镜像源族行（`:715`）预选下拉 六 ⇒ 七条 + 变更记录行（同笔落）——#237（chat 设计微轮）放行后一笔补；本笔六档全数落位。**pen 1 改动面封**：① `src/sandbox/image-sources.mjs` ∥ ② `views-sandbox-image-sources.mjs` ∥ ③ 批内件 ∥ ④ `SANDBOX.md` ∥ ⑤ `API.md` ∥ ⑥ `WEBUI.md`。
 
+### 笔 2——建容器镜像：手输 ⇒ 节点本地镜像选单（2026-10-11 21:0x）
+- **来源**：用户 21:00 实走上报（原话「创建容器的时候，镜像好歹给做成下拉选择啊，让我手输哪输得准啊！」）。
+- **口径**：选单 = 目标节点本地镜像（既有端点 `GET /api/admin/sandbox/runners/:id/images`——零新端点）；选定 ⇒ 回填下方镜像输入（可再改；提交取输入值）；「自定义（手输）」保底（读败/空表/设置预填不在表 ⇒ 手输照常——零回归）。
+- **落点**：① `thincoder-server/public/views-sandbox-containers.mjs`（建容器窗——选单 + 回填 + 预选；`<none>`/空 tags 滤除）∥ ② `i18n-zh-sandbox.mjs` ∥ ③ `i18n-en-sandbox.mjs`（各 +2 键：`imageFromNode` ∥ `imageCustom`）∥ ④ 批内件四档随正（`2026-10-10-runner-admin-console-ui.test.mjs`——选单三断言 + 提交体期望值改「nginx:1.27」∥ `2026-10-08-server-public-structure.test.mjs`——键数 **598 ∥ 603** + 指纹锚两枚重算 ∥ `2026-10-10-server-small-fixes.test.mjs` ∥ `2026-10-11-admin-agent-chat-ui.test.mjs`——键数随正）∥ ⑤ `webui/SANDBOX.md` §2.1① + 变更记录。
+- **走查读数**：全链 `npm run prepublishOnly` = **478/478 绿 · 0 红**（EXIT=0；本笔无新 `test()` 块——总计数不变）。受影响四档全绿（指纹锚 = 重算值 `ea028ee2…` ∥ `9ebe47ab…`）。
+- **冻结**：待部署 `.5` 后实走复核（用户径）。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：（eng-designer 写入时更新）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>

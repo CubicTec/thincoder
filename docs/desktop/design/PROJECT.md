@@ -130,6 +130,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | KD-76 | → `docs/desktop/design/SETTINGS.md` §1（MCP 表单 env ∥ headers = 行式键值编辑器 · MCP 键值行式输入批 · as-of 2026-10-07） | — | — |
 | KD-77 | → `docs/desktop/design/SETTINGS.md` §1（添加入口统一 = 表单类添加 ⇒ 弹窗〔`mcpForm` ∥ `consultAdd`〕+ 页脚直开 · 添加入口弹窗统一批 · as-of 2026-10-07） | — | — |
 | KD-78 | → `docs/desktop/design/COMPOSER.md` §1（模型菜单三修——行 = 分组/展开 ∥ 拾取单点 + `row` 直传 ∥ 写失败可见 + 零乐观写回滚 · `#1121` · as-of 2026-10-10） | — | — |
+| KD-79 | → `docs/desktop/design/SETTINGS.md` §1（首启向导保存 ∥ 校验面收正——保存钮提级 `.wizard-save` ∥ ②③ 合并钮「保存并继续」∥ ④ 完成未配置不静默退场 ∥ **⑤ 校验看得见**〔向导步 1 校验结果就地可见——范围增补〕· 首启保存面收正批 · 2026-10-11 · 台账 **#1277 ∥ #1278**） | — | — |
 
 ### 2.1 实测读数（实施批回填）
 
@@ -1814,3 +1815,5 @@ T-DSK30 的机检面 = `thincoder-desktop/test/views-attach.test.mjs`（附件�
 - 2026-10-10（**尾行收口批（#711①②）· 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-10-tail-residues.md` §2）：§4.1 指针面**新档补行**（`thincoder-desktop/renderer/views/chat-segment-reveal.mjs` → `docs/desktop/design/CHAT.md` §3.1）＋ 距硬限最近/贴层段同值随正（`views/chat-text-segments.mjs` **497 ⇒ 498**——复读径面序结算；余 302 行）。**零新语义**（读数 ∥ 登记）。明细 = 批档 §5。
 - 2026-10-10（**login-entry-completion 批 · 计数族残值收齐（#148 · fix 轮 2）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §4 ∥ §2 fix 轮 2 补记 · 台账 #1229–#1232）：计数族八处收正——**KD-25** ∥ **D17** ∥ **D22** ∥ **T-DSK33**（承载 17 ⇒ 18 ∥ 段表 17 ⇒ 18）∥
   **KD-30**（段集 17 ⇒ 18）∥ 残余批边界行（不播种 11 ⇒ **12 段**）∥ **T-DSK39**（闭集 16 ⇒ **18 码**）∥ §10 **AR**（不播种 11 ⇒ **12**）。**零新语义**（计数收正）。
+- 2026-10-11（**首启向导保存面收正批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-desktop-wizard-save-clarity.md` §1 · 台账 #1277 ∥ #1278）：§2 KD 索引 +**KD-79** 行（⇒ `docs/desktop/design/SETTINGS.md` §1——首启向导保存 ∥ 校验面收正：保存钮提级 ∥ 合并钮「保存并继续」∥ 完成未配置不静默退场 ∥ **⑤ 校验看得见**〔范围增补轮 · #1278〕）；机制 ∥ 文件账 ∥ 判据面明细 = 同档（`docs/desktop/design/SETTINGS.md` §2.23 ∥ §3.1/§3.2 ∥ §5 **T-DSK67**（自铸披露））+ `docs/desktop/design/UI.md`（§1 项 5 计数账 **8 ⇒ 9**）。**产品码零触（设计轮）**。明细 = 批档 §2（含范围增补轮块）。
+- 2026-10-11（**首启向导保存 ∥ 校验面收正批 · 修正轮（评审 #213 · 发现 1–8 逐号）· eng-designer**——承批档 `docs/batches/2026-10-11-desktop-wizard-save-clarity.md` §3 轮次 1 · 台账 #1277 ∥ #1278）：§2 **KD-79** 行 ∥ 本变更行补 **⑤ 校验看得见 ∥ #1278** 指针（D11 ④ 从索引面可达）。**零新语义**（指针）。明细 = 批档 §2 修正轮块。

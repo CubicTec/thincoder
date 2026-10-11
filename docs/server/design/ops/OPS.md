@@ -123,7 +123,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
   - `files` 白名单 = bin ∥ src ∥ public ∥ config.example.json ∥ README.md（`deploy/` 档组 = 仓内部署面——不入包）。
 - **npm 路装机 = 前缀式**（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议 `/opt/thincoder-server/.npm-global`——与配置/数据同根）⇒ 装机（`npm i -g @thincoder/server`）与自升（服务进程内——§5.4）同前缀、免 sudo 重写；安放后该根目录整归服务账号（`chown -R`）。
 - **Docker 路 = 壳镜像**（`thincoder-server/Dockerfile`——重设计）：基座 `node:24-slim` + 引导层（`thincoder-server/deploy/docker-entrypoint.sh`（已落盘 7 行） ∥ `thincoder-server/deploy/converge.mjs`（已落盘 197 行））；**App 代码由 npm 取装**——镜像本体只含壳（不带版本身份）。
-- **构建期预装 = 上下文包体**（离线可运行性）：构建上下文（= **仓根**——`docker build -f thincoder-server/Dockerfile … .`；console-chat-align 批收正）内 `npm pack` 双包（`thincoder-server` + `thincoder-render-core`——同各 `files` 白名单形）⇒ `npm i -g` 一次装两包入镜像前缀（`/home/node/.npm-global`——node 账号自有）；**构建零 registry 依赖**（发布前亦可构建验证）；预装版 = 构建时树版本（离线兜底副本——非版本身份，tag 不随）。
+- **构建期预装 = 上下文包体**（离线可运行性）：构建上下文（= **仓根**——`docker build -f thincoder-server/Dockerfile … .`；console-chat-align 批收正）内 `npm pack` 双包（`thincoder-server` + `thincoder-render-core`——同各 `files` 白名单形）
+  ⇒ `npm i -g` 一次装两包入镜像前缀（`/home/node/.npm-global`——node 账号自有）；**构建零 registry 依赖**（发布前亦可构建验证）；预装版 = 构建时树版本（离线兜底副本——非版本身份，tag 不随）。
 - **运行期收敛**（entrypoint 口径——**重跑壳 = 收敛到配置版本：不留旧、不漂移**）：`TC_SERVER_VERSION`（env）三态——空 = 运行已装版本（零网络）∥ `x.y.z` = 钉（已装即用；缺则装；装不上 ⇒ 拒启）∥ `latest` = 追新（查 registry；不可达 ⇒ 回退已装 + 警告）；判定表 = §5.4（d）。
 - **装位 ∥ 权限**：装位 = 镜像前缀（node 账号自有——自升可写）∥ `ENV PATH` 含 `<前缀>/bin`（入口 `exec thincoder-server` 依赖——或入口改用前缀绝对路径）；运行 = `USER node`（非 root）；`VOLUME /app/data` 保留——bind 卷须对容器内 node 账号可写（`chown 1000:1000 ./data` ∥ `./config`；uid 以镜像为准——官方基座 `useradd --uid 1000` 实读在案 2026-10-06）。
 - **壳与 Node 基座**：基座 node:24 与包 `engines`（node>=24）同源；**Node 换代 = 重建镜像**（自升不动基座；触发 = 包 `engines` 变更）。

@@ -731,7 +731,7 @@ test("F3 审计：十三型下拉（全部 + 十三型）∥ `config_update` 行
     const mount = fNode("section")
     await AUDIT_VIEW.renderAudit(ctx, mount)
     const select = fFind(mount, (n) => n.tag === "select")
-    assert.equal(fFindAll(select, (n) => n.tag === "option").length, 12, "全部 + 十一型（含 agent_event；sandbox_* 两型随余面批登记）")
+    assert.equal(fFindAll(select, (n) => n.tag === "option").length, 14, "全部 + 十三型（含 agent_event；沙盒两型已接——走查轮 2026-10-11）")
     assert.equal(fFind(select, (n) => n.value === "config_update")?.textContent, ZH["audit.type.config_update"], "型表含 `config_update`")
     const cells = fFindAll(mount, (n) => n.tag === "td").map((td) => td.textContent)
     assert.ok(cells.includes(`${ZH["audit.keys"]}: autoUpdate, proxyUri`), `config_update 详情 = 键名清单：${cells.join(" | ")}`)

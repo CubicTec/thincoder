@@ -2,8 +2,8 @@
  * views-audit.mjs — 管理·审计（webui/WEBUI.md §2/§2.3④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
- * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十三型——本页收编已落型；沙盒两型随沙盒余面批）；
- * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10））
+ * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十三型——全型收编）；
+ * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11））
  * 按在场渲染；对象与操作者同名 ⇒「—」（名快照口径——改/删后记录自足）。渲染一律节点 + textContent；文案经 `t()` 取值。
  */
 import { t } from "./i18n.mjs"
@@ -21,6 +21,8 @@ const AUDIT_TYPES = [
   ["member_create", "audit.type.member_create"],
   ["config_update", "audit.type.config_update"],
   ["agent_event", "audit.type.agent_event"],
+  ["sandbox_event", "audit.type.sandbox_event"],
+  ["sandbox_rule", "audit.type.sandbox_rule"],
 ]
 
 export async function renderAudit(ctx, mount) {
@@ -72,7 +74,7 @@ function eventsTable(ctx, events) {
     typeLabel(event.type),
     event.actor,
     event.target && event.target !== event.actor ? event.target : "—",
-    detailText(event.detail),
+    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : detailText(event.detail),
   ])
   return ctx.table([t("audit.col.time"), t("audit.col.type"), t("audit.col.actor"), t("audit.col.target"), t("audit.col.detail")], rows, { foot: true })
 }
@@ -92,5 +94,50 @@ function detailText(detail) {
   if (detail?.role) parts.push(`${t("audit.role")}: ${detail.role}`)
   if (Array.isArray(detail?.keys) && detail.keys.length > 0) parts.push(`${t("audit.keys")}: ${detail.keys.join(", ")}`)
   if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary) // agent_event（§2.10）
+  return parts.length === 0 ? "—" : parts.join(" · ")
+}
+
+/** 沙盒 kind 文案键（`sandbox_event` detail.kind——枚举外 ⇒ 原值兜底；§2.1）。 */
+const SANDBOX_KIND_KEYS = {
+  container_create: "audit.sandboxKind.container_create",
+  container_start: "audit.sandboxKind.container_start",
+  container_stop: "audit.sandboxKind.container_stop",
+  container_restart: "audit.sandboxKind.container_restart",
+  container_kill: "audit.sandboxKind.container_kill",
+  container_delete: "audit.sandboxKind.container_delete",
+  image_pull: "audit.sandboxKind.image_pull",
+  image_delete: "audit.sandboxKind.image_delete",
+  volume_delete: "audit.sandboxKind.volume_delete",
+  image_source_add: "audit.sandboxKind.image_source_add",
+  image_source_update: "audit.sandboxKind.image_source_update",
+  image_source_delete: "audit.sandboxKind.image_source_delete",
+  runner_add: "audit.sandboxKind.runner_add",
+  runner_delete: "audit.sandboxKind.runner_delete",
+  workspace_create: "audit.sandboxKind.workspace_create",
+  workspace_limits: "audit.sandboxKind.workspace_limits",
+  onboarding_start: "audit.sandboxKind.onboarding_start",
+  onboarding_exec: "audit.sandboxKind.onboarding_exec",
+  onboarding_done: "audit.sandboxKind.onboarding_done",
+  onboarding_failed: "audit.sandboxKind.onboarding_failed",
+  onboarding_credential_revoke: "audit.sandboxKind.onboarding_credential_revoke",
+  approval: "audit.sandboxKind.approval",
+}
+
+/** 沙盒事件详情（`sandbox_event`——kind 文案 + 在场字段逐值；走查轮 2026-10-11）。 */
+function sandboxDetailText(detail) {
+  const parts = []
+  if (typeof detail?.kind === "string" && detail.kind !== "") {
+    parts.push(SANDBOX_KIND_KEYS[detail.kind] ? t(SANDBOX_KIND_KEYS[detail.kind]) : detail.kind)
+  }
+  if (detail?.name) parts.push(String(detail.name))
+  if (detail?.containerId) parts.push(String(detail.containerId).slice(0, 12))
+  if (detail?.image) parts.push(String(detail.image))
+  if (detail?.ref) parts.push(String(detail.ref))
+  if (detail?.volume) parts.push(String(detail.volume))
+  if (detail?.address) parts.push(String(detail.address))
+  if (detail?.host) parts.push(String(detail.host))
+  if (detail?.runId !== undefined) parts.push(`#${detail.runId}`)
+  if (detail?.kept !== undefined || detail?.removed !== undefined) parts.push(`${t("audit.sandboxKept")} ${detail.kept ?? 0} / ${t("audit.sandboxRemoved")} ${detail.removed ?? 0}`)
+  if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary)
   return parts.length === 0 ? "—" : parts.join(" · ")
 }

@@ -444,24 +444,24 @@ test("腿 F i18n：本批 6 键两表在册（非空 ∥ 占位符一致 ∥ en 
 
 // ── 腿 G（门禁——§6 AC-20 续）───────────────────────────────────────────────
 
-test("腿 G 门禁：`prepublishOnly` 五十二件含本批件 ∥ 清单目标在盘", () => {
+test("腿 G 门禁：`prepublishOnly` 五十六件含本批件 ∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 52, `门禁清单件数（⇒ 五十二——2026-10-11 六批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-console-layout.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })
 
 // ── 附加（AC-19 canon 不破——本批零新变量/悬停/越刻度/未闭合类）────────────────
 
-test("附加 AC-19 canon 不破：`:root` 38 ∥ 悬停清单七条 ∥ 内距 ∈ 刻度 ∥ 类名双向闭合", () => {
-  // 零新 `:root` 变量（变量族计数 = 38——新增即破）
+test("附加 AC-19 canon 不破：`:root` 50 ∥ 悬停清单八条（七 + 页签一）∥ 内距 ∈ 刻度 ∥ 类名双向闭合", () => {
+  // 零新 `:root` 变量（本基线随历批同拍：2026-10-11 走查轮后 = 50）
   const rootMatch = CSS_CLEAN.match(/:root\s*\{[^{}]*\}/)
   assert.ok(rootMatch !== null, ":root 变量底座缺位")
   const rootVars = [...rootMatch[0].matchAll(/(--[\w-]+)\s*:/g)]
-  assert.equal(rootVars.length, 38, `:root 变量族计数（零新增）：${rootVars.length}`)
-  // 悬停清单（行悬停二 + 交互件五——本批零新增）
+  assert.equal(rootVars.length, 50, `:root 变量族计数：${rootVars.length}`)
+  // 悬停清单（行悬停二 + 交互件六）
   const ROW_HOVER = [".nav-item:hover", "tbody tr:hover"]
-  const CTRL_HOVER = ["button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", ".modal-close:hover"]
+  const CTRL_HOVER = ["button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"]
   const hoverRules = CSS_RULES.filter((rule) => rule.selector.includes(":hover"))
   assert.deepEqual(hoverRules.map((rule) => rule.selector).sort(), [...ROW_HOVER, ...CTRL_HOVER].sort(), "悬停声明清单外残留")
   for (const selector of ROW_HOVER) assert.equal(cssRule(selector).body, "background: var(--hover);", `${selector} 行悬停非同值`)
@@ -478,7 +478,7 @@ test("附加 AC-19 canon 不破：`:root` 38 ∥ 悬停清单七条 ∥ 内距 �
   for (const name of readdirSync(PUBLIC_DIR).filter((item) => item.endsWith(".mjs") || item === "index.html")) {
     const src = readPublic(name)
     for (const m of src.matchAll(/\bclass(?:Name)?\s*[:=]\s*([^\n;]*?)(?=\s*\bclass(?:Name)?\s*[:=]|[;\n]|$)/g)) {
-      const window = m[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*[A-Za-z_$][\w$]*\s*:/)[0]
+      const window = m[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*(?:[A-Za-z_$][\w$]*|"[^"]*"|'[^']*')\s*:/)[0]
       for (const literal of window.matchAll(/["'`]([^"'`]*)["'`]/g)) for (const token of literal[1].split(/\s+/)) if (token) usedClasses.add(token)
     }
     for (const m of src.matchAll(/classList\.(?:add|remove|toggle)\(\s*["']([^"']*)["']/g)) usedClasses.add(m[1])
@@ -490,7 +490,7 @@ test("附加 AC-19 canon 不破：`:root` 38 ∥ 悬停清单七条 ∥ 内距 �
     assert.ok(cssClasses.has(known), `样式类扫描失效：${known}`)
   }
   const STATE = new Set(["active", "ok", "degraded", "down", "error", "modal-open", "open"])
-  const RENDER_CORE = new Set(["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type"]) // 核件发射类（console-chat-align 批起——随核件类族随正）
+  const RENDER_CORE = new Set(["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage"]) // 核件发射类（console-chat-align 批起；chat-shell-align 批 +`pending`/`msg-label`/`msg-time`/`assistant`/`mm-sep`/`mm-manage`——随核件类族随正）
   for (const token of usedClasses) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
   for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls) || RENDER_CORE.has(cls), `样式类零消费者：.${cls}`)
 })

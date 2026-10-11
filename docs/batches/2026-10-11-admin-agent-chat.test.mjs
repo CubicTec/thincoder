@@ -272,7 +272,7 @@ test("建会话 ∥ 列表（倒序 + excerpt）∥ 详情 ∥ E40（404 ∥ 400
 })
 // ── ③④ N54/N55 帧序 ∥ 落库 ∥ 重放 ─────────────────────────────────────────────
 
-test("N54：帧序 = delta… ∥ call ∥ result ∥ end(succeeded)；逐行落库；逐调用一条 chat_call（args = 字符串）", async () => {
+test("N54：帧序 = turn/delta… ∥ call ∥ result ∥ turn/delta… ∥ end(succeeded)；逐行落库；逐调用一条 chat_call（args = 字符串）", async () => {
   const tools = fakeTools({ invoke: async () => ({ ok: true, summary: "成员 2 人", members: [{ id: 1, name: "admin" }] }) })
   const app = await startChatApp({
     tools,
@@ -285,17 +285,18 @@ test("N54：帧序 = delta… ∥ call ∥ result ∥ end(succeeded)；逐行落
     const chat = await app.createChat()
     const { status, frames } = await sendMessage(app, chat.id, "看下成员")
     assert.equal(status, 200)
-    assert.deepEqual(frames.map((frame) => frame.type), ["delta", "delta", "call", "result", "delta", "delta", "end"])
+    assert.deepEqual(frames.map((frame) => frame.type), ["turn", "delta", "delta", "call", "result", "turn", "delta", "delta", "end"])
     assert.deepEqual(frames.filter((frame) => frame.type === "delta").map((frame) => frame.text), ["先查", "成员", "查完了：", "2 人"])
-    const call = frames[2]
+    const call = frames[3]
     assert.equal(call.name, "members")
     assert.equal(typeof call.args, "string", "`call` 帧 `args` = **字符串**（§11 钉死）")
     assert.equal(call.args, '{"op":"list"}')
-    const result = frames[3]
+    const result = frames[4]
     assert.equal(result.ok, true)
     assert.equal(result.id, call.id)
     assert.equal(result.summary, "成员 2 人")
-    assert.deepEqual(frames[6], { type: "end", status: "succeeded" })
+    assert.equal(frames[8].type, "end")
+    assert.equal(frames[8].status, "succeeded")
 
     // 落库（逐行在场：user ∥ assistant（含 toolCalls）∥ tool ∥ assistant）
     const rows = app.messages(chat.id)

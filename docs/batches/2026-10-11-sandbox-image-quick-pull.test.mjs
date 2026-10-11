@@ -12,8 +12,8 @@
  *     + Hub 面 DOM 径（按名读标签 ⇒ 标签行钮 ⇒ 预填 `docker.io/library/<名>:<标签>`）
  *   ④ 零新端点 ∥ 审计既有 `image_pull`（拉取窗唯一径 = 既有端点；服务端路由 + 审计 kind 在盘零触；两件端点面扫描）
  *   ⑤ i18n +3 键两表（逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 键集双向相等）+ 复用 2 键在盘
- *   ⑥ 静态面（档目 40 ∥ 39（文件集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥
- *     canon 不破（`:root` 38 ∥ 悬停 7）∥ 装配接线 ∥ 门禁链零悬空 + 本批件在链）
+ *   ⑥ 静态面（档目 43 ∥ 42（文件集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥
+ *     canon 不破（`:root` 50 ∥ 悬停 8）∥ 装配接线 ∥ 门禁链零悬空 + 本批件在链）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -42,13 +42,13 @@ const CSS = readPublic("style.css")
 /** 本批新增键（3——§2.2 键族登记；两表逐键同步）；复用 2 键（零新增——可用态提示条）。 */
 const NEW_KEYS = ["admin.sandbox.catalogPull", "admin.sandbox.pullPickNodeTitle", "admin.sandbox.pullTarget"]
 const REUSED_KEYS = ["admin.sandbox.noNodes", "admin.sandbox.allOffline"]
-/** public/ 档集快照（本批零新档——档目 40 ∥ 39；差集空 = 集合逐名相等）。 */
+/** public/ 档集快照（本批零新档——档目 43 ∥ 42；差集空 = 集合逐名相等）。 */
 const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs",
   "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
-  "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
-  "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
+  "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
+  "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
   "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
-  "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"]
+  "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"]
 
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
@@ -148,6 +148,7 @@ const upstreamFail = (message) => () => { throw Object.assign(new Error(message)
 /** 页面渲染夹具（运行面 + 镜像区 + 镜像源卡——整页装配 `renderSandbox`）。 */
 async function fMount({ routes = {}, runners = [fRunner()], images = [fImage()], sources = [fSource()] } = {}) {
   globalThis.document = stubDocument()
+  globalThis.history = { replaceState: () => {} } // 标签②切换回写地址栏（console-tabs-component 批——桩面补）
   const { ctx, calls } = fCtx({
     "GET /api/admin/sandbox/overview": () => ({ status: "ok", runners }),
     "GET /api/admin/sandbox/onboarding": () => ({ runs: [] }),
@@ -159,6 +160,8 @@ async function fMount({ routes = {}, runners = [fRunner()], images = [fImage()],
   })
   const mount = makeNode("section")
   await SANDBOX.renderSandbox(ctx, mount)
+  await tick()
+  await byText(mount, ZH["admin.sandbox.tabImages"]).fire("click") // 标签②（源卡 + 镜像表——console-tabs-component 批后两区迁②，懒建）
   await tick()
   return { ctx, calls, mount, modal: () => fFind(globalThis.document.body, (node) => node.tag === "dialog") }
 }
@@ -202,10 +205,10 @@ test("① N60 全链：标签行「拉取」⇒ 节点选单（单例）⇒ 预�
     })
     const callsOf = (method, path) => calls.filter(([m, p]) => m === method && p === path).length
 
-    // 展开节点 ⇒ 镜像区首取（重取腿的基线）
+    // 标签②激活 ⇒ 镜像表首取（重取腿的基线）
     await byText(mount, ZH["admin.sandbox.expand"]).fire("click")
     await tick()
-    assert.equal(callsOf("GET", "/api/admin/sandbox/runners/1/images"), 1, "前置：展开 ⇒ 镜像表首取")
+    assert.equal(callsOf("GET", "/api/admin/sandbox/runners/1/images"), 1, "前置：标签②激活 ⇒ 镜像表首取")
 
     // 目录窗：开窗读一次概览 ⇒ 拉取钮可用（在线节点在场）
     await byText(mount, ZH["admin.sandbox.sourceCatalogBtn"]).fire("click")
@@ -399,10 +402,10 @@ test("⑤ i18n：本批 3 键两表逐键在场 ∥ 占位符对位 ∥ en 零 C
 
 // ── ⑥ 静态面（档目 ∥ 行数/行宽 ∥ canon ∥ 接线 ∥ 门禁链）─────────────────────────
 
-test("⑥ 静态面：档目 40 ∥ 39（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 接线 ∥ 链", () => {
+test("⑥ 静态面：档目 43 ∥ 42（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 接线 ∥ 链", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（本批零新档——差集空）")
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（test 口径）⇒ 文档口径 39 ∥ 40")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径）")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
     const lines = source.split("\n").length
@@ -427,8 +430,8 @@ test("⑥ 静态面：档目 40 ∥ 39（集合快照）∥ 行数/行宽 ∥ �
   assert.equal(typeof IMAGES.openPullImageModal, "function", "拉取窗导出面（预填参入口）")
   // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 38, ":root 38（零新增）")
-  assert.equal([...cssClean.matchAll(/:hover/g)].length, 7, "悬停七条（零新增）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：本批件在链 ∥ 存量链目标零悬空
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
   assert.ok(chain.includes("docs/batches/2026-10-11-sandbox-image-quick-pull.test.mjs"), "本批件在链（prepublishOnly）")

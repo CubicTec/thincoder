@@ -42,16 +42,16 @@ globalThis.cancelAnimationFrame = (id) => clearTimeout(id)
 
 /** 本批新增键现值（27 `admin.chat.*`〔新增 31 − 退役 4——§2.7-1〕+ 1 nav〔shell 部件〕+ 1 `audit.type.agent_event`〔system 部件〕——§2.2 键族登记；两表逐键同步）。 */
 const NEW_KEYS = [
-  "admin.chat.title", "admin.chat.newChat", "admin.chat.newChatHint", "admin.chat.create", "admin.chat.modelLabel",
-  "admin.chat.modelPick", "admin.chat.noModels", "admin.chat.modelRequired", "admin.chat.chatsTitle", "admin.chat.chatsEmpty",
+  "admin.chat.title", "admin.chat.newChat", "admin.chat.create", "admin.chat.modelLabel",
+  "admin.chat.modelPick", "admin.chat.noModels", "admin.chat.modelRequired", "admin.chat.chatsEmpty",
   "admin.chat.listFailed", "admin.chat.detailFailed", "admin.chat.retry", "admin.chat.statusRunning", "admin.chat.noChatSelected",
-  "admin.chat.threadEmpty", "admin.chat.running", "admin.chat.reread", "admin.chat.inputPh", "admin.chat.send", "admin.chat.messageRequired",
-  "admin.chat.inputHint", "admin.chat.noticeInterrupted", "admin.chat.noticeBudget", "admin.chat.noticeModelError",
+  "admin.chat.threadEmpty", "admin.chat.reread", "admin.chat.noticeInterrupted", "admin.chat.noticeBudget", "admin.chat.noticeModelError",
   "admin.chat.noticeEmpty", "admin.chat.streamBroken",
   "nav.page.admin.chat", "audit.type.agent_event",
 ]
-/** 退役四键（console-chat-align 批——自持工具行退役；删净断言）。 */
-const RETIRED_KEYS = ["admin.chat.toolCall", "admin.chat.toolResult", "admin.chat.toolCalling", "admin.chat.toolFailed"]
+/** 退役键（console-chat-align 批四键 + chat-shell-align 批七键——删净断言）。 */
+const RETIRED_KEYS = ["admin.chat.toolCall", "admin.chat.toolResult", "admin.chat.toolCalling", "admin.chat.toolFailed",
+  "admin.chat.newChatHint", "admin.chat.chatsTitle", "admin.chat.running", "admin.chat.inputPh", "admin.chat.send", "admin.chat.messageRequired", "admin.chat.inputHint"]
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
 const placeholders = (text) => [...String(text).matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort().join(",")
@@ -254,264 +254,24 @@ test("① 纯函数：行切分（跨块/残行）∥ 帧解析（坏行 null）
     "notice 四形精确值命中（`restart`/`budget`/`model_error`/`empty_turn`）+ 近似值不当命中（`model_error_v2` ⇒ 原文）+ 无 reason/空值兜底")
 })
 
-// ── ② 会话条（三态 ∥ 活动态 ∥ 在途徽标）──────────────────────────────────────
+// ── ②–⑦ 页面行为腿（旧页类名断言——**页件经 chat-shell-align 批重写后失效**）────────────
+// 承继关系：本页 = 同一页件的后续重构（`views-chat.mjs` 改写 + `views-chat-composer.mjs` 拆件；类面改由核件发射
+// `message user`/`message assistant`/`bubble`，会话选取 = `select.chat-select` 换 `chat-row` 行点）。②–⑦ 的旧类名断言
+// 已不可机检——**语义覆盖移至承继件**（同一门禁链）：`docs/batches/2026-10-11-chat-shell-align.test.mjs`
+// （N68 装配 ∥ N69 回读装配 ∥ N64 帧序 ∥ N67 中止 ∥ N70 状态行 ∥ 结构腿核件调用面）。
 
-test("② 会话条：加载态 ∥ 空态 ∥ 失败态 + 重试 ∥ 活动态 ∥ 在途徽标 ∥ 摘要空值「—」", async () => {
-  // 加载态（列表读挂起——DOM 已建，提示在场）
-  globalThis.document = stubDocument()
-  const hanging = makeNode("section")
-  const pending = CHAT.renderChat(fCtx({ "GET /api/admin/agent/chats": () => new Promise(() => {}) }, []), hanging)
-  assert.ok(byText(hanging, ZH["common.loading"]) !== null, "加载态提示（读时读——未落地前）")
-  assert.ok(byText(hanging, ZH["admin.chat.newChat"]) !== null, "新会话钮恒在场")
-  assert.ok(byText(hanging, ZH["admin.chat.noChatSelected"]) !== null, "未选中会话 ⇒ 对话区空态")
-  void pending
-  // 空态
-  const empty = await fMount({ chats: [] })
-  assert.ok(fFind(empty.mount, (node) => node.textContent === ZH["admin.chat.chatsEmpty"]) !== null, "空态（零会话）")
-  // 有会话：活动态 + 在途徽标 + 摘要空值
-  const rows = [fChatRow({ id: 1, excerpt: "你好" }), fChatRow({ id: 2, status: "running", excerpt: "" })]
-  const list = await fMount({ chats: rows, routes: { "GET /api/admin/agent/chats/1": () => ({ chat: rows[0], messages: [] }) } })
-  const buttons = fFindAll(list.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))
-  assert.equal(buttons.length, 2, "两行会话")
-  assert.equal(buttons[1].className.includes("active"), false, "未选中 ⇒ 零活动态")
-  assert.ok(byText(buttons[1], ZH["admin.chat.statusRunning"]) !== null, "在途徽标（status=running）")
-  assert.ok(textOf(buttons[1]).includes("—"), "摘要空值 ⇒ 「—」")
-  assert.deepEqual(list.log, ["api GET /api/admin/agent/chats"], "进页只取列表（详情随选中）")
-  await buttons[0].fire("click")
-  await tick()
-  assert.ok(fFindAll(list.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].className.includes("active"), "选中 ⇒ 活动态")
-  assert.deepEqual(list.log, ["api GET /api/admin/agent/chats", "api GET /api/admin/agent/chats/1"], "选中 ⇒ 取详情（读时读）")
-  // 失败态 + 重试（重试 ⇒ 再读一次）
-  const bad = await fMount({ routes: { "GET /api/admin/agent/chats": () => { throw Object.assign(new Error("boom"), { status: 500, code: "internal_error" }) } } })
-  assert.ok(fFindAll(bad.mount, (node) => node.className === "hint error").map(textOf).join(" | ").includes(ZH["admin.chat.listFailed"]), "失败 ⇒ 就地错态")
-  assert.ok(bad.log.some((entry) => entry.startsWith("fail ")), "fail 收口")
-  await byText(bad.mount, ZH["admin.chat.retry"]).fire("click")
-  await tick()
-  assert.equal(bad.log.filter((entry) => entry === "api GET /api/admin/agent/chats").length, 2, "重试 ⇒ 再读一次")
-  delete globalThis.document
-})
-
-// ── ③ 新会话弹窗（模型下拉 ∥ 缺省 ∥ 提交门）──────────────────────────────────
-
-test("③ 新会话弹窗：模型下拉 `deriveModels` 同源 ∥ 缺省 = 最近一次所用 ∥ 无模型门 ∥ 提交 ⇒ 建会话 ⇒ 选中", async () => {
-  const routes = {
-    "GET /api/admin/providers": () => ({ providers: PROVIDERS }),
-    "POST /api/admin/agent/chats": (body) => ({ chat: fChatRow({ id: 9, model: body.model, excerpt: "" }) }),
-    "GET /api/admin/agent/chats/9": () => ({ chat: fChatRow({ id: 9, model: "p1/m-2" }), messages: [] }),
+test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效——指针腿）", () => {
+  const successor = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align.test.mjs")
+  assert.ok(existsSync(successor), "承继件在盘（行为面覆盖所归——同一门禁链）")
+  const successorSrc = readFileSync(successor, "utf8")
+  for (const leg of ["N68 装配", "N69 回读装配", "N64 帧序", "N67/B65 中止", "N70 状态行", "结构腿"]) {
+    assert.ok(successorSrc.includes(leg), `承继腿在册：${leg}`)
   }
-  const { log, mount } = await fMount({ routes })
-  await byText(mount, ZH["admin.chat.newChat"]).fire("click")
-  const dialog = fFind(globalThis.document.body, (node) => node.tag === "dialog")
-  assert.ok(dialog !== null && dialog.open === true, "弹窗开启（modal.mjs 基座）")
-  assert.ok(fFind(dialog, (node) => node.textContent === ZH["admin.chat.newChatHint"]) !== null, "换模型提示（会话内不换模型）")
-  await tick()
-  const select = fFind(dialog, (node) => node.tag === "select")
-  assert.deepEqual(optionsOf(select).map((option) => option.value), ["", ...MODEL_IDS], "模型下拉 = provider 展平（含占位项）")
-  assert.equal(select.value, "p1/m-1", "缺省 = 最近一条会话所用模型（KD-SV-87 同口径）")
-  // 提交 ⇒ POST ⇒ 列表刷新 + 选中新会话
-  await fFind(dialog, (node) => node.tag === "form").fire("submit")
-  await tick()
-  assert.deepEqual(log, [
-    "api GET /api/admin/agent/chats", "api GET /api/admin/providers",
-    "api POST /api/admin/agent/chats", "api GET /api/admin/agent/chats", "api GET /api/admin/agent/chats/9",
-  ], "提交体（所选中 model）⇒ 建会话 ⇒ 选中（列表刷新 + 详情）")
-  assert.equal(log.includes("api POST /api/admin/agent/chats"), true, "POST 在册")
-  // 无模型门（providers 空 ⇒ 空选 + 就地必填；零 POST）
-  const emptyModels = await fMount({ routes: { "GET /api/admin/providers": () => ({ providers: [] }) } })
-  await byText(emptyModels.mount, ZH["admin.chat.newChat"]).fire("click")
-  const dialog2 = fFind(globalThis.document.body, (node) => node.tag === "dialog")
-  await tick()
-  assert.deepEqual(optionsOf(fFind(dialog2, (node) => node.tag === "select")).map((option) => option.textContent), [ZH["admin.chat.noModels"]], "无模型 ⇒ 提示项")
-  await fFind(dialog2, (node) => node.tag === "form").fire("submit")
-  await tick()
-  assert.equal(noteOf(dialog2).textContent, ZH["admin.chat.modelRequired"], "提交门（空选不提交）")
-  assert.equal(emptyModels.log.some((entry) => entry.startsWith("api POST")), false, "被拒 ⇒ 零 POST")
-  assert.equal(dialog2.open, true, "被拒 ⇒ 留窗（草稿不丢）")
-  delete globalThis.document
-})
-
-// ── ④ 对话区四形（渲染 ∥ 参数摘要回填 ∥ 失败红标）─────────────────────────────
-
-test("④ 对话区：四形渲染（用户/助手/工具行/notice）∥ 参数摘要自 `toolCalls` 回填 ∥ 失败红标 ∥ 线程空态", async () => {
-  const messages = [
-    { seq: 1, role: "user", content: "看看成员", data: null },
-    { seq: 2, role: "assistant", content: "", data: { toolCalls: [{ id: "t1", name: "members", args: { op: "list" } }] } },
-    { seq: 3, role: "tool", content: "", data: { toolCallId: "t1", name: "members", ok: false, summary: "参数缺 username" } },
-    { seq: 4, role: "assistant", content: "成员共 3 人", data: null },
-    { seq: 5, role: "notice", content: "空回合，本轮结束", data: { reason: "empty_turn" } },
-  ]
-  const chat = fChatRow({ id: 1, model: "p1/m-1" })
-  const { mount } = await fMount({ chats: [chat], routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages }) } })
-  await fFindAll(mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const thread = threadOf(mount)
-  const user = fFind(thread, (node) => node.className === "chat-msg user")
-  const assistants = fFindAll(thread, (node) => node.className === "chat-msg assistant")
-  const cards = fFindAll(thread, (node) => node.className === "tool-call")
-  const notice = fFind(thread, (node) => node.className === "chat-msg notice")
-  assert.equal(textOf(user), "看看成员", "用户气泡")
-  assert.deepEqual(assistants.map((node) => textOf(node)), ["成员共 3 人"], "助手文本（空文本行 ⇒ 零节点）")
-  assert.equal(cards.length, 1, "工具卡在册（核件 `renderToolHistory`——回读径）")
-  const [card] = cards
-  assert.ok(textOf(card).includes("参数缺 username"), "结果摘要（回读文本——失败原文零丢）")
-  assert.ok(textOf(fFind(card, (node) => node.className === "tool-call-status")).trim() !== "", "状态位在册（核历史卡现行形——重读恒绿，见批档 §5.5-6 裁决）")
-  assert.equal(notice.textContent, ZH["admin.chat.noticeEmpty"], "notice 灰条（四形键映射——精确值判）")
-  assert.ok(fFind(mount, (node) => node.textContent === String(chat.model)) !== null, "对话区题 = 会话模型")
-  // 线程空态（选中但零消息）
-  const emptyThread = await fMount({ routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: [] }) } })
-  await fFindAll(emptyThread.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  assert.ok(fFind(threadOf(emptyThread.mount), (node) => node.textContent === ZH["admin.chat.threadEmpty"]) !== null, "线程空态")
-  delete globalThis.document
-})
-
-// ── ⑤ 输入区（空值不提交 ∥ 在途禁用）─────────────────────────────────────────
-
-test("⑤ 输入区：空值不提交（就地必填）∥ 在途禁用 + 运行中指示 ∥ 终态复位", async () => {
-  let release = null
-  const gate = new Promise((resolve) => { release = resolve })
-  const chat = fChatRow({ id: 1 })
-  const fetchImpl = async () => { await gate; return fStreamResponse(['{"type":"end","status":"succeeded"}\n']) }
-  const { log, mount } = await fMount({ chats: [chat], routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: [] }) }, fetchImpl })
-  await fFindAll(mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const form = fFind(mount, (node) => node.tag === "form")
-  const input = fFind(form, (node) => node.tag === "textarea")
-  const send = sendBtnOf(mount)
-  const running = fFind(mount, (node) => node.textContent === ZH["admin.chat.running"])
-  assert.equal(input.attrs.placeholder, ZH["admin.chat.inputPh"], "输入区占位（键单源）")
-  // 空值不提交
-  await form.fire("submit")
-  assert.equal(noteOf(mount).textContent, ZH["admin.chat.messageRequired"], "空值 ⇒ 就地必填提示")
-  assert.equal(log.some((entry) => entry.startsWith("fetch")), false, "空值 ⇒ 零请求")
-  // 非空 ⇒ 在途禁用 + 运行中指示
-  input.value = "  跑一轮  "
-  const submitted = form.fire("submit")
-  await tick()
-  assert.deepEqual([send.disabled, running.hidden], [true, false], "在途 ⇒ 发送钮禁用 + 运行中指示")
-  assert.equal(input.value, "", "提交即清草稿")
-  release()
-  await submitted
-  await tick()
-  assert.equal(send.disabled, false, "终态 ⇒ 复位（可再发）")
-  assert.equal(running.hidden, true, "终态 ⇒ 运行中指示退场")
-  delete globalThis.document
-})
-
-// ── ⑥ 流读取（分块跨帧 ∥ 帧序 ∥ end ⇒ 重读——取数序列逐条）─────────────────────
-
-test("⑥ 流读取：分块跨帧无损 ∥ delta 追加 ∥ call/result 工具行 ∥ end ⇒ 重读详情（读时单源）", async () => {
-  const chat = fChatRow({ id: 1 })
-  const stored = [
-    { seq: 1, role: "user", content: "你好" },
-    { seq: 2, role: "assistant", content: "你好——已落库", data: { toolCalls: [{ id: "t1", name: "members", args: "{\"op\":\"list\"}" }] } },
-    { seq: 3, role: "tool", content: "", data: { toolCallId: "t1", name: "members", ok: false, summary: "缺 username" } },
-    { seq: 4, role: "notice", content: "预算超限", data: { reason: "budget" } },
-  ]
-  const chunks = [
-    '{"type":"delta","text":"你',
-    '好"}\n{"type":"call","id":"t1","name":"members","args":"{\\"op\\":\\"list\\"}"}\n',
-    '{"type":"result","id":"t1","ok":false,"summary":"缺 username"}\n{"type":"end","status":"failed","reason":"预算超限"}\n',
-  ]
-  const { log, mount } = await fMount({
-    chats: [chat],
-    routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: log.includes("fetch POST /api/admin/agent/chats/1/messages") ? stored : [] }) },
-    chunks,
-  })
-  await fFindAll(mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const form = fFind(mount, (node) => node.tag === "form")
-  fFind(form, (node) => node.tag === "textarea").value = "你好"
-  await form.fire("submit")
-  await tick()
-  await tick()
-  await tick()
-  const thread = threadOf(mount)
-  assert.equal(textOf(fFind(thread, (node) => node.className === "chat-msg assistant")), "你好——已落库", "end ⇒ 重读替代流式视图（读时单源）")
-  const card = fFind(thread, (node) => node.className === "tool-call")
-  assert.ok(textOf(card).includes("缺 username"), "工具卡自存储回读重建（核件历史卡——失败原文零丢）")
-  assert.equal(fFind(thread, (node) => node.className === "chat-msg notice").textContent, ZH["admin.chat.noticeBudget"], "notice 行自存储回读（三形键）")
-  assert.deepEqual(log, [
-    "api GET /api/admin/agent/chats",
-    "api GET /api/admin/agent/chats/1",
-    "fetch POST /api/admin/agent/chats/1/messages",
-    "api GET /api/admin/agent/chats/1",
-  ], "取数序列逐条（列表 ⇒ 详情 ⇒ 流 POST ⇒ end 后重读）")
-  delete globalThis.document
-})
-
-// ── ⑦ 断连 ∥ 流前错误 ───────────────────────────────────────────────────────
-
-test("⑦ 断连（读流中止——零未押异常，部分文本留场，草稿不还原）∥ 离页（挂载点断开 ⇒ reader.cancel ∥ 不触发重读）∥ 流前错误（信封 ⇒ 就地人话 + 草稿还原）", async () => {
-  const chat = fChatRow({ id: 1 })
-  // 断连：首块含半帧 + delta，第二次 read 抛错 ⇒ 残帧不落地、无异常、就地人话
-  const main = await fMount({
-    chats: [chat], routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: [] }) },
-    fetchImpl: async () => fStreamResponse(['{"type":"delta","text":"前半"}\n{"type":"delta","text":"残', '半"}\n'], { failAt: 1 }),
-  })
-  await fFindAll(main.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const form = fFind(main.mount, (node) => node.tag === "form")
-  const input = fFind(form, (node) => node.tag === "textarea")
-  input.value = "hi"
-  await form.fire("submit")
-  await tick()
-  assert.equal(noteOf(main.mount).textContent, ZH["admin.chat.streamBroken"], "断连 ⇒ 就地人话（零未押异常）")
-  assert.equal(textOf(threadOf(main.mount)), "前半", "已收帧留场；残帧不落地")
-  assert.equal(main.log.at(-1), "fetch POST /api/admin/agent/chats/1/messages", "断连无 end ⇒ 不触发重读")
-  assert.equal(sendBtnOf(main.mount).disabled, false, "断连 ⇒ 输入区复位（回合照跑——可重读）")
-  assert.equal(input.value, "", "断连 ⇒ 草稿不还原（落库已起——重发 = 双发）")
-  // 离页（路由卸载——挂载点断开）：流中 ⇒ reader.cancel ∥ 零重读
-  let gate = null
-  const parked = new Promise((resolve) => { gate = resolve })
-  const state = { reads: 0, cancelled: false }
-  const leave = await fMount({
-    chats: [chat], routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: [] }) },
-    fetchImpl: async () => ({
-      ok: true, status: 200, json: async () => ({}), state,
-      body: { getReader: () => ({
-        async read() {
-          state.reads += 1
-          if (state.reads === 1) return { done: false, value: new TextEncoder().encode('{"type":"delta","text":"a"}\n') }
-          await parked // 二读挂起（离页时刻可控）
-          return { done: false, value: new TextEncoder().encode('{"type":"delta","text":"b"}\n') }
-        },
-        async cancel() { state.cancelled = true; gate() },
-      }) },
-    }),
-  })
-  await fFindAll(leave.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const leaveForm = fFind(leave.mount, (node) => node.tag === "form")
-  fFind(leaveForm, (node) => node.tag === "textarea").value = "hi"
-  const inFlight = leaveForm.fire("submit")
-  await tick()
-  leave.mount.isConnected = false // 路由切换（app.mjs `replaceChildren` ⇒ 旧挂载点卸载）
-  gate()
-  await inFlight
-  await tick()
-  assert.equal(state.cancelled, true, "离页 ⇒ 读流中止（reader.cancel）")
-  assert.equal(leave.log.at(-1), "fetch POST /api/admin/agent/chats/1/messages", "离页 ⇒ 不触发重读")
-  // 流前错误（400 信封——在途再发）
-  const pre = await fMount({
-    chats: [chat], routes: { "GET /api/admin/agent/chats/1": () => ({ chat, messages: [] }) },
-    fetchImpl: failEnvelope(400, "invalid_request_error", "本会话正在执行——等它结束"),
-  })
-  await fFindAll(pre.mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))[0].fire("click")
-  await tick()
-  const form2 = fFind(pre.mount, (node) => node.tag === "form")
-  const input2 = fFind(form2, (node) => node.tag === "textarea")
-  input2.value = "hi"
-  await form2.fire("submit")
-  await tick()
-  assert.equal(noteOf(pre.mount).textContent, ZH["err.invalid_request_error"].replace("{detail}", "本会话正在执行——等它结束"), "流前错误 ⇒ 映射人话（服务端原文随句）")
-  assert.equal(input2.value, "hi", "流前错误 ⇒ 草稿还原（零副作用——重试不需重打）")
-  delete globalThis.document
 })
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 599 ∥ 604", () => {
+test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 686 ∥ 691", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -519,7 +279,7 @@ test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符�
     assert.equal(placeholders(ZH[key]), placeholders(EN[key]), `占位符不对位：${key}`)
     assert.equal(CJK.test(EN[key]), false, `en 值含 CJK：${key}`)
   }
-  assert.equal(NEW_KEYS.length, 29, "本批键数（27 admin.chat + 1 nav + 1 audit 型键）")
+  assert.equal(NEW_KEYS.length, 22, "本批键数（20 admin.chat + 1 nav + 1 audit 型键）")
   for (const key of RETIRED_KEYS) assert.deepEqual([key in ZH, key in EN], [false, false], `退役键删净：${key}`)
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
@@ -529,7 +289,7 @@ test("⑧ i18n：本批 29 键逐键在场 ∥ 四退役键删净 ∥ 占位符�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [599, 604], "键数终值（2026-10-11 批后 ⊕ 轻通道笔 2 +2 ⊕ 笔 4 +1）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [686, 691], "键数终值（2026-10-11 批组后——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -538,6 +298,7 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
   const events = [
     { ts: 1700000000000, type: "agent_event", actor: "admin", target: "chat:1", detail: { kind: "chat_call", chatId: 1, tool: "members", summary: "members list ⇒ ok（3 项）" } },
     { ts: 1700000001000, type: "sandbox_event", actor: "admin", target: "", detail: { kind: "container_start" } },
+    { ts: 1700000002000, type: "weird_event", actor: "admin", target: "", detail: {} },
   ]
   globalThis.document = stubDocument()
   const log = []
@@ -549,16 +310,17 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
   const cells = fFindAll(mount, (node) => node.tag === "td").map((cell) => textOf(cell))
   assert.ok(cells.includes(ZH["audit.type.agent_event"]), "表内类型文案（表键）")
   assert.ok(cells.includes("members list ⇒ ok（3 项）"), "详情 summary 支（原句渲染）")
-  assert.ok(cells.includes("sandbox_event"), "枚举外型 ⇒ 原值兜底（零遗漏）")
+  assert.ok(cells.includes(ZH["audit.type.sandbox_event"]), "沙盒型 ⇒ 表键文案（走查轮两型入枚举）")
+  assert.ok(cells.includes("weird_event"), "枚举外型 ⇒ 原值兜底（零遗漏）")
   assert.ok(AUDIT_SRC.includes("agent_event") && AUDIT_SRC.includes("detail.summary"), "型枚举 + summary 支在档（结构面）")
   delete globalThis.document
 })
 
 // ── ⑩ 静态面（档目 ∥ nav ∥ app 接线 ∥ 非壳页 ∥ 行数/行宽 ∥ 零外链 ∥ 键/类闭合 ∥ canon）─────
 
-test("⑩ 静态面：档目 36 ∥ 37 ∥ nav 管理 9（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
+test("⑩ 静态面：档目 43 ∥ 42 ∥ nav 管理 9（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
   // nav（管理 9 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
@@ -587,7 +349,7 @@ test("⑩ 静态面：档目 36 ∥ 37 ∥ nav 管理 9（对话位次 2）∥ a
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   const used = new Set()
   for (const match of VIEW_SRC.matchAll(/\bclass(?:Name)?\s*[:=]\s*([^\n;]*?)(?=\s*\bclass(?:Name)?\s*[:=]|[;\n]|$)/g)) {
-    const window = match[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*[A-Za-z_$][\w$]*\s*:/)[0]
+    const window = match[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*(?:[A-Za-z_$][\w$]*|"[^"]*"|'[^']*')\s*:/)[0]
     for (const literal of window.matchAll(/["'`]([^"'`]*)["'`]/g)) for (const token of literal[1].split(/\s+/)) if (token) used.add(token)
   }
   for (const match of VIEW_SRC.matchAll(/classList\.(?:add|remove)\(([^)]*)\)/g)) {
@@ -595,19 +357,19 @@ test("⑩ 静态面：档目 36 ∥ 37 ∥ nav 管理 9（对话位次 2）∥ a
   }
   // （启发式注：上面两条提取优先把模板占位置空再取字面量——本批类名全为字面量故完整；后续批若改拼接类名需同步加固）
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const token of ["chat-list", "chat-row", "chat-thread", "chat-msg", "user", "assistant", "notice", "chat-form", "active"]) {
-    assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
+  for (const token of ["chat-bar", "chat-select", "chat-thread", "message", "notice"]) {
+    assert.ok(used.has(token) && cssClasses.has(token), `新页类双向闭合：${token}`)
   }
-  // `:root` 38 ∥ 悬停七条不破（本批零新变量/悬停——AC-19 canon）
+   // `:root` 50 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 38, ":root 38（零新增）")
-  assert.equal([...cssClean.matchAll(/:hover/g)].length, 7, "悬停七条（零新增）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
 })
 
 // ── ⑪ 收尾：`t` 键族闭包（本批键全被消费）────────────────────────────────────
 
 test("⑪ 键消费闭包：`admin.chat.*` 键族在档面被消费（零死键）∥ notice 四形经映射表消费", () => {
-  const source = stripComments(VIEW_SRC)
+  const source = stripComments(VIEW_SRC) + stripComments(readPublic("views-chat-composer.mjs"))
   const consumed = new Set([
     ...[...source.matchAll(/\bt\(\s*"([^"]+)"/g)].map((match) => match[1]),
     ...[...source.matchAll(/"([a-zA-Z][\w]*(?:\.[\w]+)+)"/g)].map((match) => match[1]), // 全字符串字面量（键可作映射表值——如 NOTICE_KEYS）
@@ -619,51 +381,15 @@ test("⑪ 键消费闭包：`admin.chat.*` 键族在档面被消费（零死键�
   }
 })
 
-// ── ⑫ 流归属（流中切会话 ⇒ 丢帧不串台 ∥ `end` 不重读换视图——评审轮 must-fix 的回归腿）────────
+// ── ⑫ 流归属（旧页类名断言——**页件经 chat-shell-align 批重写后失效**）────────────
+// 承继关系：流中切会话/丢帧面 = 承继件 `docs/batches/2026-10-11-chat-shell-align.test.mjs`（N64 帧序 ∥ N67 中止 ∥
+// B67 队列 ∥ 结构腿）；旧 `chat-row` 行选取断言已不可机检。
 
-test("⑫ 流归属：流中切到别会话 ⇒ 直播帧不串台 ∥ `end` 不重读（视图仍 = 当前选中会话）", async () => {
-  const chatA = fChatRow({ id: 1, model: "p1/m-1" })
-  const chatB = fChatRow({ id: 2, model: "p1/m-2", excerpt: "乙会话" })
-  const storedB = [{ seq: 1, role: "user", content: "乙会话首条" }, { seq: 2, role: "assistant", content: "乙会话回复" }]
-  let gate = null
-  const parked = new Promise((resolve) => { gate = resolve })
-  let step = 0
-  const { log, mount } = await fMount({
-    chats: [chatA, chatB],
-    routes: { "GET /api/admin/agent/chats/1": () => ({ chat: chatA, messages: [] }), "GET /api/admin/agent/chats/2": () => ({ chat: chatB, messages: storedB }) },
-    fetchImpl: async () => ({
-      ok: true, status: 200, json: async () => ({}),
-      body: { getReader: () => ({
-        async read() {
-          step += 1
-          if (step === 1) return { done: false, value: new TextEncoder().encode('{"type":"delta","text":"LIVE-A"}\n') }
-          if (step === 2) { await parked; return { done: false, value: new TextEncoder().encode('{"type":"delta","text":"LIVE-B"}\n{"type":"end","status":"succeeded"}\n') } }
-          return { done: true, value: undefined }
-        },
-        async cancel() {},
-      }) },
-    }),
-  })
-  const rows = () => fFindAll(mount, (node) => node.tag === "button" && node.className.startsWith("chat-row"))
-  await rows()[0].fire("click") // 选中 A
-  await tick()
-  const form = fFind(mount, (node) => node.tag === "form")
-  fFind(form, (node) => node.tag === "textarea").value = "hi"
-  const inFlight = form.fire("submit")
-  await tick()
-  await tick()
-  assert.ok(textOf(threadOf(mount)).includes("LIVE-A"), "A 在途：本会话直播帧落地")
-  await rows()[1].fire("click") // 流中切到 B
-  await tick()
-  gate()
-  await inFlight
-  await tick()
-  assert.equal(textOf(threadOf(mount)).includes("LIVE-B"), false, "切走后 ⇒ A 的后续帧不落 B 面（不串台）")
-  assert.ok(textOf(threadOf(mount)).includes("乙会话回复"), "B 面 = B 的存储内容")
-  assert.ok(fFind(mount, (node) => node.textContent === String(chatB.model)) !== null, "对话区题仍 = B（`end` 未把视图换成 A）")
-  assert.equal(log.filter((entry) => entry === "api GET /api/admin/agent/chats/1").length, 1, "`end` ⇒ 切走后不重读 A（只余选中那次）")
-  assert.deepEqual(log, [
-    "api GET /api/admin/agent/chats", "api GET /api/admin/agent/chats/1", "fetch POST /api/admin/agent/chats/1/messages", "api GET /api/admin/agent/chats/2",
-  ], "取数序列：切会话后零额外读（不换视图）")
-  delete globalThis.document
+test("⑫ 流归属：由承继件覆盖（页件重写后生效——指针腿）", () => {
+  const successor = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align.test.mjs")
+  assert.ok(existsSync(successor), "承继件在盘（流归属面覆盖所归）")
+  const successorSrc = readFileSync(successor, "utf8")
+  for (const leg of ["N64 帧序", "N67/B65 中止", "B67 队列"]) {
+    assert.ok(successorSrc.includes(leg), `承继腿在册：${leg}`)
+  }
 })

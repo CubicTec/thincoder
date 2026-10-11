@@ -179,7 +179,7 @@ test("① 运行面：六列在册 ∥ 在线/离线徽标 ∥ 离线行红标 �
     assert.ok(cellsOf(rows[0]).includes(fRunner().version), "版本列")
     assert.equal(fFind(mount, (node) => node.className === "badge ok")?.textContent, ZH["admin.sandbox.online"], "在线徽标")
     assert.ok(fFind(mount, (node) => node.textContent === ZH["admin.sandbox.empty"]) === null, "有节点 ⇒ 空态缺位")
-    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/image-sources", "GET /api/admin/sandbox/overview", "GET /api/admin/sandbox/onboarding"], "首读三件（镜像源卡 ∥ 容器区待展开——懒加载）")
+    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/overview", "GET /api/admin/sandbox/onboarding"], "首读两件（镜像源卡/镜像表 = 标签②懒读——console-tabs-component 批后；容器区待展开）")
     // 全离线（节点面不整页禁用——两钮恒在场）
     const offline = await fMount({ runners: [fRunner({ online: false, version: null, containers: null, status: "unavailable" })] })
     const alert = fFind(offline.mount, (node) => node.tag === "p" && node.textContent === ZH["admin.sandbox.allOffline"])
@@ -312,7 +312,7 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
     assert.equal(inputs[1].value, "thincoder-sandbox:9", "镜像预填 = 设置读面值")
     // 轻通道笔 2：节点本地镜像 ⇒ 选单（选定回填 ∥ 「自定义（手输）」保底）
     const selects = fFindAll(dialog, (node) => node.tag === "select")
-    assert.equal(selects.length, 1, "镜像选单在册")
+    assert.equal(selects.length, 2, "镜像选单 + 卷选单（sandbox-volumes 批）")
     assert.deepEqual(optionsOf(selects[0]).map((option) => option.value), ["", "thincoder-sandbox:9", "nginx:1.27"], "选单 = 自定义 + 节点本地镜像（`<none>` ∥ 空 tags 滤除）")
     assert.equal(selects[0].value, "thincoder-sandbox:9", "设置预填值命中 ⇒ 预选")
     selects[0].value = "nginx:1.27"
@@ -481,15 +481,15 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [599, 604], "键数终值")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [686, 691], "键数终值（2026-10-11 批组后——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
 
-test("⑧ 静态面：档目 36 ∥ 37 ∥ nav 管理 9 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
-  // 档目（31 ∥ 32 ⇒ 36 ∥ 37——2026-10-11 两批 + 拆分层后）
+test("⑧ 静态面：档目 43 ∥ 42 ∥ nav 管理 9 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
+  // 档目（43 ∥ 42——2026-10-11 走查轮后）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 9 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
@@ -518,10 +518,10 @@ test("⑧ 静态面：档目 36 ∥ 37 ∥ nav 管理 9 ∥ app 接线 ∥ 行�
   }
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
   for (const token of ["badge", "off", "detail-row", "stack-box", "step-list"]) assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
-  // `:root` 38 ∥ 悬停七条不破（本批零新变量/悬停——AC-19 canon）
+   // `:root` 50 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 38, ":root 38（零新增）")
-  assert.equal([...cssClean.matchAll(/:hover/g)].length, 7, "悬停七条（零新增）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：本批 ui 件入链（姊妹两件 = 服务面批落——本件不代断言其档面在盘）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
   assert.ok(chain.includes("docs/batches/2026-10-10-runner-admin-console-ui.test.mjs"), `本批 ui 件入链（39 ⇒ 42）：${chain.length}`)

@@ -7,7 +7,7 @@
  *   ① 组件 = AC-16（`modal.mjs`：零依赖 ∥ `<dialog>` 基座 ∥ 复用 API ∥ 单例/关闭/遮罩策略 ∥ 顶层零浏览器全局
  *      ——桩 DOM 行为直测）② 成员弹窗 = AC-16 ∥ AC-21②（三态 ∥ 分模型覆盖（惰性 providers ∥ 键级合并）∥ 一次性秘密不破——假 ctx 行为直测）
  *   ③ 服务模型页 = AC-17（`deriveModels` 同源派生纯函数 ∥ 详情弹窗复用组件 ∥ 配置五组在册——A/C/F/D/E）
- *   ④ nav（AC-16/17 面：管理 7 ∥ 新路径 ∥ denied ∥ 重定向/默认页不破）⑤ 静态面（档目 30 ∥ 31 ∥ 零外链 ∥
+ *   ④ nav（AC-16/17 面：管理 7 ∥ 新路径 ∥ denied ∥ 重定向/默认页不破）⑤ 静态面（档目 43 ∥ 42 ∥ 零外链 ∥
  *      两表键集/占位符 ∥ 键引用闭合 ∥ 两新档静态直发）⑥ 门禁清单（`prepublishOnly` 含本批件 ∥ 清单在盘）。
  */
 import test from "node:test"
@@ -401,13 +401,13 @@ test("④ nav：管理 9 ∥ `/admin/models` 在册 ∥ denied ∥ 重定向/默
 
 // ── ⑤ 静态面（档目 30 ∥ 31 ∥ 零外链 ∥ i18n 键集/键引用闭合 ∥ 直发）────────────
 
-test("⑤ 静态面：档目 40 ∥ 39 ∥ 零外链 ∥ 两表键集/占位符 ∥ 本批新键 ∥ 键引用闭合 ∥ 两新档直发", async () => {
+test("⑤ 静态面：档目 43 ∥ 42 ∥ 零外链 ∥ 两表键集/占位符 ∥ 本批新键 ∥ 键引用闭合 ∥ 两新档直发", async () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39]) // 含 favicon 全目录 ∥ UI 代码档（2026-10-11 console-chat-align 批后）
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42]) // 含 favicon 全目录 ∥ UI 代码档（2026-10-11 走查轮后）
   assert.deepEqual(names, [
     "app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs",
-    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
-    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
+    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
+    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
   ])
   for (const name of names) {
     const text = readFileSync(join(PUBLIC_DIR, name), "utf8")

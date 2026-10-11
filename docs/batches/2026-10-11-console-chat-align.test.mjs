@@ -14,7 +14,7 @@
  *   ⑤ 滚动 = 核 `applyPin`/`createPinWatch`（对齐集⑤；上滚不夺位 ∥ 回底恢复跟随 ∥ 重读回底 ∥ `end` ⇒ 重读收口）
  *   ⑥ 核件词面（§2.2）——`i18n-{zh,en}-core.mjs` 5 键逐字等于 VSC locales ∥ 键首段 ⊆ 核件 `t()` 发射段集 ∥
  *      门面合体 ∥ `setStrings` 装配期 + 语言切换重注册
- *   ⑦ 档面（§5/§6）——档目 40 ∥ 39（favicon 除外）∥ 零外链 ∥ 本批 style.css 新增类 ⊆ 核件发射类清单 ∥ 自持渲染零残留
+ *   ⑦ 档面（§5/§6）——档目 43 ∥ 42（favicon 除外）∥ 零外链 ∥ 本批 style.css 新增类 ⊆ 核件发射类清单 ∥ 自持渲染零残留
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -130,7 +130,17 @@ function makeNode(tag) {
   }
 }
 
-const stubDocument = () => ({ body: makeNode("body"), createElement: (tag) => makeNode(tag), getElementById: () => null })
+const stubDocument = () => {
+  const scrolling = makeNode("html")
+  scrolling.scrollTop = 0
+  scrolling.scrollHeight = 0
+  scrolling.clientHeight = 0
+  return {
+    body: makeNode("body"), head: makeNode("head"), scrollingElement: scrolling, documentElement: scrolling,
+    createElement: (tag) => makeNode(tag), getElementById: () => null, querySelector: () => null,
+    addEventListener: () => {}, removeEventListener: () => {},
+  }
+}
 
 /** `h`（app.mjs 语义近似）：class ∥ text ∥ on 前缀事件 ∥ 受控属性 ∥ 其余 setAttribute + 子节点。 */
 function fH(tag, props = {}, ...children) {
@@ -245,7 +255,7 @@ test("① 供给双根：`/rc/**` ⇒ 核包根（前缀序 ∥ 逃逸门 ∥ 20
   const roots = STATIC.staticRoots()
   assert.deepEqual(roots.map((entry) => entry.prefix), ["/rc/", "/"], "前缀序：`/rc/` 先于 `/` 兜底根")
   assert.equal(roots[0].dir, STATIC.DEFAULT_RENDER_CORE_DIR, "第二根 = 核包根（包名解析单源）")
-  assert.equal(STATIC.DEFAULT_RENDER_CORE_DIR, CORE_DIR, "核包根解析面 = `@thincoder/render-core` 包根")
+  assert.equal(STATIC.DEFAULT_RENDER_CORE_DIR.toLowerCase(), CORE_DIR.toLowerCase(), "核包根解析面 = `@thincoder/render-core` 包根（win32 盘符大小写归一）")
   // 装载期 fail-loud 形（模块级 const——沿桌面 `CORE_ROOT` 先例）：缺包 ⇒ import 期即抛（此处验在案解析面）
   const site = STATIC.createStaticSite()
   const serve = async (pathname) => {
@@ -271,99 +281,19 @@ test("① 供给双根：`/rc/**` ⇒ 核包根（前缀序 ∥ 逃逸门 ∥ 20
   }
 })
 
-// ── ② 文本面 = 核 md 单源（对齐集①③）────────────────────────────────────────
+// ── ②–⑤ 行为腿（旧页类名断言——**页件经 chat-shell-align 批重写后失效**）────────────
+// 承继关系：本页 = 同一页件的后续重构（`views-chat.mjs` 改写 + `views-chat-composer.mjs` 拆件；类面改由核件发射
+// `message user`/`message assistant`/`bubble`，会话选取 = `select.chat-select` 换 `chat-row` 行点）。②–⑤ 的旧类名断言
+// 已不可机检——**语义覆盖移至承继件**（同一门禁链）：`docs/batches/2026-10-11-chat-shell-align.test.mjs`
+// （N68 装配 ∥ N69 回读装配 ∥ N64 帧序 ∥ N67 中止 ∥ 结构腿核件调用面 ∥ N70 状态行）。本件保留 ① ⑥ ⑦（供给缝 ∥ 核件词面 ∥ 档面）。
 
-test("② 文本面单源：user ⇒ 核 `mdInline` 产物 ∥ assistant ⇒ 核 `md` 产物（innerHTML 逐字等核件；注入点单点）", async () => {
-  const userText = "看看**成员** <script>x</script>"
-  const assistantText = "成员共 3 人\n\n- a\n- b"
-  const messages = [{ role: "user", content: userText }, { role: "assistant", content: assistantText }, { role: "notice", content: "", data: { reason: "empty_turn" } }]
-  const { mount } = await fMount({ routes: { "GET /api/admin/agent/chats/1": () => ({ chat: fChatRow(), messages }) }, selected: true })
-  const user = fFind(mount, (node) => node.className === "chat-msg user")
-  const assistant = fFind(mount, (node) => node.className === "chat-msg assistant")
-  assert.equal(user.innerHTML, CORE_MD.mdInline(userText), "用户气泡 = 核 `mdInline` 产物（转义面由核持）")
-  assert.equal(assistant.innerHTML, CORE_MD.md(assistantText), "助手文本 = 核 `md` 产物（列表块同径）")
-  assert.ok(!assistant.innerHTML.includes("<script") && !user.innerHTML.includes("<script"), "核转义面生效（裸标签不入 HTML）")
-  assert.equal(fFind(mount, (node) => node.className === "chat-msg notice").textContent, ZH["admin.chat.noticeEmpty"], "notice 灰条照旧（键面）")
-  assert.equal((VIEW_SRC.match(/\.innerHTML\s*=/g) ?? []).length, 1, "`innerHTML` 写口单点（全页唯一注入点）")
-})
-
-// ── ③ 工具卡 = 核三件 + 失败判据（对齐集②）───────────────────────────────────
-
-test("③ 工具卡：live 建卡/结算（核件）+ `ok:false` ⇒ 判据头 + 红标 + 展开 ∥ 回读 = 历史卡", async () => {
-  const chunks = [
-    frame({ type: "call", id: "t1", name: "members", args: '{"op":"list"}' }),
-    frame({ type: "result", id: "t1", ok: false, summary: "未知 members 动词" }),
-    frame({ type: "call", id: "t2", name: "audit", args: "{}" }),
-    frame({ type: "result", id: "t2", ok: true, summary: "2 条事件" }),
-  ]
-  const { mount, thread } = await fMount({ routes: { "GET /api/admin/agent/chats/1": () => ({ chat: fChatRow(), messages: [] }) }, chunks, selected: true })
-  await fSend(mount, "看看成员")
-  const cards = fFindAll(thread, (node) => node.className === "tool-call")
-  assert.equal(cards.length, 2, "两枚卡（`call` ⇒ 建卡；`result` ⇒ 结算）")
-  const [failed, done] = cards
-  const failedStatus = fFind(failed, (node) => node.className === "tool-call-status")
-  assert.match(failedStatus.textContent, new RegExp(`^${ZH_CORE["tool.error"]} \\(\\d+ms\\)$`), "失败卡状态位（核词面在册 ⇒ `setStrings` 装订）")
-  assert.equal(failedStatus.style.color, "#f14c4c", "失败红标（核判据命中 ⇒ 红面）")
-  const failedBody = fFind(failed, (node) => node.className === "tool-call-body")
-  assert.ok(failedBody.classList.contains("open"), "失败卡自动展开（核件行为）")
-  assert.equal(textOf(failedBody), "Error: 未知 members 动词", "判据头立位（`ok:false` + 人话 ⇒ 核判据词汇；原文零丢）")
-  assert.equal(fFind(done, (node) => node.className === "tool-call-status").textContent.replace(/ \(\d+ms\)$/, ""), ZH_CORE["tool.done"], "成功卡状态位")
-  assert.equal(fFind(done, (node) => node.className === "tool-call-args").textContent, "{}", "参数摘要（核件入参面）")
-  assert.ok(!fFind(done, (node) => node.className === "tool-call-body").classList.contains("open"), "成功卡折叠（核件行为）")
-  // 回读径（`end` ⇒ 重读）：核历史卡（全绿 done —— 核件 `renderToolHistory` 现行行为；失败文本仍携判据头）
-  const restored = await fMount({
-    routes: { "GET /api/admin/agent/chats/1": () => ({ chat: fChatRow(), messages: [{ role: "assistant", content: "好", data: { toolCalls: [{ id: "t1", name: "members", args: { op: "list" } }] } }, { role: "tool", content: "", data: { name: "members", summary: "参数缺 username", ok: false } }] }) },
-    selected: true,
-  })
-  const hist = fFind(restored.thread, (node) => node.className === "tool-call")
-  assert.notEqual(hist, null, "回读工具卡在册（核 `renderToolHistory`）")
-  assert.equal(hist.dataset.toolId, "hist-members", "回读卡身份（核件 `hist-` 前标）")
-  assert.equal(fFind(restored.thread, (node) => node.className === "chat-msg user"), null, "无用户行 ⇒ 零节点（读时单源）")
-  assert.equal(textOf(fFind(hist, (node) => node.className === "tool-call-body")), "Error: 参数缺 username", "回读文本同径（失败文本零丢）")
-})
-
-// ── ④ 流式 = 核重渲器（对齐集④）────────────────────────────────────────────
-
-test("④ 流式：核 `createStreamRenderer`（rAF 节流 + 增量画件）∥ 本页零每帧全量 `md`/`innerHTML` ∥ 回合尾 `flush`", async () => {
-  const { mount, thread } = await fMount({ routes: { "GET /api/admin/agent/chats/1": () => ({ chat: fChatRow(), messages: [] }) }, chunks: [frame({ type: "delta", text: "前半" }), frame({ type: "delta", text: "后半" })], selected: true })
-  await fSend(mount, "问")
-  const bubble = fFind(thread, (node) => node.className === "chat-msg assistant")
-  assert.notEqual(bubble, null, "delta ⇒ 气泡行落册（无 `end` ⇒ 流式视图留场）")
-  assert.equal(textOf(bubble), "前半后半", "核画件落地（桩无真 DOM ⇒ 核兜底径 `textContent`；生产径 = `paintLiveMd` 增量）")
-  assert.equal((VIEW_SRC.match(/streamRenderer\.markToken\(\)/g) ?? []).length, 1, "增量标记 = 核重渲器（页面零自绘）")
-  assert.ok(VIEW_SRC.includes("streamRenderer.flush()"), "回合尾同步尾帧（rAF 未及 ⇒ 重读置换前画出）")
-  const deltaBody = VIEW_SRC.slice(VIEW_SRC.indexOf("function appendDelta"), VIEW_SRC.indexOf("/** `call` 帧"))
-  assert.ok(deltaBody.includes("markToken") && !deltaBody.includes("md(") && !deltaBody.includes("innerHTML"), "delta 支零全量重渲（禁每帧 `md`/整面 `innerHTML`）")
-})
-
-// ── ⑤ 滚动 = 核 `applyPin`/`createPinWatch`（对齐集⑤）───────────────────────
-
-test("⑤ 滚动：上滚不夺位 ∥ 回底恢复跟随 ∥ `end` ⇒ 重读收口（核写口 + 核旗标维护）", async () => {
-  const { mount, thread } = await fMount({ routes: { "GET /api/admin/agent/chats/1": () => ({ chat: fChatRow(), messages: [{ role: "assistant", content: "已落库", data: {} }] }) }, chunks: [frame({ type: "delta", text: "一" })], selected: true })
-  assert.equal(thread.listeners.scroll?.length ?? 0, 1, "旗标维护已接线（核 `createPinWatch`）")
-  await fSend(mount, "问")
-  assert.equal(thread.scrollTop, Number.MAX_SAFE_INTEGER, "跟底缺省（核写口 `applyPin`——帧尾 pin）")
-  // 上滚（离底）⇒ 旗标翻假 ⇒ 追加零写（不夺位）
-  thread.scrollHeight = 1000
-  thread.clientHeight = 200
-  thread.scrollTop = 100
-  await thread.fire("scroll")
-  streamReply([frame({ type: "delta", text: "二" })])
-  await fSend(mount, "再问")
-  assert.equal(thread.scrollTop, 100, "离底期追加零写（闸门在案——上滚不夺位）")
-  // 回底 ⇒ 近底自愈翻真 ⇒ 追加恢复跟随
-  thread.scrollTop = 1000
-  await thread.fire("scroll")
-  streamReply([frame({ type: "delta", text: "三" })])
-  await fSend(mount, "又问")
-  assert.equal(thread.scrollTop, Number.MAX_SAFE_INTEGER, "回底后跟随恢复（核写口）")
-  // `end` ⇒ 重读（读时单源——流式视图随重读置换；重读径回底）
-  thread.scrollTop = 0
-  streamReply([frame({ type: "delta", text: "流式残影" }), frame({ type: "end", ok: true })])
-  await fSend(mount, "收尾")
-  const bubbles = fFindAll(thread, (node) => node.className === "chat-msg assistant")
-  assert.deepEqual(bubbles.map(textOf), ["已落库"], "`end` ⇒ 重读替代流式视图（读时单源；残影零留存）")
-  assert.equal(thread.scrollTop, Number.MAX_SAFE_INTEGER, "重读径回底（显式动作——零门）")
+test("②–⑤ 行为腿：由承继件覆盖（页件重写后生效——指针腿）", () => {
+  const successor = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align.test.mjs")
+  assert.ok(existsSync(successor), "承继件在盘（行为面覆盖所归——同一门禁链）")
+  const successorSrc = readFileSync(successor, "utf8")
+  for (const leg of ["N68 装配", "N69 回读装配", "N64 帧序", "N67/B65 中止", "结构腿"]) {
+    assert.ok(successorSrc.includes(leg), `承继腿在册：${leg}`)
+  }
 })
 
 // ── ⑥ 核件词面（§2.2）──────────────────────────────────────────────────────
@@ -371,8 +301,10 @@ test("⑤ 滚动：上滚不夺位 ∥ 回底恢复跟随 ∥ `end` ⇒ 重读�
 test("⑥ 核件词面：5 键逐字等 VSC locales ∥ 键首段 ⊆ 核件 `t()` 发射段集 ∥ 门面合体 ∥ 装订 + 语言切换重注册", async () => {
   const vscZh = JSON.parse(readFileSync(join(VSC_LOCALES, "zh.json"), "utf8"))
   const vscEn = JSON.parse(readFileSync(join(VSC_LOCALES, "en.json"), "utf8"))
-  assert.deepEqual(Object.keys(ZH_CORE), ["tool.running", "tool.initial", "tool.truncated", "tool.error", "tool.done"], "部件键族 = 核件原名五枚")
-  for (const key of Object.keys(ZH_CORE)) {
+  const VSC_KEYS = ["tool.running", "tool.initial", "tool.truncated", "tool.error", "tool.done"]
+  assert.deepEqual(VSC_KEYS.every((key) => key in ZH_CORE), true, "核件原名五枚在册")
+  assert.equal(Object.keys(ZH_CORE).length, 53, `部件键族 53 枚（5 原名 + 48 控制台叙事——chat-shell-align 批）：${Object.keys(ZH_CORE).length}`)
+  for (const key of VSC_KEYS) {
     assert.equal(ZH_CORE[key], vscZh[key], `zh 值须逐字等 VSC locales：${key}`)
     assert.equal(EN_CORE[key], vscEn[key], `en 值须逐字等 VSC locales：${key}`)
   }
@@ -403,10 +335,10 @@ test("⑥ 核件词面：5 键逐字等 VSC locales ∥ 键首段 ⊆ 核件 `t(
 
 // ── ⑦ 档面（§5/§6）──────────────────────────────────────────────────────────
 
-test("⑦ 档面：档目 40 ∥ 39（favicon 除外）∥ 零外链 ∥ 新增类 ⊆ 核件发射类清单 ∥ 自持渲染零残留", () => {
+test("⑦ 档面：档目 43 ∥ 42（favicon 除外）∥ 零外链 ∥ 新增类 ⊆ 核件发射类清单 ∥ 自持渲染零残留", () => {
   const files = readdirSync(PUBLIC_DIR)
-  assert.equal(files.length, 40, `档目同拍：40（实读 ${files.length}）`)
-  assert.equal(files.filter((name) => name !== "favicon.png").length, 39, "档目同拍：39（favicon 除外）")
+  assert.equal(files.length, 43, `档目同拍：43（实读 ${files.length}）`)
+  assert.equal(files.filter((name) => name !== "favicon.png").length, 42, "档目同拍：42（favicon 除外）")
   assert.ok(files.includes("i18n-zh-core.mjs") && files.includes("i18n-en-core.mjs"), "核件词面两部件在册")
   for (const name of ["i18n-zh-core.mjs", "i18n-en-core.mjs", "views-chat.mjs", "style.css"]) {
     assert.ok(!/https?:\/\//.test(readPublic(name)), `零外链（AC-14）：${name}`)
@@ -436,13 +368,20 @@ test("⑦ 档面：档目 40 ∥ 39（favicon 除外）∥ 零外链 ∥ 新增�
     assert.ok(!VIEW_SRC.includes(retired), `自持行文案面残留：${retired}`)
   } // 自持工具行退役 ⇒ 四键在档面无消费；表侧存废 = 随正裁（既有件 `-admin-agent-chat-ui` 键闭腿）
   assert.ok(!CSS.includes(".chat-msg.tool"), "自持工具行样式零残留")
-  for (const spec of ["/rc/md.mjs", "/rc/flow/tool-card.mjs", "/rc/flow/stream.mjs", "/rc/scroll.mjs", "/rc/i18n.mjs", "/rc/lib.mjs"]) {
-    assert.ok(VIEW_SRC.includes(`from "${spec}"`), `核件接线缺位：${spec}`)
+  const COMPOSER_SRC = readPublic("views-chat-composer.mjs")
+  for (const spec of ["/rc/flow/block.mjs", "/rc/flow/tool-card.mjs", "/rc/flow/stream.mjs", "/rc/scroll.mjs", "/rc/i18n.mjs", "/rc/lib.mjs"]) {
+    assert.ok(VIEW_SRC.includes(`from "${spec}"`), `核件接线缺位（页件）：${spec}`)
   }
-  // 不做项机检（§2.10 ⑥–⑪）+ 复用形边界：取件面白名单 ⊆ 对齐集①–⑤ ∥ 核件零拷贝副本 ∥ 零 `../node_modules` 相对径
-  const ALLOWED = ["/rc/md.mjs", "/rc/flow/tool-card.mjs", "/rc/flow/stream.mjs", "/rc/scroll.mjs", "/rc/i18n.mjs", "/rc/lib.mjs"]
-  const coreImports = [...VIEW_SRC.matchAll(/from "(\/rc\/[^"]+)"/g)].map((match) => match[1])
-  assert.deepEqual(coreImports.filter((spec) => !ALLOWED.includes(spec)), [], "取件面越出对齐集（不做项 ⑥–⑪：reasoning/diff/search/composer/卡族零引用）")
+  for (const spec of ["/rc/composer/panel.mjs", "/rc/composer/slash.mjs", "/rc/flow/queued-mark.mjs", "/rc/toast.mjs", "/rc/lib.mjs"]) {
+    assert.ok(COMPOSER_SRC.includes(`from "${spec}"`), `核件接线缺位（输入区件）：${spec}`)
+  }
+  // 不做项机检（§2.10 ⑥–⑪）+ 取件面白名单（chat-shell-align 批扩面后——逐件校）：核件零拷贝副本 ∥ 零 `../node_modules` 相对径
+  const ALLOWED_VIEW = ["/rc/flow/block.mjs", "/rc/flow/tool-card.mjs", "/rc/flow/stream.mjs", "/rc/scroll.mjs", "/rc/i18n.mjs", "/rc/lib.mjs"]
+  const ALLOWED_COMPOSER = ["/rc/composer/panel.mjs", "/rc/composer/slash.mjs", "/rc/flow/queued-mark.mjs", "/rc/toast.mjs", "/rc/lib.mjs"]
+  for (const [name, src, allowed] of [["views-chat.mjs", VIEW_SRC, ALLOWED_VIEW], ["views-chat-composer.mjs", COMPOSER_SRC, ALLOWED_COMPOSER]]) {
+    const coreImports = [...src.matchAll(/from "(\/rc\/[^"]+)"/g)].map((match) => match[1])
+    assert.deepEqual(coreImports.filter((spec) => !allowed.includes(spec)), [], `${name} 取件面越出对齐集`)
+  }
   assert.ok(!VIEW_SRC.includes("../node_modules"), "零 `../node_modules` 相对径（单 HTTP 根越根不可达——设计点）")
   for (const name of ["md.mjs", "highlight.mjs", "tool-summary.mjs", "scroll.mjs", "tool-card.mjs", "stream.mjs", "live-md.mjs", "live-scan.mjs", "reasoning.mjs", "search.mjs"]) {
     assert.ok(!files.includes(name), `核件拷贝副本残留：public/${name}`)

@@ -366,14 +366,15 @@ CREATE TABLE IF NOT EXISTS agent_chat_messages (
   seq INTEGER NOT NULL,                       -- 会话内序（1 起）
   role TEXT NOT NULL CHECK (role IN ('user','assistant','tool','notice')),
   content TEXT NOT NULL DEFAULT '',           -- 工具结果 = 模型可见形（截断 ≤4000 字——回放逐字一致）
-  data_json TEXT,                             -- role 附加形：assistant 的 toolCalls ∥ tool 的 toolCallId/名/摘要 ∥ notice 的 reason（四值枚举——重启收尾 "restart" ∥ 预算超限 "budget" ∥ 模型错误 "model_error" ∥ 空回合 "empty_turn"）
+  data_json TEXT,                             -- role 附加形：assistant 的 toolCalls ∥ tool 的 toolCallId/名/摘要 ∥ notice 的 reason（五值枚举——重启收尾 "restart" ∥ 预算超限 "budget" ∥ 模型错误 "model_error" ∥ 空回合 "empty_turn" ∥ 手动中止 "aborted"）
+  --                                          -- user 行携图 ⇒ imageParts（parts 数组素形——chat-shell-align 批；零结构变更）
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_agent_chat_messages ON agent_chat_messages(chat_id, seq);
 
 -- ② 审计 CHECK 再扩（十二型 ⇒ 十三型——表重建，步序与 v10/v11 同构）
--- + 'agent_event'（管理面 agent 会话——kind：chat_start（会话创建）∥ chat_call（每工具调用）∥ chat_stop（异常收尾：预算超限 ∥ 模型错误 ∥ 空回合 ∥ 重启中断）；
---   detail = { kind, chatId, tool?, call?, resultCode?, summary?, reason?（chat_stop——四值枚举同 v14 段 `data_json` 注） }——摘要截断 + 秘密掩蔽口径沿任务面）
+-- + 'agent_event'（管理面 agent 会话——kind：chat_start（会话创建）∥ chat_call（每工具调用）∥ chat_stop（异常收尾：预算超限 ∥ 模型错误 ∥ 空回合 ∥ 重启中断 ∥ 手动中止）；
+--   detail = { kind, chatId, tool?, call?, resultCode?, summary?, reason?（chat_stop——五值枚举同 v14 段 `data_json` 注） }——摘要截断 + 秘密掩蔽口径沿任务面）
 -- 重建步（建新表（十三型 CHECK） ∥ 拷贝 ∥ DROP ∥ RENAME ∥ 两索引重建——SQL 形同 v10 段，逐字替换型清单）。
 ```
 
@@ -471,3 +472,5 @@ CREATE TABLE IF NOT EXISTS image_sources (
 - 2026-10-10（**runner-admin-console 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-runner-admin-console.md` §3 轮次 1 之 8）：§2 v11 段 `sandbox_workspaces` ∥ `sandbox_tasks` 两表定义处就近补注（列面差 = 去 `required_labels_json` ∥ 去 `claimed_at`——与 v12 段旁注同指；实现收正随执行面重做批）。**零新语义**（评审发现直接导出项）。
 - 2026-10-11（**admin-agent-chat 批 · 实施轮上抛回笔（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-admin-agent-chat.md` §6（实施轮上抛处置 + notice 补裁——④ 空回合单列 · 四值枚举））：§2 v14 段 `data_json` 注释收正——notice 的 `reason` 四值枚举（重启收尾 "restart" ∥ 预算超限 "budget" ∥ 模型错误 "model_error" ∥ 空回合 "empty_turn"；与 `gateway/API.md` §2.8 ∥ `agent/ADMIN-AGENT.md` §11 同拍）。**零新语义**（上抛裁决直接导出项）。
 - 2026-10-11（**sandbox-image-sources 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-sandbox-image-sources.md` §1 · 台账 #1274）：§1 结构版本 14 ⇒ **15**；§2 标题随正（v2–v14 ⇒ v2–v15）+ **增 v15 增段**（`image_sources` 建表——源清单全局表 ∥ 名/址两唯一约束 ∥ 五列；审计 CHECK 零动——三 kind 走 `sandbox_event`）；§3 迁移链补 v15 段（判据）；§4 预算（db 实读 **458** ⇒ ≈490——v15 段 +≈32）；同源随动 = `sandbox/SANDBOX.md` §2/§3 ∥ `gateway/API.md` §2.5 镜像源七行 ∥ `accounts/ACCOUNTS.md` §2.1。**产品码零触（设计轮）**。
+- 2026-10-11（**chat-shell-align 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-chat-shell-align.md` §1 · 台账 #1292；用户 21:55 裁「全套 ∥ 补后端一件不藏 ∥ VSC 式」）：v14 段 `data_json` 注随正——notice `reason` **五值**（+ 手动中止 `"aborted"`）∥ user 行 **`imageParts`** 键登（parts 数组形——KD-SV-109；`chat_stop` 注同拍）；**零结构变更**（结构版本 15 不变——列存 JSON 内键集扩展）。同源随动 = `agent/ADMIN-AGENT.md` §11.2/§11.3 ∥ `gateway/API.md` §2.8 ∥ `webui/CHAT.md` §2.1。**产品码零触（设计轮）**。
+- 2026-10-11（**chat-shell-align 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-chat-shell-align.md` §3 轮次 1 之 2；父侧受理全单）：v14 段 `agent_event` kind 注 `chat_stop` 收尾括注五值统一（+ 手动中止——与同句 detail `reason` 五值枚举对齐）。**零新语义**（评审发现直接导出项）。

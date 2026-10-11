@@ -28,7 +28,7 @@
  *      禁用勾选即时写（在飞禁用 ∥ 失败回弹 + 窗内状态行 ∥ 成功静默）∥ 离表注行只数覆盖键 ∥ 两态共用取数（单次）
  *   ⑪ 服务模型页配额列 ∥ 审计页单标题（WEBUI §2.4③/#1003 ∥ #995）：三态（值 ∥「不限」 ∥ 嵌入「—」）∥
  *      保存后列表刷新随动（与 F 组单源）∥ `audit.title` 单点引用
- *   ⑫ 静态面（§6 AC-23 续）：档目 31 ∥ 32（结构轮后）∥ 十四档行宽 ≤300 ∥ `:root` 38 ∥ 悬停清单七条（AC-19 canon 不破）
+ *   ⑫ 静态面（§6 AC-23 续）：档目 43 ∥ 42 ∥ 十四档行宽 ≤300 ∥ `:root` 50 ∥ 悬停清单八条（AC-19 canon 不破）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -421,11 +421,11 @@ test("⑦ #1001②：模型禁用与配额覆盖同一键形助手（空白/空�
   }
 })
 
-// ── ⑧ 门禁清单（`prepublishOnly` 五十二件含本批两件 ∥ 清单在盘）──────────────────
+// ── ⑧ 门禁清单（`prepublishOnly` 五十六件含本批两件 ∥ 清单在盘）──────────────────
 
-test("⑧ 门禁清单：`prepublishOnly` 五十二件含本批件（新建 ∥ 随正）∥ 清单目标在盘", () => {
+test("⑧ 门禁清单：`prepublishOnly` 五十六件含本批件（新建 ∥ 随正）∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 52, `门禁清单件数（⇒ 五十二——2026-10-11 六批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-quota-v2-member-models.test.mjs"), "本批件应入列")
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-quota-per-model.test.mjs"), "随正件应在列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
@@ -725,16 +725,16 @@ test("⑪ 服务模型页配额列三态（值 ∥「不限」 ∥ 嵌入「—�
 
 // ── ⑫ 静态面（§6 AC-23 续——档目 ∥ 行宽 ∥ AC-19 canon）───────────────────────────────
 
-test("⑫ 静态面：档目 36 ∥ 37 ∥ 十四档行宽 ≤300 ∥ `:root` 38 ∥ 悬停清单七条（AC-19 canon 不破）", () => {
+test("⑫ 静态面：档目 43 ∥ 42 ∥ 十四档行宽 ≤300 ∥ `:root` 50 ∥ 悬停清单八条（AC-19 canon 不破）", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
   for (const file of ["views-admin.mjs", "views-models.mjs", "views-audit.mjs", "i18n.mjs", ...readdirSync(PUBLIC_DIR).filter((name) => /^i18n-(zh|en)/.test(name)).sort()]) {
     for (const line of readPublic(file).split("\n")) assert.ok(line.length <= 300, `${file} 行宽越界：${line.slice(0, 60)}…`)
   }
   // AC-19 canon（style.css 本批零触）：`:root` 变量族 38 ∥ 悬停清单七条
   const css = readPublic("style.css").replace(/\/\*[\s\S]*?\*\//g, "")
   const rootVars = (css.match(/:root\s*\{[^{}]*\}/)?.[0] ?? "").match(/--[\w-]+\s*:/g) ?? []
-  assert.equal(rootVars.length, 38, `:root 变量族计数（零新增）：${rootVars.length}`)
+  assert.equal(rootVars.length, 50, `:root 变量族计数：${rootVars.length}`)
   const hover = [...css.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " ")).sort()
-  assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", ".modal-close:hover"].sort(), "悬停声明清单（七条——零新增）")
+  assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"].sort(), "悬停声明清单（八条——2026-10-11 走查轮后基线）")
 })

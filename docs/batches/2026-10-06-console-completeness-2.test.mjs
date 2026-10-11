@@ -433,11 +433,11 @@ test("⑤ 向量面：真值零密钥 ∥ 试跑成功 + 四 kind ∥ 不落库�
 test("⑥ 静态面：档目 40 ∥ 39 ∥ 零外链 ∥ 两表键集/键引用闭合 ∥ nav 直驱 ∥ 三新档直发 ∥ 健康三态", async () => {
   // 档目（UI 代码档 39 ∥ 含 favicon 全目录 40——2026-10-11 console-chat-align 批后）+ 零外链（零 http(s):// ∥ 零 @import）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "全目录 40 ∥ UI 代码档 39（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "全目录 43 ∥ UI 代码档 42（2026-10-11 走查轮后）")
   assert.deepEqual(names, [
     "app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs",
-    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
-    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
+    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
+    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
   ])
   for (const name of names) {
     const text = readFileSync(join(PUBLIC_DIR, name), "utf8")
@@ -454,7 +454,7 @@ test("⑥ 静态面：档目 40 ∥ 39 ∥ 零外链 ∥ 两表键集/键引用�
   assert.equal(zhKeys.length - SELF_NAMES.length, enBase.length)
   for (const key of enBase) assert.equal(placeholders(ZH[key]), placeholders(EN[key]), `占位符不一致：${key}`)
   const family = (prefix) => zhKeys.filter((key) => key.startsWith(prefix)).length
-  for (const [prefix, count] of [["vector.", 26], ["health.", 10], ["overview.", 8], ["usageReport.", 14], ["audit.", 30]]) assert.equal(family(prefix), count, prefix)
+  for (const [prefix, count] of [["vector.", 26], ["health.", 10], ["overview.", 8], ["usageReport.", 14], ["audit.", 56]]) assert.equal(family(prefix), count, prefix)
   for (const key of ["nav.page.admin.overview", "nav.page.admin.audit", "me.keys.lastUsed", "me.keys.neverUsed", "me.keys.windowTokens"]) assert.ok(key in ZH && key in EN, key)
   for (const type of AUDIT.AUDIT_TYPES.filter((name) => !name.startsWith("sandbox_"))) assert.ok(`audit.type.${type}` in ZH && `audit.type.${type}` in EN, type) // sandbox_* 两型标签随沙盒余面批（登记项）
   // 键引用闭合：`t("…")` 字面量 ⊆ 表键 ∥ 裸命名空间键（点分键面）

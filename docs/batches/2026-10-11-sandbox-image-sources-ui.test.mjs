@@ -9,7 +9,7 @@
  *   ③ 目录浏览窗（v2：仓库列表 ⇒ 点行取标签 ∥ 两处过滤输入 ∥ truncated 提示 ∥ 空态 ∥ Hub：目录 unsupported 人话呈 + 按镜像名查标签）
  *   ∥ 五分类读绪一键文案（窗内就地呈——不关窗）
  *   ④ 本地镜像表过滤（名/标签匹配 ∥ 无匹配空态 ∥ 零新端点）+ i18n 两表（本批 34 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等）
- *   ⑤ 静态面（档目 39 ∥ 40 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整）
+ *   ⑤ 静态面（档目 43 ∥ 42 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -153,6 +153,7 @@ const invalidFail = (message) => () => { throw Object.assign(new Error(message),
 /** 页面渲染夹具（运行面 + 镜像源卡两读）。 */
 async function fMount({ routes = {}, runners = [fRunner()], images = [fImage()], sources = [fSource()], presets = fPresets() } = {}) {
   globalThis.document = stubDocument()
+  globalThis.history = { replaceState: () => {} } // 标签②切换回写地址栏（console-tabs-component 批——桩面补）
   const { ctx, calls } = fCtx({
     "GET /api/admin/sandbox/overview": () => ({ status: "ok", runners }),
     "GET /api/admin/sandbox/onboarding": () => ({ runs: [] }),
@@ -168,12 +169,15 @@ async function fMount({ routes = {}, runners = [fRunner()], images = [fImage()],
   const mount = makeNode("section")
   await SANDBOX.renderSandbox(ctx, mount)
   await tick()
+  await byText(mount, ZH["admin.sandbox.tabImages"]).fire("click") // 标签②（镜像源卡 + 镜像表——console-tabs-component 批后两区迁②，懒建）
+  await tick()
   return { ctx, calls, mount, modal: () => fFind(globalThis.document.body, (node) => node.tag === "dialog") }
 }
 
 /** 卡件直装（导出面直测——不缠整页）。 */
 async function fSection({ routes = {}, sources = [fSource()], presets = fPresets() } = {}) {
   globalThis.document = stubDocument()
+  globalThis.history = { replaceState: () => {} } // 标签②切换回写地址栏（console-tabs-component 批——桩面补）
   const { ctx, calls } = fCtx({
     "GET /api/admin/sandbox/image-sources": () => ({ sources }),
     "GET /api/admin/sandbox/image-sources/presets": () => ({ presets }),
@@ -470,10 +474,10 @@ test("④ 本地镜像表过滤：名/标签匹配 ∥ 无匹配空态 ∥ 零�
 
 // ── ⑤ 静态面（档目 ∥ 行数/行宽 ∥ canon ∥ 门禁链）─────────────────────────────
 
-test("⑤ 静态面：档目 39 ∥ 40 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整", () => {
-  // 档目（39 ∥ 40——console-chat-align 批 +2 档后；test 口径 = [总档数, 除 favicon 档数]）
+test("⑤ 静态面：档目 43 ∥ 42 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整", () => {
+  // 档目（43 ∥ 42——2026-10-11 走查轮后；test 口径 = [总档数, 除 favicon 档数]）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（test 口径）⇒ 文档口径 39 ∥ 40")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径）")
   assert.ok(names.includes("views-sandbox-image-sources.mjs"), "新档在册：views-sandbox-image-sources.mjs")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
@@ -498,11 +502,11 @@ test("⑤ 静态面：档目 39 ∥ 40 ∥ 新档在册 ∥ 行数/行宽 ∥ �
   assert.equal(/\bwindow\.confirm\s*\(/.test(SOURCES["views-sandbox-image-sources.mjs"]), false, "零原生 confirm")
   // 接线（页面挂载两处：件 import + `sources.card` 挂载）
   assert.ok(SOURCES["views-sandbox.mjs"].includes('from "./views-sandbox-image-sources.mjs"') && SOURCES["views-sandbox.mjs"].includes("createImageSourceSection"), "源卡件接线")
-  assert.ok(SOURCES["views-sandbox.mjs"].includes("mount.append(sources.card)"), "源卡挂载点")
+  assert.ok(SOURCES["views-sandbox.mjs"].includes("imagePanel.append(createImageSourceSection(ctx,"), "源卡挂载点（标签②面板——console-tabs-component 批后）")
   // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 38, ":root 38（零新增）")
-  assert.equal([...cssClean.matchAll(/:hover/g)].length, 7, "悬停七条（零新增）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：存量链目标在盘 + 本批两件同链（入链 = 父侧随正件 47 ⇒ 49——本件只断言「零悬空 ∥ 本批两件同链不半落」）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
   for (const rel of chain.filter((entry) => !entry.includes("sandbox-image-sources"))) assert.ok(existsSync(join(ROOT, rel)), `链目标在盘：${rel}`)

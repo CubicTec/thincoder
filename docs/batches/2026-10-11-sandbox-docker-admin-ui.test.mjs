@@ -8,7 +8,7 @@
  *   ② 日志窗（`pre` 码面 + tail 选择 + 刷新 ∥ 截断标记 ∥ 空态 ∥ 失败窗内就地）
  *   ③ 镜像区（镜像表（多标签逐行 ∥ 无标签）∥ 大小/创建 ∥ 拉取窗（在飞态 + 钮禁用）∥ 删除窗（强制勾选——缺省不勾））
  *   ④ i18n 两表（本批 54 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等）
- *   ⑤ 静态面（档目 36 ∥ 37 ∥ 新档在册（两视图件 + i18n 沙盒族两件） ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链）
+ *   ⑤ 静态面（档目 43 ∥ 42 ∥ 新档在册（两视图件 + i18n 沙盒族两件） ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -158,6 +158,7 @@ const fImage = (over = {}) => ({ id: "sha256:aaa", tags: ["thincoder-sandbox:1"]
 /** 页面渲染夹具（运行面 + 容器 + 镜像三读）。 */
 async function fMount({ routes = {}, runners = [fRunner()], containers = [fContainer()], images = [fImage()], runs = [] } = {}) {
   globalThis.document = stubDocument()
+  globalThis.history = { replaceState: () => {} } // 标签②切换回写地址栏（console-tabs-component 批——桩面补）
   const { ctx, calls } = fCtx({
     "GET /api/admin/sandbox/overview": () => ({ status: "ok", runners }),
     "GET /api/admin/sandbox/runners/1/containers": () => ({ containers }),
@@ -299,8 +300,9 @@ test("③ 镜像区：表（多标签逐行 ∥ 无标签）∥ 拉取窗（在�
     const images = [fImage({ tags: ["thincoder-sandbox:1", "thincoder-sandbox:2"] }), fImage({ id: "sha256:bbb", tags: null, size: 2048, created: 1700000001 })]
     const { calls, mount, modal } = await fMount({ routes, images })
     await expand(mount)
+    await byText(mount, ZH["admin.sandbox.tabImages"]).fire("click") // 标签②（镜像与镜像源——console-tabs-component 批后：镜像表在标签②，懒建）
     assert.ok(textOf(mount).includes(ZH["admin.sandbox.imagesTitle"]), "镜像区小标题在册")
-    const table = tableAt(mount, 2) // [2] 镜像表（[0] 节点 ∥ [1] 容器）
+    const table = fFindAll(mount, (node) => node.tag === "table").find((candidate) => headersOf(candidate)[0] === ZH["admin.sandbox.image"]) // 按表头取（结构面随批演进——索引取法已脆）
     assert.deepEqual(headersOf(table), [ZH["admin.sandbox.image"], ZH["admin.sandbox.colSize"], ZH["admin.sandbox.colCreated"], ZH["admin.sandbox.colActions"]], "镜像表四列")
     const rows = fFindAll(table, (node) => node.tag === "tr").filter((row) => fFind(row, (cell) => cell.tag === "td") !== null)
     assert.equal(rows.length, 2, "两镜像两行")
@@ -328,7 +330,7 @@ test("③ 镜像区：表（多标签逐行 ∥ 无标签）∥ 拉取窗（在�
     assert.equal(modal(), null, "成功 ⇒ 关窗")
     // 删除窗（缺省不勾 ⇒ force:false；勾上 ⇒ force:true）
     await tick()
-    await byText(tableAt(mount, 2), ZH["admin.sandbox.remove"]).fire("click")
+    await byText(table, ZH["admin.sandbox.remove"]).fire("click")
     const delDialog = modal()
     assert.ok(textOf(delDialog).includes(fill(ZH["admin.sandbox.imageDeleteConfirm"], { ref: "thincoder-sandbox:1" })), "确认句携引用")
     const checkbox = fFind(delDialog, (node) => node.tag === "input" && node.attrs.type === "checkbox")
@@ -340,7 +342,9 @@ test("③ 镜像区：表（多标签逐行 ∥ 无标签）∥ 拉取窗（在�
     // 勾选 ⇒ force:true；409（400 人话）⇒ 窗内就地 + 钮复位
     const forced = await fMount({ routes: { "DELETE /api/admin/sandbox/runners/1/images": invalidFail("镜像被引用或多标签（引擎 409）") }, images: [fImage()] })
     await expand(forced.mount)
-    await byText(tableAt(forced.mount, 2), ZH["admin.sandbox.remove"]).fire("click")
+    await byText(forced.mount, ZH["admin.sandbox.tabImages"]).fire("click") // 标签②（镜像表懒建——console-tabs-component 批后）
+    const forcedTable = fFindAll(forced.mount, (node) => node.tag === "table").find((candidate) => headersOf(candidate)[0] === ZH["admin.sandbox.image"])
+    await byText(forcedTable, ZH["admin.sandbox.remove"]).fire("click")
     const forcedDialog = forced.modal()
     fFind(forcedDialog, (node) => node.tag === "input" && node.attrs.type === "checkbox").checked = true
     const delBtn = fFind(forcedDialog, (node) => node.tag === "button" && node.className === "danger")
@@ -380,10 +384,10 @@ test("④ i18n：54 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
 
 // ── ⑤ 静态面（档目 ∥ 行数/行宽 ∥ canon ∥ 门禁链）─────────────────────────────
 
-test("⑤ 静态面：档目 36 ∥ 37 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链", () => {
-  // 档目（36 ∥ 37——本批 34 ∥ 35 + i18n 沙盒族再拆 +2 档（#1270）；test 口径 = [总档数, 除 favicon 档数]）
+test("⑤ 静态面：档目 43 ∥ 42 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链", () => {
+  // 档目（43 ∥ 42——2026-10-11 走查轮后；test 口径 = [总档数, 除 favicon 档数]）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "档目 40 ∥ 39（test 口径）⇒ 文档口径 39 ∥ 40")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径）")
   for (const name of ["views-sandbox-containers.mjs", "views-sandbox-images.mjs", "i18n-zh-sandbox.mjs", "i18n-en-sandbox.mjs"]) assert.ok(names.includes(name), `新档在册：${name}`)
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
@@ -410,8 +414,8 @@ test("⑤ 静态面：档目 36 ∥ 37 ∥ 行数/行宽 ∥ 零外链/零 CJK �
   assert.ok(SOURCES["views-sandbox.mjs"].includes('from "./views-sandbox-containers.mjs"') && SOURCES["views-sandbox.mjs"].includes('from "./views-sandbox-images.mjs"'), "两区件接线")
   // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 38, ":root 38（零新增）")
-  assert.equal([...cssClean.matchAll(/:hover/g)].length, 7, "悬停七条（零新增）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：本批两件入链（档目/计数断言件 = 父侧随正件——本件不代断言其档面）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
   for (const entry of ["docs/batches/2026-10-11-sandbox-docker-admin.test.mjs", "docs/batches/2026-10-11-sandbox-docker-admin-ui.test.mjs"]) {

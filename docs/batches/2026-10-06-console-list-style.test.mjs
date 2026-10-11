@@ -17,7 +17,7 @@
  *      全档计数同拍（19——错态不外溢）
  *   ⑤ 类名双向闭合（AC-19 续）：档面字面类 ⊆ `style.css` 类选择器 ∥ `style.css` 类选择器 ⊆ 档面字面类 ∪ 态类 ∥
  *      死类零残留（`key-line`/`stat`/`view`——规则与字面两向）
- *   ⑥ 静态面：档目 31 ∥ 32（结构轮后）逐名同拍 ∥ `public/**` 零外链 ∥ 静态直发（200 ∥ mime ∥ 字节等于磁盘）
+ *   ⑥ 静态面：档目 43 ∥ 42（2026-10-11 走查轮后）逐名同拍 ∥ `public/**` 零外链 ∥ 静态直发（200 ∥ mime ∥ 字节等于磁盘）
  *   ⑦ 门禁清单：`prepublishOnly` 三十件含本批件（文档清账批拆档后）∥ 清单目标在盘
  */
 import test from "node:test"
@@ -43,7 +43,7 @@ const rulesOf = (css) => [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => (
 
 // ── ① 底座（口径①——变量单源）：`:root` 变量族 ∥ 值表同拍 ∥ 块外零颜色字面量 ─────────────────
 
-/** 底座值表（§2.5 底座——色 19 + 遮罩 1 ∥ 间距 7 ∥ 圆角 3 ∥ 字排 4 ∥ 线宽 2 ∥ 布局 2；计 38 = 变量族计数断言）。 */
+/** 底座值表（§2.5 底座——色 19 + 遮罩 1 ∥ 间距 7 ∥ 圆角 3 ∥ 字排 4 ∥ 线宽 2 ∥ 布局 2 ∥ 别名桥 12；计 50 = 变量族计数断言）。 */
 const BASE_VARS = {
   "--bg": "#f5f6f8", "--panel": "#ffffff", "--fill": "#f0f2f5", "--hover": "#eef1f5", "--selected": "#e6efff",
   "--backdrop": "rgba(15, 23, 42, 0.45)",
@@ -58,9 +58,14 @@ const BASE_VARS = {
   "--fs": "13px", "--lh": "1.5",
   "--bw": "1px", "--bw-strong": "2px",
   "--nav-w": "200px", "--modal-w": "clamp(560px, 78vw, 1200px)",
+  // 别名桥（chat-shell-align 批——核件浮层/toast 挂 `body` 层；同名键取既有定义，不另列）
+  "--fg": "var(--text)", "--input-bg": "var(--panel)", "--input-fg": "var(--text)", "--btn-fg": "var(--accent-contrast)",
+  "--btn-hover": "var(--accent-hover)", "--hover-bg": "var(--hover)", "--hover-bg-strong": "var(--selected)",
+  "--error-fg": "var(--danger)", "--red": "var(--danger)", "--diff-del-bg": "var(--danger-fill)",
+  "--overlay": "var(--backdrop)", "--shadow": "none",
 }
 
-test("① 底座：`:root` 变量族 38（值表同拍）∥ 块外零颜色字面量", () => {
+test("① 底座：`:root` 变量族 50（值表同拍）∥ 块外零颜色字面量", () => {
   const clean = stripComments(CSS)
   const rootMatch = clean.match(/:root\s*\{[^{}]*\}/)
   assert.ok(rootMatch !== null, ":root 变量底座缺位")
@@ -114,9 +119,9 @@ test("② 一套刻度：`font-size` 全 `var(--fs)`（缺省撤销——含覆�
 test("③ 态面：行悬停声明清单（两声明同取 `var(--hover)`；清单外零行悬停声明）∥ 聚焦环单形", () => {
   const rules = rulesOf(stripComments(CSS))
   const ROW_HOVER = [".nav-item:hover", "tbody tr:hover"]
-  const CTRL_HOVER = ["button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", ".modal-close:hover"]
+  const CTRL_HOVER = ["button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"]
   const hoverRules = rules.filter((rule) => rule.selector.includes(":hover"))
-  assert.deepEqual(hoverRules.map((rule) => rule.selector).sort(), [...ROW_HOVER, ...CTRL_HOVER].sort(), "悬停声明清单外残留（行悬停二 + 交互件五）")
+  assert.deepEqual(hoverRules.map((rule) => rule.selector).sort(), [...ROW_HOVER, ...CTRL_HOVER].sort(), "悬停声明清单外残留（行悬停二 + 交互件六）")
   for (const selector of ROW_HOVER) {
     const rule = hoverRules.find((item) => item.selector === selector)
     assert.equal(rule.body.replace(/\s+/g, " ").trim(), "background: var(--hover);", `${selector} 悬停底非同值（唯一行悬停取色）`)
@@ -177,7 +182,7 @@ test("④ 错态面：`.hint error` 逐面套用（八处 loadFailed + 系统页
 const STATE_CLASSES = ["active", "ok", "degraded", "down", "error", "modal-open", "open"]
 
 /** 核件发射类（单源 = thincoder-render-core——console-chat-align 批起：核件渲染产物类在控制台样式表内着色；随核件类族随正）。 */
-const RENDER_CORE_CLASSES = ["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type"]
+const RENDER_CORE_CLASSES = ["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage"]
 
 test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）", () => {
   const cssClasses = new Set([...stripComments(CSS).matchAll(/\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]))
@@ -185,7 +190,7 @@ test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）",
   for (const name of readdirSync(PUBLIC_DIR).filter((item) => item.endsWith(".mjs") || item === "index.html")) {
     const src = readPublic(name)
     for (const m of src.matchAll(/\bclass(?:Name)?\s*[:=]\s*([^\n;]*?)(?=\s*\bclass(?:Name)?\s*[:=]|[;\n]|$)/g)) {
-      const window = m[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*[A-Za-z_$][\w$]*\s*:/)[0]
+      const window = m[1].replace(/\$\{[^}]*\}/g, " ").split("//")[0].split("}")[0].split(/,\s*(?:[A-Za-z_$][\w$]*|"[^"]*"|'[^']*')\s*:/)[0]
       for (const literal of window.matchAll(/["'`]([^"'`]*)["'`]/g)) for (const token of literal[1].split(/\s+/)) if (token) usedClasses.add(token)
     }
     for (const m of src.matchAll(/classList\.(?:add|remove|toggle)\(\s*["']([^"']*)["']/g)) usedClasses.add(m[1])
@@ -203,15 +208,15 @@ test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）",
   }
 })
 
-// ── ⑥ 静态面：档目 40 ∥ 39 ∥ 零外链 ∥ 直发（200 ∥ mime ∥ 字节等于磁盘）────────────────────────
+// ── ⑥ 静态面：档目 43 ∥ 42 ∥ 零外链 ∥ 直发（200 ∥ mime ∥ 字节等于磁盘）────────────────────────
 
-test("⑥ 静态面：档目 40 ∥ 39 逐名同拍（2026-10-11 console-chat-align 批后）∥ `public/**` 零外链 ∥ 直发", async () => {
+test("⑥ 静态面：档目 43 ∥ 42 逐名同拍（2026-10-11 console-chat-align 批后）∥ `public/**` 零外链 ∥ 直发", async () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [40, 39], "全目录 40 ∥ UI 代码档 39（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "全目录 43 ∥ UI 代码档 42（2026-10-11 走查轮后）")
   assert.deepEqual(names, [
     "app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs",
-    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css",
-    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
+    "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
+    "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs",
   ])
   for (const name of names) {
     const text = readPublic(name)
@@ -235,11 +240,11 @@ test("⑥ 静态面：档目 40 ∥ 39 逐名同拍（2026-10-11 console-chat-al
   }
 })
 
-// ── ⑦ 门禁清单：`prepublishOnly` 五十二件（含本批件）∥ 清单目标在盘 ─────────────────────────────
+// ── ⑦ 门禁清单：`prepublishOnly` 五十六件（含本批件）∥ 清单目标在盘 ─────────────────────────────
 
-test("⑦ 门禁清单：`prepublishOnly` 五十二件含本批件 ∥ 清单目标在盘", () => {
+test("⑦ 门禁清单：`prepublishOnly` 五十六件含本批件 ∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 52, `门禁清单件数（⇒ 五十二——2026-10-11 六批后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-06-console-list-style.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

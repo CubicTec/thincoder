@@ -2,7 +2,7 @@
  * image-sources.mjs — 镜像源清单模型（sandbox/SANDBOX.md §3 镜像源族 ∥ gateway/API.md §2.5 镜像源七行；sandbox-image-sources 批——台账 #1274）。
  *
  * 语义（§3——KD-SV-96）：源清单 = **server 全局**（非按节点——目录读取发生在 server）；持久 = `image_sources`（v15——`store/STORE.md` §2 v15 段）；
- * **与拉取链路零耦合**（源不写节点 dockerd 配置 ∥ 不注入镜像前缀 ∥ 无默认源）；**名 ∥ 址各自唯一**（库两 UNIQUE + 本档人话报错）；
+ * **拉取消费面 = 显式选源**（源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态） ∥ 零自动选源）；**名 ∥ 址各自唯一**（库两 UNIQUE + 本档人话报错）；
  * 址归一 = `[http(s)://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；含路径/查询/空白/凭据 ⇒ 拒）；`kind` = **按地址派生**
  * （`hub` ⇔ 主机 ∈ Hub 四别名；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）。
  * 预选六条 = server 端静态表（沿 provider 预设先例 KD-SV-17——随设计轮维护，非用户可改面）。

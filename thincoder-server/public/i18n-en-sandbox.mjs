@@ -185,4 +185,9 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.catalogPull": "Pull",
   "admin.sandbox.pullPickNodeTitle": "Pull to node",
   "admin.sandbox.pullTarget": "Target node: {name}",
+
+  // ── Admin · sandbox · pull by source (§2.8① — sandbox-pull-by-source batch) ──────
+  "admin.sandbox.pullSource": "Pull via source",
+  "admin.sandbox.pullSourceNone": "None (as-is)",
+  "admin.sandbox.pullSourceHint": "Once a source is selected, the reference is assembled via it (still editable)",
 })

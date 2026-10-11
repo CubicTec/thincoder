@@ -185,4 +185,9 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.catalogPull": "拉取",
   "admin.sandbox.pullPickNodeTitle": "拉取到节点",
   "admin.sandbox.pullTarget": "目标节点：{name}",
+
+  // ── 管理·沙盒·拉取认源（§2.8①——sandbox-pull-by-source 批） ───────────────────────
+  "admin.sandbox.pullSource": "经由源",
+  "admin.sandbox.pullSourceNone": "不选（原样）",
+  "admin.sandbox.pullSourceHint": "选定后引用按该源组装（可再改）",
 })

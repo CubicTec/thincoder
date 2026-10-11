@@ -2,12 +2,66 @@
  * views-sandbox-images.mjs — 沙盒页·镜像区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 镜像表（名（多标签逐行 ∥ 无标签 ⇒「无标签」）∥ 大小 ∥ 创建 ∥ 操作：删除）+ 拉取镜像钮 + **本地镜像表过滤**（本批——
  * 表上方关键词输入（名/标签匹配；无匹配 ⇒ 空态句；零新端点））
- * ∥ 拉取窗（单输入 `名[:标签]`；在飞态 + 钮禁用；sandbox-image-quick-pull 批：可选预填参 + 预填在场附「目标节点：{name}」行）∥ 删除确认窗（强制删除勾选——缺省不勾）。
- * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection` ∥ `openPullImageModal`。
+ * ∥ 拉取窗（引用输入 `名[:标签]`；在飞态 + 钮禁用；sandbox-image-quick-pull 批：可选预填参 + 「目标节点」行）
+ * ∥ **拉取认源**（sandbox-pull-by-source 批：「经由源」选单（源清单读时读——零新端点）⇒ 选定即按源组装（`pullRefWithSource`——可见改写 ∥
+ * 可再改）；不选 = 原样；认源态 ∥ 记忆预选（P2——`localStorage` 单键 `tc_pull_source`）；「目标节点」行恒显（P1）；无源 ∥ 读败 ⇒ 不选态 + 人话——拉取不阻断）
+ * ∥ 删除确认窗（强制删除勾选——缺省不勾）。
+ * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection`
+ * ∥ `openPullImageModal` ∥ `pullRefWithSource`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { field, openModal, showNote, submitThen } from "./modal.mjs"
 import { formatBytes } from "./views-sandbox-containers.mjs"
+
+/** Hub 注册表主机（组装/预填统一形——站点主机（`hub.docker.com`）非注册表主机）∥ 连字面量拼写 = 避 `2026-10-06-server-i18n` 键面扫描件误判（点分小写字面量须为 i18n 键——本字面量非键）。 */
+const HUB_REGISTRY_HOST = "docker" + ".io"
+
+/** 源主机（去 scheme ∥ Hub 面统一 `docker.io`）——组装（`pullRefWithSource`）∥ 预填（`pullRefFor`——`views-sandbox-image-sources.mjs`）两径同源（后者复用本导出——零第二份值规则）。 */
+export function sourceHost(source) {
+  return source?.kind === "hub" ? HUB_REGISTRY_HOST : String(source?.address ?? "").replace(/^https?:\/\//, "")
+}
+
+/** Hub 面裸名补 `library/`（无 `/` ⇒ 补——引擎命名空间惯例）；两径同规则。 */
+export function hubLibraryName(source, name) {
+  const text = String(name)
+  return source?.kind === "hub" && !text.includes("/") ? `library/${text}` : text
+}
+
+/** 组装引用（纯函数——批内件直测；与 `pullRefFor` 值规则同口径）：选定源 ⇒ 对输入原文组装一次（`<主机>/<路径>[:<标签>]`）。
+ *  去 scheme ∥ 含端口逐值；已带主机（判据 = 引擎同口径：首段含 `.`/`:` ∥ = `localhost`）⇒ 剥换为源主机（「经由源」直义）；
+ *  无标签（判据 = 末个 `/` 之后的末个 `:` 起）⇒ 补 `:latest` 显式；Hub 面剥后裸名 ⇒ 补 `library/`；
+ *  `@`（digest 形）⇒ 原样透传（不组装——服务端既有 400 径）；空输入 ⇒ 不动作（原样返回——提交仍被必填门拦）。 */
+export function pullRefWithSource(input, source) {
+  const text = String(input ?? "").trim()
+  if (text === "" || text.includes("@")) return text
+  const slash = text.indexOf("/")
+  const head = slash === -1 ? "" : text.slice(0, slash)
+  const hostBearing = slash !== -1 && (head.includes(".") || head.includes(":") || head === "localhost")
+  const name = hubLibraryName(source, hostBearing ? text.slice(slash + 1) : text)
+  const tail = name.slice(name.lastIndexOf("/") + 1) // 标签判据 = 末个 `/` 之后的末个 `:` 起（与既有拉取形同口径）
+  return `${sourceHost(source)}/${name}${tail.includes(":") ? "" : ":latest"}`
+}
+
+/** 选择记忆单键（P2——`localStorage`；沿语言记忆 `tc_lang` 同法）。 */
+const PULL_SOURCE_KEY = "tc_pull_source"
+
+/** 记忆读（无值 ∥ 存储不可用/读败 ⇒ 空串 ⇒ 不选态回落；沿 `i18n.mjs` 静默同法）。 */
+function readPullSource() {
+  try {
+    return globalThis.localStorage?.getItem(PULL_SOURCE_KEY) ?? ""
+  } catch {
+    return ""
+  }
+}
+
+/** 记忆写（含「不选」——空串；存储不可用/写败 ⇒ 静默——不阻断拉取）。 */
+function writePullSource(id) {
+  try {
+    globalThis.localStorage?.setItem(PULL_SOURCE_KEY, String(id))
+  } catch {
+    /* 记忆不可用——静默 */
+  }
+}
 
 /** 镜像区段（缓存自持——同展开懒加载；动作后 `reset` + 页重取）。 */
 export function createImageSection(ctx) {
@@ -79,20 +133,58 @@ export function createImageSection(ctx) {
   return { area, reset }
 }
 
-/** 拉取镜像弹窗（单输入 `名[:标签]`；在飞态 =「拉取中……（可能持续数分钟）」+ 钮禁用）。
- *  一键拉取径（sandbox-image-quick-pull 批）：`prefill` 在场 ⇒ 引用预填（可改——确认值 = 所见值）+「目标节点」行。 */
-export function openPullImageModal(ctx, { runner, reload, prefill = null }) {
+/** 拉取镜像弹窗（引用输入 `名[:标签]`；在飞态 =「拉取中……（可能持续数分钟）」+ 钮禁用；「目标节点」行恒显——P1）。
+ *  一键拉取径（sandbox-image-quick-pull 批）：`prefill` 在场 ⇒ 引用预填（可改——确认值 = 所见值）。
+ *  拉取认源（sandbox-pull-by-source 批）：`source` 在场 ⇒ 选单认源态（一键拉取径携源）；源清单读时读（零新端点 ∥ 零缓存）；
+ *  选定 ⇒ 组装可见改写（再改不回落）；记忆预选（P2——预选态非自动改写）；无源 ∥ 读败 ⇒ 不选态 + 人话——拉取不阻断。
+ *  提交恒发输入框当刻文本（组装 ≠ 可达保证——节点侧引擎照拉，失败两形如实报）。 */
+export function openPullImageModal(ctx, { runner, reload, prefill = null, source = null }) {
   const { h } = ctx
   const input = h("input", { placeholder: t("admin.sandbox.imageRefPh") })
   if (prefill !== null) input.value = prefill
+  const select = h("select", {}, h("option", { value: "", text: t("admin.sandbox.pullSourceNone") }))
+  const hint = h("p", { class: "hint", text: t("admin.sandbox.pullSourceHint") })
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.imagePull") })
+  let sources = [] // 源清单（读时读一次——零缓存）
+  let picked = null // 当刻认源态（选定源对象；null = 不选——组装恒随此值）
   const modal = openModal({
     title: t("admin.sandbox.imagePull"),
     body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
-      ...(prefill === null ? [] : [h("p", { class: "hint", text: t("admin.sandbox.pullTarget", { name: runner.name }) })]),
+      h("p", { class: "hint", text: t("admin.sandbox.pullTarget", { name: runner.name }) }), // P1：目标节点行恒显（手动径也示去向）
+      field(h, "admin.sandbox.pullSource", select), hint,
       field(h, "admin.sandbox.imageRef", input), note, submitBtn),
   })
+
+  // 源清单读时读（开窗读一次）：成 ⇒ 各源一项 + 认源态（一键拉取径携源）∥ 记忆预选（读成后施加——预选态非自动改写）；无源/读败 ⇒ 不选态 + 人话
+  ctx.api("/api/admin/sandbox/image-sources").then((data) => {
+    sources = Array.isArray(data?.sources) ? data.sources : []
+    if (sources.length === 0) {
+      hint.textContent = t("admin.sandbox.sourcesEmpty") // 无源 ⇒ 选单仅「不选（原样）」+ 提示
+      return
+    }
+    select.append(...sources.map((item) => h("option", { value: String(item.id), text: item.name })))
+    const wanted = source === null || source === undefined ? readPullSource() : String(source.id) // 认源态优先；余 = 记忆
+    const hit = sources.find((item) => String(item.id) === wanted)
+    if (hit === undefined) return // 记忆源已被删 ∥ id 不在清单 ⇒ 不选态（预填照常——拉取不阻断）
+    select.value = String(hit.id)
+    picked = hit
+  }).catch((error) => {
+    hint.className = "hint error" // 读败 ⇒ 不选态 + `mapError` 人话（手输提交照常）
+    hint.textContent = mapError(error)
+  })
+
+  // 组装施加点①：选单变更（选定某源）⇒ 记忆随更新（含「不选」）+ 选定即组装一次（可见改写；「不选」= 不逆变换输入）
+  select.addEventListener("change", () => {
+    writePullSource(select.value)
+    picked = sources.find((item) => String(item.id) === select.value) ?? null
+    if (picked !== null) input.value = pullRefWithSource(input.value, picked)
+  })
+
+  // 组装施加点②：选定态在场时的输入完成（`blur` ∥ `change`——回车提交径先组装后提交）⇒ 再组装（幂等）；手改不自动回落（选单恒示上次组装所用源）
+  const assemble = () => { if (picked !== null) input.value = pullRefWithSource(input.value, picked) }
+  input.addEventListener("blur", assemble)
+  input.addEventListener("change", assemble)
 
   async function submit(event) {
     event.preventDefault()

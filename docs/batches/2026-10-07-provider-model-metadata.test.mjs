@@ -486,9 +486,9 @@ test("⑥ i18n + 静态面：两表 7 键在场（en 零 CJK ∥ 占位符一致
   assert.equal(rootVars.length, 38, `:root 变量族计数（零新增）：${rootVars.length}`)
   const hover = [...css.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " ")).sort()
   assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", ".modal-close:hover"].sort(), "悬停声明清单（七条——零新增）")
-  // 门禁链 50 件（历批入链合计——2026-10-11 四批后）∥ 清单目标在盘
+  // 门禁链 51 件（历批入链合计——2026-10-11 五批后）∥ 清单目标在盘
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 50, `门禁清单件数（⇒ 五十——2026-10-11 四批后）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 51, `门禁清单件数（⇒ 五十一——2026-10-11 五批后）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-provider-model-metadata.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

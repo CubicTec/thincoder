@@ -6,13 +6,13 @@
  * ∥ 目录浏览窗（懒取：仓库列表（过滤输入 + 截断提示 + 空态句）⇒ 点行取标签列表（过滤输入）；Hub 源 ⇒ 仓库面改走
  * 「按镜像名查标签」单输入（目录面 `unsupported` 人话呈）；五分类读绪各一键文案——窗内就地呈，不关窗）
  * ∥ 一键拉取（行尾「拉取」钮 ⇒ 节点选单（开窗读一次概览——无节点/全离线 ⇒ 禁用 + 一句人话）⇒ 既有拉取窗（预填
- * `<主机>[:<端口>]/<仓库>:<标签>` + 「目标节点」行；预填可改）⇒ 既有拉取径——零新端点 ∥ 零新 kind）。
+ * `<主机>[:<端口>]/<仓库>:<标签>` + 「目标节点」行；预填可改；携源 ⇒ 窗内「经由源」选单认源态——sandbox-pull-by-source 批）⇒ 既有拉取径——零新端点 ∥ 零新 kind）。
  * 契约 = gateway/API.md §2.5 镜像源七行；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）；零新端点。
  * 批内件直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel` ∥ `pullRefFor`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
-import { openPullImageModal } from "./views-sandbox-images.mjs"
+import { hubLibraryName, openPullImageModal, sourceHost } from "./views-sandbox-images.mjs"
 
 /** 面型文案键（`kind` ⇒ 表键；枚举外 ⇒ 标准 v2 兜底——服务端只出两值）。 */
 const SOURCE_KIND_KEYS = { hub: "admin.sandbox.sourceKindHub", v2: "admin.sandbox.sourceKindV2" }
@@ -37,15 +37,12 @@ export function readKindLabel(kind) {
   return key === undefined ? String(kind ?? "—") : t(key)
 }
 
-/** Hub 注册表主机（预填统一形——站点主机（`hub.docker.com`）非注册表主机）∥ 连字面量拼写 = 避 `2026-10-06-server-i18n` 键面扫描件误判（点分小写字面量须为 i18n 键——本字面量非键）。 */
-const HUB_REGISTRY_HOST = "docker" + ".io"
-
 /** 预填引用（纯函数——批内件直测）：`<主机>[:<端口>]/<仓库>:<标签>`——地址去 scheme ∥ 含端口逐值；
- *  Hub 面主机统一 `docker.io` + 裸名补 `library/`（沿读取面惯例）；仓库行（无 `tag`）⇒ `:latest` 显式。 */
+ *  Hub 面主机统一 `docker.io` + 裸名补 `library/`（沿读取面惯例）；仓库行（无 `tag`）⇒ `:latest` 显式。
+ *  主机/补名两规则 = `views-sandbox-images.mjs` 同名导出（组装 `pullRefWithSource` 复用同源——零第二份值规则）。 */
 export function pullRefFor(source, { repo, tag = null }) {
-  const host = source?.kind === "hub" ? HUB_REGISTRY_HOST : String(source?.address ?? "").replace(/^https?:\/\//, "")
-  const name = source?.kind === "hub" && !String(repo).includes("/") ? `library/${repo}` : String(repo)
-  return `${host}/${name}:${tag === null || tag === undefined || tag === "" ? "latest" : String(tag)}`
+  const name = hubLibraryName(source, repo)
+  return `${sourceHost(source)}/${name}:${tag === null || tag === undefined || tag === "" ? "latest" : String(tag)}`
 }
 
 /** 读绪块（五分类标签 + 服务端人话；转读失败（我们的 API 抛）⇒ `mapError` 人话）。 */
@@ -215,7 +212,7 @@ function openCatalogModal(ctx, { source, onPulled = null }) {
   function pickNode({ repo, tag }) {
     openNodePicker(ctx, {
       runners: pull.runners,
-      onPick: (runner) => openPullImageModal(ctx, { runner, prefill: pullRefFor(source, { repo, tag }), reload: () => onPulled?.(runner) }),
+      onPick: (runner) => openPullImageModal(ctx, { runner, prefill: pullRefFor(source, { repo, tag }), source, reload: () => onPulled?.(runner) }),
     })
   }
 

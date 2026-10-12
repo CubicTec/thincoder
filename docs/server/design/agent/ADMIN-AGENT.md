@@ -12,7 +12,7 @@
 - **唯一一个**（用户 22:29）：不为管理面另立第二个 agent；其余管理面能力（成员 ∥ provider ∥ 模型选择 ∥ 用量/配额 ∥ 审计 ∥ 沙盒各面）陆续入其工具面——「通过 agent 完成 thincoder server 的完整管理」（需求 §5 后续议题行 · 台账 #1254）。
 - **载体**：server 进程内模块 `thincoder-server/src/agent/`（不做独立进程/通道）；执行面（runner）机器上零驻留——延续用户 19:52 口径。
 - **核 = `@thincoder/core`**（KD-SV-78：依赖声明形照 CLI——钉版本；**无人值守档面裁剪 = 本档 §5**——该 KD 明文归 #1237 设计轮）。
-- **驱动器 = 两形（本批起）**：① **任务式**——管理动作创建任务（run），agent 在任务内跑工具（§2）；② **聊天式**——管理面 chat 会话（§11——本批落；需求 §5「两个 chat 界面」④）。两形**同 agent 同源**：同一工具面框架（任务五件 §3 + 管理面七件 §12）、同一审计面、同一模型出口。
+- **驱动器 = 两形（本批起）**：① **任务式**——管理动作创建任务（run），agent 在任务内跑工具（§2）；② **聊天式**——管理面 chat 会话（§11——本批落；需求 §5「两个 chat 界面」④）。两形**同 agent 同源**：同一工具面框架（任务五件 §3 + 管理面七件 §12 + 环境五族七件 §14——admin-agent-awareness 批）、同一审计面、同一模型出口。
 - **与成员面 agent 的关系**：成员面 chat = 开发壳（#1215 起步块；16:04 裁「成员资源管理 = 同一个 chat 界面 + 开放工具」）——其 server 域工具与本体同源、面不同；归属/裁剪随 **#1215（成员面 chat 轮）** 定，**本档不改其口径**。
 
 ## 2. 任务模型（run）
@@ -35,7 +35,7 @@
 | `report(summary)` | 终态报告（成功/失败 + 停在哪步 + 读数） | 任务记录 + 审计 | 终态行 |
 
 - **无白名单围栏**（用户 15:02「你先别还没干活先开始受控，他妈的我还不知道需要什么能力呢」——撤能力围栏在案）；护栏 = 任务简报（目标/边界句——随任务给）∥ 每动作审计 ∥ §4 停下报告边界。**不发明新围栏**（能力面从实际场景反推——15:02 口径；本批工具入参按主机寻址——凭据 = 该主机任务所授）。
-- **本版不含** server 本机 shell/文件工具（server 自身管理 = 域工具面逐步长——§10 边界）。
+- **任务面不含** server 本机 shell/文件工具（作用域 = 目标主机）——admin-agent-awareness 批收正：环境五族七件（含 `bash` ∥ 读文件族）入 **chat 面**（§14）。
 
 ## 4. 自主边界与失败处置（硬点② 的答案）
 
@@ -57,13 +57,16 @@
 |---|---|---|
 | `thincoder-server/src/agent/run.mjs`（已落盘） | 实读 **137** | 任务执行的 agent 环装配：核装载（`@thincoder/core`——KD-SV-78）∥ provider 注入 ∥ 工具注册 ∥ 预算 ∥ 审计 sink ∥ 无人值守裁剪（§5） |
 | `thincoder-server/src/agent/tools.mjs`（已落盘） | 实读 **288 ⇒ ≈200**（docker 十动词执行器迁出 ⇒ `docker-ops.mjs`——两驱动单源） | 任务面五工具（§3）——参数校验 ∥ 结果结构化 ∥ 审计包装（exec/docker 经 sandbox 域件；register/verify 经 registry） |
-| `thincoder-server/src/agent/chat.mjs`（已落盘——admin-agent-chat 批） | ≈300 ⇒ 实读 **498**（2026-10-11 本设计轮现读）⇒ ≈**600**（chat-shell-align 批：中止登记表 + 双通道检查点 ∥ `turn`/`usage` 帧 ∥ `end` 两可字段 ∥ notice 五值 ∥ images 落库/回放 + 详情 `imageCount`——净 ≈+100；实读 **575**——2026-10-12 本设计轮复读）⇒ ≈**585**（console-reasoning-levels 批：起跑读行携档位 ∥ `buildChatExit` 扩参（枚举内才携 `reasoningEffort`——未设/表外零字段）——净 ≈+10；越 500 软线：预案 = 档位小段随拆档审查；硬限 800 未越）⇒ 实读 **599**（2026-10-12 本批落地后） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（五形 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
+| `thincoder-server/src/agent/chat.mjs`（已落盘——admin-agent-chat 批） | ≈300 ⇒ 实读 **498**（2026-10-11 本设计轮现读）⇒ ≈**600**（chat-shell-align 批：中止登记表 + 双通道检查点 ∥ `turn`/`usage` 帧 ∥ `end` 两可字段 ∥ notice 五值 ∥ images 落库/回放 + 详情 `imageCount`——净 ≈+100；实读 **575**——2026-10-12 本设计轮复读）⇒ ≈**585**（console-reasoning-levels 批：起跑读行携档位 ∥ `buildChatExit` 扩参（枚举内才携 `reasoningEffort`——未设/表外零字段）——净 ≈+10；越 500 软线：预案 = 档位小段随拆档审查；硬限 800 未越）⇒ 实读 **599**（2026-10-12 本批落地后）⇒ ≈**640**（admin-agent-awareness 批：环境块行装配 ∥ 工具面合并 ∥ `invoke` 携 ctx ∥ 审计详情扩字段——净 ≈+40；越 500 软线：拆档预案 = 库面段（现读 ≈93 行）抽 `chat-store.mjs`——触发 = 本档越 650 ∥ 下批再增 ≥40 行） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（五形 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
 | `thincoder-server/src/agent/chat-routes.mjs`（已落盘——admin-agent-chat 批） | ≈120 ⇒ 实读 **105**（2026-10-11 本设计轮现读）⇒ ≈**150**（chat-shell-align 批：`PATCH …/:id` ∥ `POST …/:id/abort` 两端点 ∥ `images` 门（核 `parseDataUrl` + `isNonVisionModel`）——净 ≈+45；实读 **158**——2026-10-12 本设计轮复读）⇒ ≈**178**（console-reasoning-levels 批：PATCH 扩会话设置面（`{ model }` ∥ `{ reasoning }` 一次一件）+ 两校验支——净 ≈+20）⇒ 实读 **190**（2026-10-12 本批落地后） | 会话面**六**端点（§11——契约 = `gateway/API.md` §2.8）∥ 判权 ∥ 在途门 ∥ 重启恢复钩（running ⇒ idle + notice） |
 | `thincoder-server/src/agent/chat-tools.mjs`（拟新增——admin-agent-chat 批） | ≈400 | 管理面七件（§12）：members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker——参数校验 ∥ 结果结构化 ∥ 审计包装（进程内直取域件） |
 | `thincoder-server/src/agent/docker-ops.mjs`（拟新增——admin-agent-chat 批） | ≈140 | Docker 十动词执行器（自 `tools.mjs` 提取——任务面/聊天面两驱动单源；客户端 = `sandbox/docker.mjs`） |
+| `thincoder-server/src/agent/chat-env.mjs`（拟新增——admin-agent-awareness 批） | ≈150 | 环境块装配（§14.1）：时空 ∥ 所在/身份 ∥ 所管现况一行（三活体——块级降级）∥ 能力与边界段（`CHAT_LIMITS_BLOCK`——系统简报第四块） |
+| `thincoder-server/src/agent/chat-env-tools.mjs`（拟新增——admin-agent-awareness 批） | ≈230 | 环境工具面五族七件（§14.2/§14.3）：核件动载 ∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（超时 ∥ 输出 ∥ 工作目录）∥ timer 挂表与回合边界投递 |
 
 - 小计 **≈+872**（本批：新增四档 ≈960 ∥ `tools.mjs` −≈88）；`bin/thincoder-server.mjs` 实读 **187 ⇒ ≈189**（import + 注册两行——本域首经 bin 注册点）；**chat-shell-align 批另计 ≈+145**（`chat.mjs` 498 ⇒ ≈600 ∥ `chat-routes.mjs` 105 ⇒ ≈150；零新档）
   ⇒ **console-reasoning-levels 批另计 ≈+30**（`chat.mjs` 实读 575 ⇒ ≈585 ∥ `chat-routes.mjs` 实读 158 ⇒ ≈178；零新档——值域桥件行账 = `gateway/API.md` §4）。
+  ⇒ **admin-agent-awareness 批另计 ≈+420**（`chat-env.mjs` 拟新增 ≈150 ∥ `chat-env-tools.mjs` 拟新增 ≈230 ∥ `chat.mjs` 实读 599 ⇒ ≈640；零新端点 ∥ 零迁移 ∥ `bin` ±0）；批内件 ≈1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——行数随实施；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
 - `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `sandbox/SANDBOX.md` §16 R53③（as-of 2026-10-11）。
 - sandbox 域件（`ssh.mjs` ∥ `onboarding.mjs` ∥ `onboarding-routes.mjs`）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 
@@ -78,6 +81,8 @@
 | 托管接入全链判据 = `sandbox/SANDBOX.md` §11 托管接入行（本档机制被其覆盖——用例 = 其 §12 N49–N52） | 批内件 + 收口轮（真机） |
 | 输入区四件后端 + 帧面（chat-shell-align 批）：PATCH 换模型（idle/running 两态——下回合生效 ∥ 在途零触；非法/不存在 ⇒ 400/404 库零变）∥ `images` 三门（非数组 ∥ 非栅格 ∥ 超单图阈 ⇒ 400；非视觉模型 ⇒ 400——库零变）∥ user 行 `imageParts` 逐值 + 回放 content 数组（模型出口入参断言）+ 详情仅 `imageCount` ∥ abort（在途 ⇒ 200 + 收尾三件（notice `"aborted"` ∥ `chat_stop` ∥ `end` failed）；idle ⇒ 400；两中止窗（调用间 ∥ 在途 signal）∥ 登记表清零）∥ 帧序 = `turn(n)` 前 ∥ `usage` 后（缺 usage ⇒ 零帧）∥ `end` 携 `durationMs`/`calls`（可字段——旧消费零破） | 批内件（`…-admin-agent-chat.test.mjs` 续——现读 715 行（2026-10-11）；本批续增用例段 ≈+250——本设计轮复读 **716** 行；越 500 软线：预案 = 用例段随拆档审查；硬限 800 未越） |
 | 会话级思考档位（console-reasoning-levels 批——2026-10-12）：`GET /api/admin/providers` 行携 `modelReasoning`（稀疏 ∥ 键 = 上游真名 ∥ 值 = 核枚举；假 specLookup 注入）∥ `PATCH …/:id { reasoning }`（枚举内 ⇒ 200 落库 + 回执携值；表外/非串/同携 model ⇒ 400 库零变；判权三态）∥ 换模型 ⇒ `reasoning` 清 NULL（口径②）∥ 装配（行值 ∈ 当刻模型枚举 ⇒ 出口 `reasoningEffort`；未设 ∥ 表外 ⇒ 零键——假出口入参断言）∥ 结构（v16 零迁移：空库直落 16 ∥ 列面在场 ∥ 存量行 NULL） | 批内件（`…-console-reasoning-levels.test.mjs`） |
+
+| 环境感知与环境工具面（admin-agent-awareness 批——2026-10-12；功能点 43 ∥ AC-43 ①–⑥） | ① 四块装配在场（三实况行逐值——注入 now ∥ 假 db ∥ 注入 cwd；简报含能力边界段——**对位断言** = 每件注册工具名 ∈ 能力段字面）∥ ② 值随实况（读源变更 ⇒ 下回合行变）＋ 块级降级（读败 ⇒ 该行缺席、回合 `succeeded`）∥ ③ 零新端点（两新档源零 `routes.add(` ∥ `chat-routes.mjs` 计数不变）∥ ④ 行形 = `[System reminder: ` 族前缀（三端同形——坐标逐块 = §14.1 表）∥ ⑤ 工具面五族七件在场（names/schemas——核真件〔仓内核直引〕）＋ `get_current_time` 一次调用读数 ＋ `bash` 限幅三件（逾限拒 ∥ `async` 拒 ∥ cwd 生效）∥ ⑥ 每调用一审计行（逐调用——既有）＋ 详情扩字段（`subject` = 命令原文/路径 ∥ 成败 ∥ `truncated`）＋ 审计页按型渲染（agent 行模板——三文案键两表同步） | 批内件（`…-admin-agent-awareness.test.mjs`）＋ 收口轮（浏览器实走——问「现在几点/你管着几个节点」各一 ＋ 时间工具一次调用 ＋ 审计页一行） |
 
 ## 8. 用例（本域）
 
@@ -104,6 +109,12 @@
 | B69 | 边界 | 未设档（NULL）∥ 表外存量值 ∥ 换模型（携/不携档）∥ v15 存量库 | 未设 ⇒ 出口零 `reasoningEffort` 键；表外 ⇒ 零字段（读侧容忍——装配不炸）；换模型 ⇒ `reasoning` 清 NULL；v15 库升 v16 ⇒ 存量行 NULL 零变 |
 | E54 | 错误 | PATCH `{ reasoning }`：表外值 ∥ 非串 ∥ `{ model, reasoning }` 同携 ∥ 缺核规格源 | 逐形 400 人话；库零变 |
 
+| N72 | 正常 | 假模型（一轮调 `get_current_time` ＋ 一轮纯文本）＋ 环境工具面核真件（仓内直引）＋ 假 db（一节点 ∥ 一成员 ∥ 一 provider） | 四块行在场（时间 ∥ 环境身份 ∥ 现况计数逐值）＋ 简报含能力段；`end(succeeded)`；`chat_call` 行 `tool="get_current_time"`、`resultCode=0`；工具结果含 `Date:` 读数；回放零含实况行（瞬态不落库） |
+| N73 | 正常 | 同一会话连发两条；两条之间新增一个节点（库写） | 第二条现况行计数 +1（读源变更 ⇒ 下回合行变——值随实况） |
+| B70 | 边界 | ① 现况读源抛错（替身抛）∥ ② timer 到期（设 1s 项后隔一回合发一条）∥ ③ timer 未到期 | ① 该行缺席、回合照跑 `succeeded`（块级降级——其余行在场）∥ ② 该回合含 `[System reminder: ⏰ timer — …]` 行（出列幂等——只投一次）∥ ③ 零 timer 行（在途保留） |
+| B71 | 边界 | `bash`：`timeout` 逾 600000 ∥ `async:true` ∥ 输出超 4000 字 | 前两形 ⇒ 工具级错误人话（`ok:false`，回合不停）；超长 ⇒ 落库形截断（≤4000 字含注记）＋ 审计行 `truncated:true` |
+| E55 | 错误 | `read` 路径不存在 ∥ `grep` 非法正则 ∥ `bash` 非零退出（`node -e "process.exit(3)"`） | 前两形 ⇒ `ok:false` 人话回灌（回合不停）；非零退出 ⇒ 调用完成（`ok:true`——退出码在输出文本内 `(exit code 3)`）；三形各落 `chat_call` 行（`subject` = 路径/正则/命令原文） |
+
 ## 9. 关键决策（本域）
 
 | # | 决策 | 理由 | 被否候选与何故否 |
@@ -119,18 +130,28 @@
 | KD-SV-109 | **附件面 = 文本档零后端 + 图片随消息行存（视觉门在服务端）**（chat-shell-align 批）：文本档 = 纯客户端（核 `thincoder-render-core/composer/attach.mjs` 三限 + `withAttachedFiles` 内联——服务端零新面）；图片 = POST `images`（dataURL 列）⇒ 服务端核 `parseDataUrl`（栅格四型 ∥ ≤`IMAGE_MAX_BYTES` 15MB）+ 核 `isNonVisionModel` 视觉门（⇒ 400 人话）；库 = user 行 `data_json.imageParts`；回放 = content 数组（非视觉历史由核 `stripImagesForTextModel` 兜底——`thincoder-core/provider/core.mjs:133`；历史图预算 = 核 `capHistoryImages`——`:135`——服务端零重复）；详情仅 `imageCount`（dataURL 零下发） | 核件阀单源（15MB/30MB、四型——不自造）；服务端复校 = 不信任客户端（直 POST 同验）；零文件面 = 最小落法；详情零下发 = 体量面；两壳同形（VSC 同机制） | 新建上传端点/文件存储（新面——否）；客户端缩放/压缩（核件无——否）；存磁盘路径（新生命周期——否）；详情回传 dataURL（体量——否） |
 | KD-SV-110 | **会话级思考档位 = 库列 + 设置路由 + 装配携值（三件一套）**（console-reasoning-levels 批——2026-10-12；功能点 42 ∥ AC-42；口径四条经用户 11:46 核准）：① **存储** = `agent_chats.reasoning TEXT`（v16 增段——列级 `ALTER`，表不重建；NULL = 未设）+ 换模型随写清；② **设置** = `PATCH /api/admin/agent/chats/:id` 扩为会话设置面——体一次一件（`{ model }` ∥ `{ reasoning }`；同携 ⇒ 400）——`reasoning` 值域 = 核同一枚举（`specForModel(上游).reasoningEffortEnum`——会话 `model` = 对外标识 ⇒ **先经别名反查解上游真名**（`providers.mjs` 别名索引——KD-SV-59）；表外 400 ∥ `null` = 清）；③ **装配** = 回合起跑读行（与 `model` 同点）⇒ 值 ∈ 枚举（解析径同 ②）⇒ provider 配置携 `reasoningEffort`（核载荷门单源消费）；未设 ∥ 表外 ⇒ 零字段（读侧容忍——沿核会话槽「表外串不动」先例，防规格表变更砖死存量会话） | 口径③（会话级——与模型同层存；切会话各自记住）+ 口径②（默认不设 + 换模型回中性）；**零迁移**（存量行 NULL = 今日行为逐字同）；核单源（值域/载荷门/off 语义全在核——服务端零第二份档位语义） | 新表/新会话档（两表语义重叠——否）；浏览器本地存（切设备/重开即失——违会话级）；逐条覆写（VSC per-message 参——口径③会话级，否）；复用 `model` 列拼值（解析歧义——否）；内存态（重启即失——违 KD-SV-89 落库口径，否）；统一兜底枚举（口径①驳回——无档必须中性）；别名模型档位面退中性（口径①——别名所指上游有档即给，驳回） |
 
+| KD-SV-112 | **环境块装配 = 四块（三活体尾位瞬态行 ＋ 简报第四块）＋ 块级降级**（admin-agent-awareness 批——2026-10-12）：① 每回合（请求）造三活体行——时空 ∥ 所在/身份 ∥ 所管现况一行（域件进程内直取）；② **尾位**（历史与本轮消息之后——沿核 `thincoder-core/agent/setup.mjs:176-185` 前缀缓存理由）＋**瞬态**（不落库、不进回放——值随实况的直接后果）；③ 降级 = **块级略去**（该块任一读失败 ⇒ 整行缺席、回合不阻断；无半真值上屏）；④ 第四块「能力与边界」= 简报静态段 ＋ 活体面（`tools.schemas`）；⑤ timer 到期行随组同落 | 需求 43①②（值随实况 ＋ 读失败降级不阻断）；三端对位 = 核回合尾位注入/瞬态不落人读线（`pushEnvStateReminder` 先例）；瞬态 = 零迁移 ＋ 回放口径零破（KD-SV-89）；块级 = 「该块降级略去」字面读法 | 落库式（旧值冻结 ＋ 回放污染——否）；系统简报内逐回合拼动态串（简报 = 静态常量面——否）；逐字段降级（字面不符 ＋ 半真值——否）；注入 system 槽（核同判：瞬态行走 user 行——否） |
+| KD-SV-113 | **环境工具面 = 核件复用（五族七件）＋ 结果归一 ＋ 服务面限幅**（admin-agent-awareness 批——2026-10-12）：① 件 = `get_current_time` ∥ `process` ∥ `timer` ∥ `ls` ∥ `read` ∥ `grep` ∥ `bash`——**核工具对象原文复用**（实现 ∥ schema ∥ 描述三面同源；动载 `@thincoder/core/tools/*` ＋ `agent-tools/timer.mjs`——沿 `loadCoreChat` 先例）；② ctx 适配 = `{ cwd, signal, agent: timer 垫片, depth: 0 }`（`cwd` = `deps.cwd ?? process.cwd()`；`signal` = 回合中止信号透传 ⇒ bash 树杀）；③ 结果归一 = `{ ok, subject, summary, output }`（`ok` = 调用完成〔未抛错〕——命令退出码在输出文本内，不解析；`subject` = 主语原文——审计数据源）；④ 限幅三件（§14.3）：超时（缺省 120s = 核常量 ∥ 上限 600000 ms——逾限 ⇒ 工具级错误）∥ 输出（工具层 200K 字/2MB 流 ⇒ 落库形 ≤4000 字〔KD-SV-89 单源〕⇒ 帧/审计摘要 ≤300 字）∥ 工作目录（无路径围栏——如实披露）；⑤ 端池参数处置 = `bash.async` 显式拒 ∥ `process.kill` 的 `id` 靶自然报错；`kill pid` 在册（与 bash 等价） | 「对齐三端」= 同件同语义（自写一套 = 第二份漂移面——KD-SV-78 同判）；限幅 = 需求 43⑤ 明文，值取核内既有常量/惯例（零新口径）；结果归一 = chat 面既有 `{ ok, … }` 形；`subject` = 审计「命令原文/路径」的钱货（需求 43⑥） | 自写服务端工具（三端漂移——否）；核件 schema 收窄（第二份面——否，端池参数运行期处置）；`bash` 无上限（无人值守跑飞面——否）；JSON 形回文本（模型可见形失真 ＋ 耗预算——否）；解析退出码映射 `ok`（第二份输出格式语义——否） |
+| KD-SV-114 | **工具动作审计 = 详情扩字段（`subject` ∥ `truncated`）＋ 审计页按型模板**（admin-agent-awareness 批——2026-10-12）：① 落面 = 既有 `chat_call` 行（KD-SV-91 面不扩——零新型/零新 kind）；`detail` 增 `subject`（主语原文 ≤2000 字——命令/路径；逾限截断并注记）∥ `truncated`（**结果可见形**被截断〔`capToolContent` 触发〕）；成败 = 既有 `resultCode`；② 页面 = `views-audit.mjs` 增 **agent 行详情模板**（`tool · subject · 成败 · 〔截断〕 · summary`——非裸 JSON）＋ 三文案键（`audit.agentOk` ∥ `agentFail` ∥ `agentTruncated`——两表同步） | 需求 43⑥（每次调用一行 ＋ 命令原文/路径 ＋ 成败 ＋ 截断态 ＋ 页面可读）；`detail` = JSON 面 ⇒ 零迁移零 CHECK 改；页面模板 = 沿沙盒 `kind` 族先例（按型渲染） | 裸 JSON 直显（需求明文禁——否）；新审计型/新 kind（枚举面不动——否）；command/path 塞进 `call` 串（页面要解 JSON——「非裸 JSON」的实义就是结构化字段——否）；`subject` 无上限（审计表体量失控——否） |
+
 ## 10. 本域边界（不做的面）
 
-- **server 本机 shell/文件工具**（agent 不操 server 自身文件系统——server 管理动作 = 域工具面逐步长；#1254 在册）。
+- **权限模型/围栏改造**（admin 权限管理归用户——12:47 裁；本面只保证留痕：每次工具调用一审计行）。
+- **路径围栏 ∥ 命令白名单**（不设——沿核口径：`resolveInCwd` 无边界断言 ∥ bash 无命令过滤；如实披露 = 任一 admin 成员可经对话页在服务器跑命令/读文件〔含密钥与库文件面〕——需求 43 风险在册）。
+- **三端无对应物项**（cwd ∥ git 上下文 ∥ 项目档注入 ∥ 同目录实例——需求 43 边界句；服务端无该物）。
+- **timer 自动开轮 ∥ 定时/事件触发任务**（无空闲唤醒面——提醒只在下一回合开场投递；不自动开轮、不常驻——§14.4）。
+- **后台任务面**（`bash async` ∥ 后台任务池——无人值守面无驻留池；显式拒）。
+- **文件编辑族工具（write/edit/apply_patch）**（不入册——写入仍可经 `bash` 抵达，工具面如实；核 `bash` 描述指向 edit 族的指引在本面落空 = 核文案面发现项，§13 R62③）。
 - **成员面 agent 的 server 域工具面**（归属随 **#1215（成员面 chat 轮）**——本档不改 16:04 口径）。
 - **chat 面不做（§11/§12）**：SSH 凭据经 chat 文本输入（装机凭据 = 任务表单专有——KD-SV-84）∥ 会话删除/重命名/归档 ∥ 会话自动清理（保留口径未裁——不设清零）∥ 工具面机制确认门（破坏性动作先说明 = 提示词级纪律——如要机制门另裁）∥ 沙盒工作区/规则/待批/设置各面工具（随沙盒余面批同批长）∥ 节点排空/禁用工具（控制台侧未落——不发明）∥ **思考档位的逐条覆写/状态行段**（console-reasoning-levels 批——口径③④恒会话级；`✦reasoning` 零引用）。
 - **多任务编排/队列**（并发上限 = 1 个/主机在途；跨主机并行未定形）∥ **任务中途取消** ∥ **定时/事件触发任务**（触发源现 = 管理动作）。
 
 ## 11. 聊天式驱动（管理面 chat——本批）
 
-- **形态**：管理面 chat = 管理面 agent 的第二驱动形态（任务式之外的常设对话面）——浏览器侧 = 控制台页 `#/admin/chat`（`webui/CHAT.md` §2.1）；用途 = 运维/管理（托管接入 ∥ 机队 ∥ 成员与 provider ∥ 审查排障——**非开发用途**；需求 §5「两个 chat 界面」②）。与任务式同 agent 同源：同一工具面框架（§3 + §12）、同一审计面、同一模型出口（§5）。
+- **形态**：管理面 chat = 管理面 agent 的第二驱动形态（任务式之外的常设对话面）——浏览器侧 = 控制台页 `#/admin/chat`（`webui/CHAT.md` §2.1）；用途 = 运维/管理（托管接入 ∥ 机队 ∥ 成员与 provider ∥ 审查排障——**非开发用途**；需求 §5「两个 chat 界面」②）。与任务式同 agent 同源：同一工具面框架（§3 + §12 + 环境五族七件 §14）、同一审计面、同一模型出口（§5）。
 - **会话（chat）**：`model`（建会话时选定——KD-SV-87 同口径；**会话内可换**——明选即换、下回合生效（chat-shell-align 批收正 = KD-SV-108））+ 消息序（库两表——KD-SV-89）；列表/详情 = 读时读（无后台常驻）。
-- **回合（turn）**：用户发一条 ⇒ 装配 = 系统简报（管理面用途句 + 行动纪律句）+ 历史重放（含图——KD-SV-109）+ 本轮消息 ⇒ agent 环（多轮工具循环——与任务式同一环）跑到自然结束。终止**五形**：① 模型无工具调用（自然结束——`succeeded`）；② 预算超限（20 分钟 ∥ 60 调用——**每回合独立计**）；③ 模型出口抛错；④ 空回合（无文本无调用）；⑤ 手动中止（chat-shell-align 批——`"aborted"`；KD-SV-107）。
+- **回合（turn）**：用户发一条 ⇒ 装配 = 系统简报（管理面用途句 + 行动纪律句 + 能力边界段——§14.1 第四块）+ 历史重放（含图——KD-SV-109）+ 本轮消息 + **环境块**（三活体行 + timer 到期行——尾位瞬态、不落库；§14.1）⇒ agent 环（多轮工具循环——与任务式同一环）跑到自然结束。
+  终止**五形**：① 模型无工具调用（自然结束——`succeeded`）；② 预算超限（20 分钟 ∥ 60 调用——**每回合独立计**）；③ 模型出口抛错；④ 空回合（无文本无调用）；⑤ 手动中止（chat-shell-align 批——`"aborted"`；KD-SV-107）。
   ②③④⑤ ⇒ notice 行（人话；`data.reason` 各点名：② `"budget"` ∥ ③ `"model_error"` ∥ ④ `"empty_turn"` ∥ ⑤ `"aborted"`；人话文本 = `content` 面）+ `chat_stop` 审计 + `end` 帧 `failed`；②③⑤ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行），零文本 ⇒ 零 `assistant` 行。
 - **流式通路**（KD-SV-88）：`POST /api/admin/agent/chats/:id/messages` 单请求；响应 = `application/x-ndjson` 帧流（每行一帧）：`{"type":"delta","text"}`（模型文本增量——核 `onToken`）∥
   `{"type":"call","id","name","args"}`（工具调用开始——`args` = **字符串**（参数摘要——JSON 序列化 ⇒ 掩蔽后截断 ≤500 字；恒为字符串，非对象））∥ `{"type":"result","id","ok","summary"}`（结果摘要 ≤300 字）∥ `{"type":"end","status","reason"?}`（回合终态）∥ **本批扩**：`turn` ∥ `usage` ∥ `end` 两可字段——**帧形全文 = §11.3**。
@@ -209,7 +230,76 @@
 | R60 | **chat-shell-align 批（本批）——需求档回笔 + 随正件 + 披露 + 部署**：① 需求档回笔（主 agent 笔）——**已闭合**（2026-10-11：功能点 41 ∥ AC-41 入册——`docs/server/requirements/PROJECT.md` :225/:230；该档变更记录 :565「R60① 闭合」） ∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准）：`2026-10-11-admin-agent-chat-ui.test.mjs` 静态面腿上量（档目链单源 = `webui/WEBUI.md` §1；现读 669 行——净变 ≤±50）+ 类名闭合腿 ∥ `2026-10-11-console-chat-align.test.mjs` 两腿收正——取件面白名单腿（本批新取件增列 `thincoder-render-core/flow/block.mjs` ∥ `thincoder-render-core/composer/panel.mjs`）∥ 「零 composer/reasoning 引用」口径（现读 450 行；净变 ≤±20；**本体零触**——腿面收正随实施轮）∥ `style.css`（五钮隐藏 + 别名块——`webui/STYLE.md`）∥ `views-chat.mjs` 拆档（新档入链）∥ 门禁件数断言（本批批内件）∥ `i18n-{zh,en}-admin` 行账（`webui/ADMIN.md` §3）∥ ③ 披露（不阻塞）：**R54 ③ 两项交付失效**（回合中止钮 ⇒ 已交付 = KD-SV-107 ∥ 会话内换模型 ⇒ 已交付 = KD-SV-108）∥ 图片随行存 dataURL（≤15MB/图 ∥ 30MB/回合——核阀单源；详情仅 `imageCount`）∥ 无源钮隐藏五枚（模式位/设置——无源实证；推理钮 ⇒ 已交付 = KD-SV-111）∥ `interrupt` 折法（中止 + 入队首——无注入通道）∥ 换模型零审计行（三 kind 不扩）∥ ④ 部署收尾（父侧）：镜像重建 + ECS 浏览器实走（四轴走查清单 = 批档 §2） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 | R61 | **console-reasoning-levels 批——披露 + 随正件 + 部署**：① 随正件（父侧/实施轮——以当刻盘面实读为准）：结构版本断言 **11 件**（设计轮枚举——**实盘收正 20 件**：+ `-console-modals` ∥ `-embedding-decouple` ∥ `-console-list-style` ∥ `-server-auto-update` ∥ `-console-layout` ∥ `-me-usage-charts` ∥ `-model-alias` ∥ `-runner-admin-console` ∥ `-runner-admin-console-agent` 九件——逐行坐标见批档 §5 ④；各一行 `SCHEMA_VERSION === 15` ⇒ `16`——数字就地收正 ⇒ 逐件行数 ±0；逐件现读：`…-server-gateway.test.mjs`（**495 行**——`:167`） ∥ `…-console-completeness-2`（**504 行**——`:152`） ∥ `…-me-keys-redo`（**370 行**——`:120`） ∥ `…-provider-model-metadata`（**494 行**——`:151`） ∥ `…-quota-per-model`（**447 行**——`:150`） ∥ `…-quota-v2-member-models`（**740 行**——`:167`） ∥ `…-server-console-config`（**795 行**——`:383`） ∥ `…-server-gemini-openai-preset`（**735 行**——`:263`） ∥ `…-team-login-client-access`（**305 行**——`:284`） ∥ `…-admin-agent-chat`（**716 行**——`:638`） ∥ `…-sandbox-image-sources`（**685 行**——`:599`））∥ `…-chat-shell-align.test.mjs:791`（隐藏腿六 id ⇒ 五 id）+ `:807`（零悬停扫描名单）∥ `…-admin-agent-chat.test.mjs:640`（`agent_chats` 列面五列 ⇒ 六列——`ORDER BY cid` 尾插）∥ 门禁件数（**56 ⇒ 57**——本批批内件入链）∥ ② 披露（不阻塞）：**开发机无 `@thincoder/core`** ⇒ 档位面退中性（`modelReasoning = {}` + 警告一条；生产镜像内核为声明依赖——若真缺核 ⇒ admin chat 回合本就不可用，同源失败、非本批引入）∥ **路由形模型名**（含 `/`）：核载荷门静默不发 `reasoning_effort`（VSC/桌面同态）——服务端/控制台不另立过滤（只读消费核单源）∥ 档位面零审计行（三 kind 不扩——沿 KD-SV-108）∥ `views-chat.mjs` 本批后 ≈498 ⇒ **实 500**（恰贴 500 软线；硬限 800 未越——拆档预案在案）∥ ③ 部署收尾（父侧）：镜像重建 + 浏览器实走（选档/换模型/切会话三径——批档 §2） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
+| R62 | **admin-agent-awareness 批（本批）——需求档回笔 + 随正件 + 披露 + 部署收尾**：① 需求档回笔（主 agent 笔——**父侧已受理**：功能点 43③「（在线数）」与 43⑤ `process`「（看服务器进程——只读）」两括注收正——本设计轮上抛两条经父侧 2026-10-12 裁「均按设计倾向」）∥ ② 随正件（父侧落——实施轮同拍，以当刻盘面实读为准）：门禁件数断言件七件（**57 ⇒ 58**——本批件入链；注释/断言消息同拍）+ `thincoder-server/package.json`（`prepublishOnly` **57 ⇒ 58**——本批件入链；单行清单行数零变）；i18n 键集断言（system 两表 **+3 键/表**——等量 ⇒ 「键集相等」断言不破；如有计数断言 ⇒ 随正；以实施当刻盘面为准）；档目断言件 **±0**（零新档）；审计型面断言 **±0**（零新型/零新 kind）；旧断言件核（预计零——`chat-tools` 面零改：环境族 = 新档 `chat-env-tools.mjs`；待实施实读为界）∥ ③ 披露（不阻塞）：**核可达性结论 = §14.5**（依赖声明 ∥ registry 实核 0.10.4 ∥ 镜像两装径同经 npm 解析——前提 = 装机时 registry 可达，不可达 ⇒ 拒启 fail-loud）∥ **无路径围栏 ∥ 无命令白名单**（任一 admin 成员可经对话页在服务器跑命令/读文件——含密钥与库文件面；需求 43 风险在册）∥ **读文件内容不在掩蔽面内**（掩蔽只盖本轮入参敏感值；配置档内 apiKey 等可被读出——权限模型归用户）∥ `process.kill` 在册（含**杀 server 自身进程 = 操作者自伤面**——与 bash 等价）∥ `timer` 无空闲唤醒（提醒只在下一回合开场投递）∥ `bash` 非零退出不映射 `ok:false`（退出码在输出文本内——不解析）∥ 模型可见输出 ≤4000 字（`CHAT_TOOL_CONTENT_MAX`——读大文件用 offset/limit ∥ grep ∥ bash `filter` 收窄）∥ 核 `tool-docs/*.md` 指向本面不存在工具的指引（write/edit/git/repo_outline 族）落空——本批不改核文案（提示词单源；要改 = 主 agent 面另裁）∥ `chat.mjs` 越 500 软线续存（拆档预案 = §6）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（问「现在几点」「你管着几个节点」各一 + 时间工具一次调用 + 审计页看一行 `chat_call`——命令原文/路径可见） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+
+## 14. 环境感知与环境工具面（admin-agent-awareness 批——2026-10-12；功能点 43 ∥ AC-43 ①–⑥）
+
+> 口径 = 用户 2026-10-12 12:29「管理面的agent现在没有环境感知能力，我希望这一块要对齐cli/vsc和桌面。」+ 12:39（工具面）∥ 12:41（读文件族 + `bash`）∥ 12:47（审计 + 权限归用户）三句；单源 = 需求 `docs/server/requirements/PROJECT.md` §2 功能点 43。
+
+### 14.1 四块装配（时空 ∥ 所在/身份 ∥ 所管现况一行 ∥ 能力与边界）
+
+- **装配形**：每回合（= 每请求）在 `runChatTurn` 起跑段造**三活体行**（+ timer 到期行），**尾插**于历史与本轮消息之后（沿核 `thincoder-core/agent/setup.mjs:176-185` 理由：秒级新值不进前缀——缓存保持命中）；**瞬态不落库**（不进 `agent_chat_messages`、不进回放——值随实况的直接后果；校验 = 回放逐字零含实况行）。
+- 三四块逐字形（`chat-env.mjs` 造；`[System reminder: ` 族前缀 = 三端同形标记）：
+
+| 块 | 行形（本面——`{}` = 取值点） | 三端同源坐标（功能点 43 ④——逐块） |
+|---|---|---|
+| ① 时空 | `[System reminder: current time is {本地时间 sv-SE} (local; timezone {IANA 时区})].` | `thincoder-core/agent/setup.mjs:181-185`（每回合 time reminder——三端同调同核件） |
+| ② 所在/身份 | `[System reminder: env: thincoder-server {版本}（{部署身份}）∥ host: {主机名} ∥ platform: {平台} {架构} ∥ node: {版本} ∥ pid: {pid} ∥ cwd: {工作目录} ∥ model: {会话模型} ∥ reasoning: {档位 ∥ 未设}].` | `thincoder-core/agent/setup-reminders.mjs:40-42`（env 行——端名/模型/槽；同族 = `pushEnvStateReminder`） |
+| ③ 所管现况一行 | `[System reminder: 管理面现况：注册节点 {N}（active {A} ∥ disabled {D}）∥ 服务模型 {K} ∥ 成员 {M}].` | `thincoder-core/agent/setup-reminders.mjs:152`（`pushManifestStateReminder`——会话所操作对象的现况**单活体行**：值随实况 ∥ 读败保守） |
+| ④ 能力与边界 | 系统简报静态段 `CHAT_LIMITS_BLOCK`（工具族清单 ∥ 限额 ∥ 边界——四块之一）+ 活体面 = 当回合 `tools.schemas`（能力清单的真体现） | `thincoder-core/prompts/`（人格/纪律槽——三端能力与边界 = 系统提示词面；本面 = 系统简报） |
+
+- **取值源**：① `now()`（注入面）；② `process`/`os` 直读 + 版本 = `readPackageVersion()`（`thincoder-server/src/ops/update.mjs:46`——版本单源）；
+  **部署身份** = 容器（`/.dockerenv` ∨ `/run/.containerenv` 在场）∥ systemd 服务（`INVOCATION_ID` 非空）∥ 独立进程（其余）——判据明列，探测失败 ⇒ 该字段略去（不猜）；
+  ③ 域件进程内直取（`listRunners` ∥ `modelEntriesOf(listProviderEntries(db))` ∥ `listMembers`——每回合三读，读数级）。
+- **③ 在线性读面**（父侧 2026-10-12 裁）：v12 已撤心跳（`sandbox_runners.status` = active/disabled；「在线」只能读时逐节点探活——`thincoder-server/src/sandbox/routes.mjs:128-145` 每节点现打 `/info` 3s）
+  ⇒ 不便宜且慢节点会误读离线 ⇒ 本行取**注册态分布**；**在线性/容器数走工具按需探**（`runners.list` / `docker version`——需求同句「明细仍走工具」）。
+- **降级（需求 43② 字面）**：块级——该块任一读失败 ⇒ **整行略去**（无半真值上屏），其余行照常、回合不阻断（不抛、不 notice）。
+- **timer 到期行**：随三行同落（行文 = 核件单源 `[System reminder: ⏰ timer — {消息}]`）——见 §14.4。
+- **不做对位**：cwd 之外的 git 上下文 ∥ 项目档注入 ∥ 同目录实例（三端有、服务端无对应物——需求 43 边界句）。
+
+### 14.2 环境工具面（五族七件——核件复用）
+
+| 族 | 件 | 核件（单源） |
+|---|---|---|
+| 时间 | `get_current_time` | `@thincoder/core/tools/ops.mjs`（`getCurrentTimeTool`——`:140`） |
+| 进程 | `process`（list ∥ kill） | 同件（`processTool`——`:51`） |
+| 提醒 | `timer` | `@thincoder/core/agent-tools/timer.mjs`（`timerTool`） |
+| 文件读取族 | `ls` ∥ `read` ∥ `grep` | `@thincoder/core/tools/search.mjs`（`lsTool` ∥ `grepTool`） ∥ `tools/file.mjs`（`readTool`） |
+| 命令 | `bash`（限幅 = §14.3） | `@thincoder/core/tools/bash.mjs`（`bashTool`） |
+
+- **复用口径**（KD-SV-113）：实现 ∥ schema ∥ 描述三面同源——核工具对象**原文直用**（`execute(args, ctx)`），本面只做 `ctx` 适配与结果归一；**不收窄 schema**（端池参数运行期处置）。
+- **载入**：动载（`loadCoreEnvTools()`——沿 `loadCoreChat` 先例）；批内件经 `coreTools` 注入口（真件亦可——**仓内核直引**：`thincoder-core/tools/*.mjs`——`DESC()` 经 `prompt-files.mjs` 按模块自身位置解析，仓内 `tool-docs/` 在场 ⇒ 开发机可用真件）。
+- **ctx 适配**：`cwd` = `deps.cwd ?? process.cwd()`（相对路径基准——无围栏）；`signal` = 当回合中止信号（透传 ⇒ bash 树杀、模型调用中断同源）；`agent` = timer 垫片（§14.4）；`depth: 0`。
+- **结果归一**：`{ ok, subject, summary, output }`——`ok` = 调用完成（未抛错；命令非零退出 ⇒ `ok:true`，退出码在输出文本内 `(exit code N)`——不解析，KD-SV-113 被否栏）；
+  `output` = 核件文本原文（模型可见形经会话面 ≤4000 字截断——KD-SV-89 单源）；`subject` = 主语原文（审计数据源——§14.4）；
+  `summary` = 人话单行（bash ⇒ 核件结果末行状态行；`get_current_time` ⇒ 首行 `Date:`；`timer` ⇒ 核件返回句；余 = 「工具名 + 主语」）。
+- **端池参数处置**（服务面无驻留池）：`bash.async:true` ⇒ 显式拒（人话）；`process.kill` 的 `id` 靶 ⇒ 核件自然报「未知后台任务 id」；`process.kill` 的 `pid` 靶**在册**（与 bash 等价——含杀 server 自身进程的操作者自伤面；R62②披露）。
+- **描述面**：核 `tool-docs/*.md` 原文（三端同文）；其中指向本面不存在工具的指引（write/edit/git/repo_outline 族）落空 = 核文案面发现项（R62③——本批不改）。
+
+### 14.3 限幅在册（`bash` 三件——需求 43⑤）
+
+| 限 | 值 | 依据 |
+|---|---|---|
+| 超时 | 缺省 120_000 ms ∥ 上限 600_000 ms（逾限 ⇒ 工具级错误——零静默） | 缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）；上限 = 核内既有时预算惯例值（`execute` ∥ `wait_for` 同值 600000） |
+| 输出上限 | 三层：工具层 200_000 字（核 `truncate`）+ 每流 2_000_000 字节缓冲（核 `MAX_STREAM_BUF`——`thincoder-core/tools/bash.mjs:15`）⇒ 落库/模型可见 ≤4_000 字（`CHAT_TOOL_CONTENT_MAX`——KD-SV-89 单源）⇒ 帧与审计摘要 ≤300 字 | 全为核件/会话面既有常量——零新口径 |
+| 工作目录 | `deps.cwd ?? process.cwd()`（相对路径解析基准；**无路径围栏**——沿核「无边界断言」口径） | 需求 43⑤ 三限之一；围栏 = 权限模型面（12:47 归用户——§10 边界） |
+
+### 14.4 审计与 timer 投递
+
+- **审计（需求 43⑥——KD-SV-114）**：每次调用一 `agent_event`/`chat_call` 行（面不扩——KD-SV-91）；`detail` 增 `subject`（命令原文/路径——≤2000 字，逾限截断并注记）∥ `truncated`（结果可见形截断位）；成败 = 既有 `resultCode`。
+  审计页 `views-audit.mjs` 增 **agent 行详情模板**（tool · subject · 成败 ·〔截断〕· summary——非裸 JSON）+ 三文案键（`audit.agentOk`/`agentFail`/`agentTruncated`——两表同步）。
+- **timer 投递面**（差异登记——核三端有**空闲唤醒**〔闩/火/开轮〕，服务面无）：进程内按会话挂垫片（`{ _pendingTimers, history }`——核 `timer` 工具直写；帽 = 核 `TIMER_MAX_PENDING` 8）；**回合边界投递** = 每回合起跑 `takeExpiredTimers` 出列（幂等）⇒ 行文经 `injectTimerReminders` 落实况行组；**不自动开轮**（无空闲面——如实登记）；重启 ⇒ 表天然空（零持久化——沿中止登记表先例）。
+- **秘密面**：掩蔽口径沿会话面（入参敏感键 ∥ 本轮已见敏感值）；**文件内容不在掩蔽面内**（读文件/命令输出可含凭据——如实披露，R62②）。
+
+### 14.5 核可达性（生产镜像——核实结论）
+
+- 依赖声明在案（`thincoder-server/package.json:16` `@thincoder/core: ^0.10.4`）；registry 实核 = 该包在 npm 上（本设计轮 `npm view @thincoder/core version` ⇒ **0.10.4**，与仓内核版本一致）；包白名单含 `tools/` ∥ `agent-tools/` ∥ `tool-docs/`（`files` 面）+ `exports: { "./*": "./*" }` ⇒ 子路径直引可达。
+- 镜像两装径同经 npm 解析该依赖：构建期（`thincoder-server/Dockerfile:25` `npm i -g ./thincoder-server/*.tgz …`）∥ 运行期（`thincoder-server/deploy/converge.mjs:79-90` `installVersion`——`npm i -g @thincoder/server@<target>`）——registry 不可达 ⇒ 装机失败 ⇒ 拒启（fail-loud，非静默）。**结论：核在镜像内可达**（前提 = 装机时 registry 可达）。
+- 开发机（本仓 checkout）未装核 ⇒ 本面全族走动载 + 注入口（生产走真件；批内件走注入——真件亦可经仓内直引）。
+
 ## 变更记录
+
+- 2026-10-12（**admin-agent-awareness 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-admin-agent-awareness.md` §1 · 台账 #1310；用户 12:29/12:39/12:41/12:47 四句；功能点 43 ∥ AC-43 ①–⑥）：§1 驱动器行 + §3 尾句 + §11 两行随正（工具面 = 任务五件 + 管理面七件 + **环境五族七件 §14**；回合装配 + 环境块）∥ §6 增两新档行（`chat-env.mjs` ≈150 ∥ `chat-env-tools.mjs` ≈230）+ `chat.mjs` 预算行（599 ⇒ ≈640 + 拆档预案）+ 本批另计行 ∥ §7 增环境面判据行 ∥ §8 增用例（N72/N73 ∥ B70/B71 ∥ E55）∥ §9 增 **KD-SV-112/113/114**（四块装配 ∥ 工具面核件复用与限幅 ∥ 审计详情与页面模板）∥ §10 边界重写（server 本机族收正 + 五条不做面）∥ **增 §14（环境感知与环境工具面——四块装配/坐标表 ∥ 工具面五族七件 ∥ 限幅三件 ∥ 审计与 timer 投递 ∥ 核可达性结论）** ∥ §13 增 R62（含父侧两条裁决回笔 + 披露 + 部署收尾）。同源随动 = `accounts/ACCOUNTS.md` §2.1（`chat_call` detail 扩字段） ∥ `webui/READINGS.md` §2.1④/§3（审计页 agent 行模板 + 行数） ∥ `webui/SYSTEM.md` §3（i18n 两表 +3 键） ∥ `design/PROJECT.md` §2/§3/§4/§6/§7/§9。**产品码零触（设计轮）。**
 
 - 2026-10-10（**runner-admin-console 批 · 托管接入（管理面 agent）设计 · eng-designer**——承批档 §2 · 台账 #1237/#1236；用户 22:19–22:29 四句 + 15:00/15:02 裁）：建档——形态（进程内 ∥ 核复用 KD-SV-78 ∥ 唯一一个）∥ 任务模型（run ∥ 预算 ∥ 读时轮询）∥ 工具面五件（exec/docker/register/verify/report——无围栏）∥ 自主边界与失败处置（硬点②）∥ 无人值守裁剪 ∥ KD-SV-82/87 ∥ 用例 N53/B47/E39。**产品码零触（设计轮）**。
 - 2026-10-10（**runner-admin-console 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-runner-admin-console.md` §3 轮次 1 之 5/14）：#5 注册路径定——四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册（`bin` ±0——与 `sandbox/SANDBOX.md` §13 ∥ `PROJECT.md` §6 同拍）∥ #14 出口代理旗复核点指针写全（⇒ `PROJECT.md` §9 R53③）；同族：§6「构建/发布形」复核指针同拍。**零新语义**（评审发现直接导出项 + 同族指针收正）。

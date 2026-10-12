@@ -347,9 +347,9 @@ test("腿 C 样式：堆叠段件/切换/图例在册 ∥ 链行随正 ∥ 零�
   const report = cssRule(".page-area > .card.report-card")
   assert.ok(report !== null, "report-card 规则缺位")
   for (const decl of ["flex: none", "max-height: 55%", "overflow-y: auto"]) assert.ok(report.body.includes(decl), `report-card 缺声明：${decl}`)
-   // AC-19 canon：`:root` 50 ∥ 悬停清单八条（2026-10-11 走查轮后基线）
+   // AC-19 canon：`:root` 58 ∥ 悬停清单八条（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）
   const rootMatch = CSS_CLEAN.match(/:root\s*\{[^{}]*\}/)
-  assert.equal([...rootMatch[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+   assert.equal([...rootMatch[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④：核件 `--vscode-*` 族桥 +8）")
   const HOVER = ["button.danger:hover", "button.link:hover", "button.tiny:hover", "button.tab:hover", "button:hover", ".modal-close:hover", ".nav-item:hover", "tbody tr:hover"]
   assert.deepEqual(CSS_RULES.filter((rule) => rule.selector.includes(":hover")).map((rule) => rule.selector).sort(), [...HOVER].sort(), "悬停声明清单外残留")
   // 段色阶梯 = 内联透明度（档面无新颜色字面量——`--accent` 单源）

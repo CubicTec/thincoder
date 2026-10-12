@@ -303,7 +303,7 @@ test("⑥ 核件词面：5 键逐字等 VSC locales ∥ 键首段 ⊆ 核件 `t(
   const vscEn = JSON.parse(readFileSync(join(VSC_LOCALES, "en.json"), "utf8"))
   const VSC_KEYS = ["tool.running", "tool.initial", "tool.truncated", "tool.error", "tool.done"]
   assert.deepEqual(VSC_KEYS.every((key) => key in ZH_CORE), true, "核件原名五枚在册")
-  assert.equal(Object.keys(ZH_CORE).length, 53, `部件键族 53 枚（5 原名 + 48 控制台叙事——chat-shell-align 批）：${Object.keys(ZH_CORE).length}`)
+  assert.equal(Object.keys(ZH_CORE).length, 54, `部件键族 54 枚（5 原名 + 49 控制台叙事——chat-shell-align 批；2026-10-12 走查实修：+\`reasoning.off\` 哨兵键）：${Object.keys(ZH_CORE).length}`)
   for (const key of VSC_KEYS) {
     assert.equal(ZH_CORE[key], vscZh[key], `zh 值须逐字等 VSC locales：${key}`)
     assert.equal(EN_CORE[key], vscEn[key], `en 值须逐字等 VSC locales：${key}`)

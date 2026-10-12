@@ -271,7 +271,7 @@ test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效—�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 687 ∥ 692", () => {
+test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 691 ∥ 696", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -289,7 +289,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [687, 692], "键数终值（2026-10-11 批组 + 走查实修后——实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [691, 696], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -360,9 +360,9 @@ test("⑩ 静态面：档目 43 ∥ 42 ∥ nav 管理 9（对话位次 2）∥ a
   for (const token of ["chat-bar", "chat-select", "chat-thread", "message", "notice"]) {
     assert.ok(used.has(token) && cssClasses.has(token), `新页类双向闭合：${token}`)
   }
-   // `:root` 50 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon）
+   // `:root` 58 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon；2026-10-12 走查实修④ `--vscode-*` 族桥 +8）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
 })
 

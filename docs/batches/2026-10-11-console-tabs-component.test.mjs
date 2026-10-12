@@ -14,7 +14,7 @@
  *     页内 `history.replaceState`（零重渲——切换零额外读 ∥ 展开态/弹窗保活）∥ 直打/分享（子段 ⇒ 直达标签 ∥ 非法子段回落首标签）∥ 读在途 ⇒ loading 句
  *   ⑤ 零回归（§2.2）：五族动作面装配点逐族在场（节点/容器/任务/镜像/镜像源）∥ 镜像区零残留于节点展开
  *   ⑥ 静态面（§4）：i18n +2 键两表同步（en 零 CJK ∥ 键集双向相等）∥ 档目 43 ∥ 42（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥
- *     `t` 字面量闭合 ∥ 类名双向闭合 ∥ AC-19 canon（`:root` 50 ∥ 行悬停清单二 ∥ `:hover` 8 = 七 + 页签一）∥ 门禁链含本批件
+ *     `t` 字面量闭合 ∥ 类名双向闭合 ∥ AC-19 canon（`:root` 58〔2026-10-12 走查实修④ +8 `--vscode-*` 族桥〕 ∥ 行悬停清单二 ∥ `:hover` 8 = 七 + 页签一）∥ 门禁链含本批件
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -440,8 +440,8 @@ test("⑥ i18n：本批 2 键两表逐键在场 ∥ 键集双向相等 ∥ zh �
   }
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
-  assert.equal(Object.keys(ZH).length, 687, "zh 键数 687（2026-10-11 批组 + 走查实修后——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
-  assert.equal(Object.keys(EN).length, 692, "en 键数 692（2026-10-11 批组 + 走查实修后——实读）")
+  assert.equal(Object.keys(ZH).length, 691, "zh 键数 691（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
+  assert.equal(Object.keys(EN).length, 696, "en 键数 696（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4——实读）")
   assert.deepEqual([...base(ZH)].filter((key) => !base(EN).has(key)), [], "仅 zh 键（自称名族除外）")
   assert.deepEqual([...base(EN)].filter((key) => !base(ZH).has(key)), [], "仅 en 键")
 })
@@ -473,9 +473,9 @@ test("⑥ 静态面：档目 43 ∥ 42 ∥ 行数/行宽 ∥ 零外链/零 CJK �
   assert.equal(TABS.createTabs !== undefined && typeof TABS.createTabs === "function", true, "公共组件导出面（node 可 import——经头位取件）")
 })
 
-test("⑥ AC-19 canon：`:root` 50 ∥ 行悬停清单不变 ∥ `:hover` 8（七 + 页签一）∥ 门禁链含本批件", () => {
+test("⑥ AC-19 canon：`:root` 58 ∥ 行悬停清单不变 ∥ `:hover` 8（七 + 页签一）∥ 门禁链含本批件", () => {
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线——㈣ 裁定后）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线——㈣ 裁定后 ⇒ 2026-10-12 走查实修④ +8）")
   const rules = [...cssClean.matchAll(/([^{}]*)\{([^{}]*)\}/g)].map((match) => [match[1].trim().replace(/\s+/g, " "), match[2].trim().replace(/\s+/g, " ")])
   const hovers = rules.filter(([selector]) => selector.includes(":hover"))
   assert.deepEqual(hovers.map(([selector]) => selector).sort(),

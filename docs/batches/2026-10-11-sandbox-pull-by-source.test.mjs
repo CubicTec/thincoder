@@ -13,7 +13,7 @@
  *     镜像表重取）+ 零新端点（两端点面扫描 ∥ 服务端拉取路由零触）
  *   ⑤ i18n +3 键两表（逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 键集双向相等）+ 复用 `sourcesEmpty`（零新增）在盘
  *   ⑥ 静态面（档目 43 ∥ 42（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破
- *     （`:root` 50 ∥ 悬停 8）∥ 装配接线 ∥ 门禁链零悬空 + 本批件在链）
+ *     （`:root` 58〔2026-10-12 走查实修④ +8〕 ∥ 悬停 8）∥ 装配接线 ∥ 门禁链零悬空 + 本批件在链）
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -456,7 +456,7 @@ test("⑥ 静态面：档目 43 ∥ 42（集合快照）∥ 行数/行宽 ∥ �
   }
   // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 装配接线：拉取窗导出面 ∥ 一键拉取调用点携源（认源态）∥ 件间 import 单向（images 不被 image-sources 反向依赖）
   assert.equal(typeof IMAGES.pullRefWithSource, "function", "组装纯函数导出")

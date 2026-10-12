@@ -15,7 +15,7 @@
  *      （有则示 ∥ 零字段零占位 ∥ 存储补齐）∥ 上游退役只提示（行标 + 注行；勾选/保存照常零停用）∥ 加载三态（在飞 ⇒ `.hint` + 钮禁用）
  *      ∥ 保存线形（空图 ⇒ 省略键；非空 ⇒ 携）∥ 添加窗探针随 POST 携图（无探针 ⇒ 省略键）
  *   ⑤ 求交滑落（AC-24②——`filterModelMeta` 直测）：白名单 + 形不符即略 + 与 `models` 求交（非开放不入库）∥ 非对象 ⇒ 抛
- *   ⑥ i18n + 静态面（WEBUI §2.2 键族 +7 ∥ §6 AC-24 续）：两表 7 键在场（en 零 CJK ∥ 占位符一致）∥ 基键集双向相等 ∥ 档目 43 ∥ 42 ∥ 视图件行宽 ≤300 ∥ `style.css` 现读（`:root` 50 ∥ 悬停八条（七 + 页签一）——AC-19 canon）∥ 门禁链 30 件
+ *   ⑥ i18n + 静态面（WEBUI §2.2 键族 +7 ∥ §6 AC-24 续）：两表 7 键在场（en 零 CJK ∥ 占位符一致）∥ 基键集双向相等 ∥ 档目 43 ∥ 42 ∥ 视图件行宽 ≤300 ∥ `style.css` 现读（`:root` 58〔2026-10-12 走查实修④ +8〕 ∥ 悬停八条（七 + 页签一）——AC-19 canon）∥ 门禁链 30 件
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -480,10 +480,10 @@ test("⑥ i18n + 静态面：两表 7 键在场（en 零 CJK ∥ 占位符一致
   // 档目 43 ∥ 42（2026-10-11 走查轮后）
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
-  // AC-19 canon（`style.css` 零新增）：`:root` 变量族 38 ∥ 悬停声明七条
+  // AC-19 canon（`style.css` 历批随正）：`:root` 变量族 58 ∥ 悬停声明八条
   const css = readPublic("style.css").replace(/\/\*[\s\S]*?\*\//g, "")
   const rootVars = (css.match(/:root\s*\{[^{}]*\}/)?.[0] ?? "").match(/--[\w-]+\s*:/g) ?? []
-  assert.equal(rootVars.length, 50, `:root 变量族计数：${rootVars.length}`)
+  assert.equal(rootVars.length, 58, `:root 变量族计数：${rootVars.length}`)
   const hover = [...css.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " ")).sort()
   assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"].sort(), "悬停声明清单（八条——2026-10-11 走查轮后基线）")
   // 门禁链 52 件（历批入链合计——2026-10-11 六批后）∥ 清单目标在盘

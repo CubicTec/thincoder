@@ -43,7 +43,7 @@
   - **⑥ 审计可查**（`sandbox_rule` ∥ `sandbox_event` 过滤视图——数据面 = 审计页同源（type 过滤）+ 本卡快捷入口）
 - **每配置项有 UI 写入口**（必交面判据——需求 §5 沙盒块）：`sandbox_settings` 全部键 + **每工作区覆写**（资源/TTL——工作区行）+ 规则条目/默认单行（`source=default`）+ 待批裁定 = 上列六面卡内写控件；逐键对照表见 `sandbox/SANDBOX.md` §8（单源——本档不复制）。
 - **数据面**：`/api/admin/sandbox/*`（端点表 = `gateway/API.md` §2.5；判权 = `requireAdmin`——沿用 admin 面判据；新码 `sandbox_unavailable`（503）入 `err.*` 映射集——**可达面 = 工作区写路径（余面批）**）；成员面 = `gateway/API.md` §2.7 ∥ 本档 §2.2；**运行面批可达码** = 400/404/502（`upstream_error` 值补 `{detail}`——人话可见：服务端消息附入映射文案）。
-- **文案**：新键族 `admin.sandbox.*`（两表逐键同步——en 零 CJK；**运行面批先落 ≈26 键**——运行面/容器族；**托管接入增补 ≈30 键（runner-admin-console 批）**——弹窗/装机任务区/撤销凭据）；审计两型键 `audit.type.sandbox_rule` ∥ `audit.type.sandbox_event` + `kind` 族 22 键 + `sandboxKept`/`sandboxRemoved`（system 部件——**已落 +26/表（走查轮 2026-10-11）**，原估 +2/表）；**本批（console-tabs-component）+2 键**（`tabImages` ∥ `imageNode`——两表逐键同步）。
+- **文案**：新键族 `admin.sandbox.*`（两表逐键同步——en 零 CJK；**运行面批先落 ≈26 键**——运行面/容器族；**托管接入增补 ≈30 键（runner-admin-console 批）**——弹窗/装机任务区/撤销凭据）；审计两型键 `audit.type.sandbox_rule` ∥ `audit.type.sandbox_event` + `kind` 族 26 键（22 ⇒ 2026-10-12 走查实修④：补 `box_start`/`box_stop`/`box_destroy`/`runner_selfcheck_failed` 四键——服务端实发全量对齐） + `sandboxKept`/`sandboxRemoved`（system 部件——**已落 +26/表（走查轮 2026-10-11）**，原估 +2/表）；**本批（console-tabs-component）+2 键**（`tabImages` ∥ `imageNode`——两表逐键同步）。
 - **审计页随动**（已落——走查轮 2026-10-11）：`views-audit.mjs` 增两型模板（详情支 + `kind` 族渲染）——型面 = 十三型（`store/STORE.md` §2 v11/v14 段）；`agent_event` 行详情模板补 `summary` 支（`webui/CHAT.md` §2.1）。
 - **不做**：壳面五页钉表不扩（沿用）；导出/打印不做（沿先例）；**运行面批不做** = ②–⑥ 五面卡（余面批）；**本批（console-tabs-component）不做** = 其余页面标签化（用户逐页点名）∥ 卡体系改造（㈡ 裁定「保留」）∥ 沙盒余面标签归属预设（余面批点）。
 

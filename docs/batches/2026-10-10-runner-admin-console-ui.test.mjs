@@ -481,7 +481,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [687, 692], "键数终值（2026-10-11 批组 + 走查实修后——实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [691, 696], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
@@ -518,9 +518,9 @@ test("⑧ 静态面：档目 43 ∥ 42 ∥ nav 管理 9 ∥ app 接线 ∥ 行�
   }
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
   for (const token of ["badge", "off", "detail-row", "stack-box", "step-list"]) assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
-   // `:root` 50 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon）
+   // `:root` 58 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon；2026-10-12 走查实修④ `--vscode-*` 族桥 +8）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：本批 ui 件入链（姊妹两件 = 服务面批落——本件不代断言其档面在盘）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []

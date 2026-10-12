@@ -505,7 +505,7 @@ test("⑤ 静态面：档目 43 ∥ 42 ∥ 新档在册 ∥ 行数/行宽 ∥ �
   assert.ok(SOURCES["views-sandbox.mjs"].includes("imagePanel.append(createImageSourceSection(ctx,"), "源卡挂载点（标签②面板——console-tabs-component 批后）")
   // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：存量链目标在盘 + 本批两件同链（入链 = 父侧随正件 47 ⇒ 49——本件只断言「零悬空 ∥ 本批两件同链不半落」）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []

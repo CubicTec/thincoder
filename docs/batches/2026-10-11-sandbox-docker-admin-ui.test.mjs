@@ -412,9 +412,9 @@ test("⑤ 静态面：档目 43 ∥ 42 ∥ 行数/行宽 ∥ 零外链/零 CJK �
   // 容器态文案单源 + 旧导出面（re-export——沿 runner-admin-console 批件面）
   assert.ok(SOURCES["views-sandbox.mjs"].includes('export { containerStateLabel } from "./views-sandbox-containers.mjs"'), "容器态文案 re-export（单源）")
   assert.ok(SOURCES["views-sandbox.mjs"].includes('from "./views-sandbox-containers.mjs"') && SOURCES["views-sandbox.mjs"].includes('from "./views-sandbox-images.mjs"'), "两区件接线")
-  // AC-19 canon 不破（零新 `:root` 变量 ∥ 零新悬停规则）
+  // AC-19 canon 不破（`:root` 58〔2026-10-12 走查实修④ +8〕 ∥ 零新悬停规则）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 50, ":root 50（2026-10-11 走查轮后基线）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 门禁链：本批两件入链（档目/计数断言件 = 父侧随正件——本件不代断言其档面）
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []

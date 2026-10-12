@@ -725,16 +725,16 @@ test("⑪ 服务模型页配额列三态（值 ∥「不限」 ∥ 嵌入「—�
 
 // ── ⑫ 静态面（§6 AC-23 续——档目 ∥ 行宽 ∥ AC-19 canon）───────────────────────────────
 
-test("⑫ 静态面：档目 43 ∥ 42 ∥ 十四档行宽 ≤300 ∥ `:root` 50 ∥ 悬停清单八条（AC-19 canon 不破）", () => {
+test("⑫ 静态面：档目 43 ∥ 42 ∥ 十四档行宽 ≤300 ∥ `:root` 58 ∥ 悬停清单八条（AC-19 canon 不破）", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
   for (const file of ["views-admin.mjs", "views-models.mjs", "views-audit.mjs", "i18n.mjs", ...readdirSync(PUBLIC_DIR).filter((name) => /^i18n-(zh|en)/.test(name)).sort()]) {
     for (const line of readPublic(file).split("\n")) assert.ok(line.length <= 300, `${file} 行宽越界：${line.slice(0, 60)}…`)
   }
-  // AC-19 canon（style.css 本批零触）：`:root` 变量族 38 ∥ 悬停清单七条
+  // AC-19 canon（style.css 历批随正）：`:root` 变量族 58 ∥ 悬停清单八条（2026-10-11 走查轮后基线 ∥ 2026-10-12 走查实修④ +8）
   const css = readPublic("style.css").replace(/\/\*[\s\S]*?\*\//g, "")
   const rootVars = (css.match(/:root\s*\{[^{}]*\}/)?.[0] ?? "").match(/--[\w-]+\s*:/g) ?? []
-  assert.equal(rootVars.length, 50, `:root 变量族计数：${rootVars.length}`)
+  assert.equal(rootVars.length, 58, `:root 变量族计数：${rootVars.length}`)
   const hover = [...css.matchAll(/([^{}]*:hover[^{}]*)\{/g)].map((match) => match[1].trim().replace(/\s+/g, " ")).sort()
   assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"].sort(), "悬停声明清单（八条——2026-10-11 走查轮后基线）")
 })

@@ -16,7 +16,7 @@ import { providerAliasIndex } from "../gateway/providers.mjs"
 export const USAGE_SUMMARY_DAYS = 30 // 报表缺省时段（近 30 天——含今日；from 缺省 = 今日起回溯 30 个本地日）
 export const KEY_USAGE_WINDOW_DAYS = 30 // key 窗口用量（近 30 个本地日——今日起回溯；`keyUsageStats`）
 
-/** 读面别名索引（KD-SV-59）：显式传入 ⇒ 用传入（调用方复用 ∥ 批内件替身）；缺省 ⇒ 读库构建（库单源）。 */
+/** 读面别名索引（KD-SV-59）：显式传入 ⇒ 用传入（调用方复用 ∥ 单元测试档替身）；缺省 ⇒ 读库构建（库单源）。 */
 export function resolveAliases(db, aliases = null) {
   return aliases ?? providerAliasIndex(db)
 }

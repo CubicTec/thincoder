@@ -20,7 +20,7 @@
  * ∥ `sectionBody`，零第二实现；宿主 = `renderer/settings-modal.mjs`；决策单源 = `docs/desktop/design/SETTINGS.md` §1 **KD-68**）。
  * **三端对齐批增（2026-10-07 · 台账 #1027–#1028 · KD-75 ①②）**：`ADD_MODAL_GROUP`（`providerAdd`——弹窗面第八值，
  * 名单源于此，`SCOPES` ∥ `MODAL_READS` ∥ 开径出口三面同领）+ `settingsModalTree` 添加支：标题词
- * `settings.addProviderTitle`、体 = 失败串（scope = `providers` ∥ `panel`）+ 段态词（= `providers` 面态，第二闸在途判据面）
+ * `settings.addProviderTitle`、体 = 失败串（scope = `providers` ∥ `panel`）+ 段态词（= `providers` 面态，第二闸在途判据）
  * + 单表（`providerAddBody`——段名 ∥ 段标题不复述）；卡携 `data-initial-focus="field"`（初始焦点 = 首控件，宿主取用）。
  * 渠道段体（`providers`）同批：两形常显表单退场 ⇒ 段尾添加钮（`settings:addProvider`）。
  * **添加入口弹窗统一批增（2026-10-07 · 台账 #1054 · KD-77 ①②）**：`MCP_FORM_MODAL_GROUP`（`mcpForm`——MCP 表单
@@ -148,7 +148,7 @@ function guardFlagOf(state) {
 }
 
 /** advisor 推理档**归属模型**（S11 收正 · 顾问评审 🟡2——写面 ∕ 候选面同源同序；对位核 `resolveAdvisorProvider`
- *  `thincoder-core/advisor/run.mjs:26-56`「cfg.model > 父解析模型单档」——**2026-10-09 清除批**：原「渠道 model」腿
+ *  `thincoder-core/advisor/run.mjs:26-56`「cfg.model > 父解析模型单档」——**2026-10-09 清除批**：原「渠道 model」分支
  *  随渠道单值模型退场）：`advisor.model` ⇒ 该值；再缺 ⇒ 主模型段（`defaultModel`）；无 ⇒ `null`。 */
 function advisorTargetOf(settings) {
   const advisor = settings.models?.advisor ?? {}
@@ -383,7 +383,7 @@ export function settingsTree(model, handlers = {}) {
  *  体 = 失败串（`notice.scope` = 本组 ∨ `panel`——他组隐）+ 段态词 + 段体，段标题不复述〕；复用档内私有三件
  *  （`noticeNode` ∥ `sectionStateNode` ∥ `sectionBody`）⇒ 零第二实现；三关 handler 全在树面（背板 ∥ ✕ ∥ 卡内 Esc
  *  〔`stopPropagation` —— 不连带触 F-Esc 关页〕）；表外组 ⇒ `null`（防御档——调用面已验 `SCOPES`）。
- *  体节点携 `data-state` = 组段态（装配面第二闸在途判据面 —— 与页侧 `[data-state="loading"]` 同形）。
+ *  体节点携 `data-state` = 组段态（装配面第二闸在途判据 —— 与页侧 `[data-state="loading"]` 同形）。
  *  **表单支三组（KD-75 ①② ∥ KD-77 ①②）**：`providerAdd` ∥ `mcpForm` ∥ `consultAdd` ⇒ 标题词键直取（非段名）；
  *  段态 ∥ 失败串 scope 落同段域（`providers` ∥ `mcp` ∥ `models`）；卡携 `data-initial-focus="field"`（初始焦点 =
  *  表单首控件——宿主 `settings-modal.mjs` 取用；他组缺省 ✕，KD-68 ⑥ 零动）；`mcpForm` 标题逐态（`form.editing` 判

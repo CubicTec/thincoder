@@ -138,7 +138,7 @@ ACP 官方 SDK 是 npm 依赖——违反零依赖哲学，故自写精简层。
 
 | 模块（新档名——无扩展名形态，见下注） | 装什么 | 关键缝 |
 |---|---|---|
-| `src/acp`（入口） | 常量（`VERSION` / `ACP_EXCLUDED_TOOLS`）· 注入默认（`defaultIsConfigured` / `defaultProviderStatus`）· `defaultCreateSession` · **`buildAcpHandlers` 装配**（合并五族）· `runAcpServer` | `buildAcpHandlers(deps)` 签名不变；返回 `{ handlers, sessions, notifyRef, requestRef, watcher }`（唯一外部契约——`watcher` = 变更观察器出参，`runAcpServer` 启动；既有测档直驱它） |
+| `src/acp`（入口） | 常量（`VERSION` / `ACP_EXCLUDED_TOOLS`）· 注入默认（`defaultIsConfigured` / `defaultProviderStatus`）· `defaultCreateSession` · **`buildAcpHandlers` 装配**（合并五族）· `runAcpServer` | `buildAcpHandlers(deps)` 签名不变；返回 `{ handlers, sessions, notifyRef, requestRef, watcher }`（唯一外部契约——`watcher` = 变更观察器出参，`runAcpServer` 启动；既有单元测试档直驱它） |
 | `acp/client-caps`（新） | 能力快照（§3.4）· 版本协商 · `authMethods` 构造 · `initialize` / `authenticate` handler | 快照 = 服务器级单例，构造期注入 |
 | `acp/handlers-session`（新） | 内存会话族：`session/new` · `prompt` · `cancel` · `close` · `set_mode` · `set_config_option` + `findSession` · `applyConfigOption` + **门助手** | 经 `ctx` 取共享态 |
 | `acp/handlers-slots`（新） | 持久化槽族：`session/list` · `load` · `resume` · `delete` + `slotEngineering` / `reattach`（#41 工程模式判据） | 同上 |
@@ -335,7 +335,7 @@ export function relayPrefixOf(label, id) // → `${label}#${id}/`
 - **另一消费点已自洽（非缺陷——登记为观察项）**：`thincoder-cli/src/tui/subagent-blocks.mjs:46` 的 `SUB_EVENT_RE` 枚举（含 `queued`、**不含** `cancelled`）之外另有 `:172` 显式 `cancelled` 分支 + `:187` `startsWith("⟦ev⟧")` 兜底 ⇒ 无泄漏面，本批**不改**。
 - **嵌套形态顺序不变**：relay 前缀由桥先剥（本节表①「信号检查改在 payload 上」）；前缀后 token 落 payload 首 ⇒ 同一判据命中。
 - **负向边界（防过剥）**：正文含 `⟦ev⟧` 而无 `\x1e` 终止符 ⇒ **仍转发**（判据要求终止符同现）；`[a-z]+` 不吃其它 `⟦…⟧` token 形态。
-- **测试面**：宿主 `thincoder-cli/test/acp-channel.test.mjs`（T9 信号 token 带前缀 → **零可见面文本**（零 `agent_message_chunk`）；结构化增量见 §12）——增 `queued` / `cancelled` 两相 + 无终止符负例（正文含哨兵仍须转发）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
+- **测试覆盖**：宿主 `thincoder-cli/test/acp-channel.test.mjs`（T9 信号 token 带前缀 → **零可见面文本**（零 `agent_message_chunk`）；结构化增量见 §12）——增 `queued` / `cancelled` 两相 + 无终止符负例（正文含哨兵仍须转发）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 - **受影响文件与验收（回指）**：本批受影响文件（当前行数 / 增量）= 批次档 `docs/batches/2026-09-15-core-defect-fixes.md` §四；验收 = 同档 §五 V4（可机器验证）。
 
 ### 7.3 能力缺口：`onToolOutput` 明示缺
@@ -467,7 +467,7 @@ id=63 盘点期「三份参考实现一致」的推断证据，本批**已升级
 
 **改法（四条，最小面）**
 
-1. **认证门 = 凭据状态即时判据**（撤闩锁）：受门 handler 首行 `if (!authenticated)` → `if (!isConfigured())`（沿用同一注入口，测试面零改）。
+1. **认证门 = 凭据状态即时判据**（撤闩锁）：受门 handler 首行 `if (!authenticated)` → `if (!isConfigured())`（沿用同一注入口，测试覆盖零改）。
    ⇒ 凭据在位时 `initialize → session/new → session/prompt` **零交互**全程可走；凭据缺失时仍返 `-32000`（契约允许，且文案可行动——§11.5）。
 2. **`authMethods` 对象化 + 客户端能力门控**（§3.4 快照消费）：
    仅当 `clientCaps.auth?.terminal === true` 时宣告
@@ -610,16 +610,16 @@ load / resume 的 id = **客户端传入原文形态**（同值读回保续；�
 6. **无 TTY 可驱动（可机判）**：① 凭据在位时，**从不调 `authenticate`** 的脚本化 stdio 客户端可完成 `initialize → session/new → session/prompt`；
    ② 非 TTY 下 `thincoder acp --login` **不挂死**（快速退出码非 0 + 可读文案）；③ 支持 `auth.terminal` 的客户端可从 `authMethods` 取到 `args:["--login"]` 的完整启动信息。
 
-### 11.8 实施顺序与回归面
+### 11.8 实施顺序与回归
 
 - **顺序**：① `initialize`（能力快照 + `agentCapabilities` + `authMethods`）→ ② 会话方法响应形状（G2-5/6/7/8）→ ③ 认证门改造 + `acp --login` → ④ fs 门控 → ⑤ 文档面（§11.6）。
   ①② 必须同批落地：任一单独落地都留下**不可用**中间态（G2-5 无 id / G2-6 无 prompt）。
-- **回归面（两档 · 零修改通过；**两档随 2026-09-28 测试树全清重置不在盘**——引文 = 迁移期引文类）**：
+- **回归（两档 · 零修改通过；**两档随 2026-09-28 测试树全清重置不在盘**——引文 = 迁移期引文类）**：
   ① `thincoder-cli/test/acp-channel.test.mjs`（303 行——bridge / 通道用例）：**零修改通过**（本批不动 §7.2 剥离语义与 §5 事件桥）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
   ② `thincoder-cli/test/manifest-flip-refusal.test.mjs`（`:136-184` **直驱** `buildAcpHandlers` 的 `session/load` / `session/resume`——本批改其响应形状者）：**判据 = 形状收敛不破**——该档只断言 `!r.error` / reason 句 / `createSession` 计数，**不作响应键断言**；
   harness 注入 `isConfigured: () => true` ⇒ 认证门改造后仍放行（评审 #8 收正）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
   ③ **拆分（§3.5）不破两档**：接缝 = `buildAcpHandlers(deps)` 签名与返回形状**不变**（handler 由新模块装配）。
-- **机检面**：本批 AC 走 **handler 直调 + 一条脚本化 stdio 冒烟**（不建 G9 的完整端到端网——G9 明说不做）。
+- **机检**：本批 AC 走 **handler 直调 + 一条脚本化 stdio 冒烟**（不建 G9 的完整端到端网——G9 明说不做）。
 
 ### 11.9 边界与登记项
 
@@ -690,7 +690,7 @@ load / resume 的 id = **客户端传入原文形态**（同值读回保续；�
 
 - 生命周期：`queued?` → `async`（异步族）∥ 首个 `turn`（同步族出生可辨）→ `turn`* →（`approval`*）→ `cancelled` ∥ `stopped` ∥ `settled` → `done`。
 - **load 重放不产**本通知（历史面无事件 token——本面 = live-only 信号；与显示面三处同判）。
-- **逐态字段序 = 发射侧单源；投影以样本锁定**：字段序以各发射点既有构造为准（本契约零改发射侧）；批内件 T-862-1…6 逐字钉住「token 字段序 → 输出键」映射（如 `⟦ev⟧turn\x1e3\x1e100\x1ellm\x1e` ⇒ `progress.{turn:3,maxTurns:100}`）。发射侧改字段序 = 契约面变更（回归本节与样本）。
+- **逐态字段序 = 发射侧单源；投影以样本锁定**：字段序以各发射点既有构造为准（本契约零改发射侧）；单元测试档 T-862-1…6 逐字钉住「token 字段序 → 输出键」映射（如 `⟦ev⟧turn\x1e3\x1e100\x1ellm\x1e` ⇒ `progress.{turn:3,maxTurns:100}`）。发射侧改字段序 = 契约面变更（回归本节与样本）。
 
 ### 12.4 前置件：事件文法机读单源（核侧 · 本批定形）
 
@@ -705,8 +705,8 @@ load / resume 的 id = **客户端传入原文形态**（同值读回保续；�
 - **AC-862-1**：每个带前缀的形态事件 token（8 名语料）⇒ 恰一条 `session_info_update`，且 `_meta["thincoder.dev/subagent"]` = 期望对象；**零** `agent_message_chunk`。
 - **AC-862-2**：字段投影逐态正确（turn / approval 轮号对；queued 位次 + 原因文；零字段态 ⇒ 仅 role/id/state；无值键缺席）。
 - **AC-862-3**：负向三条——无终止符 `⟦ev⟧` 文本**仍转发**（零结构化）；文本中段 `⟦ev⟧` 仍转发；无前缀形态事件仅剥离零发射。
-- **AC-862-4**：既有面零回归——`[model]` 剥离、relay 前缀剥离、内容转发语义零改（回归两例 = 批内件 T-862-11/12；§7.2 既有宿主档随 2026-09-28 测试树重置不在盘——§11.8 回归面注）。
-- **AC-862-5**：批内件全绿（先红后绿）+ `node scripts/doc-check.mjs` 复跑 + 语法检查。
+- **AC-862-4**：既有面零回归——`[model]` 剥离、relay 前缀剥离、内容转发语义零改（回归两例 = 单元测试档 T-862-11/12；§7.2 既有宿主档随 2026-09-28 测试树重置不在盘——§11.8 回归注）。
+- **AC-862-5**：单元测试档全绿（先红后绿）+ `node scripts/doc-check.mjs` 复跑 + 语法检查。
 - 用例表 = 批次档 `docs/batches/2026-10-04-acp-face-completion.md` §2（T-862-1…12）。
 
 ### 12.6 边界与登记（本批不做）

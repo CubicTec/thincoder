@@ -92,7 +92,7 @@ verify 的强制面住在完成路径，不住 verify 本体：
 | goal 完成门 | `thincoder-core/agent-tools/goal.mjs:52` | 在位 |
 | 测试 | `thincoder-cli/test/verify-redesign.test.mjs`（T-V1–V8） | 在位 （已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） |
 
-### 6.2 用例面（现行）
+### 6.2 用例（现行）
 
 | 组 | 覆盖 |
 |---|---|

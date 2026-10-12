@@ -3,7 +3,7 @@
  * 内容 = `CODE_EMBED_BATCH` ∥ `codeSearch`（FTS5(BM25) + 向量余弦，RRF 合并；无 embedder ⇒ 纯 FTS，
  * ftsQuery 空且有 embedder ⇒ 纯向量）∥ `ensureCodeEmbeddings`（并发锁 + `_runEnsureCodeEmbeddings`）
  * ∥ `codeSearchTool`——迁出块逐字；原档 `memory/code-sync.mjs` 经 `export { … } from` 转口保名
- * （消费面 / 批内件 import 面零改）。
+ * （消费面 / 单元测试档 import 面零改）。
  */
 import { embed, embedTolerant, cosine, toBlob, fromBlob } from "../embedding.mjs"
 import { scanVectors, createTopK } from "./scan.mjs"

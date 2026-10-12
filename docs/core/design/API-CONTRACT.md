@@ -3467,10 +3467,10 @@
 | `checkAnchors` | `(domain, checkConfig, opts)` | 结果对象（rows ∥ 计数 ∥ 两态） | 只读 | `docs/core/design/DOC-CODE-RECONCILE.md` §3.1 |
 | `checkDocWidths` | `(base, { lineWidth, scanDirs, exclude })` | 超宽行集 | 只读 | `docs/core/design/DOC-CODE-RECONCILE.md` §3.1 |
 
-**节级注记（非符号键面 —— v1）**：以下接口契约节无具名导出可键（CLI 参数表 / 目录与命名面 / 判据面），不入本表：
+**节级注记（非符号键面 —— v1）**：以下接口契约节无具名导出可键（CLI 参数表 / 目录与命名面 / 判据），不入本表：
 
 - `docs/core/design/TESTING.md` §4.3（双端集成面：目录 ∥ 命名 ∥ 入口 ∥ 发布门）· `docs/core/design/MODEL-BENCH.md` §2（CLI 参数表——`bench/run.mjs` 面）；
-- `docs/core/design/DOC-SYSTEM.md` §7（交叉引用形态 R1–R5——判据面）· `docs/core/design/DOC-MIGRATION.md` §10.2（迁移落点规则）；
+- `docs/core/design/DOC-SYSTEM.md` §7（交叉引用形态 R1–R5——判据）· `docs/core/design/DOC-MIGRATION.md` §10.2（迁移落点规则）；
 - `docs/core/design/ARCHITECTURE.md` §4 的族名行（transport 族 / 工具族 / 模块级端面）以代表性导出键入表；入口档（`thincoder-cli/bin/thincoder.mjs`）与端面壳（desktop）无核导出——登记于此。
 
 <!-- END SEMANTIC -->
@@ -3478,5 +3478,5 @@
 ## 变更记录
 
 - 2026-09-29（**tools-carryover 批 · 设计档舱 D · eng-designer**——承 `docs/batches/2026-09-29-tools-carryover.md` §2.3 · 台账 #418）：建档——档头 + 双区标记（生成区 = 生成器唯一笔 ∥ 语义区 = 人工唯一笔）+ 语义区 v1 种子 **75 行**（机制档接口契约节符号面 ∪ `docs/core/design/ARCHITECTURE.md` §4 引用面；未填列显式「未填充——读码」）+ 节级注记 5 处。
-  生成区 = 空（待父侧收口跑 `scripts/api-contract.mjs --write` 填充）。
+  生成区 = 空（待父侧收口时跑 `scripts/api-contract.mjs --write` 填充）。
 - 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · 生成区全量重生成（父裁）· eng-coder #100 · 可 revert**——承 `docs/batches/2026-10-10-vsc-consistency.md`（#1047-4 面）；记录面承档 = `docs/batches/2026-10-10-doc-sync-tail.md`）：生成区数据行 3336 ⇒ **3349**（本批面 = `async-discard` 两行随消 + #1101 六导出；他批面 = 坐标位移 168 ∥ 新增 10 ∥ 删除 1——随落 = 真值归位）；`node scripts/api-contract.mjs --check` = 骨架零漂移（3349 条 · 728 档）；生成区零手工笔（生成器唯一笔）。**零新语义**（派生面真值替换）。

@@ -10,7 +10,7 @@
  * 值渲染 = 文件面（`GET /api/admin/config`——**有效值**（在场值 ∥ 缺省回填）；读档失败 ⇒ 就地错态）；
  * 排版 = 逐项竖排（`.provider-form.stacked`——标题行 + 控件成对；2026-10-09 走查收正：横排折行致标签/输入错位）；
  * 全部可写项统一标「重启生效」（配置文件不热载——`ops/OPS.md` §1 KD-SV-56）。渲染沿 `h`/`textContent`
- * （零拼串）；文案经 `t()` 取值（§2.2）；零 CJK（注释外）。批内件直测面 = `systemConfigSection`（取数注入 + 保存往返）。
+ * （零拼串）；文案经 `t()` 取值（§2.2）；零 CJK（注释外）。单元测试档直测面 = `systemConfigSection`（取数注入 + 保存往返）。
  */
 import { mapError, t } from "./i18n.mjs"
 

@@ -117,7 +117,7 @@ export function createTurnDriver({
    *  + 回合代次面 `turnGate`〔中止墓碑四查位同源 —— U-6 ∕ U-7〕+ 撞帽询问缝 `askContinue`〔R3 · #505〕）。 */
   const { executeTurn } = createTurnFace({
     post, run, bridge, postUsage, flights,
-    // 步边界缝（U-6 第三臂）：中止墓碑同判据查位 —— 陈旧回合零取批（零旧代理消费新会话队 ∕ 迟到投递同族）；
+    // 步边界缝（U-6 第三分支）：中止墓碑同判据查位 —— 陈旧回合零取批（零旧代理消费新会话队 ∕ 迟到投递同族）；
     // 组合 = **窗优先**（挂起窗在飞期窗内提交于步边界可达——#623）⇒ 链（忙态队）同判
     queuedPickup: (key) => (agent) => (turnGate.revoked(key, agent) ? false : suspension.stepBoundaryPickup(key, agent) || chain.stepBoundaryPickup(key, agent)),
     turnGate, // 起跑落代次（stamp）∕ 回合尾落盘前查位（revoked）—— 判据住本档

@@ -1,5 +1,5 @@
 /**
- * proxy-admin.mjs — 代理连通测试面（控制台——仅 admin；gateway/API.md §2.4 ∥ KD-SV-60 · 台账 #1158）：
+ * proxy-admin.mjs — 代理连通测试（控制台——仅 admin；gateway/API.md §2.4 ∥ KD-SV-60 · 台账 #1158）：
  * `POST /api/admin/proxy/test`（**真打**——`webui/WEBUI.md` §2.7 系统页「服务配置」卡内）。
  *
  * body `{ uri, target }`（**双必传**——trim 非空）；`uri` 须 `http:` URL（口径沿 `validateProxyConfig`——`ops/OPS.md` §1
@@ -49,7 +49,7 @@ function releaseBody(response) {
 
 /**
  * 注册代理连通测试端点（§2.4）：`db` = openDatabase 产物。
- * 注入口径（批内件替身）：`fetchImpl`（缺省 = `proxyFetch`——真打同链）∥ `timeoutMs` 走可覆盖参数（缺省 = 生产行为不变）。
+ * 注入口径（单元测试档替身）：`fetchImpl`（缺省 = `proxyFetch`——真打同链）∥ `timeoutMs` 走可覆盖参数（缺省 = 生产行为不变）。
  */
 export function registerProxyAdminRoutes(routes, { db, log = null, fetchImpl = proxyFetch, timeoutMs = PROXY_TEST_TIMEOUT_MS } = {}) {
   if (!db) throw new Error("registerProxyAdminRoutes：缺少 db（装配面须传全）")

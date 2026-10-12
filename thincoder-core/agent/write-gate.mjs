@@ -18,8 +18,8 @@
  *    M6 的 `advisor.mjs` design-review 分类分支消费本导出
  *    （KD-M6-1——同源不重复实现；落 dispatch.mjs 会让 advisor 反向 import 门禁簇成环）。
  * 2. `freezeWindowConflict(agent, absPaths)` —— D5 冻结窗口判据组装：被审文件集 =
- *    声明文档集（`inflightDesignReviewConflict` 同源 docAbs 腿）+ 批次档（`run.batchDoc`
- *    腿——评审绑定批档在途时，写批档同样致 stale）。dispatch.mjs
+ *    声明文档集（`inflightDesignReviewConflict` 同源 docAbs 分支）+ 批次档（`run.batchDoc`
+ *    分支——评审绑定批档在途时，写批档同样致 stale）。dispatch.mjs
  *    只 import 消费，不再各自直连 `advisor-settle.mjs`。
  * 3. `batchRecordWriteConflict(agent, depth, absPaths)` —— 批次档写门判据组装（#309 ·
  *    `AGENT-LOOP-SUBAGENT.md` §6.29.1）：判据与拒绝文案同址（文案字面只出本档）。
@@ -62,9 +62,9 @@ export function resolveReviewTargetPaths(agent) {
 /**
  * D5 冻结窗口判据组装（M4 §2.1#2）：评审在途（点火 → 结算）期间父侧对被审文件集
  * （声明文档集 + 批次档）的写入 → 返回冲突 { id, path }；无冲突 → null。
- * 声明文档集腿 = `inflightDesignReviewConflict`（同 docAbs / 同 normAbs，仅 running
- * 未取消的设计条目）；批次档腿 = 同池条目 `run.batchDoc`（评审绑定批档在途时写批档
- * 同样致 stale——被审文件集合流点）。两腿同形返回，消费端拒绝文案零改。
+ * 声明文档集分支 = `inflightDesignReviewConflict`（同 docAbs / 同 normAbs，仅 running
+ * 未取消的设计条目）；批次档分支 = 同池条目 `run.batchDoc`（评审绑定批档在途时写批档
+ * 同样致 stale——被审文件集合流点）。两分支同形返回，消费端拒绝文案零改。
  * @param {Object} agent
  * @param {string[]} absPaths — 本次写将触碰的路径（ABS——调用方 resolve(agent.cwd, p)）
  * @returns {{id: string, path: string}|null} 命中评审 id + 冲突路径（ABS），无冲突 null

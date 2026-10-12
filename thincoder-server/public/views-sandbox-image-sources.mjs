@@ -8,7 +8,7 @@
  * ∥ 一键拉取（行尾「拉取」钮 ⇒ 节点选单（开窗读一次概览——无节点/全离线 ⇒ 禁用 + 一句人话）⇒ 既有拉取窗（预填
  * `<主机>[:<端口>]/<仓库>:<标签>` + 「目标节点」行；预填可改；携源 ⇒ 窗内「经由源」选单认源态——sandbox-pull-by-source 批）⇒ 既有拉取径——零新端点 ∥ 零新 kind）。
  * 契约 = gateway/API.md §2.5 镜像源七行；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）；零新端点。
- * 批内件直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel` ∥ `pullRefFor`（纯函数）。
+ * 单元测试档直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel` ∥ `pullRefFor`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
@@ -26,7 +26,7 @@ const READ_KIND_KEYS = {
   bad_response: "admin.sandbox.readKindBadResponse",
 }
 
-/** 面型文案（纯函数——批内件直测）。 */
+/** 面型文案（纯函数——单元测试档直测）。 */
 export function sourceKindLabel(kind) {
   return t(SOURCE_KIND_KEYS[kind] ?? SOURCE_KIND_KEYS.v2)
 }
@@ -37,7 +37,7 @@ export function readKindLabel(kind) {
   return key === undefined ? String(kind ?? "—") : t(key)
 }
 
-/** 预填引用（纯函数——批内件直测）：`<主机>[:<端口>]/<仓库>:<标签>`——地址去 scheme ∥ 含端口逐值；
+/** 预填引用（纯函数——单元测试档直测）：`<主机>[:<端口>]/<仓库>:<标签>`——地址去 scheme ∥ 含端口逐值；
  *  Hub 面主机统一 `docker.io` + 裸名补 `library/`（沿读取面惯例）；仓库行（无 `tag`）⇒ `:latest` 显式。
  *  主机/补名两规则 = `views-sandbox-images.mjs` 同名导出（组装 `pullRefWithSource` 复用同源——零第二份值规则）。 */
 export function pullRefFor(source, { repo, tag = null }) {

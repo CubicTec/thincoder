@@ -4,7 +4,7 @@
  * 在用卷 ⇒ 服务端 400 就地在窗内呈——窗不关可重试）∥ 展开懒加载（读败 ⇒ 行内人话——区级失败不掀页）+ 容器动作后随取
  * （页装配层 `reset`——首用即建：新卷随容器动作上表）。契约 = gateway/API.md §2.5 卷族两行；文案经 `t()`（§2.2）；
  * 渲染一律节点 + textContent（零拼串）。
- * 批内件直测面 = `createVolumeSection`（桩 ctx + 假 fetch 路由表）。
+ * 单元测试档直测面 = `createVolumeSection`（桩 ctx + 假 fetch 路由表）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, submitThen } from "./modal.mjs"

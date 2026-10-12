@@ -32,7 +32,7 @@ export function requireApiKey(db, req) {
 /** 注册 OpenAI 三面（G1 注册行制）：`db` = openDatabase 产物 ∥ `config` = 校验后配置。
  *  provider 运行时（装配期引导：种子导入 → 构建）未传 ⇒ 本行引导并返回；provider 管理面接收**同一实例**
  *  （换表两族同见——gateway/API.md §2.2）。`env` = 构建期 `env:` 解析注入面（缺省 process.env）。
- *  `limiter` = 限流器注入口径（缺省 = 进程内 60s 定窗新实例；批内件可注时钟——KD-SV-35）。 */
+ *  `limiter` = 限流器注入口径（缺省 = 进程内 60s 定窗新实例；单元测试档可注时钟——KD-SV-35）。 */
 export function registerGatewayRoutes(routes, { db, config, runtime = null, log = null, env = process.env, limiter = null } = {}) {
   if (!db || !config) throw new Error("registerGatewayRoutes：缺少 db ∥ config（装配面须传全）")
   const providerRuntime = runtime ?? bootstrapProviderRuntime({ db, config, log, env })

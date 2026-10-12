@@ -28,7 +28,7 @@
 - **吊销语义**：立即生效（逐请求查库——KD-SV-11 不变）；幂等（已吊销 ⇒ 200——软删纪律，行保留）；吊销后 key 行离列表（仅列未吊销——KD-SV-16 口径不变；页面行消失 + flash）。
 - **审计**：入既有两型（写作点 = §2.1 表：`key_issue` ∥ `key_revoke`——主体 = 本人）；**型面零增**（批时十型 ⇒ 沙盒批后十二型 ⇒ admin-agent-chat 批后十三型 ⇒ team-projects-permissions 批后十四型——§2.1）。
 - **数据面**：`api_keys.name`（v8 迁移——`store/STORE.md` §2/§3；存量行回填默认名）；`created_at` 既有（本批起随行下发——§3 行形）。
-- **端点**：`POST /api/me/keys/issue` ∥ `POST /api/me/keys/:keyId/revoke`（§3 表）；轮换端点 `POST /api/me/keys/rotate` = **保留**（既有批内件与审计型零动——页面露出面 = `webui/ME.md` §2.1）；其新签行 `name` = 默认名助手（空名入参——请求/响应形零改）。
+- **端点**：`POST /api/me/keys/issue` ∥ `POST /api/me/keys/:keyId/revoke`（§3 表）；轮换端点 `POST /api/me/keys/rotate` = **保留**（既有单元测试档与审计型零动——页面露出面 = `webui/ME.md` §2.1）；其新签行 `name` = 默认名助手（空名入参——请求/响应形零改）。
 - **边界**：不做改名 ∥ 不做 key 级有效期/过期 ∥ 不做删除行（软删纪律）∥ CLI 命名参数（后续如需——在案）。
 
 ## 2. 账号与会话（B 案）
@@ -40,7 +40,7 @@
 - **密码规则**：最小长度 8（建成员 ∥ 改密 ∥ 重置统一校验）；长度不设上界（已审定：无 DoS 面）；改密 = 哈希替换（旧密即失效——无宽限）；登录失败不区分「用户不存在 ∥ 密码错」（措辞与耗时同——不存在用户照跑哑散列，防枚举）。
 - **登录防护（防爆破——首版完备化②）**：双维失败计数（**进程内存**——`thincoder-server/src/accounts/login-guard.mjs`（已落盘））——**用户名维**（提交值——无论是否存在）：连续失败 ≥5 次（窗 15 分钟）⇒ 锁 15 分钟；**IP 维**：失败 ≥20 次（同窗）⇒ 锁同。
 - 锁定期内登录 ⇒ **429 `too_many_attempts`** + `Retry-After`（剩余秒）+ 固定文案（**两维同文案、与用户名存在性无关**——防枚举面保持；不跑散列——快速拒绝）；固定窗（锁期内重试不延长）。
-- 口面 = `check` ∥ `recordFailure` ∥ `recordSuccess` ∥ `clearUsername`（时钟可注入——批内件）。
+- 口面 = `check` ∥ `recordFailure` ∥ `recordSuccess` ∥ `clearUsername`（时钟可注入——单元测试档）。
 - **清计路径**：登录成功（清该用户名 + 该 IP） ∥ 自助改密（清本人用户名维） ∥ admin 重置（清目标用户名维——HTTP 面；本机 CLI 重置跨进程不达——残余 ≤ 锁窗，在案）。
 - **重启 ⇒ 计数清零**（在案口径：在线爆破窗 = 分钟级；重启罕发——接受；离线撞库不在防线内）。
 - **桶过期惰性清理**：读写路径顺扫过期条目（过期桶即删——无独立清扫面；重启清零同拍）。
@@ -134,19 +134,19 @@
 | `thincoder-server/src/accounts/audit.mjs`（已落盘） | **≈90**（设计估——`recordAudit` ∥ `queryAudit`（过滤/分页） ∥ `pruneAuditEvents` ∥ 行解码）**⇒ 实读 109**（2026-10-09——首版完备化批落地后首读）**⇒ 实读 116**（2026-10-12——B2 批设计轮复读收正；原 109 读陈旧）**⇒ ≈118**（team-projects-permissions 批：`project_event` 入 `AUDIT_TYPES` +1 型——≈+2 行含注释） | 审计事件（§2.1） |
 | **小计** | **≈570 ⇒ 493 ⇒ 632 ⇒ ≈785**（#963 实读：+139）**⇒ ≈822**（配额批：+≈37 = members +≈24 ∥ keys +≈7 ∥ routes +≈6）**⇒ ≈872 ⇒ 实读 897（2026-10-07——配额 v2 批落地后；Δ+75 = members +49 ∥ keys +7 ∥ routes +5 ∥ routes-admin +14——越估 ≈25）⇒ ≈953（me-keys 批：+≈56 = keys +22 ∥ routes +34 ∥ members/routes-admin ±0——实施实读为准）** | —— |
 
-## 5. 验收判据（机检面）
+## 5. 验收判据（机检）
 
 | 需求 AC | 设计级判据 | 载体 |
 |---|---|---|
-| AC-1（功能点 1） | 无 Authorization ∥ 未知 key ∥ 吊销 key ⇒ **401 + `invalid_api_key`**；持有效团队 key 经 mock 上游完成一次请求 ⇒ 200 | 批内件 |
-| AC-5（功能点 5） | 吊销后**下一次请求** ⇒ 401（无缓存路径——查库即判） | 批内件 |
-| AC-7（功能点 7——B 案） | ① 正确凭据登录 ⇒ 200 + 会话 cookie；错凭据（含不存在用户）⇒ 401 `invalid_credentials`（同措辞）② 无/过期会话访问 `/api/me` ∥ `/api/usage` ⇒ 401 `unauthorized` ③ `user` 会话调管理写（建成员 ∥ 配额（分模型覆盖） ∥ 吊销 ∥ 重置）⇒ 403 `forbidden`（服务端判）④ 自助改密 ⇒ 旧密登录失败 + 新密登录成功 + 本人其他会话失效（当前保留）⑤ admin 重置 ⇒ 旧密失效 + 临时密码可登（一次性回显——同签发语义）⑥ 自助轮换 ⇒ 新 key 通行 + 旧 key 下一请求 401 ⑦ 首启引导幂等（零 admin + 配置 ⇒ 建；再启动 ⇒ 不重建不改密——机制 = `ops/OPS.md` §2） | 批内件 |
-| AC-13②（功能点 12——登录防爆破；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 5 连败（同用户名）⇒ 第 6 次（含正确密码）⇒ 429 `too_many_attempts` + `Retry-After`（秒）；锁窗过后 ⇒ 正确密码 200；成功 ⇒ 清计；IP 维 20 阈值（`trustProxy` 下取 `X-Real-IP`）；不存在用户名同锁（枚举零差——措辞/计时面）；admin 重置 ⇒ 该用户名锁清（旧密 401、临时密码 200）；锁触发日志 `login_throttled` 在册 | 批内件 |
-| AC-15④（功能点 15——审计/安全面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 事件落库（逐写入点实走 ⇒ 各型行在场：登录成/败/锁 ∥ 轮换/签发/吊销 ∥ 改密/重置 ∥ 建成员——含 CLI 面 `actor=cli`）∥ 列表过滤（类型 ∥ 成员 ∥ 时段逐轴生效）∥ 失败登录可见（N 连败 ⇒ `login_failure` 行 + 第 5 次起 `login_locked` 行）∥ 判权三态（user ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）∥ 保留清理（注入时钟 ⇒ 窗外删——同窗接线） | 批内件 |
-| AC-23（功能点 23③——成员模型禁用写/读面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 写面：`POST /api/members/:id/model-disables` 键级合并（`true` = 禁用 ∥ `null` = 删键 ∥ 未出现键不动）∥ 键形非法（空 ∥ 首尾空白 ∥ 含斜杠时空段）⇒ 400（裸名 = 别名形合法——2026-10-09 alias 批）∥ 值非 `true`/`null` ⇒ 400（库零变）∥ 不存在 ⇒ 404 ∥ 返回 `{id, modelDisables}` ∥ 判权三态（user ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）；读面：`memberView` 新字段 `modelUsage`（当月逐模型已用——键 = 外标）∥ `modelDisables`——`/api/me` ∥ `/api/members` 同形；变更不入审计（十四型零增）；覆盖键形校验同拍（#1001② ∥ #1008——`model-quotas` 首尾空白键 ⇒ 400；裸名 = 别名形合法） | 批内件 |
-| AC-29④（功能点 29——成员面随动：配额/禁用键；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 写面键形 = 对外标识（配别名模型 ⇒ 别名形——裸名合法；首尾空白 ⇒ 400；含斜杠 ⇒ 两段非空）；`memberView` 三 map 键 = 对外标识；别名变更 ⇒ 键面当即随动（旧形键 = 离表键保留、不生效——无历史/迁移）；记账面判据 = `metering/METERING.md` §4 AC-29④ 行；用例 = §7 N35 | 批内件 |
-| AC-25（功能点 25——key 多把并存/命名/自助签发/逐把吊销；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 签发：`POST /api/me/keys/issue`（会话）——`{name?}` ⇒ 200 `{id,name,hint,plain}`（明文一次性；**旧 key 照常可用**——多把并存）；空名 ⇒ 默认 `key-N`（单调——含吊销行）；名 ≤40 字符（trim；超长/非字符串 ⇒ 400 `invalid_request_error`）；重名允许；active ≥20 ⇒ 400（消息明示上限——防滥用；CLI 不设限在案）∥ 吊销：`POST /api/me/keys/:keyId/revoke` ⇒ 200；**他人 key ⇒ 404 `not_found`**（不属本人与不存在不区分——防枚举）；已吊销 ⇒ 幂等 200；吊销即断（下一 `/v1` 请求 401——逐请求查库）∥ 行形：`/api/me` ∥ `/api/members` key 行 += `name`/`createdAt`（单源 = `memberView`；仅未吊销）∥ 审计：两型既有（`key_issue` ∥ `key_revoke`——主体 = 本人；十四型零增）∥ 判权：无会话 ⇒ 401；轮换端点保留（页面不再露出——兼容不变量）∥ 数据面：`api_keys.name`（v8 迁移——存量行回填默认名）∥ **空串零残留断点**（v8 回填后全表实读——全部创建路径经默认名助手；空串仅限迁移前存量） | 批内件 |
-| AC-31（功能点 31——三端登录 token 面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | login ⇒ 200 携 token（`api_keys` 新行：name = 端标签 ∥ key_hash = sha256(token)）；错凭据 ⇒ 401 同措辞；锁定期 ⇒ 429 + `Retry-After`（沿双维锁——§2）；logout ⇒ 吊销即判（下一请求 401——无缓存）；token 兼用 `/v1/*` 与 `/api/client/*`；label ≤40（空 ⇒ 默认名 `key-N`）；签发不受 20 上限；审计两型沿用（十四型零增）；`sessions` 表零涉 | 批内件 |
+| AC-1（功能点 1） | 无 Authorization ∥ 未知 key ∥ 吊销 key ⇒ **401 + `invalid_api_key`**；持有效团队 key 经 mock 上游完成一次请求 ⇒ 200 | 单元测试档 |
+| AC-5（功能点 5） | 吊销后**下一次请求** ⇒ 401（无缓存路径——查库即判） | 单元测试档 |
+| AC-7（功能点 7——B 案） | ① 正确凭据登录 ⇒ 200 + 会话 cookie；错凭据（含不存在用户）⇒ 401 `invalid_credentials`（同措辞）② 无/过期会话访问 `/api/me` ∥ `/api/usage` ⇒ 401 `unauthorized` ③ `user` 会话调管理写（建成员 ∥ 配额（分模型覆盖） ∥ 吊销 ∥ 重置）⇒ 403 `forbidden`（服务端判）④ 自助改密 ⇒ 旧密登录失败 + 新密登录成功 + 本人其他会话失效（当前保留）⑤ admin 重置 ⇒ 旧密失效 + 临时密码可登（一次性回显——同签发语义）⑥ 自助轮换 ⇒ 新 key 通行 + 旧 key 下一请求 401 ⑦ 首启引导幂等（零 admin + 配置 ⇒ 建；再启动 ⇒ 不重建不改密——机制 = `ops/OPS.md` §2） | 单元测试档 |
+| AC-13②（功能点 12——登录防爆破；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 5 连败（同用户名）⇒ 第 6 次（含正确密码）⇒ 429 `too_many_attempts` + `Retry-After`（秒）；锁窗过后 ⇒ 正确密码 200；成功 ⇒ 清计；IP 维 20 阈值（`trustProxy` 下取 `X-Real-IP`）；不存在用户名同锁（枚举零差——措辞/计时面）；admin 重置 ⇒ 该用户名锁清（旧密 401、临时密码 200）；锁触发日志 `login_throttled` 在册 | 单元测试档 |
+| AC-15④（功能点 15——审计/安全面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 事件落库（逐写入点实走 ⇒ 各型行在场：登录成/败/锁 ∥ 轮换/签发/吊销 ∥ 改密/重置 ∥ 建成员——含 CLI 面 `actor=cli`）∥ 列表过滤（类型 ∥ 成员 ∥ 时段逐轴生效）∥ 失败登录可见（N 连败 ⇒ `login_failure` 行 + 第 5 次起 `login_locked` 行）∥ 判权三态（user ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）∥ 保留清理（注入时钟 ⇒ 窗外删——同窗接线） | 单元测试档 |
+| AC-23（功能点 23③——成员模型禁用写/读面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 写面：`POST /api/members/:id/model-disables` 键级合并（`true` = 禁用 ∥ `null` = 删键 ∥ 未出现键不动）∥ 键形非法（空 ∥ 首尾空白 ∥ 含斜杠时空段）⇒ 400（裸名 = 别名形合法——2026-10-09 alias 批）∥ 值非 `true`/`null` ⇒ 400（库零变）∥ 不存在 ⇒ 404 ∥ 返回 `{id, modelDisables}` ∥ 判权三态（user ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）；读面：`memberView` 新字段 `modelUsage`（当月逐模型已用——键 = 外标）∥ `modelDisables`——`/api/me` ∥ `/api/members` 同形；变更不入审计（十四型零增）；覆盖键形校验同拍（#1001② ∥ #1008——`model-quotas` 首尾空白键 ⇒ 400；裸名 = 别名形合法） | 单元测试档 |
+| AC-29④（功能点 29——成员面随动：配额/禁用键；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 写面键形 = 对外标识（配别名模型 ⇒ 别名形——裸名合法；首尾空白 ⇒ 400；含斜杠 ⇒ 两段非空）；`memberView` 三 map 键 = 对外标识；别名变更 ⇒ 键面当即随动（旧形键 = 离表键保留、不生效——无历史/迁移）；记账面判据 = `metering/METERING.md` §4 AC-29④ 行；用例 = §7 N35 | 单元测试档 |
+| AC-25（功能点 25——key 多把并存/命名/自助签发/逐把吊销；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 签发：`POST /api/me/keys/issue`（会话）——`{name?}` ⇒ 200 `{id,name,hint,plain}`（明文一次性；**旧 key 照常可用**——多把并存）；空名 ⇒ 默认 `key-N`（单调——含吊销行）；名 ≤40 字符（trim；超长/非字符串 ⇒ 400 `invalid_request_error`）；重名允许；active ≥20 ⇒ 400（消息明示上限——防滥用；CLI 不设限在案）∥ 吊销：`POST /api/me/keys/:keyId/revoke` ⇒ 200；**他人 key ⇒ 404 `not_found`**（不属本人与不存在不区分——防枚举）；已吊销 ⇒ 幂等 200；吊销即断（下一 `/v1` 请求 401——逐请求查库）∥ 行形：`/api/me` ∥ `/api/members` key 行 += `name`/`createdAt`（单源 = `memberView`；仅未吊销）∥ 审计：两型既有（`key_issue` ∥ `key_revoke`——主体 = 本人；十四型零增）∥ 判权：无会话 ⇒ 401；轮换端点保留（页面不再露出——兼容不变量）∥ 数据面：`api_keys.name`（v8 迁移——存量行回填默认名）∥ **空串零残留断点**（v8 回填后全表实读——全部创建路径经默认名助手；空串仅限迁移前存量） | 单元测试档 |
+| AC-31（功能点 31——三端登录 token 面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | login ⇒ 200 携 token（`api_keys` 新行：name = 端标签 ∥ key_hash = sha256(token)）；错凭据 ⇒ 401 同措辞；锁定期 ⇒ 429 + `Retry-After`（沿双维锁——§2）；logout ⇒ 吊销即判（下一请求 401——无缓存）；token 兼用 `/v1/*` 与 `/api/client/*`；label ≤40（空 ⇒ 默认名 `key-N`）；签发不受 20 上限；审计两型沿用（十四型零增）；`sessions` 表零涉 | 单元测试档 |
 
 ## 6. 关键决策（本域）
 

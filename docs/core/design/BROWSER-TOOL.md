@@ -190,7 +190,7 @@ Error: <action> timed out after <ms>ms (stuck in <步名>) — retry the action,
 
 **队列等待计入预算（有意）**：deadline 自入队即起算（串行队列排队期计入——`timeoutMs` 亦为端到端界）；排队期到点 ⇒ `Error: <action> timed out after <ms>ms (stuck in queue wait)`（动作从未起执行——无展开；可重试）。
 
-**预算表**（`thincoder-core/browser/queue.mjs` 导出常量——机检面）：
+**预算表**（`thincoder-core/browser/queue.mjs` 导出常量——机检）：
 
 | 动作 | 预算 | 说明 |
 |---|---|---|
@@ -205,7 +205,7 @@ Error: <action> timed out after <ms>ms (stuck in <步名>) — retry the action,
 
 - **动作内 CDP 调用**：随动作控制器——`h.call` / `evalRaw` / `h.once` / 轮询 sleep 全数受控；abort 后一切后续调用**快速失败**（清理路径不得再起命令——防僵尸命令与下一动作交错）。
 - **动作外路径显式帽**：`connectCdp` open 10s ∥ `/json/new` fetch 5s ∥ `Page.enable` / `Runtime.enable` / `Network.enable` 各 10s ∥ `Browser.close` 3s ∥ 健康探针 2s ∥ `launchBrowser` 12s（既有）∥ `closeSession` 等待 3s + 杀树兜底。
-- **兜底帽**：`cdp.call` 缺省 15s——任何未显式配帽的调用也不悬挂（机检面）。
+- **兜底帽**：`cdp.call` 缺省 15s——任何未显式配帽的调用也不悬挂（机检）。
 
 **步名（`stuck in`）**：`h.call` 自动记为 CDP 方法名（`Page.navigate` / `Runtime.evaluate` …）；非调用阶段显式标注（`queue wait` / `launch browser` / `connect CDP` / `waitForReady` / `wait poll` / `scroll settle`）。**取消**（§2.11）与超时共用同一控制器——错误句分形（`cancelled` ∥ `timed out`），卡点步名同样入句（N-BT10）。
 
@@ -364,16 +364,16 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 | `thincoder-core/agent-tools/subagent-scheduler.mjs` | 450 | 取号扫描域 +`_browserTasks` |
 | `thincoder-core/tool-docs/browser.md`（prompt 面） | 48 | `async` ∥ 超时 / 外部关闭语义 ∥ 「现实环境实践」段（F-BT19） |
 | `thincoder-core/tool-docs/{wait_for,process}.md`（prompt 面） | 24 ∥ 14 | 条件枚举 ∥ kill 靶面 |
-| `docs/batches/2026-10-07-browser-async-fix.test.mjs`（单测 A 腿 · 新档） | 334 | 机检单测（假传输 ∥ 假子进程事件——零真实浏览器；用例面 = 批档 §2.5） |
-| `docs/batches/2026-10-07-browser-async-fix.b.test.mjs`（单测 B 腿 · 新档） | 386 | B 腿（agent 集成 ∥ 异步通道 ∥ kill / 收尾面——夹具同 A 腿） |
+| `docs/batches/2026-10-07-browser-async-fix.test.mjs`（单元测试 A 组 · 新档） | 334 | 机检单元测试（假传输 ∥ 假子进程事件——零真实浏览器；用例 = 批档 §2.5） |
+| `docs/batches/2026-10-07-browser-async-fix.b.test.mjs`（单元测试 B 组 · 新档） | 386 | B 组（agent 集成 ∥ 异步通道 ∥ kill / 收尾面——夹具同 A 组） |
 | `docs/batches/2026-10-07-browser-async-fix.smoke.mjs`（新档） | 173 | 真 Edge 冒烟 S19–S22（硬超时 ∥ 自愈重开 ∥ 异步 ack+摘要 ∥ kill） |
 | `docs/core/design/TOOLS.md` | 1353 | §6.7 browser 条 +`async` / 预算 / 会话自愈；§6.19 后台任务族 +`browser`（wait_for / kill 路由随动 ∥ +合并错误句——回填轮）；设计轮 3 处行内改；回填轮 1 处；变更记录 2 条 |
-| `docs/core/design/API-CONTRACT.md` | 3345 | 生成区随动——收口跑 `node scripts/api-contract.mjs --write`（新档导出行 + 行号——生成器唯一笔） |
+| `docs/core/design/API-CONTRACT.md` | 3345 | 生成区随动——收口时跑 `node scripts/api-contract.mjs --write`（新档导出行 + 行号——生成器唯一笔） |
 
 **拆分决定（本批——已实施）**：**拆出新档 `thincoder-core/browser/queue.mjs`**（现读 171；`session.mjs` 现读 494）——域界 = 「调度策略（排队 ∥ 预算 ∥ 控制器 ∥ 步名）」∥「会话机制（生命周期 ∥ 页原语 ∥ 安全助手 ∥ 健康）」；旧五档拆分（KD-12）已成事实。
 
 **档位处置（本批有 Δ 者与新档——本批不拆；触发条件 = 下次实质改动时核 ∥ 越 800 即拆）**：`tools/ops.mjs`（346，余 454 行）∥ `helpers.mjs`（490，余 310 行）∥ `suspension.mjs`（351，余 449 行）∥ `async-settle.mjs`（327，余 473 行）∥
-`subagent-scheduler.mjs`（450，余 350 行）∥ `subagent-async.mjs`（477，余 323 行）∥ `session.mjs`（**494——余 306 行；最紧面**）∥ `queue.mjs`（171——新档）∥ `agent-tools/browser-async.mjs`（198——新档）∥ 批内件单测两档（A 334 ∥ B 386；本批不拆）。余量 = 距 800 硬限（实施后实读）。
+`subagent-scheduler.mjs`（450，余 350 行）∥ `subagent-async.mjs`（477，余 323 行）∥ `session.mjs`（**494——余 306 行；最紧面**）∥ `queue.mjs`（171——新档）∥ `agent-tools/browser-async.mjs`（198——新档）∥ 单元测试档两档（A 334 ∥ B 386；本批不拆）。余量 = 距 800 硬限（实施后实读）。
 **域界（本批增行）**：异步桥 = `agent-tools/browser-async.mjs`（拟新增；族名对齐 bash-async / subagent-async / advisor-async——池 ∥ 起跑 ∥ 结算 ∥ 注入 ∥ 杀单点）；入径 = `tools/browser.mjs` ∥ `tools/ops.mjs` **动态 import**（W8 契约②——agent-tools 静态链达 node:sqlite；端壳静态闭包零命中）。
 **依赖单向无环**：`tools/browser.mjs` → `session.mjs` → {`actions` / `input-actions` / `clipboard`} → {`input` / `snapshot` / `cdp`}；`session → queue`；`queue → actions`（wait 帽常量——`thincoder-core/browser/queue.mjs:11`）；`browser-async → session`（入队面）+ agent-tools 族单点——无环。
 **click / type 不拆不迁**（裁决项②——§6 KD-10）。
@@ -393,12 +393,12 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 | KD-7 | 不设 SSRF 私网拦截 | 本机 dev 服务首要用例；agent 已有 bash 网络能力——拦截零增益 | 沿 fetch 拦截（挡用例——localhost walkthrough 直接不可达） |
 | KD-8 | 空闲 15 分钟自动关 + 进程退出杀树 | 长驻宿主（桌面）资源卫生；进程退出兜底不回退 | 仅进程退出（桌面一开整天——浏览器永挂）· 无空闲关（同前） |
 | KD-9 | 描述面英文、约 45 行 | 沿既有 tool-docs 惯例（用户面语言 = 模型面英文）；schema 预算（`scripts/tool-schema-size.mjs` 报告态） | 中文描述（先例零）· 长描述（预算面） |
-| KD-10 | 裁决项②：click / type 内部机制**不迁** Input 域 | 零回归（回执 / 寻址 / 旧用例面逐条）；分工保留且互补：click = DOM 级语义激活（`el.click()`——`isTrusted=false`，遮挡 / `pointer-events` 面仍可激活）∥ mouse = 真指针输入（真命中测试 + 受信事件）；真输入需求由 press / mouse / insert 全覆盖 | 迁移 click（重写旧验收证据；对遮挡 / `pointer-events` 面行为起变——违「对外语义零回归」）· type 迁按键（长文本逐字昂贵、clear 语义丢失） |
+| KD-10 | 裁决项②：click / type 内部机制**不迁** Input 域 | 零回归（回执 / 寻址 / 旧用例逐条）；分工保留且互补：click = DOM 级语义激活（`el.click()`——`isTrusted=false`，遮挡 / `pointer-events` 面仍可激活）∥ mouse = 真指针输入（真命中测试 + 受信事件）；真输入需求由 press / mouse / insert 全覆盖 | 迁移 click（重写旧验收证据；对遮挡 / `pointer-events` 面行为起变——违「对外语义零回归」）· type 迁按键（长文本逐字昂贵、clear 语义丢失） |
 | KD-11 | 裁决项①：门面逐动作分类 = §3.1 表（press ∥ mouse ∥ drag ∥ touch 点按 ∥ clipboard 全量过门；hover ∥ wheel ∥ insert ∥ touch 手势免审） | 判据沿 F-BT7（不可逆 / 提交类）逐动作推得；同一 `isReadonlyAction` 钩子按参数分类——机制零新增（需求 §4） | 全量过门（审批疲劳——门失意义）· 全量免审（违 F-BT7） |
 | KD-12 | `session.mjs` 拆分（五档——§5） | 拆后五档合计 ≈1,110 行（net ≈+674）——不拆单档破 800 硬限；域界按「动作实施 ∥ 输入引擎 ∥ 会话机制 ∥ 剪贴板」切 | 不拆（破 800 硬限）· 只拆输入引擎（余 ≈600） |
 | KD-13 | 剪贴板路径 = 页面 API（`navigator.clipboard`）+ Browser 域授权（§3.5） | CDP 无剪贴板直控方法（官方议题未决——实读）；`setPermission` 现代形 + `grantPermissions` 回落护版本漂移 | 等 CDP 直控（无期）· OS 级外部命令（越工具面 / 跨端不一致） |
-| KD-14 | 触屏分工：tap / doubleTap / swipe 走 `dispatchTouchEvent` 显式序列；pinch 走 `synthesizePinchGesture` | 实测（本机 Edge）：`synthesizeTapGesture` 不产 click（事件面仅 pointerdown / touchstart / touchend——无头 ∥ 有头同、加 touchEmulation 亦同）；显式 touchStart + touchEnd ⇒ 全链 mousedown / mouseup / click（`isTrusted`）；doubleTap = 两条序列、间隔 60ms（同一双击窗内）⇒ click:2 + dblclick:2（计数由浏览器管）；pinch 走 `synthesizePinchGesture` 实测有效（scale 1 → 2.0000005——保持）；swipe 需手指路径语义（from → to）——显式序列直配契约且可单测（兜底：若冒烟证 swipe 不驱卷动 ⇒ 改 `synthesizeScrollGesture`——距离语义换算） | 全 synthesize（tap / doubleTap 不产 click（实测）；swipe 语义错位）· 全 dispatchTouchEvent（pinch 亦显式——多点插值 / 时序自管；synthesize 族实测有效） |
-| KD-15 | 几何渲染口径 = 数据全员携、回执仅 `[outside]` 标记 | 在屏行零几何后缀 ⇒ 旧行文法与旧用例（`$` 锚断言）零回归；`[outside]` = F-BT14「视口外标记」落面 | 每行携坐标（旧验收面破） |
+| KD-14 | 触屏分工：tap / doubleTap / swipe 走 `dispatchTouchEvent` 显式序列；pinch 走 `synthesizePinchGesture` | 实测（本机 Edge）：`synthesizeTapGesture` 不产 click（事件面仅 pointerdown / touchstart / touchend——无头 ∥ 有头同、加 touchEmulation 亦同）；显式 touchStart + touchEnd ⇒ 全链 mousedown / mouseup / click（`isTrusted`）；doubleTap = 两条序列、间隔 60ms（同一双击窗内）⇒ click:2 + dblclick:2（计数由浏览器管）；pinch 走 `synthesizePinchGesture` 实测有效（scale 1 → 2.0000005——保持）；swipe 需手指路径语义（from → to）——显式序列直配契约且可做单元测试（兜底：若冒烟证 swipe 不驱卷动 ⇒ 改 `synthesizeScrollGesture`——距离语义换算） | 全 synthesize（tap / doubleTap 不产 click（实测）；swipe 语义错位）· 全 dispatchTouchEvent（pinch 亦显式——多点插值 / 时序自管；synthesize 族实测有效） |
+| KD-15 | 几何渲染口径 = 数据全员携、回执仅 `[outside]` 标记 | 在屏行零几何后缀 ⇒ 旧行文法与旧用例（`$` 锚断言）零回归；`[outside]` = F-BT14「视口外标记」落面 | 每行携坐标（旧验收破） |
 | KD-16 | drag 默认 = 鼠标序列；`html5:true` = `setInterceptDrags` → `dragIntercepted` → `dispatchDragEvent` 三连（实验） | F-BT11「可选支」定为纳入（最大化令；CDP 提供完整路径——实读方法面）；原生 DnD（draggable / dragstart 族）须拦截面方可驱 | 不做 html5 支（原生 DnD 页面不可驱——F-BT11 半覆盖） |
 | KD-17 | IME = 组合 `imeSetComposition`（候选）+ 提交 `insertText`（终文） | 协议注记引的 `imeCommitComposition` **不在协议方法集**（实读）；`insertText` 语义 = 模拟 IME / 表情键盘插入——即提交路径 | 只 insertText（无组合面——F-BT13 半覆盖） |
 | KD-18 | 超时 = **单时钟动作预算**（§2.9 表）+ 三层帽；超时 = 显式失败回执（携卡点步名） | 组合动作（导航 = 命令 + 轮询 + 快照）逐命令帽拼不出总界；单时钟可解释 / 可机检 / 错误句能指名卡点；外部关窗实录（无界悬挂）的直接修复 | 仅 CDP 命令级帽（轮询循环无帽——帽失效）· 仅外层 race 不 abort（僵尸命令穿插下一动作）· 不设帽（现状） |
@@ -409,110 +409,110 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 | KD-23 | 取消 = queued 丢队 ∥ running abort；**不杀浏览器**（重置经 `close`） | 保持「杀 ⟺ 控制器已中止」不变式；浏览器重置是独立动作、且 `close` 自身有界 | 取消即杀浏览器（误伤 ∥ 缓不济急） |
 | KD-24 | 全 16 动作统一可异步；审批门在起跑调用处照常 | 零二次分类（门面已有一张分类表——不再叠）；异步 ≠ 免审 | 白名单异步（多一套分类面 ∥ 边界噪音） |
 
-## 7. 验收标准回指（F-BT1–19 / N-BT1–10 → 设计条目 → 用例面）
+## 7. 验收标准回指（F-BT1–19 / N-BT1–10 → 设计条目 → 用例）
 
-| 需求 | 设计落点 | 机验判据（用例面） |
+| 需求 | 设计落点 | 机验判据（用例） |
 |---|---|---|
 | **F-BT1** 自启（无接管） | §1 方案 ∥ §2.4 开启序 | 冒烟 S1：零预置条件下自启成功；回执/进程参数断言 `--user-data-dir` 非默认、端口非 9222 固定；**不 import/不连**任何用户实例（代码面无连接分支） |
-| **F-BT2** 无头∥有头 | §2.4 | 单测 T7（异值报错句 + close→异值重开正例——U23）；冒烟 S1（headless）∥ S7（有头——仅本地跑，CI 面可跳：`headless:false` 需显示环境） |
-| **F-BT3** 动作面 | §2.1 ∥ §2.2 | 单测 T1（schema 动作枚举 + 参数字典）+ T2（逐动作回执文法）；冒烟 S1：navigate 内联新页清单 ∥ S6：screenshot 真落盘（路径在盘 · PNG 头 · >0 字节） |
-| **F-BT4** 引用步进 | §2.3 | 单测 T3（生成/复用/[new]/disabled/stale/上限）；冒烟 S2（snapshot→type→click 按 ref 走通） |
-| **F-BT5** 等待与稳定 | §2.2 wait ∥ 失败回执 | 单测 T4（四谓词 + 超时 + 失败回执含页摘清单）；冒烟 S3（wait selector 命中）、S4（wait 超时回执） |
-| **F-BT6** 登录态持久 | §4 profile | 单测 T8（profile 路径稳定性）；冒烟 S5：同 profile 两次会话——本地服务 Set-Cookie ⇒ 二段会话免登（读回 cookie 或标记页） |
-| **F-BT7** 写操作闸 | §3.1 | 单测 T5（`isReadonlyAction` 分类表逐动作——基线八动作）+ T6（拒绝回执句「permission denied」）；读盘断言 `formatPermission` browser 分支在档；扩展表 = T25（N-BT7 行） |
-| **F-BT8** 四端注册 | §2.6 | 单测 T9（`builtinTools` 含 browser；VSC 清单源码含列项）；单测 T10（无浏览器错误句——`BROWSER_PATH` 置空 + 发现表打桩） |
-| **N-BT1** 零第三方 | §1 | 单测 T11：`browser.mjs` + `browser/*.mjs` import 面扫描 = 仅 `node:*` + 仓内相对路径 |
-| **N-BT2** 不可信数据 | §3.3 | 单测 T12：回执 source 标注（`[page]` / `[evaluate @`）；描述档含 untrusted-data 句（对表 grep） |
-| **N-BT3** 规模上限 | §2.3 ∥ §2.2 | 单测 T13：101 元素 ⇒ 截断标记；8001 字符 evaluate 值 ⇒ 截断标记 |
-| **N-BT4** 隔离与凭据 | §3.4 | 单测 T14：password 目标 type 回执含 `(hidden)` 且无明文；清单不含 password `[value=]` |
-| **N-BT5** 平台面 | §4 | 单测 T15：三平台候选表 + `BROWSER_PATH` 覆盖 + 找不到错误句（`resolveBrowser` 打桩——零真实文件系统依赖） |
-| **N-BT6** 可测试 | §5 ∥ 本表用例面 | 批内件两档：单测（假传输——`WebSocketImpl`/`_deps` 注入缝）＋ 冒烟（真 Edge/Chrome 无头）；**缝纪律** = 缝默认回落真实现（`??` 缺省）、用例 `finally` 还原、冒烟面零依赖缝；先红后绿读数入批档 §5 |
-| **F-BT9** 键盘真输入 | §2.2 press ∥ §2.7 聚焦 ∥ §2.8 键面 | 单测 T17（键序列：命名键 / 可打印字符 / 修饰组合 / down-up 分离 / repeat / 聚焦失败）∥ T16（schema 面）；冒烟 S8：真按键驱表单（Enter 提交）成功 + 页面侧 `isTrusted === true` 读回 |
-| **F-BT10** 指针真输入 | §2.2 hover/wheel/mouse ∥ §2.7 坐标解析 | 单测 T18（鼠标序列逐形 + wheel 参）∥ T19（坐标 / 几何）；冒烟 S9（hover 驱出菜单）· S10（滚轮位移读数 = window 读数为卷动后值）· S11（坐标点击 / 双击） |
-| **F-BT11** 拖拽 | §2.2 drag ∥ §6 KD-16 | 单测 T20（序列 = 按下→移动×N→抬起 + steps + html5 拦截链）；冒烟 S12（拖拽结果断言）· S12b（html5 分支——dragIntercepted 链） |
-| **F-BT12** 触屏 | §2.2 touch ∥ §6 KD-14 | 单测 T21（tap / doubleTap / swipe 显式序列 + pinch 调用形）；冒烟 S13（tap/doubleTap 驱 click）· S13b（pinch）· S13c（swipe） |
-| **F-BT13** 文本 / IME | §2.2 insert ∥ §6 KD-17 | 单测 T22（insertText ∥ 组合+提交两形）；冒烟 S14（长文本 + emoji 真落值；组合中间态可见） |
-| **F-BT14** 输入基建 | §2.3 几何 ∥ §2.7 | 单测 T19（geo / inViewport / `[outside]` / point / focus 表达式）；冒烟 S17（屏外 ref 自动滚动后驱动成立） |
-| **F-BT15** 剪贴板 | §3.5 ∥ §2.2 clipboard | 单测 T23（四操作调用形 + 授权序列）∥ T24（隐私：全量过门 / 上限 / 零落盘）；冒烟 S15（工具写 ⇒ 系统读回 ∥ 系统写 ⇒ 工具读回——PowerShell 对照）· S16（copy ⇒ 系统读回 ∥ paste ⇒ 字段值）· S15a（无头：页↔页保真——父侧裁示②增格） |
-| **N-BT7** 写面门覆盖 | §3.1 扩展表 ∥ §2.1 | 单测 T25（逐动作分类断言——全表 + 旧八动作分类零变） |
-| **N-BT8** 兼容与不回归 | §5 ∥ §7 本表 | 旧单测 21/21 全绿（**唯一随动 = T1 枚举 8⇒16**）∥ 旧冒烟 S1–S7 全绿；新动作逐条配用例（T16+ / S8+）∥ **S18**（有头抽样复跑——`press` + `clipboard` 两动作；仅本地跑、CI 面可跳，沿 S7 先例）= 「无头∥有头双支持」覆盖格（U51） |
-| **N-BT9** 剪贴板隐私面 | §3.5 ∥ §3.1 | 单测 T24（全量过门 + read 上限截断 + 无落盘路径）∥ T23（write 回执不回显） |
-| **F-BT16** 动作硬超时 | §2.9 ∥ §5 `thincoder-core/browser/queue.mjs` | 单测 T27–T30 · T27b（本批新档——挂死型假传输 ⇒ 逐动作拒绝于预算内 ∥ 开启段中止 ⇒ 干净重开 ∥ `ACTION_BUDGETS` 覆盖全动作 ∥ 命令缺省帽 ∥ 卡点步名）；冒烟 S19（永不响应服务） |
-| **F-BT17** 外部关闭可感知与自愈 | §2.10 ∥ §2.4 | 单测 T31–T33 · T44（本批新档——假 WS close ∥ 假 child exit ⇒ 在飞即时拒（下一事件循环内——非墙钟界）+ 态复位 + 重开计数 + 注记；探针三检；外部关闭遇排队条目不呆等）；冒烟 S20；走查 W1（真关窗——用户复核） |
-| **F-BT18** 异步通道 | §2.11 ∥ §2.5 | 单测 T34–T39（本批新档——ack ∥ 池 ∥ 结算 ∥ 摘要文法 ∥ kill 两态（即时展开——非墙钟界）∥ 帽 ∥ depth 门）；冒烟 S21 / S22 |
-| **F-BT19** 用法认知（描述面） | §2.11 ∥ `tool-docs/browser.md`（F-BT19 段） | 单测 T42（本批新档——描述档四小节存在；文本面 grep，落笔后生效） |
-| **N-BT10** 挂起可诊断 | §2.9 步名 ∥ §2.11 摘要面 | 单测 T30（本批新档——错误句携步名）∥ T38–T40 ∥ T43（终态墓碑 / 摘要必达；Stop 收尾——墓碑 `discarded` ∥ 出池 ∥ 整批提醒 ∥ 竞态窗兜底停靠） |
+| **F-BT2** 无头∥有头 | §2.4 | 单元测试 T7（异值报错句 + close→异值重开正例——U23）；冒烟 S1（headless）∥ S7（有头——仅本地跑，CI 面可跳：`headless:false` 需显示环境） |
+| **F-BT3** 动作面 | §2.1 ∥ §2.2 | 单元测试 T1（schema 动作枚举 + 参数字典）+ T2（逐动作回执文法）；冒烟 S1：navigate 内联新页清单 ∥ S6：screenshot 真落盘（路径在盘 · PNG 头 · >0 字节） |
+| **F-BT4** 引用步进 | §2.3 | 单元测试 T3（生成/复用/[new]/disabled/stale/上限）；冒烟 S2（snapshot→type→click 按 ref 走通） |
+| **F-BT5** 等待与稳定 | §2.2 wait ∥ 失败回执 | 单元测试 T4（四谓词 + 超时 + 失败回执含页摘清单）；冒烟 S3（wait selector 命中）、S4（wait 超时回执） |
+| **F-BT6** 登录态持久 | §4 profile | 单元测试 T8（profile 路径稳定性）；冒烟 S5：同 profile 两次会话——本地服务 Set-Cookie ⇒ 二段会话免登（读回 cookie 或标记页） |
+| **F-BT7** 写操作闸 | §3.1 | 单元测试 T5（`isReadonlyAction` 分类表逐动作——基线八动作）+ T6（拒绝回执句「permission denied」）；读盘断言 `formatPermission` browser 分支在档；扩展表 = T25（N-BT7 行） |
+| **F-BT8** 四端注册 | §2.6 | 单元测试 T9（`builtinTools` 含 browser；VSC 清单源码含列项）；单元测试 T10（无浏览器错误句——`BROWSER_PATH` 置空 + 发现表打桩） |
+| **N-BT1** 零第三方 | §1 | 单元测试 T11：`browser.mjs` + `browser/*.mjs` import 面扫描 = 仅 `node:*` + 仓内相对路径 |
+| **N-BT2** 不可信数据 | §3.3 | 单元测试 T12：回执 source 标注（`[page]` / `[evaluate @`）；描述档含 untrusted-data 句（对表 grep） |
+| **N-BT3** 规模上限 | §2.3 ∥ §2.2 | 单元测试 T13：101 元素 ⇒ 截断标记；8001 字符 evaluate 值 ⇒ 截断标记 |
+| **N-BT4** 隔离与凭据 | §3.4 | 单元测试 T14：password 目标 type 回执含 `(hidden)` 且无明文；清单不含 password `[value=]` |
+| **N-BT5** 平台面 | §4 | 单元测试 T15：三平台候选表 + `BROWSER_PATH` 覆盖 + 找不到错误句（`resolveBrowser` 打桩——零真实文件系统依赖） |
+| **N-BT6** 可测试 | §5 ∥ 本表用例 | 单元测试档两档：单元测试（假传输——`WebSocketImpl`/`_deps` 注入缝）＋ 冒烟（真 Edge/Chrome 无头）；**缝纪律** = 缝默认回落真实现（`??` 缺省）、用例 `finally` 还原、冒烟测试零依赖缝；先红后绿读数入批档 §5 |
+| **F-BT9** 键盘真输入 | §2.2 press ∥ §2.7 聚焦 ∥ §2.8 键面 | 单元测试 T17（键序列：命名键 / 可打印字符 / 修饰组合 / down-up 分离 / repeat / 聚焦失败）∥ T16（schema 面）；冒烟 S8：真按键驱表单（Enter 提交）成功 + 页面侧 `isTrusted === true` 读回 |
+| **F-BT10** 指针真输入 | §2.2 hover/wheel/mouse ∥ §2.7 坐标解析 | 单元测试 T18（鼠标序列逐形 + wheel 参）∥ T19（坐标 / 几何）；冒烟 S9（hover 驱出菜单）· S10（滚轮位移读数 = window 读数为卷动后值）· S11（坐标点击 / 双击） |
+| **F-BT11** 拖拽 | §2.2 drag ∥ §6 KD-16 | 单元测试 T20（序列 = 按下→移动×N→抬起 + steps + html5 拦截链）；冒烟 S12（拖拽结果断言）· S12b（html5 分支——dragIntercepted 链） |
+| **F-BT12** 触屏 | §2.2 touch ∥ §6 KD-14 | 单元测试 T21（tap / doubleTap / swipe 显式序列 + pinch 调用形）；冒烟 S13（tap/doubleTap 驱 click）· S13b（pinch）· S13c（swipe） |
+| **F-BT13** 文本 / IME | §2.2 insert ∥ §6 KD-17 | 单元测试 T22（insertText ∥ 组合+提交两形）；冒烟 S14（长文本 + emoji 真落值；组合中间态可见） |
+| **F-BT14** 输入基建 | §2.3 几何 ∥ §2.7 | 单元测试 T19（geo / inViewport / `[outside]` / point / focus 表达式）；冒烟 S17（屏外 ref 自动滚动后驱动成立） |
+| **F-BT15** 剪贴板 | §3.5 ∥ §2.2 clipboard | 单元测试 T23（四操作调用形 + 授权序列）∥ T24（隐私：全量过门 / 上限 / 零落盘）；冒烟 S15（工具写 ⇒ 系统读回 ∥ 系统写 ⇒ 工具读回——PowerShell 对照）· S16（copy ⇒ 系统读回 ∥ paste ⇒ 字段值）· S15a（无头：页↔页保真——父侧裁示②增格） |
+| **N-BT7** 写面门覆盖 | §3.1 扩展表 ∥ §2.1 | 单元测试 T25（逐动作分类断言——全表 + 旧八动作分类零变） |
+| **N-BT8** 兼容与不回归 | §5 ∥ §7 本表 | 旧单元测试 21/21 全绿（**唯一随动 = T1 枚举 8⇒16**）∥ 旧冒烟 S1–S7 全绿；新动作逐条配用例（T16+ / S8+）∥ **S18**（有头抽样复跑——`press` + `clipboard` 两动作；仅本地跑、CI 面可跳，沿 S7 先例）= 「无头∥有头双支持」覆盖格（U51） |
+| **N-BT9** 剪贴板隐私面 | §3.5 ∥ §3.1 | 单元测试 T24（全量过门 + read 上限截断 + 无落盘路径）∥ T23（write 回执不回显） |
+| **F-BT16** 动作硬超时 | §2.9 ∥ §5 `thincoder-core/browser/queue.mjs` | 单元测试 T27–T30 · T27b（本批新档——挂死型假传输 ⇒ 逐动作拒绝于预算内 ∥ 开启段中止 ⇒ 干净重开 ∥ `ACTION_BUDGETS` 覆盖全动作 ∥ 命令缺省帽 ∥ 卡点步名）；冒烟 S19（永不响应服务） |
+| **F-BT17** 外部关闭可感知与自愈 | §2.10 ∥ §2.4 | 单元测试 T31–T33 · T44（本批新档——假 WS close ∥ 假 child exit ⇒ 在飞即时拒（下一事件循环内——非墙钟界）+ 态复位 + 重开计数 + 注记；探针三检；外部关闭遇排队条目不呆等）；冒烟 S20；走查 W1（真关窗——用户复核） |
+| **F-BT18** 异步通道 | §2.11 ∥ §2.5 | 单元测试 T34–T39（本批新档——ack ∥ 池 ∥ 结算 ∥ 摘要文法 ∥ kill 两态（即时展开——非墙钟界）∥ 帽 ∥ depth 门）；冒烟 S21 / S22 |
+| **F-BT19** 用法认知（描述面） | §2.11 ∥ `tool-docs/browser.md`（F-BT19 段） | 单元测试 T42（本批新档——描述档四小节存在；文本面 grep，落笔后生效） |
+| **N-BT10** 挂起可诊断 | §2.9 步名 ∥ §2.11 摘要面 | 单元测试 T30（本批新档——错误句携步名）∥ T38–T40 ∥ T43（终态墓碑 / 摘要必达；Stop 收尾——墓碑 `discarded` ∥ 出池 ∥ 整批提醒 ∥ 竞态窗兜底停靠） |
 
 ## 8. 用例表（正常 / 边界 / 错误——输入 → 期望）
 
 | # | 类 | 输入 | 期望 | 落点 |
 |---|---|---|---|---|
 | U1 | 正常 | `navigate` 到本地 fixture 页 | `[navigate]` + `[page]` + 清单含 `e1 link …` | 冒烟 S1 |
-| U2 | 正常 | `snapshot`（承接 U1） | 同页清单；`(<M> new)` 数 = 首见数 | 冒烟 S2 · 单测 T3 |
+| U2 | 正常 | `snapshot`（承接 U1） | 同页清单；`(<M> new)` 数 = 首见数 | 冒烟 S2 · 单元测试 T3 |
 | U3 | 正常 | `type` ref=文本框 + `click` ref=提交钮（审批已批） | 回执两行文法；click 后 `[navigated]` + 新清单 | 冒烟 S2 |
-| U4 | 正常 | `evaluate` `document.title` | `[evaluate @ <url>] "…"` | 单测 T2 |
-| U5 | 正常 | `wait` selector 延迟出现元素 | `[wait] selector "…" — ok after <ms>ms` | 冒烟 S3 · 单测 T4 |
+| U4 | 正常 | `evaluate` `document.title` | `[evaluate @ <url>] "…"` | 单元测试 T2 |
+| U5 | 正常 | `wait` selector 延迟出现元素 | `[wait] selector "…" — ok after <ms>ms` | 冒烟 S3 · 单元测试 T4 |
 | U6 | 正常 | `screenshot` | 路径在盘、PNG 头、>0 字节 | 冒烟 S6 |
-| U7 | 正常 | `close` ⇒ 再次 `close` | 首回 `[close] … closed`；二回 `[close] no browser session` | 单测 |
-| U8 | 边界 | 页面微变（插一条无关 DOM）后再 snapshot | 旧元素 ref **号不变**；新增元素 `[new]` | 单测 T3 |
-| U9 | 边界 | `wait networkIdle` 于静态页 | 静默 500ms 内 ok | 单测 T4 |
-| U10 | 边界 | `max=200` 长页 | 行数 ≤200；超限标记在 | 单测 T13 |
-| U11 | 边界 | password 输入 `type` | `(hidden)`、无明文 | 单测 T14 |
-| U12 | 边界 | `headless:false` 会话中再传 `headless:true` | 错误句（异值拒） | 单测 T7 |
-| U13 | 错误 | `click` 老 ref（元素已移除） | `Error: ref … is stale …` + 页摘 + 清单 | 单测 T3 |
-| U14 | 错误 | `click`/`evaluate` 用户拒批 | `Error: permission denied by user`（不执行） | 单测 T5 · T6 |
-| U15 | 错误 | `navigate` 非 http(s) scheme | `Error: …`（拒） | 单测 |
-| U16 | 错误 | `navigate` host 不在非空 allowDomains | `Error: blocked by browser.allowDomains …` | 单测 |
-| U17 | 错误 | 无浏览器环境（全候选落空） | §2.6 错误句（可读——N-BT5） | 单测 T10 |
-| U18 | 错误 | `wait` 超时 | `Error: wait timed out …` + 页摘 + 清单 | 冒烟 S4 · 单测 T4 |
-| U19 | 错误 | `evaluate` 抛异常 | `Error: evaluate failed: <message>` | 单测 T2 |
-| U20 | 错误 | 他进程持 profile 锁 | `Error: browser profile in use … (pid <N>)` | 单测 |
-| U21 | 错误 | 缺必填参（如 `click` 无 ref） | `Error: click requires ref`（不执行） | 单测 |
-| U22 | 边界 | 同批两次 `navigate`（并行调用） | 串行执行、顺序与调用序一致（队列）；排队期计入预算（端到端界）——排队中到点 ⇒ 同失败形（`stuck in queue wait`） | 单测 |
-| U23 | 正常 | `close` ⇒ 以另一 `headless` 值重开 | 新会话达成；进程参数按新值（`--headless=new` 有无）；同 profile | 单测 T7 |
+| U7 | 正常 | `close` ⇒ 再次 `close` | 首回 `[close] … closed`；二回 `[close] no browser session` | 单元测试 |
+| U8 | 边界 | 页面微变（插一条无关 DOM）后再 snapshot | 旧元素 ref **号不变**；新增元素 `[new]` | 单元测试 T3 |
+| U9 | 边界 | `wait networkIdle` 于静态页 | 静默 500ms 内 ok | 单元测试 T4 |
+| U10 | 边界 | `max=200` 长页 | 行数 ≤200；超限标记在 | 单元测试 T13 |
+| U11 | 边界 | password 输入 `type` | `(hidden)`、无明文 | 单元测试 T14 |
+| U12 | 边界 | `headless:false` 会话中再传 `headless:true` | 错误句（异值拒） | 单元测试 T7 |
+| U13 | 错误 | `click` 老 ref（元素已移除） | `Error: ref … is stale …` + 页摘 + 清单 | 单元测试 T3 |
+| U14 | 错误 | `click`/`evaluate` 用户拒批 | `Error: permission denied by user`（不执行） | 单元测试 T5 · T6 |
+| U15 | 错误 | `navigate` 非 http(s) scheme | `Error: …`（拒） | 单元测试 |
+| U16 | 错误 | `navigate` host 不在非空 allowDomains | `Error: blocked by browser.allowDomains …` | 单元测试 |
+| U17 | 错误 | 无浏览器环境（全候选落空） | §2.6 错误句（可读——N-BT5） | 单元测试 T10 |
+| U18 | 错误 | `wait` 超时 | `Error: wait timed out …` + 页摘 + 清单 | 冒烟 S4 · 单元测试 T4 |
+| U19 | 错误 | `evaluate` 抛异常 | `Error: evaluate failed: <message>` | 单元测试 T2 |
+| U20 | 错误 | 他进程持 profile 锁 | `Error: browser profile in use … (pid <N>)` | 单元测试 |
+| U21 | 错误 | 缺必填参（如 `click` 无 ref） | `Error: click requires ref`（不执行） | 单元测试 |
+| U22 | 边界 | 同批两次 `navigate`（并行调用） | 串行执行、顺序与调用序一致（队列）；排队期计入预算（端到端界）——排队中到点 ⇒ 同失败形（`stuck in queue wait`） | 单元测试 |
+| U23 | 正常 | `close` ⇒ 以另一 `headless` 值重开 | 新会话达成；进程参数按新值（`--headless=new` 有无）；同 profile | 单元测试 T7 |
 | U24 | 正常 | `press` key=Enter ref=提交钮（审批已批） | 回执 `[press] Enter → …`；表单真提交（URL 变化） | 冒烟 S8 |
-| U25 | 正常 | `press` key=a modifiers=[Control] | 序列含修饰位 + 主键；回执 `[press] Control+a` | 单测 T17 |
-| U26 | 正常 | `press` phase=down ⇒ 再 phase=up | 两回执 `(down)` / `(up)`；中间键面保持 | 单测 T17 |
-| U27 | 边界 | `press` repeat=3 | 序列 = down + autoRepeat×3 + up；回执 ` ×3` | 单测 T17 |
-| U28 | 错误 | `press` key=Foo | `Error: unknown key "Foo" — keys: …`（不执行） | 单测 T26 |
+| U25 | 正常 | `press` key=a modifiers=[Control] | 序列含修饰位 + 主键；回执 `[press] Control+a` | 单元测试 T17 |
+| U26 | 正常 | `press` phase=down ⇒ 再 phase=up | 两回执 `(down)` / `(up)`；中间键面保持 | 单元测试 T17 |
+| U27 | 边界 | `press` repeat=3 | 序列 = down + autoRepeat×3 + up；回执 ` ×3` | 单元测试 T17 |
+| U28 | 错误 | `press` key=Foo | `Error: unknown key "Foo" — keys: …`（不执行） | 单元测试 T26 |
 | U29 | 正常 | `hover` ref=菜单项 | 回执 `[hover] …`；菜单驱出（后续 snapshot 见子菜单） | 冒烟 S9 |
 | U30 | 正常 | `wheel` deltaY=600 | 回执含 `Δ(0,600)` + 卷动后 window 读数 | 冒烟 S10 |
 | U31 | 正常 | `mouse` x,y 坐标左键单击 | 回执 `[mouse] left click …`；页面真收点击 | 冒烟 S11 |
-| U32 | 正常 | `mouse` double=true | clickCount 序列（1、2）；页面收 dblclick | 单测 T18 · 冒烟 S11 |
-| U33 | 错误 | `mouse` 无 ref 无 x,y | `Error: mouse requires ref or x,y` | 单测 T26 |
+| U32 | 正常 | `mouse` double=true | clickCount 序列（1、2）；页面收 dblclick | 单元测试 T18 · 冒烟 S11 |
+| U33 | 错误 | `mouse` 无 ref 无 x,y | `Error: mouse requires ref or x,y` | 单元测试 T26 |
 | U34 | 正常 | `drag` from=e1 to=e2 | 回执 `[drag] e1 … → e2 …`；目标态变化 | 冒烟 S12 |
 | U35 | 正常 | `drag` html5=true（原生 DnD 页） | 拦截链 → drop；日志见 dragstart/drop | 冒烟 S12b |
 | U36 | 正常 | `touch` gesture=tap ref=钮 | 回执 `[touch] tap …`；真 click | 冒烟 S13 |
 | U37 | 正常 | `touch` gesture=pinch scale=2 | 回执 `×2`；页面缩放 / 视觉变化 | 冒烟 S13b |
 | U38 | 正常 | `touch` gesture=swipe from→to | 回执 swipe 形；卷动 / 手势处理链触发 | 冒烟 S13c |
-| U39 | 正常 | `insert` text=长文本+emoji | 值真落（无按键）；回执字符数 | 冒烟 S14 · 单测 T22 |
-| U40 | 正常 | `insert` ime=候选 text=终文 | 组合中间态可见 → 提交后字段 = 终文 | 单测 T22 · 冒烟 S14 |
+| U39 | 正常 | `insert` text=长文本+emoji | 值真落（无按键）；回执字符数 | 冒烟 S14 · 单元测试 T22 |
+| U40 | 正常 | `insert` ime=候选 text=终文 | 组合中间态可见 → 提交后字段 = 终文 | 单元测试 T22 · 冒烟 S14 |
 | U41 | 正常 | `clipboard` write text=X ⇒ 系统读回 | 系统剪贴板 = X（PowerShell 读回） | 冒烟 S15 |
 | U42 | 正常 | 系统写 Y ⇒ `clipboard` read | 回执 `[clipboard] read …` 正文 = Y | 冒烟 S15 |
 | U43 | 正常 | 页面选中 ⇒ `clipboard` copy ⇒ 系统读回 | 系统剪贴板 = 选中文本 | 冒烟 S16 |
 | U44 | 正常 | 系统写 Z ⇒ `clipboard` paste ref=输入框 | 字段值含 Z | 冒烟 S16 |
-| U45 | 错误 | `clipboard` op=write 无 text | `Error: clipboard write requires text`（不执行） | 单测 T26 |
-| U46 | 边界 | `clipboard` read 超 8000 字符 | 截断标记在；总长受限 | 单测 T24 |
-| U47 | 边界 | 屏外元素 ref 驱 `hover` / `mouse` | 自动滚动后动作成立（`[outside]` → 动作成功） | 冒烟 S17 · 单测 T19 |
-| U48 | 边界 | snapshot 含屏外元素 | 该行带 `[outside]`；在屏行无几何后缀（旧文法零动） | 单测 T19 |
-| U49 | 错误 | `press` ref=不可聚焦元素 | `Error: ref … is not focusable …` | 单测 T17 |
-| U50 | 正常 | 旧八动作全谱（U1–U23 复跑） | 旧单测 / 冒烟全绿（T1 枚举随动除外） | 回归面 |
+| U45 | 错误 | `clipboard` op=write 无 text | `Error: clipboard write requires text`（不执行） | 单元测试 T26 |
+| U46 | 边界 | `clipboard` read 超 8000 字符 | 截断标记在；总长受限 | 单元测试 T24 |
+| U47 | 边界 | 屏外元素 ref 驱 `hover` / `mouse` | 自动滚动后动作成立（`[outside]` → 动作成功） | 冒烟 S17 · 单元测试 T19 |
+| U48 | 边界 | snapshot 含屏外元素 | 该行带 `[outside]`；在屏行无几何后缀（旧文法零动） | 单元测试 T19 |
+| U49 | 错误 | `press` ref=不可聚焦元素 | `Error: ref … is not focusable …` | 单元测试 T17 |
+| U50 | 正常 | 旧八动作全谱（U1–U23 复跑） | 旧单元测试 / 冒烟全绿（T1 枚举随动除外） | 回归 |
 | U51 | 正常 | 有头（`headless:false`）抽样复跑：`press` + `clipboard` 两动作 | 两动作真跑成立；回执文法同无头面（N-BT8「无头∥有头双支持」抽检） | 冒烟 S18（仅本地跑——CI 面可跳，沿 S7 先例） |
-| U52 | 错误 | 页面挂死（永不响应型）→ `navigate` | 预算内 `Error: navigate timed out after <ms>ms (stuck in <步名>)`；其后动作可继续（工具不中毒；含预算落于开启段一格——半开态复位后干净重开，§2.9） | 单测 T27–T28 · T27b · 冒烟 S19（本批新档） |
-| U53 | 边界 | `timeoutMs` 传 150（慢动作） | 到点显式失败（同 U52 形）；`timeoutMs` 超 120000 ⇒ 按上限夹取 | 单测 T29（本批新档） |
-| U54 | 边界 | `wait timeoutMs=120000` 且谓词不达 | 谓词帽到点报 `wait timed out after 120000ms`（既有——不被动作预算提前截断） | 单测（回归） |
-| U55 | 错误 | 会话在飞时外部关窗（假 WS close ∥ 假 child exit） | 在飞动作即时 `Error: … closed externally …`（下一事件循环内——确定性判据，非墙钟界）；其后下一动作干净重开 + 注记行 | 单测 T31–T32 · 冒烟 S20 · 走查 W1（本批新档） |
-| U56 | 边界 | 重开后第二轮动作 | 回执无重开注记（置位一次） | 单测 T33（本批新档） |
-| U57 | 正常 | `browser{action:navigate, async:true}` | ack `browser#N started (running) — navigate <url>`；动作后台推进；结算后摘要含回执正文 | 单测 T34–T35 · 冒烟 S21（本批新档） |
-| U58 | 错误 | 异步任务在飞遇外部关闭 | 摘要 `failed: …closed externally…` 必达（不吞）；队列未启动条目 ⇒ 自愈重开后照跑（不呆等）；下一动作自愈重开 | 单测 T36 · T44（本批新档） |
-| U59 | 正常 | `process{action:kill, id:N}`（queued ∥ running） | queued ⇒ 从未运行 + 墓碑 `cancelled`；running ⇒ abort 即时展开（下一事件循环内——确定性判据，非墙钟界）⇒ 结算 cancelled；重复幂等 | 单测 T37–T38 · 冒烟 S22（本批新档） |
-| U60 | 边界 | 第 5 条异步起跑 | `Error: …cap reached (4/4 running…)`（显式拒） | 单测 T39（本批新档） |
+| U52 | 错误 | 页面挂死（永不响应型）→ `navigate` | 预算内 `Error: navigate timed out after <ms>ms (stuck in <步名>)`；其后动作可继续（工具不中毒；含预算落于开启段一格——半开态复位后干净重开，§2.9） | 单元测试 T27–T28 · T27b · 冒烟 S19（本批新档） |
+| U53 | 边界 | `timeoutMs` 传 150（慢动作） | 到点显式失败（同 U52 形）；`timeoutMs` 超 120000 ⇒ 按上限夹取 | 单元测试 T29（本批新档） |
+| U54 | 边界 | `wait timeoutMs=120000` 且谓词不达 | 谓词帽到点报 `wait timed out after 120000ms`（既有——不被动作预算提前截断） | 单元测试（回归） |
+| U55 | 错误 | 会话在飞时外部关窗（假 WS close ∥ 假 child exit） | 在飞动作即时 `Error: … closed externally …`（下一事件循环内——确定性判据，非墙钟界）；其后下一动作干净重开 + 注记行 | 单元测试 T31–T32 · 冒烟 S20 · 走查 W1（本批新档） |
+| U56 | 边界 | 重开后第二轮动作 | 回执无重开注记（置位一次） | 单元测试 T33（本批新档） |
+| U57 | 正常 | `browser{action:navigate, async:true}` | ack `browser#N started (running) — navigate <url>`；动作后台推进；结算后摘要含回执正文 | 单元测试 T34–T35 · 冒烟 S21（本批新档） |
+| U58 | 错误 | 异步任务在飞遇外部关闭 | 摘要 `failed: …closed externally…` 必达（不吞）；队列未启动条目 ⇒ 自愈重开后照跑（不呆等）；下一动作自愈重开 | 单元测试 T36 · T44（本批新档） |
+| U59 | 正常 | `process{action:kill, id:N}`（queued ∥ running） | queued ⇒ 从未运行 + 墓碑 `cancelled`；running ⇒ abort 即时展开（下一事件循环内——确定性判据，非墙钟界）⇒ 结算 cancelled；重复幂等 | 单元测试 T37–T38 · 冒烟 S22（本批新档） |
+| U60 | 边界 | 第 5 条异步起跑 | `Error: …cap reached (4/4 running…)`（显式拒） | 单元测试 T39（本批新档） |
 
-**批内件用例面**：单测（T1–T15——假传输 + 打桩，零真实浏览器/文件系统）与冒烟（S1–S7——真 Edge/Chrome 无头 + 进程内 fixture 服务）＝ §7 表逐格引用面（**落点列** = U 条执行档；无编号者 = 单测组内，格内归属以 §7 判据列为准）；先红后绿。
+**单元测试档用例**：单元测试（T1–T15——假传输 + 打桩，零真实浏览器/文件系统）与冒烟（S1–S7——真 Edge/Chrome 无头 + 进程内 fixture 服务）＝ §7 表逐格引用面（**落点列** = U 条执行档；无编号者 = 单元测试组内，格内归属以 §7 判据列为准）；先红后绿。
 扩展轮件 = `docs/batches/2026-10-07-browser-input.test.mjs`（拟新增）∥ `docs/batches/2026-10-07-browser-input.smoke.mjs`（拟新增）——T16–T26 ∥ S8–S18（剪贴板端到端 = 本机 OS 面——Windows 以 PowerShell `Get-Clipboard` / `Set-Clipboard` 为对照）。
-异步化批件 = `docs/batches/2026-10-07-browser-async-fix.test.mjs`（单测 A 腿）∥ `docs/batches/2026-10-07-browser-async-fix.b.test.mjs`（单测 B 腿——拆档：单档越 500 硬限）∥ `docs/batches/2026-10-07-browser-async-fix.smoke.mjs`（冒烟）——单测 T27–T44（含 T27b）∥ 冒烟 S19–S22（走查 W1 = 真关窗——用户复核）。
-旧件复跑 = 零回归面（T1 枚举断言随动 8⇒16 为唯一例外——§7 N-BT8 行）。
-- T27b 开启段中止（U52 开启段一格）——批内件 `docs/batches/2026-10-07-browser-async-fix.test.mjs:168`。
+异步化单元测试档 = `docs/batches/2026-10-07-browser-async-fix.test.mjs`（单元测试 A 组）∥ `docs/batches/2026-10-07-browser-async-fix.b.test.mjs`（单元测试 B 组——拆档：单档越 500 硬限）∥ `docs/batches/2026-10-07-browser-async-fix.smoke.mjs`（冒烟）——单元测试 T27–T44（含 T27b）∥ 冒烟 S19–S22（走查 W1 = 真关窗——用户复核）。
+旧件复跑 = 零回归（T1 枚举断言随动 8⇒16 为唯一例外——§7 N-BT8 行）。
+- T27b 开启段中止（U52 开启段一格）——单元测试档 `docs/batches/2026-10-07-browser-async-fix.test.mjs:168`。
 
 ## 9. 边界（不做）
 

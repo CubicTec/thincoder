@@ -16,7 +16,7 @@ export function embeddingPatch(raw, embKey, defaults) {
 
 /** 并发池三键当前值读取（POOL-CONFIG-UNIFIED F-3——2026-09-09）：配置值合法（≥1 整数）
  *  读配置——非法/缺省回退 DEFAULTS（agent.poolLimits 三键——/config 并发池子菜单/
- *  主菜单/view 三面共用同一读取——config-pool.test.mjs 单测面）。 */
+ *  主菜单/view 三面共用同一读取——config-pool.test.mjs 单元测试）。 */
 export function poolCur(pl, defaults) {
   return (k) => (Number.isInteger(pl?.[k]) && pl[k] >= 1 ? pl[k] : defaults.agent.poolLimits[k])
 }

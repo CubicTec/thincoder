@@ -203,7 +203,7 @@ export function _clearGitFailureCooldownForTests(cwd) {
   gitFailureCooldowns.delete(cwd)
 }
 
-/** Git context 纯格式化（branch/log/status = trim 后原串）——独立导出供单测锁字节
+/** Git context 纯格式化（branch/log/status = trim 后原串）——独立导出供单元测试锁字节
  *  parity（现拼装逐字节保留——detached/dirty>20 截断/clean 三形态——VSC 镜像）。 */
 export function composeGitContext({ branch, log, status }) {
   const dirty = status ? status.split("\n").length : 0

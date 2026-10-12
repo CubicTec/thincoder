@@ -2,7 +2,7 @@
  * test/toolcall.test.mjs — 工具调用探针自检（§11.11 结构级 + 行为级 · 零网络）。
  *
  * 覆盖：用例集 schema 与冻结副本两层逐字等值（AC-1）· 三变体差异面 + 能力位两态 + `payloadDigest` 确定性
- * （AC-2）· V1 枚举块点名名 ⊆ 载荷面 · `--dry-run` 全链路六形态与三轴 / 分母口径（AC-3）· 成本读数两腿
+ * （AC-2）· V1 枚举块点名名 ⊆ 载荷面 · `--dry-run` 全链路六形态与三轴 / 分母口径（AC-3）· 成本读数两用例
  * （AC-4）；报告对产物断言 / 落档面 / 成本闸住 `toolcall-report.test.mjs`。
  * 手动跑：`node --test "bench/test/*.test.mjs"`（不进 CI）。
  */
@@ -193,7 +193,7 @@ test("AC-3/AC-6：--dry-run 全链路（夹具六形态 + 三轴 / 分母口径 
   has((x) => x.parseOk === false, "arguments 非 JSON")
   has((x) => x.hit === true && x.legal === false && x.schemaErrors.some((e) => e.includes("缺 required")), "schema 违规·缺 required")
   has((x) => x.schemaErrors.some((e) => e.includes("enum")), "schema 违规·enum 越界")
-  // tool.13 零调用腿（§11.6）：轴① true · 轴② / ③ null · noCall 计数
+  // tool.13 零调用用例（§11.6）：轴① true · 轴② / ③ null · noCall 计数
   const t13 = v0.cases.find((c) => c.caseId === "tool.13").runs
   assert.equal(t13.length, 3)
   for (const x of t13) {
@@ -220,7 +220,7 @@ test("AC-3/AC-6：--dry-run 全链路（夹具六形态 + 三轴 / 分母口径 
   assert.equal(wrong.hit, false, "零调用例被误答 ⇒ 轴① false")
   assert.equal(wrong.legal, null)
   assert.equal(wrong.semOk, null)
-  // 空响应 / 接口错 ⇒ error（无判定素材：三轴 null · 不入分母）——含假接口错腿（transport 抛错）
+  // 空响应 / 接口错 ⇒ error（无判定素材：三轴 null · 不入分母）——含假接口错用例（transport 抛错）
   const t1 = CASES.find((c) => c.id === "tool.1")
   const empty = gradeRun({ caseObj: t1, payload: v0.payload.tools, n: 1, observed: observedOf([]) })
   assert.equal(empty.terminal, "error", "空响应 ⇒ error")
@@ -287,7 +287,7 @@ test("AC-3/AC-4：三轴判据逐例面（谓词求值 / 载荷外名 ⇒ offPay
   assert.equal(run0.metrics.tokens, null)
   assert.equal(run0.metrics.cost, null)
   assert.equal(data.warnings.some((w) => w.includes("usage 缺失")), true, "缺 usage ⇒ warning（不静默）")
-  // 实测腿：报告成本列 / Δ vs V0 在场且可用
+  // 实测用例：报告成本列 / Δ vs V0 在场且可用
   const md = readFileSync(artifactPath(usageLabel, ".md"), "utf8")
   assert.match(md, /prompt tokens 中位/, "报告含 tokens 中位列（AC-4）")
   assert.match(md, /Δ vs V0/, "报告含 Δ vs V0 列（AC-4）")

@@ -23,7 +23,7 @@
  * 口径：**执行不依赖连接**（断连照跑到终态——落库单源；`emit` 写失败即吞，回合不受影响）；消息逐条增量落库（KD-SV-89）；
  * 审计 = `agent_event`（`chat_call` 逐调用 ∥ `chat_stop` 异常收尾——KD-SV-91；`chat_start` 归 `chat-routes.mjs`）；
  * 秘密零入库（工具入参 `apiKey` 等敏感键 ⇒ 摘要掩蔽后入帧/入库/入审计）；工具结果 = 模型可见形（截断 ≤4000 字——回放逐字一致）。
- * 注入缝（§11——批内件依托）：模型出口 ∥ 工具面 = **模块级 setter + 参数覆盖**（默认 `null` ⇒ 回落真件，生产行为不变）。
+ * 注入缝（§11——单元测试档依托）：模型出口 ∥ 工具面 = **模块级 setter + 参数覆盖**（默认 `null` ⇒ 回落真件，生产行为不变）。
  */
 import { recordAudit } from "../accounts/audit.mjs"
 import { findMemberById } from "../accounts/members.mjs"
@@ -120,7 +120,7 @@ export function clearChatAbort(id) {
 let injectedChat = null
 let injectedTools = null
 
-/** 模块级注入（批内件：假模型出口 ∥ 假工具面）；README = 默认 null（生产行为不变）。 */
+/** 模块级注入（单元测试档：假模型出口 ∥ 假工具面）；README = 默认 null（生产行为不变）。 */
 export function setChatTestDeps({ chat = null, tools = null } = {}) {
   injectedChat = chat
   injectedTools = tools

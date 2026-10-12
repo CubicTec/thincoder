@@ -472,7 +472,7 @@ export function sandboxPublicBase(config = {}) {
  * 步序：① 承载工作区确认（`confirm` 缺 ⇒ 400）⇒ ② 容器处置校验（`keep` ∥ `remove`）⇒ ③ 读时列容器（不可达 ⇒ 仅 `keep` 可过）
  * ⇒ ④ `remove` 逐删强删（任一失败 ⇒ 502 + 登记行保留）⇒ ⑤ 作废在途指令 + 工作区解绑 + 删登记行 ⇒ ⑥ 弃置工作区续放置。
  * **审计写不随迁**（调用侧各留：控制台 = `sandbox_event`/`runner_delete` ∥ chat = 只 `chat_call` 行——KD-SV-91）。
- * 出 = `{ id, name, kept, removed }`（`fetchImpl` = Docker 传输注入面——批内件替身）。 */
+ * 出 = `{ id, name, kept, removed }`（`fetchImpl` = Docker 传输注入面——单元测试档替身）。 */
 export async function deleteRunnerChain(db, runner, { containers = undefined, confirm = false } = {}, { fetchImpl = fetch, now = Date.now, publicBase = null } = {}) {
   const bound = db.prepare("SELECT id, name FROM sandbox_workspaces WHERE runner_id = ? ORDER BY id").all(runner.id)
   if (bound.length > 0 && confirm !== true) {

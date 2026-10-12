@@ -29,7 +29,7 @@ export const sectionHeaderRe = (seg) => new RegExp(`^## §${seg}(?=\\s|$)`, "m")
  * 内嵌另一冻结词的值（含「进行中…已收口」双词 ⇒ 已收口优先误冻结——2026-09-20 词面纪律）。
  * emoji / 括注 / 日期后缀容忍（**读侧** gate 判定 = 子串包含，同 gate——写入面 value 谓词
  * 自本批起收紧为「剥装饰白名单后余核 = 关键词」，见 batch-lifecycle.mjs）；
- * 全词表并集 = 各段项去重集合（note 字段零命中的判据面——括注永不误触 gate）。
+ * 全词表并集 = 各段项去重集合（note 字段零命中的判据——括注永不误触 gate）。
  */
 export const STATUS_WORDS = Object.freeze({
   1: Object.freeze({ open: "进行中", closed: "已收口" }),
@@ -42,10 +42,10 @@ export const STATUS_WORDS = Object.freeze({
  *  的 depth-0 白名单（模式感知——工程 §1/§4/§6 · §1 ∥ 普通 §1/§2/§4/§5/§6 · §1/§2/§5，§4.16）
  *  由身份判据在 batch.mjs / batch-lifecycle.mjs 分支，不经本表。旧 batch-segment.mjs 导出面等价
  *  保持——本符号经 batch.mjs re-export（过渡 shim 面零触）。**表零字面改**——普通模式另立增表
- *  `SEGMENT_BY_ROLE_NORMAL`（合并查只在普通模式腿）；工程面「逐字不变」判据据此成立。 */
+ *  `SEGMENT_BY_ROLE_NORMAL`（合并查只在普通模式分支）；工程面「逐字不变」判据据此成立。 */
 export const SEGMENT_BY_ROLE = { "eng-designer": 2, "eng-coder": 5 }
 
-/** 普通模式增表（§4.16——**合并查只在普通模式腿**，工程模式腿不消费本表）：coder 承办 ⇒ §5
+/** 普通模式增表（§4.16——**合并查只在普通模式分支**，工程模式分支不消费本表）：coder 承办 ⇒ §5
  *  实施记录（可选绑定自写——未绑定由主 agent 代记、行内注明来源）。 */
 export const SEGMENT_BY_ROLE_NORMAL = { "coder": 5 }
 
@@ -61,7 +61,7 @@ export const DEPTH0_SEGMENTS = Object.freeze({
 export const STATUS_LINE_RE = /^\s*\*\*状态行\*\*[：:]\s*(.*)$/
 
 /**
- * 骨架死占位**枚举单源**（F11-C 判据面——create 骨架产出过的全部死占位字面）：
+ * 骨架死占位**枚举单源**（F11-C 判据——create 骨架产出过的全部死占位字面）：
  *  - `#<编号>` / `<板块>` = 现行骨架仍在产出的两处（台账行——填充人 = 主 agent，时点 =
  *    建档后、本档首个 append/status 之前）；
  *  - `<BATCH-ID>` / `<讨论来源>` = 改形**删除**的两处旧占位（create 不再产出；旧档残留同判）。
@@ -208,7 +208,7 @@ export function batchSkeleton({ date, topic, source, prev, ledger = null, board 
     "<§1 模板占位：本批条目 / 关键判据 / 授权口径>",
     `## §2 批次任务与设计（${designerSeat}）`,
     `**状态行**：（${normal ? "主 agent" : "eng-designer"} 写入时更新）`, // ③ §2 状态占位句
-    "<§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>",
+    "<§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试覆盖 / 验收对照 / 关键决策 / 上抛项>",
     "## §3 设计评审（评审子代理）",
     "## §4 用户批准（主 agent）",
     `## §5 实施记录（${implementerSeat}）`,

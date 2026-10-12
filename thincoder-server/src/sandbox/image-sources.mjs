@@ -6,7 +6,7 @@
  * 址归一 = `[http(s)://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；含路径/查询/空白/凭据 ⇒ 拒）；`kind` = **按地址派生**
  * （`hub` ⇔ 主机 ∈ Hub 四别名 ∥ `hub-mirror` ⇔ 主机 ∈ Hub 镜像两主机；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移；`hub-mirror` 消费面 = 拉取组装裸名补 `library/`——走查轮 2026-10-11 甲）。
  * 预选七条 = server 端静态表（沿 provider 预设先例 KD-SV-17——随设计轮维护，非用户可改面）。
- * 端点面 = `image-source-routes.mjs`；本档纯函数面（形校验 ∥ kind 派生 ∥ 预选表）= 批内件直测。
+ * 端点面 = `image-source-routes.mjs`；本档纯函数面（形校验 ∥ kind 派生 ∥ 预选表）= 单元测试档直测。
  */
 import { HttpError } from "../gateway/errors.mjs"
 

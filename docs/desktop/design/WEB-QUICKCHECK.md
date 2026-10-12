@@ -1,7 +1,7 @@
 # 桌面端（DESKTOP）· web 快筛（渲染面脱 Electron 快筛）
 
 **面**：web 快筛工具（`thincoder-desktop/tools/web-quickcheck/`）——本档是该面的单源设计。
-**权威面**：真 Electron（走查 + E2E）——**web 快筛不作验收判据** ∥ 不替代走查 ∥ 不入仓套件 ∥ 不作交付依据（裁定 = §1 · 纪律句 = §3.4 · 边界 = §7）。
+**权威面**：真 Electron（走查 + E2E）——**web 快筛不作验收判据** ∥ 不替代走查 ∥ 不入集成测试树 ∥ 不作交付依据（裁定 = §1 · 纪律句 = §3.4 · 边界 = §7）。
 **上位单源**：`docs/core/design/TESTING.md`（测试纪律 / 承载选型 / 单入口门禁——本档**引用不重述**，D2）；关系档 = `docs/desktop/design/E2E-TESTING.md`（Electron E2E 基建——本档只采其判据形与产物根，零改其面）。
 **本批**：`docs/batches/2026-09-30-web-quickcheck.md`（§1 条目 · §2 批条目）；台账 = #434。
 
@@ -18,8 +18,8 @@
 
 **与 #433 基建（`docs/desktop/design/E2E-TESTING.md`）的复用与边界**：
 
-- **复用**：同一枚驱动依赖 `playwright-core`（`thincoder-desktop/package.json:22` devDep——零 postinstall、不下载浏览器；依据 = `E2E-TESTING.md` KD-1）；运行期产物同根 `thincoder-desktop/test/artifacts/`（已由 `thincoder-desktop/.gitignore:2` 忽略）；单入口套件面零改（`thincoder-desktop/test/run.mjs` ∥ `files.mjs` 零触）。
-- **边界**：E2E = 真 Electron 全栈（真进程 ∥ 真 preload 白名单 ∥ 真 IPC ∥ `app://` scheme ∥ 真窗口截图）——**验收判据面**；快筛 = 真浏览器 + 假宿主——**开发期回路**。快筛红 ⇒ 渲染面大概率真红（同一份文件被两端取用）；快筛绿 ⇒ 只证渲染面在 shim 契约内自洽，**IPC ∥ 主进程 ∥ 宿主面仍未验**。
+- **复用**：同一枚驱动依赖 `playwright-core`（`thincoder-desktop/package.json:22` devDep——零 postinstall、不下载浏览器；依据 = `E2E-TESTING.md` KD-1）；运行期产物同根 `thincoder-desktop/test/artifacts/`（已由 `thincoder-desktop/.gitignore:2` 忽略）；单入口集成测试树零改（`thincoder-desktop/test/run.mjs` ∥ `files.mjs` 零触）。
+- **边界**：E2E = 真 Electron 全栈（真进程 ∥ 真 preload 白名单 ∥ 真 IPC ∥ `app://` scheme ∥ 真窗口截图）——**验收判据**；快筛 = 真浏览器 + 假宿主——**开发期回路**。快筛红 ⇒ 渲染面大概率真红（同一份文件被两端取用）；快筛绿 ⇒ 只证渲染面在 shim 契约内自洽，**IPC ∥ 主进程 ∥ 宿主面仍未验**。
 - **#433 面零触**：E2E-TESTING.md 本体不改；其 §7 项 1「不做 web 快筛」边界句与 §8-1 上抛项的**状态随动 = §8 上抛 U1**（裁权归主 agent——「不扩 #433 已收口面」）。
 
 **权威面裁定（实读后定形）**：真 Electron 独有且不可脱的面 = preload 通道白名单（`thincoder-desktop/src/preload/preload.cjs:30` `CHANNELS` 46 项 ∥ `:47` `EVENT_CHANNELS` 23 项）· 真 IPC 处理体 · `app://` 特权 scheme（`thincoder-desktop/src/main/protocol.mjs:44`）· 主进程 / 会话 / 模型真链。
@@ -32,12 +32,12 @@
 | KD | 决策 | 理由 · 否决备选 |
 |---|---|---|
 | KD-W1 | 权威面 = 真 Electron（走查 + E2E）；快筛 = 开发期回路，不作验收判据 | 实读：宿主面（白名单 ∥ 真 IPC ∥ `app://`）不可脱 ⇒ 快筛替代 = 假绿面。否决：以快筛替代走查 ∥ E2E（缺宿主面）；否决：给快筛挂验收级判据（第二权威源） |
-| KD-W2 | 实现落点 = `thincoder-desktop/tools/web-quickcheck/`（`serve.mjs` ∥ `host-shim.mjs` ∥ `run.mjs`） | 工具 ≠ 套件：`test/` 树 = 单入口套件域（`thincoder-desktop/test/run.mjs:35-37` 对未登记 `*.test.mjs` 反查即红）；本工具 = 零登记运行路径。否决：落 `test/`（域界 = 目录界被抹平）；否决：落 `scripts/`（与打包链工具 `check-dist.mjs` 混面） |
-| KD-W3 | 静态服务 = 自持 `node:http`（三根 + MIME 白名单 + 逃逸 ∥ 点段门 + `127.0.0.1` 绑定） | 语义对齐 `thincoder-desktop/src/main/protocol.mjs`（双根 = `:34-37` ∥ MIME = `:24-31` ∥ 门 = `:53-61`）但**不同源**——本机开发工具、loopback 唯一入口（安全门语义本职在 Electron 侧）。否决：复用 `protocol.mjs`（顶层 `import { protocol } from "electron"`——平 node 不可装载）；否决：抽共用模块（本批产品码零触）。漂移控制 = §3.4 对齐表 + §6 WQ-2 行为腿 |
+| KD-W2 | 实现落点 = `thincoder-desktop/tools/web-quickcheck/`（`serve.mjs` ∥ `host-shim.mjs` ∥ `run.mjs`） | 工具 ≠ 集成测试树：`test/` 树 = 单入口集成测试树域（`thincoder-desktop/test/run.mjs:35-37` 对未登记 `*.test.mjs` 反查即红）；本工具 = 零登记运行路径。否决：落 `test/`（域界 = 目录界被抹平）；否决：落 `scripts/`（与打包链工具 `check-dist.mjs` 混面） |
+| KD-W3 | 静态服务 = 自持 `node:http`（三根 + MIME 白名单 + 逃逸 ∥ 点段门 + `127.0.0.1` 绑定） | 语义对齐 `thincoder-desktop/src/main/protocol.mjs`（双根 = `:34-37` ∥ MIME = `:24-31` ∥ 门 = `:53-61`）但**不同源**——本机开发工具、loopback 唯一入口（安全门语义本职在 Electron 侧）。否决：复用 `protocol.mjs`（顶层 `import { protocol } from "electron"`——平 node 不可装载）；否决：抽共用模块（本批产品码零触）。漂移控制 = §3.4 对齐表 + §6 WQ-2 行为用例 |
 | KD-W4 | host shim = **服务端静态注入**（`/` 的 HTML 把 shim 脚本行插在 `app.mjs` 前）+ 有限 stub 表（5 通道） | 同源注入 ⇒ Playwright 与手动浏览同一形；CSP `script-src 'self'` 放行同源脚本（`thincoder-desktop/renderer/index.html:7`）。否决：`page.addInitScript` 单用（手动浏览无 shim——半残）；否决：改 renderer 加缝（产品码零触） |
 | KD-W5 | 浏览器 = **系统浏览器 channel**（缺省 `msedge`；`--browser=` 覆盖）；不引浏览器下载 | `playwright-core` 零 postinstall、不下载浏览器（`E2E-TESTING.md` KD-1 依据守恒）；本机 Edge ∥ Chrome 两在（2026-10-01 实查）；通道选项在册（`thincoder-desktop/node_modules/playwright-core/types/types.d.ts:17554` `channel?: string`）。否决：引 `playwright` 全包（新增下载面 ∥ 与 #433 依赖面分叉）；否决：缺省静默回退（失败必明示） |
-| KD-W6 | 冒烟面 = 引导链（boot ∥ 骨架 ∥ 引导面 ∥ 会话条 ∥ 输入面板）+ **一真事件径**（会话下拉开合）+ CSS ∥ 布局读数 + 截图 + 干净面 | 断言锚全为已登记契约面（§3.3 逐锚实读）；深浅平衡 = 一条覆盖 boot 全链，不叠形状敏感 stub。否决：设置面开合（+≥6 通道 stub——形状敏感、面大值低）；否决：`project:open` 真点链（级联 resume ∥ history 面） |
-| KD-W7 | 不入套件、零登记、单入口工具调用（`npm run quickcheck`——scripts +1） | 快筛 ≠ 验收门（KD-W1）；仓套件单入口规则零破（`docs/core/design/TESTING.md` §10 F1/F2）。否决：登记进 `thincoder-desktop/test/files.mjs`（并入套件 ⇒ 慢路复发 + 权威面冲突）；否决：第二 test runner |
+| KD-W6 | 冒烟测试 = 引导链（boot ∥ 骨架 ∥ 引导面 ∥ 会话条 ∥ 输入面板）+ **一真事件径**（会话下拉开合）+ CSS ∥ 布局读数 + 截图 + 干净面 | 断言锚全为已登记契约面（§3.3 逐锚实读）；深浅平衡 = 一条覆盖 boot 全链，不叠形状敏感 stub。否决：设置面开合（+≥6 通道 stub——形状敏感、面大值低）；否决：`project:open` 真点链（级联 resume ∥ history 面） |
+| KD-W7 | 不入集成测试树、零登记、单入口工具调用（`npm run quickcheck`——scripts +1） | 快筛 ≠ 验收门（KD-W1）；集成测试单入口规则零破（`docs/core/design/TESTING.md` §10 F1/F2）。否决：登记进 `thincoder-desktop/test/files.mjs`（并入集成测试树 ⇒ 慢路复发 + 权威面冲突）；否决：第二 test runner |
 
 ## 3. 架构与接口契约
 
@@ -123,24 +123,24 @@ stub 表（回执逐形 = 实读锚）：
 | `thincoder-desktop/tools/web-quickcheck/host-shim.mjs`（已落） | 0 | **44**（实读 2026-10-10——2026-10-02 记 42；父侧扩表 +2：`theme:state` ∥ `team:status`） | host shim（§3.2） |
 | `thincoder-desktop/tools/web-quickcheck/run.mjs`（已落） | 0 | **191**（实读 2026-10-02） | 快筛冒烟（§3.3） |
 | `thincoder-desktop/package.json` | **23**（实读 2026-10-01——内容行数口径） | 24（+1 行——`quickcheck` script） | `devDependencies` 零改（`playwright-core` 在册复用；`dependencies` 零改） |
-| `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行——批内件） | 0 | **137**（实读 2026-10-02） | 服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚面腿；随批留存 · 不进仓套件 |
+| `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行——单元测试档） | 0 | **137**（实读 2026-10-02） | 服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚用例；随批留存 · 不进集成测试树 |
 | `docs/desktop/design/WEB-QUICKCHECK.md` | 0 | 本档 | 设计单源 |
 | `docs/desktop/design/PROJECT.md` | 1891 | §4.1 三行（已落——实读回填）+ 值列随动（`package.json` 23 ⇒ 24）· §4.2 本批块 · §5 script 行 · 变更记录 | 已落（设计轮） |
 | `docs/desktop/design/SHELL.md` | 238 | §1 树一行 + `package.json` 行随动 + 变更记录 | 已落（设计轮） |
 | `docs/README.md` | 141 | 地图（desktop 设计 6 ⇒ 7 ∕ 部分 7 ⇒ 8 ∕ 总 33 ⇒ 34）+ 变更记录 | 已落（设计轮） |
 
-**零改动面**：`thincoder-desktop/src/**` ∥ `thincoder-desktop/renderer/**`（= 产品码全域——宿主注入形已是缝，本批零加缝）∥ `thincoder-desktop/test/**`（套件面——单入口 ∥ 清单零登记）
+**零改动面**：`thincoder-desktop/src/**` ∥ `thincoder-desktop/renderer/**`（= 产品码全域——宿主注入形已是缝，本批零加缝）∥ `thincoder-desktop/test/**`（集成测试树——单入口 ∥ 清单零登记）
 ∥ `thincoder-desktop/src/main/protocol.mjs`（供给语义权威——镜像不改）∥ `thincoder-desktop/.gitignore`（产物根沿用）∥ `docs/desktop/design/E2E-TESTING.md`（#433 面——状态随动 = §8 上抛 U1）
-∥ `thincoder-core` ∥ `thincoder-render-core` ∥ 三端测试面。
+∥ `thincoder-core` ∥ `thincoder-render-core` ∥ 三端测试。
 
 ## 5. 验收判据回指（台账 #434 三件 → 本档落点 → 机检形）
 
 | 判据（台账 #434 消解径） | 本档落点 | 机检形 |
 |---|---|---|
-| ① host shim 契约 | §3.2 + `host-shim.mjs` | 批内件腿（5 通道逐形 ∥ 表外 reject ∥ 记录面）；冒烟 §3.3 步 9 `unstubbed = 0` |
-| ② 静态服务 | §3.1 + `serve.mjs` | 批内件腿（`/` 携注入 ∥ `/rc/` 实供 ∥ 逃逸 404 ∥ 表外扩展名 404） |
+| ① host shim 契约 | §3.2 + `host-shim.mjs` | 单元测试档用例（5 通道逐形 ∥ 表外 reject ∥ 记录面）；冒烟 §3.3 步 9 `unstubbed = 0` |
+| ② 静态服务 | §3.1 + `serve.mjs` | 单元测试档用例（`/` 携注入 ∥ `/rc/` 实供 ∥ 逃逸 404 ∥ 表外扩展名 404） |
 | ③ 一条真浏览器冒烟 | §3.3 + `run.mjs` | `npm run quickcheck` exit 0（本机 `msedge`）+ 步 9 截图存在 + PNG magic；错误径（WQ-4）= 不存在通道名 ⇒ 非零退出 + stderr 含该通道名 |
-| ④ 权威面关系判据 | §1 裁定 + §3.4 纪律句 | 本批 diff 零触 `test/`（运行期产物根 `test/artifacts/` 除外——冒烟截图落点，已 gitignore） ∥ `src/` ∥ `renderer/`（触碰面 = `tools/` ∥ `package.json` ∥ `docs/`）；套件 `npm test` 面零改 |
+| ④ 权威面关系判据 | §1 裁定 + §3.4 纪律句 | 本批 diff 零触 `test/`（运行期产物根 `test/artifacts/` 除外——冒烟截图落点，已 gitignore） ∥ `src/` ∥ `renderer/`（触碰面 = `tools/` ∥ `package.json` ∥ `docs/`）；集成测试树 `npm test` 面零改 |
 
 **三链同源**：台账 #434（承载 = tech_todo；本批无需求档条目——如需需求档笔 = §8 上抛 U3）↔ 批档 `docs/batches/2026-09-30-web-quickcheck.md` §2 条目 ↔ 本表。
 
@@ -149,9 +149,9 @@ stub 表（回执逐形 = 实读锚）：
 | 编号 | 类型 | 输入 | 期望输出 | 本批 |
 |---|---|---|---|---|
 | `WQ-1` boot 冒烟 | 正常 | 起服务 ⇒ 系统浏览器 ⇒ §3.3 九段全序 | 九段全绿 + PNG 落点 + `unstubbed = 0` + exit 0 | ✅ 做 |
-| `WQ-2` 边界 | 边界 | 表外通道调用 ∥ 逃逸路径 `..%2Fsrc%2Fmain%2Fprotocol.mjs` ∥ 表外扩展名 | 拒（reject + `unstubbed` 记名）∥ 404 ∥ 404 | ✅ 做（批内件腿） |
-| `WQ-3` 错误 | 错误 | 注入锚缺失（夹具改 `index.html` 脚本行） | 服务 500 + stderr 明示（fail-loud） | ✅ 做（批内件腿） |
-| `WQ-4` 错误 | 错误 | `--browser=<不存在通道名>` 直跑 `run.mjs` | 启动即败：非零退出 + stderr 含该通道名 | ✅ 做（批内件腿：非零退出 + stderr 含通道名） |
+| `WQ-2` 边界 | 边界 | 表外通道调用 ∥ 逃逸路径 `..%2Fsrc%2Fmain%2Fprotocol.mjs` ∥ 表外扩展名 | 拒（reject + `unstubbed` 记名）∥ 404 ∥ 404 | ✅ 做（单元测试档用例） |
+| `WQ-3` 错误 | 错误 | 注入锚缺失（夹具改 `index.html` 脚本行） | 服务 500 + stderr 明示（fail-loud） | ✅ 做（单元测试档用例） |
+| `WQ-4` 错误 | 错误 | `--browser=<不存在通道名>` 直跑 `run.mjs` | 启动即败：非零退出 + stderr 含该通道名 | ✅ 做（单元测试档用例：非零退出 + stderr 含通道名） |
 | 设置面开合 ∥ provider 真链 ∥ 事件面 ∥ 像素回归 | — | — | 不作（§7 边界——不静默缩水：登记于此） | ❌ 不做 |
 
 ## 7. 边界（不做）
@@ -193,12 +193,12 @@ stub 表（回执逐形 = 实读锚）：
 |---|---|---|---|
 | 1 | `thincoder-desktop/package.json` | **23 ⇒ 24**（scripts +`quickcheck` 一条（`node tools/web-quickcheck/run.mjs`）；devDeps 零改——`playwright-core` 在册复用） | 脚本面 |
 | 2 | `thincoder-desktop/tools/web-quickcheck/`（已落 · 新目录） | 0 ⇒ **379**（= 144 + 44 + 191——实读 2026-10-10）（`serve.mjs` ∥ `host-shim.mjs` ∥ `run.mjs`——逐档行 = `docs/desktop/design/PROJECT.md` §4.1） | 工具面 |
-| 3 | 批内件 | `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行 · 实读 2026-10-02——服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚面；随批留存 · 不进仓套件） | 全批 |
+| 3 | 单元测试档 | `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行 · 实读 2026-10-02——服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚；随批留存 · 不进集成测试树） | 全批 |
 | 4 | 设计档 | `docs/desktop/design/WEB-QUICKCHECK.md`（新档——本批主交付）· `docs/desktop/design/PROJECT.md` §4.1 三行 + 值列随动 ∥ §4.2 本块 ∥ §5 script 行 ∥ 变更记录 · `docs/desktop/design/SHELL.md` §1 树一行 + 变更记录 · `docs/README.md`（地图 6 ⇒ 7） | 全批 |
 
-零触面：产品码全域（`thincoder-desktop/src/**` ∥ `thincoder-desktop/renderer/**`——宿主注入形已是缝，零加缝）∥ 套件面（`thincoder-desktop/test/**`——单入口 ∥ 清单零登记）
+零触面：产品码全域（`thincoder-desktop/src/**` ∥ `thincoder-desktop/renderer/**`——宿主注入形已是缝，零加缝）∥ 集成测试树（`thincoder-desktop/test/**`——单入口 ∥ 清单零登记）
 ∥ `thincoder-desktop/src/main/protocol.mjs`（供给语义权威——镜像不改）∥ `thincoder-desktop/.gitignore`（产物根沿用）∥ E2E-TESTING.md（#433 面——状态随动 = 设计档 §8 上抛 U1）
-∥ `thincoder-core` ∥ `thincoder-render-core` ∥ 三端测试面。
+∥ `thincoder-core` ∥ `thincoder-render-core` ∥ 三端测试。
 
 ## 变更记录
 

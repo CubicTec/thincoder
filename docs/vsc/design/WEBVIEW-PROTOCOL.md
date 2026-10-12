@@ -136,7 +136,7 @@ reasoning, provider, images? } → extension _chat()
 | 变更源 | 端 | 显示面 | 判定 | 证据 |
 |---|---|---|---|---|
 | `eng` 工具（核） | VSC | `agentSettings` 快照 → ENG 按钮态 | **未接** | `configureEngMirror` 端侧实现只做槽写 + 结果尾提示串，**零 webview 推送**（`thincoder-vscode/src/agent/setup-tooltable.mjs:85-94`；对照 webview 桥 `thincoder-vscode/src/extension/panel-callbacks.mjs:158`） |
-| `plan` 工具（核） | VSC | `planMode` 消息 | **已接（静态链完整）· 运行时未验** | `thincoder-vscode/src/extension/panel-turn-loop.mjs`（`attachToolDrivenLegs` planMode 腿——写入 diff → `callbacks.onPlanMode`）→ `thincoder-vscode/src/extension/panel-callbacks.mjs:158`（`postMessage({type:"planMode"})` + `_setPlanMode` 槽写） |
+| `plan` 工具（核） | VSC | `planMode` 消息 | **已接（静态链完整）· 运行时未验** | `thincoder-vscode/src/extension/panel-turn-loop.mjs`（`attachToolDrivenLegs` planMode 侧——写入 diff → `callbacks.onPlanMode`）→ `thincoder-vscode/src/extension/panel-callbacks.mjs:158`（`postMessage({type:"planMode"})` + `_setPlanMode` 槽写） |
 | `settings` 工具（核） | VSC | `agentSettings` / `proxySettings` / `websearchSettings` / `shellCandidates` 四快照 | **未接** | 核工具全域零通知缝（`thincoder-core/agent-tools/settings.mjs` 内 `configure` / `notify` / `onChange` / `postMessage` / `panel` 零命中）；`config-watch` 的**自写抑制**（成功写后刷基线 ⇒ 元组未变零推送）把兜底路径一并关掉 |
 | 三工具 | CLI | 状态行 banner（`ENG│` / `PLAN│`） | **已接（结构性——零改需求）** | `thincoder-cli/src/tui/render-frame.mjs:234-237` 每帧由**活对象** recompute（`agent.config.agent.engineering` / `agent.planMode`）；回合中 1s ticker + 行 diff 重绘（`thincoder-cli/src/tui/agent-turn.mjs` 回合驱动器） |
 
@@ -144,7 +144,7 @@ reasoning, provider, images? } → extension _chat()
 
 ```text
 变更源（工具）→ 状态载体（agent.config.agent.engineering / 会话槽；config.json）
-      ↓ 工具批后（与 task / plan / goal 同一趟「载体镜像回填」——VSC `panel-turn-loop.mjs` `callbacks.onTurnEnd` 推送腿）
+      ↓ 工具批后（与 task / plan / goal 同一趟「载体镜像回填」——VSC `panel-turn-loop.mjs` `callbacks.onTurnEnd` 推送侧）
 端显示同步点（一处在位，判据两条，每轮复位）
       ↓ callbacks.onEngMode / onSettingsChanged
 单一 sink = panel._pushSettingsLight()（唯一 webview 写点——四快照重推）
@@ -152,11 +152,11 @@ reasoning, provider, images? } → extension _chat()
 webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` 态
 ```
 
-- **零新增消息类型**（§3.2「只增不改」纪律保持）：两腿都复用既有 `agentSettings` 快照消息——**发射点 / 载荷 / 消费位三面零变**，§12 对表**零改**（机检口径 = 顶级判别式集与发射点集，两者均不动）。
+- **零新增消息类型**（§3.2「只增不改」纪律保持）：两侧都复用既有 `agentSettings` 快照消息——**发射点 / 载荷 / 消费位三面零变**，§12 对表**零改**（机检口径 = 顶级判别式集与发射点集，两者均不动）。
 - **判据两条（同在工具批后单点）**：
-  ① **模式腿** —— `agent.config?.agent?.engineering !== agent._engShown`；`_engShown` 在 `hydrateRun` 按槽应用处**置为当前基线**（`agent._engShown = agent.config?.agent?.engineering === true`）——「**已展示基线**」语义，
+  ① **模式侧** —— `agent.config?.agent?.engineering !== agent._engShown`；`_engShown` 在 `hydrateRun` 按槽应用处**置为当前基线**（`agent._engShown = agent.config?.agent?.engineering === true`）——「**已展示基线**」语义，
   **非** `undefined` / `null`（后者会让每 run 首个工具批无条件重推一次快照——设计评审轮 1 发现 9 定值）；
-  ② **参数腿** —— `agent._settingsTouched` 标记（端侧 settings 工具包装在 `execute` 返回处置位；同步点读后复位——置位不做「成功」判定，快照重推幂等）。
+  ② **参数侧** —— `agent._settingsTouched` 标记（端侧 settings 工具包装在 `execute` 返回处置位；同步点读后复位——置位不做「成功」判定，快照重推幂等）。
 - **用户路径不对称**：用户点击（`setEngineeringEnabled` / `setPlanMode`）走既有**直推**（`thincoder-vscode/src/extension/panel-messages.mjs:347-348`）——与本机制的 sink **同源**（`_pushSettingsLight` / `planMode` 消息），不构成第三条路径。
 - **CLI half = 不进推送链**：状态行每帧 recompute 已是「变更 → 显示」的最短路径。本档登记该**结构性**属性：CLI 侧**不得**为模式再引入缓存副本（引入即须自建失效链——本机制的 CLI 面因此天然免维护）。
 - **深度 > 0 不涉及**：子代理循环的 `callbacks` 无该两键 ⇒ `?.` 调用恒为 no-op（零注入、零推送）。
@@ -400,12 +400,12 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | 2 | 忙态与消化轮可见指示（`turnState` 收敛 · digest 轮 · cap 行） | F-W7 · N-W1 |
 | 3 | 状态行段位与块头字段对位（含端差登记） | F-W7 · N-W6 |
 | 4 | 会话标题与消息秩序（promptId / seq / 单向 boot） | F-W2 · F-W3 |
-| 5 | 机检面（新增档 ≤500 行 · 无 >300 字符单行 · 文档锚零悬空） | N-M3 · N-M2 |
+| 5 | 机检（新增档 ≤500 行 · 无 >300 字符单行 · 文档锚零悬空） | N-M3 · N-M2 |
 | 6 | 收发面全量对表（§12——机检对账 `thincoder-vscode/test/protocol-coverage.test.mjs`） | N-W7 （已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） |
 | 7 | 发面全量对表（§13——机检对账 `thincoder-vscode/test/protocol-coverage-reverse.test.mjs`） | F-W12 · N-W7 （已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） |
 | 8 | 权限卡族 id 纪律与释放（合并卡同族 · 单释放通道 · 孤儿响应 · **释放即刷新**） | F-W13 |
 
-**用例面**：协议面测试资产原在 `thincoder-vscode/test/`（`webview-turnstate` · `status-line` · `digest-visibility` · `chat-panel` · `chat-panel-messages` · `session-boot`）——**退场注**：逐档随 2026-09-28 测试树全清重置退场；用例表归测试层，本档不复制（D2）。
+**用例**：协议面测试资产原在 `thincoder-vscode/test/`（`webview-turnstate` · `status-line` · `digest-visibility` · `chat-panel` · `chat-panel-messages` · `session-boot`）——**退场注**：逐档随 2026-09-28 测试树全清重置退场；用例表归测试层，本档不复制（D2）。
 
 ## 12. 收发面全量对表（机检对账）
 

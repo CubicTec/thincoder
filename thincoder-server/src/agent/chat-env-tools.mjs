@@ -85,7 +85,7 @@ export async function loadCoreEnvTools() {
 }
 
 /**
- * 环境工具面装配（§14.2）：`coreTools` = 核件注入口（批内件走仓内直引真件；缺省 ⇒ 动载）。
+ * 环境工具面装配（§14.2）：`coreTools` = 核件注入口（单元测试档走仓内直引真件；缺省 ⇒ 动载）。
  * 出 = `{ names, schemas, invoke }`——`invoke(name, args, ctx)` 不抛（未知件 ∥ 参数不合 ∥ 核件抛错 ⇒ `{ ok:false, … }`）。
  */
 export async function createEnvTools({ coreTools = null } = {}) {
@@ -210,7 +210,7 @@ export function timerPadOf(chatId) {
   return pad
 }
 
-/** 在途 timer 条数（诊断/断言面——零副作用）。 */
+/** 在途 timer 条数（诊断/断言——零副作用）。 */
 export function pendingTimerCount(chatId) {
   return timerPadOf(chatId)._pendingTimers.length
 }

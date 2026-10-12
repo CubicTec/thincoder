@@ -9,7 +9,7 @@
  * （`question:respond` —— `question` 工具真作答面）+ 历史页（`history:page`）
  * + 回合驱动（`msg:send` / `msg:interrupt`）（`docs/desktop/design/IPC.md` §2 该行 · 白名单面）
  * + 设置族二十项（provider / model / agent 参数 / MCP / env / tools / 配置写（语言））与项目级信息两项（台账 / 相位）
- * + 会话级偏好写面（`session:prefs`）+ **子 agent 停止出口（`subagent:stop` —— R3b 落）** + **文件链接打开（`file:open` —— 「对齐第三批」落）** + **R1 输入面板移植两项**（模式位四写面 `session:flags` + @ 补全面 `at:complete`）+ **会话维护线两项**（`session:gc` 会话数据回收 ∕ `session:index` 派生索引重建 —— R1 · 桌面功能对位批；白名单**末位**）
+ * + 会话级偏好写面（`session:prefs`）+ **子 agent 停止出口（`subagent:stop` —— R3b 落）** + **文件链接打开（`file:open` —— 「对齐第三批」落）** + **R1 输入面板移植两项**（模式位四写面 `session:flags` + @ 补全 `at:complete`）+ **会话维护线两项**（`session:gc` 会话数据回收 ∕ `session:index` 派生索引重建 —— R1 · 桌面功能对位批；白名单**末位**）
  * + **索引数据面两项**（`index:build` 语义索引构建入口 ∕ `index:status` 索引状态读数 —— R2 · 桌面功能对位批；白名单**末位**）
  * + **R7 设置补充三项**（`settings:env` env 读写 ∕ `settings:tools` 两 key 读写 ∕ `mcp:tools` MCP 工具清单 ∕ Test 探活 —— 桌面功能对位批；白名单**末位**）
  * + **模型菜单全渠扇出批增 `model:catalog`**（无载荷全渠扇出 —— 模型钮一级候选面；白名单**末位**）

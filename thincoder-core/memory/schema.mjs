@@ -86,7 +86,7 @@ export function createMemory({ dbPath }) {
   // §6.12 WAL 卫生（TUI 假死批）：① `journal_size_limit` = 回收后 WAL 文件截断上界（防复胀）；
   // ② 开库**一次性** `wal_checkpoint(TRUNCATE)`——失败容忍（另一实例持读事务 ⇒ busy：静默跳过，
   // 不重试不报错）。边界写实：最坏等待上界 = 连接上的 `busy_timeout`（**不是**「不阻塞」；
-  // `wal_checkpoint` 是否走 busy handler = unverified——判据面 = 批档 §2.5 T-W2）。
+  // `wal_checkpoint` 是否走 busy handler = unverified——判据 = 批档 §2.5 T-W2）。
   db.exec(`PRAGMA journal_size_limit = ${WAL_SIZE_LIMIT_BYTES}`)
   try { db.exec(`PRAGMA wal_checkpoint(TRUNCATE)`) } catch { /* busy / 非 WAL（内存库）⇒ 保持现状 */ }
 

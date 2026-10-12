@@ -40,16 +40,16 @@
   （单点 = `streamHttpResponse`——https 隧道 ∥ http 转发两条代理分支共用：汇流坐标 = `tunnelHttps` `thincoder-core/proxy-transport.mjs:258` ∥ `proxyFetch` `thincoder-core/proxy.mjs:52` 均移交本函数；解码器 = `thincoder-core/proxy-chunked.mjs`）。**流式保形**：边收边吐、只保有帧头（块长行），零整包缓冲
   ——SSE 面 `data:` 行与事件流不受帧字节干扰；终止 = `0` 块（其后 trailer ∥ 余字节读取即弃，body 随 0 块结束）；`Connection: close` 语义不变。
   **畸形帧回退 = 透传**（块长行非十六进制 ∥ 块长数值越界（非安全整数）∥ 块尾非 CRLF ⇒ 停解码、余字节原样吐——不报错、不截断）；判定按 `Transfer-Encoding` 末段 token（大小写不敏感），**头缺席而帧在场（协议违规）不解码**。
-  **管线拓扑**：解码器居源 `sock` 与目标 body 之间、**函数式改写**（body 本体零替换——chunked 径 `sock.on('data')` ⇒ `decoder.push(d)` ⇒ `onData` ⇒ **推入 body 前最后一级可写流**（带 CE = 解压器，否则 = body；经写门 `!destroyed && !writableEnded`——终止后解码器余出不再入 body，与非 chunked 径 `pipe` 自摘语义齐）；非 chunked 无 CE 径 `sock.pipe(body)` 不变（带 CE ⇒ 推送臂接解压器）。）
+  **管线拓扑**：解码器居源 `sock` 与目标 body 之间、**函数式改写**（body 本体零替换——chunked 径 `sock.on('data')` ⇒ `decoder.push(d)` ⇒ `onData` ⇒ **推入 body 前最后一级可写流**（带 CE = 解压器，否则 = body；经写门 `!destroyed && !writableEnded`——终止后解码器余出不再入 body，与非 chunked 径 `pipe` 自摘语义齐）；非 chunked 无 CE 径 `sock.pipe(body)` 不变（带 CE ⇒ 推送分支接解压器）。）
   **错误面归口（#16 契约零变）**：解码器 = 纯状态机、无自有 `'error'` 面（畸形帧回退透传——不 emit）；body 终止守卫族（`destroyBody` ∥ `_bodyIdleMs` 看门狗 ∥ `terminateBody`）照旧对 body 单点直作、不经解码器；`sock` 级错误沿现径（`thincoder-core/proxy-transport.mjs:194-197` ⇒ `fail` ⇒ `destroyBody`）。
-  **行数注记**（as-of 2026-10-08；现读见 §6.1）：新档 `proxy-chunked.mjs` = **102 行** ∥ `streamHttpResponse` 改动面落 `thincoder-core/proxy-transport.mjs`（**219 ⇒ 245 行**）∥ 批内件 = **301 行**（含 C16 CONNECT 腿；按盘记录；明细 = 批档 `docs/batches/2026-10-08-proxy-chunked-frame.md` §2.4 ∥ §2.12）。
-  回归面（旧缺此解码）：代理响应体首段携 `<hex>\r\n` 帧 ⇒ 一切走代理的请求 body 污染（模型清单探针 `non-JSON response` ∥ 聊天 SSE 事件被打断——用户 2026-10-08 案）。
+  **行数注记**（as-of 2026-10-08；现读见 §6.1）：新档 `proxy-chunked.mjs` = **102 行** ∥ `streamHttpResponse` 改动面落 `thincoder-core/proxy-transport.mjs`（**219 ⇒ 245 行**）∥ 单元测试档 = **301 行**（含 C16 CONNECT 用例；按盘记录；明细 = 批档 `docs/batches/2026-10-08-proxy-chunked-frame.md` §2.4 ∥ §2.12）。
+  回归（旧缺此解码）：代理响应体首段携 `<hex>\r\n` 帧 ⇒ 一切走代理的请求 body 污染（模型清单探针 `non-JSON response` ∥ 聊天 SSE 事件被打断——用户 2026-10-08 案）。
 - **响应体内容编码解压（2026-10-10 补 · #1067）**：TE 剥帧后接**解压阶段**（单 token 且已列编码——gzip ∥ x-gzip ⇒ gunzip ∥ deflate ⇒ inflate ∥ br ⇒ brotli；`node:zlib`；`deflate` = RFC1950 zlib 包裹形，非合规裸形（RFC1951）不支持 ⇒ 走明错误径、不透传）。
   `identity` ∥ 头缺席 ∥ 未知编码 ∥ 多 token 列表 ⇒ **透传零动**；**不发 `Accept-Encoding`**（请求头零改——上游自发压缩才走本阶段，请求面语义不变）。
   零输入（空体 + CE 在场）⇒ 不解压（sawInput 门——零误报：空 gunzip 结束会抛 `unexpected end of file`）；**解压失败 ⇒ body 以明错误终止**
   （部分解码已发生——无「原字节」可回退；错误形 = `Response body decompression failed (content-encoding: …)`）。落点 = `streamHttpResponse`（`thincoder-core/proxy-transport.mjs:128-139`；chunked ∥ 非 chunked 两径同点）；解压器 ⇒ body 走 `pipe`（自带背压）。
 - **chunked 径背压传播 + 停止门（2026-10-10 补 · #1087）**：暂停级 = **body 前最后一级可写流**（带 CE = 解压器 ∥ 无 CE = body；`thincoder-core/proxy-transport.mjs:90-98` `pushDownstream`）
-  ——`write()` 返 false ⇒ 暂停上游源 `sock`（推送臂 `:144` ∥ `:149`），排空 ⇒ 恢复（背压旗幂等；带 CE 时恢复信号在解压器 `'drain'`、无 CE 时在 body `'drain'`）。
+  ——`write()` 返 false ⇒ 暂停上游源 `sock`（推送分支 `:144` ∥ `:149`），排空 ⇒ 恢复（背压旗幂等；带 CE 时恢复信号在解压器 `'drain'`、无 CE 时在 body `'drain'`）。
   **看门狗复位源扩 `drain`**（`:161`——排空 = 消费进度信号，防「暂停期无数据到达 ⇒ 误杀慢而健康的消费者」）；消费方永停摆 ⇒ 照旧 `bodyIdleMs` 断流。
   **停止门**（`:170-173`——评审 F3）：body 终止（watchdog ∥ abort ∥ 消费方 destroy）时上游仍在暂停态 ⇒ `resume()` + `destroy()` 源（被暂停的 sock 不因 body 消亡自行关闭——悬挂口闭合）。
   与非 chunked 径 `pipe` 语义对齐（pipe 自带 pause/drain）；非 chunked 无 CE 径零动。
@@ -117,9 +117,9 @@ Clear proxy
   `thincoder-cli/src/tui/wizard.mjs`（TUI 首启——`thincoder-cli/src/tui/index.mjs:194` 装配 ∥ `thincoder-cli/src/tui/startup.mjs:238` 触发）；皆在 provider-admin 四流之外。
   **问句形 ≡ add 流既有问句**（`thincoder-cli/src/tui/provider-admin.mjs:74` ∥ `:102` 同形）：正文 `Route this provider's model requests through the proxy` ∥ 两选项 No (direct) / Yes (proxy) ∥ 缺省 No；答 Yes ⇒ 条目 `proxy: true`，No ∥ 缺省 ⇒ 零 `proxy` 键（渠道条目照落）。
   **位置** = 向导末问（全部输入步后、落盘 ∥ 流尾探针前）；**载体各随该档既有输入形**（零新机制）——TUI 向导 = `showPicker` 同形调用（`thincoder-cli/src/tui/wizard.mjs` `finishWizard` 落盘前；经 ctx 注入——`thincoder-cli/src/tui/index.mjs` 装配处随 `openModelPicker` 先例）∥ 首配向导 = 该档既有 readline `ask`（y/N；该档唯一输入机制）。
-  **写入点 = 新渠条目 `proxy` 字段**（随各自落盘一次写；探针条目携答案——探针 ≡ 写后运行态，同 #1048② 判据）；**重配语义**（2026-10-08 父裁〔a〕——批档 §5 补步腿报表项 1）：既有渠重配 = **upsert 保留**——答 No ∥ Esc 均零写，不清既有旗；渠级旗写入径配套已齐（形A 删行 + 两向导问句）——零新增债登记（批档 §2.15 ②）。
-  **验收/用例面** = 批内件增量腿（两向导双案：答 Yes ⇒ 盘上 `proxy: true` ∥ No ∥ 缺省 ⇒ 零 `proxy` 键——首配向导假 HOME 子进程实跑（沿 T5 驱动器先例）∥ TUI 向导 mock ctx 行为腿）——**已落：W1 ∥ W2**。
-  **实施 = 已落**（2026-10-08 · #1049 补步腿）：首配向导 `thincoder-cli/src/cli/setup-wizard.mjs`（109 行——问句 `:62`–`:63` ∥ 探针携答案 `:71` ∥ 写盘 `:90`）∥ TUI 向导 `thincoder-cli/src/tui/wizard.mjs`（256 行——`:192`–`:196`）∥ 装配注入 `thincoder-cli/src/tui/index.mjs:196`。
+  **写入点 = 新渠条目 `proxy` 字段**（随各自落盘一次写；探针条目携答案——探针 ≡ 写后运行态，同 #1048② 判据）；**重配语义**（2026-10-08 父裁〔a〕——批档 §5 补步报表项 1）：既有渠重配 = **upsert 保留**——答 No ∥ Esc 均零写，不清既有旗；渠级旗写入径配套已齐（形A 删行 + 两向导问句）——零新增债登记（批档 §2.15 ②）。
+  **验收/用例** = 单元测试档增量用例（两向导双案：答 Yes ⇒ 盘上 `proxy: true` ∥ No ∥ 缺省 ⇒ 零 `proxy` 键——首配向导假 HOME 子进程实跑（沿 T5 驱动器先例）∥ TUI 向导 mock ctx 行为用例）——**已落：W1 ∥ W2**。
+  **实施 = 已落**（2026-10-08 · #1049 补步）：首配向导 `thincoder-cli/src/cli/setup-wizard.mjs`（109 行——问句 `:62`–`:63` ∥ 探针携答案 `:71` ∥ 写盘 `:90`）∥ TUI 向导 `thincoder-cli/src/tui/wizard.mjs`（256 行——`:192`–`:196`）∥ 装配注入 `thincoder-cli/src/tui/index.mjs:196`。
 
 ## 6. 机制面（B 式迁移并入——现状路径）
 
@@ -135,7 +135,7 @@ Clear proxy
 | 经典转发 / 流式响应 | `thincoder-core/proxy-transport.mjs`（`tcpConnectProxy` ∥ `streamHttpResponse`——拆档后家位，现位 `:269` ∥ `:41`；原 `thincoder-core/proxy.mjs:248` ∥ `:85`） | 在位 |
 | 响应体分块解码（#1065） | `thincoder-core/proxy-chunked.mjs`（解码器 `createChunkedDecoder`）· 单点 = `proxy.mjs` `streamHttpResponse`（拆档后 = `proxy-transport.mjs`） | 已落（#1065 实施落讫——解码器 102 行） |
 | 内容编码解压（#1067） | `thincoder-core/proxy-transport.mjs`（`streamHttpResponse` 内——TE 剥帧后接，现位 `:128-139`；chunked ∥ 非 chunked 两径同点） | 已落（#1067 实施落讫——批 2026-10-10） |
-| 背压传播 + 停止门（#1087） | `thincoder-core/proxy-transport.mjs`（`pushDownstream` ∥ 推送臂 ∥ 看门狗复位 ∥ 停止门——现位 `:90-98` ∥ `:144` ∥ `:161` ∥ `:170-173`） | 已落（#1087 实施落讫——批 2026-10-10） |
+| 背压传播 + 停止门（#1087） | `thincoder-core/proxy-transport.mjs`（`pushDownstream` ∥ 推送分支 ∥ 看门狗复位 ∥ 停止门——现位 `:90-98` ∥ `:144` ∥ `:161` ∥ `:170-173`） | 已落（#1087 实施落讫——批 2026-10-10） |
 | 统一出口 | `thincoder-core/proxy.mjs`（`proxyFetch` 编排——直连分支 = 断流通道建设点；拆档后重锚——现位 `:36-53`（2026-10-10 按盘实读）） | 在位 |
 | loopback 旁路（#1026） | `thincoder-core/proxy-target.mjs`（`isLoopbackTarget`——拆档后家位，现位 `:44`）· 旁路点 = `proxy.mjs` `proxyFetch` 入口（现位 `:38`） | 在位 |
 | web 工具代理参数 | `thincoder-core/tools/web.mjs:96` · `:188` | 逐次调用参数 |
@@ -144,15 +144,15 @@ Clear proxy
 | body 终止守卫（#16） | `thincoder-core/stream-destroy.mjs`（已落——单点 `destroyBody` ∥ `terminateBody`（web 流 abort 通道）+ `IDLE_ABORT`）· **abort 通道建设点 = `thincoder-core/proxy.mjs` 直连分支（`proxyFetch`——评审轮 1 收正）** · 消费点 `thincoder-core/proxy-transport.mjs:71` ∥ `:102` ∥ `thincoder-core/provider/sse.mjs:207` ∥ `thincoder-core/provider/google.mjs:219` | 本批落位；2026-10-04 扩 abort 通道 |
 | server 对位实现（2026-10-09 代理批） | `thincoder-server/src/gateway/proxy.mjs`（自持——`proxyFetch` fetch-like：loopback 旁路 ∥ CONNECT 隧道 ∥ 经典转发 ∥ 超时族；node:http/https 内建 + 自建 CONNECT——std） | 逐渠判定镜像（D-PX1）；机制全文 = `docs/server/design/gateway/API.md` §6 KD-SV-55 |
 
-### 6.2 测试面
+### 6.2 测试
 
-- 代理族单测（CONNECT 隧道 / 配置解析 / `normalizeProxy` / 坏代理串报错 / provider 头注入——原 `provider-headers.test.mjs` 经 `_deps.proxyFetchImpl` 注入替身）原在 CLI 测试树（`thincoder-cli/test/`）——**随 2026-09-28 测试树全清重置退场**；实读 2026-10-03：现盘 = `run.mjs` ∕ `slow.mjs` + smoke 三枚，零 `.test.mjs`。
-- 现形 = 单元测试档（批内件惯例——名随批档 · 住 `docs/batches/` · 随批留存 · 不随仓套件收集；单测树重建时回迁）。
-- 本批新增守卫用例（#16 面）落 `docs/batches/2026-10-03-crash-guards.test.mjs`（已落——批内件惯例）。
-- 本批（proxy 逐渠独立 · 2026-10-08）批内件 = `docs/batches/2026-10-08-proxy-per-channel.test.mjs`（**已落**——拆档 ∥ 逐渠判定 ∥ 探针字段面 ∥ 文案面 ∥ 全局面 ∥ 两向导补步；T1–T8 + W1 ∥ W2 = 10/10 绿；**448 行**〔按盘实读〕）。
-- 本批（代理分块解码 · 2026-10-08）批内件 = `docs/batches/2026-10-08-proxy-chunked-frame.test.mjs`（已落——用例 C1–C16；枚举落点 = 批档 `docs/batches/2026-10-08-proxy-chunked-frame.md` §2.5 ∥ §2.12 补行——以彼为准）：
-  分支标签 = C1–C12 两分支共用层（`streamHttpResponse`——CONNECT ∥ 转发汇流后）∥ C13–C14 转发腿（假代理回放）∥ C16 CONNECT 腿（https 隧道回放）∥ C15 回归腿；帧序列类别 = 单块 ∥ 多块 ∥ 跨包块边界 ∥ 块扩展 ∥ trailer ∥ `0` 块终止 ∥ 畸形回退 ∥ 非分块零动 ∥ 「首字节先于 `0` 块到达」（= C8；零整包缓冲判据）。
-- 无代理路径 = 原生 `fetch`——单测的唯一网络面（无真网络依赖）。
+- 代理族单元测试（CONNECT 隧道 / 配置解析 / `normalizeProxy` / 坏代理串报错 / provider 头注入——原 `provider-headers.test.mjs` 经 `_deps.proxyFetchImpl` 注入替身）原在 CLI 测试树（`thincoder-cli/test/`）——**随 2026-09-28 测试树全清重置退场**；实读 2026-10-03：现盘 = `run.mjs` ∕ `slow.mjs` + smoke 三枚，零 `.test.mjs`。
+- 现形 = 单元测试档（沿单元测试档惯例——名随批档 · 住 `docs/batches/` · 随批留存 · 不随集成测试树收集；单元测试树重建时回迁）。
+- 本批新增守卫用例（#16 面）落 `docs/batches/2026-10-03-crash-guards.test.mjs`（已落——沿单元测试档惯例）。
+- 本批（proxy 逐渠独立 · 2026-10-08）单元测试档 = `docs/batches/2026-10-08-proxy-per-channel.test.mjs`（**已落**——拆档 ∥ 逐渠判定 ∥ 探针字段面 ∥ 文案面 ∥ 全局面 ∥ 两向导补步；T1–T8 + W1 ∥ W2 = 10/10 绿；**448 行**〔按盘实读〕）。
+- 本批（代理分块解码 · 2026-10-08）单元测试档 = `docs/batches/2026-10-08-proxy-chunked-frame.test.mjs`（已落——用例 C1–C16；枚举落点 = 批档 `docs/batches/2026-10-08-proxy-chunked-frame.md` §2.5 ∥ §2.12 补行——以彼为准）：
+  分支标签 = C1–C12 两分支共用层（`streamHttpResponse`——CONNECT ∥ 转发汇流后）∥ C13–C14 转发用例（假代理回放）∥ C16 CONNECT 用例（https 隧道回放）∥ C15 回归用例；帧序列类别 = 单块 ∥ 多块 ∥ 跨包块边界 ∥ 块扩展 ∥ trailer ∥ `0` 块终止 ∥ 畸形回退 ∥ 非分块零动 ∥ 「首字节先于 `0` 块到达」（= C8；零整包缓冲判据）。
+- 无代理路径 = 原生 `fetch`——单元测试的唯一网络面（无真网络依赖）。
 
 ## 7. 并入的关键决策记录（含否决备选）
 

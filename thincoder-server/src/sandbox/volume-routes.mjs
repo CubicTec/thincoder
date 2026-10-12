@@ -48,7 +48,7 @@ export function volumeDeleteFailure(e) {
   return dockerFailure(e)
 }
 
-/** 注册卷族两路由（§3）：`fetchImpl` = Docker 传输注入口（批内件假件；缺省 = 全局 fetch——生产行为不变）。 */
+/** 注册卷族两路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。 */
 export function registerVolumeRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
   if (!db) throw new Error("registerVolumeRoutes：缺少 db")
 

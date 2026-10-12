@@ -3,7 +3,7 @@
  * （`h` + `onChange` 注入——侧栏 meta 槽 ∥ 登录卡两处复用）∥ 错误码映射 ∥ `document` 接线。
  *
  * 模块顶层零浏览器全局访问——`document`/`localStorage`/`navigator` 仅在 init/绑定函数内触碰；检测输入经参数注入
- * （`pickLang(stored, languages)`）——批内件 node 直测。缺键回退链 = 当前表 → zh 表 → 键原文（+ `console.warn`——安全网）。
+ * （`pickLang(stored, languages)`）——单元测试档 node 直测。缺键回退链 = 当前表 → zh 表 → 键原文（+ `console.warn`——安全网）。
  */
 import { ZH } from "./i18n-zh.mjs"
 import { EN } from "./i18n-en.mjs"

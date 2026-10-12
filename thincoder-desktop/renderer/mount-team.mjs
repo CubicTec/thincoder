@@ -180,7 +180,7 @@ export function createTeam(deps = {}) {
 
 /** ── 状态段就地面板宿主（单例 —— 挂 `document.body`；零背板 ∥ 零遮罩） ─────────────────────────────── */
 
-/** 现态面板根（关态 ⇒ `null`；机检面 ∥ 施用面读数）。 */
+/** 现态面板根（关态 ⇒ `null`；机检 ∥ 施用面读数）。 */
 let panelRoot = null
 /** 面板残件（跨在途重挂携带 —— `mergeViewSnaps`；关态弃）。 */
 let panelResidue = null

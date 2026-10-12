@@ -301,7 +301,7 @@ advisor 径的 provider 解析（`thincoder-core/advisor/run.mjs` `resolveAdviso
 **添加表单不设 model 输入件**（渠道条目不携模型——单值模型退场；模型选择 = `/models` 候选 ∥ 命令面 `provider:model`；探不通 ⇒ 渠道标 `不可用`）；**执行层 = 配置阶段**（加渠道 / 设 API key / 设默认模型的配置路径探一次）；**运行期不加闸**（启动 / 每请求零 `/models` 探测——不引入启动期网络依赖）。
 - **M8/M9 补（2026-09-18 · F-W19 · VSC 探针落账与有界重试）**：探针失败落账增 `failure ∈ {timeout, malformed, hostBusy}` + `ts`；
 `hostBusy` = 宿主事件循环繁忙（**非渠道故障**——分类可辨）；**运行期零探测语义零改**——本补只动配置阶段；**文案逐字零改**（`channelUnavailableMessage`）。
-端侧详面（采样器落点 / 重试窗口起止与计数 / 展示面分档 / 机检面）= `docs/vsc/design/SETTINGS.md` §2.12（**不重述**）。
+端侧详面（采样器落点 / 重试窗口起止与计数 / 展示面分档 / 机检）= `docs/vsc/design/SETTINGS.md` §2.12（**不重述**）。
 - **M10 候选未命中 = 保持当前选择**：候选清单未命中「偏好 / 当前选择」时**不得静默写会话槽**——该场景写槽仅来自显式用户动作（候选行点击 / `/model` 选择）；未命中分支显示与状态同步回落会话槽复合、零 `selectModel` / `selectReasoning` post；**命中分支维持现状**（同值幂等回写 / 无槽复合时沿用 workspaceState 播种 / reasoning 归一改写）。
   CLI 对位 = 会话值优先链（`sessionModel ?? dm.model`——`keep.model` 回落随 2026-10-09 清除批退场；缺 ⇒ 明示未设置，**绝不静默回落**）。
 - **UI / 交互决策（已定）**：候选列表行**直接可选**（不再区分「候选 / 建议」两组）；**渠道行显示回退 = `baseURL`**（单值模型退场——原「渠道无默认模型」词族删除）；**模型选择面不加手输行**（命令面 `provider:model` 仍放行任意串）；**添加表单不设 model 输入件**（渠道条目不携模型——单值模型退场；「拉取模型」钮收为渠道校验）；本批**不加** VSC 面板 spec 来源回显。**open 项：无**。
@@ -371,14 +371,14 @@ minimax 携 `chatPath: "/text/chatcompletion_v2"`；`presetToEntry`（核单源 
 （逐已配置渠道各探一次——探通 → 候选行直接可选；探不通 → 不可选 + 失败消息随载荷）。**M9 准入探针（配置阶段）** = 收敛于核 `@thincoder/core/provider/list-models.mjs`（W10 已迁核——同名镜像已删；消费面 = `thincoder-vscode/src/extension/{provider-flows,settings,settings-panel-write}.mjs` 经核面引用）
 （探针目标由核 `thincoder-core/provider-flows.mjs` `probeTargetOf` 组装——三端同源；VSC 端侧自持副本已删（B10 E1）——桌面 ∕ VSC 写面同取该件）；探通 / 探不通两态 + **不阻断保存**；`defaultModel` 写面探针 fire-and-forget（写面为同步契约——探针绝不 reject）；**运行期零探测**（启动 / 发请求 / 面板打开不做 `/models` 探测）。候选未命中 = 保持当前选择显示与状态
 （回落会话槽复合）+ 零 `selectModel` / `selectReasoning` post（§6.16 M10 语义同源 · 独立实现）。
-**探针落账与有界重试（2026-09-18 · F-W19）**：端侧详面 = `docs/vsc/design/SETTINGS.md` §2.12（采样器 / 重试窗口 / 展示面分档 / 机检面）；核语义 = §6.16 M8/M9 补行（载荷与分类）——双向指，**不重述**。
+**探针落账与有界重试（2026-09-18 · F-W19）**：端侧详面 = `docs/vsc/design/SETTINGS.md` §2.12（采样器 / 重试窗口 / 展示面分档 / 机检）；核语义 = §6.16 M8/M9 补行（载荷与分类）——双向指，**不重述**。
 
 **transport 端差**（W10 已迁核——自持镜像已删）：VSC 经 `@thincoder/core/provider/core.mjs` 引用（原 `thincoder-vscode/src/provider.mjs` chat / `TRANSPORTS` 面已删）——调用链 = 核单实现（§6.2 不重述）；下列原 VSC 端差登记随迁核退役： （迁移期引文）
 ① **超时相位**（原登记：四 transport 读侧 idle 全配 / 本端无 `fetchTimeoutMs` 配置键）——现体 = 核 §6.3 超时制度（sse / google 读侧 idle + `effectiveFetchTimeoutMs`）；
 VSC 调用面已无相位传参点（W10 已迁核）——相位参数由核 chat 装配（核 `thincoder-core/provider/core.mjs:414-415` 实核）；端侧用例 `provider-timeout-semantics` 锁该跨端契约（相位参数在位）；
 ② **Responses 实现差异注**（链元数据 / usage 归一 / `responseId` / `builtinToolResults`）——现体 = 核 §6.13（核面已承载同列语义）；
 本地接线不变 = responses provider 经 config.json 手写 `format: "responses"` 或预设扩展启用（custom 表单 format 下拉未加 responses 项——显式 opt-in，CLI parity）；
-finishReason 区分（`response.incomplete` 非长度原因不得报成 `length`）**保留为端侧验收面**。
+finishReason 区分（`response.incomplete` 非长度原因不得报成 `length`）**保留为端侧验收**。
 
 **能力适配端差**（语义同源不重并——坐标即指）：`specForModel` / `providerSpec` / `resolveEnableThinking` / `isBailianHost`（`thincoder-core/model-specs.mjs:290` / `:323` ∥ `thincoder-core/config.mjs:167` / `:150`（W16 已迁核——原端档已删）——W16 面）·
 reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 真 off；**载荷形随 `doc:MODEL-SPECS.md:§16.2` 按族取形**）· escape v5 与 UTF-16 安全截断（核 `escape.mjs` + 端 `src/agent/run-helpers.mjs` `safeSliceUTF16`——§6.7 同构）·
@@ -417,7 +417,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 - **消费点收敛**：三处相位枚举 / 兜底分支退役 → `const s = waitStatusText(ev); if (s) …`（TUI 状态行 / headless stderr `[rate-limit]` 前缀 / ACP stderr 日志）。
 - **VSC 面（多实现面）**：`thincoder-vscode/src/extension/panel-callbacks.mjs:72` `statusTextPayload()` 五相已完备（`warn` / 未知 → `null` = 不发射；用例 `thincoder-vscode/test/status-line.test.mjs:62-70`）——**语义同源、各面独立实现**（不以任一面产物回改另一面）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 - **复现与判据（本批测试层 · 需求档 F-PV1）**：
-  ① 单测直驱三消费点回调：`{ phase: "warn", message: "estimated 5000 tokens > tpm 1000 — request proceeds and may hit a server 429" }` ⇒ TUI 状态行 / headless stderr **不出现** `undefined`（现态必现）；
+  ① 单元测试直驱三消费点回调：`{ phase: "warn", message: "estimated 5000 tokens > tpm 1000 — request proceeds and may hit a server 429" }` ⇒ TUI 状态行 / headless stderr **不出现** `undefined`（现态必现）；
   ② `{ phase: "quota", message: "quota exhausted: x" }` ⇒ 显示 `quota exhausted: x`（**不双前缀**——剥前缀后插值）；`{ phase: "quota", message: "x" }` ⇒ 显示 `quota exhausted: x`；
   ③ `{ phase: "overloaded", seconds: 3 }` ⇒ 显示 `Server overloaded, retrying in 3s`（**不得**落 429 文案）；
   ④ 未知相位（`{ phase: "zzz" }`）/ 秒缺失（`{ phase: "retry" }`）⇒ 不显示（旧文案不得残留）；
@@ -498,8 +498,8 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 **第四消费面（ACP）注（本批明写边界）**：`thincoder-cli/src/acp.mjs` 门判据（`defaultIsConfigured` = `loadConfig().provider?.apiKey?.trim()`）随核取值切换而变——「持 key ∧ 无有效 `defaultModel`」（`fallback` 类）由「拒（携 reason）」变「**放行**」，协议面**零提示行**（本批明示射程 = 三端 UI 面；ACP = 外部编排器协议面，无既有提示通道）。
 此变 = U3 判据的**自然导出**（可运行 ⇒ 放行——**已认账行为变更，非缺陷**）；结构不全角仍由装配后检查兜底（`handlers-session.mjs` `session/new`：`_providerInvalid` ⇒ `-32000` + 真因）。协议面是否补提示通道 = **已定形：不立**（2026-10-04 ACP 协议面补全批收口——判由四条与备选支 = `doc:ACP-CLIENT.md:§13`；协议面零提示行 = 设计行为，非缺口）。
 
-**可机检断言形**：① 解析一致（**运行面 + config 级两腿**）——夹具矩阵每行（临时配置路径缝 `_setConfigPathForTest`）：**运行面** = 三端同喂**同一假槽**（VSC `resolveTurnStage` 核读 ∥ 桌面核装配读 ∥ 核 `resolveProviderPlan` 直读）按 `{state, source, channel, model, provider.name, provider.model}` **逐字段相等**；
-**config 级**（`loadConfig()` 无槽入参——KD-841-3 状态 = config 级）= **只比 `state`**；含槽行（S9）单列口径 = config 级 `state` 断言（`ok`）∥ 运行渠道断言归假槽腿（三端同喂）；② 单源——VSC 树零自建扫描链（源码判据）+ CLI ∥ 桌面取值点唯一 = `loadConfig().provider`；
+**可机检断言形**：① 解析一致（**运行面 + config 级两侧**）——夹具矩阵每行（临时配置路径缝 `_setConfigPathForTest`）：**运行面** = 三端同喂**同一假槽**（VSC `resolveTurnStage` 核读 ∥ 桌面核装配读 ∥ 核 `resolveProviderPlan` 直读）按 `{state, source, channel, model, provider.name, provider.model}` **逐字段相等**；
+**config 级**（`loadConfig()` 无槽入参——KD-841-3 状态 = config 级）= **只比 `state`**；含槽行（S9）单列口径 = config 级 `state` 断言（`ok`）∥ 运行渠道断言归假槽用例（三端同喂）；② 单源——VSC 树零自建扫描链（源码判据）+ CLI ∥ 桌面取值点唯一 = `loadConfig().provider`；
 ③ 明示必达——`state === "fallback"` ⇒ 各端明示节点在场（`model` 在场 ⇒ 现行句；`model === null` ⇒ **未设置变体（禁「本次使用」句）**——各端同键两字面，按载荷 `model` 判）；
 `state === "ok"` ∧ `providerInvalidReason` 空 ⇒ 零节点（负向锁）；invalid 类（合成式）⇒ 端面导引节点（CLI picker ∥ VSC 现词 ∥ 桌面发送失败面）。机检件 = 批档 `docs/batches/2026-10-03-provider-invalid-unify.test.mjs`（随批留存）。
 
@@ -542,7 +542,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 2. **缺钥 = 前置守卫（#1063）**：核 `thincoder-core/provider/core.mjs` `chatImpl` 在 `resolveProviderSecrets`（`:122`）之后、格式分派之前**单点前置校验**——`apiKey`（trim 后）空 ⇒ 抛可读错误（前缀锁定 `API key missing for provider "<name>"`；尾句 = 配置指引）；
 **零请求**（先于 rateGate ∥ 全部 fetch）。单点覆盖四 transport（openai ∥ anthropic ∥ google ∥ responses）+ 续写 ∕ advisor ∕ 子代理 ∕ consult 全链（`chat()` = 单一入口——`:78-84` 文档记载）。四档凭据位不各自加守卫（避四份判据）——由本守卫关闭该径。
 
-**可机检断言形**（批内件 = `docs/batches/2026-10-08-provider-key-guards-core.test.mjs`）：
+**可机检断言形**（单元测试档 = `docs/batches/2026-10-08-provider-key-guards-core.test.mjs`）：
 
 - ① #1062 原子共落——临时配置路径缝（`_setConfigPathForTest`）；订阅 `onConfigSelfWrite` 逐拍快照 ⇒ 快照数**恰 1** ∧ 该拍盘面**同时**含条目与 `apiKey`（旧实现：write1 快照无钥 ∥ 两拍——红）。
 - ② #1062 键语义回归——`" sk "` ⇒ 落 trim 值；空 ∥ 全空白 ⇒ 无 `apiKey` 键。
@@ -597,7 +597,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 **边界（本批不做）**：**原生路回带**不在本批——原生路 `convertMessages` 现不复建 functionCall parts（工具轮历史压平为文本）⇒ 触不到本 400；补建 = 另一机制（functionCall / functionResponse 史形 + 修复前历史无签名 ⇒ 直接补发反引新 400），另议。规格表 / 预设表 / 三端 UI / 服务器快照零涉。
 
-**可机检断言**（批内件 = `docs/batches/2026-10-10-gemini-thought-signature.test.mjs`）：① 捕获——合成帧喂 `readSSE` ⇒ 槽含签名字段（原生路经 `google.mjs` `chat()` + fetch 桩同判）；② 承载——`assistantToolCallMessage` 直调：有 ⇒ 键在场逐字同值 ∥ 无 ⇒ 键不存在；③ 零回归——无签名字段帧 ⇒ 槽 / 消息键集与批前逐字同形。
+**可机检断言**（单元测试档 = `docs/batches/2026-10-10-gemini-thought-signature.test.mjs`）：① 捕获——合成帧喂 `readSSE` ⇒ 槽含签名字段（原生路经 `google.mjs` `chat()` + fetch 桩同判）；② 承载——`assistantToolCallMessage` 直调：有 ⇒ 键在场逐字同值 ∥ 无 ⇒ 键不存在；③ 零回归——无签名字段帧 ⇒ 槽 / 消息键集与批前逐字同形。
 
 ### 6.25 派生渠道条目（团队登录——`derived` 标记 · 2026-10-10 · 台账 #1212）
 

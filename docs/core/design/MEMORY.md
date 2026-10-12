@@ -52,7 +52,7 @@
 
 | # | 条目（路径 / 对位） | 命中 | 左端行为（CLI） | 右端行为（VSC） | 建议归一形态 | 影响面 | 裁定状态 |
 |---|---|---|---|---|---|---|---|
-| A1 | `memory.mjs`（席位 #82；实为 CLI `src/memory/**` 8 档 ↔ VSC `memory.mjs` + `memory-tool.mjs`） | ①②③ | `node:sqlite` `DatabaseSync` + FTS5（`src/memory/schema.mjs:9,68`）；库 = `~/.thincoder/memory.db`；三层 `personal` / `project` / `team`，**personal = 全机共享的库行**；project 层 = `.thincoder/memory/*.md`（**只扫顶层** `thincoder-core/memory/core.mjs:205-212`） | 零 sqlite——纯仓内 md（`.thincoder/memory/{personal,project}/*.md`，`:26-37`）+ 遗留 `.json` 读兼容（`:150-162`）；两层（`team` 明确拒绝、指向 CLI）；`personal` 落在**仓库目录内** | **以 CLI 为准**（A12——前提失效，非选边）；`node:sqlite` 采纳为定案（§2.11 A8） | ① 记忆存哪变了（VSC 的 personal 由仓内目录 → 全机库）；② 两端**从此可互读**（现状：VSC 读不到 CLI 的库、CLI 不递归读 VSC 的子目录）；③ 旧数据要搬（见 A2）；④ 检索能力（FTS5 + 中文逐字分段）随之而来；⑤ 两侧测试面 | **已裁（2026-09-13）· 按建议** |
+| A1 | `memory.mjs`（席位 #82；实为 CLI `src/memory/**` 8 档 ↔ VSC `memory.mjs` + `memory-tool.mjs`） | ①②③ | `node:sqlite` `DatabaseSync` + FTS5（`src/memory/schema.mjs:9,68`）；库 = `~/.thincoder/memory.db`；三层 `personal` / `project` / `team`，**personal = 全机共享的库行**；project 层 = `.thincoder/memory/*.md`（**只扫顶层** `thincoder-core/memory/core.mjs:205-212`） | 零 sqlite——纯仓内 md（`.thincoder/memory/{personal,project}/*.md`，`:26-37`）+ 遗留 `.json` 读兼容（`:150-162`）；两层（`team` 明确拒绝、指向 CLI）；`personal` 落在**仓库目录内** | **以 CLI 为准**（A12——前提失效，非选边）；`node:sqlite` 采纳为定案（§2.11 A8） | ① 记忆存哪变了（VSC 的 personal 由仓内目录 → 全机库）；② 两端**从此可互读**（现状：VSC 读不到 CLI 的库、CLI 不递归读 VSC 的子目录）；③ 旧数据要搬（见 A2）；④ 检索能力（FTS5 + 中文逐字分段）随之而来；⑤ 两侧测试 | **已裁（2026-09-13）· 按建议** |
 | A2 | 记忆面旧数据迁移（§2.12.3 第 2 行） | ②③ | 有 `memory` 子命令（list / search / put / remove）与 `/reindex`；**无 md / json 导入命令** | 用户既有记忆 = 仓内 `personal` 层 md + 遗留 `.json` + `workspaceState` 的 `thincoder.modelPrefs` | **已裁（2026-09-13）：① 提供一次性导入器**（md / json → `entries`）——**父侧代选**（用户 2026-09-13「全部按建议」未逐字指定本行，已披露 ✓；理由：选 ② 会让 VSC 老用户记忆清空，与「不丢用户数据」相悖）。**落地** = S2 建一次性导入器（`memory import` 子命令面；`modelPrefs` 仍取不到——住 VS Code 状态，不在文件系统）；**边界（2026-09-15 裁定）**：本行 = **记忆条目**迁移面——**索引数据面（`.thincoder/index/`）不适用**（零迁移 / 零兼容——§4 第 11 行；重新索引 = 正当路径） | 用户既有记忆保留（md / json → `entries`）；`modelPrefs` 明确不迁（无文件系统载体） | **已裁（2026-09-13）· ① 一次性导入器（父侧代选）** |
 | A3 | VSC 引擎下限（§2.12.3 第 1 行） | ② | `engines.node = >=24` | `engines.vscode = ^1.85.0` | 抬到 **`^1.104.0`（已裁 2026-09-15）**（A13 已裁「可抬」；**原候选 `^1.101.0` 经实核不成立** ✗——见下行与 §2.11 A8）；**不另做真机实测**（资料推导链 + `activate()` 护栏兜底） | 放弃 VS Code < 新下限的用户（A13 已接受该代价）；装上旧宿主 ⇒ 扩展不可用 | **已裁（2026-09-15 用户）：`^1.104.0` · 不另实测** |
 
@@ -293,7 +293,7 @@ action 枚举 / 参数形态住 `thincoder-core/memory/memory-tool.mjs`（2026-1
 - **存储 = 核 sqlite（与 CLI 同库）**：`~/.thincoder/memory.db`（共享配置 `memory.dbPath`；缺省 = `<configDir>/memory.db`）。
   句柄 `createMemory` 由端壳装配面创建持有（`thincoder-vscode/src/embed-config.mjs`——`ensurePanelAgent` 同址惰性创建）；
   护栏 = `isMemoryFaceEnabled()`（`extension.mjs`）前置——停用/创建失败 ⇒ 句柄 null、消费点全部零崩；
-  **端壳静态 import 链零 `node:sqlite`**（核面经动态 `import()` 载入——静态可达 = 低宿主模块加载期硬失败；机判 = W8 契约②判据——现载体 = 批件 `docs/batches/2026-09-29-residuals-round2.test.mjs`，单测树重建时回迁端侧单测档）。
+  **端壳静态 import 链零 `node:sqlite`**（核面经动态 `import()` 载入——静态可达 = 低宿主模块加载期硬失败；机判 = W8 契约②判据——现载体 = 单元测试档 `docs/batches/2026-09-29-residuals-round2.test.mjs`，单元测试树重建时回迁端侧单元测试档）。
   `embedder` 经 getter 跟随共享 config（惰性向量回填）；`codeOrigin` = 当前项目根（逐调用限定——多项目单库）；`projectOrigin` = `memory.projectDir`（缺省 `.thincoder/memory`，首次逐项目 `syncDir`——CLI 启动同形）。
 - **检索 = 核 `codeSearch` / `docSearch` / `search`**（FTS5 + 惰性向量，无 embedder → 纯 FTS 回退非空〔限非空 query〕）；
   端壳文件制索引（`indexer` 族）与宿主 regex 回退**退役**——`code_search` / `doc_search` 面经核工具生成器调用（描述/输出契约同文）。
@@ -474,7 +474,7 @@ Windows 盘符**大小写随启动拼写**（`cd d:\teamcode` 与 `cd D:\teamcod
 
 **边界（写实 · 评审 #3 落点）**：本机制是**卫生**不是**保证**——busy 时以现状继续；
 该语句的**最坏等待上界 = 连接上的 `busy_timeout`**（`SQLITE_BUSY_TIMEOUT = 3000` ms——`thincoder-core/memory/schema.mjs:19` 常量、`:85` 设好），**不是「不阻塞」**。
-SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界约束）= **`unverified`**（本设计未实测；判据面 = 本批批次档 §2.5 的 WAL 边界用例「另一连接持读事务时开库」——量等待时长；
+SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界约束）= **`unverified`**（本设计未实测；判据 = 本批批次档 §2.5 的 WAL 边界用例「另一连接持读事务时开库」——量等待时长；
 若实测不走 busy handler ⇒ 等待更短，上界仍成立）。
 **不做**写侧逐次 checkpoint（写侧在性能敏感路径，高频 checkpoint = 每次写多一次主库 fsync；PASSIVE 对本症无收益）。
 **数据面一次性回收 = 父侧 ops**（`wal_checkpoint(TRUNCATE)`；`VACUUM` 可选——需 2× 磁盘与整库重写，收益只在删除后空页）。
@@ -553,12 +553,12 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 | B8 | `createMemory` 开库（`memory/schema.mjs:80-91`） | 一次性 WAL `checkpoint(TRUNCATE)` +（v10 起）索引建立 | **留**（一次性；等待上界 = `busy_timeout`——§6.12 边界句不改） |
 | B9 | `memory sweep`（CLI 子命令） | ops 面 | **留**（非 UI 路径） |
 
-**形态裁定（worker ∕ 分片 ∕ 调度）**：**本批不引入 worker_thread**——① 三个 UI 路径爆点（B2 白扫 ∕ B3 全扫 ∕ B6 零让出）全部由「去废 + 分片」消解，无需结构迁移；② worker 化牵动句柄直用面（`memory.db` 直用点分布装配 ∕ 同步 ∕ 工具 ∕ 三端构建）与测试面，成本高于收益；③ 承 D-MEM17「登记不执行」。
-**升级触发（判据腿）**：B2 ∕ B3 ∕ B6 + 面 ③ 行预算落定后，以本批件探针**对缺省工作集 origin 复测**——单回合召回注入墙钟 ≥ **0.5 s** ⇒ 下一轮以 worker 出库（独立批）。**判别基线** = 缺省工作集 origin 实态行数（同量级夹具 ∕ 真库只读复测）；换算 = 26 µs ∕ 行 ⇒ 0.5 s ≙ ≈1.9 万行：工作集 ≤ 1.9 万行 ⇒ 读数 < 0.5 s（不触发），越界 ⇒ 触发。
+**形态裁定（worker ∕ 分片 ∕ 调度）**：**本批不引入 worker_thread**——① 三个 UI 路径爆点（B2 白扫 ∕ B3 全扫 ∕ B6 零让出）全部由「去废 + 分片」消解，无需结构迁移；② worker 化牵动句柄直用面（`memory.db` 直用点分布装配 ∕ 同步 ∕ 工具 ∕ 三端构建）与测试，成本高于收益；③ 承 D-MEM17「登记不执行」。
+**升级触发（判据项）**：B2 ∕ B3 ∕ B6 + 面 ③ 行预算落定后，以本单元测试档探针**对缺省工作集 origin 复测**——单回合召回注入墙钟 ≥ **0.5 s** ⇒ 下一轮以 worker 出库（独立批）。**判别基线** = 缺省工作集 origin 实态行数（同量级夹具 ∕ 真库只读复测）；换算 = 26 µs ∕ 行 ⇒ 0.5 s ≙ ≈1.9 万行：工作集 ≤ 1.9 万行 ⇒ 读数 < 0.5 s（不触发），越界 ⇒ 触发。
 
 **面 ③：体积护栏与增量维护**
 
-需求锚 = `docs/core/requirements/MEMORY.md` §4.10（F-S6–F-S8 ∕ N-S4–N-S6）+ §4.13（F-S14 ∕ N-S10——行预算用户面收正 · 2026-10-08 用户裁定）；判据腿 = 本节 L-③ 族。
+需求锚 = `docs/core/requirements/MEMORY.md` §4.10（F-S6–F-S8 ∕ N-S4–N-S6）+ §4.13（F-S14 ∕ N-S10——行预算用户面收正 · 2026-10-08 用户裁定）；判据项 = 本节 L-③ 族。
 
 - **P1 读数（可见面）**：`memoryStatus()` 回执增 `dbBytes`（库文件 `statSync`）与**逐 origin 行数**（code ∕ doc）——**本批兑现面 = 核出口回执**（机检 L-③-1）。消费面 = 桌面索引面板 ∕ 状态行 ∕ CLI——端面（含 VSC 面板读数位）本批**零改**（逐档判定 = 批次档 `docs/batches/2026-09-30-memory-db-family.md` §2.12【补块 4】点名文件判定块）；桌面端侧零 SQL 纪律不变（端面取数经核出口）。
 - **P2 行预算（硬背板 · 只停新增不删存量）**：**计数基准 = 该 origin 库内行数（`code_chunks` + `doc_chunks` 合计，同步开始时点读）**；判定点 = 每文件落库前（`既有 + 本趟已落 ≥ CAP` ⇒ 跳过该文件及后列）。
@@ -571,8 +571,9 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
     ② `Options: exclude paths from indexing (index.excludePaths in PROJECT-MANIFEST.json), or remove old rows (thincoder memory sweep --origin "<o>" --path <sub>)`（优雅降级说明 + 选项式指路——F-S14 ②）。
   **`declare ∕ prune` 指令形 = 退出默认输出**（能力照留文档 ∕ `memoryStatus` 面——F-S14 边界）；存量行不因预算失效。
    **机制现体 = `memory/sync-tail.mjs` `createRowBudget:37-62`**（WARN ∕ CAP 单源——`originRowCount` ∕ `rowCountOfPath` 同档；消费 = `code-sync.mjs:178` ∕ `docs.mjs:57`——设计轮实读）。
-   **测试注入缝（计数注入——最小形）**：`createRowBudget(memory, origin, kind, dir, { baseOffset } = {})`——`base = originRowCount(memory, origin) + (baseOffset ?? 0)`；缺省（`undefined`）⇒ `+ 0` = 实读核计数（生产行为逐字不变）；批内件经 `baseOffset` 注入 ≥ WARN ∕ ≥ CAP 计数（文本腿零真行 ∥ 集成腿真 5 文件 + 计数偏移——30 万真行不落）。先例 = 面⑤ ⑤-2 测试缝（注入参数 + `??` 缺省）。
-   **成本线分离（F-S14 ④）**：WARN ∕ CAP = 用户面规模线（数值 = 用户裁定 2026-10-08）；**成本自适应仍归内部触发**（面② 升级触发判据腿 L-②-5——单回合召回墙钟 ≥ 0.5 s ⇒ worker；零改）——两线不数值耦合。
+   **测试注入缝（计数注入——最小形）**：`createRowBudget(memory, origin, kind, dir, { baseOffset } = {})`——`base = originRowCount(memory, origin) + (baseOffset ?? 0)`；缺省（`undefined`）⇒ `+ 0` = 实读核计数（生产行为逐字不变）；单元测试档经 `baseOffset` 注入 ≥ WARN ∕ ≥ CAP 计数（文本用例零真行 ∥ 集成用例真 5 文件 + 计数偏移——30 万真行不落）。
+   先例 = 面⑤ ⑤-2 测试缝（注入参数 + `??` 缺省）。
+   **成本线分离（F-S14 ④）**：WARN ∕ CAP = 用户面规模线（数值 = 用户裁定 2026-10-08）；**成本自适应仍归内部触发**（面② 升级触发判据项 L-②-5——单回合召回墙钟 ≥ 0.5 s ⇒ worker；零改）——两线不数值耦合。
 - **P3 触发位**：同步尾（预算判定 + `budgetSkipped` 回执）；开库一次性（WAL checkpoint——§6.12 既有）；桌面 ∕ VSC 状态面（既有读数位）。**库字节读数（`dbBytes` + 逐 origin 行数）= `memoryStatus` 核出口**（P1 面）。**自动删除 ∥ 自动 VACUUM ∥ 备份轮转 = 面 ⑤（自愈轮 · 2026-10-08）**（P 族判据零改）。
 - **M1 per-origin 锚**：`meta.last_indexed_commit` 现为**全局单键**（实读：全库恰一枚）——多 origin 互相覆盖 ⇒ 他仓 diff 失锚（`git diff <旧锚> HEAD` 未知修订 ⇒ `gitSync` 返 null ⇒ 全扫兜底，慢但不错）；**改 `last_indexed_commit:<归一键>`**；兼容窗 = 旧键在而 per-origin 键缺 ⇒ 视为无锚（该 origin 全扫一次）；旧键清退 = 全部 origin 落锚后（ops）。
 - **M2 gitSync 路径形态收正**：diff 表为**仓根相对**（实读：子目录内 `git diff --name-only` 回 `scripts/…`），而索引路径为 **cwd 相对**（`git ls-files` 同读回 `src/tui/…`；`codeSync` 与库内 path 同形）。
@@ -628,7 +629,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 **边界（本批不做）**：把 `bin` 收进排除表；§6.11 路径键口径不动；manifest `index.excludePaths` 面不动（互补——声明面归面 ①）；**收尾口径零改**——不加 `excludePaths` 同款保护位（声明（用户）≠ 内建名单（产品）：SKIP_DIRS 命中文件本不该有行，存量 = 残余，沿上「二路」收敛）；
 判假围栏名**不入表**（出现实测需求再补）；`tools/tree.mjs` ∥ `index-discover.mjs` ∥ 桌面 `at-complete.mjs` ∥ `scripts/**` 同名常量 = 各自独立面（非索引判定），零触。
 
-**判据腿（逐条机检 · 号承上）**：
+**判据项（逐条机检 · 号承上）**：
 
 - **L-①-1（声明面）**：manifest 夹具含 `index.excludePaths:["./openclaw/","refs",""]` ⇒ 投影 `["openclaw","refs"]`（`/` 归一 · **首部 `./` 剥离** · 去尾斜杠 · 空 ∕ 非串元素剔除）；非数组形态 ⇒ 档非法（fail-closed，与 `index.*` 同款）。
 - **L-①-2（过滤 · 四半条）**：① 夹具树（含 `openclaw/` 与 `openclaw-fork/`）⇒ `listProjectFiles`（git ∕ walk 两径）零返回 `openclaw/**`、返回 `openclaw-fork/**`；② walk 径 = 剪枝形——全部可索引文件位于排除子树 ∧ `maxFiles` 小于该子树文件数 ⇒ 返回空 ∧ `truncated=false`（后过滤实现会 `truncated=true`——判别形）；
@@ -639,7 +640,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 - **L-②-2（B3 ∕ B4）**：接线夹具断言 SQL 含 origin 绑定 + 有界形（B3 = 计数子查询 `LIMIT WARN+1` 形；B4 = 文件行 `LIMIT WARN+1` 形——**随 WARN 常量**，现值 = `100001`）；越界返回串 = 「+」形（`100000+`）∕ 提示行（B4 越界 = 跳过大纲构建）。
 - **L-②-3（B6 ∕ M3）**：注入计数 `yieldFn` ⇒ stale 行数 ≥ 阈值时让出次数 ≥ 1。
 - **L-②-4（B7 读面零写）**：spy 句柄（记录 `prepare(sql)`）驱动 `search` ∕ `docSearch` ∕ `codeSearch` ⇒ 零 `UPDATE` ∕ `INSERT` ∕ `DELETE`；模型键不匹配 ⇒ 结果 = FTS-only（向量零计分）+ 一行可见。
-- **L-②-5（worker 触发）**：本批件探针脚本落批件——**夹具基线 = 缺省工作集 origin**（实态行数同量级夹具；复测 = 真库只读）；读数 ≥ 0.5 s ⇒ 下一轮升级判据，< 0.5 s ⇒ 不触发（**两向读数落档**）。判别换算 = 26 µs ∕ 行〔2026-09-30 读数〕⇒ 0.5 s ≙ ≈1.9 万行；预算上界档（= CAP 档）读数 = 结构量级参考，不作触发判别。
+- **L-②-5（worker 触发）**：本单元测试档探针脚本落该档——**夹具基线 = 缺省工作集 origin**（实态行数同量级夹具；复测 = 真库只读）；读数 ≥ 0.5 s ⇒ 下一轮升级判据，< 0.5 s ⇒ 不触发（**两向读数落档**）。判别换算 = 26 µs ∕ 行〔2026-09-30 读数〕⇒ 0.5 s ≙ ≈1.9 万行；预算上界档（= CAP 档）读数 = 结构量级参考，不作触发判别。
 - **L-③-1（P1）**：`memoryStatus` 夹具 ⇒ `dbBytes` = `statSync` 实读 ∧ 逐 origin 行数 = 直读聚合同值。
 - **L-③-2（P2）**：夹具 origin 既有行数（code + doc 合计）置于 CAP 邻域 ⇒ 回执 `budgetSkipped > 0` ∧ 跳过文件零落行（逐 `rel` 新旧行数差 = 0）∧ 两跑跳过集逐字相等（处理序确定性）∧ WARN 行恰一。
 - **L-③-3（M1）**：两 origin（两仓）各自 sync ⇒ 两枚 `last_indexed_commit:<origin>` 键互不覆盖；legacy 单键在而无 per-origin 键时 `gitSync` = null（全扫一次）。
@@ -648,7 +649,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
   ② **WARN 行（≥ 100k 夹具 · 计数注入）**——恰一行 `console.warn`：`[memory] index origin=<o> rows≈<n> (code + doc)` ∧ n = 真实行数（非阈值常量兜底 ∥ 非「+」截断形）∧ 无「WARN」∧ 无 `declare ∕ prune ∕ sweep` 形；
   ③ **CAP 行（≥ 300k 夹具）**——含「new files are not being indexed for now」（停收新档语义）∧ 选项式指路（`Options:` 枚举——`index.excludePaths` + `memory sweep`）∧ 无「WARN」∧ 跳过后列文件行为不变（`budgetSkipped` = 列序后缀 ∧ 逐 `rel` 零落行 ∧ 两跑跳过集逐字相等——L-③-2 同款）；
   ④ **显示面随动（F-S14 ③）**——「+」界 = WARN 线随动：头部计数 < WARN 给真实数（非「+」）∥ 越界回「+」形 = `100000+`（`setup.mjs` 读常量——功能零改；唯一触碰 = `thincoder-core/agent/setup.mjs:115` 注释值面一行收正）∥ B4 文件行上界同源（`repomap.mjs` `LIMIT WARN+1`）；
-  ⑤ **零行为变化（数值面外）**——`over()` ∕ `add` 刻度 ∥ 回执 ∥ `logEvent` 名 ∥ 跳过语义逐字不变；测试 = 批内件 `docs/batches/2026-10-08-memory-budget-surface.test.mjs`（拟新增——计数注入形 · 轻量）。
+  ⑤ **零行为变化（数值面外）**——`over()` ∕ `add` 刻度 ∥ 回执 ∥ `logEvent` 名 ∥ 跳过语义逐字不变；测试 = 单元测试档 `docs/batches/2026-10-08-memory-budget-surface.test.mjs`（拟新增——计数注入形 · 轻量）。
 - **L-④（home 根防护 ∥ SKIP_DIRS 补表——2026-10-04 · #867 本批新增）**：① **home 根检测**——启动索引 ∥ `/reindex` 触发面（`thincoder-cli/src/tui/startup.mjs` `backgroundIndex` ∥ `cmd-reindex.mjs`）于 `cwd === 用户主目录`（`resolve` 后平台归一比较——win32 大小写不敏感）⇒ **跳过索引**（`gitSync` / `codeSync` / `docSync` 零调用）；
   + 一行可见提示（含出路：项目目录启动——**去 `index.excludePaths` 半句**：跳过判据无条件、不查声明；同错三处收正 2026-10-04 ∥ #898）——**不阻断启动**（不砖死）；
   ② **`SKIP_DIRS` 补用户目录常用项**（`Library`=macOS ∥ `go`=Go 工作区——basename 匹配 · 任意深度剪枝，与既有平台项同款；**误剪接受面**：非用户目录下同名目录（如源码树内 `go/`）同被剪——承既有表同款口径，登记为已接受面）；③ 排除表零声明面（常量——同「行预算常量不可声明」款）。实现 = 本批实施轮。
@@ -699,21 +700,21 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 幂等 = 进程内一次性 + 逐动作阈值 ∥ 空集判（后到者零写）+ 跨进程单事务 ∥ `busy_timeout` 兜底 ∥ 备份撞名 fail-closed（§6.13 既有判据）。
 
 **⑤-6 安全封套 ∥ 读数（N-S8 显式化）**：**同一引擎同一安全口径** = 自动拍 ∥ 工具（∥ 将来命令形）皆经 `maintainMemory` 单点——备份先行 ∥ ENOENT-only ∥ 干跑读数随行（工具面缺省 = 干跑；自动拍写姿态 = 非干跑——⑤-5）∥ 写后回读。
-**低峰不阻塞** = 鬼行扫描分片让出（`SCAN_YIELD_MS` 口径——探针循环读钟让出）∥ 写面短事务 ∥ `VACUUM` 单语句不可让出（成本 ∝ 库重写——仅双式越阈 ∥ 窗口内执行；升级路径 = worker，承面② 判据腿）。
+**低峰不阻塞** = 鬼行扫描分片让出（`SCAN_YIELD_MS` 口径——探针循环读钟让出）∥ 写面短事务 ∥ `VACUUM` 单语句不可让出（成本 ∝ 库重写——仅双式越阈 ∥ 窗口内执行；升级路径 = worker，承面② 判据项）。
 **读数面挂靠 §4.10**（`dbBytes` ∥ 逐 origin 行数 = `memoryStatus` 口径不变——零新计数面；freelist = 维护内部读数，不入可见面）。可见面 = CLI 有动作时一行 ∥ `logEvent`（端面板零改）。
 
-**判据腿（逐条机检 · 号承 §6.14 上族）**：
+**判据项（逐条机检 · 号承 §6.14 上族）**：
 
 - **L-⑥-1（F-S10 · 鬼行 GC）**：表集 = `code_chunks` ∥ `doc_chunks`（夹具 ∥ 读回 ∥ 「鬼行 0」皆限于此二表；`files` 行归 §6.13 sweep ∥ `syncDir` 面）；沙箱夹具三 origin——A 树亡 ∥ B 树活且独档被删 ∥ C 树活全档在盘；① 干跑 = 计划含 A 全档 + B 死档 ∧ 零写（行 ∥ 字节不变、无备份）；② `confirm` ⇒ A ∥ B 死档行归零 ∧ C 逐键等前值 ∧ 探针错档零变 ∧ 备份在册（`integrity_check` = ok）∧ 报告含干跑先行读数；
-  ③ 探针错腿 = `probeFn` 注入缝返回 unknown ⇒ 该档保留。
+  ③ 探针错误用例 = `probeFn` 注入缝返回 unknown ⇒ 该档保留。
 - **L-⑥-2（F-S11 · 压实）**：阈值注入参数（`??` 缺省核常量——⑤-2）置小值 + 沙箱库造 freelist：① 双式全越 ⇒ 执行（注入计数 `vacuumFn` = 1）∧ freelist 后 < 前 ∧ 读数在；② 单越一式 ⇒ 跳过 + 理由；③ 全未越 ⇒ 零执行（注入计数 `vacuumFn` 零调用）；已知界（登记）= `VACUUM` 单语句不可让出——阻塞 = 恰一次全库重写（本批手清实例 2054.1 ⇒ 1006.0 MiB；时长未记）。
 - **L-⑥-3（F-S12 · 轮转）**：N+k 枚族内夹具 + 干扰档（8 位戳 ∥ 族外名）⇒ `confirm` ⇒ 恰余 N ∧ 最老者被清 ∧ 干扰档在场 ∧ 失败档（占用）跳过计数不抛；干跑 ⇒ 零删 + 清单在；钳制支 = N=0 ∥ 负值 ⇒ 引擎钳 1 ⇒ 恰余 1。
 - **L-⑥-4（F-S13 · 工具）**：① 缺省调用 = 干跑零写 + 逐动作段（执行 ∥ 跳过 + 理由）在场；② `confirm:true`（沙箱）⇒ 执行读数 + 备份在册；③ VSC 面动作闭集含 `maintain`；④ 未知 action 仍拒。
-- **L-⑥-5（N-S8 ∥ N-S9 · 封套）**：① 单点结构断言——自动 ∥ 工具两入口皆经 `maintainMemory` ∧ 同夹具两入口读数等值；② 备份判据两腿——命中 > 0 才取 ∥ 目标已存在 ⇒ 抛 ⇒ 零写；③ 零空转 = 干净夹具（零鬼行 ∧ 未越阈 ∧ 备份 ≤ N）`confirm` ⇒ 零写（行 ∥ 字节 ∥ 备份集全前值）；④ 让出腿 = 注入计数 `yieldFn` ⇒ 鬼行扫描越阈值时让出次数 ≥ 1（承 L-②-3 形——N-S8「低峰不阻塞」半条）。
-- **L-⑥-6（接线 · 幂等）**：① 调度器直测——二次调用返 `false` ∧ 延迟缝在场 ∧ 库不在盘 ⇒ 零动作且不建库；② 落点结构断言——CLI `backgroundIndex` 尾 ∥ 桌面启动拍邻位 + 惰性转口（静态闭包零 `node:sqlite`——承壳护栏判据）；③ 并发腿 = 先后两跑同夹具 ⇒ 后到者逐动作零写 ∥ 跳过。
+- **L-⑥-5（N-S8 ∥ N-S9 · 封套）**：① 单点结构断言——自动 ∥ 工具两入口皆经 `maintainMemory` ∧ 同夹具两入口读数等值；② 备份判据两项——命中 > 0 才取 ∥ 目标已存在 ⇒ 抛 ⇒ 零写；③ 零空转 = 干净夹具（零鬼行 ∧ 未越阈 ∧ 备份 ≤ N）`confirm` ⇒ 零写（行 ∥ 字节 ∥ 备份集全前值）；④ 让出分支 = 注入计数 `yieldFn` ⇒ 鬼行扫描越阈值时让出次数 ≥ 1（承 L-②-3 形——N-S8「低峰不阻塞」半条）。
+- **L-⑥-6（接线 · 幂等）**：① 调度器直测——二次调用返 `false` ∧ 延迟缝在场 ∧ 库不在盘 ⇒ 零动作且不建库；② 落点结构断言——CLI `backgroundIndex` 尾 ∥ 桌面启动拍邻位 + 惰性转口（静态闭包零 `node:sqlite`——承壳护栏判据）；③ 并发用例 = 先后两跑同夹具 ⇒ 后到者逐动作零写 ∥ 跳过。
 
 **边界（本批不做）**：不做 origin 结构卫生（盘根僵尸 ∥ 变体折叠 ∥ 嵌套重叠 ∥ 存量树——另议）；不自动扩缩收录范围（收录 = 声明 ∥ 名单面——维护 ≠ 裁决）；
-不提供绕过阈值的强制压实；不做 CLI 命令形（引擎已备——出现实测需求再补；**工具一面即达标**——命令形 = 边界在册）；`files` 表不涉；不引 worker（升级触发承面② 判据腿）；
+不提供绕过阈值的强制压实；不做 CLI 命令形（引擎已备——出现实测需求再补；**工具一面即达标**——命令形 = 边界在册）；`files` 表不涉；不引 worker（升级触发承面② 判据项）；
 §6.11 ∥ §6.13 既有判据零改（折叠 ∥ 探针 ∥ 安全三件 = 复用非改）。
 
 ### 6.15 声明公共仓的索引接入与跨仓引用（2026-10-02 · 台账 #832 · 设计轮）
@@ -735,18 +736,18 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
    声明根缺位 ⇒ **整根跳过**（展开前判存在性——同步面不扫不删；存量行归 §6.14 面 ⑤ 维护面回收（备份窗内可回滚；树恢复 ⇒ 重新同步）；树改名 ⇒ 旧 origin 存量行同此；ops `sweep --origin` 通路仍在）+ 一行 `logEvent`。
 2. **读面 origin 集（读侧）**：`docSearch` ∥ `codeSearch` 过滤集 = 项目 origin ∪ 声明公共仓 origin（各经 `normalizeOrigin`）；**单 origin（未声明 / 无项目）⇒ 逐字零行为**；多 origin ⇒ **逐 origin 分趟**：矢量扫描支 = 每趟**单 origin 等值**（`AND origin = ?`——游标键 `["path","line_start"]`，与单 origin 快径逐字同形同计划）；FTS 支 = `origin IN (…)` 单趟（无游标面）。
    **不取**「`origin IN (…)` + 全 PK 游标」形（与 D-MEM22 否决形同构相邻——未取证形不引）；**合并** = 各趟候选统一收集后经既有稳定排序，并列分数定序 = **PK 元组升序**（`origin` → `path` → `line_start`——单 origin 面即扫描序；与趟序 / 到达序无关）。`thincoder-core/agent/setup.mjs` 每回合召回注入与计数行（B3）同用该集。
-   注入块自 #1100 起**按腿分取**（本仓腿 ∥ 声明腿）——`docSearch` 可选 `origins` 覆盖参：缺省 `null` ⇒ 本函数自取 `searchOrigins`（现行为逐字）∥ 给定 ⇒ 以其为 origin 集（复用既有单/多 origin SQL 形）∥ 空数组 ⇒ 现「不过滤」语义；配额策略 = `AGENT-LOOP.md` §6.3（本档不复述）。
+   注入块自 #1100 起**按来源分取**（本仓来源 ∥ 声明来源）——`docSearch` 可选 `origins` 覆盖参：缺省 `null` ⇒ 本函数自取 `searchOrigins`（现行为逐字）∥ 给定 ⇒ 以其为 origin 集（复用既有单/多 origin SQL 形）∥ 空数组 ⇒ 现「不过滤」语义；配额策略 = `AGENT-LOOP.md` §6.3（本档不复述）。
 3. **跨仓引用（可核形——记录面同用）**：形态 / 解析序 / 处置 = `docs/core/design/DOC-DISCIPLINE.md` §4.2.2；记录面有界例外 = `docs/core/design/LEDGER-SELF-CONTAINED.md` §5.1；本档登记**解析消费面** = 锚机检声明源候选（`scripts/doc-check-anchors.mjs` 接线）。
 
-**判据腿（机检——单源批档 §2；号 = §6.15 面）**：
+**判据项（机检——单源批档 §2；号 = §6.15 面）**：
 
 - **L-6.15-1（声明投影——断值形层）**：夹具 `index.publicRepos: ["./../docs-repo/", "../mods/", "", 7]` ⇒ 投影 `["../docs-repo","../mods"]`（`./` 剥离 · `\` 归一 · 去尾斜杠 · 空 ∕ 非串剔除 · 去重保序）；非数组 ⇒ 档非法（fail-closed）；缺省 `[]` ⇒ 零行为。
-  **解析层（绝对根集）不在本腿**——`declaredPublicRoots` 经 `resolve(decl.root, p)` 产出、`normalizeOrigin` 消费（消费面腿 = L-6.15-2 ∥ L-6.15-3 ∥ L-6.15-4）。
+  **解析层（绝对根集）不在本项**——`declaredPublicRoots` 经 `resolve(decl.root, p)` 产出、`normalizeOrigin` 消费（消费面判据 = L-6.15-2 ∥ L-6.15-3 ∥ L-6.15-4）。
 - **L-6.15-2（同步展开）**：夹具两树 ⇒ 同步后两 origin 各有行；公共仓内单文件改动 + 复跑 ⇒ 增量只动该文件；公共仓自身声明第三仓 ⇒ 第三仓零行（不递归）；声明根缺位 ⇒ 零行零错 ∧ 存量行零变 ∧ `logEvent` 在场。
 - **L-6.15-3（读面集）**：同库三 origin（项目 ∥ 声明 ∥ 未声明）⇒ 检索命中含声明源、不含未声明源；无声明夹具 ⇒ 结果与基线逐字等值（单 origin 快径）。
-  **计划腿（多 origin 形——#832 修正轮 1）**：逐 origin 分趟——经 `runChunkedQuery` 缝捕获建后 SQL：① 趟数 = origin 集大小；② 每趟谓词 = 单 origin 等值 ∧ 游标键 `["path","line_start"]`（等值前缀列不入元组）；③ `EXPLAIN QUERY PLAN` 读数 = `SEARCH` 行（索引面）∧ **无 `USE TEMP B-TREE FOR ORDER BY`**（与单 origin 快径同形）；④ 合并并集排序与趟序 / 到达序无关（并列定序 = PK 元组升序）。
+  **计划用例（多 origin 形——#832 修正轮 1）**：逐 origin 分趟——经 `runChunkedQuery` 缝捕获建后 SQL：① 趟数 = origin 集大小；② 每趟谓词 = 单 origin 等值 ∧ 游标键 `["path","line_start"]`（等值前缀列不入元组）；③ `EXPLAIN QUERY PLAN` 读数 = `SEARCH` 行（索引面）∧ **无 `USE TEMP B-TREE FOR ORDER BY`**（与单 origin 快径同形）；④ 合并并集排序与趟序 / 到达序无关（并列定序 = PK 元组升序）。
 - **L-6.15-4（跨仓引用三态——三条独立谓词，各带一例；#832 父侧钉二）**：① `声明源在场 ∧ 目标档在` ⇒ **可解析（核绿）**（例：声明 `docs-repo` ∧ 目录在场 ∧ 声明仓内 `x.md` 在 ⇒ 非悬空）；② `声明源缺位` ⇒ **未核列报（报告面，不入闸——exit 0）**（例：同引用、`docs-repo` 目录不在 ⇒ 未核行列 + 汇总计数，不判悬空）；
-  ③ `不可解析 ∧ 未声明` ⇒ **照旧判（悬空红）**（例：未声明仓 `other-repo` 的前缀引用——机检解析序不可达且无声明 ⇒ 悬空照红）；`声明在场 ∧ 目标档缺` ⇒ 悬空照红（真悬空）。细节 = 批内件——批档 §2。
+  ③ `不可解析 ∧ 未声明` ⇒ **照旧判（悬空红）**（例：未声明仓 `other-repo` 的前缀引用——机检解析序不可达且无声明 ⇒ 悬空照红）；`声明在场 ∧ 目标档缺` ⇒ 悬空照红（真悬空）。细节 = 单元测试档——批档 §2。
 
 **边界（本批不做）**：不做跨仓写（各仓写侧自持不变；`reindexFile` 单文件缝不覆盖公共仓——公共仓内改动由下次同步收敛，登记为已知形态）；不做自动同步（不 clone ∕ 不 pull ∕ 不跨仓搬内容——只把**已在本地**的声明目录纳入索引）；不新造索引系统（复用既有 origin ∥ 同步 ∥ 读面机制）；不改召回语义 ∥ RRF ∥ 工具契约；公共仓缺位 ⇒ 存量行归 §6.14 面 ⑤ 维护面回收（备份窗内可回滚；树恢复 ⇒ 重新同步）；ops `sweep --origin` 通路仍在。
   **读源为默认面；发布包 ∕ 已装包（`node_modules` 树）不入射程**（SKIP_DIRS 既有排除——登记；如需消费另裁）。
@@ -762,7 +763,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 | D-MEM5 | 磁盘为真相（list / 批量删） | 孤儿文件一轮即删；工具所见即磁盘所存 |
 | D-MEM6 | 直接删 + `confirm` 参数即门禁 | 误删可审计重建（删除前返回内容）；否决两段式人工确认 |
 | D-MEM7 | 展开点 = `loadConfig()` 单点 | 权威单点、漏点面为 0、可回归；否决「各消费点各自展开」（漏点不可枚举）·「读取代理层」（破坏 config 普通对象契约）·「写盘归一」（毁原文与可移植性） |
-| D-MEM8 | 展开器住新模块 `expand-home.mjs` | `config.mjs` 已近硬限且同因已有拆分档；纯函数独立单测面干净；否决内联 |
+| D-MEM8 | 展开器住新模块 `expand-home.mjs` | `config.mjs` 已近硬限且同因已有拆分档；纯函数独立单元测试干净；否决内联 |
 | D-MEM9 | 支持形态 = `~` / `~/` / `~\`，**不含** `~user` | `~user` 需 passwd / Windows 用户名解析——收益低、双平台语义不一、猜错即静默错域 |
 | D-MEM10 | projectDir 消费侧用 `isAbsolute ? p : join(cwd, p)`（非 `resolve`） | `resolve` 对相对输入亦归一二进样（尾斜杠 / `..` 折叠）⇒ origin 串非零 delta |
 | D-MEM11 | 磁盘原文不动（读时归一） | 写回绝对路径毁可移植性 + 存量手写配置永不展开 |
@@ -780,11 +781,11 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 | D-MEM23 | 索引范围 = **声明面**（`index.excludePaths`）+ 前缀谓词单源三起效点；产品不硬编码参考系 | 范围是用户的工作集安排，产品无判据猜；单一声明载体 = manifest（KD-M1-31）。否决「`SKIP_DIRS` 硬加目录名」（用户布局各异 ⇒ 硬编码面）·「按体积自动排除」（静默行为、不可声明） |
 | D-MEM24 | 存量剪枝 = `sweep --origin + --path`（备份先行 · 干跑默认 · 写后回读） | 复用 §6.13 安全三件；`--origin` 整档做不到子树粒度；存量剪枝须用户批准 + 父侧 ops（自动删除 = §6.14 面 ⑤） |
 | D-MEM25 | **读面零写**：embedding 失效**判定**留读面（降级 FTS-only + 可见），失效**执行**移维护口 | 读路径（每回合）不得触发 162k 行级写；F-M6 ∕ D-MEM14「不产出无效结果 + 可见」两条同守（不评旧向量 ∥ 失效可见）。否决「保持现状 + 仅加日志」（巨写仍在 UI 路径）·「读面直接懒重建」（网络 + 写双爆点） |
-| D-MEM26 | 体积护栏 = 读数（`dbBytes` + 逐 origin 行数）+ 行预算常量（WARN 100k ∕ CAP 300k，只停新增——计数基准 = origin 库内行数）+ 触发三处；**自动删除 = §6.14 面 ⑤** | **用户告警线 ≠ 内部成本线**（F-S14 ④）：WARN ∕ CAP = 用户面规模线（用户裁定 2026-10-08——正常规模安静 ∕ 降级说人话；两行文本 = §6.14 P2）；成本自适应仍由内部触发承（单回合召回墙钟 ≥ 0.5 s ⇒ worker——面② 判据腿，数值零改）；常量先落（可声明面 = §8.3 登记）。否决「按字节算」（需全表 SUM——本身即大操作）·「自动剪枝」（破坏性） |
+| D-MEM26 | 体积护栏 = 读数（`dbBytes` + 逐 origin 行数）+ 行预算常量（WARN 100k ∕ CAP 300k，只停新增——计数基准 = origin 库内行数）+ 触发三处；**自动删除 = §6.14 面 ⑤** | **用户告警线 ≠ 内部成本线**（F-S14 ④）：WARN ∕ CAP = 用户面规模线（用户裁定 2026-10-08——正常规模安静 ∕ 降级说人话；两行文本 = §6.14 P2）；成本自适应仍由内部触发承（单回合召回墙钟 ≥ 0.5 s ⇒ worker——面② 判据项，数值零改）；常量先落（可声明面 = §8.3 登记）。否决「按字节算」（需全表 SUM——本身即大操作）·「自动剪枝」（破坏性） |
 | D-MEM27 | 增量维护三收正：per-origin commit 锚 ∕ `gitSync` `--relative`（路径形态与索引同形）∕ 探针部分索引（v10） | 实读：锚单键被多 origin 互覆；diff 路径仓根相对 vs 索引 cwd 相对 = 静默陈旧；探针 `SCAN` 实读（每回合三趟）。v10 = 只增索引（无行级变更） |
 | D-MEM28 | 本批**不**引 worker_thread；升级触发 = 修复后单回合召回墙钟仍 ≥ 0.5 s（**缺省工作集 origin 复测**——基线 ∕ 判别换算式见 §6.14 L-②-5） | 三爆点皆可去废 ∕ 分片消解；worker 牵动三端句柄直用面；承 D-MEM17 登记不执行 |
 | D-MEM29 | 声明载体 = `PROJECT-MANIFEST.json → index.publicRepos`（嵌 index 族——顶层键族与默认档计数零扰动；缺省 `[]` = 零行为） | 声明载体唯一化既有裁定（KD-M1-31——单一项目声明档）；嵌 index 族的理由 = 检索范围声明（同款先例 = `index.excludePaths`——同为解析期路径列表，元素层归一宽容 ∕ 数组层 fail-closed）。被否候选：◎顶层新键（「三族→四族」与「默认八键→九键」计数族全档连带）· ◎工作区级声明档（无此概念 = 新机制 + 跨仓协调面，违仓自持）· ◎约定位置发现（隐式魔法——不可声明 ∥ 不可核） |
-| D-MEM30 | 接入形 = **多根同步 + 读面 origin 集**（复用既有 origin 机制——不新造索引系统；展开一层不递归；单 origin 快径逐字零变） | 机械根因 = 语料单根 + 读面等值过滤 ⇒ 修法 = 语料加根（多 origin）+ 读面集化；「不新造索引系统」= 既有 origin ∥ 同步 ∥ 读面机制原样。被否候选：◎读面全放开（跨项目污染——origin 隔离本为防串项目）· ◎只直读不接入（纪律单腿——检索面缺口不闭）· ◎独立第二索引（新系统——违边界） |
+| D-MEM30 | 接入形 = **多根同步 + 读面 origin 集**（复用既有 origin 机制——不新造索引系统；展开一层不递归；单 origin 快径逐字零变） | 机械根因 = 语料单根 + 读面等值过滤 ⇒ 修法 = 语料加根（多 origin）+ 读面集化；「不新造索引系统」= 既有 origin ∥ 同步 ∥ 读面机制原样。被否候选：◎读面全放开（跨项目污染——origin 隔离本为防串项目）· ◎只直读不接入（仅靠纪律——检索面缺口不闭）· ◎独立第二索引（新系统——违边界） |
 | D-MEM31 | 毒行两道防线 = **发送前 `sanitizeLoneSurrogates`（主修）∥ 400 类批失败逐条隔离（兜底）** | 单条孤立代理毒行 ⇒ 硅基流动 400/20015 ⇒ 补嵌 backlog 永久堵死（22,957 待补嵌——每轮取同批头部）。清洗令存量毒行发前净化（根因消除）；逐条隔离只兜未知毒形（不引 schema 变更 / 持久标记——过度工程）。被否：400 加入 RETRYABLE（加重试税、无治愈）· 毒行持久登记（新存储面——清洗后已知毒源已消）。 |
 | D-MEM32 | 排除表补强 = **通用生态名入表**（精确 basename + `bazel-` 前缀）+ **族分折**（垃圾 ∕ 产物族 win32 折 ∥ 位置族全平台精确 ∥ POSIX 一律精确——2026-10-08 父侧裁定）；`bin` 不进排除表 | 名 = 目录身份，但**族不同判不同**：垃圾名 = 「这类目录」语义（拼写变体同物 ⇒ win32 折）；位置名 = 「某位置」语义（变体非同物 ⇒ 精确；全表折实核误剪 443 行——`desktop` 428 ∥ `library` 15）。精确 ∥ 前缀收的是「名」不是「模式」（`out` 不吞 `output`）。否决「全表折」（误剪合法同名面——本批实核证据）·「全平台折」（POSIX 上 `Pods` ∥ `pods` 是两个目录）·「维持全精确」（win32 上 `Node_Modules` 与 `node_modules` 是同一目录——不折 = 漏剪，F-S9 源起面）·「`bazel-*` 逐名枚举」（含工作区名——不可穷举）·「折叠扩至路径键」（§6.11 口径——两回事）。 |
 | D-MEM33 | 自愈轮 = **单引擎单入口**（`maintain.mjs` `maintainMemory`——自动拍 ∥ 工具同一单点）；三动作 = 鬼行 GC ∥ 压实 ∥ 轮转 | N-S8「同一引擎同一安全口径」的单点形；三动作共享备份先行 ∥ 读数随行 ∥ 写后回读。否决「各端各实现维护」（安全口径漂移）·「自动 ∥ 工具两套引擎」 |
@@ -792,7 +793,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 | D-MEM35 | 压实判据 = **freelist 双式联立**（`≥ 64 MiB` ∧ `freelist ∕ db ≥ 20%`——核常量 · 缺省值 = 用户拍项） | 两实测点：3 MiB ⇒ 零收益（§6.14 面③ 实判）∥ ~1 GiB ∕ 51% ⇒ 实清（2026-10-08）；比值防「大库小益」·下限防「小库频压」。否决「尺寸独立触发」（VACUUM 成本 ∝ 全库重写——freelist 小 = 纯成本）·「纯绝对阈值」 |
 | D-MEM36 | 备份轮转 = **严格名族匹配**（14 位戳）+ 保 N（`config.memory.maintain.backupKeep`——缺省 2 · 钳 ≥ 1）；引擎直落删 | 「不删非本机制所产文件」的可机检形 = 名族精确匹配（非前缀）；N ≥ 1 = 需求明文锚。否决「按 mtime 邻域清」（他产文件误伤面）·「rename 回收站形」（备份 = 派生副本——先例 = trace ∕ log 清理直删） |
 | D-MEM37 | agent 触发 = **`memory` 工具 action `maintain`**（干跑默认 ∥ `confirm` 落写）；命令形不做（**工具一面即达标**——命令形 = 边界在册） | 工具面 = 跨端同面（命令形 = CLI shell 通道——VSC 无终端子命令面，端差）；干跑默认 = 工具先例（delete 批 ∥ clear 的 confirm 形）。否决「CLI 命令形」（新命令面 ∥ 端差；出现 ops 实测需求再补——边界在册） |
-| D-MEM38 | 触发 = **启动后延迟拍**（每进程一次 · 缺省 3 s——先例 = 会话索引拍 `thincoder-core/session-index-pass.mjs:15` `INDEX_PASS_DELAY_MS = 3000`）；幂等三腿（进程内 ∥ 逐动作闸 ∥ 跨进程事务） | 「启动后低峰窗口」= 用户拍触发模型；延迟拍 = 既有先例形。否决「常驻周期拍」（长驻进程——交互高峰不可控）·「阈值不越不拍」（鬼行无阈值面——扫描 = 判定成本；写入面仍零空转） |
+| D-MEM38 | 触发 = **启动后延迟拍**（每进程一次 · 缺省 3 s——先例 = 会话索引拍 `thincoder-core/session-index-pass.mjs:15` `INDEX_PASS_DELAY_MS = 3000`）；幂等三项（进程内 ∥ 逐动作闸 ∥ 跨进程事务） | 「启动后低峰窗口」= 用户拍触发模型；延迟拍 = 既有先例形。否决「常驻周期拍」（长驻进程——交互高峰不可控）·「阈值不越不拍」（鬼行无阈值面——扫描 = 判定成本；写入面仍零空转） |
 
 ## 8. 不并项与历史沿革
 

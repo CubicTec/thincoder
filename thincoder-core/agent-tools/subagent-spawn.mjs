@@ -50,7 +50,7 @@ function logBatchDocRefs(parent, role, task, boundAbs) {
   const cwd = parent?.cwd ?? process.cwd()
   const text = typeof task === "string" ? task : ""
   const key = (p) => (process.platform === "win32" ? p.toLowerCase() : p)
-  const bases = batchDocBases(cwd) // 歧义锚 ⇒ 候选项目基底并集（#828——入基底判据覆盖面随之对齐）
+  const bases = batchDocBases(cwd) // 歧义锚 ⇒ 候选项目基底并集（#828——入基底判据覆盖范围随之对齐）
   const seen = new Set()
   for (const m of text.matchAll(MD_PATH_TOKEN)) {
     const token = m[0]
@@ -315,7 +315,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   // 每个 child 原先各自一份永不压缩的 _fullHistory（勘察 C2 乘数面）。
   child._historyWindow = RECORD_WINDOW_MESSAGES
 
-  // BATCH-RECORD.md §2 批次档段写入通道绑定（第 4 批；§4.16 扩 coder 可选臂）：工程角色
+  // BATCH-RECORD.md §2 批次档段写入通道绑定（第 4 批；§4.16 扩 coder 可选分支）：工程角色
   // （eng-coder/eng-designer）把批次档绝对路径记在 child 上——setup 挂载 `batch` 时读它；
   // 携绑定的 coder（普通模式，可选）同点绑定。无路径参数的工具靠这条绑定决定目标档
   // （spawn 门已保证「参数在 + 路径可读」）。

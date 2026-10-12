@@ -8,7 +8,7 @@
  * （F-BT6：有头登录一次 ⇒ 后续含无头复用登录态）。
  *
  * 注入缝（N-BT6）：`resolveBrowser({platform, env, pathExists, which})` 与 `acquireProfileLock`
- * 的 `io`——缺省回落真实现，单测零真实文件系统。
+ * 的 `io`——缺省回落真实现，单元测试零真实文件系统。
  */
 import { execFileSync, spawn } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"

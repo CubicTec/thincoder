@@ -115,7 +115,7 @@ function enqueueForWorkspace(db, workspace, kind, payload = {}, { now = Date.now
 
 /**
  * 注册沙盒控制台面 + 成员面 + 容器面 + 托管接入面。
- * 注入口径（批内件替身）：`now`（时钟——生产行为不变）∥ `fetchImpl`（Docker 传输——节点/容器面 ∥ 探活）∥ `deps`（托管接入面替身——见 `onboarding.mjs`）。
+ * 注入口径（单元测试档替身）：`now`（时钟——生产行为不变）∥ `fetchImpl`（Docker 传输——节点/容器面 ∥ 探活）∥ `deps`（托管接入面替身——见 `onboarding.mjs`）。
  */
 export function registerSandboxRoutes(routes, { db, config = {}, log = null, now = Date.now, fetchImpl = fetch, deps = {} } = {}) {
   if (!db) throw new Error("registerSandboxRoutes：缺少 db（openDatabase 产物）")

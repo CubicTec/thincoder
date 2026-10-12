@@ -80,7 +80,7 @@ export function appendStep(db, runId, stepId, entry = {}) {
 }
 
 /**
- * 任务面服务（§3）：`deps` = 注入口径（批内件/假件——`chat` 模型替身 ∥ `execImpl` SSH 替身 ∥ `fetchImpl` Docker 替身 ∥
+ * 任务面服务（§3）：`deps` = 注入口径（单元测试档/假件——`chat` 模型替身 ∥ `execImpl` SSH 替身 ∥ `fetchImpl` Docker 替身 ∥
  * `hasSshpass` 前置替身 ∥ `budget` 预算覆盖；缺省 = 生产行为不变）。
  */
 export function createOnboardingService({ db, config = {}, deps = {}, now = Date.now, log = null } = {}) {

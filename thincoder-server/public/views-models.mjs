@@ -15,18 +15,18 @@ import { t } from "./i18n.mjs"
 import { openModal } from "./modal.mjs"
 import { specForDisplay } from "./model-specs-snapshot.mjs"
 
-/** 条目名取读（两形——纯函数，批内件直测）：字符串 = 名 ∥ 对象 ⇒ `name`（形判/归一单源在服务端——本侧只读）。 */
+/** 条目名取读（两形——纯函数，单元测试档直测）：字符串 = 名 ∥ 对象 ⇒ `name`（形判/归一单源在服务端——本侧只读）。 */
 export function modelNameOf(item) {
   return typeof item === "string" ? item : String(item?.name ?? "")
 }
 
-/** 条目别名取读（两形 ⇒ 别名 ∥ `null`——纯函数，批内件直测）。 */
+/** 条目别名取读（两形 ⇒ 别名 ∥ `null`——纯函数，单元测试档直测）。 */
 export function modelAliasOf(models, model) {
   const hit = (models ?? []).find((item) => modelNameOf(item) === model)
   return hit !== null && typeof hit === "object" && typeof hit.alias === "string" && hit.alias !== "" ? hit.alias : null
 }
 
-/** 服务模型行集（与 `/v1/models` 同源——纯函数，批内件直测）：providers 展平（**嵌入引擎模型不入本列表**——
+/** 服务模型行集（与 `/v1/models` 同源——纯函数，单元测试档直测）：providers 展平（**嵌入引擎模型不入本列表**——
  *  单独命名空间，KD-SV-58）。行形 = `{ id（**对外标识**——配别名 ⇒ 别名 ∥ 未配 ⇒ 前缀形）, provider, upstream（上游真名）, surface（恒 chat）, reasoning }`。
  *  `reasoning` = 该模型思考档位枚举（服务端 `modelReasoning[上游真名]`——无档 ⇒ `[]`；**控制台零二次改写**——KD-SV-111）。
  *  条目两形（字符串 ∥ `{ name, alias }`——KD-SV-59①）；零迁移：存量字符串条目 ⇒ `id` 仍回落前缀形。 */
@@ -42,13 +42,13 @@ export function deriveModels(providers) {
   return [...rows].sort((a, b) => a.id.localeCompare(b.id)) // id 升序（2026-10-07 走查收正——服务模型页长清单可找；同弹窗清单口径）
 }
 
-/** A 停用 = `models` 减项（纯函数——批内件直测；本页 = 开放清单自持操作面——退役项同口径）。
+/** A 停用 = `models` 减项（纯函数——单元测试档直测；本页 = 开放清单自持操作面——退役项同口径）。
  *  **按名匹配保形**（KD-SV-59）：其余条目两形原样携带——别名不丢。 */
 export function modelsWithout(models, model) {
   return (models ?? []).filter((item) => modelNameOf(item) !== model)
 }
 
-/** G 别名写面（纯函数——批内件直测）：`models` 全量数组，目标条目别名改写（别名清空 `null` ⇒ **回落字符串形**——
+/** G 别名写面（纯函数——单元测试档直测）：`models` 全量数组，目标条目别名改写（别名清空 `null` ⇒ **回落字符串形**——
  *  两形归一）；其余条目**按名匹配保形**携带（两形与别名不动——服务端归一 = 规范两字段 `{name, alias}`）；目标不在清单 ⇒ 原样（防御——本页不会发生）。 */
 export function modelsWithAlias(models, model, alias) {
   return (models ?? []).map((item) => {
@@ -151,7 +151,7 @@ function modelsTable(ctx, rows, providers, reload) {
       h("tfoot", {}, h("tr", {}, h("td", { colspan: String(headers.length), text: t("common.rowCount", { count: rows.length }) })))))
 }
 
-/** 详情弹窗（复用公共组件；导出 = 批内件直测）：详情四行 + 配置六组（A/C/F/G/D/E）。
+/** 详情弹窗（复用公共组件；导出 = 单元测试档直测）：详情四行 + 配置六组（A/C/F/G/D/E）。
  *  停用 = confirm ⇒ PATCH `models` 减项（保形）⇒ 关窗 + 列表刷新 + flash；保存 = PATCH `settings`（单键全对象——
  *  **仅别名变更时随携 `models` 全量数组**，KD-SV-59）⇒ flash + 弹窗留驻。 */
 export function openModelModal(ctx, { row, entry, reload }) {

@@ -43,8 +43,8 @@
 
 | # | 项 | 现状（as-of 2026-09-25） | 到期 / 触发 |
 |---|---|---|---|
-| T1 | `session gc` / `session index` 旗标补全（bash / zsh / fish **三套皆缺**） | 三套只补子命令名面，无 `--dry-run` / `--confirm` / `--status` / `--rebuild`（实装旗标面 = `thincoder-cli/bin/thincoder.mjs:120-125` USAGE 行） | 该命令面 ∨ 补全面下次触碰 |
-| T3 | 补全面 / 命令清单**全量**机检锁缺位 | **cli-small-items 批**窄射程锁（sweep 旗标 + `ledger` 顶层词）宿主 = `thincoder-cli/test/memory-sweep-cli.test.mjs`——**该档随 2026-09-28 测试树全清令退役**（常驻重建挂台账 #590 面）⇒ 窄锁现缺位；本批 ledger 补全（#677 I8）锁面 = 批内件（单测树重建时回迁）；其余命令 / 旗标条目无锁（漂移史 = **cli-small-items 批** #350 三件） | 立全量锁单批 ∨ 补全面下次实质改动（重建时同落）（迁移期引文） |
+| T1 | `session gc` / `session index` 旗标补全（bash / zsh / fish **三套皆缺**） | 三套只补子命令名面，无 `--dry-run` / `--confirm` / `--status` / `--rebuild`（实装旗标面 = `thincoder-cli/bin/thincoder.mjs:120-125` USAGE 行） | 该命令面 ∨ 补全下次触碰 |
+| T3 | 补全 / 命令清单**全量**机检锁缺位 | **cli-small-items 批**窄射程锁（sweep 旗标 + `ledger` 顶层词）宿主 = `thincoder-cli/test/memory-sweep-cli.test.mjs`——**该档随 2026-09-28 测试树全清令退役**（常驻重建挂台账 #590 面）⇒ 窄锁现缺位；本批 ledger 补全（#677 I8）锁面 = 单元测试档（单元测试树重建时回迁）；其余命令 / 旗标条目无锁（漂移史 = **cli-small-items 批** #350 三件） | 立全量锁单批 ∨ 补全下次实质改动（重建时同落）（迁移期引文） |
 
 ## 4. 已消解（勿当债——留证据行，防回潮）
 

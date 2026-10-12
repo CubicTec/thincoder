@@ -12,7 +12,7 @@
  * 流形：`application/x-ndjson`（每行一帧 `turn`/`delta`/`usage`/`call`/`result`/`end`；`Cache-Control: no-store`）；**流中失败 = `end` 帧**（headers 已发——不再走信封）。
  * 重启恢复（`running` ⇒ `idle` + notice + `chat_stop` 审计）= **装配期执行**（无端点——本注册行内跑；KD-SV-86 如实收尾）。
  * 审计写（`agent_event`——KD-SV-91）：`chat_start`（会话创建）∥ 重启 `chat_stop` 在本档；逐调用 `chat_call` 与异常/中止 `chat_stop` 在 `chat.mjs`。
- * 注入口径（批内件替身）：`deps`（`chat` 假模型出口 ∥ `tools` 假工具面 ∥ `imageGate` 图片门核件替身 ∥ `runtime`/`config`/`env`/`fetchImpl`/`guard` 工具面装配上下 ∥ `budget`）。
+ * 注入口径（单元测试档替身）：`deps`（`chat` 假模型出口 ∥ `tools` 假工具面 ∥ `imageGate` 图片门核件替身 ∥ `runtime`/`config`/`env`/`fetchImpl`/`guard` 工具面装配上下 ∥ `budget`）。
  */
 import { recordAudit } from "../accounts/audit.mjs"
 import { requireAdmin } from "../accounts/session.mjs"

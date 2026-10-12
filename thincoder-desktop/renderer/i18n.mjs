@@ -63,7 +63,7 @@
  *      `status.usage` 仅值改、零增退）⇒ 实读 `HOST_DICT`（**合并表**）**295 ⇒ 294**（两语同拍、键集相等；届盘实读续链）。
  *      **i18n 拆分批（2026-09-29 · 台账 #614 · 顶格消解）**：`settings.*` 族 **55** 键出档（→ `renderer/i18n-settings.mjs`
  *      （第四档））⇒ 本档自有 **142 ⇒ 87**、四档单语键数 = `HOST_DICT`（**合并表**，值零动）**294** 不变 ∕ `VIEWS_DICT` **124** ∕
- *      `COMPOSER_DICT` **28** ∕ `SETTINGS_DICT` **55**（两语同拍、键集相等；机检 = 批内件）。
+ *      `COMPOSER_DICT` **28** ∕ `SETTINGS_DICT` **55**（两语同拍、键集相等；机检 = 单元测试档）。
  *      **撤会话头批退三键**（会话头三字段标两语同退 —— 台账 #668；消费面随面退场 ⇒ 键面随退，零残键）
  *      ⇒ 实读 `HOST_DICT`（**合并表**）**295 ⇒ 292**（两语同拍、键集相等；届盘实读续链）。
  *      **S3 分档批增一键**（#673 · 2026-09-29：`settings.reason.hostBusy` 两语同增 —— 渠行行标分档词，
@@ -141,7 +141,7 @@ import { COMPOSER_DICT } from "./i18n-composer.mjs"
 import { SETTINGS_DICT } from "./i18n-settings.mjs"
 import { VIEWS_DICT } from "./i18n-views.mjs"
 
-/** 宿主 UI 专有键（两语键序同 = 对位阅读 · 键集相等 = 用例机检面）：`rail.*` = 会话控制条残余族（打开目录 ∕
+/** 宿主 UI 专有键（两语键序同 = 对位阅读 · 键集相等 = 用例机检）：`rail.*` = 会话控制条残余族（打开目录 ∕
  *  新建会话两动作词 + 会话条目三键 = 缺省题 ∕ 计数 ∕ 日期 + 账本注记两键——会话模型轮 R13：原左列元素族随左列
  *  裁撤退场，保留键 = 会话控制条 ∕ 引导面两消费面同用）·
  *  `chat.*` = 对话流（引导面两键 / 摘要块 / 药丸两态 /
@@ -397,7 +397,7 @@ export const FALLBACK_LOCALE = "en"
 let current = FALLBACK_LOCALE
 let project = {}
 let hostTable = null
-/** 核件取词注册槽（「对齐第二批」修复轮）：未注册（平 node / 用例面）⇒ `initDict` 空操作 —— 本档零依赖。 */
+/** 核件取词注册槽（「对齐第二批」修复轮）：未注册（平 node / 用例）⇒ `initDict` 空操作 —— 本档零依赖。 */
 let stringSink = null
 
 /** 核件取词注册面（注册单点 = `renderer/app.mjs` —— 浏览器专属档持核 `setStrings`；本档须保持平 node

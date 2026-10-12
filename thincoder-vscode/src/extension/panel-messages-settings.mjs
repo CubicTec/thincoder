@@ -157,7 +157,7 @@ export function handleDeleteWebsearchKey(panel) {
 }
 
 /** 迁出自 `panel-messages.mjs` 的 case "testProvider"。③′：载荷 +`proxy` 透传（未勾 ∥ 缺省 ⇒ 直连）。
- *  #1051（2026-10-10 vsc-consistency 批）：请求归属判据面——**结果原样回显 `id`**（webview 落框前
+ *  #1051（2026-10-10 vsc-consistency 批）：请求归属判据——**结果原样回显 `id`**（webview 落框前
  *  按 id 判归属：旧框在飞果 ∥ 重放果弃）；载荷缺 `id`（无请求 id 的发送方）⇒ 结果不携。 */
 export async function handleTestProvider(panel, msg) {
   // M1 三 format 分派：format 随表单透传（anthropic/google 与 openai 端点/头不同）
@@ -201,7 +201,7 @@ export function handleSaveAgentSettings(panel, msg) {
 
 /** 迁出自 `panel-messages.mjs` 的 case "getAgentSettings"。
  *  F-W18（§2.11）：await 序——`indexStatus` 先落，其后快照族（含异步 shell 候选面）；
- *  两拍均 await ⇒ 回批序 = 契约序（W8-1 机检面）。 */
+ *  两拍均 await ⇒ 回批序 = 契约序（W8-1 机检）。 */
 export async function handleGetAgentSettings(panel) {
   await panel._pushIndexStatus()
   await panel._pushSettingsLight()

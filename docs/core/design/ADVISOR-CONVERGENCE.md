@@ -14,7 +14,7 @@
 > `thincoder-core/advisor/citations.mjs`（host-verified citations）· `thincoder-core/advisor/history.mjs`（响应表 / 对话背景提取）·
 > `thincoder-core/advisor/repos.mjs`（评审范围采集）· `thincoder-core/agent-tools/advisor.mjs` / `advisor-async.mjs`（工具面与异步池）·
 > `thincoder-core/agent-tools/advisor-settle.mjs`（结算 / 陈旧判定）· `thincoder-core/agent/record-results.mjs`（工具结果记账）· `thincoder-core/agent/completion.mjs`（完成 guard 推回）。
-> 档位判据（>500 主动拆 / >800 硬顶）= 纪律层代码结构判据节；行数标注义务（限源 / 测试档）——文档规范节不再承载行数义务；评审核查维度行为 = 本档 §9 ∥ §14。
+> 档位判据（>500 主动拆 / >800 硬顶）= 纪律层代码结构判据节；行数标注义务（限源 / 测试文件）——文档规范节不再承载行数义务；评审核查维度行为 = 本档 §9 ∥ §14。
 
 ## 1. 目标
 
@@ -393,7 +393,7 @@ advisor design review 标准维度补一条：
 ## 12. 验证
 
 评审收敛行为（轮次提示词替换、prior 原文注入、确定性轮次判定、**第 6 次及以后照常受理探针（撤 cap）**、guard 推回判定、fresh session、host-verified citations、对象声明块注入）的回归测试按测试基建执行（`docs/core/design/TESTING.md` §10：单入口 `npm test`——`slow` 纯别名、原慢测用例随入口全跑）。
-提示词锚（“Do NOT look for new issues”、证据规则句等）的防回退核对 = **逐字读核对**；如需机检，形态限**行为面 / 结构机检面**（禁读非测试档断言「某句在场 / 缺席」的散文锚测试——纪律 = `docs/core/design/prompts/discipline-engineering.md` §测试纪律）。
+提示词锚（“Do NOT look for new issues”、证据规则句等）的防回退核对 = **逐字读核对**；如需机检，形态限**行为面 / 结构机检**（禁读非测试文件断言「某句在场 / 缺席」的散文锚测试——纪律 = `docs/core/design/prompts/discipline-engineering.md` §测试纪律）。
 
 **验收标准（逐条回指需求）**：
 
@@ -410,8 +410,8 @@ advisor design review 标准维度补一条：
 | A-AC9 | 响应表 `Action` 四值封闭；`Dispatched` 行在批准请求前须收敛为 `Fixed` | 响应表 / 时序 |
 | A-AC10 | 需求契合度维度在位（声称 vs 实现 / 期望 vs 形态）；证据约束（无证据至多 🔵） | 需求契合 |
 | A-AC11 | 行数标注核查维度在位；函数档为第一判据 | 行数核查 |
-| A-AC12 | 争议窗与接受收口（F32）：轮 2 可对不修理由出打回（轮 1 无 prior——窗语义不入，§2.5）、轮 3+ 对携理由不修项接受收口；零理由项任一轮保持未解（提示词逐字在位 + 表列 `Accepted` 词表行逐字可核——**逐字读核对**；机检限行为面 / 结构机检面） | §2.5 |
-| A-AC13 | pass 判据随动（F33）：轮 3+ prior 🔴 全部 ∈ {fixed, accepted} 才可 pass；零理由未解项 ⇒ 不可 pass（轮 2 / 3 裁决句逐字 + 设计回显条件句在位——**逐字读核对**；机检限行为面 / 结构机检面） | §2.4 / §2.5 |
+| A-AC12 | 争议窗与接受收口（F32）：轮 2 可对不修理由出打回（轮 1 无 prior——窗语义不入，§2.5）、轮 3+ 对携理由不修项接受收口；零理由项任一轮保持未解（提示词逐字在位 + 表列 `Accepted` 词表行逐字可核——**逐字读核对**；机检限行为面 / 结构机检） | §2.5 |
+| A-AC13 | pass 判据随动（F33）：轮 3+ prior 🔴 全部 ∈ {fixed, accepted} 才可 pass；零理由未解项 ⇒ 不可 pass（轮 2 / 3 裁决句逐字 + 设计回显条件句在位——**逐字读核对**；机检限行为面 / 结构机检） | §2.4 / §2.5 |
 | A-AC14 | 跨评审隔离：并发 / 延迟下消息构建取本评审实例值（排队启动复核）；轮 2+ 响应表取件不小于本评审投递水印（前向取首表；无水印回落全文倒扫） | §4.3 / `AGENT-LOOP-ASYNC-POOL.md` §6.10 |
 | A-AC15 | 同类先例核查维度在位（「同类先例」行：先例坐标 + 对齐 ∥ 偏离理由；偏离理由显式判据；无先例须显式声明）；设计评审提示词对应维度在位——落点 = `docs/core/design/prompts/advisor-design.md` §评审标准第 9 条 ∥ `thincoder-core/prompts/advisor-design.md` 同节同位；**待实施轮落笔**（CN = eng-designer 笔 ∥ EN = eng-coder 笔） | 同类先例 |
 

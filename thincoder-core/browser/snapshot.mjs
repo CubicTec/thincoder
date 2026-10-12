@@ -3,7 +3,7 @@
  * （BROWSER-TOOL.md §2.3 ∥ §2.7）。
  *
  * 页面侧脚本一律经 `Runtime.evaluate` **一次性执行、不驻留**（§3.3）；每条表达式带一个块注释标识
- * 前缀（`thincoder-browser:<种类>`）——回执/调试可辨出处，单测假传输按此前缀派发。
+ * 前缀（`thincoder-browser:<种类>`）——回执/调试可辨出处，单元测试假传输按此前缀派发。
  * 引用表：`key = tag + "|" + selector`，跨快照复用原号（KD-1 / F-BT4「微变不全失效」）。
  * 几何（F-BT14）：每条记录携 `geo`（视口 CSS 像素）与 `inViewport`；`[outside]` 仅标视口外行（KD-15）。
  */

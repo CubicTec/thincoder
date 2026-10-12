@@ -14,7 +14,7 @@
  * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`delta` 追加当前块 ∥ `call`/`result` 工具卡嵌块内 ∥
  * `end` ⇒ 重读详情〔读时单源〕）；中止 = `POST .../:id/abort`；换模型 ∥ 设档位 = `PATCH .../:id`（明选即改、下回合生效——KD-SV-108/110）。
  * 断连/离页 = 读流中止（回合照跑——落库单源；回来「重读」即全量）；发送失败/流前错误 = 就地人话（`ctx.fail`——`mapError` 口径）。
- * 批内件直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`）。
+ * 单元测试档直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`）。
  */
 import { mapError, t, langTag } from "./i18n.mjs"
 import { openModal, showNote } from "./modal.mjs"
@@ -39,7 +39,7 @@ const PIN_FLAG = "_chatFollowPin"
 /** 核件词面部件（当前语言别持——门面同源档；`langTag()` ⇒ `zh-CN` ∥ `en`）。 */
 const coreStrings = () => (langTag() === "en" ? EN_CORE : ZH_CORE)
 
-// ── 纯函数（批内件直测）────────────────────────────────────────────────────
+// ── 纯函数（单元测试档直测）────────────────────────────────────────────────────
 
 /** NDJSON 行切分（流式读取帧切面）：`buffer + chunk` ⇒ 完整行 + 残行（不足一行留待下一块——末帧无换行由调用方再切一次）。 */
 export function splitLines(buffer, chunk) {
@@ -72,7 +72,7 @@ const NOTICE_KEYS = {
   aborted: "admin.chat.noticeAborted",
 }
 
-/** notice 行文案（纯函数——批内件直测）。 */
+/** notice 行文案（纯函数——单元测试档直测）。 */
 export function noticeText(message) {
   const reason = typeof message?.data?.reason === "string" ? message.data.reason : ""
   const key = NOTICE_KEYS[reason]

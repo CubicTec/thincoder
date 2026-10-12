@@ -13,12 +13,12 @@
  * 安全封套（N-S8 · ⑤-6）：同一引擎同一安全口径——备份先行 ∥ ENOENT-only ∥ 干跑读数随行
  * （工具面缺省 = 干跑；自动拍 = 非干跑）∥ 写后回读。低峰不阻塞：鬼行扫描分片让出（`SCAN_YIELD_MS`
  * 口径——探针循环读钟让出）∥ 写面短事务；`VACUUM` 单语句不可让出（已知界——恰一次全库重写；
- * 升级路径 = worker，承面② 判据腿）。
+ * 升级路径 = worker，承面② 判据分支）。
  *
  * 复用（单源 = §6.14 引擎表）：`sweep.mjs` 的 `probeOriginPath` ∥ `treeState` ∥ `takeBackup`
  * （+ `backupPathFor`）∥ `originCounts`。`files` 表不涉（记忆层非项目文件）；§6.11 ∥ §6.13 判据零改。
  *
- * 测试缝（L-⑥ 各腿所需）：阈值参数（`??` 缺省核常量）∥ `vacuumFn` ∥ `probeFn` ∥ `yieldFn`
+ * 测试缝（L-⑥ 各分支所需）：阈值参数（`??` 缺省核常量）∥ `vacuumFn` ∥ `probeFn` ∥ `yieldFn`
  * （+ `nowFn` ∥ `yieldMs` ∥ `yieldCheckRows` ∥ `now` ∥ `backupKeep`）；调度缝 =
  * `_setMemoryMaintenanceDelayForTest`。调度（⑤-5）= `scheduleMemoryMaintenance`——每进程一次 ∥
  * 延迟拍（缺省 3 s——先例 `session-index-pass.mjs`）∥ 异步非阻塞 ∥ 失败静默（+ `logEvent`）∥

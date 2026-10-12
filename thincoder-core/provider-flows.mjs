@@ -21,7 +21,7 @@
  * M9 语义定死：**准入永不阻断写** —— 探针只出读数 ∕ 失败消息（消息本体逐字长句），绝不抛出 ∕
  * 绝不回滚已完成的保存；失败不缓存（下次配置动作重探）。
  *
- * 消费面：桌面 `thincoder-desktop/src/main/providers.mjs`（四通道壳——判据面：`FORMATS` ∕
+ * 消费面：桌面 `thincoder-desktop/src/main/providers.mjs`（四通道壳——判据：`FORMATS` ∕
  * `customFieldsError` ∕ `probeAdmission`；端侧 reason 词法不动）；三流程本体 = 桌面 ∕ VSC（已随本批迁移改指）消费，CLI 待迁。
  */
 import { PROVIDER_PRESETS } from "./config-presets.mjs"

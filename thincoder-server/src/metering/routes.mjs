@@ -27,7 +27,7 @@ function paramsOf(url) {
 }
 
 /** 过滤参数装配（四读端点共用；`memberId` 给定 = 固定成员——本人面）。
- *  注：查询键以模板字面量书写——from 键的双引号形会撞批内件依赖面扫描的采集正则（该扫描件按令零改）误报。 */
+ *  注：查询键以模板字面量书写——from 键的双引号形会撞单元测试档依赖面扫描的采集正则（该扫描件按令零改）误报。 */
 function usageFiltersOf(db, params, { memberId = null } = {}) {
   return {
     memberId: memberId ?? resolveMemberFilter(db, params.get(`member`)),

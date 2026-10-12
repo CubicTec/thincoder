@@ -78,7 +78,7 @@
 - 令牌 / 参数 / 设置面 **5 档**：`AGENT-PARAMS.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `ENG-TOKEN-BINDING.md` · `SETTINGS-TOOL.md` · `VERIFY-REDESIGN.md`；
 - 流程 / 文档机制面 **12 档**：`ANCHOR-DEBT-REPAIR.md` · `BATCH-RECORD.md` · `DOC-CODE-RECONCILE.md` · `DOC-DISCIPLINE.md` · `ENGINEERING-MODE-V2.md` · `LEDGER.md` · `LEDGER-SELF-CONTAINED.md` · `LIGHT-CHANNEL.md`（轻通道机制——细节面 ∥ 收敛面受控旁路设计；2026-09-30 建档 · 2026-10-02 扩容）·
   `MANIFEST.md` · `TESTING.md` · `TURN-CAP-CONTINUE.md` · `API-CONTRACT.md`（核接口按需索引——生成区 ∥ 语义区两区制；2026-09-29 建档）；
-- 基准测试面 **2 档**：`MODEL-BENCH.md`（模型基准测试套件——仓级 `bench/` 工具的设计面；2026-09-23 model-bench 批建档）· `MODEL-SPECS.md`（模型规格表设计档——bench 名单面规格行承载；2026-09-24 参数批建行）；
+- 基准测试 **2 档**：`MODEL-BENCH.md`（模型基准测试套件——仓级 `bench/` 工具的设计面；2026-09-23 model-bench 批建档）· `MODEL-SPECS.md`（模型规格表设计档——bench 名单面规格行承载；2026-09-24 参数批建行）；
 - 团队客户端面 **1 档**：`TEAM.md`（团队客户端——登录与接入：`team` 段 ∥ 派生 provider 条目 ∥ 三端同构 ∥ 决策 D-TM1–6；2026-10-10 B1 批建档）；
 - **计数核对（复跑 as-of 2026-10-10 · B1 批（team-login-client-access）· 按名对账）**：`core/design/` 实档 **60** = 本图登记 **60** + **待补登 0**（逐名相等；2026-10-07 基线 59 ⇒ + `TEAM.md`——2026-10-10 本批建档）。
   （前值 **51 = 51** 为 as-of 2026-09-17 读数；此后实增五档：`MODEL-SPECS.md`（他批）+ `AGENT-LOOP-ASYNC-POOL.md` · `AGENT-LOOP-UPSTREAM.md`（structure-debt 批同批登记）+ `MODEL-BENCH.md`（model-bench 批同批登记）+ `LIGHT-CHANNEL.md`（轻通道机制批 · 2026-09-30）。）
@@ -137,7 +137,7 @@
 - 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #230 / #245）：
   §4 按名对账收正（幻影 `ENGINEERING-MODE.md` 撤登 · `MODEL-SPECS.md` 补登 · 工作流档计入口径写明）；计数 = **实档 55 = 登记 55 + 待补登 0**；§1 部分档 **10 → 23**（`cli/` 12 · `vsc/` 11——实盘对账）；§4 迁移批迁入档行 `cli/` / `vsc/` 逐档重出 + `RELEASE.md` 死指针收正。
 
-- 2026-09-23：**model-bench 批登记 + 计数收正**——§4「其余」组 **32 → 33 档**（+ 基准测试面 `MODEL-BENCH.md`——模型基准测试套件设计档，2026-09-23 建档）；计数核对行收正为 **实档 55 = 本图登记 54 + 待补登 1**（`MODEL-SPECS.md`——他批）。
+- 2026-09-23：**model-bench 批登记 + 计数收正**——§4「其余」组 **32 → 33 档**（+ 基准测试 `MODEL-BENCH.md`——模型基准测试套件设计档，2026-09-23 建档）；计数核对行收正为 **实档 55 = 本图登记 54 + 待补登 1**（`MODEL-SPECS.md`——他批）。
 
 - 2026-09-22：**structure-debt 批（三分面）登记 + 计数收正**——§4「顾问 / 协作 / 子代理面」**7 → 9 档**（+ `AGENT-LOOP-ASYNC-POOL.md` · `AGENT-LOOP-UPSTREAM.md`）；「其余」组标题计数随批收正（27 → 32）；计数核对行收正为 **实档 54 = 登记 53 + 待补登 1**（`MODEL-SPECS.md`——他批）。
 

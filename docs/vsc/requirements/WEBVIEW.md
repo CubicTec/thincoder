@@ -100,7 +100,7 @@ webview 只做 UI 渲染与用户交互；agent 循环与工具执行在 extensi
 | N-W2 | DOM / 内存有界 | 消息窗上限 150 块（含归档块——`thincoder-vscode/webview/ui.js:231-239`）；卡体上限 64K（核 `thincoder-render-core/lib.mjs:26-34`）；离屏消息 / 工具卡跳过 layout/paint（`thincoder-vscode/webview/chat.css:474-475`）；活动区居民有界（live + awaitingDigest——设计 = `design/WEBVIEW.md` §5.1） | 常量在位（逐处源码锚）；长会话回归：裁剪后 `data-idx` 锚可将历史拉回（`history-restore`——**退场注**：随 2026-09-28 测试树全清重置退场——留名存档） |
 | N-W3 | 流式渲染性能 | 帧应用走 rAF 脏集路径——不逐 chunk 强制同步布局（`thincoder-vscode/webview/ui.js:207` ∥ `:209` 抄「写超值不读 scrollHeight」——单源 = 核 `thincoder-render-core/scroll.mjs:33-39`；`thincoder-vscode/webview/streaming.js:27` 注释） | 源码锚 + `thincoder-vscode/test/activity-live-ux.test.mjs`（帧应用不丢 / 节流重排）（已随 2026-09-28 测试树全清退场，留名存档）（迁移期引文） |
 | N-W4 | 分页与恢复对位 | `HISTORY_PAGE_SIZE === 200`（核 `thincoder-core/history-window.mjs:29`——跨端首窗对齐；VSC 端转口档 `thincoder-vscode/src/extension/history-window.mjs:12`）；恢复保真（帧序 / 工具卡 / 时间戳形态） | 常量断言 = `history-window`；`history-restore` 全绿（**退场注**：两件随 2026-09-28 测试树全清重置退场——留名存档） |
-| N-W5 | 可机判 | 每条功能需求有既有用例面（活动族 / 输入族 / 历史族 / 状态族）；**登记在案的例外 1 条**：F-W4 活卡面现无专属用例——**消解路径** = 活卡面（`toolCall`/`toolOutput`/`toolResult` 接收）补测；**到期条件** = WEBVIEW 面下次被触碰时 / 下批收口前（依据 = `ENGINEERING-MODE（VSC 侧·需求）` §1.3 F14 第三子条）；测试档登记入 `thincoder-vscode/test/files.mjs`（清单制） | `node test/run.mjs` 全绿（单入口）+ 档名在册；登记在案的例外 1 条（消解路径 + 到期条件在位） |
+| N-W5 | 可机判 | 每条功能需求有既有用例（活动族 / 输入族 / 历史族 / 状态族）；**登记在案的例外 1 条**：F-W4 活卡面现无专属用例——**消解路径** = 活卡面（`toolCall`/`toolOutput`/`toolResult` 接收）补测；**到期条件** = WEBVIEW 面下次被触碰时 / 下批收口前（依据 = `ENGINEERING-MODE（VSC 侧·需求）` §1.3 F14 第三子条）；测试文件登记入 `thincoder-vscode/test/files.mjs`（清单制） | `node test/run.mjs` 全绿（单入口）+ 档名在册；登记在案的例外 1 条（消解路径 + 到期条件在位） |
 | N-W6 | 端差显式 | 各端独立实现、语义同源；端差逐条登记（本档 §4），不静默（同规 = `AGENT-LOOP（VSC 侧·需求）` §16 N-CL4） | §4 表逐行在位；无未登记放行通道（`ENGINEERING-MODE（VSC 侧·需求）` §1.3 F14） |
 | N-W7 | 收发面对表零未处置 | host → webview 全部**顶级**消息判别式（`type` / `name`）逐条登记：发射点 `file:line` / 分发或消费位 `file:line` / 处置（`活`·`删`·`补`）——**无未处置项**；无生产者族（死码）当批删除且零悬空引用；`补` 行（host 缺发射）登记 + 转技术待办（带消解期），不在本批新增协议语义 | 表在 `design/WEBVIEW-PROTOCOL.md` §12；结构机检 = `thincoder-vscode/test/protocol-coverage.test.mjs`（已落 · 实读 386 · 复跑零未处置）；被删标识符全树 `grep` 零命中；`npm test` 绿 |
 
@@ -156,7 +156,7 @@ webview 只做 UI 渲染与用户交互；agent 循环与工具执行在 extensi
 |---|---|---|---|
 | 1 | 设计侧三档（`design/WEBVIEW.md` · `WEBVIEW-PROTOCOL.md` · `WEBVIEW-INPUT.md`）**已迁入基准层**（批 2） | 本档 §1 / §2 的设计节引用已翻转为**同层引用**（`design/<档>.md` §N——`docs/core/design/DOC-SYSTEM.md` §7 R2 层前缀形态） | 本批已收口 |
 | 2 | `AGENT-LOOP（VSC 侧·需求）` §10 / §12 / §14 / §16 未迁入基准层 | 同上 | 统一面批次（`docs/core/requirements/AGENT-LOOP.md` 并入后翻转） |
-| 3 | 测试档路径按仓根写（`thincoder-vscode/test/...`） | 已按现状改写（产品树仍在） | 产品树降格后随批收口 |
+| 3 | 测试文件路径按仓根写（`thincoder-vscode/test/...`） | 已按现状改写（产品树仍在） | 产品树降格后随批收口 |
 
 ## 变更记录
 

@@ -631,9 +631,9 @@ T-TW3–T-TW6 / T-TW8 / T-TW10 / T-TW12 / T-TW13 → `thincoder-cli/test/timer-w
 | T-TW26 | 正常·VSC 域文本 | `timerTurn`（手动档）⇒ 组合点 | 选中核 `TIMER_TURN_DOMAIN`；`upstreamTurn` 优先不回归 |
 | T-TW27 | 边界·VSC 开关关 | `agent.timerWake = false` ⇒ 闩面 `sync` | 零注册 / 已注册者撤闩（与桌面 T-TW17 后半同判） |
 
-**用例宿主**：T-TW14–T-TW16 → `thincoder-core/test/suspension.test.mjs`（原址补例；**修正轮补两桩**（非新号）：`clear` 先到先得臂 ∕ timer 轮中止容纳（±两负臂）——源 = 批档 §5.8）；T-TW17–T-TW21 → 新档 `thincoder-desktop/test/timer-wake.test.mjs`（T-TW21 亦落 `test/agent-host.test.mjs` 驱动面）；（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
+**用例宿主**：T-TW14–T-TW16 → `thincoder-core/test/suspension.test.mjs`（原址补例；**修正轮补两桩**（非新号）：`clear` 先到先得用例 ∕ timer 轮中止容纳（±两反例用例）——源 = 批档 §5.8）；T-TW17–T-TW21 → 新档 `thincoder-desktop/test/timer-wake.test.mjs`（T-TW21 亦落 `test/agent-host.test.mjs` 驱动面）；（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 T-TW22 → `thincoder-vscode/test/agent-lifecycle-singleton.test.mjs`（原址改例）；T-TW23–T-TW26 → 新档 `thincoder-vscode/test/timer-wake.test.mjs`（T-TW25 状态行面亦落 `test/status-line.test.mjs`；T-TW27 → 同档）；（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
-  **修正轮补三桩**（非新号——随补注登记）：开关真链（`config.json` ⇒ 生产者真链 · 评审 🟡1）· 窗内 timer 轮中止容纳（`AbortError` ∧ 会话未停 ⇒ 容纳并重入 · ±两负臂 · 评审 🟡2）· 触发落流（`timer { status:"fired", text }`——协议 §3.2 行 19）——源 = 批档 §5.15。
+  **修正轮补三桩**（非新号——随补注登记）：开关真链（`config.json` ⇒ 生产者真链 · 评审 🟡1）· 窗内 timer 轮中止容纳（`AbortError` ∧ 会话未停 ⇒ 容纳并重入 · ±两反例用例 · 评审 🟡2）· 触发落流（`timer { status:"fired", text }`——协议 §3.2 行 19）——源 = 批档 §5.15。
 
 ### 6.30.13 受影响文件清单（R24a · 行数 = 实施后现盘实读（`wc -l` 口径 · 2026-09-28 收尾轮））
 
@@ -722,7 +722,7 @@ VSC 自持点 = `thincoder-vscode/src/extension/timer-watch.mjs:33-35`（判据�
 **零变不变量（核对点）**：① 闩——武装 ∕ 到点自撤 ∕ 重臂撤旧 ∕ `unref` ∕ 开关关零注册；② 交付——出列幂等 → 注入单源逐字 → 落流 ∕ 发帧；
 ③ 火——非空闲零动作（VSC = `turnBusy` 真 ∥ 无 agent；CLI = `processing ∥ suspended ∥ _suspPending ∥ modalOpen`）+ 零交付零开轮 + 开轮形 `{ autoTurn: true, timerTurn: true }`；④ 端面 API——CLI 导出面逐名零变；VSC 导出面 −1（`createTimerWatch` 退场——实读零消费者），其余签名零变。
 
-**对拍法与用例**（先例 = R4 差分探针 `.thincoder/tmp/r4-diff-probe.mjs` 同法）：OLD 逐字拷贝 × NEW 端模块现值，同假钟同序列 ⇒ 可观察日志逐项相等；**改前先跑绿 → 改后同文件零改直跑仍绿**。用例宿主 = `docs/batches/2026-09-29-parity-b3-timer.test.mjs`（拟新增 · 批内单测随档）：
+**对拍法与用例**（先例 = R4 差分探针 `.thincoder/tmp/r4-diff-probe.mjs` 同法）：OLD 逐字拷贝 × NEW 端模块现值，同假钟同序列 ⇒ 可观察日志逐项相等；**改前先跑绿 → 改后同文件零改直跑仍绿**。用例宿主 = `docs/batches/2026-09-29-parity-b3-timer.test.mjs`（拟新增 · 单元测试档随档）：
 
 | # | 场景 | 输入 | 预期 |
 |---|---|---|---|
@@ -762,7 +762,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 
 **修复形（桌面最小 · 核件零触）**——timer 轮的钉定重装**先于投递**：
 
-- `thincoder-desktop/src/main/suspension-timers.mjs` `faceOf().deliver`（`:41-45`）：**零在途早退**——`pendingTimerDeadline(agent) === null`（空在途判据 = `thincoder-core/agent/timers.mjs:25-34`；`thincoder-desktop/src/main/suspension-timers.mjs:12` 已导入）⇒ 直接返 `false`（零重装 ∥ 零投递——与 T-TW37 臂 1 期望一致）；
+- `thincoder-desktop/src/main/suspension-timers.mjs` `faceOf().deliver`（`:41-45`）：**零在途早退**——`pendingTimerDeadline(agent) === null`（空在途判据 = `thincoder-core/agent/timers.mjs:25-34`；`thincoder-desktop/src/main/suspension-timers.mjs:12` 已导入）⇒ 直接返 `false`（零重装 ∥ 零投递——与 T-TW37 用例 1 期望一致）；
   否则先 `reloadSlot?.(key, agent, cwd)` 再 `deliverExpiredTimers(...)`（投递行落**重装后**机读线 = 该轮将读数组）；`faceOf(key, agent, cwd)` 携 cwd；`createSuspensionTimers` 增 `reloadSlot` 注入项（同源缝 = `createSuspensionDrive` 既有 `reloadSlot` 转口）。
 - `thincoder-desktop/src/main/suspension-drive.mjs` `driveTurn`（`:159`）：timer 轮零重装（`if (!timerTurn) reloadSlot?.(...)`——该轮重装已前移；二次重装会再吞一行）。
 
@@ -781,14 +781,14 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 **「在飞期到期」一致性（同批裁定）**：在飞回合内到期 = 既有步边界投递（`thincoder-core/agent/post-turn.mjs:18-21`——回合内 push、下游无重装）· 回合尾未及者交链尾重同步（闩 ∕ 窗 deadline）——语义零变；
 本修复只补「链尾经**窗内 timer 轮**兑现」段的投递存活。
 
-**用例（先红后绿 · 批内件 `docs/batches/2026-10-01-timer-wake-delivery.test.mjs`（拟新增 · 实施轮落）——仓根 `node --test` 直跑）**：
+**用例（先红后绿 · 单元测试档 `docs/batches/2026-10-01-timer-wake-delivery.test.mjs`（拟新增 · 实施轮落）——仓根 `node --test` 直跑）**：
 
 | # | 场景 | 输入 | 预期 |
 |---|---|---|---|
 | T-TW36 | 缺陷复现（红→绿）·窗内投递存活 | 假钟 + 池 live 桩 + 在途一项到期；真 `loadAgentSlot`（临时槽·重装整换可达）+ `runTurn` 桩 | 轮起跑刻 `agent.history` 含逐字投递行（修前：零）；重装恰一次（先于投递）；`ev:timer` 恰一条；轮 opts = `{ autoTurn: true, timerTurn: true }` |
 | T-TW37 | 边界·零交付 ∥ 出列幂等 | deliver 时在途零项 ∥ 到期两条 | 零交付 ⇒ 零开轮零重装；两条 ⇒ 恰两行逐字；二次调用零返（零重复投递） |
 | T-TW38 | 回归·桌面 idle 径零变 | 空闲（无窗无在飞）+ 假钟到点 | 投递行在（零重装径——与修前同签）；开轮 opts 同；`reloadSlot` 零调用 |
-| T-TW39 | 射程·CLI ∥ VSC 交付目标 | CLI deliver（ctx 桩）∥ VSC deliver（`lines` 桩） | 投递行落各自轮读面（CLI = `agent.history`；VSC = `lines.contextHistory` 活线）；两端零重装面（射程腿——非缺陷复现） |
+| T-TW39 | 射程·CLI ∥ VSC 交付目标 | CLI deliver（ctx 桩）∥ VSC deliver（`lines` 桩） | 投递行落各自轮读面（CLI = `agent.history`；VSC = `lines.contextHistory` 活线）；两端零重装面（射程用例——非缺陷复现） |
 
 **边界（不做）**：核件 ∕ 核契约零改（不增核面）· 其余轮（用户 ∕ 消化）重装时点零变 · idle 径零变 · 显示面（`ev:timer` 行 ∕ `⏰N`）零变 · 不新造「投递确认」机制（存活性由判据与用例守）。
 
@@ -824,7 +824,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 - 校验（逐条显式抛错——不静默钳制）：`every` 非有限 ∥ < 60s ⇒ 拒（文案含下限）；`at` ∥ `daily` 形不合 ⇒ 拒（文案含期望形）；互斥违例 ⇒ 拒（文案列合法式）。
 - **首投 = 设时 + N**（`every`——非立即，防「设置即投」双投感）；`at` 过时点 ⇒ `expiresAt` = 所给刻（`delay = 0` ⇒ 即时投递——AC-45① 口径；不重排）；`daily` 过刻 ⇒ **明日**（非即时——「每天 HH:MM」= 每日该刻语义）。
 - **id 唯一化**（取消可寻址）：基准读**时钟缝单点**（缺省 `Date.now()`）与在途撞号 ⇒ `+1` 递增至空闲（同毫秒二次设置可达——零新载体字段）。
-- **时钟缝（评审轮 1 #5 收正）**：工具面取时单点 = `const now = ctx.now ?? Date.now()`（毫秒数**可选**读——生产 `toolCtx`（`thincoder-core/agent/dispatch-run.mjs:97-106`）不携 `now` ⇒ 缺省回落 = 现行为零变）；`at` 过时判定 ∥ `every`/`daily` 首投换算 ∥ id 撞号基准皆读该点。批内件以假 ctx（`{ agent, now: 假钟 }`）直驱——每调用独立 ctx ⇒ 零模块级状态 ∕ 零复位需求。
+- **时钟缝（评审轮 1 #5 收正）**：工具面取时单点 = `const now = ctx.now ?? Date.now()`（毫秒数**可选**读——生产 `toolCtx`（`thincoder-core/agent/dispatch-run.mjs:97-106`）不携 `now` ⇒ 缺省回落 = 现行为零变）；`at` 过时判定 ∥ `every`/`daily` 首投换算 ∥ id 撞号基准皆读该点。单元测试档以假 ctx（`{ agent, now: 假钟 }`）直驱——每调用独立 ctx ⇒ 零模块级状态 ∕ 零复位需求。
 - **帽 8 = 占坑语义（D-TW15）**：周期项 1 条 = 1 坑；重排 = 原条目回插（**净零**——不触帽）；`cancel` 释放坑。周期豁免不采（被否：最贵一类反被豁免）。
 - `cancel`：按 id 移除（零匹配 ⇒ 显式抛错 · 文案含 `list` 指引）；`list`：只读枚举（剩余现算——`due now` 态照出）。
 - **返回文案（新增式逐字——一次性式零变）**：
@@ -863,7 +863,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | `thincoder-core/tool-docs/timer.md` | **6** | +≈8 | 描述面四式（逐字 = 父侧定稿） |
 | `thincoder-cli/src/tui/cmd-timers.mjs` | **33** | +≈8 | kind 段 ＋ `<dur>` 格式 ＋ 档头取消面句收正 |
 | `thincoder-server/src/agent/chat-env-tools.mjs` | **232** | +≈12 | `subjectOf` timer 分支（同片串行——排兄弟批后；坐标按届盘实读） |
-| `docs/batches/2026-10-12-timer-completeness.test.mjs` | —— | **新 ≈320** | 批内件（四腿 ＋ 回归腿）（拟新增 · 实施轮落）——**不入 server 门禁链**（批面非服务；先例 = `docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 不在链） |
+| `docs/batches/2026-10-12-timer-completeness.test.mjs` | —— | **新 ≈320** | 单元测试档（四用例 ＋ 回归用例）（拟新增 · 实施轮落）——**不入 server 门禁链**（批面非服务；先例 = `docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 不在链） |
 | `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` | **1141** | +≈150 | 本节 ＋ 变更记录一行 ＋ D-TW7 行 ∥ §6.30.3 三处收正 |
 | `docs/core/design/TOOLS.md` | **1362** | +1 | §6.7 `timer` 行扩述 |
 | `docs/cli/design/TUI.md` | **937** | +≈6 | §7.6 行形态 ＋ 取消面句收正 |
@@ -875,7 +875,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 
 | # | 决策 | 落 | 理由 ∥ 被否 |
 |---|---|---|---|
-| D-TW9 | 载体扩**扁平可选字段** `everyMs` ∥ `daily` | 采纳 | 一次性条目形逐字零变（回归面最小）；被否：`repeat` 嵌套对象 ∥ `kind` 判别式（改一次性条目形 = 破零回归）∥ 派生 `nextAt`（第二真值源） |
+| D-TW9 | 载体扩**扁平可选字段** `everyMs` ∥ `daily` | 采纳 | 一次性条目形逐字零变（回归最小）；被否：`repeat` 嵌套对象 ∥ `kind` 判别式（改一次性条目形 = 破零回归）∥ 派生 `nextAt`（第二真值源） |
 | D-TW10 | 重排点 = `takeExpiredTimers` 内（出列＋重排原子） | 采纳 | 公共读点唯一 ⇒ 四端零改；被否三条见上 |
 | D-TW11 | 错过拍 = **跳过不补投**（严格 `> now`） | 采纳 | 回补 ⇒ 投递风暴；与「出列幂等」同族（一次出列一条周期至多一投） |
 | D-TW12 | 首投 = 设时 + N ∥ `daily` 下一本地刻 ∥ `at` 过时点即时 | 采纳 | AC-45① 明写过时点即时；周期无「立即」语义（+N 防设置即投） |
@@ -885,7 +885,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | D-TW16 | `every` 下限 = **60s 硬拒** | 采纳（**提请**） | AC 判据以 1 分钟实走 ⇒ 下限 ≤ 60s；更低 ⇒ 回合风暴；被否：无下限 ∥ 30s ∥ 静默钳制 |
 | D-TW17 | 低费式（只出提醒行不开轮）= **本批不做** | 采纳（**提请**） | 现语义 = 到点自唤醒 + 开轮（D-TW4）；quiet 化 = 语义分叉（须用户裁）；接口缝已在（`thincoder-core/agent/timers.mjs:105` `fireTimerWake({ busy, deliver, openTurn })`——跳过 `openTurn` 即 quiet 火） |
 
-**用例表（T-TW40–T-TW50——T-TW40–T-TW49 落批内件 `docs/batches/2026-10-12-timer-completeness.test.mjs`（拟新增 · 实施轮落）∥ T-TW50 随兄弟批（服务面审计主语 · 同片串行）；
+**用例表（T-TW40–T-TW50——T-TW40–T-TW49 落单元测试档 `docs/batches/2026-10-12-timer-completeness.test.mjs`（拟新增 · 实施轮落）∥ T-TW50 随兄弟批（服务面审计主语 · 同片串行）；
 恒假钟 ∥ 直驱 · 零真实等待；时钟缝 = 工具面 `ctx.now`（缺省 `Date.now()` 回落——生产零变）∥ `nextFireAt` / `takeExpiredTimers` 的 `now` 参数沿既有缝；跑法 = 仓根 `node --test docs/batches/2026-10-12-timer-completeness.test.mjs`）**：
 
 | # | 场景 | 输入 | 预期 |
@@ -895,11 +895,11 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | T-TW42 | 正常·固定间隔（**AC 实走形**） | `{ every: 60, message: "x" }` ＋ 假钟 | 首投 = 设时 + 60s（`ctx.now` 假钟——精确断言）；出列后条目仍在（同 id · `expiresAt` = 设时 + 120s）；二投同判；`cancel` 后出列零返（**投 2 次后可取消**） |
 | T-TW43 | 边界·错过跳拍 | `every` 600s · 假钟跳 3.5 拍 | 出列恰一投；重排 = `base + 4 × everyMs`（严格 `> now`）；零补投；缺省 `message` = `every` 形（默认表） |
 | T-TW44 | 正常·日历式（含跨日 ∥ 过刻） | `daily: "09:00"`（假钟 08:59 ∥ 09:01 ∥ 23:59 设 `"00:01"`） | 首 = 今日 09:00 ∕ 明日 09:00 ∕ 明日 00:01（`ctx.now` 假钟）；投后重排 = 次日同刻；缺省 `message` = `daily` 形（默认表） |
-| T-TW45 | 回归·一次性零变 | 旧形条目 `{ id, expiresAt, message }` ＋ 存量批件复跑 | 交付行逐字 ∥ 返回文案逐字 ∥ 出列幂等 ∥ 帽行为全零变；`docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 全绿 |
+| T-TW45 | 回归·一次性零变 | 旧形条目 `{ id, expiresAt, message }` ＋ 存量单元测试档复跑 | 交付行逐字 ∥ 返回文案逐字 ∥ 出列幂等 ∥ 帽行为全零变；`docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 全绿 |
 | T-TW46 | 错误·校验矩阵 | 互斥违例 ∥ `every: 30` ∥ `every: 0` ∥ `at: "2026-02-30T10:00"` ∥ `daily: "9:00"` ∥ `cancel` 未知 id | 逐条显式抛错；在途表零变动 |
 | T-TW47 | 边界·帽（占坑） | 在途 8（含周期 1）⇒ 第 9 拒；`cancel` 一条 ⇒ 复设成功；周期重排后仍 8 | 拒点零变动；重排净零；取消释放 |
 | T-TW48 | 边界·重启即失 | 同 cwd 二次装配（新 agent 对象） | 在途表空（进程内语义——与一次性同命） |
-| T-TW49 | 正常·可见面 | 工具 `list`（三类 ＋ 到期未投）∥ CLI `/timers` handler 直驱 | `list` 逐行含 id/kind/next/message（`due now` 态照出；长时长臂 ⇒ `<h:mm:ss>`）；`/timers` 周期行含 kind 段（非整分 ⇒ `每 <N>s`）∧ 一次性行逐字零变 |
+| T-TW49 | 正常·可见面 | 工具 `list`（三类 ＋ 到期未投）∥ CLI `/timers` handler 直驱 | `list` 逐行含 id/kind/next/message（`due now` 态照出；长时长分支 ⇒ `<h:mm:ss>`）；`/timers` 周期行含 kind 段（非整分 ⇒ `每 <N>s`）∧ 一次性行逐字零变 |
 | T-TW50 | 射程·服务面审计主语 | `subjectOf("timer", …)` 五式直驱 | 各出对应主语；一次性式逐字零变 |
 
 **验收（A-TW14–A-TW19——逐条机检）**：
@@ -907,8 +907,8 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | # | 判据 | 落点 |
 |---|---|---|
 | A-TW14 | 需求 ①–⑤ 逐条对位（三链同源） | 功能点 45（`docs/server/requirements/PROJECT.md:266-275`）∥ AC-45（`:341`）↔ 本节用例 ↔ 批档 §2.1 —— 三链同源同拍 |
-| A-TW15 | AC-45 判据（实走形） | 假钟臂 = T-TW42（1 分钟两投后取消）；收口轮真走（父侧：设 1 分钟间隔 ⇒ 两投 ⇒ `cancel` ⇒ 零再投） |
-| A-TW16 | 一次性零回归 | T-TW45 ∥ T-TW49（一次性行）∥ 存量批件复跑全绿 |
+| A-TW15 | AC-45 判据（实走形） | 假钟用例 = T-TW42（1 分钟两投后取消）；收口轮真走（父侧：设 1 分钟间隔 ⇒ 两投 ⇒ `cancel` ⇒ 零再投） |
+| A-TW16 | 一次性零回归 | T-TW45 ∥ T-TW49（一次性行）∥ 存量单元测试档复跑全绿 |
 | A-TW17 | 四端同得（零改面守） | 零改面清单 ＋ 消费面全经 take（接缝句）；服务面随彼批部署收口 |
 | A-TW18 | 口径明示（AC-45③） | 时区 ∥ 跨日 ∥ 重启三口径句（本节）在册 |
 | A-TW19 | 机检零新增 | 仓根 `node scripts/doc-check.mjs` 对比开工基线（2026-10-12 设计轮实测：**悬空 25 ∥ 行宽 0 ∥ 行数面 18 报告**——本批四档逐档零新增） |
@@ -1040,18 +1040,18 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | `thincoder-vscode/src/extension/suspension.mjs` | 328 | +3 | end 消息增 `unsettled` |
 | `thincoder-vscode/webview/chat-status.js` | 151 | +10 | 残余行元素 |
 | `thincoder-vscode/src/extension/panel-turn-loop.mjs` | 303 | +4 | 载体字段 +2（`_unsettledDigests` ∕ `_daSession`；14 ⇒ 16） |
-| `docs/batches/2026-10-05-digest-accounting.test.mjs` | —（新档） | **408（as-built）** | 核侧用例宿主（T-DA1–T-DA10 / T-DA12–T-DA14 + 补充臂——平 node 直驱：假 carrier / 假 runTurn / 直驱 `finalizeAgentTurn` 同窗） |
-| `docs/batches/2026-10-05-digest-accounting-exit-seam.test.mjs` | —（新档） | **165（as-built）** | 出口缝两腿宿主（T-DA15 / T-DA16——纯搬移自宿主档；核件直驱 `finishSuspension` / `startSuspension` ∥ T-DA16① 另经真 `runAgent` 一轮） |
-| `docs/batches/2026-10-05-digest-accounting-cli.test.mjs`（拟新增） | — | ≈30–60 | 端腿 T-DA11（CLI——记录携 `unsettled` + 残余痕行） |
-| `docs/batches/2026-10-05-digest-accounting-desktop.test.mjs`（拟新增） | — | ≈30–60 | 端腿 T-DA11（桌面——end 帧携 `unsettled` + 行元素） |
-| `docs/batches/2026-10-05-digest-accounting-vsc.test.mjs`（拟新增） | — | ≈30–60 | 端腿 T-DA11（VSC——end 消息携 `unsettled` + 行元素） |
+| `docs/batches/2026-10-05-digest-accounting.test.mjs` | —（新档） | **408（as-built）** | 核侧用例宿主（T-DA1–T-DA10 / T-DA12–T-DA14 + 补充用例——平 node 直驱：假 carrier / 假 runTurn / 直驱 `finalizeAgentTurn` 同窗） |
+| `docs/batches/2026-10-05-digest-accounting-exit-seam.test.mjs` | —（新档） | **165（as-built）** | 出口缝两用例宿主（T-DA15 / T-DA16——纯搬移自宿主档；核件直驱 `finishSuspension` / `startSuspension` ∥ T-DA16① 另经真 `runAgent` 一轮） |
+| `docs/batches/2026-10-05-digest-accounting-cli.test.mjs`（拟新增） | — | ≈30–60 | 端用例 T-DA11（CLI——记录携 `unsettled` + 残余痕行） |
+| `docs/batches/2026-10-05-digest-accounting-desktop.test.mjs`（拟新增） | — | ≈30–60 | 端用例 T-DA11（桌面——end 帧携 `unsettled` + 行元素） |
+| `docs/batches/2026-10-05-digest-accounting-vsc.test.mjs`（拟新增） | — | ≈30–60 | 端用例 T-DA11（VSC——end 消息携 `unsettled` + 行元素） |
 | 文档：本档 §6.31 ∥ §6.8 ∥ §6.11 | 1104 → **1136（as-built——#61/#63 后终读）** | +218（本批合计——918 起算 · as-built） | 本节 + 指针 |
 | 文档：`docs/cli/design/TUI.md` §6.9 | 916 → 917（本 fix 轮后） | +3（本批已落） | 残余痕行条 + 两行同屏口径注 |
 | 文档：`docs/core/design/AGENT-LOOP.md` §2.3 / §6.15 / §7 / §6.2 / §6.5 | 637 → 642（本 fix 轮后） | +8 / −4（本批合计——已落） | 载体字段 +2（13 款 ⇒ 15 款——`_unsettledDigests` ∕ `_daSession`）+ 释放点 ∥ D-AL23 ∥ 枚举 ∥ 空白判收正 |
 | 文档：`docs/core/design/LOGGING.md` §6.2 | 161 → **164（as-built）** | +3（本批已落：两事件行 + 变更记录 1 行） | `ev:unsettled` / `ev:finish-missing` 行 |
 | 文档：桌面 / VSC 显示档（§6.31.6 落点） | — | 各 +1–2 | 残余行 / 载荷字段面 / 记录复列（RENDERER.md §1.1 · IPC.md §1 · WEBVIEW.md §5.1 / §5.7 · WEBVIEW-PROTOCOL.md §5 / §6.3 / §3.2） |
 
-**批内件沿革（内容口径）**：406 ⇒ 456 ⇒ 502（越 500 硬门）⇒ 拆档 = 主档 408 ∥ 出口缝档 165（#47——出口缝两腿纯搬移；拆前 / 拆后两读入批档 §5）。
+**单元测试档沿革（内容口径）**：406 ⇒ 456 ⇒ 502（越 500 硬门）⇒ 拆档 = 主档 408 ∥ 出口缝档 165（#47——出口缝两用例纯搬移；拆前 / 拆后两读入批档 §5）。
 
 `subagent-actions-query.mjs`（270 → **277（as-built）**——**未越软线**（设计轮 ≈302 预估未兜现——移出本列口径）；改动 = status 增段（既有动作面内无新职责 / 无新导出）——不涉拆分窗口）。
 `thincoder-vscode/src/extension/panel-turn-loop.mjs`（303 → ≈307）：改动 = 载体表 +2 字段（数组行内追加——无新职责 / 无新导出）⇒ **本批不拆**。
@@ -1069,22 +1069,22 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | T-DA5 | 错误·超限升级 | 三轮均未覆盖 | 第 3 次后：离容器入 `_unsettledDigests`；恰一条提醒 + 恰一条 `ev:unsettled`；`failures=3` |
 | T-DA6 | 边界·升级即终结 | 升级后再开消化轮 | 不重投（账目终态）；`poolLive` 不含（会话可退） |
 | T-DA7 | 边界·fallback 零回归（缺省条） | 无 `_daSession`（headless 形）pending 注入——缺省条 | 逐字旧行为：取尽（先离容后注入）+ 注入 + 双释放；零账目动作（`_daDelivered` 条跳过且留容器 = T-DA16 面） |
-| T-DA8 | 边界·输出缺痕 | 消化轮抛错 / 撞帽（未收口）∧ 零输出落痕（#939 缺痕定义——见 §6.31.5；有早轮输出 ⇒ 按累积痕判定——T-DA20 臂 2） | 全条 `_daFailures + 1`（重投窗口保留）；零假销账 |
+| T-DA8 | 边界·输出缺痕 | 消化轮抛错 / 撞帽（未收口）∧ 零输出落痕（#939 缺痕定义——见 §6.31.5；有早轮输出 ⇒ 按累积痕判定——T-DA20 用例 2） | 全条 `_daFailures + 1`（重投窗口保留）；零假销账 |
 | T-DA9 | 边界·机检反例 | 输出仅提 `#12` 无标记 / 仅标记无 id | 两条皆不计覆盖（皆不销） |
 | T-DA10 | 正常·status 可见 | overview 直驱（在途未销 / 升级各一） | `unsettled` 段两态行在场；单查 id 同解析 |
 | T-DA11 | 正常·端面残余行 | 消化轮收尾 unsettled = 2（CLI 记录 / 桌面帧 / VSC 消息） | CLI 记录携 `unsettled` + 痕行 `digest.residue` 在场；桌面 / VSC 行同键文；= 0 ⇒ 零行 |
 | T-DA12 | 正常·F-DA5 归一 | anthropic stop_reason 四类 / google 两类 / responses completed | 映射逐条（stop / tool_calls / length / 透传）；同轮零缺席提醒 |
 | T-DA13 | 错误·F-DA5 缺席 | clean end 缺 finish_reason | 同面提醒恰一条 + `ev:finish-missing` 恰一条；partial ⇒ 零提醒 |
-| T-DA14 | 错误·F-DA6 空停 | content 纯空白 ⇒ 重试臂；重试用尽臂 | 空白进空响应支（≤2）后抛；非空半句零触 |
+| T-DA14 | 错误·F-DA6 空停 | content 纯空白 ⇒ 重试分支；重试用尽分支 | 空白进空响应支（≤2）后抛；非空半句零触 |
 | T-DA15 | 出口缝①·idle 清场投递账过滤 | 直驱 `finishSuspension`（idle——已投递 ∥ 未投递条交错）∥ 回退形（无投递账条）∥ 全径（会话内消化轮抛非 abort 错） | 已投递条不注入且留容器（不入 `left` / 不入 `reclaim`；`report` 零释放）；未投递条照注入 + 离容；回退形全量注入零变 |
 | T-DA16 | 出口缝②·fallback 支投递账分区 | fallback 直驱（无 `_daSession`——已投递 ∥ 缺省条交错）+ 单遍分区顺序面 | 已投递条零注入且留容器（原序、零释放）∥ 缺省条照注入（恰一次）+ 照释放（双释放）；零账目动作；离容 / 留容器顺序不缩水 |
 | T-DA17 | 缺陷复现（红→绿）·首轮签收跨轮存活 | 多轮 run（首轮输出含 `[digest-ack #3]` + 工具调用 ∥ 收口轮无签收——真 `runAgent` + fetch 桩） | 覆盖 ⇒ 销账（离容器 + 释放）；零失败 / 零重投（注入计数 = 1）；修前红读：`_daFailures=1` + `_daRetry=true` |
 | T-DA18 | 回归·跨 run 清位 | run A 输出含 `#44` 签收（该条不属 A）⇒ run B 投递 #44、输出无签收 | B 判未覆盖（`_daFailures=1`）——上一 run 文本不替本 run 作证（窗未清 ⇒ 假覆盖） |
 | T-DA19 | 回归·未签收照重投 | 单轮无签收 ⇒ 下轮重投补账（两 runAgent） | 轮 1：失败 +1 + `_daRetry`（条留容器 / report 留 / childAgent 释）；轮 2 补账 ⇒ 销（注入计数 = 2） |
-| T-DA20 | 边界·缺痕两臂 | 臂 1：零模型轮（`maxTurns: 0`）⇒ 全条未覆盖 ∥ 臂 2：早轮签收 + 撞帽未收口（`maxTurns: 1`） | 臂 1：失败 +1 + 零假销账；臂 2：按累积痕覆盖（销账——判据窗既定） |
+| T-DA20 | 边界·缺痕两用例 | 用例 1：零模型轮（`maxTurns: 0`）⇒ 全条未覆盖 ∥ 用例 2：早轮签收 + 撞帽未收口（`maxTurns: 1`） | 用例 1：失败 +1 + 零假销账；用例 2：按累积痕覆盖（销账——判据窗既定） |
 
-**用例宿主**：核侧（T-DA1–T-DA10 · T-DA12–T-DA14）→ 批内件 `docs/batches/2026-10-05-digest-accounting.test.mjs`（as-built 408 行）；出口缝（T-DA15 / T-DA16）→ 批内件 `docs/batches/2026-10-05-digest-accounting-exit-seam.test.mjs`（as-built 165 行——纯搬移）；端侧（T-DA11）→ 各端批内腿（CLI 记录痕行 ∥ 桌面帧 + 行元素 ∥ VSC 消息 + 行元素——沿各端批内件惯例）。
-窗收正四例（T-DA17–T-DA20——含 ★ 红绿对）→ 批内件 `docs/batches/2026-10-05-digest-account-window-fix.test.mjs`（拟新增——本批自持）。
+**用例宿主**：核侧（T-DA1–T-DA10 · T-DA12–T-DA14）→ 单元测试档 `docs/batches/2026-10-05-digest-accounting.test.mjs`（as-built 408 行）；出口缝（T-DA15 / T-DA16）→ 单元测试档 `docs/batches/2026-10-05-digest-accounting-exit-seam.test.mjs`（as-built 165 行——纯搬移）；端侧（T-DA11）→ 各端单元测试用例（CLI 记录痕行 ∥ 桌面帧 + 行元素 ∥ VSC 消息 + 行元素——沿各端单元测试惯例）。
+窗收正四例（T-DA17–T-DA20——含 ★ 红绿对）→ 单元测试档 `docs/batches/2026-10-05-digest-account-window-fix.test.mjs`（拟新增——本批自持）。
 
 #### 6.31.11 验收标准（逐条回指）
 
@@ -1097,7 +1097,7 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 | A-DA5 | 结束信号缺席（F-DA5） | 四 transport 归一逐条；缺席（clean ∧ ¬partial）⇒ 提醒恰一条 + `ev:finish-missing` 恰一条；partial ⇒ 零提醒；既有异常处理零变 |
 | A-DA6 | 空停（F-DA6） | 纯空白 ⇒ 空响应支（≤2）后抛；非空半句零触；重试预算 / 文案零变 |
 | A-DA7 | 零回归（N1） | 全覆盖轮零提醒零事件；用户输入优先 / `maxTurns` / 注入格式 / 预算 / 归档时点 / 面板块面逐条零改；fallback 面 = 缺省条逐字旧行为 + `_daDelivered` 条跳过且留容器（#45 落码终态） |
-| A-DA8 | 机检与回指（N2） | 批内件全绿；仓根 `node scripts/doc-check.mjs` 本批文档面零新增悬空 / 零行宽 |
+| A-DA8 | 机检与回指（N2） | 单元测试档全绿；仓根 `node scripts/doc-check.mjs` 本批文档面零新增悬空 / 零行宽 |
 
 #### 6.31.12 边界（本批不做）
 

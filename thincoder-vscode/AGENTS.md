@@ -125,7 +125,7 @@ webview/index.html   Webview shell (referenced by ChatPanel._html())
 
 - **Smoke test**: `node test/smoke-provider.mjs <provider> <api-key>` — directly tests an API provider (single turn, no tools).
 - **Unit tests** (`npm test`): explicit file list in `test/files.mjs`（清单单一来源——逐档登记 + 行内注释记覆盖面；测试基线读数与 as-of 的权威 = `../docs/core/design/TESTING.md` §10）。
-  **2026-09-28 全清重置（用户令）**：存量用例全退役——清单现为空（`export default []`）；重建规则 = 单元档随批次本地、集成档业务设立（见 `test/files.mjs` 档头）。
+  **2026-09-28 全清重置（用户令）**：存量用例全退役——清单现为空（`export default []`）；重建规则 = 单元测试档随批次本地、集成测试档业务设立（见 `test/files.mjs` 档头）。
 - **Repo suite**: `npm test` — the single entry: the registered set runs in one go (slow runs as-is; no separate fast/full/integration scripts). After the 2026-09-28 reset both manifests are empty — zero tests = green（现行态认账 = `../docs/core/design/TESTING.md` §2.3）。
 - **Integration set**: business-voice scenarios asserting observable results — they run inside `npm test`（`test/integration/` + 其清单 `test/integration/files.mjs`，统一 runner `test/run.mjs` 驱动）。**2026-09-28 全清重置**：集成清单现为空（`export default []`）——重建按业务设立（窗口 50–100）。
 - **Release gate**: `vscode:prepublish` = `npm run lint && npm test` (runs automatically on `vsce package` / bare `vsce publish`).

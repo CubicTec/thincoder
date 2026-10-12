@@ -5,7 +5,7 @@ import { DESC } from "../tools/shared.mjs"
  * timer tool: set a time budget for thinking before the agent insists on action.
  * 描述面 = `tool-docs/timer.md`（DESC() 加载；机制 = AGENT-LOOP-ASYNC-POOL.md §6.30.3 D-TW8 ∥ §6.30.18
  * 四式 ＋ `cancel`/`list`）。取时单点 = 时钟缝 `ctx.now ?? Date.now()`（§6.30.18——生产 `toolCtx`
- * （`agent/dispatch-run.mjs`）不携 `now` ⇒ 缺省回落 = 现行为零变；批内件以假 ctx 直驱）。
+ * （`agent/dispatch-run.mjs`）不携 `now` ⇒ 缺省回落 = 现行为零变；单元测试档以假 ctx 直驱）。
  */
 
 /** `at` = 本地刻 `YYYY-MM-DDTHH:MM[:SS]`（严格正则＋日历回读校验——如 `2026-02-30` 拒）。 */

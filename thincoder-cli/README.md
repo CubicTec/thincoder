@@ -218,7 +218,7 @@ Key design decisions:
 ## Development
 
 ```bash
-npm test                          # repo suite (integration set, offline) — empty manifest after the 2026-09-28 reset; unit tests = docs/batches/ — current state: ../docs/core/design/TESTING.md §2.3
+npm test                          # integration tests (offline) — empty manifest after the 2026-09-28 reset; unit tests = docs/batches/ — current state: ../docs/core/design/TESTING.md §2.3
 node scripts/verify-compress.mjs  # real-API verification of context compaction (needs valid config)
 node scripts/verify-team.mjs      # team memory A->git->B full-chain verification (local git, offline)
 ```

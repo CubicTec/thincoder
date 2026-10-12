@@ -281,6 +281,6 @@ export async function reindexFile(memory, cwd, absPath) {
 }
 
 // ─── 迁出面（2026-10-01 拆分批 · #755 ∥ #786）：检索面 → `memory/code-search.mjs`；清单面 →
-// `memory/file-list.mjs`——经本档转口保名（消费面 / 批内件 import 面零改），四起效点调用形零改。──────
+// `memory/file-list.mjs`——经本档转口保名（消费面 / 单元测试档 import 面零改），四起效点调用形零改。──────
 export { codeSearch, ensureCodeEmbeddings, codeSearchTool } from "./code-search.mjs"
 export { listProjectFiles, indexExtensions } from "./file-list.mjs"

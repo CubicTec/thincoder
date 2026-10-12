@@ -134,14 +134,14 @@ export async function executeToolCalls(agent, toolByName, toolCalls, callbacks, 
     // E（第 11 批·F17/ADVISOR-GUARDS.md §5 E-3d）：D5 冻结窗口写前拦截——设计评审在途（点火 → 结算）期间，
     // 父侧对被审文件集（声明文档集 + 批次档）的写入会被拒绝：在途写使本轮结算 stale——pass 轮
     // = token 直接丢失（实证：第 10 批 id=20 整轮作废）。工具面 = FILE_MUTATORS ∪ `file_ops`
-    // （E2——冻结腿覆盖面；批次档腿仍 = FILE_MUTATORS：与变更记账同集——不记入日志的写面既不判 stale 也不拦）；判据与 reviewIsStale 同源、单一权威源 =
-    // agent/write-gate.mjs 的 freezeWindowConflict（声明文档集腿 = inflightDesignReviewConflict
-    // 同 docAbs / 同 normAbs；批次档腿 = run.batchDoc——M4 合流点，仅扫 running 未取消的设计条目）。
+    // （E2——冻结分支覆盖范围；批次档分支仍 = FILE_MUTATORS：与变更记账同集——不记入日志的写面既不判 stale 也不拦）；判据与 reviewIsStale 同源、单一权威源 =
+    // agent/write-gate.mjs 的 freezeWindowConflict（声明文档集分支 = inflightDesignReviewConflict
+    // 同 docAbs / 同 normAbs；批次档分支 = run.batchDoc——M4 合流点，仅扫 running 未取消的设计条目）。
     // 位置：只读 / autoApprove 短路之前——审批不得绕过冻结；拒绝 = 可见 denied + 逃生门
     // （先 cancel → 改 → 重发）。
     if (FILE_MUTATORS.has(toolCall.name) || toolCall.name === "file_ops") {
       // #327：单源谓词（同集合内两处消费共用）；#309 批次档写门与 D5 冻结窗同区、共用同一路径集。
-      // E2（parity-b1 §2.5——缺省取核形）：外门扩 `file_ops`（冻结窗覆盖面与端壳对齐——`file_ops`
+      // E2（parity-b1 §2.5——缺省取核形）：外门扩 `file_ops`（冻结窗覆盖范围与端壳对齐——`file_ops`
       // 的 move ∕ copy ∕ rename 亦为写面）；**批次档写门判据集不变**（= `FILE_MUTATORS`，file_ops 不入）。
       const absPaths = toolTouchPaths(tool, args)
         .filter((p) => typeof p === "string" && p)

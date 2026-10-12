@@ -201,7 +201,7 @@ export function createWizard(deps = {}) {
       ? configuredFlag(receipt.configured)
       : (store.get().settings?.configured ?? null)
     if (read) clearReport()
-    else report("panel", receipt, "config:read") // 两臂互斥：失败串留面（禁「先清后报」—— 向导占槽路会把刚落的串同 tick 抹除）
+    else report("panel", receipt, "config:read") // 两分支互斥：失败串留面（禁「先清后报」—— 向导占槽路会把刚落的串同 tick 抹除）
     const next = patchSettings(store.get(), { configured })
     if (configured === true) {
       store.set(settleTeamNotice(next, false)) // 已配 ⇒ 照退（零改；退场 = 离屏 ⇒ 提示同轮收束）

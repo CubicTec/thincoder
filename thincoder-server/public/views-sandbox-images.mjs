@@ -7,7 +7,7 @@
  * 可再改）；不选 = 原样；认源态 ∥ 记忆预选（P2——`localStorage` 单键 `tc_pull_source`）；「目标节点」行恒显（P1）；无源 ∥ 读败 ⇒ 不选态 + 人话——拉取不阻断）
  * ∥ 删除确认窗（强制删除勾选——缺省不勾）。
  * console-tabs-component 批：本区随沙盒页分标签迁**标签②「镜像与镜像源」**（节点选单当刻节点的镜像表）——题行去重（卡 h3 承担）。
- * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。批内件直测面 = `createImageSection`
+ * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。单元测试档直测面 = `createImageSection`
  * ∥ `openPullImageModal` ∥ `pullRefWithSource`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"
@@ -28,7 +28,7 @@ export function hubLibraryName(source, name) {
   return (source?.kind === "hub" || source?.kind === "hub-mirror") && !text.includes("/") ? `library/${text}` : text
 }
 
-/** 组装引用（纯函数——批内件直测；与 `pullRefFor` 值规则同口径）：选定源 ⇒ 对输入原文组装一次（`<主机>/<路径>[:<标签>]`）。
+/** 组装引用（纯函数——单元测试档直测；与 `pullRefFor` 值规则同口径）：选定源 ⇒ 对输入原文组装一次（`<主机>/<路径>[:<标签>]`）。
  *  去 scheme ∥ 含端口逐值；已带主机（判据 = 引擎同口径：首段含 `.`/`:` ∥ = `localhost`）⇒ 剥换为源主机（「经由源」直义）；
  *  无标签（判据 = 末个 `/` 之后的末个 `:` 起）⇒ 补 `:latest` 显式；Hub 面剥后裸名 ⇒ 补 `library/`；
  *  `@`（digest 形）⇒ 原样透传（不组装——服务端既有 400 径）；空输入 ⇒ 不动作（原样返回——提交仍被必填门拦）。 */

@@ -11,7 +11,7 @@
 
 /** 探针目标解析（入参 = 显式 `provider:model`；语义单源 = 核 `parseModelRef`——首冒号分割 ∥ 双段非空 ∥
  *  provider 在册）。2026-10-09 清除批：渠道单值模型退场，选路不得再读 `providers[].model`。
- *  导出供批内件直测（正常 ∥ 多冒号 ∥ 非法三例）。
+ *  导出供单元测试档直测（正常 ∥ 多冒号 ∥ 非法三例）。
  *  @returns {Promise<{ok:true, provider:object, model:string} | {ok:false, reason:string}>} */
 export async function parseSmokeTarget(ref, providers) {
   const { parseModelRef } = await import("@thincoder/core/config.mjs")

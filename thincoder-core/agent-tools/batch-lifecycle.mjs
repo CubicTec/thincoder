@@ -12,7 +12,7 @@
  * 身份判据（D-BR17/D-BR18/D-BR21）：主 agent 的工具调用 ctx 带 `depth === 0`（dispatch 装配）；
  * eng 子代理 `ctx.depth > 0`；评审实例 ctx 无 depth 但工具以 `review: true` 绑定。create/close
  * 仅 depth-0 放行（BR-19/BR-24「… is main-agent-only」）；status 写域 = 调用者自己段
- * （eng-designer → §2 · 评审 → §3 · eng-coder → §5 · coder → §5【普通模式腿增表】· 主 agent →
+ * （eng-designer → §2 · 评审 → §3 · eng-coder → §5 · coder → §5【普通模式分支增表】· 主 agent →
  * 工程 §1 ∥ 普通 §1/§2/§5【取段——§4.16】——§4/§6 状态面走普通文档写）；depth-0 的 status/path 面
  * 按 D-BR21（可选 path，缺省 = 在飞批唯一时取）。
  */
@@ -298,7 +298,7 @@ function assertStatusNote(note) {
 export function statusBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
   const depth0 = isDepthZero(ctx)
   // 模式位执行期实读（§4.16——同款先例 = task.mjs execute 门；翻转即时生效——D-BR26）。
-  // 写域：评审 → §3 · 子代理 → 身份段（普通模式腿合并 coder 增表——工程模式腿不查）·
+  // 写域：评审 → §3 · 子代理 → 身份段（普通模式分支合并 coder 增表——工程模式分支不查）·
   // depth-0 工程 → §1 ∥ 普通 → §1/§2/§5（取段——缺省 §1）。
   const engineering = !!ctx?.agent?.config?.agent?.engineering
   let seg = review ? 3 : depth0 ? 1 : SEGMENT_BY_ROLE[ctx?.agent?._role] ?? (engineering ? null : SEGMENT_BY_ROLE_NORMAL[ctx?.agent?._role] ?? null)

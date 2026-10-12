@@ -4,7 +4,7 @@
  * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗（建窗卷字段 = 节点已有卷选单 + 「新建卷（手输）」保底——sandbox-volumes 批）。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。
  * 拆档缘由 = `views-sandbox.mjs` 增量将越 500 硬线前外拆；窗体助手四件已迁 `modal.mjs`（避循环 import）。
- * 批内件直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
+ * 单元测试档直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
@@ -18,7 +18,7 @@ const CONTAINER_STATE_KEYS = { created: "admin.sandbox.stateCreated", running: "
 /** 日志 tail 选项（服务端界 1–2000——§2.5；缺省 200）。 */
 const LOG_TAIL_OPTIONS = [100, 200, 500, 1000, 2000]
 
-/** 容器态文案（纯函数——批内件直测）。 */
+/** 容器态文案（纯函数——单元测试档直测）。 */
 export function containerStateLabel(state) {
   const key = CONTAINER_STATE_KEYS[state]
   return key === undefined ? String(state ?? "—") : t(key)

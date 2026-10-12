@@ -110,10 +110,10 @@ export async function prepareRun(agent, input, callbacks, {
     // §6.10 修法 B（TUI 假死批）：回合召回注入 = **depth-0 门**——子代理（depth > 0）不注入
     // 相关文档 / 相关记忆两块（同函数其余自动注入全为 depth-0 门；需求锚 = F-M7 + 核 §4.11）。
     if (agent.memory && depth === 0) {
-      // ── 文档检索注入：§6.15 origin 集 + #1100 声明源保底名额（腿分取——总上限 2×DOC_SEARCH_LIMIT）──
-      // 无声明源（origin 集 ≤1）⇒ 原单调用路径逐字保留；有声明源 ⇒ 双腿 `Promise.all` 并行：
-      // 本仓腿（origin = 项目）∥ 声明腿（集 − 本仓），各 DOC_SEARCH_LIMIT——合并序 = 本仓 ≤5 在前
-      // + 声明 ≤5 补位（两腿 origin 集互斥 ⇒ 行不可能重复，无需去重）。配额机制 = `docs/core/design/AGENT-LOOP.md` §6.3。
+      // ── 文档检索注入：§6.15 origin 集 + #1100 声明源保底名额（两路分取——总上限 2×DOC_SEARCH_LIMIT）──
+      // 无声明源（origin 集 ≤1）⇒ 原单调用路径逐字保留；有声明源 ⇒ 两路 `Promise.all` 并行：
+      // 本仓路（origin = 项目）∥ 声明源路（集 − 本仓），各 DOC_SEARCH_LIMIT——合并序 = 本仓 ≤5 在前
+      // + 声明 ≤5 补位（两路 origin 集互斥 ⇒ 行不可能重复，无需去重）。配额机制 = `docs/core/design/AGENT-LOOP.md` §6.3。
       const originSet = searchOrigins(agent.memory)
       let docs
       if (originSet.length > 1) {

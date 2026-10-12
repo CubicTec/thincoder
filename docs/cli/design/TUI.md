@@ -387,7 +387,7 @@ todo 面板（task 列表，≤5 行，全部 done 自动收起）
 
 > 需求锚：台账技术待办 **#19**（异步子代理「零块」）；批次档 `docs/batches/2026-09-17-subagent-zero-block.md`（§2 任务书 + §2.0 复现读数）。
 > 范围：块生命周期的**墓碑存活闸**（显示面）+ 静默面留痕；**发射面零改**。
-> 本节 = 本批设计落点（canonical 基准层）；受影响文件 / 用例 / 验收面为本批**执行与验收材料**（时点值随实装漂移）。
+> 本节 = 本批设计落点（canonical 基准层）；受影响文件 / 用例 / 验收为本批**执行与验收材料**（时点值随实装漂移）。
 
 **6.8.3.1 问题陈述与根因（复现实测——非推断）**
 
@@ -515,7 +515,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 | AC-ZB4 | 发射面零改：域释放补位仍发 `⟦ev⟧async` + `[model]`；queued 仍不发 `[model]` | 既有断言（`advisor-pool-queue.test.mjs:86/211`——**仅 async 面**）+ T-ZB1（**`[model]` 面**落位断言）（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） | 批次档 §1.3 判据 2 |
 | AC-ZB5 | 降级面（无 `state._agent`）行为与批前逐字一致 | T-ZB5 | §6.8.1 降级路径条 |
 | AC-ZB6 | 留痕：复活分支与 relay 异常各留一条可观测痕（禁静默） | T-ZB6 | 批次档 §1.3 判据 3 |
-| AC-ZB7 | 两端全量 `npm test` 绿 | `npm test`（cli + core） | 常规门 |
+| AC-ZB7 | 两端集成测试绿（`npm test`） | `npm test`（cli + core） | 常规门 |
 
 **6.8.3.8 边界（本批不做）**
 
@@ -602,7 +602,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 - **可见态**：idle / processing 常态在行；模态提示态（question / permission / picker / wizard / slash 提示）状态行整行让位（既有形态，零改）。
 - **VSC 对位**：顶栏常显（`#session-title`）保持、端侧零改；**列表面**（`/session` / VSC `pushSessions`）两端同字段（`title`）同回退链（`listSlots` 派生——VSC `panel-session.mjs:235-243`）；
   本段取值 = `agent.title` 活读 · 空值回退链（`sessionTitleFallback`——值同 VSC：`firstMessage` ≤40 截断 ∥ `"(empty)"`）；空窗差（生成前 / 失败期）= **消**（已落——对位 `thincoder-vscode/src/extension/panel-session.mjs:235-243`；#677 I2）。
-- **可机判**：`renderStatus` 纯函数直驱——`agent.title` 置值 / 清空两次调用，strip-ANSI 文本读「含 ` │ <title>` / 空值 ⇒ 含回退值（`"(empty)"` 形）」两段（用例 = 批内件 `docs/batches/2026-09-30-crossline-clearance-cli.test.mjs` T-XL2——单测树重建时回迁）。 （机检豁免——用例退场登记）
+- **可机判**：`renderStatus` 纯函数直驱——`agent.title` 置值 / 清空两次调用，strip-ANSI 文本读「含 ` │ <title>` / 空值 ⇒ 含回退值（`"(empty)"` 形）」两段（用例 = 单元测试档 `docs/batches/2026-09-30-crossline-clearance-cli.test.mjs` T-XL2——单元测试树重建时回迁）。 （机检豁免——用例退场登记）
 
 ### 7.5 queued 反馈面（F16 · busy-extend 批 2026-09-22 扩面 · 排队期可见 = queue-visible 批 2026-09-24）
 

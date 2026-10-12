@@ -75,7 +75,7 @@ async function textExcerpt(response, limit = 200) {
 
 /**
  * 注册向量服务面两端点（§2.4）：`db` = openDatabase 产物 ∥ `config` = 校验后配置（`embedding` 段 = 地址/模型/key 真值）。
- * 注入口径（批内件替身）：`fetchImpl` ∥ `timeoutMs` 走可覆盖参数（缺省 = 生产行为不变）。
+ * 注入口径（单元测试档替身）：`fetchImpl` ∥ `timeoutMs` 走可覆盖参数（缺省 = 生产行为不变）。
  */
 export function registerEmbeddingAdminRoutes(routes, { db, config, log = null, fetchImpl = fetch, timeoutMs = EMBEDDING_TEST_TIMEOUT_MS } = {}) {
   if (!db || !config) throw new Error("registerEmbeddingAdminRoutes：缺少 db ∥ config（装配面须传全）")

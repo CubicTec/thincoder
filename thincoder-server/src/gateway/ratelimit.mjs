@@ -4,7 +4,7 @@
  * 检查点 = 派发命中后、转发前；窗口 = 进程内存 60s 定窗（重启归零——软状态）；
  * 通过 ⇒ 计次 +1（`check`）；token 于用量到达计入（`record`——失败/断开计次不计 token）；
  * 超限 ⇒ 429 `rate_limited` + `Retry-After`（秒——距窗尾；调用方 = `routes.mjs` 装配）。
- * 纯函数形态 + 时钟可注入（`now`）⇒ 可直测（「注时钟滚窗 ⇒ 放行」腿）；嵌入面零涉。
+ * 纯函数形态 + 时钟可注入（`now`）⇒ 可直测（「注时钟滚窗 ⇒ 放行」分支）；嵌入面零涉。
  */
 
 /** 定窗长（60s——gateway/API.md §2.1）。 */
@@ -21,7 +21,7 @@ export function retryAfterSeconds(ts, index, windowMs = RATE_LIMIT_WINDOW_MS) {
   return Math.max(1, Math.ceil((windowEnd - ts) / 1000))
 }
 
-/** 建限流器（进程内存单实例——`routes.mjs` 注册期建；测试面可注 `windowMs`/`now`）。 */
+/** 建限流器（进程内存单实例——`routes.mjs` 注册期建；测试可注 `windowMs`/`now`）。 */
 export function createRateLimiter({ windowMs = RATE_LIMIT_WINDOW_MS, now = Date.now } = {}) {
   const buckets = new Map() // `provider/model` → `{ index, count, tokens }`（滚窗即重置——定窗非滑窗；不主动回收——键 = 曾见 provider/model 对，量级 = 模型数，有界）
 

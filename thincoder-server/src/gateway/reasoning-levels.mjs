@@ -8,7 +8,7 @@
  * 标识解析径（三处同经）：会话 `model` = 对外标识（别名 ∥ `provider/model`）⇒ 先经别名反查
  * （`providers.mjs`/KD-SV-59）解上游真名，再取枚举（别名模型 = 别名所指上游枚举——不另退中性）。
  *
- * 装载与注入：`@thincoder/core` **懒载**（`await import(...)`——部署前提 = 依赖声明；本仓开发/测试面经注入缝
+ * 装载与注入：`@thincoder/core` **懒载**（`await import(...)`——部署前提 = 依赖声明；本仓开发/测试经注入缝
  * 替身，沿 `run.mjs` `loadCoreChat` 同式）+ 缓存单例（载失败同样缓存——不逐请求重试）。
  * **缺核 ⇒ 抛**（`CORE_MISSING_MESSAGE`）：调用侧退化（档位面退中性——`{}` ∥ 零字段 ∥ PATCH 400 人话），
  * **回合不阻断**；警告一条（模块级旗——一进程一条，`noteDegraded`）。
@@ -18,12 +18,12 @@ import { providerAliasIndex } from "./providers.mjs"
 /** 缺核报错文（调用侧人话面单源）。 */
 export const CORE_MISSING_MESSAGE = "思考档位值域源不可用：@thincoder/core（model-specs.mjs）未装载"
 
-let injectedSpecLookup = null // 注入缝（批内件替身；缺省 null ⇒ 懒载真核——生产行为不变）
+let injectedSpecLookup = null // 注入缝（单元测试档替身；缺省 null ⇒ 懒载真核——生产行为不变）
 let coreSpecLookup = null // 懒载缓存（真核 `specForModel`）
 let coreError = null // 装载失败缓存（零重试）
 let warnedDegraded = false // 缺核警告旗（一进程一条）
 
-/** 注入（批内件）：`specLookup(model) ⇒ spec`（核 `specForModel` 替身形）；`null` = 复位懒载。 */
+/** 注入（单元测试档）：`specLookup(model) ⇒ spec`（核 `specForModel` 替身形）；`null` = 复位懒载。 */
 export function setReasoningLevelsDeps({ specLookup = null } = {}) {
   injectedSpecLookup = typeof specLookup === "function" ? specLookup : null
   warnedDegraded = false

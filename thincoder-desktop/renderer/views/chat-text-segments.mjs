@@ -353,7 +353,7 @@ function segmentRect(record, seg) {
   return { top, bottom, height: bottom - top }
 }
 
-/** 锚分类（读 —— 视口顶锚面）：`{ seg }` = 含视口顶的段；`{ side: "above" }` = 面全在视口顶**之上**（变更全归锚上 ——
+/** 锚分类（读 —— 视口顶锚）：`{ seg }` = 含视口顶的段；`{ side: "above" }` = 面全在视口顶**之上**（变更全归锚上 ——
  *  全高）；`{ side: "below" }` = 全在之下（**零补偿** —— 面外变更不位移视口内容）。
  *  视口窗（读 —— 只量现窗内已显示段）：段内 ⇒ ±1 垫；窗带外 ⇒ 面上底窗 ∥ 面下首窗（渐进收敛）。 */
 function anchorClassOf(root, record) {
@@ -439,7 +439,7 @@ export function mountSegmentWindows(root, model, transfer) {
  * 帧尾第 ⑦ 步（`settleFrame` 六步**之后** —— 独立显式补偿；与 [t0, t1] ∥ 回填互不叠算）：
  * ① 分区保持 ∥ 稳态推进 ② 读（目标窗；跟滚帧零读）②′ 读（先读后卸：锚分类 + 待卸段矩形）③ 写（切换 `display`）
  * ④ 补偿（跟滚 ⇒ 贴底写覆盖；非跟滚 ⇒ **写后复读**锚段首壳顶 ⇒ 真位移；复读径**面序结算**（复读位移含前序面已写入位移 ⇒ 取代式取本面自担量）；锚段不可测 ⇒ 段序算式回退）。
- * 返回读数面（探针 ∥ 单测假源消费：`{ faces, hides, shows, delta, following }`）。
+ * 返回读数面（探针 ∥ 单元测试假源消费：`{ faces, hides, shows, delta, following }`）。
  */
 export function segmentViewStep(root, model, mounted) {
   const readout = { faces: 0, hides: [], shows: [], delta: 0, following: model?.following === true }

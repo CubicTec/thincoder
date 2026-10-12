@@ -106,7 +106,7 @@ export async function syncDocRoot(memory, dir, { onProgress, yieldFn = yieldTick
  * Falls back to pure FTS when no embedder; falls back to pure vector when ftsQuery is empty and embedder is present.
  * `origins`（可选覆盖参 · 2026-10-10 #1100）：缺省 `null` ⇒ 现行为（本函数自取 `searchOrigins`）**逐字**；
  * 给定 ⇒ 以其为 origin 集（复用既有单/多 origin SQL 形）；空数组 ⇒ 现「不过滤」语义（本设计调用方不产此形）。
- * 消费方 = `thincoder-core/agent/setup.mjs` 注入块两腿分取（配额策略 = `docs/core/design/AGENT-LOOP.md` §6.3）。
+ * 消费方 = `thincoder-core/agent/setup.mjs` 注入块两路分取（配额策略 = `docs/core/design/AGENT-LOOP.md` §6.3）。
  */
 export async function docSearch(memory, query, { limit = 5, origins: originsOverride = null } = {}) {
   const ftsQuery = buildFtsQuery(query)

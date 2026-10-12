@@ -6,7 +6,7 @@
  * PAT/密钥**永不回显原文**（读面掩码 = `…` + 末 4——本件 `sourceView`）；名唯一（库 UNIQUE + 人话报错）；
  * 平台四值枚举；自建须基址；间隔 5–1440；`sync_mode='event'` **平台门 = 仅 github**（KD-SV-118——其余平台无成员事件）。
  * 密钥材料 = `store/credential-crypto.mjs` 单源（KD-SV-119）；删源防护（还挂项目 ⇒ 拒）阅读 = 本件。
- * 端点面 = `admin-routes.mjs`；本档为纯存储/形面（批内件直测）。
+ * 端点面 = `admin-routes.mjs`；本档为纯存储/形面（单元测试档直测）。
  */
 import { randomBytes } from "node:crypto"
 

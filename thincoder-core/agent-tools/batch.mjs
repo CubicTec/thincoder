@@ -14,7 +14,7 @@
  * 缺省 = findInFlightBatch 取唯一在飞批，0/复数 ⇒ throw）；子代理/评审传 path ⇒ 拒（目标 =
  * spawn/实例注入，语法上写不到别处——运行期门拒）。append 段白名单（**模式感知**——§4.16）：
  * depth-0 → 工程 §1/§4/§6 ∥ 普通 §1/§2/§4/§5/§6 · eng-designer → §2 · 评审 → §3 · eng-coder → §5 ·
- * coder（普通模式腿增表——SEGMENT_BY_ROLE_NORMAL）→ §5；status 写域 = 调用者自己段（模式感知
+ * coder（普通模式分支增表——SEGMENT_BY_ROLE_NORMAL）→ §5；status 写域 = 调用者自己段（模式感知
  * ——见 batch-lifecycle.mjs）。append 迁移面错误串**逐字保持 "batch_segment:" 前缀**（§4.1 全表锚断言）；
  * "batch:" 前缀 = 本批新增错误面（create/close/status/findInFlight/path 门/dispatch）。
  *
@@ -95,7 +95,7 @@ function segmentNumber(raw) {
 
 /** 身份 → 可写段号；无写权身份 → null。评审实例绑定优先（评审者的身份即"设计评审"。）
  *  depth-0 的段白名单（append——模式感知，§4.16）由 appendBatchRecord 分支，不经本表；
- *  普通模式腿额外合并 coder 增表（`SEGMENT_BY_ROLE_NORMAL`——**合并查只在普通模式腿**）。 */
+ *  普通模式分支额外合并 coder 增表（`SEGMENT_BY_ROLE_NORMAL`——**合并查只在普通模式分支**）。 */
 function allowedSegment(agent, review, engineering) {
   if (review) return 3
   const role = agent?._role
@@ -151,7 +151,7 @@ function insertIntoSection(src, seg, text) {
  * append 执行体（action=append——原 batch_segment execute 迁移 + depth-0 分支）：
  *  - 段白名单（**模式感知**——§4.16）：depth-0 工程 → §1/§4/§6（新错误面，"batch:" 前缀）∥
  *    depth-0 普通 → §1/§2/§4/§5/§6（模式化新串）；eng-designer → §2 · 评审 → §3 ·
- *    eng-coder → §5 · coder（普通模式腿增表）→ §5（迁移错误面，"batch_segment:" 前缀**逐字保持**）；
+ *    eng-coder → §5 · coder（普通模式分支增表）→ §5（迁移错误面，"batch_segment:" 前缀**逐字保持**）；
  *  - 目标定位（D-BR21）：depth-0 path 可选（缺省 = findInFlightBatch 唯一在飞批）；子代理/评审
  *    传 path ⇒ 拒，目标 = spawn/实例绑定；
  *  - 其余（gate / text 校验 / 剥凭证 / 骨架保护 / **死占位机检（F11-C）** / 插入 / 记账 / 回执）逐字保持原语义。

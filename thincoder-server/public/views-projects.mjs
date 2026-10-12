@@ -6,7 +6,7 @@
  *
  * 判权全在后端（控件显隐 = 服务端 `my` 读数——`can` 六键 ∥ `admin` 布尔；页面不是判据——直打端点仍 403/404）；渲染一律节点 + textContent（零拼串）；
  * 文案经 `t()` 取值；失败就地人话（404 直取 = 「项目不存在或不可见」——刷新列表收口）。端点 = gateway/API.md §2.9。
- * 导出面 = 批内件直测（`levelLabel` ∥ `readKindLabel` ∥ `countsText` ∥ `projectsTable` ∥ 共用件两枚：`openProjectDetail` ∥ `openAddRepoDialog`）。
+ * 导出面 = 单元测试档直测（`levelLabel` ∥ `readKindLabel` ∥ `countsText` ∥ `projectsTable` ∥ 共用件两枚：`openProjectDetail` ∥ `openAddRepoDialog`）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
@@ -23,7 +23,7 @@ const ERR_KIND_KEYS = {
   bad_response: "admin.gitSources.errKind.badResponse",
 }
 
-/** 档位/徽标文案（纯函数——批内件断言面）：负责人优先显；档位空（admin 非成员）⇒ 「—」。 */
+/** 档位/徽标文案（纯函数——单元测试档断言）：负责人优先显；档位空（admin 非成员）⇒ 「—」。 */
 export function levelLabel(level, isOwner = false) {
   if (isOwner === true) return t("me.projects.level.owner")
   return LEVEL_KEYS[level] === undefined ? "—" : t(LEVEL_KEYS[level])

@@ -41,17 +41,17 @@
 | **小计** | **≈257** | —— |
 
 - `thincoder-server/package.json` ±0（`prepublishOnly` 清单 38 ⇒ **39**——本批件入链；单行清单行数零变）；**store 域零改**（零迁移——结构版本保持 v10）。
-- 批内件：`docs/batches/2026-10-10-team-login-client-access.test.mjs`（服务端面——估 ≈260 行）。
+- 单元测试档：`docs/batches/2026-10-10-team-login-client-access.test.mjs`（服务端面——估 ≈260 行）。
 
-## 4. 验收判据（机检面——回指 AC-31）
+## 4. 验收判据（机检——回指 AC-31）
 
 | 需求 AC | 设计级判据 | 载体 |
 |---|---|---|
-| AC-31①（三端登录入口在册） | 端侧面 = `docs/core/design/TEAM.md` §5；服务面 = login 端点三态（200 ∥ 401 ∥ 429——§6 用例 N37/B27） | 批内件 + 收口轮 |
-| AC-31②（token 落本地 ∥ 明文密码零落盘） | login 200 携 `token`（仅一次回显）∥ 服务端库存 hash（实读 `api_keys.key_hash` 行在场）∥ 端侧零密码字段（`docs/core/design/TEAM.md` §5） | 批内件 |
-| AC-31③（登录后自动 provider——模型可用） | 服务面：该 token 对 `/v1/models` 与 `/v1/chat/completions` 可用（同 key 面判据——`gateway/API.md` §2）；端侧派生条目面 = `docs/core/design/TEAM.md` §5 | 批内件 + 收口轮 |
-| AC-31④（未登录 ⇒ 团队各面不启用） | 端侧登录态门 = `docs/core/design/TEAM.md` §5；服务面 = 无 token 请求 `/api/client/*` ⇒ 401 | 批内件 + 收口轮 |
-| AC-31⑤（退出 ⇒ 登录 token 吊销（`api_keys` 行）+ 团队面关闭） | logout ⇒ 该 token 下一次 `/api/client/*` 与 `/v1/*` 请求 ⇒ 401（吊销即判——无缓存）；端侧关闭面 = `docs/core/design/TEAM.md` §5 | 批内件 + 收口轮 |
+| AC-31①（三端登录入口在册） | 端侧面 = `docs/core/design/TEAM.md` §5；服务面 = login 端点三态（200 ∥ 401 ∥ 429——§6 用例 N37/B27） | 单元测试档 + 收口轮 |
+| AC-31②（token 落本地 ∥ 明文密码零落盘） | login 200 携 `token`（仅一次回显）∥ 服务端库存 hash（实读 `api_keys.key_hash` 行在场）∥ 端侧零密码字段（`docs/core/design/TEAM.md` §5） | 单元测试档 |
+| AC-31③（登录后自动 provider——模型可用） | 服务面：该 token 对 `/v1/models` 与 `/v1/chat/completions` 可用（同 key 面判据——`gateway/API.md` §2）；端侧派生条目面 = `docs/core/design/TEAM.md` §5 | 单元测试档 + 收口轮 |
+| AC-31④（未登录 ⇒ 团队各面不启用） | 端侧登录态门 = `docs/core/design/TEAM.md` §5；服务面 = 无 token 请求 `/api/client/*` ⇒ 401 | 单元测试档 + 收口轮 |
+| AC-31⑤（退出 ⇒ 登录 token 吊销（`api_keys` 行）+ 团队面关闭） | logout ⇒ 该 token 下一次 `/api/client/*` 与 `/v1/*` 请求 ⇒ 401（吊销即判——无缓存）；端侧关闭面 = `docs/core/design/TEAM.md` §5 | 单元测试档 + 收口轮 |
 
 ## 5. 关键决策（本域）
 
@@ -60,14 +60,14 @@
 | KD-SV-61 | **客户端 token = 一枚具名成员 key**（`api_keys` 行；端标签落 `name`；无过期天然；`/api/client/*` 与 `/v1/*` 同源校验） | ① token 须兼作 /v1 凭据（AC-31③「模型可用」）——校验/记账/配额/归因全链零改（`usage.key_id` 引用天然成立）；② 「不设过期」= api_keys 无过期列（零改）；③ 「端标签 + 列表可撤销」= `name` + 既有列表面（`/api/me` ∥ key 页 ∥ CLI）——零新设施；④ 单秘密（一次登录一枚——口径①） | **新表 `client_tokens`**（token 独立——/v1 面须第二校验面或映射；记账 key 归因无着落；两套凭证语义——否）· **复用 `sessions` 表**（7 天绝对过期与「不设过期」相抵；浏览器 cookie 语义与端侧持久 token 混装——否）· token 兼 session + 另发 key（每次登录两枚秘密——与「发一个」口径相抵——否） |
 | KD-SV-62 | **客户端数据面命名空间 = `/api/client/*`**（骨架 = login ∥ logout ∥ me；鉴权 = 登录 token（Bearer——`requireApiKey` 单源复用）） | ① `EVOLUTION.md` §2「客户端数据面命名空间」决策点本批钉死——后续团队四面同空间扩；② 鉴权单源 = 账号 key 校验——零第二校验面；③ 与 `/api/*`（会话 cookie 面）∥ `/v1/*`（模型面）三分清晰 | `/api/team/*`（语义窄化——台账/记忆非「team 专属」义——否）· 并入 `/api/*` 会话面（cookie 与 Bearer 混面——判权分族乱——否） |
 
-## 6. 用例（本域 · 批内件）
+## 6. 用例（本域 · 单元测试档）
 
 | # | 用例 | 判据 |
 |---|---|---|
-| N37 | login 成功 ⇒ 200 携 token；`api_keys` 新行（name = label ∥ key_hash = sha256(token)）；审计 `login_success` + `key_issue` 各一行 | 批内件 |
-| B27 | 错密码 ∥ 不存在用户 ⇒ 401 同措辞；5 连败 ⇒ 429 + `Retry-After`；label 缺省 ⇒ 默认名 `key-N`；label >40 字符 ⇒ 400 | 批内件 |
-| E28 | logout ⇒ 吊销；再请求（`/api/client/me` ∥ `/v1/models`）⇒ 401；已吊销再 logout ⇒ 401（端侧清本地语义） | 批内件 |
-| N39 | token 兼用：`GET /api/client/me` ∥ `GET /v1/models` 同 token 皆 200 | 批内件 |
+| N37 | login 成功 ⇒ 200 携 token；`api_keys` 新行（name = label ∥ key_hash = sha256(token)）；审计 `login_success` + `key_issue` 各一行 | 单元测试档 |
+| B27 | 错密码 ∥ 不存在用户 ⇒ 401 同措辞；5 连败 ⇒ 429 + `Retry-After`；label 缺省 ⇒ 默认名 `key-N`；label >40 字符 ⇒ 400 | 单元测试档 |
+| E28 | logout ⇒ 吊销；再请求（`/api/client/me` ∥ `/v1/models`）⇒ 401；已吊销再 logout ⇒ 401（端侧清本地语义） | 单元测试档 |
+| N39 | token 兼用：`GET /api/client/me` ∥ `GET /v1/models` 同 token 皆 200 | 单元测试档 |
 
 ## 7. 本域边界（不做）
 

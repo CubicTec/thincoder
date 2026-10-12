@@ -55,7 +55,7 @@ grid-template-rows: auto minmax(0, 1fr) auto auto auto;
 | `send.js` / `loading.js` | 输入门（核 `thincoder-render-core/composer/panel.mjs`——busy 拒发 `:301-324`；本端 `send.js:10-12` 转口）/ 忙态与按钮可见性（核 `thincoder-render-core/composer/panel.mjs:434-435`；本端 `loading.js` 转口） |
 | `input.js` / `autocomplete.js` / `toast.js` | 输入面（keydown 全族——`WEBVIEW-INPUT.md`）/ @ 补全与图片粘贴 / 瞬时提示（R2 迁核：核 `toast.mjs`；本端 = 2 行 `export *` shim） |
 | `permission.js` / `question.js` | 权限弹窗与批确认 / 内联 question 卡（R2 换接：构树单源 = 核 `thincoder-render-core/cards/permission.mjs` / `thincoder-render-core/cards/question.mjs`——端壳只留出站绑） |
-| `diff.js` · `tool-card-restore.mjs` | diff 预览（apply_patch）/ 恢复会话的工具卡折叠语义（R2 迁核：核 `thincoder-render-core/flow/tool-card-restore.mjs`；本端 = 2 行 shim——仅测试面消费） |
+| `diff.js` · `tool-card-restore.mjs` | diff 预览（apply_patch）/ 恢复会话的工具卡折叠语义（R2 迁核：核 `thincoder-render-core/flow/tool-card-restore.mjs`；本端 = 2 行 shim——仅测试消费） |
 | `tool-summary.js` | 工具结果**一行式摘要单源**（`formatToolSummary` 分派：advisor / read / write / grep / glob / bash / 默认分支）——活卡 `finishToolCard` 与恢复卡 `buildToolHistory` 共用（X3 · X7） |
 | `settings.js` + `settings-*.js` | 设置面板（providers / agent / models / tools / env / widgets / state）——信息架构见同层 `SETTINGS.md` |
 | `settings-mcp.js` | MCP 面（服务器列表 + add ∕ edit 表单 + env ∥ headers 行式键值编辑器）——自 `settings-tools.js` 拆出（MCP 键值行式输入批 · 2026-10-07 · 台账 #1036）；**126 行**（`wc -l`——2026-10-09 sweep 复读；后表单族续拆入 `settings-mcp-dialog.js`）；拆后 `settings-tools.js` **212 行**（拆前 **433**） |
@@ -89,7 +89,7 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
   （`Session N` + 生成中提示——`input.js:109-112`），生成完成后经 `sessions` 刷新。
   账本异常注记（LEDGER-RELIABILITY 批）：`sessions` 载荷携 `ledger`（`{ refused, reason, scene }`——异常才携；判据单源 = 核 `ledgerHealth(cwd)`）⇒ 下拉**首行警示注记**（非可点条目——渲染点 `thincoder-vscode/webview/session-bar.js` `buildSessionDropdown`）。
   文案 = 主句键 `session.ledgerNotice`（含 reason 与「打开会话即自动补回」）**+ `scene === true` 时条件附句键 `session.ledgerNotice.scene`**（「损坏现场档保留 30 天」——与 CLI 同口径：**条件合成，恒附改条件附**），见 `WEBVIEW-PROTOCOL.md` §6.3。
-  **异常清 ⇒ 两腿**（单源 = 核 `ledgerHealth(cwd)`）：`scene` 腿 = 损坏现场档清 ⇒ 注记消失（零历史态）∥ `refused` 腿 = 核**本进程累计**（不清零）⇒ 进程内一旦拒写，注记持续在场**至重启**（有界）。
+  **异常清 ⇒ 两侧**（单源 = 核 `ledgerHealth(cwd)`）：`scene` 侧 = 损坏现场档清 ⇒ 注记消失（零历史态）∥ `refused` 侧 = 核**本进程累计**（不清零）⇒ 进程内一旦拒写，注记持续在场**至重启**（有界）。
 - **模型选择 UI**：主下拉列 provider 行 + hover flyout 子菜单选模型（两级菜单——`model-picker.js` / `model-menu.js`）；底部含 add / remove / key 管理入口。
 - **挂起与忙态 UI**：settled → `awaitingDigest`（等待消化，带提示）；digest 起跑（起跑窗）→ 归档落流；会话退出 = 区全体归档（§5.1）。
   状态行（⏳ 后台 N 子代理 + 待消化计数——`status-bar.js:66-78`）；输入框永不锁（`loading.js`），
@@ -213,7 +213,7 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
 
 - **修前**：thinking 段 = `t("status.thinking")` + `<span class="loading-dots">`；点动画 = `controls.css` `@keyframes dots`（`steps(4)` 四拍——内容宽度 ''/'.'/'..'/'...' 逐拍变）⇒ 段宽逐拍抖、状态行抖动。
 - **修法**：改**静态省略号**——`t("status.thinking") + "…"`（同两处既有静态形：活动块状态词 `W.thinking` ∥ 推理块 summary）；`.loading-dots` 件与 `@keyframes dots` 块**删除**（全树唯一消费者即本段）。词键零改。
-- **判据**：单测（渲染面）——`_phase === "thinking"` ⇒ 段在场且零 `.loading-dots` 节点；`_phase = null` ⇒ 段缺席；全树 `loading-dots` / `@keyframes dots` 零命中（grep 面）。
+- **判据**：单元测试（渲染面）——`_phase === "thinking"` ⇒ 段在场且零 `.loading-dots` 节点；`_phase = null` ⇒ 段缺席；全树 `loading-dots` / `@keyframes dots` 零命中（grep 面）。
 - **边界**：同台账「最小窗口尺寸缩放异常」= 静态读不出 ⇒ 待报方复现材料——**不在本批**（在册）。
 
 ### 4.10 会话模型选定写回（2026-10-04 · 台账 #883）
@@ -237,7 +237,7 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
 - **接线**：`thincoder-vscode/webview/onboarding.js`（+route 状态 ∥ 换取 ∥ 团队表单提交/回退）+ `thincoder-vscode/webview/index.html`（#welcome-panel 结构）+ `thincoder-vscode/webview/settings.css`（卡样式段）
   + `thincoder-vscode/webview/state.js`（ctx 引用）+ `thincoder-vscode/webview/chat-messages.js`（`teamLoginResult` 既有两消费位——+板面钩）；**零新协议消息**。
 - **跳过/以后再说**：⇒ 既有 `_welcomeDismissed`（webview 生存期——板不再显）；登录路仍可达 = 状态栏团队 item（§4.12）；**零第二引导面**。
-- **判据（机检 ∥ 真机）**：机检 = 批内件（happy-dom：路由屏两卡在场 ∥ 零预选 ∥ 换取（表单在场 ∧ 路由退场——同屏）∥ 回退（路由在场 ∧ 已填保留 ∧ 密码清）∥ 本地路既有表单逐字等价（负控）∥ 失败行四句）；真机 = 收口轮实走（首启 → 两路 → 登 → 模型面）。
+- **判据（机检 ∥ 真机）**：机检 = 单元测试档（happy-dom：路由屏两卡在场 ∥ 零预选 ∥ 换取（表单在场 ∧ 路由退场——同屏）∥ 回退（路由在场 ∧ 已填保留 ∧ 密码清）∥ 本地路既有表单逐字等价（负控）∥ 失败行四句）；真机 = 收口轮实走（首启 → 两路 → 登 → 模型面）。
 - **边界**：不改 `localStorage keyOk` 交棒判据 ∥ 不改设置面板 ∥ 零新协议 ∥ 不改 preset 表单语义（本地路零改）。
 
 ### 4.12 团队常显与直达（状态栏 item + 命令 · F-W21 · 2026-10-10 · 登录面补全批 · 台账 #1231）
@@ -249,7 +249,7 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
 - **登/退不再经设置面板**：面板团队卡 = 管理面（label ∥ 详情——`docs/vsc/design/SETTINGS.md` §2.20 收正）；「轮换」= 另裁项（服务端无 client rotate 端点——本批零控件）。
 - **接线**：`thincoder-vscode/extension.mjs`（+`registerCommand('thincoder.team')` + 初始化/销毁 item）+ `thincoder-vscode/package.json` contributes.commands（+1）+ `thincoder-vscode/locales/en.json ∥ zh.json`（+键）
   + 复用 `thincoder-vscode/src/extension/team.mjs`（teamStatus/teamLogin/teamLogout + **`teamVerify` 转口**——转口四件；`team-surface.mjs` 经转口取核，与桌面 `thincoder-desktop/src/main/team.mjs` 同拍）∥ `thincoder-vscode/src/extension/settings.mjs` `pushTeamStatus`（既有——单一实现）；**零新 webview 协议**。
-- **判据（机检 ∥ 真机）**：机检 = 批内件（item 三态文本 ∥ tooltip 含 host ∥ 命令注册 ∥ 流：桩 `showInputBox` 三连 ⇒ `teamLogin` 调用序 ∥ 已登录 QuickPick ⇒ `teamLogout` ∥ 失败四句）；真机 = 收口轮（命令面板 → 登录 → item 变名 → 点击 → 退出 → item 回入口）。
+- **判据（机检 ∥ 真机）**：机检 = 单元测试档（item 三态文本 ∥ tooltip 含 host ∥ 命令注册 ∥ 流：桩 `showInputBox` 三连 ⇒ `teamLogin` 调用序 ∥ 已登录 QuickPick ⇒ `teamLogout` ∥ 失败四句）；真机 = 收口轮（命令面板 → 登录 → item 变名 → 点击 → 退出 → item 回入口）。
 - **边界**：不改 webview 消息面 ∥ 不改 panel 推送链 ∥ 状态 item 不搬 URL 全串 ∥ 校验触发点制（零周期轮询）。
 
 ## 5. 子代理活动块与活动区
@@ -471,8 +471,8 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 - **DOM 窗上限 150 块**：`thincoder-vscode/webview/ui.js:237`（`MAX_MESSAGE_BLOCKS`）+ `trimOldMessages`（`:238-245`）——计数选择器含 `.message` / `.tool-call` / `.advisor-block` / `.sub-block`（**归档块随窗出窗**）；区驻留块不在其容器，不计。
 - **懒历史锚**：`thincoder-vscode/webview/history.js:29`（加载指示插位——插入行 `:36`）与 `:72`/`:76`（分页 prepend 锚）选择器同含 `.sub-block`——归档块与懒历史页共存时插位正确。
 - **分页**：首窗 = 末页（`older=false`）+ `hasOlder`；`scrollTop ≤ 40` 触发 `loadOlder`（`history.js:98` 判据 / `:103` 投递）；prepend 后按 `scrollHeight` 增量补偿 `scrollTop`（`:73-77`）。页大小常量 = 核 `thincoder-core/history-window.mjs:29`（`HISTORY_PAGE_SIZE = 200`——跨端首窗对齐；本端 `history-window.mjs` = 12 行转口）。
-- 归档块锚面（按径分述）：**live 归档块不补 `data-idx`**（活流落点 = **到达序当刻流末**——记录 `idx` 为流末追加位次、与视觉位次不重合 ⇒ 不入回填游标面；出窗后经记录重建径回填）；**重建块携 `data-idx`**（= 记录全局 `idx`——§5.7 重建径；分页游标面完整性所系：`minLoadedIdx` 含重建元素 ⇒ 更早页游标正确）。
-- **防双渲染判据（live ∥ 重建两径）**：重建插入前按同位 `[data-idx]` 去重（命中 ⇒ 跳过——幂等）；**live 块不回溯补锚**（锚面 = 重建径独占）——同一 DOM 世代内一条记录至多产一元素（重建径仅产自页快照内含之记录 ∥ live 径仅产自快照后新归档——两径不相交）。
+- 归档块锚检查（按径分述）：**live 归档块不补 `data-idx`**（活流落点 = **到达序当刻流末**——记录 `idx` 为流末追加位次、与视觉位次不重合 ⇒ 不入回填游标面；出窗后经记录重建径回填）；**重建块携 `data-idx`**（= 记录全局 `idx`——§5.7 重建径；分页游标面完整性所系：`minLoadedIdx` 含重建元素 ⇒ 更早页游标正确）。
+- **防双渲染判据（live ∥ 重建两径）**：重建插入前按同位 `[data-idx]` 去重（命中 ⇒ 跳过——幂等）；**live 块不回溯补锚**（锚检查 = 重建径独占）——同一 DOM 世代内一条记录至多产一元素（重建径仅产自页快照内含之记录 ∥ live 径仅产自快照后新归档——两径不相交）。
 
 ### 5.5 live 块跟滚与内容区高度
 
@@ -545,12 +545,12 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
   - `subagent` 记录 ⇒ 归档块元素 = **活形同构**（核 `subblocks` 原语直消费 + `rows` 回放 + 冻结节 + tail-3）+ 落点镜式（**记录位次原位（零配对）**——重建径；与 live `archiveBlock` 到达序**两径并存为设计**（2026-10-01 裁 A 随正）——对位桌面「归档块 = 普通块——记录位次原位出」）。
   - 负控 = 记录缺 ⇒ 恢复面逐字等价；未归档块（live / 在飞）**不重建**（I-7 收窄——池内块非记录对象）。
 - **容差（本端状态）**：① 跨页分裂 = **不可证面零产**（起跑未载的 `cap` ∥ `end` 记录不入 ∥ 非末页尾残起跑不入——与桌面同构；页 200 条低频 ∥ 数据零损；重开条件 = 实测走查命中 ⇒ 另批）；② 归档快照落盘晚一拍（**沿用**——出站异步 ⇒ 记录随**下一次** `saveLines` 落槽；「重载可见性 = 至最后一次落盘」）。
-- **验收回指**：F-W1 判定句 + I-7 收窄负控 + 批内件腿（批档 §2 §五）；真机 = 面板重开 ∥ reload（父侧走查）。
+- **验收回指**：F-W1 判定句 + I-7 收窄负控 + 单元测试档用例（批档 §2 §五）；真机 = 面板重开 ∥ reload（父侧走查）。
 
 ### 5.8 阅读位保护与视图偏好（2026-10-04 · 台账 #875）
 
 - **缺陷 a（阅读位被夺）修法 = 调用点纪律回正**：工具卡建 / 完成（`ui.js` `addTool` ∥ `finishTool` 两径）与错误横幅（`showError`）改走 `maybeScrollDown`（旗标门——`_pinBottom === false`（用户上滚）⇒ 零写不夺；钉底照旧跟底）；
-  `scrollDown`（强制重 pin）只留显式动作（回底钮 ∥ 发消息 ∥ 首窗历史）。判据 = 单测（旗标假 ⇒ `scrollTop` 零改 ∥ 旗标真 ⇒ 写 MAX——修前红对照）。
+  `scrollDown`（强制重 pin）只留显式动作（回底钮 ∥ 发消息 ∥ 首窗历史）。判据 = 单元测试（旗标假 ⇒ `scrollTop` 零改 ∥ 旗标真 ⇒ 写 MAX——修前红对照）。
   **已修面（保持）**：滚动条拖动 / 键盘滚动同解 pin（`scroll` 事件按近底直写——核 `scroll.mjs` 现行集）。
 - **Thinking 默认折叠**：推理块两径默认合——核 `thincoder-render-core/flow/reasoning.mjs`（live 流式块）∥ 核 `thincoder-render-core/flow/block.mjs`（恢复帧）；手动展开仍可看全。机面详句 = `docs/render-core/design/RENDER-CORE.md` §5；桌面面零触（其实读不消费该两件）。
   **跨端默认差（VSC 折叠 ∥ 桌面 `thincoder-desktop/renderer/views/chat-text.mjs:55` 自持 open:true）= 待消解**——凭据判定 = 宿主能力面证据 ∥ 行为证据均不成立（默认开合态 = 用户可见态差，非载体差；判据 = `WEBVIEW-PROTOCOL.md` §6.1 首句）⇒ **消解路径 = 桌面面另批**（桌面默认态改折叠——一行）；**触发 ∥ 到期条件 = 桌面面下次被触碰**。
@@ -588,7 +588,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | D-W16 | **模型 / 推理钮随处可切**（2026-10-04 解锁批收正——原「忙态禁用」形退场） | 收正由 = 体验目标（真 idle 窗罕见——「总是被锁着」）+ 写面保护替代硬挡；D-W16 原「否决仅 running」理由面（`susp` 在飞蒸馏落盘窗携旧回合快照）由落盘保护（偏好键单写者）吸收——不靠挡；见 §4.2 |
 | D-W17 | `@` 引用 = **显示边界剥离**（消费面二处 = 恢复面显示 + **标题源文本**——均还原简洁形；落点端侧） | 否决改存储本体（动人读线 = CLI 共文件）· 否决活面同步展开（B 口——正文搬上屏）· 否决落核窗口面（消费方只有 VSC + 语法产者住端——§4.4 判据） |
 | D-W18 | 非零退出 = **判据扩**（卡态 + 保持展开 + 摘要含退出状态，同一判据派生） | 否决仅摘要（卡仍绿）· 否决仅展开（折叠面读作 `(empty)`）——单信号不达「可见失败」 |
-| D-W19 | spawn 失败（进程未启动） = **产者补状态位** `(spawn failed)`（状态位族第三成员；端侧判据族随扩一名）——**产者两处、同名同形**：核 `thincoder-core/tools/bash.mjs:183-190`（CLI 面）· **宿主 `thincoder-vscode/src/tools/shell.mjs:242-260`（本端卡面真产者）**；同批收正宿主两态（超时 ⇒ `(killed: timeout <N>ms)` · 输出超容 ⇒ `(killed: output limit exceeded)`）+ **退出码槽只接受数字**规则。本端 `bash` ≠ 核 `bash`（`thincoder-vscode/src/tools/index.mjs:30` · `:173-176`）⇒ 只改核面则本端卡面零变化（评审 id=118 #1 实核） | 否决判据面认产者措辞（`Command failed:` 前缀——跨端措辞耦合 ⇒ 产者改字即静默复辟；且不产状态文本 ⇒ 摘要仍读 `(empty)`，第三信号须二次手术；CLI 端零收益）· 否决 `Error:` 前缀（核侧控制信号——`dispatch.mjs:369` · `:420` · `:426` · `:438` 同读，语义升格面）· 否决伪造 `(exit code N)`（进程未启动，禁造假状态）· 否决「本端改判为核/CLI 面收口」（本端卡面即本缺陷的用户可见承诺面） |
+| D-W19 | spawn 失败（进程未启动） = **产者补状态位** `(spawn failed)`（状态位族第三成员；端侧判据族随扩一名）——**产者两处、同名同形**：核 `thincoder-core/tools/bash.mjs:183-190`（CLI 面）· **宿主 `thincoder-vscode/src/tools/shell.mjs:242-260`（本端卡面真产者）**；同批收正宿主两态（超时 ⇒ `(killed: timeout <N>ms)` · 输出超容 ⇒ `(killed: output limit exceeded)`）+ **退出码槽只接受数字**规则。本端 `bash` ≠ 核 `bash`（`thincoder-vscode/src/tools/index.mjs:30` · `:173-176`）⇒ 只改核面则本端卡面零变化（评审 id=118 #1 实核） | 否决判据侧认产者措辞（`Command failed:` 前缀——跨端措辞耦合 ⇒ 产者改字即静默复辟；且不产状态文本 ⇒ 摘要仍读 `(empty)`，第三信号须二次手术；CLI 端零收益）· 否决 `Error:` 前缀（核侧控制信号——`dispatch.mjs:369` · `:420` · `:426` · `:438` 同读，语义升格面）· 否决伪造 `(exit code N)`（进程未启动，禁造假状态）· 否决「本端改判为核/CLI 面收口」（本端卡面即本缺陷的用户可见承诺面） |
 | D-W20 | 出生自愈 = **既有存活投影的 2 s 心跳**（拍体即 `reassertLiveChildren` 本体；起于就绪握手、止于 dispose） | 否决新造存活投影（双源）· 否决投递层重试（投递层看不见 webview 守卫吞掉 / 键已冻结）· 否决只在握手 / 切屏再断言（投递丢失窗口不覆盖——本次事故留 20 min 空窗） |
 | D-W21 | 心跳**允许**对已冻结键建新代（接管；host 是「该键仍 live」的权利人） | 否决心跳禁接管（新代出生消息丢失时永久不可见——违 F-A3）· 否决心跳携带实例序号（改频道命名法——D-W11 / F-A3 边界禁止） |
 | D-W22 | 痕迹面**迁出** `thincoder-vscode/webview/activity-diag.js`（已落） + 上行 `panelDiag` 入主侧日志 | 否决痕迹留 `activity.js`（**450 行**——行计数口径 = `wc -l` / 含末行；as-of 2026-09-20 收口轮实读 + 新增 ⇒ 近 500 硬限；2026-10-09 复读 263 行）· 否决只留 webview 环形日志（DevTools 不可回读——本次事故正因不可回读而盲） |
@@ -687,7 +687,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | 4 | 工具调用卡（卡片形态 · 卡体 64K 上限 · 恢复卡对齐） | F-W4 · N-W2 |
 | 5 | 活动块可靠性（**出生面存活闸**（冻结键接管 · 不限角色族与 pool）· **非出生面禁静默** · 单投递队列（事件面 + 内容面）· 就绪/清屏后再断言 · **出生自愈心跳** · 终态补桩（含 tombstone 形）· 痕迹七类 + `panelDiag` 上行） | F-W1 · N-W5 · **F-A1 · F-A2 · F-A3 · F-A4 · F-A5 · NFR-A1 · NFR-A2 · NFR-A3** |
 | 6 | 内容面投递（子代内容 chunk relay 前缀分流 → `sub:<role>#<id>` · 事件面/内容面次序 · 嵌套链数据面（`dataset.sub`）） | F-W1 · N-W5 |
-| 7 | 机检面（新增档 ≤500 行 · 无 >300 字符单行 · 文档锚零悬空） | N-M3 · N-M2 |
+| 7 | 机检（新增档 ≤500 行 · 无 >300 字符单行 · 文档锚零悬空） | N-M3 · N-M2 |
 | 8 | 权限卡族释放形态（逐项 / 合并 · 卡消失 · 零静默无效 · 释放即刷新（状态栏）） | F-W13 |
 | 9 | 模型 / 推理按钮随处可切（钮面零门 · 落盘保护 · 回写门保留） | F-W14（2026-10-04 解锁批收正） |
 | 10 | 工具卡失败信号与摘要（判据单源 · 产者两处：核 `thincoder-core/tools/bash.mjs` / 宿主 `thincoder-vscode/src/tools/shell.mjs` · 活卡/恢复卡同判据 · 摘要含状态位——族三成员：退出码 / 被杀 / spawn 失败） | F-W16 |
@@ -701,7 +701,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | 18 | 首启板两路（两卡 ∥ 零预选 ∥ 同屏换取 ∥ 回退保真 ∥ 「以后再说」第三态 ∥ 提交链复用零新协议） | F-W20 |
 | 19 | 团队常显与直达（状态栏 item 三态 ∥ 命令 `thincoder.team` 登/退流 ∥ 校验触发点制 ∥ 卡降管理面） | F-W21 |
 
-**用例面**：本板块的测试资产原在 `thincoder-vscode/test/`（`activity-flow` · `activity-closure` · `activity-live-ux` ·
+**用例**：本板块的测试资产原在 `thincoder-vscode/test/`（`activity-flow` · `activity-closure` · `activity-live-ux` ·
 `async-visibility` · `history-window` · `history-restore` · `session-boot`）——**退场注**：逐档随 2026-09-28 测试树全清重置退场；用例表归测试层，本档不复制（D2）。
 **登记例外 1 条**：F-W4 活卡面（`toolCall`/`toolOutput`/`toolResult` 接收）现无专属用例
 （缺口登记 = `requirements/WEBVIEW.md` N-W5，消解路径 + 到期条件在案）。
@@ -727,7 +727,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 
 **阈值射程（2026-09-25 修正轮 · 发现 #12）**：J-2 的绝对线（> 1s）**只作单段占比的补批候选触发**；**首屏总时延不设绝对阈值**——判别恒为常态带分离 / 自身对照（与批档 §2 §5 KD-1 同句）。
 
-**边界（本节不做）**：不做常驻仪表（默认一次性探针）；不加 webview `performance` 标记（真画证据归真机 QA · 台账 #162）；口径 A 不入本批。**读数留档** = 批次档 §5 / §6（一次性材料）；探针撤除后 `git diff` 空 = 方案自身验证面。
+**边界（本节不做）**：不做常驻仪表（默认一次性探针）；不加 webview `performance` 标记（真画证据归真机 QA · 台账 #162）；口径 A 不入本批。**读数留档** = 批次档 §5 / §6（一次性材料）；探针撤除后 `git diff` 空 = 方案自身验证。
 
 ## 变更记录
 - 2026-10-10（**login-entry-completion 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §1 · 台账 #1230 ∥ #1231；用户 14:33–14:49 裁定链）：新增 **§4.11 首启板两路**（F-W20——路由屏两卡 ∥ 零预选 ∥ 同屏换取 ∥ 回退保真 ∥ 提交链复用（零新协议）∥ 判据 ∥ 边界）∥ **§4.12 团队常显与直达**（F-W21——状态栏 item 三态 ∥ 命令 `thincoder.team` 登/退流 ∥ 校验触发点制 ∥ 卡降管理面）∥ §10 +两行（18 ∥ 19）。语义单源 = `docs/core/design/TEAM.md` §2.5 ∥ §2.6。**产品码零触（设计轮）**。明细 = 批档 §2。

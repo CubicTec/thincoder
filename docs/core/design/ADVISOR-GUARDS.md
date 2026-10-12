@@ -347,7 +347,7 @@ export function outputReserve(provider, spec) {
 - **循环侧消费（两处）**：循环体外一次性取预算（provider 全场不变）；两处比较点改读 `compactAt` / `limit`，其余逐字不动。
 - **完成预留（基数扣减项——单源 `outputReserve`）**：显式 `provider.maxTokens`（有限且 > 0——请求实发值 `thincoder-core/provider/core.mjs:187`）∥ 规格 `maxOutput` ∥ 0。
 - **预留消费面（两处 · 同源）**：评审预算（`thincoder-core/advisor/compaction.mjs:34-39`）∥ 代理侧压缩阈值 `resolveCompactThreshold`（×0.6——`thincoder-core/config.mjs:122-129`；每回合压缩检查 / 展示面回退 `thincoder-core/token-window.mjs:151`）。
-- **裁定（2026-10-06 用户原话 · #975）**：用户 2026-10-06 20:32「坐着完成预留的处理也应该压缩而不是判死啊！你这什么逻辑？！」——预留在窗口里占位（provider 口径 = 输入 + `max_tokens` ≤ 窗）⇒ 折入预算，基数 = **可用窗口**（评审两档与代理阈值同基数口径；零回归面 = 预留 0 ⇒ 与旧式逐值相等——比例关系整式未动）。
+- **裁定（2026-10-06 用户原话 · #975）**：用户 2026-10-06 20:32「坐着完成预留的处理也应该压缩而不是判死啊！你这什么逻辑？！」——预留在窗口里占位（provider 口径 = 输入 + `max_tokens` ≤ 窗）⇒ 折入预算，基数 = **可用窗口**（评审两档与代理阈值同基数口径；零回归 = 预留 0 ⇒ 与旧式逐值相等——比例关系整式未动）。
 
 **收口读数（as-of 2026-10-06 · 逐行可复算——本笔前 ⇒ 后）**：
 

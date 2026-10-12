@@ -51,11 +51,11 @@ import {
 /** 团队就地面板开合态（登录面补全批 —— **本地模块级单值**，沿 🎯 目标面板先例；非 store 切片：开合 = 瞬时 UI 态，
  *  零跨窗 ∥ 零持久面）。段（`segment.code === "team"`）点 / 键盘 ⇒ `toggleTeamPanel()`；面板宿主（`div.team-pop`）
  *  = `renderer/mount-team.mjs`，施用面经 `setTeamPanelApplier` 装配期注册（本档零 DOM、零面板树）；
- *  applier 缺（未装配 ∥ 测试面）⇒ 翻态零动作（下次装配按新态出件 —— 沿 🎯「无卡 ⇒ 零动作」同判）。 */
+ *  applier 缺（未装配 ∥ 测试）⇒ 翻态零动作（下次装配按新态出件 —— 沿 🎯「无卡 ⇒ 零动作」同判）。 */
 let teamPanelOpen = false
 let applyTeamPanel = null
 
-/** 面板现态读数（宿主 ∥ 判据面取用）。 */
+/** 面板现态读数（宿主 ∥ 判据取用）。 */
 export function teamPanelVisible() {
   return teamPanelOpen
 }
@@ -231,7 +231,7 @@ export function sameStatusModel(a, b) {
 
 /** 薄挂载（状态树切片 ⇒ 状态行；单点重建 —— 清容器再建，零残留）；返回模型（读数 / 走查面）。
  *  **面内差分门（更新纪律收核批 · KD-48 ④）**：新模型与上帧模型等价 ⇒ **零写**（子节点身份不变 —— 帧界
- *  高频繁调下免整面重建；`blocks` 保持入键：工具段更新点随块面）；判据面 = `sameStatusModel`。 */
+ *  高频繁调下免整面重建；`blocks` 保持入键：工具段更新点随块面）；判据 = `sameStatusModel`。 */
 export function mountStatus(root, state) {
   if (!root || typeof root.append !== "function") return null
   const model = statusModel({

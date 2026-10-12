@@ -289,7 +289,7 @@ export function validateProviderSettings(settings, { where = "settings" } = {}) 
   return out
 }
 
-/** 库路径归一：`:memory:` 原样（测试面）；其余相对 = 配置档所在目录 ⇒ 绝对。 */
+/** 库路径归一：`:memory:` 原样（测试）；其余相对 = 配置档所在目录 ⇒ 绝对。 */
 export function resolveDatabasePath(db, baseDir) {
   if (db === ":memory:") return db
   return resolve(baseDir, db)

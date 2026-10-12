@@ -103,7 +103,7 @@ function detailText(detail) {
 
 /** agent 行详情模板（`agent_event`——KD-SV-114：`tool · subject · 成败 ·〔截断〕· summary`——非裸 JSON）：
  *  成败 = 既有 `resultCode`（`0` ⇒ 成功 ∥ 其余 ⇒ 失败；缺 ⇒ 不渲）；`subject` 空（无主事词件）⇒ 略；
- *  零字段行（`chat_start` 等）⇒ 「—」。导出 = 批内件断言面（同 `sandboxKindLabel` 先例）。 */
+ *  零字段行（`chat_start` 等）⇒ 「—」。导出 = 单元测试档断言（同 `sandboxKindLabel` 先例）。 */
 export function agentDetailText(detail) {
   const parts = []
   if (typeof detail?.tool === "string" && detail.tool !== "") parts.push(detail.tool)
@@ -129,7 +129,7 @@ const PROJECT_KIND_KEYS = {
   member_remove: "admin.projects.kind.member_remove",
 }
 
-/** 项目 kind 文案（导出——批内件断言面；枚举外 ⇒ 原值兜底）。 */
+/** 项目 kind 文案（导出——单元测试档断言；枚举外 ⇒ 原值兜底）。 */
 export function projectKindLabel(kind) {
   return PROJECT_KIND_KEYS[kind] === undefined ? String(kind ?? "—") : t(PROJECT_KIND_KEYS[kind])
 }

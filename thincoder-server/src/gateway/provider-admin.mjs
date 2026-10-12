@@ -289,7 +289,7 @@ export async function discoverProviderModels(ctx = {}, { baseURL, apiKey, provid
 /**
  * 注册 provider 管理面六端点（§2.2）：`db` = openDatabase 产物 ∥ `config` = 校验后配置 ∥
  * `runtime` = gateway 注册行装配期引导的**同一实例**（换表两族同见）。
- * 注入口径（批内件替身）：`env` ∥ `fetchImpl` ∥ `discoverTimeoutMs` ∥ `specLookup`（档位值域桥——缺省 null ⇒ 懒载真核）
+ * 注入口径（单元测试档替身）：`env` ∥ `fetchImpl` ∥ `discoverTimeoutMs` ∥ `specLookup`（档位值域桥——缺省 null ⇒ 懒载真核）
  * 走可覆盖参数（缺省 = 生产行为不变）；`fetchImpl` 缺省 = `proxyFetch`（KD-SV-55——discover 出口同转发；无代理串 ⇒ 原生 fetch 直连）。
  */
 export function registerProviderAdminRoutes(routes, { db, config, runtime, log = null, env = process.env, fetchImpl = proxyFetch, discoverTimeoutMs = PROVIDER_DISCOVER_TIMEOUT_MS, specLookup = null } = {}) {

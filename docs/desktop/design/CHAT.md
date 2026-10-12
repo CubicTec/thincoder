@@ -71,7 +71,7 @@
    样式 = `thincoder-desktop/renderer/chat.css`（diff 类名映射——值源 = VSC `base.css:405-432`；新增变量 `--diff-add-bg` / `--diff-add-fg` / `--diff-del-fg`，`--diff-del-bg` 在册）。
 2. **文件链接点开（原「文件打开暂缓」）**——对齐形：工具结果区**可点文件链接**——线 = `ev:tool-result` 载荷增 `links`（`[{ raw, path, line? }]`——宿主计算：路径 token + **盘上存在闸** + 去重 + 封顶；语义同源 = `thincoder-core/file-links.mjs`（R2 处理流批上提后核单源），两端薄壳 = 探针注入——**只述实现形态**）；
    行参面 = 探测径命中 ⇒ 含行；兜底径 = `shell.openPath`（无行参——宿主事实，单源 = 本档 KD-39）；
-   视图 = 结果区挂核 `linkifyPaths`（`span.file-link` 核类名——帧尾着装幂等）＋ 着装面落 **`data-path` 锚**（值 = 该链接盘上绝对路径——核件不带 ⇒ 端侧着装时落；断言面 = T-DSK42 / T-DSK43）；出口 = 点按 / Enter 委托 ⇒ 通道 `file:open { path, line? }` ⇒ 主进程打开。
+   视图 = 结果区挂核 `linkifyPaths`（`span.file-link` 核类名——帧尾着装幂等）＋ 着装面落 **`data-path` 锚**（值 = 该链接盘上绝对路径——核件不带 ⇒ 端侧着装时落；断言 = T-DSK42 / T-DSK43）；出口 = 点按 / Enter 委托 ⇒ 通道 `file:open { path, line? }` ⇒ 主进程打开。
    落点 = 新档 `thincoder-desktop/src/main/file-links.mjs` + `agent-host.mjs` + `ipc.mjs` / `preload.cjs`（白名单）+ `thincoder-desktop/renderer/views/chat-tool.mjs`（着装）+ `mount-*.mjs`（委托单点）+ `core.css`（类名映射）。
    **消解（端差清算批 · 2026-09-29）**：桌面打开 = 外部编辑器 CLI 探测（`code` → `code-insiders` → `cursor` → `subl`——命中 ⇒ spawn 含行参 ⇒ 打开到行；未命中 ∕ spawn 败 ⇒ `shell.openPath` 兜底恰一次；实现 = `thincoder-desktop/src/main/editor-open.mjs`）。边界：历史卡（页读面）零链接（VSC 同径）；`file:open` 失败 ⇒ `console.error`。
 
@@ -100,7 +100,7 @@
 3. **盒块上距 = 8px（三型）**——思考 ∥ 错误 ∥ 归档（非带签者）间呼吸；**工具块零距相连**（轻通道轮二——用户「工具块之间的间距也没必要了」）；用户 2026-09-30 走查「工具和思考块之间都没间隔……你觉得呢」+ 父侧建议；CLI 参照 = `thincoder-cli/src/tui/render-conversation.mjs:375` 块前空行；选择器 = `.block + .block:is(.block-reasoning, .block-error, .block-subagent):not(:has(> .msg-label))`。
 4. **首块上距 = 14px** 不变（`.flow` `padding-top`——R12 注项 4 同值）；**件级三覆写（工具 8 ∕ 错误 8 ∕ 推理 4）退场**——由本条 1–3 的块级模型通管。
 5. **消化行上距 = 8px**——用户 2026-09-30「前面希望留点间距，不要跟上面的内容挨在一起」；落点 = `thincoder-desktop/renderer/chat.css`（**消化行族行元素**——无轮容器（#747），容器选择面随形收正）；**族内相邻行上距 0**（`.chat-digest + .chat-digest`）；**轮间 = 基规则 8px**（新轮标签行紧随前轮行 = 行出即留后常态 ⇒ `.chat-digest + .chat-digest[data-digest-label]` 回基值——自然形收正批 · 2026-10-01 补条）。
-6. **验证**：真机 computed 实测（带签块 8 ∥ 盒块 8（三型）∥ 无签块 0——全族归一后同值；工具块头行距 = 行高（**随字号联动**——现 14px × 1.3 = 18.2px；笔 5 判据句「连续工具块文字距 = 内容行间」）+ 用户走查通过（2026-09-30「看着舒服」；2026-10-01「这个距离差不多了」）；测试面 = 桌面测试树空清单（2026-09-28 全清重置）——视觉面验证靠真机探针。
+6. **验证**：真机 computed 实测（带签块 8 ∥ 盒块 8（三型）∥ 无签块 0——全族归一后同值；工具块头行距 = 行高（**随字号联动**——现 14px × 1.3 = 18.2px；笔 5 判据句「连续工具块文字距 = 内容行间」）+ 用户走查通过（2026-09-30「看着舒服」；2026-10-01「这个距离差不多了」）；测试覆盖 = 桌面测试树空清单（2026-09-28 全清重置）——视觉面验证靠真机探针。
 7. **轮四流形三件（2026-10-01 · 台账 #759——「向 CLI 看齐」）**：
    ① **工具头前导箭头**——两态 `▸`（折叠）∕ `▼`（展开；`.block-tool:has(> .tool-result)` 判）；仅带 toggle 接线的可开关头落箭头（`::before` 字形）；落点 = `thincoder-desktop/renderer/chat.css:166-168`。
    ② **展开体左流线**——`.tool-result` ∥ `.reasoning-content` 同形：`border-left: 2px solid var(--fg-muted)` ∥ 左移 13px ∥ 留白（工具结果 6px ∥ 推理内容 10px）；线心对箭头心（实测差 0.1px）；落点 = 同档 `:189-193` ∥ `renderer/core.css:83-84`。
@@ -121,10 +121,10 @@
 2. **复制面两控件摘除（D13 收正）**——**当前复制面 = 核件代码块 Copy 钮（唯一）**：`pre.code-block` 内 `.code-copy-btn`（核件 `attachCopyButtons`；词键 `msg.copy` / `msg.copied` = 端供给面）；桌面挂点 = `thincoder-desktop/renderer/views/chat.mjs` `attachCodeCopies`（重挂 / 帧尾两调用点——零动）。
    自建面摘除物（**零残留为判据**）：`chat-copy.mjs`（整档删——`blockTextOf` 迁 `thincoder-desktop/renderer/views/chat-text.mjs`）· 块尾 ∕ 推理块尾 ∕ 错误块尾 `chat:copy-block` 控件 · 输入区尾 `chat:last` 控件 · `[data-composer-tail]` 挂件锚（槽形三件 ⇒ 两件）·
    `thincoder-desktop/renderer/chat-composer.css` 两控件族与 `⧉` 字形规则 · i18n 两键（`chat.action.copy` ∕ `chat.action.copyLast`）·
-   `thincoder-desktop/renderer/app.mjs` `writeText` 单点供给（消费者归零随退）；`data-raw` 锚**保留**（就地更新判据面）。
+   `thincoder-desktop/renderer/app.mjs` `writeText` 单点供给（消费者归零随退）；`data-raw` 锚**保留**（就地更新判据）。
 3. **判据**——① **D27 真机**：选中文本 ⇒ 右键 ⇒ 菜单出「复制」⇒ 剪贴板往返（粘回可见）∥ 输入框 ⇒ 四件在场（粘贴可用）；
    ② **D13 真机零残留**（**判据域 = 代码树**：`thincoder-desktop/**` ∕ `thincoder-render-core/**`——排除 `docs/`）：`⧉` 零命中 ∧ `chat:copy-block` ∕ `chat:last` ∕ `chat.action.copy` 零命中 ∧ 代码块 Copy 钮仍在且点按可复制；
-   ③ 机检面 = 两纯函数平 node 直测口径（`contextMenuTemplate` 三语境 + `editFlags` 启用径 + 两语词值）——**批档本地用例随批留存**（载体 = `docs/batches/2026-09-29-desktop-copy-vsc-align.test.mjs` · 不入仓套件——全清令：仓套件不写 ∕ 不改 ∕ 不跑）；真机走查 = 父侧真跑闭合（D16 义务）。
+   ③ 机检 = 两纯函数平 node 直测口径（`contextMenuTemplate` 三语境 + `editFlags` 启用径 + 两语词值）——**批档本地用例随批留存**（载体 = `docs/batches/2026-09-29-desktop-copy-vsc-align.test.mjs` · 不入集成测试树——全清令：集成测试不写 ∕ 不改 ∕ 不跑）；真机走查 = 父侧真跑闭合（D16 义务）。
 4. **计数（D3）**：摘除档 **1**（`chat-copy.mjs`）· 新档 **1** = `thincoder-desktop/src/main/context-menu.mjs`（已落 · 60）· 词键退 **2** × 2 语 + 增 **4** × 2 语（净 +2 键）· 通道 **0** · 白名单 **0** 改。
 
 ## 3. 文件账（本域）
@@ -149,7 +149,7 @@
 | `thincoder-desktop/renderer/views/question.mjs` | **58**（实读 2026-09-29） | 提问卡面（`question` 工具流内卡——纯描述符 + 薄挂载；子序 = 题干行 → [给答项操作区?] → 作答区；三出口锚 `question:<i>` / `question:answer` / `question:cancel`——零 `store.mjs` import；形态单源 = `docs/desktop/design/UI.md` §1 提问呈现行） |
 | `thincoder-desktop/renderer/views/plan.mjs` | **34**（实读 2026-09-29） | 计划卡面（`ev:task` 消费——纯描述符；行 = 事项标题 + 状态词；空列表 ⇒ 卡不在场；形态单源 = `docs/desktop/design/UI.md` §1 计划面行） |
 | `thincoder-desktop/renderer/views/goal.mjs`（R5 新档） | **63**（实读 2026-09-29——残余族清账批后） | 目标卡面（核 `renderGoalPanel` 直消费 + 端壳；纯呈现零出口） |
-| `thincoder-desktop/renderer/mount-cards.mjs`（批 A 修正轮） | **164**（实读 2026-10-01——复核扫面收正批实施后（167 ⇒ 164——M1 失败臂删）；更前实读 2026-09-29——残余族清账批 ∕ RF 波 2 后） | 卡族挂载与出站（批 A 修正轮新档——提问卡出口落点点名）：`question:respond` 出站（作答 / 取消两向）+ 回执 `ok` 真 ⇒ 清本键 `questions` 切片（纯动作 `clearQuestion` 增导出 = `thincoder-desktop/renderer/events.mjs`）+ 清位标（**清码判据 = 两族皆清**——单源 = `docs/desktop/design/UI.md` §2 项 2）+ 卡挂载（计划卡零出口——纯呈现）；先例 = 审批出口 `respondApproval` 住 `thincoder-desktop/renderer/views/approval.mjs` ∥ 接线住 `thincoder-desktop/renderer/mount-pool.mjs`；形态单源 = `docs/desktop/design/UI.md` §1 提问呈现行 |
+| `thincoder-desktop/renderer/mount-cards.mjs`（批 A 修正轮） | **164**（实读 2026-10-01——复核扫面收正批实施后（167 ⇒ 164——M1 失败分支删）；更前实读 2026-09-29——残余族清账批 ∕ RF 波 2 后） | 卡族挂载与出站（批 A 修正轮新档——提问卡出口落点点名）：`question:respond` 出站（作答 / 取消两向）+ 回执 `ok` 真 ⇒ 清本键 `questions` 切片（纯动作 `clearQuestion` 增导出 = `thincoder-desktop/renderer/events.mjs`）+ 清位标（**清码判据 = 两族皆清**——单源 = `docs/desktop/design/UI.md` §2 项 2）+ 卡挂载（计划卡零出口——纯呈现）；先例 = 审批出口 `respondApproval` 住 `thincoder-desktop/renderer/views/approval.mjs` ∥ 接线住 `thincoder-desktop/renderer/mount-pool.mjs`；形态单源 = `docs/desktop/design/UI.md` §1 提问呈现行 |
 | `thincoder-desktop/renderer/views/chat-guide.mjs`（批 B 追加轮） | **81**（实读 2026-09-29——@ 文件引用对齐批后（登记句收正 + `@` 段注释）） | 首启引导节点构树（三值 `data-guide`：`no-project` / `no-session` / `no-message`——判据单源 = `thincoder-desktop/renderer/views/chat.mjs` 的 `chatModel.guide`）；**非块节点**（零 `data-block-id` · 不入块序）· 零 `store.mjs` import（句柄注入 `onOpenDir` / `onNewSession`）——流内非块节点构树先例；形态单源 = `docs/desktop/design/UI.md` §1 批 B 追加注 |
 | `thincoder-desktop/renderer/views/chat-text.mjs`（R3c） | **127**（实读 2026-10-01——**#764 落盘后**（残件-2）；前值 126（E4-JS 波后零改复核）） | 文本面经核 `md` + 推理块壳 + 帧尾就地更新（`user` ⇒ `mdInline` ∥ 余型 ⇒ `md`）；**E4-JS 支（2026-09-30）**：分段窗不住本档（**零改**——落点收正 = 批档 §2.15） |
 | `thincoder-desktop/renderer/views/chat-text-segments.mjs`（E4-JS 支） | **498**（实读 2026-10-10——尾行收口批（#711①②）实施后（净 +1：复读径面序结算）；前读 **497**（实读 2026-09-30——E4-JS 波后）；**距 500 线余 2 行 ⇒ 贴层在册——见 `PROJECT.md` §4.1 贴层段；距 800 硬限余 302 行**） | 巨块分段窗（段 = 12K 渲染字符 ∕ 窗 = 视口段 ±1 ∕ 每帧 ≤2 变更；`splitText` + `<span data-seg>` 包壳 ∥ `display:none` 切换 ∥ 段窗补偿 ∥ 测试缝 `setSegmentMount`）；**#711② 披露缝导出面**（`ACCOUNTS` ∥ `applyWindow`——消费 = `views/chat-segment-reveal.mjs`）；机制 ∕ 参数单源 = `docs/batches/2026-09-30-desktop-heap-freeze.md` §2.15 |
@@ -176,7 +176,7 @@
 | 5 | `thincoder-desktop/renderer/page-read.mjs` | **143 ⇒ ≈152**（`clearDigest` 第四清——终端整清 ∕ 未结末轮保） | #670 |
 | 6 | `thincoder-desktop/renderer/chat.css` | **≈327 ⇒ ≈327**（在册句收正——值零改） | #670 |
 | 7 | `thincoder-desktop/renderer/events.mjs` | **264 ⇒ 264**（注释级句处置——留存分述句） | #670 |
-| 8 | 批内件 | `docs/batches/2026-09-29-desktop-digest-parity.test.mjs`（已建成 · 306 行——归约 ∕ 组树 ∕ 清点三面红→绿；随批留存 · 不进仓套件） | #670 |
+| 8 | 单元测试档 | `docs/batches/2026-09-29-desktop-digest-parity.test.mjs`（已建成 · 306 行——归约 ∕ 组树 ∕ 清点三面红→绿；随批留存 · 不进集成测试树） | #670 |
 
 **本批（复制面对齐 VSC · 2026-09-29）行「现行 ⇒ 预期」**（实读 2026-09-29——内容行数口径；机制 / 判据单源 = `docs/desktop/design/UI.md` §1「本批注（复制面对齐 VSC · 2026-09-29）」；决策 = `docs/desktop/design/SHELL.md` §1 **KD-43** + 本档 §1 KD-22 收正）：
 
@@ -192,21 +192,21 @@
 | `thincoder-desktop/renderer/app.mjs` | **276 ⇒ ≈268**（`writeText` 单点供给摘除——消费者归零） | 本批 |
 | `thincoder-desktop/renderer/chat-composer.css` | **71 ⇒ ≈55**（两控件族 + `⧉` 字形 + 尾锚规则摘除） | 本批 |
 | `thincoder-desktop/renderer/i18n.mjs` | **473 ⇒ ≈482**（实落 482——以盘为准〔实读 2026-09-29〕；净量复算 = 退两键 × 2 语 = −4 行 + 增四键 × 2 语 = +8 行 + 两语注释块 ∕ 链记录行 = +5——合计净 +9（473 ⇒ 482）；键数链随动 = HOST_DICT 合并表 **267 ⇒ 269**（净 +2 键）；**≤500 ⇒ 免拆**——拆档第二 ∕ 三档已落（`thincoder-desktop/renderer/i18n-views.mjs` ∕ `thincoder-desktop/renderer/i18n-composer.mjs`）（500/800 口径更换批） | 本批 |
-| 测试面 | **零改**——全清令 2026-09-28 23:18：**仓套件不写 ∕ 不改 ∕ 不跑；批档本地用例随批留存（不入仓套件）**；验收 = 设计判据句 + 真机走查由父侧闭合 | 本批 |
+| 测试覆盖 | **零改**——全清令 2026-09-28 23:18：**集成测试不写 ∕ 不改 ∕ 不跑；批档本地用例随批留存（不入集成测试树）**；验收 = 设计判据句 + 真机走查由父侧闭合 | 本批 |
 | `docs/desktop/design/{UI,PROJECT,SHELL,RENDERER,IPC}.md` | 本批设计落定（UI 本批注 + 六处反转句收正；PROJECT.md KD-22 收正 / KD-43 · §4.1 · §4.2 · §6.1 · §7 · §9 · §10 · 变更记录；SHELL §1 树 / §2 行；RENDERER 先例指针重锚；五档档头 D1–D27） | 本批（已落） |
 
 **余量**：零（§6.1 域行 ∥ §7 用例行 ∥ §10 上抛行 已随切片 4（终篇）迁入——见 §4/§5/§6）；`core.css` ∥ `core-markdown.css` 两行 = 切片 3 判入 `docs/desktop/design/UI.md` §4.1（判读在册——视觉映射族）；`file-links.mjs` 行已随切片 3 迁入本档 §3.1（原址指针在册）。
 
 ## 4. 验收回指（需求卷条目 → 本域面 · 判据全文——迁自 `PROJECT.md` §6.1 本域行 · as-of 2026-10-02）
 
-| 需求 | 机检判据（点回需求卷） | 验证面 |
+| 需求 | 机检判据（点回需求卷） | 验证 |
 |---|---|---|
 | **D3** | 发送后收到流式增量事件序列；中断后回合停止且历史保留；错误卡出现且含耗时；长会话渲染 / 回填 / 跟滚三面见 `docs/desktop/design/RENDERER.md` §2 / §3；批 A 落**输入区**（Enter 发送 / Shift+Enter 换行 · 忙态入队——「回合中插入」批收正：受理交宿主任判、消费两时刻 = 步边界注入 ∕ 回合尾续发、本地判忙与回合尾 flush 退场——单源 = 本档 §1 **KD-40**；`docs/desktop/design/UI.md` §1 输入区行）；**可见面修复批修（#458 / #459 / #457）**：用户消息块活流在场（受理即出——`docs/desktop/design/UI.md` §1「本批注（可见面修复 · 四件）」项 2）· 回合尾零流式游标（项 3）· 输入区样式落点与关键尺寸（项 1）；**对齐第三批**：恢复帧次序 / `[stopped]` 痕 / 错误横幅（详情 + 重试）/ turnBreak / 发送后回底——单源 = 本档 §2（对齐第三批 · A8 ∥ A6 ∥ A9 ∥ A7 ∥ A13） | T-DSK4 / T-DSK17 / T-DSK18 / T-DSK19 / T-DSK22 |
 | **D5** | 审批三出口（once / always / reject）+ 批审批三按钮皆通；AUTO 与工程模式状态随会话槽往返不丢；**对齐第三批**：审批卡 owner 归属（子代理门）/ diff 预览（相抵①）/ 真置焦执行（F-置焦）——单源 = 本档 §2（对齐第三批 · B1 ∥ C1 ∥ F-置焦） | T-DSK6 / T-DSK21 |
 | **D19** | 宿主无关渲染核在册（逐模块判定表 50 档 + 落点 / 加载形）= `docs/render-core/design/RENDER-CORE.md` §1/§3；逐机制对位表 **22 行**在册（§4）；桌面经核呈现（Markdown / 代码块复制 / 工具卡族 / 推理块 / 帧容器 / **文件链接（核 `linkifyPaths` + 宿主验存链 + `file:open`——单源 = 本档 §2（对齐第三批 · C2））**——KD-RC-4）；VSC 接核零回归（C2）；判据 C1–C8 = 核档 §7；**「对齐第二批」扩充消费面**（推理钉底画笔 / 队列标记两导出（`markPending` / `paintLabel`——`planBusyQueued` / `clearPending` 不消费，登记 = `docs/desktop/design/PROJECT.md` §10 **AZ**——留原址）/ 子 agent 块四件直消费——`setStrings` 接线；单源 = 核档 §5 消费面段） | T-DSK35 / T-DSK38 |
 
 **跨档条目（本域半边）**：
-- **D13**（复制面 = 核件 Copy 钮唯一（本档 §1 **KD-22** ∥ §2 复制面注项 2）；真机零残留三腿 = §2 复制面注项 3——单源 = `docs/desktop/design/COMPOSER.md` §4）
+- **D13**（复制面 = 核件 Copy 钮唯一（本档 §1 **KD-22** ∥ §2 复制面注项 2）；真机零残留三用例 = §2 复制面注项 3——单源 = `docs/desktop/design/COMPOSER.md` §4）
 - **D27**（宿主面 `context-menu.mjs` 两纯函数 / 平 node 直测 + 真机往返——单源 = `docs/desktop/design/PROJECT.md` §6.1（SHELL 无接收节——留原址））
 - **D4 / D20 / D28**（挂起 ∥ 消化 ∥ 留档——单源 = `docs/desktop/design/ACTIVITY.md` §5；本档不重载）。
 
@@ -214,17 +214,17 @@
 
 ## 5. 用例（本域 · 全文迁自 `PROJECT.md` §7 涉行 · as-of 2026-10-02）
 
-| 用例 | 场景 | 输入 | 预期输出 | 机检面 / 落点 |
+| 用例 | 场景 | 输入 | 预期输出 | 机检 / 落点 |
 |---|---|---|---|---|
 | T-DSK4 | 正常 · 流式与中断 | 发送一条消息 → 中途中断 | 收到增量事件序列；中断后回合停止、已产出内容保留在对话流 | — |
 | T-DSK6 | 正常 · 审批三出口 | 触发需审批工具 → 分别回 once / always / reject | 首次执行 / 后续免问 / 拒绝；三态下活动池待审批计数与标签位同步变化 | — |
 | T-DSK21 | 正常 · 审批键盘与大 patch | 待审批卡出现 → 键 1 / 2 / 3；另一例 patch 超阈 | 三键 = once / always / reject；初始焦点**目标** = 「拒绝」（**真置焦执行 = 本批落**——帧尾 `focus()` ⇒ `document.activeElement` = 卡内 `[data-autofocus="1"]`；「对齐第三批 · 小修族」F-置焦）；大 patch（核 `diffBig`）= 核卡 `.diff-preview` 全量渲染 + `.view-diff` 唯单径（`diff.path`）留钮走 `file:open`（`apply_patch` 形 ⇒ 钮退场——零死控；端差清算批 #629 收正） | — |
 | T-DSK24 | 正常 · 提问作答与计划 | ① 核发 `ev:question` ⇒ 界面出现提问卡；选项 / 自由作答 / 取消各一例 ② 核发 `ev:task`（含 pending / in_progress / done 三态事项）；③ 待作答期按中断键（`msg:interrupt`） | ① 卡含题干 + 给答项 + 作答区；作答 ⇒ `question:respond` 往返 ⇒ **回执 ok 后**卡清除（失败 ⇒ 卡留 + `console.error`）；取消 ⇒ `answer: null`；**待作答期该会话位标含 `approval` 码**（跨会话可见面 = 「不静默等待」兑现），回执处置后清码（**清码判据 = 两族皆清**——单源 = `docs/desktop/design/ACTIVITY.md` §2（标签位集合与优先级）） ② 计划卡逐行 = 标题 + 状态词（排队中 / 运行中 / 完成）；空列表 ⇒ 卡不在场；③ 卡**零回执直摘**（中断 ⇒ 本键各门按取消结算 ⇒ `stopped` 终局 ⇒ 事件面摘本键提问项 + 按卡退场同判据清码；判据 = 终局事件面，非回执——单源 = `docs/desktop/design/RENDERER.md` §1.1 卡面在场与随动条） | — |
 | T-DSK35 | 正常 / 边界 · 会话流经核（D19） | 助手块含围栏代码块 / 行内 md / 注入样本（`<script>` 字面）；用户块；推理 `ev:reasoning`；文件链接候选文本 | ① 围栏块 ⇒ `pre.code-block` 在场 + 代码块复制控件在场（点按 ⇒ `clipboard.writeText` 收代码文本）；② 注入样本 ⇒ 字面文本（转义闸）；③ 推理块 = 折叠块（块型 `reasoning`）；④ 文件链接**承载**（验存链 + 核 `linkifyPaths` + `file:open`；单源 = 本档 §2（对齐第三批 · C2）） | 新增用例族（名实施批定；真渲染视觉 = 人工走查 T-DSK21 面） |
-| T-DSK37 | 正常 · 会话流经核 + 会话面板元数据（真 Electron） | fixture 家（`{"locale":"en"}` + 会话槽族四档——槽 1 回放历史：围栏块 / 注入样本 / 路径候选 / 推理块） | 块序 = `user/reasoning/assistant/user`（**对齐第三批收正**——恢复帧次序 = 推理 → 正文；单源 = 本档 §2（对齐第三批 · A8））；`pre.code-block` 恰一枚 + 复制钮点按 ⇒ 剪贴板收代码文本；注入样本 = 字面文本 ∧ 零 `script` 节点；推理块 = `details.reasoning-block`；路径候选零 `.file-link` 节点；行元数据段序 = `provider / msgs / updated` ∧ 含 `p1:m1` | 机检面 = 单元测试档惯例（原集成档 `chat-render.test.mjs` 随 2026-09-28 全清重置退场）；断言序单源 = `docs/desktop/design/E2E-TESTING.md` §6 |
-| T-DSK42 | 正常 · 小修族（对话流面 · 对齐第三批） | fixture 家（`{"locale":"en"}` + 会话槽族档〔`cwd` = `PROJ`〕——沿 T-DSK32 夹具先例）——**离线可产断言**：工具卡族 / 错误横幅（文 + 重试钮）/ 空态欢迎条 · **离线不可产**（真回合面）：停止痕 · 文件链接 · `techInfo` 详情面 | ① 工具卡头 = 名称 / 参数 / 状态词 / 耗时 / **摘要段**（`read` ⇒ `N lines` 形）在场 ∧ 状态色 = `data-status` 两值（`error` ⇒ `#f14c4c`）；② 停止痕 `[data-stopped]` 在场（`msg:interrupt` ⇒ `stopped` 终局后）且词 = `[stopped]`（en）——**离线不可产**（真回合面）；③ 错误横幅 = 文 + 重试钮在场（末 `user` 块在场 ⇒ 钮在）；`details`（`techInfo`）面 = **离线不可产**（`ev:error` 活径）；④ `no-message` 帧欢迎条 = 抬头 / 文案 / 快捷键行三行 ∧ 文案含 `welcome.heading` 值；⑤ 工具结果含盘上真路径 ⇒ `.file-link[data-path]` 在场 ∧ 点按 ⇒ 零 `pageerror`——**离线不可产**；**离线不可产面 = 人工走查 + 父侧真跑闭合**（D16 义务——零 provider 夹具 ⇒ 真回合不可离线复现） | 机检面 = 单元测试档惯例（原集成档 `align3-face.test.mjs` 随 2026-09-28 全清重置退场——离线可产断言）；断言序单源 = `docs/desktop/design/E2E-TESTING.md` §6；用例号自铸披露 = `docs/desktop/design/PROJECT.md` §10 **BF**（留原址） |
+| T-DSK37 | 正常 · 会话流经核 + 会话面板元数据（真 Electron） | fixture 家（`{"locale":"en"}` + 会话槽族四档——槽 1 回放历史：围栏块 / 注入样本 / 路径候选 / 推理块） | 块序 = `user/reasoning/assistant/user`（**对齐第三批收正**——恢复帧次序 = 推理 → 正文；单源 = 本档 §2（对齐第三批 · A8））；`pre.code-block` 恰一枚 + 复制钮点按 ⇒ 剪贴板收代码文本；注入样本 = 字面文本 ∧ 零 `script` 节点；推理块 = `details.reasoning-block`；路径候选零 `.file-link` 节点；行元数据段序 = `provider / msgs / updated` ∧ 含 `p1:m1` | 机检 = 单元测试档惯例（原集成测试档 `chat-render.test.mjs` 随 2026-09-28 全清重置退场）；断言序单源 = `docs/desktop/design/E2E-TESTING.md` §6 |
+| T-DSK42 | 正常 · 小修族（对话流面 · 对齐第三批） | fixture 家（`{"locale":"en"}` + 会话槽族档〔`cwd` = `PROJ`〕——沿 T-DSK32 夹具先例）——**离线可产断言**：工具卡族 / 错误横幅（文 + 重试钮）/ 空态欢迎条 · **离线不可产**（真回合面）：停止痕 · 文件链接 · `techInfo` 详情面 | ① 工具卡头 = 名称 / 参数 / 状态词 / 耗时 / **摘要段**（`read` ⇒ `N lines` 形）在场 ∧ 状态色 = `data-status` 两值（`error` ⇒ `#f14c4c`）；② 停止痕 `[data-stopped]` 在场（`msg:interrupt` ⇒ `stopped` 终局后）且词 = `[stopped]`（en）——**离线不可产**（真回合面）；③ 错误横幅 = 文 + 重试钮在场（末 `user` 块在场 ⇒ 钮在）；`details`（`techInfo`）面 = **离线不可产**（`ev:error` 活径）；④ `no-message` 帧欢迎条 = 抬头 / 文案 / 快捷键行三行 ∧ 文案含 `welcome.heading` 值；⑤ 工具结果含盘上真路径 ⇒ `.file-link[data-path]` 在场 ∧ 点按 ⇒ 零 `pageerror`——**离线不可产**；**离线不可产面 = 人工走查 + 父侧真跑闭合**（D16 义务——零 provider 夹具 ⇒ 真回合不可离线复现） | 机检 = 单元测试档惯例（原集成测试档 `align3-face.test.mjs` 随 2026-09-28 全清重置退场——离线可产断言）；断言序单源 = `docs/desktop/design/E2E-TESTING.md` §6；用例号自铸披露 = `docs/desktop/design/PROJECT.md` §10 **BF**（留原址） |
 
-（本域用例全文迁讫（T-DSK4 ∥ 6 ∥ 21 ∥ 24 ∥ 35 ∥ 37 ∥ 42）；T-DSK30 ∥ T-DSK43（附件 ∥ 复制 ∥ 外围混装）与 T-DSK17–19（工艺侧）为跨域 ∕ 他档条目，留 `docs/desktop/design/PROJECT.md` §7 原址。批内件（单元测试档）随批次档留存。）
+（本域用例全文迁讫（T-DSK4 ∥ 6 ∥ 21 ∥ 24 ∥ 35 ∥ 37 ∥ 42）；T-DSK30 ∥ T-DSK43（附件 ∥ 复制 ∥ 外围混装）与 T-DSK17–19（工艺侧）为跨域 ∕ 他档条目，留 `docs/desktop/design/PROJECT.md` §7 原址。单元测试档随批次档留存。）
 
 ## 6. 上抛（本域 · 迁自 `PROJECT.md` §10 涉行 · as-of 2026-10-02）
 

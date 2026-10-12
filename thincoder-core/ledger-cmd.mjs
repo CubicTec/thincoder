@@ -29,7 +29,7 @@ function isRowAged(row, now) {
 /** 查询（只读，全角色）：SELECT 行集（status / kind / board / trigger 等值过滤并取，缺省 = 全部行；id 升序）。
  *  库不在 = 空账。只读开库（readOnly 句柄 + 零 DDL/ALTER——read-data-interface 批 FR2③）；库档非台账库 ⇒ 空账。
  *  逐行携计算字段 `aged: boolean`（§13.4——不入库、不入导出白名单 DATA_COLUMNS）；`trigger` 过滤
- *  仅三枚举等值（`NULL` 不过滤——批面未列，§13.2）；`now` = 注入缝（确定性用例面）。 */
+ *  仅三枚举等值（`NULL` 不过滤——批面未列，§13.2）；`now` = 注入缝（确定性用例）。 */
 export function ledgerQuery({ cwd, status = null, kind = null, board = null, trigger = null, now = Date.now() } = {}) {
   const db = openLedger(cwd, { readOnly: true })
   if (!db) return []

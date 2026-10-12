@@ -7,7 +7,7 @@
  * 调用侧只管**寻址**（任务面 = 主机 + `args.endpoint`；聊天面 = 注册节点名/地址查 `sandbox_runners`）与客户端装配（协商版本一次），
  * 动词语义全在本档（单源——两驱动零分叉）。
  */
-/** 动词全集（§3 表——两驱动同一清单；断言面）。 */
+/** 动词全集（§3 表——两驱动同一清单；断言）。 */
 export const DOCKER_OPS = Object.freeze(["version", "info", "ps", "images", "pull", "create", "start", "stop", "rm", "logs"])
 
 /** 单行文本校验（trim 非空 ∥ ≤ max）——参数面（调用侧 catch 转工具级/结构错误）。 */

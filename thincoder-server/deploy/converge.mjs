@@ -12,7 +12,7 @@
  *
  * 输出行（docker logs 直读）：`converge: version=<v> source=<installed|installed-now|fallback>` ∥ `converge: warning …` ∥
  * `converge: refused …`（拒启含修复选项）。退出码：0 = 可运行（已收敛）∥ 1 = 拒启（重起循环使其可见——不静默漂移）。
- * 注入口径（批内件替身）：`npmCommand` ∥ `print` ∥ `readInstalled` 走可覆盖参数 + `??` 缺省（缺省 = 生产行为不变）。
+ * 注入口径（单元测试档替身）：`npmCommand` ∥ `print` ∥ `readInstalled` 走可覆盖参数 + `??` 缺省（缺省 = 生产行为不变）。
  */
 import { spawn } from "node:child_process"
 import { existsSync, readFileSync, realpathSync } from "node:fs"

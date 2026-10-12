@@ -28,7 +28,7 @@ import { unlinkRecordStore } from "@thincoder/core/session-store.mjs"
 // F-XR1 退出释放（EXIT-CLAIM-RELEASE · SESSION.md §6.18）：核薄函数（端壳纯转口——
 // 容忍逻辑全在核；workspace 判据 = 入参形，见 releaseClaimsOnExit）。
 import { releaseClaimsAll } from "@thincoder/core/session-slots-manifest.mjs"
-// F-MI7 判据面（单源 = 核）：探测束 + 属主三态 / pid 清单。
+// F-MI7 判据（单源 = 核）：探测束 + 属主三态 / pid 清单。
 import { probeOwnersAsync } from "@thincoder/core/process-probe.mjs"
 import { ownerPids, ownerStateOf } from "@thincoder/core/session-slots-manifest.mjs"
 import {

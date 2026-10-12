@@ -3,7 +3,7 @@
  *
  * 形沿 `scripts/console-walkthrough.mjs:133-141` 的实证客户端（id 派发 ∥ 事件派发）——本文档把它
  * 拆成类以承载多动作会话（connect / call / on / close），并加 HTTP 面 `/json/new` 取标签页。
- * `WebSocketImpl` = 注入缝（缺省 `globalThis.WebSocket`；单测注假传输——缺省回落真实现，`??`）。
+ * `WebSocketImpl` = 注入缝（缺省 `globalThis.WebSocket`；单元测试注假传输——缺省回落真实现，`??`）。
  *
  * 错误语义：CDP 回 `{ error: { message } }` ⇒ 拒以 `Error(message)`（BROWSER-TOOL.md §5）。
  * 帽（§2.9 三层帽——层二 / 层三）：`call` 缺省帽 15s（任何未显式配帽的调用也不悬挂）；`connectCdp` open 帽

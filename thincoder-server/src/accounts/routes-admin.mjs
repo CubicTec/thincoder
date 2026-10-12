@@ -27,7 +27,7 @@ function resolveMemberFilter(db, raw) {
 }
 
 /** 审计列表查询参数装配（`GET /api/audit`）：type（枚举校验归 `queryAudit`）∥ member ∥ from ∥ to ∥ limit。
- *  注：查询键以模板字面量书写——from 键的双引号形会撞批内件依赖面扫描的采集正则（该扫描件按令零改）误报。 */
+ *  注：查询键以模板字面量书写——from 键的双引号形会撞单元测试档依赖面扫描的采集正则（该扫描件按令零改）误报。 */
 function auditQueryOf(db, url) {
   const params = new URL(url, "http://localhost").searchParams
   const key = (name) => params.get(name)

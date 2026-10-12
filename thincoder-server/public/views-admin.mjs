@@ -11,7 +11,7 @@
  *
  * 判权全在后端（admin 面——服务端 403 为准）；弹窗 = 公共组件 `modal.mjs`（单例 ∥ 遮罩/关闭/焦点）；渲染一律
  * 节点 + textContent；文案经 `t()` 取值；弹窗开着 ⇒ 一切反馈落窗内（窗内状态行——§2.2/弹窗反馈定则）。
- * `openMemberModal` 导出 = 批内件直测（三态驱动）。
+ * `openMemberModal` 导出 = 单元测试档直测（三态驱动）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { openModal } from "./modal.mjs"

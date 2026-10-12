@@ -3,7 +3,7 @@
  * · 自 `conventions.mjs` 迁出 · 2026-10-01 core 拆分批 #755 ∥ #786。
  * 投影单源 = `manifest.mjs`（ONE reader / ONE root resolution——`readManifest` + `manifestFilePath`；
  * name / shape / defaults = schema 面 `docs/core/design/MANIFEST.md` §2.2）。迁出块逐字；
- * 原档 `conventions.mjs` 经 `export { … } from` 转口保名（消费面 / 批内件 import 面零改）。
+ * 原档 `conventions.mjs` 经 `export { … } from` 转口保名（消费面 / 单元测试档 import 面零改）。
  */
 import { existsSync, statSync } from "node:fs"
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path"
@@ -223,7 +223,7 @@ export function loadProjectDeclaration(cwd) {
  * 对象（`loadProjectDeclaration` 本体零改——按档路径缓存）；祖先链无档 ⇒ `null` = **出辖**
  * （不在任何 manifest 树内——父侧门不判不拦）。
  * **发现梯（`discoverProjects`）不参与**——无候选 ∥ 歧义均出辖（不在无档面凭空落脚）。
- * 相对形由消费面按会话 cwd 先解析（判据面 = 目标所属项目，非会话 cwd）。
+ * 相对形由消费面按会话 cwd 先解析（判据 = 目标所属项目，非会话 cwd）。
  * @param {string} targetAbs 目标绝对路径（目录 / 文件）
  * @returns {Readonly<object>|null} 所属项目的声明对象 / null = 出辖
  */

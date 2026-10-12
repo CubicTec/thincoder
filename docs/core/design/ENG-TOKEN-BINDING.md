@@ -119,7 +119,7 @@ VERDICT_CHANGES_LINE = /^[ \t]*[*_`]*[ \t]*VERDICT:[ \t]*changes-required[ \t]*[
 - **裁定行来源（提示词面既有逐字约定——两源同文口径；本闸零新造提示词面要求）**：`VERDICT: pass` / `VERDICT: changes-required` = 评审员提示词既有的收尾裁决行——EN 运行期 `thincoder-core/prompts/advisor-design.md:20-22` ∥ CN 模板 `docs/core/design/prompts/advisor-design.md:51-53`（同文口径）；
   补充轮族三档同形（`thincoder-core/prompts/advisor-round1.md` 等——「`## Verdict Line`」节）。
   EN 逐字锚（`:20`）= 「Close your findings with a single verdict line — `VERDICT: pass` or `VERDICT: changes-required` — as the line immediately before the token echo」。
-- **判定三值（机器序 = 先 changes、后 pass）**：含 changes-required（与 pass 并存亦然——fail-closed 方向）⇒ `"changes-required"`；否则缺 pass 行 ⇒ `"no-pass-line"`（**缺行 = 拒签**——fail-closed：提示词面既有「以单行裁决收尾」义务，缺行 = 不合规回执，不得铸）；含 pass ∧ 无 changes ⇒ `null`（过闸）。实现形（新导出；逐字——供直连单测，同 `stripDesignTokenEcho` 先例）：
+- **判定三值（机器序 = 先 changes、后 pass）**：含 changes-required（与 pass 并存亦然——fail-closed 方向）⇒ `"changes-required"`；否则缺 pass 行 ⇒ `"no-pass-line"`（**缺行 = 拒签**——fail-closed：提示词面既有「以单行裁决收尾」义务，缺行 = 不合规回执，不得铸）；含 pass ∧ 无 changes ⇒ `null`（过闸）。实现形（新导出；逐字——供直连单元测试，同 `stripDesignTokenEcho` 先例）：
 
 ```js
 export function verdictGateFailure(rawResult) {
@@ -146,7 +146,7 @@ The verdict line is checked mechanically: without a `VERDICT: pass` line, or wit
 
   提示词档（`advisor-design.md` EN/CN）既有「pass ⇒ 才回显」句已言明耦合——**零改**（如需同句加固 = 主 agent 内容权）。
 - **实现坐标（钉死——实施者零开放结构决定）**：`settleDesignReview`（`thincoder-core/agent-tools/design-token.mjs:128`）回显分支内——现体 `:146-149` 非回显径 return 之后 ∥ `:158` `agent._engDesignTokens ??= new Map()` 之前（闸不过 ⇒ 原地 early return 拒签）。
-  两常量 + `verdictGateFailure` + 标记常量同宿主（`NO_VALID_ECHO_MARK` 族邻位——现体 `:95-96`；函数导出——直连单测面，同 `stripDesignTokenEcho` 先例）。
+  两常量 + `verdictGateFailure` + 标记常量同宿主（`NO_VALID_ECHO_MARK` 族邻位——现体 `:95-96`；函数导出——直连单元测试，同 `stripDesignTokenEcho` 先例）。
   同步径（`thincoder-core/agent-tools/advisor.mjs:261`）∥ 异步径（`thincoder-core/agent-tools/advisor-settle.mjs:155`）共用本单点——**零第二签发点 ∥ 零调用点改**（re-export 面 `advisor-async.mjs:45` 零触）。
 - **依据**：台账 #940；对侧实撞 2026-10-04；需求 = `docs/core/requirements/ENG-TOKEN-BINDING.md` FR6 / FR8（回显以代码判定为准 + 回显异常零静默）。
 - **验收（回指批档 §2.5 全表）**：红 = `VERDICT: changes-required` + 回显（pass 并现亦然）⇒ 拒签（槽零写 ∥ 实例保持 ∥ 标记逐字）∥ 无裁定行 + 回显 ⇒ 拒签；绿 = 裁定 pass + 回显（全串 ∥ 截断）⇒ 照旧签发（#884 回归零改）。
@@ -244,10 +244,10 @@ R16 语义（跨模式存活 + 三清时机 + 单一权威）**已全部落地**
 **F2 D5 冻结窗口（继承 v1 判据 + 来源改读）**：设计评审在途，被审文件集（设计档 + 批次档）零写入——写入即拒 / 本轮结算为陈旧（不发 token）。「在途」窗口下界 = 报告送达或取消·中止（**不是**子进程退出）；不读 M6 槽文件（槽签发于批准后，无法表达「在途」）。
 
 **F3 评审目标来源（v2 核心增量）**：`resolveReviewTargetPaths(agent)`——读 manifest `docRoot`（缺 `docRoot` 键 → 默认值 fallback，与架构 §2.3 E2 同源），产出评审对象 / 被审文件绝对路径集合。
-**按用点解析增量**（2026-10-02 · #828）：同单点新导出 `resolveReviewRootsFor(dir)`（判定本体 = `thincoder-core/agent-tools/review-facts.mjs`；`thincoder-core/agent/write-gate.mjs` 同名再出口）——按目标目录（其所属项目根——最近带档祖先）解析同一根集；M6 `thincoder-core/agent-tools/advisor.mjs` 逐文档所属项目腿消费（消费点 = `resolveReviewDocPaths`）；无主档回退会话根集判定（原行为零变）。
-**路径归一增量**（2026-10-04 · #921 设计轮 · 批档 `docs/batches/2026-10-04-tool-path-baseline.md` §2）：documents 解析单源新导出 `resolveReviewDocPaths(documents, cwd)`（宿主 = `thincoder-core/agent-tools/review-facts.mjs`；零新模块边），逐文档四腿试探：
-① 会话根集 ② 所属项目根集——两腿既有行为零变封装；③ 候选项目根试探（`projectRootView(cwd)` 候选）④ 歧义可读唯一化——裸仓相对形（cwd 基面落空）按候选项目归一受理；多候选可读命中 ≥2 ⇒ fail-closed 拒（`scope-doc-ambiguous`）；冻结窗 `docAbs` 产出面（advisor-async）同源。实施 = eng-coder 轮。
-**锚祖先链增量**（2026-10-05 · #945 · 批档 `docs/batches/2026-10-05-review-face-gaps.md` §2.3）：腿③候选底座并入 **cwd 祖先链全量目录**（现行集在前 ∥ 祖先链随尾、去重保序）——容器相对形在子仓锚下受理；受理判据（目标解析位最近 manifest 声明面）∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义零改。实施 = eng-coder 轮。
+**按用点解析增量**（2026-10-02 · #828）：同单点新导出 `resolveReviewRootsFor(dir)`（判定本体 = `thincoder-core/agent-tools/review-facts.mjs`；`thincoder-core/agent/write-gate.mjs` 同名再出口）——按目标目录（其所属项目根——最近带档祖先）解析同一根集；M6 `thincoder-core/agent-tools/advisor.mjs` 逐文档按所属项目消费（消费点 = `resolveReviewDocPaths`）；无主档回退会话根集判定（原行为零变）。
+**路径归一增量**（2026-10-04 · #921 设计轮 · 批档 `docs/batches/2026-10-04-tool-path-baseline.md` §2）：documents 解析单源新导出 `resolveReviewDocPaths(documents, cwd)`（宿主 = `thincoder-core/agent-tools/review-facts.mjs`；零新模块边），逐文档四项试探：
+① 会话根集 ② 所属项目根集——两项既有行为零变封装；③ 候选项目根试探（`projectRootView(cwd)` 候选）④ 歧义可读唯一化——裸仓相对形（cwd 基面落空）按候选项目归一受理；多候选可读命中 ≥2 ⇒ fail-closed 拒（`scope-doc-ambiguous`）；冻结窗 `docAbs` 产出面（advisor-async）同源。实施 = eng-coder 轮。
+**锚祖先链增量**（2026-10-05 · #945 · 批档 `docs/batches/2026-10-05-review-face-gaps.md` §2.3）：第③项候选底座并入 **cwd 祖先链全量目录**（现行集在前 ∥ 祖先链随尾、去重保序）——容器相对形在子仓锚下受理；受理判据（目标解析位最近 manifest 声明面）∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义零改。实施 = eng-coder 轮。
 **落点 = 新文件 `thincoder-core/agent/write-gate.mjs`**（不是 `dispatch.mjs`——落 dispatch 会让 M6 `advisor.mjs` 反向 import 门禁簇成回边；write-gate 无上游依赖，三向消费不成环）：`dispatch.mjs` / VSC `tool-gates.mjs` / M6 `advisor.mjs` 三向 import 消费（单一权威源，不重复实现）。
 token 门与冻结窗口判据复用 v1 现有导出（`anyLiveDesignSlot` / `inflightDesignReviewConflict` / `validateDesignToken`——不改签名），「改读 docRoot」只落在评审目标来源一处。
 

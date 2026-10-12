@@ -113,7 +113,7 @@ function consultLiveCount(carrier) {
 }
 
 /**
- * 退出清场（单点——驱动 finally 与单测共用）：
+ * 退出清场（单点——驱动 finally 与单元测试共用）：
  *  - abort：**只清已死**（§6.20 口径——增补 D：`discardAbortedPool` ∕ `discardAbortedAdvisors`
  *    单点，与核 run-stages 回合尾中止同式；存活 ∕ 已 settle 条目留池——settled 报告沿后续
  *    回合边界注入到达，不静默丢）+ pending 单容器清 + 会诊会话清理标记；

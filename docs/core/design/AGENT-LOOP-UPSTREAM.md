@@ -160,7 +160,7 @@
 **不新增静态边**（登记册静态图契约 = `family-tools.mjs:12-16` / 端壳 W8 契约②）；取用一次 / 循环头就地取皆可（实现轮择一，判据 = 零新增静态 import + A2 的循环头调用点）。
 
 ▸ 与 `consumeInjected?.(agent)` 的关系：后者 = spawn 方为我（子）装的**入向**通道；前者 = 我（作为父）自身的**子代理入向**通道。同址、反向、互不干扰。
-▸ 覆盖面：正常回合 / digest auto-turn / headless 直连 `runAgent` **同点覆盖**（皆为循环头）。
+▸ 覆盖范围：正常回合 / digest auto-turn / headless 直连 `runAgent` **同点覆盖**（皆为循环头）。
 
 **注入文案（逐字——父侧所见；`message` 经 `escapeXml`）**：
 
@@ -585,7 +585,7 @@ export function upstreamWaiting(carrier) {
 ```
 
 **为什么是动态 import（非静态）**：`thincoder-core/agent-tools/parent-channel.mjs` 的**静态闭包实测可达 `node:sqlite`**（本席实测：126 档，`node:sqlite` 在 builtins 列——经 `thincoder-core/agent-tools/async-settle.mjs`）⇒ 静态引会破端壳静态闭包机判
-（W8 契约②判据——现载体 = 批件 `docs/batches/2026-09-29-residuals-round2.test.mjs`，单测树重建时回迁端侧单测档）。**零新增静态边**——与 `thincoder-vscode/src/extension/suspension.mjs:73` 同款先例。
+（W8 契约②判据——现载体 = 单元测试档 `docs/batches/2026-09-29-residuals-round2.test.mjs`，单元测试树重建时回迁端侧单元测试档）。**零新增静态边**——与 `thincoder-vscode/src/extension/suspension.mjs:73` 同款先例。
 
 **H. `thincoder-vscode/src/extension/suspension.mjs`（397 行 → ~409 行）**——等待单点**零改**（W13 已双载体注册 `_asyncWaiters`：`thincoder-vscode/src/extension/suspension.mjs:171-191`）；第 2 步判据 + 旗标 + 日志标签：
 
@@ -642,14 +642,14 @@ export function composeTurnDomain(upstreamTurn) {
 
 | # | 候选 | 判据逐项评估 | 结论 |
 |---|---|---|---|
-| **a** | **复用既有 async 唤醒通道（W1 `_asyncWaiters`）+ 扩第 2 步开轮谓词**（+ auto 轮新旗标与域文本） | ① 唤醒零新字段 / 零新注册（三驱动已注册）② 谓词 = 1 行 × 3 驱动（核单点导出）③ 回复路径既有（`send` 控制类豁免，digest 内可调）④ **提示词面零改**（承诺变真）⑤ 非阻塞地基零改 ⑥ 面数 = **7 档 + 4 用例档**（**修正轮 1 收正**：+ CLI 贯通档 `agent-turn.mjs` · + 核新测档） | **选定** |
+| **a** | **复用既有 async 唤醒通道（W1 `_asyncWaiters`）+ 扩第 2 步开轮谓词**（+ auto 轮新旗标与域文本） | ① 唤醒零新字段 / 零新注册（三驱动已注册）② 谓词 = 1 行 × 3 驱动（核单点导出）③ 回复路径既有（`send` 控制类豁免，digest 内可调）④ **提示词面零改**（承诺变真）⑤ 非阻塞地基零改 ⑥ 面数 = **7 档 + 4 用例文件**（**修正轮 1 收正**：+ CLI 贯通档 `agent-turn.mjs` · + 核新单元测试档） | **选定** |
 | b | 把 ask 并入 `_pendingAsyncResults`（复用 digest 机器，谓词零改） | ① 破 §6.27.2 载体分离裁决（D-UC1/D-UC5——`_childUpstream` ≠ 终态报告容器）② 注入点二义（轮首注入 vs 轮头 drain）③ 回收 / 冻结 / `injectAsyncResult` 族分发全需新分支 ④ 失败面（F3 / F9）注脚语义被污染 | 否决 |
 | c | 新造唤醒钩子（宿主句柄注册字段，如 `parent._upstreamWake`） | ① 比 a 多 3 宿主注册 + 1 字段 + 清场生命周期面（挂起退出 / 面板销毁 / 会话切换三路）② 只买到「唤醒原因可区分」这点内部面子（返回值今日无消费方——`thincoder-core/agent/suspension.mjs:208-209` 只判 `aborted`） | 否决 |
 | d | **降级 note-only**（不改机制，把承诺改准） | 0 机制改动；但「在飞纠偏」需求主线（`:210`）作废、F-UC1 / F-UC2 / F-UC6 须同步收紧（**需求改判 = 父侧笔**） | **备选（不落——见 §6.27.12.11-6 备份路径）** |
 | e | 子侧批量化提问（"攒够再问"） | 提示词面纪律、零结构收益——首个 ask 仍等父侧拐点，且子代理无从知晓拐点在何时 | 否决 |
 | f | 同步窗口（`notify_parent` 阻塞 N 秒等父回合） | 破非阻塞地基（N1 / D-UC3「子代理机制上永不等」）——**出界**（批档禁触面） | 否决 |
 
-**为什么不是另一边（d）**：a 的代价面 = **7 档小改 + 1 段文本 + 4 用例档**（**修正轮 1 收正**），全部落在既有单点上；d 的代价 = 需求承诺降级（用户 2026-09-19 23:11 确认的验收目标 `:220` 整条作废）。**残余代价如实登记**：a 下答复到达耗时 = 一个父侧轮（本机实测 ≈ 6.8–64.3 s）；子代理剩余运行时长若短于该轮，答复仍在子代理终态后到达 ⇒ 走 F9 / F-UC3 兜底。**收益面**：恒迟到 ⇒ 大概率及时（窗口从「子代理自身 settle」前移到「ask 入队 + 一个父侧轮」）。
+**为什么不是另一边（d）**：a 的代价面 = **7 档小改 + 1 段文本 + 4 用例文件**（**修正轮 1 收正**），全部落在既有单点上；d 的代价 = 需求承诺降级（用户 2026-09-19 23:11 确认的验收目标 `:220` 整条作废）。**残余代价如实登记**：a 下答复到达耗时 = 一个父侧轮（本机实测 ≈ 6.8–64.3 s）；子代理剩余运行时长若短于该轮，答复仍在子代理终态后到达 ⇒ 走 F9 / F-UC3 兜底。**收益面**：恒迟到 ⇒ 大概率及时（窗口从「子代理自身 settle」前移到「ask 入队 + 一个父侧轮」）。
 
 #### 6.27.12.7 受影响文件清单（行数口径 = `find /c /v ""`（≡ `wc -l`）；现量 = as-of 2026-09-19 23:2x 实测）
 
@@ -730,7 +730,7 @@ spawning subagents, asking questions — those need a real user message. End the
 | T-VS-U6 | 正常·回复可达（`send` → runs 子代理） | 端侧载体形（`{ history }` 合成父 + 池挂 history）+ `executeSendAction({ id, message }, ctx)` | `delivered` + 条目 `_injected` 呈追加（下回合边界消费——回复路径零改） | 条目 7 / §6.27.12.4 ① 回复可达性 |
 | T-VS-U7 | 正常·组合同规（两轮构成差异项 = 0） | 端侧纯函数两分支（`composeTurnDomain(false)` / `composeTurnDomain(true)`——`thincoder-vscode/src/agent/turn-domains.mjs`（已落 · 实读 **37**）） | 两返回值：① 各以对应核基座（`AUTO_TURN_DIGEST_DOMAIN` / `UPSTREAM_TURN_DOMAIN`）逐字起头；② 均含 `VSC_TURN_OVERLAY` 全串（逐字）；③ 均以 `]` 收尾且端 overlay 在收尾括号内；④ 两返回值的 overlay 段逐字相同（差异项 = 0） | 条目 9 / §6.27.12.12 ④ |
 
-**用例档位（修正轮 1 · 发现 2）**：T18–T22 = `thincoder-core/test/parent-channel-upstream.test.mjs`（已落 · 实读 146——拆分落地，行 23）；T23 / T24 = `thincoder-core/test/suspension.test.mjs`；T-CL-U1 / U2 = `thincoder-cli/test/input-lock.test.mjs`；（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
+**用例落位（修正轮 1 · 发现 2）**：T18–T22 = `thincoder-core/test/parent-channel-upstream.test.mjs`（已落 · 实读 146——拆分落地，行 23）；T23 / T24 = `thincoder-core/test/suspension.test.mjs`；T-CL-U1 / U2 = `thincoder-cli/test/input-lock.test.mjs`；（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 T-VS-U1–U7 = `thincoder-vscode/test/upstream-parity.test.mjs`（已落 · 实读 276）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
 #### 6.27.12.10 验收标准（逐条回指——可机检 · Windows / cmd.exe）
@@ -747,7 +747,7 @@ T-VS-U1–U7 = `thincoder-vscode/test/upstream-parity.test.mjs`（已落 · 实�
 | U8 | 文档一致：`node scripts/doc-check.mjs` 输出中**本批触碰档零新增**悬空锚 / 行宽条目（基线（修正轮 1 复测，cwd = `thincoder/`）= **6 悬空 / 18 行宽**——存量，非本批引入；初期轮记 17 = as-of 读数；本批落地后复测原始读数 = **6 / 19**，**剔除他批同期写入 1 行（`docs/core/design/PROMPT-SYSTEM.md:293`）后 = 6 / 18** ⇒ 本批写域**净增 0**；本批触碰两档零悬空 / 零行宽条目）；§6.27.12 ↔ 批档 §2 ↔ 需求档 §4.12 三方条目同源 | 批档自身约束 |
 | U9 | VSC 载体检修：`cd thincoder-vscode && node --test test/upstream-parity.test.mjs test/integration/scenario-03-subagent-lifecycle.test.mjs` 全绿（含 T-VS-U1–U7 + 夹具同步） | 条目 7 / 8 / 9 |
 | U10 | VSC 零回归：`cd thincoder-vscode && npm test` 全绿（单元 + 集成两清单；启动自检含无漏登记反查） | 不变量 ⑤ |
-| U11 | 端壳静态闭包不破：`node --test docs/batches/2026-09-29-residuals-round2.test.mjs`（腿 A——W8 契约②判据现载体；单测树重建时回迁端侧单测档）全绿（`node:sqlite` 不入静态链） | 不变量 ① / ⑤ |
+| U11 | 端壳静态闭包不破：`node --test docs/batches/2026-09-29-residuals-round2.test.mjs`（用例 A——W8 契约②判据现载体；单元测试树重建时回迁端侧单元测试档）全绿（`node:sqlite` 不入静态链） | 不变量 ① / ⑤ |
 | U12 | 端侧结构机检（ASCII 令牌，单行 `node -e`；四查 + 一否定）：`node -e "const fs=require('fs');const f=(p,s)=>{if(!fs.readFileSync(p,'utf8').includes(s))throw new Error(p+' missing: '+s)};const g=(p,s)=>{if(fs.readFileSync(p,'utf8').includes(s))throw new Error(p+' must not contain: '+s)};f('thincoder-vscode/src/agent.mjs','drainChildUpstream(agent)');f('thincoder-vscode/src/extension/suspension.mjs','upstreamWaiting(');f('thincoder-vscode/src/agent/turn-domains.mjs','composeTurnDomain');f('thincoder-vscode/src/agent.mjs','composeTurnDomain(');g('thincoder-vscode/src/agent/turn-domains.mjs','[System reminder: auto-turn')"`（在 `thincoder` 根跑；末项 = 核单源守护——新档零核基座文本字面） | 条目 7 / 9 |
 | U13 | 行宽门（N-P3 硬限）：`find /c /v "" thincoder-vscode\src\agent.mjs` ≤ 800（本批预测 ~487）；报告行数口径 = `wc -l`（≡ `find /c /v ""` 实测） | 拆分计划已落地（行 21） |
 
@@ -782,7 +782,7 @@ T-VS-U1–U7 = `thincoder-vscode/test/upstream-parity.test.mjs`（已落 · 实�
   该前提已由两仓合并批（`thincoder-cli/docs/batches/2026-09-13-TWO-REPO-MERGE.md:128` **R14**：「import 禁令删除……『语义同源 / 各写一份』保留」）撤销
   ⇒ 单仓内核包复用**不违** FR23，且**强于**「语义同源」（同一实现）。④ 端壳「自持 depth-0 循环」不是障碍——本项是**单点调用**（非把核循环搬端侧），与 W15 的「循环契约位移 = 调用期适配」同款。
   **备选（登记不采）**：端侧自持 drain 副本——收益 = 端侧可自定文案（本项无此需求）；代价 = 上文 ① 的漂移面。若父侧另裁，改动面 = 端侧新函数 + 夹具重组（本设计不预设）。
-- **W8 契约②（硬）**：`thincoder-core/agent-tools/parent-channel.mjs` 静态闭包实测**可达 `node:sqlite`**（本席实测 126 档）⇒ **必须动态 import**（静态引 ⇒ W8 契约②判据（现载体 = 批件 `docs/batches/2026-09-29-residuals-round2.test.mjs`；单测树重建时回迁端侧单测档）即红）。
+- **W8 契约②（硬）**：`thincoder-core/agent-tools/parent-channel.mjs` 静态闭包实测**可达 `node:sqlite`**（本席实测 126 档）⇒ **必须动态 import**（静态引 ⇒ W8 契约②判据（现载体 = 单元测试档 `docs/batches/2026-09-29-residuals-round2.test.mjs`；单元测试树重建时回迁端侧单元测试档）即红）。
 
 **② 载体表**
 
@@ -1049,7 +1049,7 @@ export function upstreamAskLabelVars(carrier) {
 
 - **子代理族**：闩 `_zeroWriteAlerted`——越阈推报时置位；**下一次落笔（streak 归零）时清位**（此后再度连零 50 ⇒ 再报一条——「每条连续零写段恰一条」）；链起点（`!resume`）随 streak 复位一并清位。
 - **评审族**：闩 `stallAlerted`——单次运行至多一条（文本产出后不再触发——「连续无产出」条件不回头）。
-- **否决备选与判据**：a）每段臂上限（1 条 / 段）——与跨段 streak 互相打架（段界会吞已累计的连续数）；b）冷却计时——无计时器面（引 timer 机制 = 新结构面），且冷却期内的真停滞漏报；c）每满 50 轮循环重报——轮风暴（父侧队列可积压）。
+- **否决备选与判据**：a）每段提醒上限（1 条 / 段）——与跨段 streak 互相打架（段界会吞已累计的连续数）；b）冷却计时——无计时器面（引 timer 机制 = 新结构面），且冷却期内的真停滞漏报；c）每满 50 轮循环重报——轮风暴（父侧队列可积压）。
   判据 = 闩 + 写后重臂在「写 = 恢复推进」语义上自洽——报一次、恢复即重臂，零计时零窗口。
 
 ### 6.32.4 提醒文案（单行 · 英文 · 携角色 / id / 轮数——**父侧定稿 2026-10-05**：逐字如下）
@@ -1085,7 +1085,7 @@ export function upstreamAskLabelVars(carrier) {
 export const ZERO_WRITE_ALERT_ROUNDS = 50          // 阈值单源（两族共用）
 export function zeroWriteAlertText(from, rounds)   // 子代理族文案（§6.32.4 逐字——`from` = `_upstream.label`）
 export function advisorAlertText(from, rounds)     // 评审族文案（§6.32.4 逐字——`from` = `advisor#<entry id>`）
-export function maybeZeroWriteAlert(child)         // 子代理族判定 + 推送；恒零抛；返回布尔（测试面）
+export function maybeZeroWriteAlert(child)         // 子代理族判定 + 推送；恒零抛；返回布尔（测试用）
 // 门 = child._role ∈ {eng-coder, eng-designer} ∧ child._upstream?.parent 在场
 //      ∧ (_zeroWriteStreak 为整数) ≥ 50 ∧ !child._zeroWriteAlerted
 // 命中 ⇒ pushChildUpstream({ parent, from: child._upstream.label, kind: "note",
@@ -1129,7 +1129,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 ```
 
 - 钩子链：`thincoder-core/agent-tools/advisor-async.mjs` 的 `entry.start` 供 `callbacks.onStall`（= `(rounds) => pushAdvisorAlert(parent, "advisor#" + id, rounds)`——entry 闭包携 id）；`thincoder-core/advisor/run.mjs` 调用环路时以 `seams = { onStallRound: callbacks?.onStall }` 转发；**同步径（advisor 工具）不供钩子 ⇒ 零行为**。
-- **as-built 残余登记（评审族钩子链 · 父侧 2026-10-05 裁 = 接受登记，不补腿）**：真入口两行转发（`thincoder-core/agent-tools/advisor-async.mjs:431` ∥ `thincoder-core/advisor/run.mjs:146`）无已执行证据——批件按设计以钩子注入定形（静态核对：供点 / 转发点 / 环路取值链；叶档 ∥ 环路单元面已覆盖）；**真入口腿留作可选加固**。
+- **as-built 残余登记（评审族钩子链 · 父侧 2026-10-05 裁 = 接受登记，不补用例）**：真入口两行转发（`thincoder-core/agent-tools/advisor-async.mjs:431` ∥ `thincoder-core/advisor/run.mjs:146`）无已执行证据——单元测试档按设计以钩子注入定形（静态核对：供点 / 转发点 / 环路取值链；叶档 ∥ 环路单元测试已覆盖）；**真入口用例留作可选加固**。
 - 计数细节（逐轮增量序 / 首轮口径）实现轮定形；契约 = 「连续 50 轮无文本 token ⇒ 恰一次通报」+「缺钩子零行为」。
 
 **载体重置（`thincoder-core/agent/run-start.mjs`）**：`!resume` 块内——`_touchedFiles = []`（`:123`）邻（复位锚与分支差别注见 §6.32.2 ①）——加两行：`_zeroWriteStreak = 0` · `_zeroWriteAlerted = false`。
@@ -1144,7 +1144,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 | 4 | `thincoder-core/advisor/loop.mjs` | 288 → **310** | +22 | 循环局部计数 + 越阈通报钩子（缺省零行为）；增量以注释为主 ⇒ 非结构性触碰；**本批不拆** |
 | 5 | `thincoder-core/advisor/run.mjs` | 200 → **204** | +4 | 钩子转发（seams） |
 | 6 | `thincoder-core/agent-tools/advisor-async.mjs` | 494 → **497** | +3 | `entry.start` 供钩——**≤800 硬限 ✓（终值 497 · 余量 303——守限兑现）** |
-| 7 | `docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs` | 新 → **319** | 新增 | 用例宿主（U-ZW1–U-ZW8 + A-ZW4 送达/静态腿 = 9 用例——名随批档 · 复跑 = `node --test` 直跑）；批内件（随批档留存 · 不进仓套件——记录接受，不拆；先例 = `docs/batches/2026-10-04-core-patch-batch.test.mjs` 342 行同判） |
+| 7 | `docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs` | 新 → **319** | 新增 | 用例宿主（U-ZW1–U-ZW8 + A-ZW4 送达/静态用例 = 9 用例——名随批档 · 复跑 = `node --test` 直跑）；单元测试档（随批档留存 · 不进集成测试树——记录接受，不拆；先例 = `docs/batches/2026-10-04-core-patch-batch.test.mjs` 342 行同判） |
 | 8 | `docs/core/design/AGENT-LOOP-UPSTREAM.md` | 1022 | +~200（落笔实测——1224 ⇒ 收笔轮 **1227**） | §6.32（本节）+ 承载节 / 需求层指针行 + 变更记录 |
 | 9 | `docs/core/requirements/AGENT-LOOP.md` | 347 | +22（落笔实测——369） | §4.16（五要素）+ 变更记录 |
 | 10 | 批档 `docs/batches/2026-10-05-subagent-zero-write-watchdog.md` | — | §2 | 一次性批次材料 |
@@ -1159,7 +1159,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 | U-ZW2 | 边界·阈下 / 已闩 | ① streak 49；② streak 50 且闩真 | 均 ⇒ false ∧ 队列零增 | F-ZW3 |
 | U-ZW3 | 边界·写后重臂 | 越阈报毕 ⇒ 落笔（streak 归零 + 闩清）⇒ 再连零 50 | 第二条 note（恰 +1） | F-ZW3 |
 | U-ZW4 | 边界·角色门 / 无上游 | ① role `coder`；② role `explore`；③ 无 `_upstream.parent` | 均 ⇒ false ∧ 零动作（静默、零抛） | F-ZW6 |
-| U-ZW5 | 集成·回合环 50+ 轮 | 直驱 `runTurnLoop` 零写夹具（形参照在盘批件 `docs/batches/2026-10-04-core-patch-batch.test.mjs`） | 第 50 零写轮起恰 1 条；51 轮起不重发；`_zeroWriteTurns` 读数改前逐字同 | F-ZW1 / F-ZW3 |
+| U-ZW5 | 集成·回合环 50+ 轮 | 直驱 `runTurnLoop` 零写夹具（形参照在盘单元测试档 `docs/batches/2026-10-04-core-patch-batch.test.mjs`） | 第 50 零写轮起恰 1 条；51 轮起不重发；`_zeroWriteTurns` 读数改前逐字同 | F-ZW1 / F-ZW3 |
 | U-ZW6 | 集成·跨段存活 | streak 49 ⇒ resume 新段（`_zeroWriteTurns` 复位、streak 存活）再 1 零写轮 | 新段内越阈推报（段界不吞计数） | F-ZW1 |
 | U-ZW7 | 正常·评审越阈 | 假评审环路（钩子注入）：连 49 轮无文本 ⇒ 第 50 轮 | `onStallRound` 恰一次（携 50）；文本后归零不再触发 | F-ZW2 |
 | U-ZW8 | 边界·评审无钩子 | 同步径调用（不供 seams） | 零行为（零推、零抛） | F-ZW2 |
@@ -1172,7 +1172,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 | A-ZW2 | 防轰炸：越阈恰一条 ∧ 写后重臂 ∧ 评审一次 / 运行——U-ZW2 / U-ZW3 / U-ZW7 绿 | F-ZW3 |
 | A-ZW3 | 文案携 `from`（`role#id`）+ 轮数；两族文案逐字 = `zero-write-watch.mjs`（已落）单源——U-ZW1 逐字断言 | F-ZW4 |
 | A-ZW4 | 送达 = 同队列 note：条目 `{from, kind:"note", message}`；**不唤醒**（静态机检：watch 档零引唤醒面）；`UPSTREAM_*` / drain 文案零改 | F-ZW5 |
-| A-ZW5 | 零回归：`_zeroWriteTurns`（#417）读数与显示逐字不变；`notify_parent` 工具面零改；**现役可红面 = 本批批件用例（U-ZW1–U-ZW8）全绿**（U-ZW5 已含「`_zeroWriteTurns` 读数改前逐字同」断言）；`cd thincoder-core && npm test` 绿 = 形式过门（核清单自 2026-09-28 空置——`thincoder-core/test/run.mjs:42-45`：空清单 ⇒ 零用例 = 绿 · exit 0——非可红判据） | F-ZW6 |
+| A-ZW5 | 零回归：`_zeroWriteTurns`（#417）读数与显示逐字不变；`notify_parent` 工具面零改；**现役可红面 = 本批单元测试档用例（U-ZW1–U-ZW8）全绿**（U-ZW5 已含「`_zeroWriteTurns` 读数改前逐字同」断言）；`cd thincoder-core && npm test` 绿 = 形式过门（核清单自 2026-09-28 空置——`thincoder-core/test/run.mjs:42-45`：空清单 ⇒ 零用例 = 绿 · exit 0——非可红判据） | F-ZW6 |
 | A-ZW6 | `node scripts/doc-check.mjs` 本批触碰档零新增悬空锚 / 零新增行宽违规 | 批档自身约束 |
 
 ### 6.32.10 边界（本批不做）
@@ -1193,7 +1193,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 | D-ZW1 | 子代理族判据 = **连续**零写（新增 `_zeroWriteStreak`），不复用 `_zeroWriteTurns` | 「50 轮没有落笔」直读 = 连续；累计计数在健康长任务上误报（写后不清零）；改其语义则 #417 显示契约破面。否决：累计口径 / 改写 `_zeroWriteTurns` |
 | D-ZW2 | streak **跨段存活**（复位 = `!resume` 链起点——锚与分支差别见 §6.32.2 ①） | 段边界不打断「连续」语义；否决段内口径（45+45 型跨段停滞漏报） |
 | D-ZW3 | 送达 = 同通道 / note / 不唤醒 | 语义 + ask 窗口 + 成本三面（§6.32.5）；否决 ask 类 / 独立通道 |
-| D-ZW4 | 防轰炸 = 闩 + 写后重臂 | 零计时零窗口、语义自洽（写 = 恢复推进）；否决段臂 / 冷却 / 周期重报（§6.32.3） |
+| D-ZW4 | 防轰炸 = 闩 + 写后重臂 | 零计时零窗口、语义自洽（写 = 恢复推进）；否决每段提醒上限 / 冷却 / 周期重报（§6.32.3） |
 | D-ZW5 | 单源落点 = 本档 §6.32（上行通道族）+ 机制叶档 `thincoder-core/agent-tools/zero-write-watch.mjs`（已落） | 交付面全在 §6.27 面（队列 / 消费 / 闸 / 显示）；触发坐标以「产出站点」表跨档列示（§6.27.2 S 表先例）。否决落 `docs/core/design/AGENT-LOOP-SUBAGENT.md`（其范围句 = 工具契约与装配面——触发坐标跨族无自然承载位） |
 | D-ZW6 | 评审族判据 = **文本产出否**（改锚）+ 连续 50 轮 + 异步面 + 钩子形 | 父侧 2026-10-05 12:2x 裁定 A（承用户原话三面全点名）；只读角色「没有落笔」=「没有产出」；用户可一句话改判。否决 B（轮数直报——正常产出中的大评审误报）/ C（不动——静默缩面） |
 | D-ZW7 | 采集点 = 回合环轮顶单点（撞帽收尾轮不另判） | 单点最小面；撞帽 ask 载荷自带 `_zeroWriteTurns`——终局信息不丢 |
@@ -1220,7 +1220,7 @@ if (!stallAlerted && silentRounds >= ZERO_WRITE_ALERT_ROUNDS) {
 | 6 | 提示词面 · 工具档 | `thincoder-core/tool-docs/notify_parent.md` | 子代理侧契约档（装载单点 = 同档 `:185` `DESC("notify_parent")`）——无标识约定 |
 | 7 | 提示词面 · 接收侧 | `thincoder-core/prompts/common.md:80-84` ∥ `docs/core/design/prompts/common.md:66-68` | 「接收侧（父）」段——无标识辨识句 |
 | 8 | 提示词面 · 报告惯例 | `thincoder-core/prompts/subagent-base.md` ∥ `docs/core/design/prompts/subagent-base.md` | 全子代理角色槽「你与父代理」节——无报告面标识约定（落点判由 = §6.33.9 D-UM4） |
-| 9 | 测试面 | `thincoder-core/test`（仅 `run.mjs` ∥ `slow.mjs`——清单空置）∥ 三产品测试树 `*.test.mjs` 扫描 ∥ 批件档面 `docs/batches/*.test.mjs` | 三产品测试树无 drain 渲染断言；**批件档存 1 条活断言**（`docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs:311`——`note · eng-coder#7: …`）——随正项与通道 = §6.33.5 表行 9 |
+| 9 | 测试覆盖 | `thincoder-core/test`（仅 `run.mjs` ∥ `slow.mjs`——清单空置）∥ 三产品测试树 `*.test.mjs` 扫描 ∥ 单元测试档 `docs/batches/*.test.mjs` | 三产品测试树无 drain 渲染断言；**单元测试档存 1 条活断言**（`docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs:311`——`note · eng-coder#7: …`）——随正项与通道 = §6.33.5 表行 9 |
 
 ### 6.33.2 设计要点
 
@@ -1309,11 +1309,11 @@ your own disposition as the user's words.
 | 5 | `thincoder-core/prompts/subagent-base.md` | 15 → **18**（已落 · 实施后复读——+3） | +3（条目 3 行） | 提示词面 · 报告惯例（EN 运行面） |
 | 6 | `docs/core/design/prompts/subagent-base.md` | 14 → **16**（已落 · 实施后复读——+2） | +2（条目 2 行） | 提示词面 · 报告惯例（CN 权威面） |
 | 7 | `docs/core/design/AGENT-LOOP-UPSTREAM.md`（本档） | 1227 → **1402**（实施后复读——行号读数口径〔含末行空行〕） | +164（设计轮：§6.33 + 变更记录一行）+ 9（评审修正轮：同档收正 ∥ 随正登记 ∥ 读数收正 ∥ 变更记录）+ 2（实施后收正轮：坐标 / 读数收正 ∥ 登记收正 ∥ 变更记录） | 设计档（本批笔） |
-| 8 | `docs/batches/2026-10-06-upward-flag-marker.test.mjs`（已落） | **183**（已落 · 实施后复读——拟 ≈150..250 内） | 新增 ≈150..250（引擎用例 U-UM1–U-UM6 ∥ U-UM8 直驱；U-UM7 = 文本对读 / 脚本——§6.33.6 档位注） | 批件单测档（实施轮） |
-| 9 | `docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs` | 320（行号读数；§6.32.7 行 7 旧录值 319） | ±1..2（`:311` 断言随形收正——`note · eng-coder#7: …` ⇒ 标识形） | 批件单测档（**父侧随正**——随实施轮同拍；跨批写门禁 ⇒ eng 角色零触） |
+| 8 | `docs/batches/2026-10-06-upward-flag-marker.test.mjs`（已落） | **183**（已落 · 实施后复读——拟 ≈150..250 内） | 新增 ≈150..250（引擎用例 U-UM1–U-UM6 ∥ U-UM8 直驱；U-UM7 = 文本对读 / 脚本——§6.33.6 档位注） | 单元测试档（实施轮） |
+| 9 | `docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs` | 320（行号读数；§6.32.7 行 7 旧录值 319） | ±1..2（`:311` 断言随形收正——`note · eng-coder#7: …` ⇒ 标识形） | 单元测试档（**父侧随正**——随实施轮同拍；跨批写门禁 ⇒ eng 角色零触） |
 
-**测试面判定**：① 三产品测试树（`thincoder-core/test` ∥ `thincoder-cli/test` ∥ `thincoder-vscode/test`）现无 `.test.mjs` 单测档（跑器 / 清单空置）；**批件档面存 1 条活断言**（`docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs:311`）⇒ **随正项**（引擎改形落盘后随形收正——**父侧直接执行**、随实施轮同拍；表行 9）；
-② 引擎渲染回归锚 = 实施轮新批件单测档（行 8：`pushChildUpstream` → `drainChildUpstream` 直驱——U-UM1–U-UM6 ∥ U-UM8；U-UM7 = 文本对读 / 脚本——§6.33.6 档位注）；③ `api-contract` 零涉（导出面无增改；`tool-docs` 不在扫描域）；④ 集成场景无涉（无业务入口面变化——纯提示词 + 投递渲染文本）。
+**测试覆盖判定**：① 三产品测试树（`thincoder-core/test` ∥ `thincoder-cli/test` ∥ `thincoder-vscode/test`）现无 `.test.mjs` 单元测试档（跑器 / 清单空置）；**单元测试档存 1 条活断言**（`docs/batches/2026-10-05-subagent-zero-write-watchdog.test.mjs:311`）⇒ **随正项**（引擎改形落盘后随形收正——**父侧直接执行**、随实施轮同拍；表行 9）；
+② 引擎渲染回归锚 = 实施轮新单元测试档（行 8：`pushChildUpstream` → `drainChildUpstream` 直驱——U-UM1–U-UM6 ∥ U-UM8；U-UM7 = 文本对读 / 脚本——§6.33.6 档位注）；③ `api-contract` 零涉（导出面无增改；`tool-docs` 不在扫描域）；④ 集成场景无涉（无业务入口面变化——纯提示词 + 投递渲染文本）。
 
 **读数随动（已落）**：实施后复跑 `node scripts/tool-schema-size.mjs`——`notify_parent.md` 增量计入总量（§6.11 表）；读数变化已随收口刷新 = **100,349 / 0.969**（as-of 2026-10-06；先例 = #950 同面收口笔）。
 
@@ -1332,7 +1332,7 @@ your own disposition as the user's words.
 | U-UM7 | 提示词面 | 三处落笔 + 双面 | 五块文本逐字 = §6.33.4；`node scripts/prompt-refs-check.mjs` 零命中；`notify_parent.md` 单档 ≪ 8k | §2 条目 3 |
 | U-UM8 | 边界·空队列 | 空队列调用 | 零历史变更（no-op——零回归） | §2 条目 2 |
 
-**用例档位（评审 #60 · 发现 5 收正）**：引擎面 U-UM1–U-UM6 ∥ U-UM8 = 批件单测档直驱（`docs/batches/2026-10-06-upward-flag-marker.test.mjs`——`pushChildUpstream` → `drainChildUpstream` 直驱）；U-UM7 = 文本对读（五块逐字 ↔ §6.33.4）+ `node scripts/prompt-refs-check.mjs` 脚本核（含单档体量核）。
+**用例落位（评审 #60 · 发现 5 收正）**：引擎面 U-UM1–U-UM6 ∥ U-UM8 = 单元测试档直驱（`docs/batches/2026-10-06-upward-flag-marker.test.mjs`——`pushChildUpstream` → `drainChildUpstream` 直驱）；U-UM7 = 文本对读（五块逐字 ↔ §6.33.4）+ `node scripts/prompt-refs-check.mjs` 脚本核（含单档体量核）。
 
 ### 6.33.7 验收标准（逐条回指——可机检；cwd = `D:\teamcode\thincoder`）
 

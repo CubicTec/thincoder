@@ -50,7 +50,7 @@ export function imageDeleteFailure(e) {
   return dockerFailure(e)
 }
 
-/** 注册镜像族三路由（§3）：`fetchImpl` = Docker 传输注入口（批内件假件；缺省 = 全局 fetch——生产行为不变）。 */
+/** 注册镜像族三路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。 */
 export function registerImageRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs, pullTimeoutMs } = {}) {
   if (!db) throw new Error("registerImageRoutes：缺少 db")
 

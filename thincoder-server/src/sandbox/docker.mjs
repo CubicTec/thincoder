@@ -196,7 +196,7 @@ function apiMessageOf(text) {
 
 /**
  * Docker API 客户端（`baseUrl` = 归一地址；`apiVer` = 协商版本——`null` 时仅 `version()` 可调（引导步））。
- * 注入口径（批内件/agent 假件）：`fetchImpl`（缺省 = 全局 fetch）∥ 三超时可覆盖（读/动作/拉取）。
+ * 注入口径（单元测试档/agent 假件）：`fetchImpl`（缺省 = 全局 fetch）∥ 三超时可覆盖（读/动作/拉取）。
  */
 export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, readTimeoutMs = READ_TIMEOUT_MS, actionTimeoutMs = ACTION_TIMEOUT_MS, pullTimeoutMs = PULL_TIMEOUT_MS } = {}) {
   if (typeof baseUrl !== "string" || baseUrl === "") throw new Error("createDockerClient：缺 baseUrl")

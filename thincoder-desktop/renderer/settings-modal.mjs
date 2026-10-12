@@ -22,7 +22,7 @@ export { settingsModalTree }
 /** 现态弹框（宿主 → `{ backdrop, card }`；单例 —— 同刻至多一框）。 */
 let face = null
 
-/** 现卡根（装配面第二闸捕获 ∕ 在途判据面）：无弹窗 ⇒ `null`。 */
+/** 现卡根（装配面第二闸捕获 ∕ 在途判据）：无弹窗 ⇒ `null`。 */
 export function settingsModalNode() {
   return face === null ? null : face.card
 }

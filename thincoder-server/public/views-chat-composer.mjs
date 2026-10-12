@@ -6,7 +6,7 @@
  * ② **变量别名桥** = `:root` 别名块（落 `style.css`——核壳族变量名 ⇒ 控制台既有变量，零新值）；③ **注入口桥** = 本档 `post`/`state`/`hooks` 三件；
  * ④ **无源钮收窄** = 五 id CSS 隐藏（`style.css`——本档零钮面逻辑；`#reasoning-btn` 经 KD-SV-111 解隐藏——档位通道三段补齐，钮字/选中态/下拉全归核件）。
  * 状态行（§2.1④——段表 ⊆ 有源）：`#status-line` = `#toolbar` 首子；段源 = `turn`/`usage`/`call`/`result`/`end` 帧 + 客户端时钟；
- * `statusSegments` 纯函数 = 批内件直测面；`✦reasoning` 与模型名段不做（无源——§2.1④ 表）。
+ * `statusSegments` 纯函数 = 单元测试档直测面；`✦reasoning` 与模型名段不做（无源——§2.1④ 表）。
  * 排队面（§2.1③）：在途提交 ⇒ 核面板出泡（`markPending`）+ `queuedUserMessage` ⇒ 入队（容量 = 核 `QUEUED_MAX_ITEMS`）；
  * `end` ⇒ 队首发起（新回合）；`interrupt`（Ctrl+I）= 折法（中止当前回合 + 该文本入队首——无注入通道，端差异条③）。
  */
@@ -54,7 +54,7 @@ export function contextPctOf(model, prompt) {
   return Math.min(999, Math.round((prompt / context) * 100))
 }
 
-/** 状态行段集（纯函数——批内件直测）：段序 = §2.1④ 表；`{ text, warn }`；缺源段零输出。 */
+/** 状态行段集（纯函数——单元测试档直测）：段序 = §2.1④ 表；`{ text, warn }`；缺源段零输出。 */
 export function statusSegments(state, nowMs = Date.now()) {
   const out = []
   const push = (text, warn = false) => out.push({ text, warn })

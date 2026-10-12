@@ -4,7 +4,7 @@
  *
  * 零第三方依赖：自检 = node 内建 `fetch`（scheme 随 `NPM_CONFIG_REGISTRY`——http(s) 皆可）；自升 = npm CLI 子进程
  * （自检与自装同源——§5.3）。检查失败/404 静默（与「无新版」同面）；自装失败/超时恒保留旧版运行（绝不 brick——§5.4(f)）。
- * 注入口径（批内件替身——§5.4(c)）：npm 命令 ∥ 读装版本 ∥ 周期/超时常量走可覆盖参数 + `??` 缺省
+ * 注入口径（单元测试档替身——§5.4(c)）：npm 命令 ∥ 读装版本 ∥ 周期/超时常量走可覆盖参数 + `??` 缺省
  * （缺省 = 生产行为不变；测试内 finally 复原）。进程内状态（`getStatus()`——控制台可见面：KD-SV-24 ∥ `gateway/API.md` §2.3）
  * = 生效档位（钉版抑制后） ∥ 最近自检时刻 ∥ 已见新版号；未检/失败 ⇒ 静默同面（`null`）。
  */
@@ -111,7 +111,7 @@ function runChild(command, args, { spawnImpl, env, timeoutMs }) {
 /**
  * 自升执行器（§5.4(c)）：`npm i -g @thincoder/server@<target> --no-audit --no-fund` 子进程（超时 `timeoutMs`）。
  * 成功判据 = 退出码 0 ∧ 复读版本 = target（复读 = `readInstalled()`——缺省 = 运行树 package.json，即 npm i -g
- * 的改写对象——前缀式装机 §5.1）。`npmCommand` = 命令 + 前导参数形（字符串 ∥ 数组——批内件替身）。
+ * 的改写对象——前缀式装机 §5.1）。`npmCommand` = 命令 + 前导参数形（字符串 ∥ 数组——单元测试档替身）。
  * 返回 `{ ok, reason, installed, message }`（失败恒不动进程——调用方保留旧版）。
  */
 export async function installPackage(target, {

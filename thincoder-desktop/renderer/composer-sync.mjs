@@ -102,7 +102,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     const face = state1?.providerState
     if (face === null || typeof face !== "object" || Array.isArray(face)) return null
     if (face.state !== "fallback") return null // ok ∥ invalid ⇒ 零行（负向锁）
-    if (typeof face.invalidReason === "string" && face.invalidReason !== "") return null // invalid 类合成式（第二腿）
+    if (typeof face.invalidReason === "string" && face.invalidReason !== "") return null // invalid 类合成式（第二分支）
     const word = typeof face.model === "string" && face.model !== ""
       ? t("composer.send.noDefaultModelFallback")
       : t("composer.send.noDefaultModelFallbackUnset")

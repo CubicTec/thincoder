@@ -2,7 +2,7 @@
  * memory/file-list.mjs — 项目文件清单面（自 `memory/code-sync.mjs` 迁出 · 2026-10-01 core 拆分批 #755 ∥ #786）。
  * 内容 = `indexExtensions`（内置扩展名表 ∪ 项目声明并集）∥ `listProjectFiles`（git 列面 + 非 git walk
  * 回退 + unlisted 计数；`index.excludePaths` §6.14 面① 双径过滤：git 列面筛行 ∥ walk 剪枝）——迁出块逐字。
- * 原档 `memory/code-sync.mjs` 经 `export { … } from` 转口保名（消费面 / 批内件 import 面零改）。
+ * 原档 `memory/code-sync.mjs` 经 `export { … } from` 转口保名（消费面 / 单元测试档 import 面零改）。
  */
 import { CODE_EXTS, DOC_EXTS } from "./schema.mjs"
 import { walkProjectFiles, isSkippedRelPath, extensionOf, createUnlistedTally, MAX_WALK_FILES } from "./file-walk.mjs"

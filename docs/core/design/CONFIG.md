@@ -34,8 +34,8 @@
 | 74 | `proxy.mjs` | 同路径 | 0.7570 · 异 | ② | 进核 | 融合：取 CLI（abort 来源标注）+ VSC 的坏代理串友好报错并入 | 分叉 ＝ 错误形态（VSC 包 try/catch 报「Invalid proxy URI」`src/proxy.mjs:189,236`（迁移期引文——VSC 该档已拆入核） / CLI 抛原生）；配置格式与双开关语义同 | — | S1（建核补齐） |
 | 77 | `expand-home.mjs` | 同路径 | 0.2308 · 异 | ② | 进核 | 融合：取一侧、逐字随迁 | 分叉 ＝ 仅注释出处（CLI 引记忆子系统规范档的 §9.3a / VSC 引本端设置档的 §2.7） | — | S1（建核补齐） |
 | 79 | `config-migrate.mjs` | 同路径 | 0.0802 · 异 | ② | 进核 | 融合：取并集——核内保留 VSC 的 VS Code 旧设置 / 密钥库迁移遍（`src/config-migrate.mjs:112-184`） | 分叉 ＝ VSC 多一条老用户升级通道（VSC 独有迁移遍，不迁即丢密钥）；模型字段迁移两端同规则（CLI `src/config-migrate.mjs:20-63`） | — | S1（建核补齐） |
-| 80 | `config.mjs` | 同路径 | 0.0471 · 异 | ③ | 进核（**同名不同物**：对位 = CLI `config.mjs` ↔ VSC `config-io.mjs`；VSC 的 `config.mjs` 实为模型规格表 ↔ CLI `model-specs.mjs`） | 以 CLI 为准（装载器）+ VSC 的 `$schema` 注入与配置监视面按端注入；默认值 / 校验覆盖面取 CLI 全量表 | 分叉 ＝ 组织结构（VSC 拆 8 档）+ 两处差异（`$schema` 注入 VSC `src/config-io.mjs:108`（as-of 2026-09-29）；VSC 校验表只覆盖 agent/traces `src/agent-tools/settings.mjs:43`）；前提（同一 `~/.thincoder/config.json`、同一 v2 架构）仍成立 | **①②** | S1（建核补齐） （迁移期引文） |
-| 87 | `thincoder-core/agent-tools/settings.mjs` | 同路径 | 0.5546 · 异 | ③ | 进核 | 以 CLI 为准（类型表由全量 DEFAULTS 派生 `src/agent-tools/settings.mjs:58`） | 分叉 ＝ 校验覆盖面（VSC 只派生 agent/traces `:43,61` ⇒ `websearch` / `mcp` / `memory` / `embedding` / `shell` 错类型可静默写入两端共享的 `config.json`）；前提（同一 config.json）仍成立 | **①②** | S1（建核补齐） （迁移期引文） |
+| 80 | `config.mjs` | 同路径 | 0.0471 · 异 | ③ | 进核（**同名不同物**：对位 = CLI `config.mjs` ↔ VSC `config-io.mjs`；VSC 的 `config.mjs` 实为模型规格表 ↔ CLI `model-specs.mjs`） | 以 CLI 为准（装载器）+ VSC 的 `$schema` 注入与配置监视面按端注入；默认值 / 校验覆盖范围取 CLI 全量表 | 分叉 ＝ 组织结构（VSC 拆 8 档）+ 两处差异（`$schema` 注入 VSC `src/config-io.mjs:108`（as-of 2026-09-29）；VSC 校验表只覆盖 agent/traces `src/agent-tools/settings.mjs:43`）；前提（同一 `~/.thincoder/config.json`、同一 v2 架构）仍成立 | **①②** | S1（建核补齐） （迁移期引文） |
+| 87 | `thincoder-core/agent-tools/settings.mjs` | 同路径 | 0.5546 · 异 | ③ | 进核 | 以 CLI 为准（类型表由全量 DEFAULTS 派生 `src/agent-tools/settings.mjs:58`） | 分叉 ＝ 校验覆盖范围（VSC 只派生 agent/traces `:43,61` ⇒ `websearch` / `mcp` / `memory` / `embedding` / `shell` 错类型可静默写入两端共享的 `config.json`）；前提（同一 config.json）仍成立 | **①②** | S1（建核补齐） （迁移期引文） |
 
 ### 2.2 语义对位遍行（原 §2.5（四）行集——同职责但相对路径不同）
 
@@ -130,7 +130,7 @@
 
 **写门**：`NODE_TEST_CONTEXT`（node:test 自设——外部约定，不在拔除面）下，日志 / 轨迹**只写显式缝指向的落点**；未设缝 ⇒ 跳过写盘（不污染真实 `~/.thincoder`）。
 
-**argv 门的副作用免害**：显式 argv 标志不受宿主 env 透传影响——旧 env 门的「宿主 TUI 会话把门透传给套件 ⇒ 假红」类问题随拔除消失。
+**argv 门的副作用免害**：显式 argv 标志不受宿主 env 透传影响——旧 env 门的「宿主 TUI 会话把门透传给集成测试树 ⇒ 假红」类问题随拔除消失。
 
 **保留集 = 外部约定**（非「我们的配置」——不属本纪律、不拔）：`NODE_TEST_CONTEXT` · `ELECTRON_RUN_AS_NODE` · `HTTPS_PROXY` / `HTTP_PROXY` / `ALL_PROXY` / `NO_PROXY` 一族 · CI 与 `npm_*` 系 · 系统原语（`HOME` / `USERPROFILE` / `LOCALAPPDATA` / `PATH` / `LC_ALL` / `LANG`）· 外部工具契约（`GIT_EDITOR` · `VSCE_PAT` / `OVSX_PAT`）。
 
@@ -165,7 +165,7 @@
 | # | 决策 | 理由 / 否决备选 |
 |---|---|---|
 | D-CF5 | 自有配置 / 行为输入**只经四类通道**——**禁 env 回退** | 用户裁定「不用环境变量做配置……存量的也直接拔掉」；env = 隐式全局态（不可枚举 / 不可见 / 宿主与子进程串扰）；否决「保留旧名兼容读」（= 存量不拔）。**2026-09-29 补注**：值位显式引用（`${env:VAR}`——§6.3）≠ 通道 ∕ 回退；缺失即抛错，无隐式分支 |
-| D-CF6 | 退场后**按原受众定型**：用户面开关 ⇒ 配置键；测试隔离落点 ⇒ 进程内缝；子进程测试钩 ⇒ argv 标志 | 等价能力以最小面承接——用户面仍有可关通道、测试面零污染、生产零路径不进命令解析；否决「一律升为配置键」（测试钩进产品配置面 = 面膨胀） |
+| D-CF6 | 退场后**按原受众定型**：用户面开关 ⇒ 配置键；测试隔离落点 ⇒ 进程内缝；子进程测试钩 ⇒ argv 标志 | 等价能力以最小面承接——用户面仍有可关通道、测试零污染、生产零路径不进命令解析；否决「一律升为配置键」（测试钩进产品配置面 = 面膨胀） |
 
 ### 6.3 配置值 `${env:VAR}` 引用（消费侧解析 · 2026-09-29 provider-config-family 批 · 台账 #57）
 

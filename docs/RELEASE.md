@@ -98,7 +98,7 @@
 
 > **干跑注（时点与预期红）**：① CLI 干跑全绿时点 = 核已发布后（或 bump 前的现行号面）；bump 后—核发布前区间 ⓪ 必红（守卫，非缺陷）。
 > ② VSC 段 1.5 全过 = 物化后（未物化 ⇒ 断言 B red——fail-closed，预期）；物化时点 = 核已发布后（§5.3 先发核再物化）。
-> ③ as-of 2026-10-01 实读：三端 `test/` 树零用例（2026-09-28 全清既有态——空清单守卫即绿；测试体系重建另轮在册）⇒ 干跑的 test 步当前为空清单绿；断言面不受影响。
+> ③ as-of 2026-10-01 实读：三端 `test/` 树零用例（2026-09-28 全清既有态——空清单守卫即绿；测试体系重建另轮在册）⇒ 干跑的 test 步当前为空清单绿；断言不受影响。
 > ④ 核干跑的版本占用守卫 = 本设计轮实测；bump 后 exit 0 面随窗口实读。
 
 **P3 · 物化防破 guard（junction 覆盖的检查点 ∕ 恢复 ∕ 终态判据）**
@@ -199,10 +199,10 @@ node test/smoke-qwen-thinking.mjs --smoke
 **第 2 步 · 发布**：
 
 ```bash
-npm publish                    # prepublishOnly 自动跑 release:check（lint → 全量测试 → 集成集）
+npm publish                    # prepublishOnly 自动跑 release:check（lint → 测试 → 集成测试集）
 ```
 
-**门禁链细节**（`scripts/release-check.mjs`）：两步 = lint（`check-syntax.mjs`）→ 全量测试（`thincoder-cli/test/run.mjs`——单元+集成+slow 全跑）；输出只打摘要行，失败时自动提取失败详情（每块 ≤24 行、最多 12 块；无汇总段回退输出尾 40 行）。
+**门禁链细节**（`scripts/release-check.mjs`）：两步 = lint（`check-syntax.mjs`）→ 测试（`thincoder-cli/test/run.mjs`——单元测试 + 集成测试 + slow 全跑）；输出只打摘要行，失败时自动提取失败详情（每块 ≤24 行、最多 12 块；无汇总段回退输出尾 40 行）。
 **顺序守卫**：release-check 首查核版本存在性（registry 查无 = 中止——防止发出发坏包）。
 
 **失败处置**：修复 → **局部重跑**（`node --test --test-name-pattern "<失败名>" <失败文件>`——秒级）确认 → **再 `npm publish` 终跑一次**收口（禁每次失败全链重跑）。
@@ -255,8 +255,8 @@ npm run publish:all
 ### 5.6 阶段 3b · 发桌面（`thincoder-desktop` · Windows 安装包 ∥ Linux 产物）
 
 > **定位**：桌面 = **按需发布单元**（不随三端每轮必发）；**发布动作 = 用户门**。机制 ∕ 契约单源 = `docs/desktop/design/PACKAGING.md` §2（2.1 配置契约 ∥ 2.2 构建序列 ∥ 2.3 签名 ∥ 2.5 产物校验 ∥ 2.6 失败面 ∥ **2.8 自动更新** ∥ **2.10 发布窗承接** ∥ **2.11 Linux 面**）；物化纪律（打包物化一律源自源树）= §5.3 同律——桌面窗同遵。
-> **构建机要求**（签名臂）：GlobalSign EV token（eToken 5300）在位 + SafeNet SAC 驱动在 + 签名时 PIN 弹窗（构建者在场）。
-> **构建机要求（Linux 臂）**：内网构建机（ha-proxy · Ubuntu 22.04 x86_64——配方 ∥ 读数 = `docs/desktop/design/PACKAGING.md` §2.11.1；凭据零入库（N6））；签名面 = 无（Linux 两产物均不签）。
+> **构建机要求**（签名侧）：GlobalSign EV token（eToken 5300）在位 + SafeNet SAC 驱动在 + 签名时 PIN 弹窗（构建者在场）。
+> **构建机要求（Linux 侧）**：内网构建机（ha-proxy · Ubuntu 22.04 x86_64——配方 ∥ 读数 = `docs/desktop/design/PACKAGING.md` §2.11.1；凭据零入库（N6））；签名面 = 无（Linux 两产物均不签）。
 
 **步骤 1 · 定号 + CHANGELOG + bump**（同 §5.2 各步；桌面号段 = §4.2 步骤 5）：`thincoder-desktop/package.json` `version` 改到期望号（首版 = `0.10.1`）；`thincoder-desktop/CHANGELOG.md`（已建——首版 `0.10.1` 段在）段头改新号。
 
@@ -291,15 +291,15 @@ OSS_KEY=… OSS_SECRET=… node scripts/upload-download.mjs <exe> <blockmap> <la
 
 **步骤 5 · 官网挂载** = §5.8 阶段 5 一并执行（下载卡 + 版本面三处——条目形见本档 §6.2 分节）。
 
-**Linux 臂（D42 · 构建机链——构建 → 校验 → 取回 → 上传 · 机制单源 = `docs/desktop/design/PACKAGING.md` §2.11）**：
+**Linux 侧（D42 · 构建机链——构建 → 校验 → 取回 → 上传 · 机制单源 = `docs/desktop/design/PACKAGING.md` §2.11）**：
 
-- **L1 · 构建（内网构建机）**：`~/thincoder` 浅克隆 → 三镜像环境（registry ∥ `ELECTRON_MIRROR` ∥ `ELECTRON_BUILDER_BINARIES_MIRROR`）→ `npm run package`（一条链：物化 → 两目标 AppImage ∥ deb → check-dist Linux 臂 = 闸）——配方逐字 = 同档 §2.11.1；重跑 = `git fetch` + `git reset --hard` + 清 `dist`；**不得单目标跑**（覆盖 feed 面——同档 §2.11.1 纪律）。
+- **L1 · 构建（内网构建机）**：`~/thincoder` 浅克隆 → 三镜像环境（registry ∥ `ELECTRON_MIRROR` ∥ `ELECTRON_BUILDER_BINARIES_MIRROR`）→ `npm run package`（一条链：物化 → 两目标 AppImage ∥ deb → check-dist Linux 侧 = 闸）——配方逐字 = 同档 §2.11.1；重跑 = `git fetch` + `git reset --hard` + 清 `dist`；**不得单目标跑**（覆盖 feed 面——同档 §2.11.1 纪律）。
 - **L2 · 校验**：check-dist（闸内自跑）exit 0 + **构建机命令读数**（`dpkg-deb -f dist/ThinCoder-Setup-<号>.deb Maintainer Homepage` ∥ AppImage 提取读数——同档 §2.11.3）。
 - **L3 · 取回**：三件 → `D:\WSL\artifacts\<版本>\`（版本子目录）；sha256 对盘读数随实施记录。
 - **L4 · 上传**：同步骤 4（Linux 行——序 **AppImage → deb → latest-linux.yml**）。
 - **L5 · 官网挂载**：§5.8 阶段 5 一并（download 卡 Linux 区块 ∥ desktop 页 Linux 节 ∥ 版本面同号——规格 = 同档 §2.11.5）。
 
-**完成判定**：check-dist 绿 + 签名态 = 已签（发布版）+ URL 可达（exe ∥ blockmap ∥ latest.yml 三件）+ 站点三处版本面 = 本次号；**Linux 臂（D42）** = 构建机链 exit 0 + URL 可达（AppImage ∥ deb ∥ latest-linux.yml 三件）+ `latest-linux.yml` 对盘过（步骤 4 判据）+ 站点 Linux 区块 ∥ 版本面同号。
+**完成判定**：check-dist 绿 + 签名态 = 已签（发布版）+ URL 可达（exe ∥ blockmap ∥ latest.yml 三件）+ 站点三处版本面 = 本次号；**Linux 侧（D42）** = 构建机链 exit 0 + URL 可达（AppImage ∥ deb ∥ latest-linux.yml 三件）+ `latest-linux.yml` 对盘过（步骤 4 判据）+ 站点 Linux 区块 ∥ 版本面同号。
 
 **失败处置**：§5.7 失败总原则（从失败端重跑；已发端不重发）+ `docs/desktop/design/PACKAGING.md` §2.6 失败面表 ∥ §2.8.1 更新失败面（fail-soft）。
 

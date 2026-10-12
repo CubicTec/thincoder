@@ -49,7 +49,7 @@ export function assertModelAvailable(db, model) {
 
 /**
  * 注册托管接入四端点（§2.5）：返回任务面服务（`routes.mjs` 起跑收尾面与重启恢复面共用）。
- * 注入口径（批内件/假件）：`deps`（`chat` ∥ `execImpl` ∥ `fetchImpl` ∥ `hasSshpass` ∥ `budget`——见 `onboarding.mjs`）。
+ * 注入口径（单元测试档/假件）：`deps`（`chat` ∥ `execImpl` ∥ `fetchImpl` ∥ `hasSshpass` ∥ `budget`——见 `onboarding.mjs`）。
  */
 export function registerOnboardingRoutes(routes, { db, config = {}, log = null, now = Date.now, deps = {} } = {}) {
   if (!db) throw new Error("registerOnboardingRoutes：缺少 db")

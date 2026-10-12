@@ -250,7 +250,7 @@ export function compressFallback(agent) {
 
 // ─── 迁出面（import 面保持：TUI / verify-compress / VSC 对拍经本档取——先例 = 下方 explore-distill 再导出）──
 export { estimateTokens }
-// ─── 拆分转口（2026-10-01 拆分批 · #755 ∥ #786）：写缝 ∥ 回声 ∥ 降级三面外提——消费面 / 批内件 import 面零改 ───
+// ─── 拆分转口（2026-10-01 拆分批 · #755 ∥ #786）：写缝 ∥ 回声 ∥ 降级三面外提——消费面 / 单元测试档 import 面零改 ───
 export { pushReal, pushRecord } from "./context-push.mjs"
 export { isAssistantEchoPair, mergeAdjacentAssistantEchoes } from "./context-echo.mjs"
 export { pruneStaleToolOutputs } from "./context-degrade.mjs"

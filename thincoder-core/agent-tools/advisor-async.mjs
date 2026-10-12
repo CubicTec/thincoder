@@ -392,7 +392,7 @@ export function launchAsyncAdvisor(parent, ctx, launch) {
     id, role: "advisor", reviewType, run,
     reviewId: run.reviewId, designId, designToken, documents, paths, object,
     launchSeq: mutationSeqOf(parent),
-    // docAbs 产出面同源归一（2026-10-04 · #921 · A 随件）：四腿单源 resolved（裸形/前缀形
+    // docAbs 产出面同源归一（2026-10-04 · #921 · A 随件）：四分支单源 resolved（裸形/前缀形
     // 命中候选项目根即归一为绝对路径）——冻结窗/陈旧判定对**裸形受理档**照护成立（否则 A
     // 开冻结窗保护洞）；绝对形与旧 normAbs 面逐字等价。
     docAbs: reviewType === "design" && Array.isArray(documents)

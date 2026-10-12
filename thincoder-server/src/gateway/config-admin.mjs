@@ -32,7 +32,7 @@ export const CONFIG_WRITABLE_KEYS = Object.freeze(["autoUpdate", "trustProxy", "
 /** `embedding` 子键白名单（§2.4——子键级：缺省 = 不动 ∥ 明填 = 替换）。 */
 export const CONFIG_EMBEDDING_KEYS = Object.freeze(["baseURL", "model", "apiKey"])
 
-/** fs 面（缺省 = node:fs 四件；批内件替身经注册参数覆盖——写失败腿注入）。 */
+/** fs 面（缺省 = node:fs 四件；单元测试档替身经注册参数覆盖——写失败分支注入）。 */
 const FS = { readFileSync, writeFileSync, renameSync, unlinkSync }
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value)
@@ -142,8 +142,8 @@ export function writeConfigAtomic(configPath, config, { fs: fsImpl = FS } = {}) 
 /**
  * 注册配置面两端点（§2.4）：`db` = openDatabase 产物 ∥ `configPath` = 配置档绝对路径（`loadConfig` 归一出参——
  * 每次请求实读；生效 = 重启）。
- * 注入口径（批内件替身）：`env`（`env:` 引用解析面）∥ `fs`（读/写/改名/删四件——写失败腿注入）∥
- * `recordAuditFn`（审计失败腿注入）走可覆盖参数（缺省 = 生产行为不变）。
+ * 注入口径（单元测试档替身）：`env`（`env:` 引用解析面）∥ `fs`（读/写/改名/删四件——写失败分支注入）∥
+ * `recordAuditFn`（审计失败分支注入）走可覆盖参数（缺省 = 生产行为不变）。
  */
 export function registerConfigAdminRoutes(routes, { db, configPath, log = null, env = process.env, fs: fsImpl = FS, recordAuditFn = recordAudit } = {}) {
   if (!db || typeof configPath !== "string" || configPath === "") {

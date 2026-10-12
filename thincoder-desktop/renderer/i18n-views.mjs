@@ -44,7 +44,7 @@
  * （两键——`/model` 恒受理随钮面门退场，反馈键集 −1）——值面单源 = `docs/desktop/design/UI.md` §1「本批注（slash 命令面 · 2026-10-01）」项 5
  * （en `slash.unknown` = CLI 前段逐字 + 携 `/help` 指引 ∥ 一键本端拟定）；`/plan` ENG 态拒复用在册键 `toolbar.planDisabled`（零新键）。
  * **`/help` 增量（同批 2026-10-01②）六键**（`slash.help.label` ∥ `slash.desc.{model,auto,plan,eng,help}`）——
- * 消费面 = 端装配面 `printHelp` 口经核 `formatHelp` 取词（非面板拦截段）；en 值 = CLI 同名命令 `desc` 逐字（机检面）。
+ * 消费面 = 端装配面 `printHelp` 口经核 `formatHelp` 取词（非面板拦截段）；en 值 = CLI 同名命令 `desc` 逐字（机检）。
  * 零落盘 · 零 `node:` / 零裸包（渲染面静态闭包判据）。
  */
 export const VIEWS_DICT = Object.freeze({

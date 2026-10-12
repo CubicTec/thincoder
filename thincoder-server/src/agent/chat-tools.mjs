@@ -24,10 +24,10 @@ import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "../san
 import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerRowOr404, sandboxPublicBase } from "../sandbox/registry.mjs"
 import { DOCKER_OPS, assertDockerOp, runDockerOp } from "./docker-ops.mjs"
 
-/** 工具名全集（七件——§12 表；断言面）。 */
+/** 工具名全集（七件——§12 表；断言）。 */
 export const CHAT_TOOL_NAMES = Object.freeze(["members", "providers", "models", "usage", "audit", "runners", "docker"])
 
-/** 各工具动词集（§12 逐行——参数校验先于动作；断言面）。 */
+/** 各工具动词集（§12 逐行——参数校验先于动作；断言）。 */
 export const CHAT_TOOL_OPS = Object.freeze({
   members: Object.freeze(["list", "create", "reset_password", "revoke_key", "set_quota", "set_disables"]),
   providers: Object.freeze(["list", "add", "update", "remove", "discover"]),
@@ -60,7 +60,7 @@ function optionalText(value, field, max = 2000) {
 
 /**
  * 装配七工具（§12）：`db` = openDatabase 产物 ∥ `runtime` = gateway 注册行引导的**同一实例**（provider 写面换表——与路由同见）
- * ∥ `guard` = 登录守卫（重置链清计——装配面注入）∥ `fetchImpl` = Docker 传输注入面（批内件替身）
+ * ∥ `guard` = 登录守卫（重置链清计——装配面注入）∥ `fetchImpl` = Docker 传输注入面（单元测试档替身）
  * ∥ `discoverFetchImpl` = 上游探针出口（缺省 = `proxyFetch`——与控制台 discover 同出口，代理旗判定不丢；测试替身走此参）。
  * `invoke(name, args)` 出 = **结果对象**（各动词自带字段，至少 `{ ok }`；失败 ⇒ `{ ok:false, message }`——不抛，交模型自纠）。
  * `summary` 面：docker 等结果自带则沿用，余由驱动层派生（`chat.summaryOfResult`——掩蔽 + 截断）。

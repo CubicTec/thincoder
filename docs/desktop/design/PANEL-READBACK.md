@@ -150,7 +150,7 @@
 | `thincoder-desktop/src/main/agent-host.mjs` | 322 | +3 | 装配挂 `agent._panelReadout`（per-key） |
 | `thincoder-desktop/renderer/panel-readout.mjs`（拟新增） | 0（新） | ~60 | 快照构形 + 签名去重 + 上报（纯函数 + 注入面 `queryDom` ∥ `invoke`——平 node 直测） |
 | `thincoder-desktop/renderer/app.mjs` | 321 | +4 | 帧出口挂 readout settle（`applyFrame` 尾） |
-| `docs/batches/2026-10-04-subagent-panel-live-face.test.mjs`（拟新增） | 0（新） | ~260 | 批内件（用例清单 = §6；跑法沿先例 `docs/batches/2026-10-02-desktop-menu-system.test.mjs`） |
+| `docs/batches/2026-10-04-subagent-panel-live-face.test.mjs`（拟新增） | 0（新） | ~260 | 单元测试档（用例清单 = §6；跑法沿先例 `docs/batches/2026-10-02-desktop-menu-system.test.mjs`） |
 | `docs/desktop/design/PANEL-READBACK.md` | 0（新） | 本档 | 设计单源（本批） |
 | `docs/desktop/design/IPC.md` | 543 | +6/−4 | `panel:state` 行 + 白名单面 ∥ §3.1 47 ⇒ 48（设计目标态）+ 档头 ∥ §3.1 行数齐平 + 变更记录 |
 | `docs/README.md` | — | +2/−1 | 部分档行登记（desktop 设计 14 ⇒ 15 · 全档 52 ⇒ 53）+ 变更记录一行 |
@@ -167,7 +167,7 @@
 | ③ 回收阀 | `subagent-panel.mjs`（门控源链 + 发射）∥ `subagent.mjs`（描述） | AC-3 ∥ AC-4 |
 | ④ 对账自愈 | `thincoder-desktop/src/main/suspension-drive.mjs`（宿主自愈扫 + done 帧痕——2026-10-06） | §2.4 ∥ 批 `docs/batches/2026-10-06-digested-stuck-fix.md`（台账 #978） |
 
-## 6. 用例清单（批内件 ← 设计轮拟定；normal ∥ boundary ∥ error 逐条）
+## 6. 用例清单（单元测试档 ← 设计轮拟定；normal ∥ boundary ∥ error 逐条）
 
 | 用例 | 面 | 类 | 输入 | 期望 |
 |---|---|---|---|---|

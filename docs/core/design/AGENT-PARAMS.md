@@ -75,7 +75,7 @@ const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_T
 | TUI 显示兜底 | `thincoder-cli/src/tui/cmd-config.mjs:340` · `:341` · `:366` · `:438` | 四处 `?? 200` |
 | 子代理轮次读取 | `thincoder-core/agent-tools/subagent-async.mjs:387` · `thincoder-core/agent-tools/subagent-actions.mjs:418` · `thincoder-core/agent-tools/escalate-async.mjs:218` | 三处同形回退 |
 
-### 6.2 测试面
+### 6.2 测试覆盖
 
 - 评审超时：配置覆盖 / 回退 / 非法值回退三态（`thincoder-cli/test/` 的 advisor 族用例）。
 - `maxTurns`：`thincoder-core/test/config.test.mjs:37` 断言 DEFAULTS 合并后 `maxTurns === 200`。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）

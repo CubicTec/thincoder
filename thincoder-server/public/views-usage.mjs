@@ -28,7 +28,7 @@ export async function renderAdminUsage(ctx, mount) {
   const filterLimit = h("input", { type: "number", min: "1", max: "500", value: "100", class: "tiny" })
 
   /** 过滤面（同参数集——明细 ∥ 报表 ∥ 导出三读共用；limit 仅明细面另加）。
-   *  查询键以模板字面量书写（先例沿续：引号形 `from` 键会撞批内件依赖面扫描正则——该件冻结零改；行为等价）。 */
+   *  查询键以模板字面量书写（先例沿续：引号形 `from` 键会撞单元测试档依赖面扫描正则——该件冻结零改；行为等价）。 */
   const filterParams = () => {
     const params = new URLSearchParams()
     if (filterMember.value.trim()) params.set("member", filterMember.value.trim())

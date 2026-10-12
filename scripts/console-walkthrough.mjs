@@ -14,7 +14,7 @@
  * 产物：<repo>/.thincoder/tmp/console-look-<N>-<page>.png（各页截图）
  *       <repo>/.thincoder/tmp/console-look.json（读回报告——UTF-8）
  *
- * 注：常备工具（非批内件）——用坏再修，不加功能框架。
+ * 注：常备工具（非单元测试档）——用坏再修，不加功能框架。
  *     改装配面时：照 thincoder-server/bin/thincoder-server.mjs 全量注册（漏注册 ⇒ 顶栏「无此路由」黄条 + 总览卡片全「—」）。
  */
 import { spawn, execFileSync } from "node:child_process"

@@ -49,7 +49,7 @@ export function createRouteTable() {
 }
 
 /** 建 http 服务（未 listen——监听归入口）。逐请求一行日志（method ∥ path ∥ status ∥ ms）。
- *  `staticSite` = `createStaticSite()` 产物（webui/static.mjs）——缺省 null（纯 API 面，测试面友好）。 */
+ *  `staticSite` = `createStaticSite()` 产物（webui/static.mjs）——缺省 null（纯 API 面，测试友好）。 */
 export function createGatewayServer({ config = {}, routes, log = null, staticSite = null } = {}) {
   if (!routes) throw new Error("createGatewayServer：缺少路由表（routes = createRouteTable()）")
   return createServer((req, res) => {

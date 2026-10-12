@@ -52,7 +52,7 @@
 
 | 需求 | 设计级判据 | 载体 |
 |---|---|---|
-| AC-15（续·②–⑤） | ② 看板（概览卡 ∥ CSS 柱趋势 ∥ 聚合/排行两表 ∥ 导出 blob 下载——与 `/api/usage` 同一过滤面（数据源 = 预聚合日表；日对齐窗逐值相等——口径 = `metering/METERING.md` §4）∥ 空态无错）；③ 总览（admin 落 `#/admin/overview` ∥ `#/admin` 重定向同指 ∥ 卡集六枚 ∥ user 不可达）；④ 审计页（过滤三轴 ∥ 列 ∥ 类型文案 ∥ 空态）；⑤ 灯（`nav-health` 三态 ∥ 30s 轮询 ∥ 停服红/恢复绿——收口轮浏览器实走）；i18n 两表键集相等（新增 ≈87 键——en 零 CJK ∥ 占位符一致）∥ 档目随正——单源 = `webui/WEBUI.md` §1 ∥ `nav.mjs` 直测（我的 3 ⇒ **4**（team-projects-permissions 批——`webui/PROJECTS.md` §2.1）⇒ 5（沙盒余面批——`webui/SANDBOX.md` §2.2） ∥ 管理 7（代理回迁批后）⇒ **8**（沙盒运行面批——`webui/SANDBOX.md` §2.1①）⇒ **9**（admin-agent-chat 批——`webui/CHAT.md` §2.1）⇒ **11**（team-projects-permissions 批——`webui/PROJECTS.md` §2.2/§2.3） ∥ 重定向收正（含 `#/admin/proxy` ⇒ `#/admin/system`） ∥ 默认页收正） | 批内件 + 收口轮 |
+| AC-15（续·②–⑤） | ② 看板（概览卡 ∥ CSS 柱趋势 ∥ 聚合/排行两表 ∥ 导出 blob 下载——与 `/api/usage` 同一过滤面（数据源 = 预聚合日表；日对齐窗逐值相等——口径 = `metering/METERING.md` §4）∥ 空态无错）；③ 总览（admin 落 `#/admin/overview` ∥ `#/admin` 重定向同指 ∥ 卡集六枚 ∥ user 不可达）；④ 审计页（过滤三轴 ∥ 列 ∥ 类型文案 ∥ 空态）；⑤ 灯（`nav-health` 三态 ∥ 30s 轮询 ∥ 停服红/恢复绿——收口轮浏览器实走）；i18n 两表键集相等（新增 ≈87 键——en 零 CJK ∥ 占位符一致）∥ 档目随正——单源 = `webui/WEBUI.md` §1 ∥ `nav.mjs` 直测（我的 3 ⇒ **4**（team-projects-permissions 批——`webui/PROJECTS.md` §2.1）⇒ 5（沙盒余面批——`webui/SANDBOX.md` §2.2） ∥ 管理 7（代理回迁批后）⇒ **8**（沙盒运行面批——`webui/SANDBOX.md` §2.1①）⇒ **9**（admin-agent-chat 批——`webui/CHAT.md` §2.1）⇒ **11**（team-projects-permissions 批——`webui/PROJECTS.md` §2.2/§2.3） ∥ 重定向收正（含 `#/admin/proxy` ⇒ `#/admin/system`） ∥ 默认页收正） | 单元测试档 + 收口轮 |
 
 ## 5. 边界（本面不做面）
 

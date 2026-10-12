@@ -198,7 +198,7 @@ function pendingSnapshot(agent) {
    *  **降级窗占位**（`hold`——两调用点同判，守卫序列 `guardedDeliver`）：逐批起窗 ∕ 查位 ∕ `release`；窗后占位被摘 ⇒ 零起跑 + 本径落盘件自清 ∧ 不重投。
    *  **中止检查点**（续发期窗已摘 ⇒ `abort` 经 `resuming` ∕ `abortTombstones` 落位）：每批起跑前 + 接管前查位——命中 ⇒ 停链（余值随会话终止——记错一行，非静默）且**不接管**（会话已亡 ⇒ 零复活窗）。
    *  **弃件链尾帧（#912）**：两弃件出口（墓碑 `return` 前 ∥ `!stillHeld` 断点）各补一次 `queue.emitState` —— 弃余件零帧漏点消（倾出后未消费即弃 ⇒ 镜面亦恒收口；快照整置 · 幂等）；**全消费正常径零增帧**（逐条消费帧已收口）。
-   *  **弃余计数（#912）**：`!stillHeld` 腿 = **取批前**余量（含本批已取未达件）；墓碑腿 = 倾出后未被取余量。 */
+   *  **弃余计数（#912）**：`!stillHeld` 分支 = **取批前**余量（含本批已取未达件）；墓碑分支 = 倾出后未被取余量。 */
   async function resumeResidual(entry) {
     const items = queue.drain(entry.pending) // 残值倾出（倾出后按核件取项分批）
     if (items.length === 0) return
@@ -332,9 +332,9 @@ function pendingSnapshot(agent) {
       timers.disarmAll() // 切项目级联 ⇒ 撤闩清点（幂等——逐键 abort 已撤，兜底无闩面）
       return n
     },
-    /** 窗数读数（诊断 ∕ 测试面）。 */
+    /** 窗数读数（诊断 ∕ 测试）。 */
     size() { return windows.size },
-    /** 闩数读数（诊断 ∕ 测试面 —— 撤闩清点断言；闩表为档内私有面）。 */
+    /** 闩数读数（诊断 ∕ 测试 —— 撤闩清点断言；闩表为档内私有面）。 */
     timerLatches() { return timers.size() },
   }
 }

@@ -15,7 +15,7 @@
  *
  * 用法：`node scripts/materialize-deps.mjs`（`npm run package` 经 `prepackage` 自动前置）。
  * 退出码：0 = 两包落位自检通过 ∥ 1 = 失败（源缺位 ∕ 自检判红）。
- * 纯函数面（`planMaterialize` ∥ `classifyTarget` ∥ `isExcluded`）可直测（批内件 L1）。
+ * 纯函数面（`planMaterialize` ∥ `classifyTarget` ∥ `isExcluded`）可直测（单元测试档 L1）。
  */
 import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, unlinkSync } from "node:fs"
 import { dirname, join, relative, resolve } from "node:path"

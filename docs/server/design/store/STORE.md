@@ -1,7 +1,7 @@
 # Thincoder Server · 存储（store/STORE）
 
 > 板块 = server ∥ 本档 = store 域（库 ∥ DDL ∥ 迁移链——accounts 与 metering 共用）；板总览 = `PROJECT.md`（文档地图 = §3）。
-> 结构面档（表语义 = 各域档）；数据面 AC = `metering/METERING.md` §4 ∥ `accounts/ACCOUNTS.md` §5（审计事件面）；结构升版判据 = §3 v3 段（空库直落 ∥ v2 旧库启动自动升——随批内件）。
+> 结构面档（表语义 = 各域档）；数据面 AC = `metering/METERING.md` §4 ∥ `accounts/ACCOUNTS.md` §5（审计事件面）；结构升版判据 = §3 v3 段（空库直落 ∥ v2 旧库启动自动升——随单元测试档）。
 > 建档：2026-10-06（批 `docs/batches/2026-10-06-server-gateway.md` 设计轮；同日补轮——B 案织入 + 三层结构）。
 
 ## 1. 库形态
@@ -334,7 +334,7 @@ CREATE TABLE IF NOT EXISTS sandbox_settings (
 
 - **重建步**（SQLite 不可改列集——沿 v10 表重建先例）：① 建 `sandbox_runners_v12`（列面 = v11 段所列：`id` ∥ `name`（NOT NULL UNIQUE） ∥ `address`（NOT NULL） ∥ `status`（NOT NULL DEFAULT `'active'` CHECK `active`/`disabled`） ∥ `runtime_json`（NOT NULL DEFAULT `'{}'`——连通自检读数） ∥ `created_at`（NOT NULL））。
   ⇒ ② **存量行弃**（不迁——旧通道行无地址可取、令牌/心跳语义整废；一次性过渡行为）⇒ ③ `DROP TABLE sandbox_runners` ⇒ ④ `RENAME` ⇒ 无索引/无 FK（沿先例——`sandbox_workspaces.runner_id` 无 FK）。
-- **判据（批内件）**：空库读数 12 ∥ v11 库升后读数 12 ∥ v12 段幂等（再开零变）∥ 列面五行在场（`pragma_table_info`）∥ 旧三列名不在（`token_hash` ∥ `labels_json` ∥ `last_heartbeat_at`）∥ 存量行弃（含旧行的 v11 库升后 ⇒ 空表）。
+- **判据（单元测试档）**：空库读数 12 ∥ v11 库升后读数 12 ∥ v12 段幂等（再开零变）∥ 列面五行在场（`pragma_table_info`）∥ 旧三列名不在（`token_hash` ∥ `labels_json` ∥ `last_heartbeat_at`）∥ 存量行弃（含旧行的 v11 库升后 ⇒ 空表）。
 - 同段旁注（不在本段射程——登记在案）：v11 段所列 `sandbox_workspaces`（去 `required_labels_json`）∥ `sandbox_tasks`（去 `claimed_at`）两处列面仍与实表有差——随执行面重做批收正。
 
 ### v13 增段（`sandbox_onboarding` 建表——sandbox 域；runner-admin-console 批增补（托管接入））
@@ -346,7 +346,7 @@ CREATE TABLE IF NOT EXISTS sandbox_settings (
   `name`（TEXT——节点名（可选；缺省取探测主机名））∥ `model`（TEXT NOT NULL——提交时所选模型）∥ `status`（TEXT NOT NULL CHECK `'running'`/`'succeeded'`/`'failed'`/`'interrupted'`）∥ `step`（TEXT——当前/最后一步 id）∥
   `steps_json`（TEXT NOT NULL DEFAULT `'[]'`——步骤日志（读数面））∥ `runner_id`（INTEGER——成功后关联；未成 NULL）∥ `created_by`（INTEGER——admin 成员 id）∥ `created_at`（TEXT NOT NULL）∥ `finished_at`（TEXT）。
 - **加密密钥** = `data/credentials.key`（32 字节；首用生成；0600——**不落库**；如实披露 = `sandbox/SANDBOX.md` §3）。
-- **判据（批内件）**：空库直落 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场（`pragma_table_info`）∥ 凭据列读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒。
+- **判据（单元测试档）**：空库直落 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场（`pragma_table_info`）∥ 凭据列读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒。
 
 ### v14 增段（agent chat 两表 + 审计 CHECK 再扩——agent 域；admin-agent-chat 批）
 
@@ -383,7 +383,7 @@ CREATE INDEX IF NOT EXISTS idx_agent_chat_messages ON agent_chat_messages(chat_i
 
 - 语义/对象模型 = `agent/ADMIN-AGENT.md` §11/§12（单源）；端点 = `gateway/API.md` §2.8；控制台面 = `webui/CHAT.md` §2.1；审计型面 = `accounts/ACCOUNTS.md` §2.1。
 - 圈界：`agent_chat_messages.chat_id` 无 FK（沿 `audit_events`/沙盒瞬态表口径）；消息不回写/不归档（保留口径未裁——不设清零——`agent/ADMIN-AGENT.md` §10）。
-- **判据（批内件）**：空库直落 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场（`pragma_table_info`）∥ `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写（CHECK 放行）∥ `role`/`status` CHECK 枚举放行/越值拒。
+- **判据（单元测试档）**：空库直落 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场（`pragma_table_info`）∥ `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写（CHECK 放行）∥ `role`/`status` CHECK 枚举放行/越值拒。
 
 ### v15 增段（`image_sources` 建表——sandbox 域；sandbox-image-sources 批）
 
@@ -405,7 +405,7 @@ CREATE TABLE IF NOT EXISTS image_sources (
 
 - 语义/机制 = `sandbox/SANDBOX.md` §3（单源）；端点 = `gateway/API.md` §2.5 镜像源七行；审计 kind = `accounts/ACCOUNTS.md` §2.1。
 - 圈界：`created_by` 无 FK（沿 `audit_events`/沙盒瞬态表口径）；**清单不镜像远端**（远端态不落库——读时读；KD-SV-79 精神）。
-- **判据（批内件）**：空库直落 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场（`pragma_table_info`）∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
+- **判据（单元测试档）**：空库直落 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场（`pragma_table_info`）∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
 
 ### v16 增段（`agent_chats.reasoning` 增列——agent 域；console-reasoning-levels 批）
 
@@ -419,7 +419,7 @@ ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;
 
 - 语义/机制 = `agent/ADMIN-AGENT.md` §11.4（单源）；端点 = `gateway/API.md` §2.8（会话设置面 + 会话行形）；控制台面 = `webui/CHAT.md` §2.1⑤。
 - 圈界：**零迁移**——存量行保持 NULL（= 未设 = 今日行为逐字同；无回填 ∥ 无改写）；**档位词表不入库**（核单源——列只存该模型枚举内的串）；NULL 与字面 `off` 不等价（缺省 ≠ 原子档位哨兵——`off` = 核件**显示**哨兵，写面不收）。
-- **判据（批内件）**：空库直落 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ `agent_chats` 列面六列在场（`pragma_table_info`——`reasoning` 尾插）∥ 存量行 `reasoning IS NULL` 零变 ∥ 存量其余列逐值保形。
+- **判据（单元测试档）**：空库直落 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ `agent_chats` 列面六列在场（`pragma_table_info`——`reasoning` 尾插）∥ 存量行 `reasoning IS NULL` 零变 ∥ 存量其余列逐值保形。
 
 ### v17 增段（git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型）——project 域；team-projects-permissions 批）
 
@@ -475,7 +475,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_source ON projects(source_id);
 
 - 语义/机制 = `project/PROJECTS.md` §2/§4/§5（单源）；端点 = `gateway/API.md` §2.9；控制台面 = `webui/PROJECTS.md` §2。
 - 圈界：`projects.source_id` 无 FK（删除防护 = 应用层 400——KD-SV-122）；成员行不要求本地账号存在（KD-SV-116）；项目删除 = 应用层级联（`project_members` 同事务随删——`project/PROJECTS.md` §14）；`token_cipher` ∥ `hook_secret_cipher` 同键文件（`data/credentials.key`）不同密钥（每源独立随机——KD-SV-84/119）。
-- **判据（批内件）**：空库直落 17 ∥ v16 库升后读数 17 ∥ v17 段幂等（再开零变）∥ 三表列面（含 `git_sources.hook_secret_cipher`）/三索引在场（`pragma_table_info` + `sqlite_master`）∥ 存量审计行逐值保形 + 两索引在场 ∥ `project_event` 型可写（CHECK 放行）。
+- **判据（单元测试档）**：空库直落 17 ∥ v16 库升后读数 17 ∥ v17 段幂等（再开零变）∥ 三表列面（含 `git_sources.hook_secret_cipher`）/三索引在场（`pragma_table_info` + `sqlite_master`）∥ 存量审计行逐值保形 + 两索引在场 ∥ `project_event` 型可写（CHECK 放行）。
 
 ### v18 增段（`api_keys.key_plain` 列——管理面 sk 明文面；server-wake-face 批 · 修订轮）
 
@@ -489,7 +489,7 @@ ALTER TABLE api_keys ADD COLUMN key_plain TEXT;
 - **单源**：`thincoder-server/src/accounts/keys.mjs`（列写入点 = `issueKey`；读取 = `agentKeyOf`）。
 - **旁证先例**：沙盒工作区 `key_plain`（服务端即消费方——披露类不升级）。
 
-- **判据（批内件）**：空库直落 18 ∥ v17 库升后读数 18 ∥ v18 段幂等（再开零变）∥ `api_keys` 列面含 `key_plain`（`pragma_table_info`——尾插）∥ 存量行 `key_plain IS NULL` 零变 ∥ 其余列逐值保形。
+- **判据（单元测试档）**：空库直落 18 ∥ v17 库升后读数 18 ∥ v18 段幂等（再开零变）∥ `api_keys` 列面含 `key_plain`（`pragma_table_info`——尾插）∥ 存量行 `key_plain IS NULL` 零变 ∥ 其余列逐值保形。
 
 ### v19 增段（主机表七列 + `sandbox_onboarding` 凭据态四值（`'moved'`）+ 回填移交——sandbox 域；admin-chat-creds-merge 批）
 
@@ -513,7 +513,7 @@ ALTER TABLE sandbox_runners ADD COLUMN credential_updated_at TEXT;              
 - **语义/机制 = `sandbox/SANDBOX.md` §3 主机凭据块（单源）**——列面/行形（`ssh` 元数据） ∥ 密列零回显（响应 ∥ 日志 ∥ 审计 ∥ 帧四面零秘密字段） ∥ 端点 = `gateway/API.md` §2.5 ∥ 审计两 kind = `accounts/ACCOUNTS.md` §2.1。
 - **回填口径**：存量 `keep` ∧ 成功行（`runner_id` 在场）按 `id` 序移交——**同 runner 多行 ⇒ 后者胜**；`keep` ∧ 未成功 ⇒ 留 run 行（密文不动）；既有 `sandbox_runners` 行新列 = NULL ∥ `'none'`（零伪造回填）。
 - **圈界**：加解密 = 既有凭据三件同件（**不与 run 行并存两份**——实施轮以当刻盘面实读为准）；`sandbox_runners` 既有列 ∥ 索引 ∥ 引用面零动。
-- **判据（批内件）**：空库直落 19 ∥ v18 库升后读数 19 ∥ v19 段幂等（再开零变）∥ 七列在场（`pragma_table_info('sandbox_runners')`）∥ `credential_state` 四值放行/越值拒 ∥ 回填三腿（成功行 ⇒ 移交 ∥ 同 runner 多行 ⇒ 后者胜 ∥ 失败行 ⇒ 零变）∥ 存量 `sandbox_onboarding` 行逐值保形（拷贝前后全等）。
+- **判据（单元测试档）**：空库直落 19 ∥ v18 库升后读数 19 ∥ v19 段幂等（再开零变）∥ 七列在场（`pragma_table_info('sandbox_runners')`）∥ `credential_state` 四值放行/越值拒 ∥ 回填三用例（成功行 ⇒ 移交 ∥ 同 runner 多行 ⇒ 后者胜 ∥ 失败行 ⇒ 零变）∥ 存量 `sandbox_onboarding` 行逐值保形（拷贝前后全等）。
 
 ## 3. 迁移链（`user_version` 逐版升）
 
@@ -521,29 +521,29 @@ ALTER TABLE sandbox_runners ADD COLUMN credential_updated_at TEXT;              
 - 开库序：读 `user_version` ⇒ 顺序执行 `v > 当前` 的段（每段单事务；成功 ⇒ `PRAGMA user_version = v`；抛错 ⇒ 进程非零退出——fail-closed）。
 - 结构每变一次 = 追一段（+1）——空库 ∥ 旧库启动自动升，零手工脚本（断点列 = `EVOLUTION.md` §1-G2）。
 - v2 = provider 增段（`providers` 表——控制台 provider 管理；旧库（v1）启动自动升 ∥ 空库直落 v2）。
-- v3 = 审计增段（`audit_events` 表 + 三索引——`accounts/ACCOUNTS.md` §2.1 ∥ key 明细索引）；旧库（v1/v2）启动自动升 ∥ 空库直落 v3；判据（批内件）= 空库结构版本读数 3 ∥ v2 库升后读数 3 ∥ 迁移链幂等（再开零变）。
-- v4 = 模型设置增列（`providers.settings_json`——服务模型配置面）：**列级 ALTER = 表不重建**（SQLite `ADD COLUMN` 常量默认——存量行即刻得 `'{}'`）；旧库（v1–v3）启动自动升 ∥ 空库直落 v4；判据（批内件）= 空库读数 4 ∥ v3 库升后读数 4 ∥ v4 段幂等（再开零变）。
+- v3 = 审计增段（`audit_events` 表 + 三索引——`accounts/ACCOUNTS.md` §2.1 ∥ key 明细索引）；旧库（v1/v2）启动自动升 ∥ 空库直落 v3；判据（单元测试档）= 空库结构版本读数 3 ∥ v2 库升后读数 3 ∥ 迁移链幂等（再开零变）。
+- v4 = 模型设置增列（`providers.settings_json`——服务模型配置面）：**列级 ALTER = 表不重建**（SQLite `ADD COLUMN` 常量默认——存量行即刻得 `'{}'`）；旧库（v1–v3）启动自动升 ∥ 空库直落 v4；判据（单元测试档）= 空库读数 4 ∥ v3 库升后读数 4 ∥ v4 段幂等（再开零变）。
 - first-release-completeness 批（2026-10-06）：**零结构变更**（保留窗清理 = 删除式 ∥ 登录防护计数 = 进程内存——均无新表；结构版本不变）。
 - v5 = 两字段拆列 + 派生两表 + 成员配额列（**配额分模型批**——需求 §2:21 ∥ §2:22 ∥ 台账 #990/#991/#992）：五步见 §2 v5 段（拆列 ∥ 建 `usage_daily`/`quota_counters` ∥ 成员列增删 ∥ 期初回填）。
-  判据（批内件）= 空库读数 5 ∥ v4 库升后读数 5 ∥ v5 段幂等（再开零变）∥ 拆列抽样逐值（含 `model` 带斜杠 ∥ 嵌入行 `provider = ''`）∥ 回填两表逐值 = usage 重算 ∥ 旧列不在 `pragma_table_info('members')`；耗时（一次性 @500k 行——同构探针实读）= 日表回填 ≈1.2s ∥ 计数回填 ≈3.4s（合计 ≈5s 级）。
-- v6 = 成员模型禁用列（`members.model_disabled_json`——**配额 v2 · 成员模型面批** ∥ 台账 #1004）：**列级 ALTER = 表不重建**（存量行即刻得 `'{}'`——默认全可用）；旧库（v1–v5）启动自动升 ∥ 空库直落 v6；判据（批内件）= 空库读数 6 ∥ v5 库升后读数 6 ∥ v6 段幂等（再开零变）∥ 新列常量默认在场（`pragma_table_info('members')` 含列）。
-- v7 = provider 模型元数据留存列（`providers.model_meta_json`——**Provider 模型元数据批** ∥ 台账 #1005）：**列级 ALTER = 表不重建**（存量行即刻得 `'{}'`——未存 = 无元数据）；旧库（v1–v6）启动自动升 ∥ 空库直落 v7；判据（批内件）= 空库读数 7 ∥ v6 库升后读数 7 ∥ v7 段幂等（再开零变）∥ 新列常量默认在场（`pragma_table_info('providers')` 含列）。
-- v8 = key 名称列（`api_keys.name`——**me-keys 批** ∥ 台账 #1023）：**列级 ALTER = 表不重建**（存量行即刻得 `''` ⇒ 随段回填默认名 `key-N`——按成员签发序）；旧库（v1–v7）启动自动升 ∥ 空库直落 v8；判据（批内件）= 空库读数 8 ∥ v7 库升后读数 8 ∥ v8 段幂等（再开零变）∥ 新列在场（`pragma_table_info('api_keys')` 含 `name`）∥ 存量回填抽查（多 key 成员：行名 = `key-1..key-N` 按 id 序 ∥ 空串零残留）。
-- v9 = provider 上游代理旗（`providers.proxy`——**server 代理批** ∥ 台账 #1129）：**列级 ALTER = 表不重建**（存量行即刻得 `0`——缺省直连）；旧库（v1–v8）启动自动升 ∥ 空库直落 v9；判据（批内件）= 空库读数 9 ∥ v8 库升后读数 9 ∥ v9 段幂等（再开零变）∥ 新列在场（`pragma_table_info('providers')` 含 `proxy`）∥ 存量默认值抽查（迁移后旧行 `proxy = 0`——直连缺省）。
-- v10 = 审计事件型扩（`audit_events` CHECK 扩十型——**配置控制台批** ∥ 台账 #1139）：**表重建**（SQLite 不可改 CHECK——建新表 ∥ 拷贝 ∥ 换名 ∥ 索引重建）；旧库（v1–v9）启动自动升 ∥ 空库直落 v10；判据（批内件）= 空库读数 10 ∥ v9 库升后读数 10 ∥ v10 段幂等（再开零变）∥ 存量行逐值保形（id/时刻/型/详情——拷贝前后全等）∥ 两索引在场 ∥ `config_update` 型可写（CHECK 放行）∥ `sqlite_sequence` 连续（新事件 id 不撞存量）。
-- server-model-alias 批（2026-10-09——台账 #1153）：**零结构变更**（别名 = `models_json` 元素升级——JSON 文本内演进；无新列/新表/新段——结构版本保持 **10**；旧行字符串天然兼容）；判据（批内件）= 迁移链读数仍 10 ∥ 别名增删往返不改库结构（`pragma_table_info('providers')` 零变）。
+  判据（单元测试档）= 空库读数 5 ∥ v4 库升后读数 5 ∥ v5 段幂等（再开零变）∥ 拆列抽样逐值（含 `model` 带斜杠 ∥ 嵌入行 `provider = ''`）∥ 回填两表逐值 = usage 重算 ∥ 旧列不在 `pragma_table_info('members')`；耗时（一次性 @500k 行——同构探针实读）= 日表回填 ≈1.2s ∥ 计数回填 ≈3.4s（合计 ≈5s 级）。
+- v6 = 成员模型禁用列（`members.model_disabled_json`——**配额 v2 · 成员模型面批** ∥ 台账 #1004）：**列级 ALTER = 表不重建**（存量行即刻得 `'{}'`——默认全可用）；旧库（v1–v5）启动自动升 ∥ 空库直落 v6；判据（单元测试档）= 空库读数 6 ∥ v5 库升后读数 6 ∥ v6 段幂等（再开零变）∥ 新列常量默认在场（`pragma_table_info('members')` 含列）。
+- v7 = provider 模型元数据留存列（`providers.model_meta_json`——**Provider 模型元数据批** ∥ 台账 #1005）：**列级 ALTER = 表不重建**（存量行即刻得 `'{}'`——未存 = 无元数据）；旧库（v1–v6）启动自动升 ∥ 空库直落 v7；判据（单元测试档）= 空库读数 7 ∥ v6 库升后读数 7 ∥ v7 段幂等（再开零变）∥ 新列常量默认在场（`pragma_table_info('providers')` 含列）。
+- v8 = key 名称列（`api_keys.name`——**me-keys 批** ∥ 台账 #1023）：**列级 ALTER = 表不重建**（存量行即刻得 `''` ⇒ 随段回填默认名 `key-N`——按成员签发序）；旧库（v1–v7）启动自动升 ∥ 空库直落 v8；判据（单元测试档）= 空库读数 8 ∥ v7 库升后读数 8 ∥ v8 段幂等（再开零变）∥ 新列在场（`pragma_table_info('api_keys')` 含 `name`）∥ 存量回填抽查（多 key 成员：行名 = `key-1..key-N` 按 id 序 ∥ 空串零残留）。
+- v9 = provider 上游代理旗（`providers.proxy`——**server 代理批** ∥ 台账 #1129）：**列级 ALTER = 表不重建**（存量行即刻得 `0`——缺省直连）；旧库（v1–v8）启动自动升 ∥ 空库直落 v9；判据（单元测试档）= 空库读数 9 ∥ v8 库升后读数 9 ∥ v9 段幂等（再开零变）∥ 新列在场（`pragma_table_info('providers')` 含 `proxy`）∥ 存量默认值抽查（迁移后旧行 `proxy = 0`——直连缺省）。
+- v10 = 审计事件型扩（`audit_events` CHECK 扩十型——**配置控制台批** ∥ 台账 #1139）：**表重建**（SQLite 不可改 CHECK——建新表 ∥ 拷贝 ∥ 换名 ∥ 索引重建）；旧库（v1–v9）启动自动升 ∥ 空库直落 v10；判据（单元测试档）= 空库读数 10 ∥ v9 库升后读数 10 ∥ v10 段幂等（再开零变）∥ 存量行逐值保形（id/时刻/型/详情——拷贝前后全等）∥ 两索引在场 ∥ `config_update` 型可写（CHECK 放行）∥ `sqlite_sequence` 连续（新事件 id 不撞存量）。
+- server-model-alias 批（2026-10-09——台账 #1153）：**零结构变更**（别名 = `models_json` 元素升级——JSON 文本内演进；无新列/新表/新段——结构版本保持 **10**；旧行字符串天然兼容）；判据（单元测试档）= 迁移链读数仍 10 ∥ 别名增删往返不改库结构（`pragma_table_info('providers')` 零变）。
 - v11 = 沙盒七表 + 审计 CHECK 再扩（十二型）+ `sandbox_rules` 种子（八行——**server-exec-sandbox 批** ∥ 台账 #1224）：七表 CREATE（见 §2 v11 段）+ 种子写入（`source='default'`——一次性；可改可删不复活）+ `audit_events` 表重建（十型 ⇒ 十二型：+ `sandbox_rule` ∥ `sandbox_event`——步序与 v10 同构）；
-  旧库（v1–v10）启动自动升 ∥ 空库直落 v11；判据（批内件）= 空库读数 11 ∥ v10 库升后读数 11 ∥ v11 段幂等（再开零变） ∥ 七表在场（`pragma_table_info`） ∥ 存量审计行逐值保形 + 两索引在场 ∥ 两新型可写（CHECK 放行） ∥ 种子八行在场（`source='default'`——deny 三 + allow 五） ∥ 覆写列在场（`sandbox_workspaces.limits_json` 默认 `'{}'`）。
-- v12 = `sandbox_runners` 表重建（旧通道形态 ⇒ Docker 节点形态——**runner-admin-console 批** ∥ 台账 #1252）：**表重建**（建新表 ∥ 存量行弃 ∥ DROP ∥ RENAME——见 §2 v12 段）；旧库（v1–v11）启动自动升 ∥ 空库直落 v12；判据（批内件）= 空库读数 12 ∥ v11 库升后读数 12 ∥ v12 段幂等（再开零变）∥ 列面五行在场 ∥ 旧三列名不在 ∥ 存量行弃（含旧行 ⇒ 空表）∥ `sandbox_workspaces.runner_id` 引用面零变。
-- v13 = `sandbox_onboarding` 建表（托管接入任务 + 凭据——**runner-admin-console 批增补** ∥ 台账 #1236/#1237）：**加表**（零重建——见 §2 v13 段）；旧库（v1–v12）启动自动升 ∥ 空库直落 v13；判据（批内件）= 空库读数 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 存量表零变。
-- v14 = agent chat 两表 + 审计 CHECK 再扩（十三型——**admin-agent-chat 批** ∥ 台账 #1254）：**加两表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11 同构；见 §2 v14 段）；旧库（v1–v13）启动自动升 ∥ 空库直落 v14；判据（批内件）= 空库读数 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场 + `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写。
-- v15 = `image_sources` 建表（镜像源清单——**sandbox-image-sources 批** ∥ 台账 #1274）：**加表**（零重建——见 §2 v15 段）；旧库（v1–v14）启动自动升 ∥ 空库直落 v15；判据（批内件）= 空库读数 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场 ∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
-- v16 = `agent_chats.reasoning` 增列（会话级思考档位——**console-reasoning-levels 批** ∥ 台账 #1303）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v16 段）；旧库（v1–v15）启动自动升 ∥ 空库直落 v16；判据（批内件）= 空库读数 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ 列面六列在场 ∥ 存量行 NULL 零变。
-- v17 = git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型——**team-projects-permissions 批** ∥ 台账 #1216）：**加三表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11/v14 同构；见 §2 v17 段）；旧库（v1–v16）启动自动升 ∥ 空库直落 v17；判据（批内件）= 空库读数 17 ∥ v16 库升后读数 17 ∥ v17 段幂等（再开零变）∥ 三表列面（含 `hook_secret_cipher`）与索引在场 ∥ 存量审计行逐值保形 ∥ `project_event` 型可写。
-- v18 = `api_keys.key_plain` 增列（管理面 sk 明文面——**server-wake-face 批修订轮** ∥ 台账 #1324）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v18 段）；旧库（v1–v17）启动自动升 ∥ 空库直落 v18；判据（批内件）= 空库读数 18 ∥ v17 库升后读数 18 ∥ v18 段幂等（再开零变）∥ 列面含 `key_plain` ∥ 存量行 NULL 零变。
+  旧库（v1–v10）启动自动升 ∥ 空库直落 v11；判据（单元测试档）= 空库读数 11 ∥ v10 库升后读数 11 ∥ v11 段幂等（再开零变） ∥ 七表在场（`pragma_table_info`） ∥ 存量审计行逐值保形 + 两索引在场 ∥ 两新型可写（CHECK 放行） ∥ 种子八行在场（`source='default'`——deny 三 + allow 五） ∥ 覆写列在场（`sandbox_workspaces.limits_json` 默认 `'{}'`）。
+- v12 = `sandbox_runners` 表重建（旧通道形态 ⇒ Docker 节点形态——**runner-admin-console 批** ∥ 台账 #1252）：**表重建**（建新表 ∥ 存量行弃 ∥ DROP ∥ RENAME——见 §2 v12 段）；旧库（v1–v11）启动自动升 ∥ 空库直落 v12；判据（单元测试档）= 空库读数 12 ∥ v11 库升后读数 12 ∥ v12 段幂等（再开零变）∥ 列面五行在场 ∥ 旧三列名不在 ∥ 存量行弃（含旧行 ⇒ 空表）∥ `sandbox_workspaces.runner_id` 引用面零变。
+- v13 = `sandbox_onboarding` 建表（托管接入任务 + 凭据——**runner-admin-console 批增补** ∥ 台账 #1236/#1237）：**加表**（零重建——见 §2 v13 段）；旧库（v1–v12）启动自动升 ∥ 空库直落 v13；判据（单元测试档）= 空库读数 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 存量表零变。
+- v14 = agent chat 两表 + 审计 CHECK 再扩（十三型——**admin-agent-chat 批** ∥ 台账 #1254）：**加两表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11 同构；见 §2 v14 段）；旧库（v1–v13）启动自动升 ∥ 空库直落 v14；判据（单元测试档）= 空库读数 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场 + `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写。
+- v15 = `image_sources` 建表（镜像源清单——**sandbox-image-sources 批** ∥ 台账 #1274）：**加表**（零重建——见 §2 v15 段）；旧库（v1–v14）启动自动升 ∥ 空库直落 v15；判据（单元测试档）= 空库读数 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场 ∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
+- v16 = `agent_chats.reasoning` 增列（会话级思考档位——**console-reasoning-levels 批** ∥ 台账 #1303）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v16 段）；旧库（v1–v15）启动自动升 ∥ 空库直落 v16；判据（单元测试档）= 空库读数 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ 列面六列在场 ∥ 存量行 NULL 零变。
+- v17 = git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型——**team-projects-permissions 批** ∥ 台账 #1216）：**加三表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11/v14 同构；见 §2 v17 段）；旧库（v1–v16）启动自动升 ∥ 空库直落 v17；判据（单元测试档）= 空库读数 17 ∥ v16 库升后读数 17 ∥ v17 段幂等（再开零变）∥ 三表列面（含 `hook_secret_cipher`）与索引在场 ∥ 存量审计行逐值保形 ∥ `project_event` 型可写。
+- v18 = `api_keys.key_plain` 增列（管理面 sk 明文面——**server-wake-face 批修订轮** ∥ 台账 #1324）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v18 段）；旧库（v1–v17）启动自动升 ∥ 空库直落 v18；判据（单元测试档）= 空库读数 18 ∥ v17 库升后读数 18 ∥ v18 段幂等（再开零变）∥ 列面含 `key_plain` ∥ 存量行 NULL 零变。
 
 - v19 = 主机表七列 + `sandbox_onboarding` 凭据态四值（`'moved'`）+ 回填移交（**admin-chat-creds-merge 批** ∥ 台账 #1326）：**加列 + 表重建**（列级 `ALTER`——表不重建；CHECK 重建步序与 v10/v12 同构；见 §2 v19 段）；旧库（v1–v18）启动自动升 ∥ 空库直落 v19；
-  判据（批内件）= 空库读数 19 ∥ v18 库升后读数 19 ∥ v19 段幂等（再开零变）∥ 七列在场（`pragma_table_info('sandbox_runners')`）∥ `credential_state` 四值放行/越值拒 ∥ 回填三腿（移交 ∥ 后者胜 ∥ 失败行零变）∥ 存量 `sandbox_onboarding` 行逐值保形。
+  判据（单元测试档）= 空库读数 19 ∥ v18 库升后读数 19 ∥ v19 段幂等（再开零变）∥ 七列在场（`pragma_table_info('sandbox_runners')`）∥ `credential_state` 四值放行/越值拒 ∥ 回填三用例（移交 ∥ 后者胜 ∥ 失败行零变）∥ 存量 `sandbox_onboarding` 行逐值保形。
 
 ## 4. 本域文件与行数预算（本域族行）
 

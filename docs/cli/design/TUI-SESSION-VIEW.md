@@ -197,10 +197,10 @@ syncLineBudget(state, { pushLineLike, onTrim })      // state.lines 总量对账
     ∥ `role ∥ model ∥ done:true ∥ doneAt ∥ blocks(=rows 行集) ∥ stopped ∥ errored ∥ _charCount(=行集字符和——账实一致 §5.4）` ∥ `async(= meta.pool === true)` ∥ `queued(= meta.queued === true)`），**渲染端零改**（`render-segments.mjs` 折叠头 + tail-3 原式消费——模式词 waiting/async/sync 三态照出）。
     **停面词判据（#795）**：合成件 `stopped` = 记录 `status` 停止面词集（词面判据单源 = `docs/core/design/SESSION.md` §6.26——本档不复述）。
     **错误面词判据（#821）**：合成件 `errored` = 记录 `status` 错误面词集（词面判据单源 = `docs/core/design/SESSION.md` §6.26——本档不复述）。
-  - 负控 = 记录缺 ⇒ 恢复面逐字等价；未绑（模式 F）⇒ 既有径零改（无 sidecar 存储腿——记录入人读线、落盘随既有保存链）。
+  - 负控 = 记录缺 ⇒ 恢复面逐字等价；未绑（模式 F）⇒ 既有径零改（无 sidecar 存储侧——记录入人读线、落盘随既有保存链）。
 - **翻页**：数据源零改（`store.page`——记录已在存储、随页自然可见）；「N more earlier messages」与「N messages」口径含记录（与桌面 KD-55 ⑤ 同口径容忍）。
 - **容差（CLI 侧状态）**：① 跨页分裂 = **消**（上「`n` 解析」）；② 归档快照晚一拍 = **消**（产生面 = 进程内冻结点，先于回合落盘 ∥ 读径 = 存储直读——追加即达）；③ 复活径双记录（墓碑复活 ⇒ 同键两代冻结 ⇒ 重建面双块 ∥ 活流单块）——**在册**（低频异常修复径 ∥ 数据零损；重开条件 = 实测走查命中 ⇒ 另批）。
-- **验收回指**：F18 判定句（重启 ∥ `/session` 重建含痕行族 + 冻结载体 ∥ 负控）；机检腿 ∥ 真机项 = 批档 `docs/batches/2026-09-30-cross-end-digest-recovery.md` §2。
+- **验收回指**：F18 判定句（重启 ∥ `/session` 重建含痕行族 + 冻结载体 ∥ 负控）；机检用例 ∥ 真机项 = 批档 `docs/batches/2026-09-30-cross-end-digest-recovery.md` §2。
 
 ## 7. 不并项与历史沿革
 

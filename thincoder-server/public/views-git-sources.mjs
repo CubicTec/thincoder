@@ -7,7 +7,7 @@
  * ∥ 同步方式（「事件」仅 github 可选——平台门）∥ 间隔 5–1440 + 事件块（地址/一次性密钥/登记步——`project/PROJECTS.md` §13））。
  *
  * PAT/密钥恒掩码（读面永不回显原文——替换走明传）；判权全在后端（requireAdmin——页面不是判据）；文案经 `t()`；渲染一律节点 + textContent。
- * 端点 = gateway/API.md §2.9；分类人话六值单源 = `views-projects.mjs` `readKindLabel`。导出面 = 批内件直测（`platformLabel`）。
+ * 端点 = gateway/API.md §2.9；分类人话六值单源 = `views-projects.mjs` `readKindLabel`。导出面 = 单元测试档直测（`platformLabel`）。
  */
 import { copyText } from "./dom.mjs"
 import { mapError, t } from "./i18n.mjs"
@@ -22,7 +22,7 @@ const PLATFORM_KEYS = {
   selfhosted: "admin.gitSources.platform.selfhosted",
 }
 
-/** 平台文案（纯函数——批内件断言面；枚举外 ⇒ 原值兜底）。 */
+/** 平台文案（纯函数——单元测试档断言；枚举外 ⇒ 原值兜底）。 */
 export function platformLabel(platform) {
   const key = PLATFORM_KEYS[platform]
   return key === undefined ? String(platform ?? "—") : t(key)

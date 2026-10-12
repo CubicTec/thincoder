@@ -6,7 +6,7 @@
  * `truncated` 旗如实）∥ 错误六分类（`auth` ∥ `scope_missing` ∥ `unreachable` ∥ `timeout` ∥ `http_error` ∥ `bad_response`）∥
  * **零反向出站 = 全客户端只发 GET**（AC-44⑥——零 POST/PUT/PATCH/DELETE）。
  * 三平台基址/鉴权/路径逐条 = §4；自建 = GitLab 兼容协议（源 `base_url`）。角色映射 = §4 四表（`levelOfRole`）。
- * 消费面 = `sync.mjs`（名册/体检）∥ `admin-routes.mjs`（拉列表）；本件为纯客户端（批内件以假平台直测）。
+ * 消费面 = `sync.mjs`（名册/体检）∥ `admin-routes.mjs`（拉列表）；本件为纯客户端（单元测试档以假平台直测）。
  */
 import { HttpError } from "../gateway/errors.mjs"
 

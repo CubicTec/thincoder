@@ -26,7 +26,7 @@ function readErrorBody(e) {
   throw e
 }
 
-/** 注册镜像源七路由（§2.5）：`fetchImpl` = 远端传输注入口（批内件假 registry/hub；缺省 = 全局 fetch——生产行为不变）。 */
+/** 注册镜像源七路由（§2.5）：`fetchImpl` = 远端传输注入口（单元测试档假 registry/hub；缺省 = 全局 fetch——生产行为不变）。 */
 export function registerImageSourceRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs = REGISTRY_READ_TIMEOUT_MS } = {}) {
   if (!db) throw new Error("registerImageSourceRoutes：缺少 db")
 

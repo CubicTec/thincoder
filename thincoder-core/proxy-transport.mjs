@@ -74,7 +74,7 @@ export function streamHttpResponse(sock, urlStr, opts = {}, timeout = FETCH_TIME
     function pauseUpstream() {
       if (!pausedUpstream) { pausedUpstream = true; sock.pause() }
     }
-    /** 排空恢复上游源（#1087——暂停态对偶臂，幂等） */
+    /** 排空恢复上游源（#1087——暂停态对偶分支，幂等） */
     function resumeUpstream() {
       if (pausedUpstream) { pausedUpstream = false; sock.resume() }
     }
@@ -133,7 +133,7 @@ export function streamHttpResponse(sock, urlStr, opts = {}, timeout = FETCH_TIME
       if (ceFactory) {
         sink = ceFactory()
         // 解压失败 ⇒ body 以明错误终止（部分解码已发生——无「原字节」可回退）；解压器 ⇒ body 走 pipe
-        // （自带背压：body 慢 ⇒ 解压器停 ⇒ 其可写侧涨满 ⇒ 推送臂暂停源）。
+        // （自带背压：body 慢 ⇒ 解压器停 ⇒ 其可写侧涨满 ⇒ 推送分支暂停源）。
         sink.on("error", (e) => fail(new Error(`Response body decompression failed (content-encoding: ${ceTokens[0]}): ${e.message}`)))
         sink.pipe(body)
       }
@@ -141,10 +141,10 @@ export function streamHttpResponse(sock, urlStr, opts = {}, timeout = FETCH_TIME
         // chunked 径：解码器剥帧 ⇒ 逐段推入 body 前最后一级（带 CE = 解压器；函数式改写——body 本体零替换）；
         // 不再 pipe——body 由解码器 onData/onEnd 驱动
         const decoder = createChunkedDecoder({ onData: pushDownstream, onEnd: endBody })
-        sock.on("data", (c) => decoder.push(c)) // 推送臂 = 背压暂停点（#1087：write() 返 false ⇒ sock.pause()）
+        sock.on("data", (c) => decoder.push(c)) // 推送分支 = 背压暂停点（#1087：write() 返 false ⇒ sock.pause()）
         decoder.push(remaining)
       } else if (sink) {
-        // 非 chunked 径 · 带 CE：源 ⇒ 解压器（推送臂同形——背压暂停点同判）
+        // 非 chunked 径 · 带 CE：源 ⇒ 解压器（推送分支同形——背压暂停点同判）
         if (remaining.length > 0) pushDownstream(remaining)
         sock.on("data", pushDownstream)
       } else {
@@ -159,7 +159,7 @@ export function streamHttpResponse(sock, urlStr, opts = {}, timeout = FETCH_TIME
       body.on("readable", armIdle)
       // 背压排空 = 消费进度信号（#1087——防「暂停期无数据到达」把慢而健康的消费者误杀）。
       body.on("drain", armIdle)
-      // 背压对偶臂：排空 ⇒ 恢复上游源。带 CE 时恢复信号在解压器（body 经 pipe 先恢复解压器——链传导）；
+      // 背压对偶分支：排空 ⇒ 恢复上游源。带 CE 时恢复信号在解压器（body 经 pipe 先恢复解压器——链传导）；
       // 无 CE 时 body 即最后一级 ⇒ 其 drain 即恢复点。
       if (sink) sink.on("drain", resumeUpstream)
       else body.on("drain", resumeUpstream)

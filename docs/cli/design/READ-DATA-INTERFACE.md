@@ -165,7 +165,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 | `thincoder-cli/src/command-table.mjs` | — | 185 | +8 | ~193 | `:154` 分支 + `:162` usage 行 |
 | `thincoder-cli/src/completions.mjs` | — | 140 | +6 | ~146 | 三套脚本 `list` 词（`:26` / `:73` / `:136`） |
 | `thincoder-cli/bin/thincoder.mjs` | — | 178 | +3 | ~181 | `:137` 邻位 USAGE 两行 |
-| `docs/batches/2026-10-03-read-data-interface.test.mjs`（拟新增） | — | — | ~300 | 超即拆 | 批内单测（§7） |
+| `docs/batches/2026-10-03-read-data-interface.test.mjs`（拟新增） | — | — | ~300 | 超即拆 | 单元测试档（§7） |
 | `docs/README.md` | — | ≈154 | 0（本轮已落） | ≈154 | §1 计数收正 + 变更记录（**本轮已落**） |
 | `docs/cli/design/CLI-ENTRY.md` | — | 80 | +3 | ~83 | §2 行 + 变更记录（**随动**：实施轮） |
 | `docs/cli/design/ACP-CLIENT.md` | — | 650 | +9 | ~659 | §2.1 / §2.2 行 + §3 枚举（`:76` ∥ `:84` 四 ⇒ 五 handler 模块，+ `thincoder-cli/src/acp/read-data.mjs`（拟新增））+ §3.5 模块表（+ 行）+ 变更记录（**随动**：实施轮） |
@@ -205,9 +205,9 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 | N2 `schemaVersion` 标记 | 写后 = 1 ∥ 旧库读 = 0 | RDI-4 |
 | N3 族同源 | family 输出 = `discoverFamily` 逐项 | RDI-5 |
 
-## 7. 用例表（批内单测件——先红后绿）
+## 7. 用例表（单元测试档——先红后绿）
 
-全例先红（面未存在）；RDI-4 红 = 现行读即改库（负向锁）。夹具 = 临时项目树 + `_setLedgerDirForTest` 注入；CLI 子进程 = HOME ∥ USERPROFILE 沙箱（先例 = 批内件同法）。
+全例先红（面未存在）；RDI-4 红 = 现行读即改库（负向锁）。夹具 = 临时项目树 + `_setLedgerDirForTest` 注入；CLI 子进程 = HOME ∥ USERPROFILE 沙箱（先例 = 单元测试档同法）。
 
 | # | 类 | 输入 | 期望 | 先红点 |
 |---|---|---|---|---|
@@ -239,7 +239,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
   1. 与在飞批零撞车（`thincoder-core/ledger.mjs` · `ledger-surface.mjs` 在飞改动）——本批对 `ledger.mjs` 零编辑（D-11）；
   2. 文档随动 = 实施轮同步落（CLI-ENTRY · ACP-CLIENT 词面行；`docs/README.md` 本轮已随档登记）；
   3. `docs/core/design/LEDGER.md` 登记（§2 版本标记 / §7.1 导出面）= #882 写域让渡后随动——上抛排期；
-  4. 单测先红后绿（§7）——实施者跑批内件即反馈环（零入仓套件）。
+  4. 单元测试先红后绿（§7）——实施者跑单元测试档即反馈环（零入集成测试树）。
 
 ## 变更记录
 

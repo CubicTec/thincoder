@@ -151,7 +151,7 @@ export function parseLogTail(raw) {
 }
 
 /**
- * 注册容器面十路由（§3）：列表 ∥ 建 ∥ 启/停 ∥ 删 ∥ 详情/日志/重启/强杀/用量；`fetchImpl` = Docker 传输注入口（批内件假件；缺省 = 全局 fetch——生产行为不变）。
+ * 注册容器面十路由（§3）：列表 ∥ 建 ∥ 启/停 ∥ 删 ∥ 详情/日志/重启/强杀/用量；`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。
  */
 export function registerContainerRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
   if (!db) throw new Error("registerContainerRoutes：缺少 db")

@@ -7,7 +7,7 @@
  * （响应键 `token` ∥ `access_token`）⇒ 携 `Bearer` 复读一次；**零凭据**——私有源如实 `auth_required`）；**有界首页**（`n` 1–1000 ∥ 缺省 200
  * + `truncated`——**不翻页**）；**五分类如实报错**（`timeout` ∥ `unreachable` ∥ `auth_required` ∥ `unsupported` ∥ `bad_response`——
  * 自含状态形，沿 `/api/admin/proxy/test` 先例）。
- * 读类预算 10s（跨公网——非节点面 3s）；`fetchImpl` 注入 = 测试面（缺省 = 全局 fetch——生产行为不变）。
+ * 读类预算 10s（跨公网——非节点面 3s）；`fetchImpl` 注入 = 测试（缺省 = 全局 fetch——生产行为不变）。
  */
 /** 读类预算（§2.5——10s；注入口径 = 注册参数 `readTimeoutMs`）。 */
 export const REGISTRY_READ_TIMEOUT_MS = 10000

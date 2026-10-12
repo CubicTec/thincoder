@@ -163,7 +163,7 @@ desc, connected, toolCount, config }] }`（●/○ 连接态 + N tools + 原始 
 add-or-update 原位 → 推状态）。面板 [Edit] 与 [Add] 复用同一表单（已存在 ⇒ 原位 update；add 侧失败（含并发冲突）原串上抛）。工具展开器
 （行内 [tools]）载荷 = 面板契约投影 `{ name, description, inputSchema }`（S2 W7：端壳 `panelToolList` 自核原生
 工具投影——schema 取 `parameters`；工具名 = 原生 `{server}_{tool}` 名）。
-- **config-mcp.mjs（config.json `mcp.servers[]` 读写——纯 Node，extension host 外可单测）**：`loadMcpServers`
+- **config-mcp.mjs（config.json `mcp.servers[]` 读写——纯 Node，extension host 外可做单元测试）**：`loadMcpServers`
 （`:12`——过滤无 name / 非对象项）· `addMcpServer`（`:19`——name 重复拒）· `updateMcpServer`（`:37`——原位替换、
 数组序保持、name 不可改、transport 字段被清空时回落到既有条目的类型与值——编辑表单只改 token/headers
 不产出退化 `{name}`）· `removeMcpServer`（`:63`）；三者经 `persistRaw` + `conflictError`（并发写冲突 → 同型提示串）。

@@ -14,7 +14,7 @@ import { createDockerClient, selfCheckDocker } from "../sandbox/docker.mjs"
 import { insertRunner } from "../sandbox/registry.mjs"
 import { DOCKER_OPS, assertDockerOp, runDockerOp } from "./docker-ops.mjs"
 
-/** 工具名全集（五件——§3 表；断言面）。 */
+/** 工具名全集（五件——§3 表；断言）。 */
 export const TOOL_NAMES = Object.freeze(["exec", "docker", "register", "verify", "report"])
 
 /** 步骤骨架 id（§3 步骤表——工具 `step` 标签的合法集）。 */

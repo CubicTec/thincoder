@@ -4,7 +4,7 @@
  *
  * 面：`settings:env` 三支 —— 读 `{}`（proxy + shell 现值 + shell 候选面）· 写 `{ patch: { proxy?,
  * shell? } }`（**写经核 `writeConfigAtomic`**——端侧零自写盘；删键语义住 mutate 体）· TestProxy
- * `{ testProxy: { uri } }`（转口 `providers.mjs` `testProxy` —— 探针面单源，本档零第二探针）。
+ * `{ testProxy: { uri } }`（转口 `providers.mjs` `testProxy` —— 探针单源，本档零第二探针）。
  * 语义源（逐项）：proxy merge ∕ shell 清键 = VSC `settings-env.js` + `saveProxySettingsFromPanel` ∕
  * `saveShellSettingsFromPanel`（`thincoder-vscode/src/extension/settings.mjs`）；shell 候选面 = **核单源**
  * `@thincoder/core/shell-candidates.mjs`（B10 S17 收编：候选项表 ∕ 探测序 ∕ 超时 ∕ memo 单源；本档零自持候选表）。
@@ -62,7 +62,7 @@ function envPatchError(patch) {
 /**
  * `settings:env(payload)`：读 `{}` ⇒ `{ ok, reason:null, proxy, shell }`；写 `{ patch: { proxy?,
  * shell? } }` ⇒ 同形回执（**写后回读**）；TestProxy `{ testProxy: { uri } }` ⇒ 转口 `providers.mjs`
- * `testProxy`（探针面单源 —— 本档零第二探针）。
+ * `testProxy`（探针单源 —— 本档零第二探针）。
  * 三支**互斥**（`patch` 与 `testProxy` 同在 ⇒ `invalid-patch` 零动作）；写支失败 ⇒ reason 直传
  * （核 `mtime-conflict` ∕ 本档写前校验串）——**零写**。
  */

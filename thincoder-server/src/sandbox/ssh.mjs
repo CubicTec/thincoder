@@ -1,7 +1,7 @@
 /**
  * ssh.mjs — SSH 传输（sandbox/SANDBOX.md §3「托管接入」∥ §14 KD-SV-85；runner-admin-console 批——台账 #1236）：
  * spawn 系统 openssh（密钥 `-i <0600 文件>` ∥ 密码 `sshpass -e`——环境变量口径，不入 argv/ps）∥ keyfile/known_hosts 落数据目录
- * ∥ 主机指纹 TOFU（`accept-new` + 首见记录；变更 ⇒ 停 + 「重新信任」重试）∥ 超时/输出截断；`execImpl` 注入 = 测试面。
+ * ∥ 主机指纹 TOFU（`accept-new` + 首见记录；变更 ⇒ 停 + 「重新信任」重试）∥ 超时/输出截断；`execImpl` 注入 = 测试。
  *
  * 无人值守口径：密钥径 = `BatchMode=yes`（不弹交互）∥ 口令径 = 不带 `BatchMode`（带了直接弃用口令面——真机 A/B 核 2026-10-11），
  * 改 `NumberOfPasswordPrompts=1` + `PreferredAuthentications=password` ∥ `PubkeyAuthentication=no`（单提示、仅口令面——KD-SV-85）∥ `ConnectTimeout=10`；逐条命令、非交互；sudo 口令经 stdin（`sudo -S`——§3）。
@@ -75,7 +75,7 @@ export function forgetHost(baseDir, host, port = 22) {
   return changed
 }
 
-/** 默认 spawn 实现（可注入替身——批内件假件；`execImpl(cmd, args, opts) => { code, stdout, stderr }`）。 */
+/** 默认 spawn 实现（可注入替身——单元测试档假件；`execImpl(cmd, args, opts) => { code, stdout, stderr }`）。 */
 export function spawnSsh(cmd, args, { env = process.env, input = null, timeoutMs = SSH_COMMAND_TIMEOUT_S * 1000 } = {}) {
   return new Promise((resolve) => {
     let child
@@ -149,7 +149,7 @@ function classifyFailure(stderr, host) {
 /**
  * SSH 执行器（§3）：`exec({ host, port, user, authKind, secret, sudoSecret, command, timeoutS })` ⇒ `{ exitCode, stdout, stderr }`。
  * 传输级失败 ⇒ 抛 `SshError`（auth ∥ unreachable ∥ fingerprint_changed ∥ host_missing_binary ∥ timeout）；命令非零退出 = 正常返回（读数面）。
- * 注入口径：`execImpl`（spawn 替身——测试面）∥ `baseDir`（数据目录——keyfile/known_hosts 落点）。
+ * 注入口径：`execImpl`（spawn 替身——测试）∥ `baseDir`（数据目录——keyfile/known_hosts 落点）。
  */
 export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeoutS = SSH_COMMAND_TIMEOUT_S, keyName = null } = {}) {
   if (typeof baseDir !== "string" || baseDir === "") throw new Error("createSshExecutor：缺 baseDir（数据目录）")

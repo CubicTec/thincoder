@@ -10,7 +10,7 @@
  */
 import { WAIT_TIMEOUT_DEFAULT, WAIT_TIMEOUT_MAX } from "./actions.mjs"
 
-/** 动作预算表（§2.9——机检面）：动作 ⇒ 预算 ms。wait 无固定值（谓词帽 + 余量——`budgetFor` 解算）。 */
+/** 动作预算表（§2.9——机检）：动作 ⇒ 预算 ms。wait 无固定值（谓词帽 + 余量——`budgetFor` 解算）。 */
 export const ACTION_BUDGETS = {
   navigate: 45_000, // 含会话自启（12s 启动帽内）+ 导航 + 就绪轮询 + 快照
   click: 30_000,

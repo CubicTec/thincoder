@@ -40,7 +40,7 @@ import { loadSlotFile, isLegacyTransient } from "./session.mjs"
 // TUI-OOM-ROOTCAUSE 批（SESSION.md §6.14 生命周期联动）：删槽联动记录存储（store 零项目内依赖——无环）。
 import { unlinkRecordStore } from "./session-store.mjs"
 // 探测束（init-block 批 · F-MI7）：实现 / 判据单源住 process-probe.mjs——本档零自有 exec、
-// 零逐 pid 探测（判据面与探测面分离）；单 pid 判活 re-export 见下方「判活兼容面」。
+// 零逐 pid 探测（判据与探测面分离）；单 pid 判活 re-export 见下方「判活兼容面」。
 import { probeOwnersAsync, isProcessAlive } from "./process-probe.mjs"
 // 清单 / 认领 / 属主面（init-block 批外提——双向静态环见头注）：本档 import 取用 + re-export
 // 保既有 import 面（消费档路径与名面不动）。

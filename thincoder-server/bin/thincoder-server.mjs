@@ -79,7 +79,7 @@ export function closeApp({ server, db, log, graceMs = 10000 }) {
 }
 
 /** 入口主流程：装配 → 监听 → 信号接线 + 更新循环；启动失败 ⇒ 明确报错 + 非零退出（fail-closed）。
- *  `update` = 更新器覆盖参数（批内件替身——缺省 `{}` ⇒ 生产行为不变；§5.4(c) 注入口径）。 */
+ *  `update` = 更新器覆盖参数（单元测试档替身——缺省 `{}` ⇒ 生产行为不变；§5.4(c) 注入口径）。 */
 export async function run(argv = process.argv.slice(2), log = createLogger(), { update = {} } = {}) {
   let db = null
   let app = null
@@ -159,7 +159,7 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     registerOverviewRoutes(routes, { db })
     registerEmbeddingAdminRoutes(routes, { db, config, log })
     registerConfigAdminRoutes(routes, { db, configPath: configFile, log }) // 配置面（§2.4——文件面读写；生效 = 重启——KD-SV-56）
-    registerProxyAdminRoutes(routes, { db, log }) // 代理连通测试面（§2.4——真打 ∥ 自含形；零落库零计费——KD-SV-60）
+    registerProxyAdminRoutes(routes, { db, log }) // 代理连通测试（§2.4——真打 ∥ 自含形；零落库零计费——KD-SV-60）
     // 沙盒面（§2.5/§2.6——server-exec-sandbox 批）：控制台 ∥ 成员面 + runner 通道（无 runner ⇒ 仅沙盒功能面不可用——KD-SV-71）
     registerSandboxRoutes(routes, { db, config, log })
     registerImageSourceRoutes(routes, { db }) // 镜像源族（gateway/API.md §2.5 镜像源七行——sandbox-image-sources 批）

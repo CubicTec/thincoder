@@ -256,7 +256,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
   1. **面在新机制不在修补**：结构化子代理事件 = ACP **契约外的扩展契约**（`session/update` 载荷 `_meta` 通道——候选形；非标 `sessionUpdate` 枚举值已否：严格客户端反序列化风险）——「新机制 ⇒ 全链」，且形状决策需要独立设计轮与用户可见契约文档。
   2. **跨层依赖**：状态源（`⟦ev⟧` 事件族 8 名——`async ∥ queued ∥ turn ∥ cancelled ∥ stopped ∥ settled ∥ done ∥ approval`）现状为显示面消费（CLI TUI / VSC / 桌面桥三处各自解析）——提升为**核内机读单源**是前置件（本批声明面 = `src/acp/**`，不含核面）。
   3. **客户端契约在外**：需求本义 = ACP 客户端侧活动面板前置件——服务端交付物含面向客户端（Zed 侧）的接口说明（跨仓消费者）。
-  4. **体量档不同**：其余四条 = schema 逐键对位小件；混批会拉长评审/验证面。
+  4. **体量档不同**：其余四条 = schema 逐键对位小件；混批会拉长评审/验证。
 - **后续批 scope 草案（供另批设计轮起点——非本批承诺）**：`_meta.subagent = { role, id, state?, progress? }` 候选形（role/id 自 relay 前缀 `parseRelayPath`；state 自事件族状态机；progress 自 `⟦ev⟧turn` 轮号形）；前置件 = 事件文法机读单源 + `_meta` 契约文档；被否候选 = ① 非标 `sessionUpdate` 新枚举值 ② 结构化与文本剥离同轮改（本批剥离语义零改）。
 - **登记去向**：台账 #862 维持「待设计」；另批由父侧排程（批名建议 `acp-subagent-events`）。
 
@@ -275,7 +275,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 | `docs/cli/design/ACP-CLIENT.md` | 655 | +~15 | ~670 | §5 表十处 + 变更记录（随动——实施轮） |
 | `docs/cli/design/ACP-PROTOCOL-COMPLIANCE.md` | 本档 | — | — | 本批设计（已落） |
 | `docs/core/design/API-CONTRACT.md` | 2961 | 重生成 | — | `node scripts/api-contract.mjs --write` |
-| `docs/batches/2026-10-04-issue-fix-round2.test.mjs` | 新 | ~290 | ≤300 | 批内单测（§10；拟新增） |
+| `docs/batches/2026-10-04-issue-fix-round2.test.mjs` | 新 | ~290 | ≤300 | 单元测试档（§10；拟新增） |
 | `docs/cli/requirements/ACP-CLIENT.md` | 151 | 补笔 | — | R-A5.4 补述 + 新判定句——**主 agent 笔**（§1.3） |
 
 ## 8. 关键决策记录（含被否）
@@ -289,7 +289,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 - **D-7 model 项不可解析 ⇒ 缺席**（`currentValue` 必填不可虚构）∥ 被否：占位值 ∥ 被否：空串现值。
 - **D-8 `resource_link` 内联**（读文件进 prompt）∥ 被否：仅给路径文本（kimi 式——本仓取 issue 建议的内联形：模型立即可见内容）∥ 被否：XML 包装（kimi 非 file 面——另形混入）。
 - **D-9 上限三态 = 拒绝降级**（超限不发内容发标记）∥ 被否：截断（模型误以为全文）；字节闸 = 文件级 ∥ 行/字符闸 = 载荷级（选区小文件大 ⇒ 仍可内联）。
-- **D-10 降级标记固定词表**（`[File reference: … — <reason>]`）∥ 被否：自由文案（机检面失锚）。
+- **D-10 降级标记固定词表**（`[File reference: … — <reason>]`）∥ 被否：自由文案（机检失锚）。
 - **D-11 `resource_link` 零能力门控**（基线 MUST）∥ 被否：挂 `embeddedContext`（张冠李戴——该位管 `resource` 嵌入式）。
 - **D-12 `messageCount` 删除**（契约形状收敛）∥ 被否：保留（无 schema 位——收敛原则）。
 - **D-13 #862 拆批**（§6 四理由）∥ 被否：本批做 role/id 半切片（冻结半契约——状态/进度词表未定）。
@@ -303,12 +303,12 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 | AC-3（#873） | `set_config_option` / `new` / `load` / `resume` 响应 `configOptions` 全形（判别键 + 现值 + select `options`） | T6–T8 |
 | AC-4（#872） | new id ∈ 随后 list；load/resume 原 id 全方法命中；同 id 在存处置（load/resume/new 三途）；两通知字段收正 | T9–T14 |
 | AC-5（#870） | 整文 ∥ 选区内联形；降级词表；上限三态；无文本仅引用可走；无 confine | T15–T20 |
-| AC-6（面） | 批内件全绿（先红后绿）+ `node scripts/doc-check.mjs` exit 0 + 语法检查 | 命令面 |
+| AC-6（面） | 单元测试档全绿（先红后绿）+ `node scripts/doc-check.mjs` exit 0 + 语法检查 | 命令面 |
 | AC-7（#862） | 拆批裁定在档（§6）+ 台账维持待设计 | 记录面 |
 
-## 10. 用例表（批内单测件——先红后绿）
+## 10. 用例表（单元测试档——先红后绿）
 
-宿主 = `docs/batches/2026-10-04-issue-fix-round2.test.mjs`（拟新增；自 `thincoder/` 仓根跑 `node --test`；不入仓套件）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 批内件同法）。
+宿主 = `docs/batches/2026-10-04-issue-fix-round2.test.mjs`（拟新增；自 `thincoder/` 仓根跑 `node --test`；不入集成测试树）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 单元测试档同法）。
 
 | # | 类 | 输入 | 期望 |
 |---|---|---|---|
@@ -331,7 +331,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 | T17 | 边界 | 百分号编码路径 ∥ Windows 盘符形 ∥ 相对路径（按 cwd） | 路径正确解析并读出 |
 | T18 | 降级 | 不存在文件 ∥ `zed://` ∥ https ∥ 非法选区 ∥ 行越界 | 各出对应 reason 标记（词表逐字） |
 | T19 | 上限 | >2000 行 ∥ >100k 字符 ∥ 含 NUL ∥ >10MB（sparse 造件） | 各出对应上限标记 |
-| T20 | 错误 | 空 prompt ∥ 仅 image 块 | `-32602`（文案收正）；仅 resource_link（无 text）**可走**（并入 T15 腿） |
+| T20 | 错误 | 空 prompt ∥ 仅 image 块 | `-32602`（文案收正）；仅 resource_link（无 text）**可走**（并入 T15 用例） |
 
 ## 11. 边界（本批不做）
 
@@ -352,11 +352,11 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 
 1. **前置** = #51 收口后派发（写域让渡——`thincoder-cli/src/**` ∥ `docs/cli/design/ACP-CLIENT.md`）。
 2. 实施轮首步 = §4.1 复取 schema 复核（SHA 不一致 ⇒ 停下重核字段面）。
-3. 批内件先红后绿；`node scripts/doc-check.mjs` 复跑 exit 0 为验收项。
+3. 单元测试档先红后绿；`node scripts/doc-check.mjs` 复跑 exit 0 为验收项。
 4. 同拍收正 `docs/cli/design/ACP-CLIENT.md`（§5 表十处）+ `node scripts/api-contract.mjs --write`（生成区再生）。
 5. 需求面补笔 = 主 agent 笔（§1.3 / §7 表末行）——实施轮零触需求档。
 6. 边界登记（§11 各项）随收口入台账（父侧）。
-7. **修正轮实施令（交付登记 号 1 ∥ 号 2 收正——本档定形）**：① `session/new` 同键处置（§2.4——处置点 = `sessions.set` 直前；认领释放随 `sessions.set`/`committed` 之后）；② `session/list` `updatedAt` 值域钳（§2.2）；批内件随补 T5 超域腿 + T12 delete→new 腿（先红后绿）。
+7. **修正轮实施令（交付登记 号 1 ∥ 号 2 收正——本档定形）**：① `session/new` 同键处置（§2.4——处置点 = `sessions.set` 直前；认领释放随 `sessions.set`/`committed` 之后）；② `session/list` `updatedAt` 值域钳（§2.2）；单元测试档随补 T5 超域用例 + T12 delete→new 用例（先红后绿）。
 
 ## 变更记录
 

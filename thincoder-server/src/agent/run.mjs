@@ -6,7 +6,7 @@
  *
  * 环语义：`messages`（system 简报 + user 任务）+ 模型 ⇒ 工具调用（逐条执行——结果结构化回灌）⇒ ⋯ ⇒ `report` 终态（成功/失败以 report.ok 为准）。
  * 模型出口 = provider 注册表现有渠道（server 自持 key——与网关同信任域）：`loadCoreChat()` 动载核 provider 客户端；
- * 批内件/agent 假件经 `chat` 注入口替身（缺省 = 核——生产行为不变）。进度 = 读时轮询（无后台常驻——KD-SV-86）。
+ * 单元测试档/agent 假件经 `chat` 注入口替身（缺省 = 核——生产行为不变）。进度 = 读时轮询（无后台常驻——KD-SV-86）。
  */
 import { modelEntriesOf } from "../gateway/providers.mjs"
 

@@ -7,7 +7,7 @@
  * （聊天面 `replayMessages` 同用 ⇒ 导出）。
  * **依赖方向单源**：唯一方向 = `chat.mjs` → 本档（本档零反引——不 import `chat.mjs`；零循环）。回合环 ∥ 帧流 ∥ 环境块 ∥
  * 工具面 ∥ 在途门 ∥ 重放编解码 = `chat.mjs` 面（本档只出库面）。
- * 导出面经 `chat.mjs` 重导出（既有导入方零改——含批内件经 `CHAT.CHAT_EXCERPT_MAX` 的命名空间取法）。
+ * 导出面经 `chat.mjs` 重导出（既有导入方零改——含单元测试档经 `CHAT.CHAT_EXCERPT_MAX` 的命名空间取法）。
  */
 import { HttpError } from "../gateway/errors.mjs"
 

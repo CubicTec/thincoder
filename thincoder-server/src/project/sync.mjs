@@ -77,7 +77,7 @@ export function applyRoster(db, projects, roster, { truncated = false, at = new 
 /**
  * 建同步调度器（§5——入口接线）：`{ check, start, stop, syncNow, triggerEvent, checkPat, isRunning, isPending }`。
  * 锁与待跑旗 = **进程内态**（§13 存储面与重启：单实例部署、零持久化；重启清零——定时对账兜底）。
- * `deps` = 注入口径（批内件：`fetchImpl` 假平台 ∥ `timeoutMs` 覆盖）；缺省 = 生产行为不变。
+ * `deps` = 注入口径（单元测试档：`fetchImpl` 假平台 ∥ `timeoutMs` 覆盖）；缺省 = 生产行为不变。
  */
 export function createSyncScheduler({ db, config = {}, log = null, deps = {}, now = Date.now, intervalMs = SYNC_CHECK_INTERVAL_MS } = {}) {
   if (!db) throw new Error("createSyncScheduler：缺少 db")

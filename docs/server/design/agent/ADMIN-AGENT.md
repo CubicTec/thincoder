@@ -67,7 +67,8 @@
 
 - 小计 **≈+872**（admin-agent-chat 批：新增四档 ≈960 ∥ `tools.mjs` −≈88 ⇒ 实读 **−46**〔288 ⇒ 242——原估偏大 42〕）；`bin/thincoder-server.mjs` 实读 **187 ⇒ ≈189**（import + 注册两行——本域首经 bin 注册点）；**chat-shell-align 批另计 ≈+145**（`chat.mjs` 498 ⇒ ≈600 ∥ `chat-routes.mjs` 105 ⇒ ≈150；零新档）
   ⇒ **console-reasoning-levels 批另计 ≈+30**（`chat.mjs` 实读 575 ⇒ ≈585 ∥ `chat-routes.mjs` 实读 158 ⇒ ≈178；零新档——值域桥件行账 = `gateway/API.md` §4）。
-  ⇒ **admin-agent-awareness 批另计实读 +423**（`chat-env.mjs` 实读 94 ∥ `chat-env-tools.mjs` 实读 229 ⇒ 230〔2026-10-12 轻车道〕 ∥ `chat-store.mjs` 实读 112〔拆档 A 产物〕 ∥ `chat.mjs` 实读 587 ⇒ 净 −12；零新端点 ∥ 零迁移 ∥ `bin` ±0）；批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **465**；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
+  ⇒ **admin-agent-awareness 批另计实读 +423**（`chat-env.mjs` 实读 94 ∥ `chat-env-tools.mjs` 实读 229 ⇒ **231**〔2026-10-12 轻车道：撤 600s 顶 +2 ∥ 上界守卫 +1〕 ∥ `chat-store.mjs` 实读 112〔拆档 A 产物〕 ∥ `chat.mjs` 实读 587 ⇒ 净 −12；零新端点 ∥ 零迁移 ∥ `bin` ±0）；
+  批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **467**〔含轻车道 700000 受理形 ∥ 守卫两腿〕；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
 - `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `sandbox/SANDBOX.md` §16 R53③（as-of 2026-10-11）。
 - sandbox 域件（`ssh.mjs` ∥ `onboarding.mjs` ∥ `onboarding-routes.mjs`）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 
@@ -281,7 +282,7 @@
 
 | 限 | 值 | 依据 |
 |---|---|---|
-| 超时 | 缺省 120_000 ms ∥ **无上限**（可指定任意 ≥1 ms 值；非有限值/小于 1 ⇒ 工具级错误——零静默） | 缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）；自造 600s 顶 = **用户 2026-10-12 15:00 裁撤**（核件本无上限——`bash.mjs:285` 直传；`process` 列表/杀 + 中止杀树在册 ⇒ 跑飞可杀）——父侧机械落笔 |
+| 超时 | 缺省 120_000 ms ∥ **无上限**（可指定任意 ≥1 的值；上界 = Node 计时器量程 2147483647 ms——逾之会被归 1 ms 立即触发，故显式拒；非有限值/小于 1 ⇒ 工具级错误——零静默） | 缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）；自造 600s 顶 = **用户 2026-10-12 15:00 裁撤**（核件本无上限——`bash.mjs:285` 直传；`process` 列表/杀 + 中止杀树在册 ⇒ 跑飞可杀）——父侧机械落笔；上界句 = 评审 #275 🔵 收 |
 | 输出上限 | 三层：工具层 200_000 字（核 `truncate`）+ 每流 2_000_000 字节缓冲（核 `MAX_STREAM_BUF`——`thincoder-core/tools/bash.mjs:15`）⇒ 落库/模型可见 ≤4_000 字（`CHAT_TOOL_CONTENT_MAX`——KD-SV-89 单源）⇒ 帧与审计摘要 ≤300 字 | 全为核件/会话面既有常量——零新口径 |
 | 工作目录 | `deps.cwd ?? process.cwd()`（相对路径解析基准；**无路径围栏**——沿核「无边界断言」口径） | 需求 43⑤ 三限之一；围栏 = 权限模型面（12:47 归用户——§10 边界） |
 

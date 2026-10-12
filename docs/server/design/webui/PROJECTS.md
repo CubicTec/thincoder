@@ -59,7 +59,7 @@
 | `thincoder-server/public/views-audit.mjs`（已落盘） | 实读 **206**（型表 + `project_event` + 详情支（kind 族）） | 审计面随正 |
 | `thincoder-server/public/i18n.mjs`（已落盘） | 实读 **137**（原「+≈4」陈值收正——实施面 = 门面两档 `i18n-{zh,en}.mjs` 各 +2 行） | 部件装配随正 |
 | `thincoder-server/public/style.css`（已落盘） | 实读 **352**（结果点/徽标类/确认窗——零新变量前提不动） | 样式随正 |
-| 跨批件 `docs/batches/2026-10-08-server-public-structure.test.mjs`（已落盘 · 实读 163） | 随正（PARTS/DOMAINS + `project` ∥ 指纹/键数 + 新档入行数核清单——实施轮执行） | 结构守卫随正 |
+| 跨批单元测试档 `docs/batches/2026-10-08-server-public-structure.test.mjs`（已落盘 · 实读 163） | 随正（PARTS/DOMAINS + `project` ∥ 指纹/键数 + 新档入行数核清单——实施轮执行） | 结构守卫随正 |
 
 **面小计**：≈965（设计行和）⇒ 实施实读 **≈1126**（新档五件 1072 ∥ 随动净增 ≈54：nav +2 ∥ app +5 ∥ audit +41 ∥ style +7 ∥ i18n.mjs −1——逐件见上行；以实施实读为准）。
 

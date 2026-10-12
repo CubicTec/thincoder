@@ -30,7 +30,7 @@
 
 ## 3. 权限模型（判据句——能力矩阵）
 
-**判定函数**（`src/project/projects.mjs`：`capabilitiesOf(db, member, project)`）：`{ level（三档之一 ∥ null）, owner（布尔）, admin（布尔）, can: { view, write, manageMembers, rename, editAddress, delete } }`。
+**判定函数**（`thincoder-server/src/project/projects.mjs`：`capabilitiesOf(db, member, project)`）：`{ level（三档之一 ∥ null）, owner（布尔）, admin（布尔）, can: { view, write, manageMembers, rename, editAddress, delete } }`。
 
 | 主体 | view | write | manageMembers | rename（显示名） | editAddress（仓地址） | delete（删项目） |
 |---|---|---|---|---|---|---|

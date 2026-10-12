@@ -144,9 +144,10 @@ function refuseEndpointParams(name, params, subject) {
   if (timeout !== undefined && timeout !== null && timeout !== "") {
     const value = Number(timeout)
     // 无上限（用户 2026-10-12 15:00 裁撤自造 600s 顶——核件本无上限，跑飞可由 process 杀）：
-    // 仅拒非有限值/小于 1（零静默钳制——取值范围外的输入显式报错，不静默改写）。
-    if (!Number.isFinite(value) || value < 1) {
-      return refusal(`bash timeout 非法：${String(timeout)}（须为 ≥1 的毫秒数；缺省 ${ENV_BASH_TIMEOUT_DEFAULT_MS} ms）`)
+    // 仅拒非法取值（零静默钳制）；上界 = Node 计时器量程——逾 2^31−1 ms 会被归 1 ms 立即触发（实测），
+    // 显式拒之，免「荒谬值 ⇒ 秒杀」的静默错行为（非策略顶：24.8 天以内任意值悉收）。
+    if (!Number.isFinite(value) || value < 1 || value > 2_147_483_647) {
+      return refusal(`bash timeout 非法：${String(timeout)}（须为 ≥1 且 ≤2147483647 的毫秒数；缺省 ${ENV_BASH_TIMEOUT_DEFAULT_MS} ms）`)
     }
   }
   return null

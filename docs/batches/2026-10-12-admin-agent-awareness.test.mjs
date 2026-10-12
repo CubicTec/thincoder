@@ -328,6 +328,8 @@ test("腿④ 五族七件出场（核真件）：names/schemas/描述三面同�
   assert.match(refusedTimeout.message, /非法/)
   const bigTimeout = await env.invoke("bash", { command: "echo big-ok", timeout: 700000 }, { cwd: tempRoot })
   assert.equal(bigTimeout.ok, true, "超时无上限：700000 ms 被受理（自造上限已撤）")
+  const hugeTimeout = await env.invoke("bash", { command: "echo x", timeout: 3000000000 }, { cwd: tempRoot })
+  assert.equal(hugeTimeout.ok, false, "逾 Node 计时器量程（2^31−1） ⇒ 显式拒（非静默秒杀——实测该值会被归 1ms）")
   const unknown = await env.invoke("nope", {}, {})
   assert.equal(unknown.ok, false)
   assert.match(unknown.message, /未知环境工具/)

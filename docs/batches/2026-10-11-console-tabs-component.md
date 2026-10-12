@@ -3,7 +3,7 @@
 > 编制：主 agent · 2026-10-11 · 来源 = 用户 2026-10-11 21:05 原话（「对对对，我希望你准备好一个公共的标签页组件，以后很多功能会用到。」）——前置特征询 = 同轮 21:0x（「比如沙盒这里，我就想把运行面/镜像+镜像源分成标签页显示」＋「创建容器的时候，镜像好歹给做成下拉选择啊」）；需求档 = `docs/server/requirements/PROJECT.md` §2 功能点 39 ∥ AC-39；先例参照 = 公共弹窗组件（console-modals 批）。
 > 台账 = #1286（server · 归批）。前情 = 无（独立批）。
 ## §1 讨论（主 agent）
-**状态行**：🔄 进行中（…）
+**状态行**：已收口 2026-10-12
 <§1 模板占位：本批条目 / 关键判据 / 授权口径>
 
 **来源与授权**
@@ -167,3 +167,17 @@ VERDICT: pass
 **待父侧（收口轮）**：① 旧件随正 42 腿 ∥ 25 档（上表）；② 设计档随正——`tabs.mjs`「拟新增」⇒「已落盘」+ 三档行数（`views-sandbox.mjs` **499**：≤500 建议线内、**余量 1 行**——在途卷批以 ≈400 为基的「≈403」估值失效，下一个触碰该档的批次前需先审拆分（如镜像卡/节点选单外拆）；`views-sandbox-images.mjs` 228 ∥ `tabs.mjs` 89）；③ §6 收口（含浏览器实走：两标签切换 ∥ 刷新/分享直达 ∥ 弹窗保活 ∥ 键盘可达）。
 
 ## §6 验证与收口（父代理）
+
+**收口（2026-10-12 03:0x · 主 agent）**
+
+**验证读数（一次全链）**：`npm run prepublishOnly` 全链 **501/501 绿**（56 件 · 37s）；本批件 `-console-tabs-component.test.mjs` 9/9 在链内（点按 ∥ ←/→ 循环 ∥ 子段直入 ∥ 弹窗保活 ∥ 键盘可达）。
+
+**跨批随正（本收口轮内落——沙盒夹具「标签②进法」）**：`-sandbox-image-sources-ui.test.mjs` ∥ `-sandbox-pull-by-source.test.mjs` ∥ `-sandbox-image-quick-pull.test.mjs` ∥ `-sandbox-docker-admin-ui.test.mjs` ∥ `-runner-admin-console-ui.test.mjs` 五件的整页夹具补「标签②激活」步（`byText(mount, ZH["admin.sandbox.tabImages"]).fire("click")`）+ `globalThis.history` 桩 + 表取法由索引改按表头（`headersOf` 首列）+ 首读断言两件（源卡/镜像表 = 标签②懒读）+ 创建弹窗 `selects 1⇒2`（卷选单）。静态面口径随正：`public/**` **43 ∥ 42**（三档 +1：`tabs.mjs`/`views-chat-composer.mjs`/`views-sandbox-volumes.mjs`——**`tabs.mjs` 即本批新档**）+ 两件档目清单逐名收正。
+
+**收口轮留存（明记）**：`views-sandbox.mjs` **499 行**（建议线 500 内 · 余量 1）——下一个触碰该档的批次前须先审拆分（联落于本档「实施待父侧」②）。
+
+**部署**：提交 `8b9f7ea4` + `a1c74c9d` → 箱快进 `a1c74c9` → 镜像重建 `88a36574c5bc` → **Up (healthy)**；`tabs.mjs` 实读 200。
+
+**未决（指针）**：真机走查（两标签切换 ∥ 刷新/分享直达 ∥ 弹窗保活 ∥ 键盘可达）= 用户面（`http://10.0.0.5:8787/#/admin/sandbox`）。
+
+**结算依据**：全链 501/501 读数 + 部署探针读数 + 本档 §5 实施记录 + 台账 #1298。

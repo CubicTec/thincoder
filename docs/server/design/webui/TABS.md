@@ -43,7 +43,7 @@
 | ㈢ | 懒加载 | 切到才取数：面板首激活建（数据随建读） | 标签立意 = 首屏轻；沿节点展开/目录窗懒读先例；加载态口径已有（`.hint` 静态文案） |
 | ㈣ | 样式 canon | 零新变量：全取既有底座值（悬停 `--hover` ∥ 选中 `--selected`/`--accent`） | AC-19 canon（零新变量 ∥ 零新悬停规则）；现有变量全覆盖页签值需求 |
 
-- **零回归**：五族动作面（节点/容器/任务/镜像/镜像源）零改；弹窗全族零改；`closeActiveModal` 路由收口口径不变（切换不重渲 ⇒ 不误关窗）；`views-sandbox-containers.mjs` ∥ `views-sandbox-image-sources.mjs` 零触。
+- **零回归**：六族动作面（节点/容器/任务/镜像/镜像源/卷）零改；弹窗全族零改；`closeActiveModal` 路由收口口径不变（切换不重渲 ⇒ 不误关窗）；`views-sandbox-containers.mjs` ∥ `views-sandbox-image-sources.mjs` 零触。
 - **其余页面零改**：未点名页面零标签化；其 hash/视图/文案零动（子段容许只加路由宽容量——既有 hash 形行为逐字不变）。
 - **本批产品面（实施轮）**：`tabs.mjs` 新档 ∥ `views-sandbox.mjs`（分标签装配 + 地址栏径）∥ `views-sandbox-images.mjs`（area 题行去重）∥ `style.css`（页签族）∥ i18n 两档（+2 键）∥ `nav.mjs` + `app.mjs`（地址栏径）；受影响档表 = 批档 §2。
 
@@ -61,7 +61,7 @@
 
 | 需求 | 设计级判据 | 载体 |
 |---|---|---|
-| AC-39（功能点 39——控制台公共标签页组件；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | ① 公共组件在册（`thincoder-server/public/tabs.mjs` 拟新增——`public/` 共享件 ∥ 多面切换（点按 ∥ ←/→ ∥ Home/End）∥ 零外部依赖（仅取 `t`——零第三方 ∥ 零 CDN）∥ 复用 API（`createTabs`——本档 §2.1 逐项）∥ 模块顶层零浏览器全局——node 可 import；沿弹窗组件先例）∥ ② 首个消费 = 沙盒页分标签（两标签在册——归位逐件 = `webui/SANDBOX.md` §2.1①；切换可用（点按/键盘）；两侧内容与现功能零回归（五族动作面逐件））∥ ③ 其余页面零改（`SHELL_PAGES` 五路径不动 ∥ `PAGES` 表其余行零改 ∥ 其余视图档 ∥ i18n 其余部件零改 ∥ nav 组/项零改）∥ 地址栏径（2026-10-11 裁定「进」——nav 子段容许 + app 三参 + 页内 replaceState 三件机检）∥ 样式：零新 `:root` 变量 ∥ 行悬停声明清单不变 ∥ 钮族悬停 = `webui/STYLE.md` §2.1 ② 型表在册（页签取 `--hover` 底） ∥ i18n：+2 键两表同步（en 零 CJK）∥ 档目随正——单源 = `webui/WEBUI.md` §1 | 批内件 + 收口轮（浏览器实走） |
+| AC-39（功能点 39——控制台公共标签页组件；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | ① 公共组件在册（`thincoder-server/public/tabs.mjs` 拟新增——`public/` 共享件 ∥ 多面切换（点按 ∥ ←/→ ∥ Home/End）∥ 零外部依赖（仅取 `t`——零第三方 ∥ 零 CDN）∥ 复用 API（`createTabs`——本档 §2.1 逐项）∥ 模块顶层零浏览器全局——node 可 import；沿弹窗组件先例）∥ ② 首个消费 = 沙盒页分标签（两标签在册——归位逐件 = `webui/SANDBOX.md` §2.1①；切换可用（点按/键盘）；两侧内容与现功能零回归（六族动作面逐件））∥ ③ 其余页面零改（`SHELL_PAGES` 五路径不动 ∥ `PAGES` 表其余行零改 ∥ 其余视图档 ∥ i18n 其余部件零改 ∥ nav 组/项零改）∥ 地址栏径（2026-10-11 裁定「进」——nav 子段容许 + app 三参 + 页内 replaceState 三件机检）∥ 样式：零新 `:root` 变量 ∥ 行悬停声明清单不变 ∥ 钮族悬停 = `webui/STYLE.md` §2.1 ② 型表在册（页签取 `--hover` 底） ∥ i18n：+2 键两表同步（en 零 CJK）∥ 档目随正——单源 = `webui/WEBUI.md` §1 | 批内件 + 收口轮（浏览器实走） |
 
 ## 5. 边界（本面不做面）
 

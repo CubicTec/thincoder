@@ -70,7 +70,8 @@
 | 11 | 单元测试档 | `docs/batches/2026-10-02-desktop-menu-system.test.mjs`（**已建成 · 300 行 · 五用例 · 8/8 绿**——用例集 = 批档 §2 六） | 全批 |
 | 12 | 设计档 | 本档 §1 **KD-65** ∥ 本档 §3.1（新行二 + 三行随动）∥ 本档 §3.2 本块 ∥ 本档 §4（本批块 + `docs/desktop/design/PROJECT.md` §6.1 表头 **D1–D35 ⇒ D1–D36**）∥ 本档 §5（批注 + **T-DSK57**）∥ `docs/desktop/design/PROJECT.md` §8 本批边界行 ∥ 本档 §6 **DG** ∥ `docs/desktop/design/PROJECT.md` §10 **BE**（计数随动）；`docs/desktop/design/SHELL.md` §1 树三行 + §2 菜单行；`docs/desktop/design/UI.md` §1 本批注；`docs/desktop/design/IPC.md` §1 `ev:menu` 行 + §2 `theme:state` 行 + 计数随动（白名单 46 ⇒ 47）；`docs/desktop/design/RENDERER.md`（**机制面零触**——计数随动：档头 **D1–D34 ⇒ D1–D36** ∥ 变更行 `:369`） | 全批 |
 
-零触面：`src/main/context-menu.mjs`（D27 零触 ∥ 只读复用 `contextMenuLabels`）∥ `src/main/projects.mjs`（数据面只读复用——`recentDirs` ∥ `openProject` 零改）∥ `renderer/theme.mjs` ∥ `thincoder-desktop/renderer/search.mjs` ∥ 核件 `thincoder-render-core/**` ∥ 核 `thincoder-core/**` ∥ CLI ∥ VSC；测试覆盖随修随加——不占设计条目（2026-09-27 裁定）。
+零触面：`src/main/context-menu.mjs`（D27 零触 ∥ 只读复用 `contextMenuLabels`）∥ `thincoder-desktop/src/main/projects.mjs`（数据面只读复用——`recentDirs` ∥ `openProject` 零改）∥ `renderer/theme.mjs` ∥ `thincoder-desktop/renderer/search.mjs` ∥
+  核件 `thincoder-render-core/**` ∥ 核 `thincoder-core/**` ∥ CLI ∥ VSC；测试覆盖随修随加——不占设计条目（2026-09-27 裁定）。
 
 ### 3.3 现有文件改动 · 设置菜单升级批（实施落盘）
 

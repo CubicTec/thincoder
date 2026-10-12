@@ -127,7 +127,7 @@
 | 桌面 | `thincoder-desktop/renderer/views/settings-sections-team.mjs`（已落） | **118**（实施落盘——段体两态 ∥ 结果行六句 ∥ 草稿标记） |
 | 桌面 | `thincoder-desktop/renderer/views/settings.mjs`（已落盘） | **436 ⇒ 448**（实施落盘——`SECTIONS` +1（序尾）∥ 段模型 team 切片 ∥ 段分派支） |
 | 桌面 | `thincoder-desktop/renderer/views/settings-sections.mjs`（已落盘） | **96 ⇒ 100**（实施落盘——`teamBody` re-export） |
-| 桌面 | `thincoder-desktop/renderer/mount-settings-team.mjs`（已落） | **131**（实施落盘——`createTeam`：状态读 ∥ 两出口 ∥ 写成功复读两调用点 ∥ 开面复位） |
+| 桌面 | `thincoder-desktop/renderer/mount-settings-team.mjs`（迁移期引文——旧档已并入 `mount-team.mjs`；原态已落） | **131**（实施落盘——`createTeam`：状态读 ∥ 两出口 ∥ 写成功复读两调用点 ∥ 开面复位） |
 | 桌面 | `thincoder-desktop/renderer/mount-settings.mjs`（已落盘） | **264 ⇒ 292**（实施落盘——`MODAL_READS` +1 行（`team → loadTeam`）∥ `SCOPES` 派生随动 ∥ team 读/出口装配） |
 | 桌面 | `thincoder-desktop/src/main/team.mjs`（已落） | **35**（实施落盘——核转口三件：状态 ∥ 登录 ∥ 退出——零状态零自写盘） |
 | 桌面 | `thincoder-desktop/src/main/ipc-registry.mjs`（已落盘） | **94 ⇒ 99**（实施落盘——+3 HANDLERS） |

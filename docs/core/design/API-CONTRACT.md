@@ -2008,7 +2008,7 @@
 | `createModelsExits` | `thincoder-desktop/renderer/mount-settings-segments-models.mjs:26` | `fn` |
 | `createProviderExits` | `thincoder-desktop/renderer/mount-settings-segments-providers.mjs:38` | `fn` |
 | `createSegmentExits` | `thincoder-desktop/renderer/mount-settings-segments.mjs:27` | `fn` |
-| `createTeam` | `thincoder-desktop/renderer/mount-settings-team.mjs:25` | `fn` |
+| `createTeam` | `thincoder-desktop/renderer/mount-team.mjs:46` | `fn` |
 | `SETTINGS_SLOT` | `thincoder-desktop/renderer/mount-settings.mjs:46` | `const` |
 | `SETTINGS_KEYS` | `thincoder-desktop/renderer/mount-settings.mjs:48` | `const` |
 | `attachSettings` | `thincoder-desktop/renderer/mount-settings.mjs:85` | `fn` |

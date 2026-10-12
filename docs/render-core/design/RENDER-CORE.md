@@ -388,7 +388,7 @@ VSC `webview/chat-messages.js` **267 ⇒ ≈262**（toolOutput 支改指核件�
 
 **性能尾账随动（2026-09-29 · 批 `docs/batches/2026-09-29-perf-residuals.md` · 台账 #619）**：核两档（拆档因 = 单档超 500 硬限）= `thincoder-render-core/flow/live-scan.mjs`（**新档 · 351 行**——冻结切点扫描器 `liveCut`）+ `thincoder-render-core/flow/live-md.mjs`（**179 行**——分片画件 `paintLiveMd`；`liveCut` 经其再出口保签名；单源 = §2 KD-RC-10）·
 核 `flow/stream.mjs` **135 ⇒ 135**（实读——委托净零；`paintStreamTarget` 改走画件——签名 ∕ 兜底语义不变；`paintReasoningTarget` 同签名随动）· 核 `thincoder-render-core/test/run.mjs` **82 ⇒ 82**（零改——用例住单元测试档；全清令）；
-桌面 `views/chat-stream.mjs` **77 ⇒ 101**（实读——`streamDelta` 增 `patch-append` 档 + `alignPlan` combo 支 + `paintPlan` 携 `appended`）· `views/chat.mjs` **284 ⇒ 290**（实读——未触越层预案；`patchTail` 携 `patchAt` + `settleFrame` combo 支）· `app.mjs` **299 ⇒ 299**（`alignPlan` 调用点一行形改——零净增）；
+桌面 `views/chat-stream.mjs` **77 ⇒ 101**（实读——`streamDelta` 增 `patch-append` 档 + `alignPlan` combo 支 + `paintPlan` 携 `appended`）· `thincoder-desktop/renderer/views/chat.mjs` **284 ⇒ 290**（实读——未触越层预案；`patchTail` 携 `patchAt` + `settleFrame` combo 支）· `app.mjs` **299 ⇒ 299**（`alignPlan` 调用点一行形改——零净增）；
 VSC `webview/**` ∕ 核 `subblocks/*` ∕ 两端集成测试树 = 零触；
 测试 ∕ 探针 = 单元测试档两档（`docs/batches/2026-09-29-perf-residuals.test.mjs`（平 node——C12 ∕ C13 + 复证对拍）+ `-probe.mjs`（真机扩面——R-1 ∕ R-6 ∕ R-7 ∕ R-8 ∕ R-9）；`…render-perf.{test,probe}.mjs` 原件存续）；集成测试不写 ∕ 不改 ∕ 不跑（全清令）。
 

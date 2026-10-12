@@ -600,7 +600,7 @@
 | 1 | `thincoder-desktop/renderer/views/statusline.mjs` | **204 ⇒ ≈222**（+`team` 段装配 ∥ 段点击/键盘接线 ∥ 闭集 18 码） | 状态行 |
 | 2 | `thincoder-desktop/renderer/views/statusline-segments.mjs` | **227 ⇒ ≈254**（+`teamSegment` 三态（未登录入口 ∥ 成员名（悬停 = 服务器）∥ 已失效）） | 状态行 |
 | 3 | `thincoder-desktop/renderer/mount-team.mjs`（拟新增） | **拟新增 ≈150**（段数据读 ∥ 面板开合 ∥ 两写出口 ∥ 活校验——`createTeam` 迁入单实现） | 团队面 |
-| 4 | `thincoder-desktop/renderer/mount-settings-team.mjs` | **131 ⇒ 净删**（并入 `mount-team.mjs`——单实现；迁后两写出口 ∥ 复读两调用点零语义改） | 团队面 |
+| 4 | `thincoder-desktop/renderer/mount-settings-team.mjs`（迁移期引文——旧档已并入 `mount-team.mjs`） | **131 ⇒ 净删**（并入 `mount-team.mjs`——单实现；迁后两写出口 ∥ 复读两调用点零语义改） | 团队面 |
 | 5 | `thincoder-desktop/renderer/views/settings.mjs` | **448 ⇒ ≈449**（段分派改渲 `teamAdminBody`；±1） | 设置面 |
 | 6 | `thincoder-desktop/renderer/views/settings-sections.mjs` | **100 ⇒ ≈101**（hub re-export 改 `teamAdminBody`；±1） | 设置面 |
 | 7 | `thincoder-desktop/renderer/app.mjs` | **338 ⇒ ≈360**（启动读写者 + 段/面板接线） | 装配 |
@@ -709,7 +709,7 @@
 - 2026-09-28（**桌面空闲唤醒批 · 评审轮 1 修正 · eng-designer**——发现 3 / 8 逐号点修）：表行 3 收为**段 3 完整态机**（挂起句 ∕ 零节点 ∕ 运行中 ∕ 就绪 + 优先序 + 交叠角落 + N/M 映射——单源）；「第三态」命名收正（挂起句支 vs 零节点支）；§1 状态栏行判据收正（`active ∧ n>0` ⇒ `active` 真 + 三键条件组装）· 本批注项 3 指针随动。明细 = `docs/batches/2026-09-28-desktop-idle-wake.md` §2。
 - 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 设计轮 · eng-designer**）：§1 增「**本批注（对齐第三批 · 小修族 25 + 相抵 2）**」（对话流 12 项 / 外围 13 项 / 相抵 2 项 / 重核入本批 2 件 / 计数 / open）
   + 行内指针随动九行（对话流 / 工具卡 / 会话头 / 输入区 / 审批呈现 / 提问呈现 / 设置面 / 左列会话行 / 空态）；状态词行 **7 ⇒ 8 词**（+ 已中断）· 借用项 9 同拍 · open 行摘「审批卡置焦执行」（入本批落地）补「台账行周期刷新」· 设置面行「零 Esc 绑定」⇒ Esc 关闭（重核处置）。明细 = `docs/batches/2026-09-28-desktop-vsc-align-3.md` §2。
-- 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 修正轮 1 · eng-designer**——评审轮 1 逐号点修〔1–15〕）：置焦状态句 ⇒ **本批落**（审批呈现行 / 键盘可达行同源）· §2 项 1 状态词 **7 ⇒ 8 词** + P5 指针 · 项 6 / 项 12 两处「视图两档」点名（`views/chat.mjs` + `chat.css`）· C2 补 `data-path` 锚 · F 块两件补判据（F-置焦 / F-Esc）。明细 = 批档 §2 修正轮 1 块。
+- 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 修正轮 1 · eng-designer**——评审轮 1 逐号点修〔1–15〕）：置焦状态句 ⇒ **本批落**（审批呈现行 / 键盘可达行同源）· §2 项 1 状态词 **7 ⇒ 8 词** + P5 指针 · 项 6 / 项 12 两处「视图两档」点名（`thincoder-desktop/renderer/views/chat.mjs` + `chat.css`）· C2 补 `data-path` 锚 · F 块两件补判据（F-置焦 / F-Esc）。明细 = 批档 §2 修正轮 1 块。
 - 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 微收正轮 · eng-designer**——承批档 §3 轮次 2 新发现 **#18**）：§1 本批注 D.计数收正——「新档 **1**」⇒「新档 **1** + 拆分产出 **1**」（第二档 `renderer/i18n-views.mjs`（拟新增）入计；单源 = `docs/desktop/design/PROJECT.md` §4.2）。明细 = `docs/batches/2026-09-28-desktop-vsc-align-3.md` §3 轮次 2。
 - 2026-09-28（**timer-wake 阶段 2 批 · 设计收尾轮 · eng-designer**——承 `docs/batches/2026-09-28-timer-wake-phase2.md` §2）：§1 本批注项 1 表行 12（计时）补**触发落流 `ev:timer`**（单源 = `docs/desktop/design/IPC.md` §1）；新鲜度指针随动（`docs/render-core/design/RENDER-CORE.md` §10 F 行——到期不滞留）。**段集 / 计数零变**（承载 16 段不动）。
 - 2026-09-28（**回合中插入批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-28-desktop-midturn-input.md` §2 · 台账 #509）：§1 增「**本批注（回合中插入 · 步边界 pickup）**」五项（队列单源 = 宿主 ∕ 消费两时刻 ∕ 附件留队 ∕ 形态零改 ∕ 边界）+ D3 计数；

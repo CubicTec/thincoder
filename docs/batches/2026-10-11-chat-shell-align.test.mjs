@@ -789,7 +789,7 @@ test("结构腿：零自持渲染 ∥ 核件调用面逐件 ∥ 类闭合域 ∥
   assert.deepEqual(orphans, [], `类名闭合域（核件发射 ∪ 样式面）：${orphans.join("∕")}`)
   // ③ 无源钮收窄（六 id + 菜单 footer 两族）
   for (const id of ["#reasoning-btn", "#auto-btn", "#advisor-btn", "#eng-btn", "#plan-btn", "#settings-btn"]) assert.ok(CSS.includes(id), `无源钮隐藏规则缺位：${id}`)
-  for (const cls of [".mm-sep", ".mm-manage"]) assert.ok(CSS.includes(cls), `模型菜单式项收窄缺位：${cls}`)
+  for (const cls of [".mm-sep", ".mm-row.mm-manage"]) assert.ok(CSS.includes(cls), `模型菜单式项收窄缺位（特征度升形 ≻ 核件 \`.mm-row\`）：${cls}`)
   // ④ 四段面子（会话条/消息流/状态行/输入区）与旧面退役
   for (const name of [".chat-bar", ".chat-select", ".chat-thread", "#toolbar", "#status-line", ".status-sep", ".status-warn", ".message", ".message.notice", ".message.pending", ".msg-label", ".msg-time", ".bubble"]) {
     assert.ok(CSS.includes(name), `四段面样式缺位：${name}`)

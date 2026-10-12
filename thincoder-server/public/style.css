@@ -281,7 +281,7 @@ dialog.modal::backdrop { background: var(--backdrop); }
 /* 无源钮收窄（§2.1③④——CSS 隐藏 + 逐条无源实证）：推理（会话级 reasoning 通道无）∥ 四模式位（无人值守裁剪）∥ 设置（开发壳面）∥
    模型菜单 footer 管理三项（provider 增删/密钥——控制台落点 = Provider 页） */
 #reasoning-btn, #auto-btn, #advisor-btn, #eng-btn, #plan-btn, #settings-btn { display: none; }
-.mm-sep, .mm-manage { display: none; }
+.mm-sep, .mm-row.mm-manage { display: none; } /* 特征度升形（`.mm-row.mm-manage` ≻ 核件 `.mm-row` 0,1,0）——核件表后加载，平形同胜者会盖掉收窄（2026-10-12 走查实修） */
 
 /* ── 对话页·核件族（console-chat-align 批——§2.10；chat-shell-align 批：md 块级宿主随消息块换壳 ⇒ `.bubble`）：
    核件发射类名（tool-call 族/码面/token）与 md 块级产物——页面补样式（零新变量 ∥ 零新悬停规则）；

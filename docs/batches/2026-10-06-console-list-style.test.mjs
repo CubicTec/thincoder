@@ -187,7 +187,7 @@ test("④ 错态面：`.hint error` 逐面套用（八处 loadFailed + 系统页
 const STATE_CLASSES = ["active", "ok", "degraded", "down", "error", "modal-open", "open"]
 
 /** 核件发射类（单源 = thincoder-render-core——console-chat-align 批起：核件渲染产物类在控制台样式表内着色；随核件类族随正）。 */
-const RENDER_CORE_CLASSES = ["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage"]
+const RENDER_CORE_CLASSES = ["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage", "mm-row"]
 
 test("⑤ 类名双向闭合 ∥ 死类零残留（`key-line`/`stat`/`view`）", () => {
   const cssClasses = new Set([...stripComments(CSS).matchAll(/\.([a-z][a-z0-9-]*)/g)].map((m) => m[1]))

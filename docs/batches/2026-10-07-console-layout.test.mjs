@@ -497,7 +497,7 @@ test("附加 AC-19 canon 不破：`:root` 58 ∥ 悬停清单八条（七 + 页�
     assert.ok(cssClasses.has(known), `样式类扫描失效：${known}`)
   }
   const STATE = new Set(["active", "ok", "degraded", "down", "error", "modal-open", "open"])
-  const RENDER_CORE = new Set(["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage"]) // 核件发射类（console-chat-align 批起；chat-shell-align 批 +`pending`/`msg-label`/`msg-time`/`assistant`/`mm-sep`/`mm-manage`——随核件类族随正）
+  const RENDER_CORE = new Set(["tool-call", "tool-call-header", "tool-call-icon", "tool-call-name", "tool-call-args", "tool-call-status", "tool-call-summary", "tool-call-body", "code-block", "code-lang", "tk-comment", "tk-keyword", "tk-string", "tk-number", "tk-type", "pending", "msg-label", "msg-time", "assistant", "mm-sep", "mm-manage", "mm-row"]) // 核件发射类（console-chat-align 批起；chat-shell-align 批 +`pending`/`msg-label`/`msg-time`/`assistant`/`mm-sep`/`mm-manage`；2026-10-12 走查实修 +`mm-row`（收窄规则特征度升形用——DOM 实证核件发射 `class="mm-row mm-manage"`））
   for (const token of usedClasses) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
   for (const cls of cssClasses) assert.ok(usedClasses.has(cls) || STATE.has(cls) || RENDER_CORE.has(cls), `样式类零消费者：.${cls}`)
 })

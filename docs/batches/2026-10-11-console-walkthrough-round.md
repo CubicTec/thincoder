@@ -74,6 +74,23 @@
 
 **验证读数**：全链 `npm run prepublishOnly`（thincoder-server）**501/501 绿 · fail 0 · exit 0**（56 件）——收口前唯一一次全跑（日志 `.thincoder/tmp/full-chain-3.log`）。部署 = 见 §6 尾行。
 
+### 1.11 笔 10：建容器「命令」字段（2026-10-12 12:0x · 轻通道② · 父侧直笔 · 可 revert）
+
+**披露**：This pen = light channel（详情面小改——弹窗一字段 + 路由一可选参）| change: 建容器弹窗「命令」字段 | reach: 控制台建容器链路（弹窗 → 路由 → 引擎 `Cmd`）| rollback = revertable。
+
+**来源**：用户 2026-10-12 11:51 原话「#1300 我倾向于甲，应该有个默认，但是可覆盖。」（台账 #1300 ⇒ 甲）；父侧落法呈报（12:0x 报单：「空串 = 拒绝」∥「按空格切分，不解析引号」）+ 用户「可以」放行。
+
+**三处落点（实施）**
+- `thincoder-server/src/sandbox/container-routes.mjs:44-52` 新增 `normalizeContainerCommand`（缺省/`null` ⇒ `["sleep","infinity"]` ∥ 字符串 ⇒ trim + 空格切分 ∥ 显式空串 ⇒ 抛（400）∥ 非串 ⇒ 抛 ∥ >200 字符 ⇒ 抛）；`:180-196` 建容器路由：入参 `command?` 入校验链 + `createBody` 的 `Cmd` 由常量改 `cmd`。
+- `thincoder-server/public/views-sandbox-containers.mjs:303`（字段 `commandInput`，**预填 `sleep infinity`**）∥ `:313`（字段 + 说明行挂弹窗表单）∥ `:352-354`（提交：命令 trim + 空 ⇒ 就地拦人话 + `body.command`）。
+- `thincoder-server/public/i18n-{zh,en}-sandbox.mjs:46-47`（+2 键：`command` ∥ `commandHint`——en 零 CJK）。同源公告 = `gateway/API.md:129`（入参四件 + 体形 `Cmd: <命令>`）∥ `sandbox/SANDBOX.md:61-63`（入参 + 覆写句）∥ `webui/SANDBOX.md`（键族登记 + 表体量）。
+
+**口径裁定（父侧，已随单呈报用户并获「可以」）**：命令形 = **空格切分参数数组，不解析引号**（本字段非壳；正确解析 shell 引号要引入解析器 = 大件且出安全边角——要壳串请自带 `bash -lc` 形）；**显式空串 ⇒ 400**（空命令 = 容器一亮即退 = 笔 3 要防的坑）；键缺 ⇒ 待命命令（默认零改）。
+
+**测试**：`docs/batches/2026-10-11-sandbox-volumes.test.mjs`（路由腿：缺省 ⇒ `["sleep","infinity"]` 零改 ∥ 自定义 `sh -c top -b` ⇒ 空格切分逐值 ∥ 空串 ⇒ 400）∥ `2026-10-11-sandbox-volumes-ui.test.mjs`（四输入 ∥ 命令预填 ∥ 三处提交体携命令 ∥ 清空 ⇒ 就地人话 + 不发 POST）∥ 跨批件随正（`-runner-admin-console-ui` 四字段 + 提交体；键数锁 5 件 + 指纹两枚）。
+
+**验证读数**：全链 `npm run prepublishOnly`（thincoder-server）= **501/501 绿 · fail 0 · exit 0**（56 件——收口前唯一一次全跑；日志 `.thincoder/tmp/full-chain-4.log`）；被触面定向复跑 = 11/11 绿。**实机实走**（`.5` · walker · 镜像 `736d4d3b3cfb`）：弹窗实读 = 标签「命令」+ 预填 `sleep infinity` + 中文说明行 ✓；建容器 `cmd-check` 携自定义 `sleep 4321` ⇒ `GET …/containers/:id` 实读 `command.cmd = ["sleep","4321"]` ✓ ⇒ 启动 200 ⇒ 状态 **running** ✓（自定义命令生效且长驻）。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：（eng-designer 写入时更新）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
@@ -97,3 +114,5 @@
 **收口评审（2026-10-12 09:0x · 独立评审 #261 · 判 pass）**：0 🔴 ∥ 2 🟡（均标「可选、不阻断」）∥ 4 🔵；父侧逐条裁定 = 🟡①② 当场修（§1.10）∥ 🟡⑥ 当场修（读数收正）∥ 🔵③④⑤ 挂账（#1306/#1307/#1308）+ 评审另提 `sandbox_rule` 详情定形项挂 #1305。**收口前全链读数**：`npm run prepublishOnly`（thincoder-server）**501/501 绿 · fail 0 · exit 0**（56 件——含本轮 16 件计数锁随正）。评审局限在案：评审无执行面 ⇒ 其「未验证项」清单（实跑读数/指纹/部署）由本侧读数补足。
 
 **部署 + 页面实读（2026-10-12 09:1x · 收口读数补）**：镜像 `2bd38254de38`→healthy（回滚锚 `pre-20261012-0950`）；服上件探针 = `views-audit.mjs` 含 `box_start` ✓ ∥ `i18n-zh-system.mjs` 含 `box_destroy` ✓。审计页实况（`.5` walker 账号）：类型下拉 14 项（全部 + 十三型，含「沙盒事件」「沙盒规则裁定」）✓；**过滤形态 = 表单提交**（`views-audit.mjs:60` `filterForm.addEventListener("submit" …)`——非 select 变更即查，填完过滤项回车/提交即生效，非缺陷）；提交后**全表 78 行皆「沙盒事件」** ✓ 且详情列人话实读 = 「容器重启 · a29fcaa182da」∥「镜像拉取 · …」∥「镜像源添加 · …」∥「容器停止 · d68816343ee1」✓（pen 3 交付面在服生效）。
+
+**笔 10 收口读数（2026-10-12 12:1x 补）**：全链 `npm run prepublishOnly` = **501/501 绿 · fail 0 · exit 0**；镜像 `736d4d3b3cfb` → healthy（回滚锚 `pre-20261012-1200`）；实机实走（自定义命令建容器 ⇒ `cmd: ["sleep","4321"]` ⇒ 启动 running）✓。台账 #1300 已核销（`已核销`——依据 = 本段）。

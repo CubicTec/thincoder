@@ -313,6 +313,19 @@ test("③ N63/B63/B64 建容器卷选单：已有卷在单 ∥ 选定回填 ∥ 
     assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1),
       ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v2", image: "thincoder-sandbox:1", command: "sleep infinity" }], "卷空 ⇒ 省略键（不挂）∥ 命令恒携（笔 10 预填）")
 
+    // 笔 10：清空命令 ⇒ 就地拦（人话 + 不发 POST）
+    await byText(mount, ZH["admin.sandbox.createContainer"]).fire("click")
+    await tick()
+    const dialog2b = modal()
+    const inputs2b = fFindAll(dialog2b, (node) => node.tag === "input")
+    inputs2b[0].value = "box-v2b"
+    inputs2b[3].value = "   "
+    const postsBefore = calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").length
+    await fFind(dialog2b, (node) => node.tag === "form").fire("submit")
+    await tick()
+    assert.ok(textOf(dialog2b).includes(fill(ZH["admin.sandbox.fieldRequired"], { field: ZH["admin.sandbox.command"] })), "命令清空 ⇒ 就地人话（必填门）")
+    assert.equal(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").length, postsBefore, "命令清空 ⇒ 不发 POST")
+
     // B63：卷清单读败 ⇒ 选单只余「新建卷（手输）」；手输照常（提交不受阻——不反噬）
     const manual = await fMount({ routes: { "GET /api/admin/sandbox/runners/1/volumes": () => { throw new Error("节点不可达——测试样件") }, "POST /api/admin/sandbox/runners/1/containers": postOk } })
     await expand(manual.mount)

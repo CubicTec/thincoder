@@ -173,6 +173,7 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.type.agent_event": "管理面会话",
   "audit.type.sandbox_event": "沙盒事件",
   "audit.type.sandbox_rule": "沙盒规则裁定",
+  "audit.type.project_event": "项目事件",
   "audit.sandboxKind.container_create": "容器创建",
   "audit.sandboxKind.container_start": "容器启动",
   "audit.sandboxKind.container_stop": "容器停止",

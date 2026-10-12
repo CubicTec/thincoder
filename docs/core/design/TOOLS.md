@@ -238,7 +238,9 @@ apply_patch——无坐标 hunk 宽容 + 文件头容缺；多文件原子。wri
 - **wait_for**：条件等待（非 sleep）——条件语义化（advisor settled / subagent id:N done / consult done / `bash id:N done` / `browser id:N done` / file exists / port open）；未知条件显式报错；timeout 默认 30s（config 可覆盖，cap 600s）；
 interval 默认 1s 下限 100ms。**`advisor settled` 判据** = 后台评审池真实态（无 running / queued 评审）——修前读子代理池的 advisor 条目（该池永无此类条目）⇒ **恒真 0ms 秒过**（用户实证）
 。机制面细则归 AGENT-LOOP 板。
-- **timer**：默认 180s；`seconds` 必须为有限正数；在途 ≤ 8（超限显式拒）；到期语义 = 在途跨 run 存活 + 到点自唤醒（空闲 / 挂起窗）——**支持面 = CLI / VSC / 桌面三端前台（headless 结构性不支持）**，逐格定义 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.5；机制 = 同档 §6.30（开关 `agent.timerWake` 默认开；端面接线 = §6.30.11）。
+- **timer**：四式 = 一次性倒计时（默认 180s · `seconds` 有限正数）∥ 绝对时刻（`at` = `YYYY-MM-DDTHH:MM[:SS]` 本地 · 过时点即时）∥ 固定间隔（`every` 秒 · 下限 60s · 首投 = 设时 + N）∥ 日历式（`daily` = `HH:MM` 本地 · 每日该刻）；
+  另二动作 = `cancel`（按 id）∥ `list`（只读）；`seconds` ∥ `at` ∥ `every` ∥ `daily` 至多一（互斥违例显式拒）。在途 ≤ 8（超限显式拒——周期项占坑：1 条 1 坑、到点重排净零）；
+  到期语义 = 在途跨 run 存活 + 到点自唤醒（空闲 / 挂起窗）——**支持面 = CLI / VSC / 桌面三端前台（headless 结构性不支持）**，逐格定义 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.5；四式机制 = 同档 §6.30.18（开关 `agent.timerWake` 默认开；端面接线 = §6.30.11）。
 - **task**：状态别名归一（completed / finished / …）+ warning；跨会话 / 项目级用**台账**（`/ledger`——描述含路由）。
 - **verify**：通用验证门禁——语言 / 框架 / 项目无关，不自动跑任何测试命令；模型经 `verification:{status:"passed"|"failed"|"skipped", command?, summary?}` 声明验证状态（passed 放行 / failed 打回 / skipped 放行但须 summary 理由）；参数已删 `full` / `testNamePattern` / `filter`，保留 `workdir`。
 - **read_image**：视觉模型读图；非视觉模型拒绝 / 占位（防 image_url 毒化会话）；svg 返回文本源码、bmp 拒绝并提示转 PNG。
@@ -1360,3 +1362,5 @@ plan 工具退出文本收正为**批准语义**（**五处**：`thincoder-core/
 - 2026-10-08（**批 manifest-agent-tool · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-manifest-agent-tool.md` §3 轮次 1 发现 11）：§6.2 元工具枚举补 `notify_parent` / `ledger` / `manifest`（拟新增；`ledger` 另注 `thincoder-core/ledger.mjs` 宿位）· §6.7 补 `manifest` / `notify_parent` / `ledger` 三条要旨行（含既有漂移两行）。**零新语义**（枚举 / 要旨随实况收正——`manifest` = 本批新增）。
 
 - 2026-10-08（**批 manifest-agent-tool · 收口笔 · 父侧直接执行 · 可 revert**——承实施轮上抛）：§6.2 `:175` ∥ §6.7 `:251`「（拟新增）」退场（已实施落盘）· §6.11 `:287`「49 档随包发布」⇒「**50 档**」（现盘实读——`thincoder-core/tool-docs/*.md` 50 档）；`:530` 档引裸名形 ⇒ 全路径形 `thincoder-core/manifest.mjs:48`（裸名碰撞消解 + 缝位现盘收正——`_setProjectRootForTest` / `_resetProjectRootForTest` 再出口）。**零新语义**（时态 / 计数 / 引用形收正）。
+
+- 2026-10-12（**timer-completeness 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §1 · 台账 #1321）：§6.7 `timer` 行扩述四式（`at`/`every`/`daily` ＋ 一次性）∥ `cancel`/`list` ∥ 互斥 ∥ `every` 下限 60s ∥ 帽占坑语义。机制单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.18。**零新语义**（本批批档 §2 设计的落位）。明细 = 批档 §2。

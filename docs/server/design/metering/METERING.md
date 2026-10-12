@@ -12,6 +12,8 @@
 - 行形 = 一行/请求：成员 × key × 模型（**`provider` ∥ `model` 两字段** = 内部真名（转发/存储零涉）——对外显示 = **别名回映射**（配别名 ⇒ 别名 ∥ 未配 ⇒ `provider/model`；回映射单源 = `thincoder-server/src/gateway/providers.mjs` 别名索引——KD-SV-59）；`model` 可含斜杠；嵌入行 `provider = ''`——无前缀命名空间，仅统计照记） × 时段（`ts`） × token（三列 + 状态/端点/流式标记/耗时）；
   token 三列 = **上游 usage 原值**（逐值不加工——AC-3 判据单源）；上游未回 ⇒ 三列 NULL（status 照记实况；派生日表该行 token 计 0）。
 - 提取来源 = gateway 侧 tap 扫描（`gateway/API.md` §2.1）。
+- **管理面 chat 出账（server-wake-face 批修订轮——2026-10-12；用户 15:44 裁 ∥ 台账 #1324）**：管理面 chat（**含唤醒回合**）的模型调用 = 本 server 网关链的进程内客户端（loopback）⇒ 与四端客户端**同径出账**：
+  `usage` 行归因 = 会话 owner（`member`）× 该成员的 `admin-agent` key（`keyName` = `admin-agent`）；端点/流式/状态列 = 网关侧实况（与客户端同径）；配额/限流/禁用三件同门生效（阻断面 = 网关错形）。机制全文 = `agent/ADMIN-AGENT.md` §16.2/§16.3。
 - **派生两表 = 汇表面读源 ∥ 检查面点查源**（`usage_daily` ∥ `quota_counters`——粒度/字段 = §2.3；**可随时自 usage 重算**——对账命令 = §2.5）；仅 `usage` 为真源——明细/导出/审计毫秒精度零改。
 - 保留 = **保留窗（配置化——`usageRetentionDays`，`ops/OPS.md` §1）**：缺省 90 天（论证 = 配额周期 = 月 ⇒ 跨月可见必需；统计回看惯例 = 一季 ⇒ 90 天覆盖；表只增不减 = 无界增长面 ⇒ 缺省窗收口）；`null` = 不限（保留全量——显式开）；非正整数 ⇒ 拒启。
 - 清理 = **删除式**（`pruneUsage`——`thincoder-server/src/metering/`）：usage（`ts <` 界 ∥ 走 `idx_usage_ts`） + `usage_daily`（`day <` 界日） + `quota_counters`（`month <` 界月）**三删同事务同窗**；时机 = **启动一次 + 每 24h**（实现常量；入口接线 = `thincoder-server/bin/thincoder-server.mjs`）；无归档面（§8）。
@@ -170,3 +172,4 @@
 - 2026-10-10：清账轮簇Ⅱ server 面小收批（批 `docs/batches/2026-10-10-server-face-residues.md` · 台账 #1161 + 并入 #1162 ∥ #1169 ∥ #1170；2026-10-10 实施轮）：§3 增「派发 ∥ 过滤两径不对称」澄清句（#1162——派发 404 ∥ 过滤逐值可达；事实源 = `thincoder-server/src/metering/report.mjs:48-56` ∥ `gateway/API.md:32-33`）；同源随动 = `thincoder-server/src/metering/routes.mjs` 报文句（#1161 句族收正）。**机制零变**（澄清 ∥ 句面）。
 - 2026-10-10（**server-exec-sandbox 批 · 残差对齐（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-server-exec-sandbox.md` §2 残差项 ②；父侧裁定：收口前对齐）：§3 前言补写端点 JSON 门例外括注——**例外** = `POST /api/runner/checkpoint`（octet-stream——`gateway/API.md` §2.6）；与 `accounts/ACCOUNTS.md` §3 ∥ `client/CLIENT.md` §2 逐字同拍。**零新语义**（KD-SV-77 路由级豁免的残差对齐）。
 - 2026-10-10（**runner-admin-console 批 · 设计档随正 · eng-designer**——承批档 `docs/batches/2026-10-10-runner-admin-console.md` §1 · 台账 #1252）：§3 前言去端点 JSON 门例外括注（随执行面重定——`gateway/API.md` §2.6 退场）；与 `accounts/ACCOUNTS.md` §3 ∥ `client/CLIENT.md` §2 逐字同拍。**零新语义**。
+- 2026-10-12（**server-wake-face 批 · 修订轮（fix 轮「加宽」）· eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §1.4（条目 ④ 入批）；用户 15:44「应该走我们自己的模型代理服务，这样才能确保用量统计的准确」；台账 #1324）：§1 增**管理面 chat 出账**条（管理面 chat（含唤醒回合）= 网关链的进程内客户端（loopback）⇒ 与四端客户端同径出账：`usage` 行归因 = 会话 owner × `admin-agent` key；配额/限流/禁用三件同门）。机制 = `agent/ADMIN-AGENT.md` §16.2/§16.3（KD-SV-129/130）。**产品码零触（设计轮）。**

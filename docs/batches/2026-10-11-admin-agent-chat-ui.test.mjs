@@ -271,7 +271,7 @@ test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效—�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 696 ∥ 701", () => {
+test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 854 ∥ 859", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -289,7 +289,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-   assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [696, 701], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3——实读）")
+   assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [854, 859], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -320,7 +320,7 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
 
 test("⑩ 静态面：档目 43 ∥ 42 ∥ nav 管理 9（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（2026-10-12 team-projects-permissions 批后）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
   // nav（管理 9 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")

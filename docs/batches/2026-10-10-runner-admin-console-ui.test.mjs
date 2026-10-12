@@ -481,7 +481,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [696, 701], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3——实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [854, 859], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
@@ -489,7 +489,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
 test("⑧ 静态面：档目 43 ∥ 42 ∥ nav 管理 9 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
   // 档目（43 ∥ 42——2026-10-11 走查轮后）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（2026-10-11 console-chat-align 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（2026-10-12 team-projects-permissions 批后）")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 9 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")

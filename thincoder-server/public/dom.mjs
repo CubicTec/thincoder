@@ -1,6 +1,6 @@
 /**
  * dom.mjs — 控制台渲染助手 + 提示条（webui/WEBUI.md §1——结构轮自 `app.mjs` 逐字外拆）：`h`（建元素）∥ `table`（表格 +
- * 表尾行计数）∥ 格式化（`fmtTs`/`fmtValue`/`fmtModelQuotas`）∥ 一次性秘密区（`showSecret` + `copyText` 三路回退）∥
+ * 一次性秘密区（`showSecret` + `copyText` 三路回退——复制面单源）∥
  * `usageTable`（用量表——本人 ∥ 全队同构）∥ `dataShell`（数据表页视口高壳——§2.6②）∥ `flash`（提示条——携 `flashEl`/计时器）。
  * 消费单点 = `app.mjs`（`viewCtx()` 装配——视图面零改）。
  */
@@ -57,10 +57,10 @@ export function showSecret(box, label, value) {
   box.hidden = false
 }
 
-/** 复制三路回退（§2.3⑥——`showSecret` 全局随动）：① `navigator.clipboard.writeText`（安全上下文）⇒
+/** 复制三路回退（§2.3⑥——复制面单源：`showSecret` ∥ 事件块地址行）：① `navigator.clipboard.writeText`（安全上下文）⇒
  *  ② 选中明文 + `document.execCommand("copy")` ⇒ ③ 仍失败 ⇒ 保持选中 + flash 手动提示；
  *  成功反馈 = 钮文案「已复制」（2s 复位）。 */
-async function copyText(value, code, button) {
+export async function copyText(value, code, button) {
   let copied = false
   try {
     await navigator.clipboard.writeText(value) // ① 安全上下文

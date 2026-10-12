@@ -268,10 +268,10 @@ test("静态面：`/` ∥ `/app.mjs` ∥ `/nav.mjs` ∥ `/style.css` 直发（mi
   }
 })
 
-// ── 前端自洽：零外部资源 ∥ 四十二档在册（含 favicon 共四十三档）────────────────────
-test("前端自洽：`public/**` 四十二档在册（含 favicon 共四十三档） ∥ 零外部引用（无 http(s):// ∥ 无 @import——内网自洽，KD-SV-9）", () => {
+// ── 前端自洽：零外部资源 ∥ 四十七档在册（含 favicon 共四十八档）────────────────────
+test("前端自洽：`public/**` 四十七档在册（含 favicon 共四十八档） ∥ 零外部引用（无 http(s):// ∥ 无 @import——内网自洽，KD-SV-9）", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual(names, ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"])
+  assert.deepEqual(names, ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-project.mjs", "i18n-en-sandbox.mjs", "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-project.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs", "views-admin-projects.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-git-sources.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs", "views-projects.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"])
   for (const name of names) {
     const text = readFileSync(join(PUBLIC_DIR, name), "utf8")
     assert.ok(!/https?:\/\//.test(text), `${name} 含外部链接（CDN/外链字体等——内网不达）`)

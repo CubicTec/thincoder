@@ -437,19 +437,19 @@ I1 → `thincoder-cli/test/integration/subagent-lifecycle.test.mjs:182`（扩）
 
 **门三件**：
 
-- ① **仅系统类消息可自唤醒**：唤醒源 = `_pendingTimers`（唯一写点 = timer 工具 `thincoder-core/agent-tools/timer.mjs:59`）；投递形态 = 系统类 `[System reminder:` 通道；
+- ① **仅系统类消息可自唤醒**：唤醒源 = `_pendingTimers`（写点 = timer 工具 `thincoder-core/agent-tools/timer.mjs:42` ＋ 出列重排面 `thincoder-core/agent/timers.mjs:38-44`——本批 §6.30.18）；投递形态 = 系统类 `[System reminder:` 通道；
   其它注入面（用户排队消息 / peer 提醒 / stall / goal / task 提醒）**零唤醒面**——闩只读到期件、不看 history，**无通用「注入即唤醒」通道**（防借道）。
 - ② **成本闸**（沿用既有形态——不新增预算件）：到期批**合并一轮**（多条同批到期 ⇒ 一次注入 + 一轮）；**到期即消费**（出列幂等——绝不重复投递）；
   轮次帽 = 系统 `maxTurns`（§6.8 既有口径「auto-turn 不另设轮次预算」沿用）；撞帽**不自动续跑**（`thincoder-cli/src/tui/agent-turn.mjs:194-201` autoTurn 分支既有纪律）；
-  在途条数帽 `TIMER_MAX_PENDING` = 8（与排队容量 `QUEUED_MAX_ITEMS`（`thincoder-core/queued.mjs:25`）同值同形）——超限 ⇒ timer 工具**显式拒**（抛错：不静默丢、不静默清；形态先例 = 队满「拒 + 提示 + 保留」）。
-- ③ **开关**：配置键 `agent.timerWake`（布尔 · **默认 `true`**）——理由：① 工具描述面已承诺到点提醒（`thincoder-core/agent-tools/timer.mjs:16-27`）⇒ 默认关 = 缺陷留存量用户；
+  在途条数帽 `TIMER_MAX_PENDING` = 8（与排队容量 `QUEUED_MAX_ITEMS`（`thincoder-core/queued.mjs:25`）同值同形）——超限 ⇒ timer 工具**显式拒**（抛错：不静默丢、不静默清；形态先例 = 队满「拒 + 提示 + 保留」）；**周期项同占坑**（1 条 1 坑 · 重排净零——§6.30.18 D-TW15）。
+- ③ **开关**：配置键 `agent.timerWake`（布尔 · **默认 `true`**）——理由：① 工具描述面已承诺到点提醒（`thincoder-core/tool-docs/timer.md:2 ∥ :10`）⇒ 默认关 = 缺陷留存量用户；
   ② 三条成本闸在 + 手动档动作面 = 权限面（用户在场才批）；③ 先例 = `diagnostics.heapWatch` 默认开 + 显式关键。**关 ⇒ 端侧不武装闩**（回到仅回合边界投递——既有语义；零调度器面）。
   键面派生：`agent.timerWake` 随核全量 DEFAULTS 派生进 `settings` 工具类型面（`thincoder-core/agent-tools/settings.mjs:62`——装载期派生）；
   已登记 = `docs/core/design/CONFIG.md` §6.2 **派生消费面**行（与 `diagnostics.heapSnapshot` / `diagnostics.heapWatch` 同列——实现面零改码）。
 
-**描述面收正（D-TW8）**：`thincoder-core/agent-tools/timer.mjs:16-27` 的契约句（`:21`）「the reminder fires at the deadline」在自唤醒落地后成立；收正 = 保留该句为契约句 + 补**投递形态**一句（在飞回合 = 下一步边界投递 / 空闲 = 自唤醒）与在途帽一句。**逐字文本 = 父侧定稿**（内容权威）；参数 schema 零变。
+**描述面收正（D-TW8）**：`thincoder-core/tool-docs/timer.md:10` 的契约句「the reminder fires at the deadline」在自唤醒落地后成立；收正 = 保留该句为契约句 + 补**投递形态**一句（在飞回合 = 下一步边界投递 / 空闲 = 自唤醒）与在途帽一句。**逐字文本 = 父侧定稿**（内容权威）；参数 schema 零变（该批范围——本批 §6.30.18 扩五参）。
 **端限定（合同形——评审轮 1 #5 · 阶段 2 合同句）**：收正文本中「空闲 = 自唤醒」表述须携带**支持面限定**（回指 §6.30.5）——阶段 2 后支持面 = **CLI / VSC / 桌面三端前台**，headless（`chat` / ACP / 直连 `runAgent`）保留边界投递。
-**合同句（定稿 2026-09-28 · 父侧逐字对齐实施落文 · 对应段 = `thincoder-core/agent-tools/timer.mjs:22-25`）**：`the idle wake is available on the CLI / VSC / desktop foregrounds and suspension windows (headless is structurally unsupported); other paths keep the step-boundary behavior`。
+**合同句（定稿 2026-09-28 · 父侧逐字对齐实施落文 · 对应段 = `thincoder-core/tool-docs/timer.md:11`）**：`the idle wake is available on the CLI / VSC / desktop foregrounds and suspension windows (headless is structurally unsupported); other paths keep the step-boundary behavior`。
 **`TIMER_TURN_DOMAIN` 正文** = 阶段 1 既有文本复用（端侧 re-export 核单源——零新文本；落点见 §6.30.11 VSC 块「域文本」行）。
 
 ### 6.30.4 关键决策记录（含否决备选）
@@ -462,7 +462,7 @@ I1 → `thincoder-cli/test/integration/subagent-lifecycle.test.mjs:182`（扩）
 | D-TW4 | 消费入口 = auto-turn 第三变体 `timerTurn` + 普通权限面 | 采纳 | 备选 A = 沿用 digest 域文本（组织域）⇒ 与「动手」语义相悖；备选 B = 剥处理器（digest 手动档形态）⇒ 「跑代码」机械不可达 |
 | D-TW5 | 开关默认 `true` | 采纳 | §6.30.3 门三件 ③ 三条理由 |
 | D-TW6 | 在途帽 = 8（超限显式拒） | 采纳 | 成本闸形态复用队容量先例（拒 + 保留，不静默） |
-| D-TW7 | 可见面 = 状态行派生标记 + 触发落流一行 + `/timers` 只读列表；**取消面不做** | 采纳 | 显示形态单源 = `docs/cli/design/TUI.md` §7.6；取消 = 控制面（门 / 回执 / 持久化语义）⇒ 出「只观测不阻塞」边界，登记后续项 |
+| D-TW7 | 可见面 = 状态行派生标记 + 触发落流一行 + `/timers` 只读列表；取消面 = 模型工具 `cancel` 动作（本批补——§6.30.18） | 采纳（取消面按本批收正） | 显示形态单源 = `docs/cli/design/TUI.md` §7.6；`/timers` 保持只读（端专属取消 UI = 新跨端差异 ⇒ 不许——取消经核件在途表移除，零门 ∕ 零回执 ∕ 零持久化语义） |
 | D-TW8 | 描述面：契约句保留 + 补投递形态 / 在途帽句 | 采纳 | 见 §6.30.3；逐字 = 父侧定稿 |
 
 ### 6.30.5 跨形态行为表
@@ -551,7 +551,7 @@ T-TW3–T-TW6 / T-TW8 / T-TW10 / T-TW12 / T-TW13 → `thincoder-cli/test/timer-w
 
 1. VSC / 桌面零写入 = **阶段 1 边界**（阶段 2 批已接线——§6.30.10–§6.30.15；端差裁定见 §6.30.1 / D-TW3）。
 2. 不做 `/timers` 取消面；不做模型门控；**不新增机械门**（既有系统轮机械面沿用）。
-3. 参数 schema 零变（timer 工具参数面）；不触 #442 已收口面；不扩压缩 / traces 等无关机制。
+3. 参数 schema 零变（timer 工具参数面）——**阶段 1 边界**（timer-completeness 批扩五参——见 §6.30.18）；不触 #442 已收口面；不扩压缩 / traces 等无关机制。
 4. headless（`chat` / ACP / 直连 `runAgent`）**自唤醒面零变化**；**核工具面帽为全端共享**——在途 ≤ 8、超限显式拒（§6.30.3 门三件 ②）在 headless / VSC / 桌面 / 子代理同判：第 9 条 `timer` 由成功变抛错。
 5. 子代理（depth>0）**显示面**零改（其面板时间面自持）；**工具面帽全端共享**（见边界 4）。
 
@@ -698,7 +698,7 @@ T-TW22 → `thincoder-vscode/test/agent-lifecycle-singleton.test.mjs`（原址�
 ### 6.30.15 边界（阶段 2）
 
 1. 阶段 1 面零改（阶段 2 边界）：CLI 闩 / CLI 挂起窗 / 核三件 / 域文本 / 帽 / 开关语义逐字不动——**CLI 闩面随 B3 批改指核件（§6.30.16；机制语义零变）**＋**核件档头注释一行（`timers.mjs:16` 双写窗口句收正——同批）**；余五面仍逐字不动。
-2. timer 参数 schema 零改；**不新增机械门**（动作域 = 系统轮既有机械面沿用）。
+2. timer 参数 schema 零改——**阶段 2 边界**（timer-completeness 批扩五参——见 §6.30.18）；**不新增机械门**（动作域 = 系统轮既有机械面沿用）。
 3. headless（`chat` / ACP / 直连 `runAgent`）自唤醒面零变化（无空转面 ⇒ 零闩）。
 4. **不碰在途批文件增量**（`desktop-idle-wake` 收口中 / `desktop-vsc-align-2` / `desktop-vsc-align-3`）——实施方案与在途批同片（桌面 main / renderer · vscode）⇒ **排后串行**；桌面档面落点 = 持有面（§6.30.13 末块），**已落**（2026-09-28 收尾轮）。
 5. `/timers` 取消面不做（阶段 1 既有边界沿用）；不接模型门控。
@@ -793,6 +793,131 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 **边界（不做）**：核件 ∕ 核契约零改（不增核面）· 其余轮（用户 ∕ 消化）重装时点零变 · idle 径零变 · 显示面（`ev:timer` 行 ∕ `⏰N`）零变 · 不新造「投递确认」机制（存活性由判据与用例守）。
 
 **可达性注（「零到期而仍重装」径）**：该径 = 零在途早退判据（零**在途**）之外的合法路径——零到期但非零在途 ⇒ 照重装（`reloadSlot` 恰一次 · 零交付 ⇒ 零开轮）；生产可达性窄；**裁定 = 非缺陷**（设计判定 · 2026-10-01）。
+
+### 6.30.18 timer 能力完备化——绝对时刻 ∕ 固定间隔 ∕ 日历式 ＋ 取消 ∕ 可见（2026-10-12 · 批 timer-completeness · 台账 #1321）
+
+**需求对位（功能点 45 ①–⑤ · AC-45——`docs/server/requirements/PROJECT.md:266-275` ∥ 同档 `:341`）**：① 绝对时钟时刻（设「到某时刻」⇒ 该时刻投递，含过时点即时口径）；② 固定间隔（「每 N 分钟」⇒ 首投 + 每拍续投，取消即止）；③ 日历式（「每天 HH:MM」⇒ 本地时区每日一投；跨日 ∕ 重启口径明示）；④ 一次性倒计时保留零变；⑤ 周期项可见 ∕ 可取消（承载 = 本节定 ∥ 机检）。
+落点 = **核**（用户 2026-10-12 15:25 裁「定时设计要四端都做」）——CLI ∥ VSC ∥ 桌面 ∥ 服务面经核件同得，端面零专属实现。
+
+**机制句（一句话）**：载体条目**增量可选字段** ＋ 到点**重排**（重排点 = 核出列件 `takeExpiredTimers` 内——出列＋重排同为一次原子操作）＋ 工具面四式参数与 `cancel`/`list` 两动作。逐端零改：一切消费面（回合边界 ∥ 空闲闩 ∥ 挂起窗 ∥ 服务面投递）皆经该出列读点 ⇒ 周期续投自动四端同得。
+
+**载体扩展（增量可选 · 零迁移）**：条目形扩两**可选**字段——`everyMs`（毫秒数 · 固定间隔）∥ `daily`（`"HH:MM"` 字符串 · 日历式）；一次性条目形 = `{ id, expiresAt, message }` **逐字零变**（D-TW2 ∕ D-TW3 ∕ D-TW6 保持）；`at` 条目携 `at: true` **来源标记位**（非载重——显示面判形用；时刻单源 = `expiresAt`；机制面零变）；三式互斥由工具面保证（核重排不判互斥）。**零迁移**：载体纯进程内（D-TW3 无盘面格式）——重启即失 = 既有语义（口径见下）。
+
+**重排（新 · 出列＋重排原子）**：`takeExpiredTimers`（`thincoder-core/agent/timers.mjs:38-44`）出列到期项时，对携 `everyMs`/`daily` 者**同 id 克隆回插**新 `expiresAt = nextFireAt(t, now)`（严格 `> now`）；一次性 ∕ 绝对时刻条目照旧被消费（无重排）。
+
+- **为什么在 take 内**：take 是全部消费面的公共读点（回合边界 = `thincoder-core/agent/post-turn.mjs:18-21` ∥ 空闲闩 ∥ 挂起窗 ∥ 服务面 = `thincoder-server/src/agent/chat-env-tools.mjs:218-225`）⇒ 一处改动、四端零改获得续投；且重排先于交付 ⇒ 「到点即重排」与「交付幂等」互不依赖（二者之间中断 ⇒ 该拍投递丢、周期不灭——与「错过即跳」同族）。
+- 被否：重排放 `deliverExpiredTimers` 内（回合边界径不经 deliver ⇒ 漏）；独立调度器（第二套钟 = 新机制）；交付后再重排（交付抛 ⇒ 周期灭）。
+
+**`nextFireAt(entry, now)`（新纯函数 · 出核 `thincoder-core/agent/timers.mjs`）**：
+
+- **固定间隔**：`base = entry.expiresAt`（= 首设刻）；`k = max(1, floor((now − base) / everyMs) + 1)`；返 `base + k × everyMs`。基准 = 首设刻 ⇒ **零漂移**；错过任意拍 ⇒ 直落下一格（**跳过不补投**——一次出列对一条周期项至多一投）。
+- **日历式**：`HH:MM` 按**宿主本地时区**解算（`Date` 本地语义：`setHours`/`setMinutes`；DST 按宿主日历规则走，不作特例）——取**严格 `> now`** 的下一 occurrence（今日该刻未过 ⇒ 今日；已过 ⇒ 明日）；秒位归零（该刻整分投递）。
+- 一次性 ∥ 绝对时刻（无两字段）⇒ 返 `null`（无重排）。守卫：`everyMs` 非有限正数 ∥ `daily` 形不合 ⇒ 返 `null`（照消费——防御面；下限校验在工具面）。
+- **首设换算同函数**：`every` ⇒ `nextFireAt({ everyMs, expiresAt: now }, now)`（= 设时 + N）；`daily` ⇒ `nextFireAt({ daily }, now)`；`at` ⇒ 直解算（不经本函数）；`TIMER_MIN_EVERY_MS` = 60000 常量同档出。
+
+**时区 ∥ 跨日 ∥ 重启口径（AC-45③ 明示）**：时区 = **宿主本地**（先例 = METERING KD-SV-6 服务器本地）——`at`/`daily` 皆按设点宿主本地时钟解释；同机四端同时区（服务面 = 服务器本地）。跨日 = `Date` 日历运算承载（如 `daily: "00:01"` 于 23:59 设 ⇒ 明日 00:01）——无跨日特例代码。重启 = **周期项随进程消失**（D-TW3 进程内存语义——与一次性同命，非本批新增缺口；重启存续 = 不做，见边界）。
+
+**工具面（`thincoder-core/agent-tools/timer.mjs` · 46 行）——参数 ∥ 互斥 ∥ 校验 ∥ 返回**：
+
+- 新参：`at`（`YYYY-MM-DDTHH:MM[:SS]`——严格正则＋日历回读校验（如 `2026-02-30` 拒）· 本地时区）∥ `every`（秒数 · ≥ `TIMER_MIN_EVERY_MS`）∥ `daily`（`HH:MM` 严格正则）∥ `cancel`（id——`String` 宽松比对）∥ `list`（布尔）。
+- 互斥：`{ seconds, at, every, daily }` 至多一；`cancel` ∥ `list` 与一切设置式互斥、与彼此互斥。
+- 校验（逐条显式抛错——不静默钳制）：`every` 非有限 ∥ < 60s ⇒ 拒（文案含下限）；`at` ∥ `daily` 形不合 ⇒ 拒（文案含期望形）；互斥违例 ⇒ 拒（文案列合法式）。
+- **首投 = 设时 + N**（`every`——非立即，防「设置即投」双投感）；`at` 过时点 ⇒ `expiresAt` = 所给刻（`delay = 0` ⇒ 即时投递——AC-45① 口径；不重排）；`daily` 过刻 ⇒ **明日**（非即时——「每天 HH:MM」= 每日该刻语义）。
+- **id 唯一化**（取消可寻址）：基准读**时钟缝单点**（缺省 `Date.now()`）与在途撞号 ⇒ `+1` 递增至空闲（同毫秒二次设置可达——零新载体字段）。
+- **时钟缝（评审轮 1 #5 收正）**：工具面取时单点 = `const now = ctx.now ?? Date.now()`（毫秒数**可选**读——生产 `toolCtx`（`thincoder-core/agent/dispatch-run.mjs:97-106`）不携 `now` ⇒ 缺省回落 = 现行为零变）；`at` 过时判定 ∥ `every`/`daily` 首投换算 ∥ id 撞号基准皆读该点。批内件以假 ctx（`{ agent, now: 假钟 }`）直驱——每调用独立 ctx ⇒ 零模块级状态 ∕ 零复位需求。
+- **帽 8 = 占坑语义（D-TW15）**：周期项 1 条 = 1 坑；重排 = 原条目回插（**净零**——不触帽）；`cancel` 释放坑。周期豁免不采（被否：最贵一类反被豁免）。
+- `cancel`：按 id 移除（零匹配 ⇒ 显式抛错 · 文案含 `list` 指引）；`list`：只读枚举（剩余现算——`due now` 态照出）。
+- **返回文案（新增式逐字——一次性式零变）**：
+  - `every` ⇒ `Repeating timer set (id <id>): first reminder in <N> seconds, then every <N> seconds. Stop it with cancel id <id>.`
+  - `daily` ⇒ `Daily timer set (id <id>): next reminder <YYYY-MM-DD HH:MM> local, then every day at <HH:MM>. Stop it with cancel id <id>.`
+  - `at`（未来）⇒ `Timer set (id <id>) for <YYYY-MM-DD HH:MM> local. Stop it with cancel id <id>.`
+  - `at`（已过）⇒ `Timer set (id <id>) for <YYYY-MM-DD HH:MM> local — that time has passed, so the reminder appears immediately.`
+  - `cancel` ⇒ `Timer cancelled (id <id>).`；`list` 空 ⇒ `No pending timers.`
+  - `list`（非空）⇒ 逐行 `<id> · <kind> · next <dur> · <message 首行>`（kind 判形 = `at` 在场 ⇒ `at <YYYY-MM-DD HH:MM>`；`everyMs` ⇒ `every <N>s`；`daily` ⇒ `daily <HH:MM>`；三者皆无 ⇒ `one-shot`；`<dur>` = `<mm:ss>`（< 1h）∥ `<h:mm:ss>`（≥ 1h——h 不补零；`daily` ∥ `at` 长时长同形；与 `/timers` 行同判）；到期未投 ⇒ `due now`）。
+  - **一次性式逐字零变**（`Timer set for <N> seconds. A reminder will appear when time is up.`）且不携 id（零回归口径；其取消可经 `list` 寻址）。
+
+**默认 `message`（`message` 未传时——逐式 · 评审轮 1 #4 收正）**：`⏰ Time's up (<槽>). Have you tried running the code, adding a console.log, or checking the output? Thinking more without data is guessing.`
+  槽逐式 = `${seconds}s`（一次性式——逐字零变）∕ `at ${YYYY-MM-DD HH:MM}`（`at`——解析刻宿主本地）∕ `every ${N} seconds`（N = `every` 秒值）∕ `daily at ${HH:MM}`；显式 `message` ⇒ 逐字原样（既有语义零变）。
+- **描述面（`thincoder-core/tool-docs/timer.md` · 6 行）**：扩述三式 ＋ 下限 ＋ `cancel`/`list`；**逐字文本 = 父侧定稿**（内容权威——D-TW8 同口径；草稿位 = 本节，落 = 实施轮）。
+  **预算读数（评审轮 1 #10）**：扩档 ⇒ **收口轮复跑 `node scripts/tool-schema-size.mjs` 登记读数随动**（先例 = 读数随动入 §5；预算表唯一权威处 = `docs/core/design/PROMPT-SYSTEM.md` §6.11——链 = `docs/core/design/TOOLS.md` §6.9）。
+
+**可见面 ∥ 取消面（功能点 45⑤ 承载）**：模型面 = `list` 动作（四端同得）。`/timers`（CLI）逐条行**插入 kind 段**——`⏰<i> · <kind> · 剩余 <dur> · <message 首行>`（kind = `每 <N>m`（整分）∕ `每 <N>s`（非整分）∥ `每天 <HH:MM>` ∕ `于 <YYYY-MM-DD HH:MM>`；
+判形 = `at` 在场 ⇒ `于` 段；`everyMs` ⇒ `每` 段；`daily` ⇒ `每天` 段；三者皆无 = 一次性 ⇒ 零段；`<dur>` = `<mm:ss>`（< 1h）∥ `<h:mm:ss>`（≥ 1h）；**一次性行零变**——段仅非一次性项插入）；
+  档 = `thincoder-cli/src/tui/cmd-timers.mjs`（33 行）。
+取消面 = **模型工具面**（`cancel` 动作——四端同得）；**不设端专属取消 UI**（CLI `/timers cancel` 子命令等 = 新跨端差异 = 不许——被否理由记档）；`/timers` 保持**只读**（其档头 ∥ TUI.md §7.6「取消面不做」句按本批收正为「取消 = 模型 `cancel`」）。状态行 `⏰N` ∥ VSC ∥ 桌面投影 `{ count, expired }` = **零改**（计数式——周期项同计，读 `expiresAt` 单字段不动）。
+
+**attention 面口径（周期项 × awaiting 除外——评审轮 1 #3 收正）**：周期项在途 ⇒ `_pendingTimers` 恒非空 ⇒ `docs/cli/design/TUI.md` §7.1 表 awaiting 行除外（在途 timer ∧ 唤醒会武装）**恒生效**——「不计 awaiting」由一次性瞬态变会话常态。
+  **裁定 = 有意语义**（与一次性项同谓词同读法：除外理由 = 自动续跑在途；周期项 = 持续自动续跑在途——无特判必要）；退出径 = `cancel` 释放坑 ∥ `agent.timerWake` 关（照常置位）；状态行计数面照零改。同拍 = `docs/cli/design/TUI.md` §7.1 ∥ §7.2。
+
+**接缝（唤醒面 = 兄弟批，接口零增）**：`docs/batches/2026-10-12-server-wake-face.md` §2 ∥ `docs/server/design/agent/ADMIN-AGENT.md` §15——四端投递皆经核 `takeExpiredTimers`（或其在各端的转口 ∕ 直调——服务面直调 = `thincoder-server/src/agent/chat-env-tools.mjs:224`）⇒ 周期重排**免费搭车**；
+  其再武装读 `pendingTimerDeadline`（重排后自动落新到期点）⇒ 唤醒器 ∥ 挂起窗 ∥ 空闲闩零改。本批**只引不重设计**；实施排期 = 彼批落地后（同片 `chat-env-tools.mjs` 串行）。
+
+**服务面审计面（微增量 · 同片串行）**：`subjectOf("timer", …)`（`thincoder-server/src/agent/chat-env-tools.mjs:172-176`）按单一 `seconds` 派生主语 ⇒ 新式与 `cancel`/`list` 会出错误主语（如周期设置报 `set 180s`）——随正 = 按 `at`/`every`/`daily`/`cancel`/`list` 分支各出主语（一次性式逐字零变）；排兄弟批之后。
+
+**受影响文件清单（现读 = 2026-10-12 设计轮实测）**：
+
+| 文件 | 现读 | 增量 | 说明 |
+|---|---|---|---|
+| `thincoder-core/agent/timers.mjs` | **113** | +≈50 | `TIMER_MIN_EVERY_MS` ∥ `nextFireAt` ∥ take 重排 ∥ 档头「唯一写点」句收正（出列也写） |
+| `thincoder-core/agent-tools/timer.mjs` | **46** | +≈75 | 五参 ∥ 互斥 ∥ 校验 ∥ `cancel`/`list` ∥ 返回文案 ∥ 时钟缝（`ctx.now`） |
+| `thincoder-core/tool-docs/timer.md` | **6** | +≈8 | 描述面四式（逐字 = 父侧定稿） |
+| `thincoder-cli/src/tui/cmd-timers.mjs` | **33** | +≈8 | kind 段 ＋ `<dur>` 格式 ＋ 档头取消面句收正 |
+| `thincoder-server/src/agent/chat-env-tools.mjs` | **232** | +≈12 | `subjectOf` timer 分支（同片串行——排兄弟批后；坐标按届盘实读） |
+| `docs/batches/2026-10-12-timer-completeness.test.mjs` | —— | **新 ≈320** | 批内件（四腿 ＋ 回归腿）（拟新增 · 实施轮落）——**不入 server 门禁链**（批面非服务；先例 = `docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 不在链） |
+| `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` | **1141** | +≈150 | 本节 ＋ 变更记录一行 ＋ D-TW7 行 ∥ §6.30.3 三处收正 |
+| `docs/core/design/TOOLS.md` | **1362** | +1 | §6.7 `timer` 行扩述 |
+| `docs/cli/design/TUI.md` | **937** | +≈6 | §7.6 行形态 ＋ 取消面句收正 |
+
+**零改面（明示）**：`thincoder-core/agent/post-turn.mjs` ∥ 三端 `timer-watch.mjs` ∥ 三端 `suspension*.mjs` ∥ `thincoder-desktop/src/main/agent-host.mjs` ∥ `thincoder-vscode/src/extension/panel-callbacks.mjs`
+∥ `thincoder-cli/src/tui/render-frame.mjs` ∥ `thincoder-cli/src/tui/agent-turn.mjs` ∥ `thincoder-cli/src/tui/tool-events.mjs`。
+
+**关键决策（D-TW9–D-TW17）**：
+
+| # | 决策 | 落 | 理由 ∥ 被否 |
+|---|---|---|---|
+| D-TW9 | 载体扩**扁平可选字段** `everyMs` ∥ `daily` | 采纳 | 一次性条目形逐字零变（回归面最小）；被否：`repeat` 嵌套对象 ∥ `kind` 判别式（改一次性条目形 = 破零回归）∥ 派生 `nextAt`（第二真值源） |
+| D-TW10 | 重排点 = `takeExpiredTimers` 内（出列＋重排原子） | 采纳 | 公共读点唯一 ⇒ 四端零改；被否三条见上 |
+| D-TW11 | 错过拍 = **跳过不补投**（严格 `> now`） | 采纳 | 回补 ⇒ 投递风暴；与「出列幂等」同族（一次出列一条周期至多一投） |
+| D-TW12 | 首投 = 设时 + N ∥ `daily` 下一本地刻 ∥ `at` 过时点即时 | 采纳 | AC-45① 明写过时点即时；周期无「立即」语义（+N 防设置即投） |
+| D-TW13 | 时区 = 宿主本地（DST 不特例） | 采纳 | 先例 = METERING KD-SV-6；被否：UTC ∥ 服务面集中时区 |
+| D-TW14 | 取消/可见 = 模型 `cancel`/`list` ＋ `/timers` kind 段；**不设端专属取消 UI** | 采纳 | 四端同得纪律；被否：CLI `/timers cancel` 子命令 ∥ 新取消工具 |
+| D-TW15 | 帽 8 = **占坑**（周期 1 条 1 坑 · 重排净零） | 采纳 | 成本闸语义（周期 = 最贵类）；被否：周期豁免（反向） |
+| D-TW16 | `every` 下限 = **60s 硬拒** | 采纳（**提请**） | AC 判据以 1 分钟实走 ⇒ 下限 ≤ 60s；更低 ⇒ 回合风暴；被否：无下限 ∥ 30s ∥ 静默钳制 |
+| D-TW17 | 低费式（只出提醒行不开轮）= **本批不做** | 采纳（**提请**） | 现语义 = 到点自唤醒 + 开轮（D-TW4）；quiet 化 = 语义分叉（须用户裁）；接口缝已在（`thincoder-core/agent/timers.mjs:105` `fireTimerWake({ busy, deliver, openTurn })`——跳过 `openTurn` 即 quiet 火） |
+
+**用例表（T-TW40–T-TW50——T-TW40–T-TW49 落批内件 `docs/batches/2026-10-12-timer-completeness.test.mjs`（拟新增 · 实施轮落）∥ T-TW50 随兄弟批（服务面审计主语 · 同片串行）；
+恒假钟 ∥ 直驱 · 零真实等待；时钟缝 = 工具面 `ctx.now`（缺省 `Date.now()` 回落——生产零变）∥ `nextFireAt` / `takeExpiredTimers` 的 `now` 参数沿既有缝；跑法 = 仓根 `node --test docs/batches/2026-10-12-timer-completeness.test.mjs`）**：
+
+| # | 场景 | 输入 | 预期 |
+|---|---|---|---|
+| T-TW40 | 正常·绝对时刻（未来） | `timer { at: <now+2h> }`（假钟） | 条目 `expiresAt` = 解析刻；返回含 `(id `；到点出列恰一条；在途清空（不重排）；缺省 `message` = `at` 形（默认表） |
+| T-TW41 | 正常·绝对时刻（已过） | `timer { at: <now−10m> }` | `expiresAt` = 所给刻（delay ≤ 0 ⇒ 即时）；首取即交付；在途清空；缺省 `message` = `at` 形（默认表） |
+| T-TW42 | 正常·固定间隔（**AC 实走形**） | `{ every: 60, message: "x" }` ＋ 假钟 | 首投 = 设时 + 60s（`ctx.now` 假钟——精确断言）；出列后条目仍在（同 id · `expiresAt` = 设时 + 120s）；二投同判；`cancel` 后出列零返（**投 2 次后可取消**） |
+| T-TW43 | 边界·错过跳拍 | `every` 600s · 假钟跳 3.5 拍 | 出列恰一投；重排 = `base + 4 × everyMs`（严格 `> now`）；零补投；缺省 `message` = `every` 形（默认表） |
+| T-TW44 | 正常·日历式（含跨日 ∥ 过刻） | `daily: "09:00"`（假钟 08:59 ∥ 09:01 ∥ 23:59 设 `"00:01"`） | 首 = 今日 09:00 ∕ 明日 09:00 ∕ 明日 00:01（`ctx.now` 假钟）；投后重排 = 次日同刻；缺省 `message` = `daily` 形（默认表） |
+| T-TW45 | 回归·一次性零变 | 旧形条目 `{ id, expiresAt, message }` ＋ 存量批件复跑 | 交付行逐字 ∥ 返回文案逐字 ∥ 出列幂等 ∥ 帽行为全零变；`docs/batches/2026-10-01-timer-wake-delivery.test.mjs` 全绿 |
+| T-TW46 | 错误·校验矩阵 | 互斥违例 ∥ `every: 30` ∥ `every: 0` ∥ `at: "2026-02-30T10:00"` ∥ `daily: "9:00"` ∥ `cancel` 未知 id | 逐条显式抛错；在途表零变动 |
+| T-TW47 | 边界·帽（占坑） | 在途 8（含周期 1）⇒ 第 9 拒；`cancel` 一条 ⇒ 复设成功；周期重排后仍 8 | 拒点零变动；重排净零；取消释放 |
+| T-TW48 | 边界·重启即失 | 同 cwd 二次装配（新 agent 对象） | 在途表空（进程内语义——与一次性同命） |
+| T-TW49 | 正常·可见面 | 工具 `list`（三类 ＋ 到期未投）∥ CLI `/timers` handler 直驱 | `list` 逐行含 id/kind/next/message（`due now` 态照出；长时长臂 ⇒ `<h:mm:ss>`）；`/timers` 周期行含 kind 段（非整分 ⇒ `每 <N>s`）∧ 一次性行逐字零变 |
+| T-TW50 | 射程·服务面审计主语 | `subjectOf("timer", …)` 五式直驱 | 各出对应主语；一次性式逐字零变 |
+
+**验收（A-TW14–A-TW19——逐条机检）**：
+
+| # | 判据 | 落点 |
+|---|---|---|
+| A-TW14 | 需求 ①–⑤ 逐条对位（三链同源） | 功能点 45（`docs/server/requirements/PROJECT.md:266-275`）∥ AC-45（`:341`）↔ 本节用例 ↔ 批档 §2.1 —— 三链同源同拍 |
+| A-TW15 | AC-45 判据（实走形） | 假钟臂 = T-TW42（1 分钟两投后取消）；收口轮真走（父侧：设 1 分钟间隔 ⇒ 两投 ⇒ `cancel` ⇒ 零再投） |
+| A-TW16 | 一次性零回归 | T-TW45 ∥ T-TW49（一次性行）∥ 存量批件复跑全绿 |
+| A-TW17 | 四端同得（零改面守） | 零改面清单 ＋ 消费面全经 take（接缝句）；服务面随彼批部署收口 |
+| A-TW18 | 口径明示（AC-45③） | 时区 ∥ 跨日 ∥ 重启三口径句（本节）在册 |
+| A-TW19 | 机检零新增 | 仓根 `node scripts/doc-check.mjs` 对比开工基线（2026-10-12 设计轮实测：**悬空 25 ∥ 行宽 0 ∥ 行数面 18 报告**——本批四档逐档零新增） |
+
+**边界（不做）**：cron 全语法 ∥ 条件触发（「当 X 发生时」——非定时）∥ 持久化 ∥ 重启存续（D-TW3 既有语义）∥ 端专属取消 UI ∥ 唤醒器设计（兄弟批）∥ 一次性 `seconds` 语义 ∥ 文案零变 ∥ 低费式（提请项）∥ 子代理 timer 面（读对象 = 主 agent——既有构造性边界）。
+
+**开放点（提请项 · 均附推荐与代价——请裁）**：① 频率下限（D-TW16——推荐 60s；更松 ⇒ 回合费用升，更紧 ⇒ 可设更密）② 低费式可做性（D-TW17——接口缝已在；代价 = 「到点自动看/续」语义分叉）③ 帽语义（D-TW15——推荐占坑）④ 可见面承载（推荐 = 模型 `list` ＋ `/timers` kind 段；更富端面 UI = 各端新面，不做面）。
+
+**落文口径（评审轮 1 #6——推荐值已入册 · 待裁）**：①（D-TW16）∥ ③（D-TW15）推荐值已随本设计落成规范文（`docs/core/design/TOOLS.md` §6.7「下限 60s」∥ 帽句 · §6.30.3 帽注 · 本节校验句 · T-TW42 ∥ A-TW15 实走形）——**待用户裁**；裁定异值 ⇒ 相应档同拍收正（收正点清单 = 批档 §2 fix 轮块 + 报告）。②（D-TW17）∥ ④ 未落文（本批不做面——裁可 ⇒ 另轮）。
 
 ### 6.31 消化账务——投递 ≠ 销账（报告不许无声消失）（2026-10-05 · 批 digest-accounting · 台账 #930）
 
@@ -1139,3 +1264,12 @@ trace 实读（`~/.thincoder/traces/2026-10-01/38478126a2c4-6602.jsonl`）= 343 
 - 2026-10-02（**文档清账轮 · 执行轮 1（core/design 前段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 8 处 R1 改指（补仓根全路径——桌面 ∥ CLI 语境）；宽面 76 ∥ 326 两行折行（语义零改）。**零新语义**。
 
 - 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · eng-coder**——承 `docs/batches/2026-10-10-vsc-consistency.md` §2（`1047-3`）· 台账 #1047）：§6.20 引用面 11 处 + 协调项随正——序句（对侧基准）整行删；选型表 / 文案段（逐字源改指核 `/async-discard.mjs`）/ 端差登记 / 决策表（D-AD7 收口注）/ 验收行 / 边界项逐处处置：死坐标删 ∥ 改指核单源；对侧档随 `_archive` 归档 ⇒ 协调项消解。**机制条文零改**；判据保留 ∥ 死指针零悬空。
+
+- 2026-10-12（**timer-completeness 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §1 · 台账 #1321；用户 15:13 原话 ＋ 15:1x 追认 ＋ 15:25 裁「定时设计要四端都做」）：新增 **§6.30.18 timer 能力完备化**（载体扩 `everyMs` ∥ `daily` 可选字段（一次性条目形逐字零变）· 重排点 = 核 `takeExpiredTimers` 内（出列＋重排原子 · 跳过不补投）· 新纯函数 `nextFireAt`（基准 = 首设刻零漂移 ∥ 日历式宿主本地）· 工具面四式参数 ＋ `cancel`/`list` ＋ 返回文案 ∥ 互斥 ∥ 校验 · 帽 8 占坑 · 取消/可见 = 模型面（`/timers` 只读 ＋ kind 段）· 时区 ∥ 跨日 ∥ 重启口径 · 用例 T-TW40–T-TW50 · 验收 A-TW14–A-TW19 · 开放点四条）；§6.30.3 三处收正（写点句 = 工具 ＋ 出列重排面（原 `timer.mjs:59` 死坐标同拍收正）· 帽注指针 · schema 句限本批）；D-TW7 行收正（取消面 = 模型工具 `cancel`——`/timers` 保持只读）；同拍 `docs/core/design/TOOLS.md` §6.7 `timer` 行 ∥ `docs/cli/design/TUI.md` §7.6。**零回归**（一次性语义 ∥ 文案 ∥ 帽 ∥ 投递形态逐条零变）。明细 = 批档 §2。
+
+- 2026-10-12（**timer-completeness 批 · 设计评审轮 1 修正（fix）· eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §3 轮次 1 · 评审 #282 · 父侧逐条裁收）：① §6.30.18 补四处——默认 `message` 逐式表（返回文案同址）；工具面**时钟缝**（`ctx.now ?? Date.now()`——缺省生产零变）；**attention 面周期项口径**（周期项在途 ⇒ §7.1 awaiting 行除外恒生效——有意语义：持续自动续跑在途）；描述面**预算读数**（收口轮复跑 `scripts/tool-schema-size.mjs` 登记随动）。② §6.30.3 D-TW8 契约句锚收正（`thincoder-core/agent-tools/timer.mjs:16-27` ⇒ `thincoder-core/tool-docs/timer.md:4`）。③ §6.30.9 ∥ §6.30.15 两条 schema 边界句挂阶段限定（本批扩五参——同 §6.30.18）。④ 接缝句收正（「皆经 `deliverExpiredTimers`」⇒「皆经 `takeExpiredTimers`（转口 ∕ 直调）」）；`list` ∥ `/timers` 单位格式定形（`<dur>` = `<mm:ss>` ∥ `<h:mm:ss>`；非整分秒形）；开放点落文口径注。**机制零改**（收正 ∥ 口径登记 ∥ 格式定形）。明细 = 批档 §2 fix 轮块。
+
+- 2026-10-12（**死锚收正 · 主 agent 直接执行 · 可 revert**——承本批评审轮 2（#293）残留项 🔵 · 同族第二处）：§6.30.3 合同句（`:452`）「对应段」锚 `thincoder-core/agent-tools/timer.mjs:22-25`（该区间现文 = schema 尾行——死坐标）⇒ `thincoder-core/tool-docs/timer.md:5`（合同句现行文，逐字在盘）；与 fix 轮 `:450` 同法（同族残留收齐）。**零语义改**。
+
+- 2026-10-12（**timer-completeness 批 · 实施轮设计档处正（fix 2 · 实施席 #294 上抛 · 父侧裁）· eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §2.9）：① §6.30.18 **载体句收正**——`at` 条目携 `at: true` **来源标记位**（非载重——显示面判形用；时刻单源 = `expiresAt`；机制面零变）——原「一次性 ∕ 绝对时刻条目形 `{ id, expiresAt, message }` 逐字零变」与显示面判形相抵（at 类无可辨字段 ⇒ 规范句成死文；一次性条目形零变保持）；`list` ∥ `/timers` 两处补判形句（`at` 在场 ⇒ at 段）；② 用例表表头随正（T-TW40–T-TW49 落批内件 ∥ T-TW50 随兄弟批——服务面同片串行）。**机制零改**（最小标记位 + 判形读法 + 用例归属）。明细 = 批档 §2.9。
+- 2026-10-12（**timer-completeness 批 · 实施轮死锚随正（描述档扩容 +6 行所致）· 主 agent 直接执行 · 可 revert**——承批档 §5（#294）报备）：§6.30.3 三锚齐正——开关③理由句（`:445`）`thincoder-core/tool-docs/timer.md:2-4` ⇒ `:2 ∥ :10`；D-TW8 契约句（`:450`）`:4` ⇒ `:10`；合同句「对应段」（`:452`）`:5` ⇒ `:11`。**零语义改**（纯坐标随正；三处现文逐字复核在盘）。

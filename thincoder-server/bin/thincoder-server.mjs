@@ -27,6 +27,10 @@ import { registerProxyAdminRoutes } from "../src/gateway/proxy-admin.mjs"
 import { registerSandboxRoutes } from "../src/sandbox/routes.mjs"
 import { registerImageSourceRoutes } from "../src/sandbox/image-source-routes.mjs"
 import { registerChatRoutes } from "../src/agent/chat-routes.mjs"
+import { registerProjectRoutes } from "../src/project/routes.mjs"
+import { registerProjectAdminRoutes } from "../src/project/admin-routes.mjs"
+import { registerProjectWebhookRoutes } from "../src/project/webhooks.mjs"
+import { createSyncScheduler } from "../src/project/sync.mjs"
 import { ensureBootstrap, findMemberByUsername } from "../src/accounts/members.mjs"
 import { createLoginGuard } from "../src/accounts/login-guard.mjs"
 import { pruneAuditEvents, recordAudit } from "../src/accounts/audit.mjs"
@@ -81,6 +85,7 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
   let app = null
   let updater = null
   let pruneTimer = null
+  let projectSync = null
   let stopping = false
   /** 优雅停机：清周期定时器（更新循环 ∥ 保留清理同法——§4；自升成功亦走本路径）⇒ 停收新连 ⇒ 关库。 */
   const stop = (signal) => {
@@ -91,6 +96,7 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
       clearInterval(pruneTimer)
       pruneTimer = null
     }
+    projectSync?.stop()
     log.info("shutdown", { signal })
     closeApp({ ...app, log }).then(() => {
       log.info("stopped")
@@ -158,6 +164,13 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     registerSandboxRoutes(routes, { db, config, log })
     registerImageSourceRoutes(routes, { db }) // 镜像源族（gateway/API.md §2.5 镜像源七行——sandbox-image-sources 批）
     registerChatRoutes(routes, { db, log, deps: { runtime: providerRuntime, config, guard: loginGuard } }) // 管理面 agent 会话面（gateway/API.md §2.8——四端点 + 重启恢复钩）
+    // 项目面（gateway/API.md §2.9——team-projects-permissions 批）：成员面六 ∥ 管理面十 ∥ 接收面一（公开——验签门）；
+    // 调度器单例（三径共锁——手动 ∥ 定时 ∥ 事件；周期 60s）
+    projectSync = createSyncScheduler({ db, config, log })
+    registerProjectRoutes(routes, { db })
+    registerProjectAdminRoutes(routes, { db, config, log, scheduler: projectSync })
+    registerProjectWebhookRoutes(routes, { db, config, log, scheduler: projectSync })
+    projectSync.start()
     // D4 面：webui 静态面（`public/` 直发——注册路由优先；`/v1/*` ∥ `/api/*` 不走静态面）
     const server = createGatewayServer({ config, routes, log, staticSite: createStaticSite() })
     app = { server, db }

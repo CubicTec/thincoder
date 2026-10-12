@@ -316,6 +316,14 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .bubble :is(h1, h2, h3, h4, h5, h6, p, pre, ul, ol, table, blockquote):first-child { margin-top: 0; }
 .bubble :is(p, pre, ul, ol, table, blockquote):last-child { margin-bottom: 0; }
 
+/* ── 项目与 Git 源族（views-projects.mjs ∥ views-admin-projects.mjs ∥ views-git-sources.mjs——team-projects-permissions 批；零新变量 ∥ 零新悬停规则）── */
+.sync-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--idle); margin-right: var(--sp-2); vertical-align: middle; } /* 结果点（未同步 = 中性） */
+.sync-dot.ok { background: var(--ok); } /* 结果点·成（色板既有值） */
+.sync-dot.fail { background: var(--danger); } /* 结果点·败 */
+.badge.accent { color: var(--accent); border-color: var(--accent); } /* 徽标·读写档 */
+.badge.warn { color: var(--warn); border-color: var(--warn); } /* 徽标·负责人 */
+.cell-hint { white-space: normal; margin: var(--sp-2) 0 0; } /* 表内就地人话行（PAT/结果列——长文案可折行） */
+
 /* ── 数据表页视口高壳（§2.6②——高度链声明单源：页头固定 ∥ 表区吃剩高；表尾行计数 = 表内 tfoot〔吸附表底〕；回退见下）────── */
 body.data-shell > .content { height: 100dvh; display: flex; flex-direction: column; } /* `>` 同因（核件消息泡类撞名——2026-10-12 走查实修） */
 body.data-shell main { flex: 1; min-height: 0; display: flex; flex-direction: column; }

@@ -8,12 +8,11 @@
  * 审计（五 kind——accounts/ACCOUNTS.md §2.1）：`onboarding_start` ∥ `onboarding_exec`（每命令/调用：原文 ∥ 退出码/结果码 ∥ 摘要——秘密掩蔽后）
  * ∥ `onboarding_done` ∥ `onboarding_failed`（停步 + 原因）∥ `onboarding_credential_revoke`。
  */
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto"
-import { dirname, join } from "node:path"
+import { join } from "node:path"
 
 import { recordAudit } from "../accounts/audit.mjs"
 import { findMemberById } from "../accounts/members.mjs"
+import { credentialKeyPath, dataDir, decryptSecret, encryptSecret, loadOrCreateCredentialKey } from "../store/credential-crypto.mjs"
 import { createSshExecutor, hasSshpass, removeKeyFile, sshDir } from "./ssh.mjs"
 import { createOnboardingTools } from "../agent/tools.mjs"
 import { DEFAULT_MAX_CALLS, DEFAULT_MAX_DURATION_MS, buildModelExit, runAgentTask } from "../agent/run.mjs"
@@ -36,43 +35,8 @@ export const PROBE_SCRIPT = [
   "echo NET=$(getent hosts deb.debian.org >/dev/null 2>&1 && echo ok || echo unknown)",
 ].join("\n")
 
-/** 数据目录（keyfile ∥ known_hosts ∥ credentials.key 落点——容器重建不丢；§3）。 */
-export function dataDir(config = {}) {
-  const dbPath = typeof config.db === "string" && config.db.trim() !== "" ? config.db.trim() : "data/gateway.db"
-  return dirname(dbPath) === "." ? "data" : dirname(dbPath)
-}
-
-/** 凭据加密密钥（KD-SV-84）：`data/credentials.key`——32 字节随机 ∥ 首用生成 ∥ 0600 ∥ 不落库。 */
-export function loadOrCreateCredentialKey(keyPath) {
-  try {
-    const existing = readFileSync(keyPath)
-    if (existing.length >= 32) return existing.subarray(0, 32)
-  } catch {
-    /* 首用——下方生成 */
-  }
-  const key = randomBytes(32)
-  mkdirSync(dirname(keyPath), { recursive: true })
-  writeFileSync(keyPath, key, { mode: 0o600 })
-  chmodSync(keyPath, 0o600)
-  return key
-}
-
-/** AES-256-GCM 加密（出 = `iv|tag|ct` —— base64 三段——§2 v13 段存储形）。 */
-export function encryptSecret(plaintext, key) {
-  const iv = randomBytes(12)
-  const cipher = createCipheriv("aes-256-gcm", key, iv)
-  const ciphertext = Buffer.concat([cipher.update(String(plaintext), "utf8"), cipher.final()])
-  return [iv.toString("base64"), cipher.getAuthTag().toString("base64"), ciphertext.toString("base64")].join("|")
-}
-
-/** AES-256-GCM 解密（形不合/篡改 ⇒ 抛——调用方转任务失败）。 */
-export function decryptSecret(payload, key) {
-  const parts = String(payload ?? "").split("|")
-  if (parts.length !== 3) throw new Error("凭据密文形非法（iv|tag|ct）")
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(parts[0], "base64"))
-  decipher.setAuthTag(Buffer.from(parts[1], "base64"))
-  return Buffer.concat([decipher.update(Buffer.from(parts[2], "base64")), decipher.final()]).toString("utf8")
-}
+/** 凭据三件 + 数据目录：实现单源 = `store/credential-crypto.mjs`（KD-SV-119——逐字抽出；本档同名再导出 = 零改调用方）。 */
+export { dataDir, decryptSecret, encryptSecret, loadOrCreateCredentialKey }
 
 function parseSteps(text) {
   try {
@@ -122,7 +86,7 @@ export function appendStep(db, runId, stepId, entry = {}) {
 export function createOnboardingService({ db, config = {}, deps = {}, now = Date.now, log = null } = {}) {
   if (!db) throw new Error("createOnboardingService：缺少 db")
   const baseDir = dataDir(config)
-  const keyPath = join(baseDir, "credentials.key")
+  const keyPath = credentialKeyPath(config)
   const keyFileOf = (runId) => join(sshDir(baseDir), `onboarding-${runId}.key`)
   const budget = { maxCalls: deps.budget?.maxCalls ?? DEFAULT_MAX_CALLS, maxDurationMs: deps.budget?.maxDurationMs ?? DEFAULT_MAX_DURATION_MS }
 

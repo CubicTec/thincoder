@@ -14,9 +14,12 @@
 | 系统面 | `GET /healthz`（公开——零鉴权只读探活） ∥ `GET /api/system`（会话——版本/更新状态） | 无 ∥ 会话 | 本档 §2.3 |
 | 客户端数据面 | `POST /api/client/login` ∥ `POST /api/client/logout` ∥ `GET /api/client/me`（骨架——B1 批） | 登录 token（`Authorization: Bearer`——与 /v1 同校验单源） | `client/CLIENT.md` §2 |
 | 控制台数据面 | `GET /api/overview`（管理总览读数） ∥ `GET /api/admin/embedding` ∥ `POST /api/admin/embedding/test`（向量服务面——探活/试跑） ∥ `GET/PATCH /api/admin/config`（配置面——读写 config.json；`ops/OPS.md` §1） ∥ `POST /api/admin/proxy/test`（代理连通测试——真打；`webui/SYSTEM.md` §2.2） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.4 |
-| 沙盒控制台面 | `GET/POST/PATCH/DELETE /api/admin/sandbox/*`（runner ∥ 工作区 ∥ 规则 ∥ 待批 ∥ 设置——`sandbox/SANDBOX.md` §8） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.5 |
+| 沙盒控制台面 | `GET/POST/PUT/PATCH/DELETE /api/admin/sandbox/*`（runner ∥ 工作区 ∥ 规则 ∥ 待批 ∥ 设置——`sandbox/SANDBOX.md` §8） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.5 |
 | 沙盒成员面 | `GET /api/me/sandbox/workspaces`（本人工作区读数——`sandbox/SANDBOX.md` §8 成员面） | 会话（本人——admin/user 恒本人过滤） | 本档 §2.7 |
 | 管理面 agent 面 | `POST/GET/PATCH /api/admin/agent/chats*`（会话 + 换模型 + 回合 NDJSON 流） ∥ `POST /api/admin/agent/chats/:id/abort`（回合中止——chat-shell-align 批） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.8 |
+| 项目面（成员） | `/api/projects*`（可见项目列表/详情/成员增删改/项目改——可见性三档） | 会话 + 能力矩阵（`project/PROJECTS.md` §3） | 本档 §2.9 |
+| 项目管理面（admin） | `/api/admin/git-sources*`（源 CRUD ∥ 立即同步 ∥ 体检 ∥ 拉列表 ∥ webhook 密钥生成） ∥ `/api/admin/projects*`（加仓——批量/手输 ∥ 项目删除） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.9 |
+| 项目接收面（公开） | `POST /api/hooks/git-sources/:id`（github webhook 接收——验签门；`project/PROJECTS.md` §13） | 无会话（每源密钥 HMAC-SHA256 验签） | 本档 §2.9 |
 | 前端静态面 | `GET /` ∥ `public/**`（`app.mjs` ∥ `nav.mjs` ∥ `views-*`（档单 = `webui/WEBUI.md` §1） ∥ `style.css`） | 公开（页面壳零数据） | `webui/WEBUI.md` §1 |
 | 其余 | —— | —— | 404（JSON 错误形 = §3） |
 
@@ -124,9 +127,11 @@
 
 | 方法 + 路径 | 语义 |
 |---|---|
-| `GET /api/admin/sandbox/overview` | 运行面读数（**读时探活**——每节点现打 `GET …/info`，3s ∥ 并发）：`{ status: "available" ∥ "unavailable", reason?, runners: [{ id, name, address, status, online, version, containers: { total, running } ∥ null, selfCheck, createdAt }] }`——无节点注册 ∥ 节点全部不可达 ⇒ `unavailable` + 原因；`online=false` ⇒ `version`/`containers` = `null`（离线读数不外推）；**节点面（添加/删除）恒可用** |
-| `POST /api/admin/sandbox/runners` | 添加节点：`{ name, address }`（地址归一 = `http://<host>:<port>`——缺协议/端口补全；`https:` ⇒ 400）⇒ **连通自检**（`GET …/version`——读版本 + 协商 API 版本 `max(1.44, MinAPIVersion)`，须 ≤ `ApiVersion`）⇒ 通过 ⇒ 200 `{ runner }` + 审计行（`runner_add`）；失败（不可达 ∥ 超时 ∥ 非 Docker API ∥ 版本不兼容）⇒ 502 `upstream_error` + **零落库** + 审计行（`runner_selfcheck_failed`）；重名/形非法 ⇒ 400 |
+| `GET /api/admin/sandbox/overview` | 运行面读数（**读时探活**——每节点现打 `GET …/info`，3s ∥ 并发）：`{ status: "available" ∥ "unavailable", reason?, runners: [{ id, name, address, status, online, version, containers: { total, running } ∥ null, selfCheck, createdAt, ssh: { user, port, authKind, credential: { state, updatedAt } } }] }`——无节点注册 ∥ 节点全部不可达 ⇒ `unavailable` + 原因；`online=false` ⇒ `version`/`containers` = `null`（离线读数不外推）；**节点面（添加/删除）恒可用** |
+| `POST /api/admin/sandbox/runners` | 添加节点：`{ name, address }`（地址归一 = `http://<host>:<port>`——缺协议/端口补全；`https:` ⇒ 400）⇒ **连通自检**（`GET …/version`——读版本 + 协商 API 版本 `max(1.44, MinAPIVersion)`，须 ≤ `ApiVersion`）⇒ 通过 ⇒ 200 `{ runner }`（行形含 `ssh` 元数据——同 `overview` 行元素形）+ 审计行（`runner_add`）；失败（不可达 ∥ 超时 ∥ 非 Docker API ∥ 版本不兼容）⇒ 502 `upstream_error` + **零落库** + 审计行（`runner_selfcheck_failed`）；重名/形非法 ⇒ 400 |
 | `DELETE /api/admin/sandbox/runners/:id` | 删除节点：`{ containers: "keep" ∥ "remove" }`——有容器未给处置 ⇒ 400；`keep` ⇒ 只删登记 ∥ `remove` ⇒ 逐删 `DELETE …/containers/{id}?force=1`，任一失败 ⇒ 502 + 登记行保留（消息携失败清单）；无容器 ⇒ 直接删；**节点不可达 ⇒ 仅 `keep` 可过**；有承载工作区 ⇒ `confirm: true`（现行为）；不存在 ⇒ 404；审计行（`runner_delete`——detail 携 kept/removed） |
+| `PUT /api/admin/sandbox/runners/:id/credential` | 主机凭据设/改（admin-chat-creds-merge 批——#1326）：`{ sshPort?, sshUser, auth: { kind: "key" ∥ "password", secret }, sudoSecret? }` ⇒ 200 `{ runner }`（行形——**响应零秘密字段**）；密文落行密列（AES-256-GCM——机制 = `sandbox/SANDBOX.md` §3）；形非法（缺 `sshUser` ∥ `auth.kind` 表外 ∥ `secret` 空 ∥ `sshPort` 越界 0/70000）⇒ 400（逐形人话——库零变）；不存在 ⇒ 404；审计 `host_credential_set`（detail 键集 = `accounts/ACCOUNTS.md` §2.1——零秘密） |
+| `DELETE /api/admin/sandbox/runners/:id/credential` | 主机凭据撤销（server 侧清密列——只及存留；目标机账号须到机处置）：密列零化 + `credential_state='revoked'` ⇒ 200 + 审计 `host_credential_revoke`；**无凭据在留 ⇒ 400**；不存在 ⇒ 404 |
 | `GET /api/admin/sandbox/runners/:id/containers` | 容器列表（读时读 `GET …/containers/json?all=1`）：`{ containers: [{ id, name, image, state, status }] }`（名去前导 `/`）；节点不可达 ⇒ 502 |
 | `POST /api/admin/sandbox/runners/:id/containers` | 创建容器（四件）：`{ name, image, volume?, command? }` ⇒ `POST …/containers/create?name=<名>`（体 = `{ Image, Cmd: <命令>, HostConfig: { Binds: ["<卷>:/workspace"] } }`——**待命命令缺省恒携**（盒语义，缺它 ⇒ 无长驻进程的镜像一亮即退；轻通道笔 3）；`command` 给了 ⇒ 该值按空格切分入 `Cmd`（**可覆写**——轻通道笔 10）；显式空串 ⇒ 400；卷缺 ⇒ 省略 `HostConfig`）⇒ 200 `{ container: { id, name, image, state: "created" } }` + 审计行（`container_create`）；引擎 404（无此镜像）∥ 409（名占用）⇒ 400（含引擎原文）；不可达 ⇒ 502 |
 | `POST /api/admin/sandbox/runners/:id/containers/:containerId/start` ∥ `…/stop` | 启动 ∥ 停止：`POST …/containers/{id}/start` ∥ `…/stop`（`t` 不带 = 引擎缺省 10s）——204 ⇒ 200 `{ ok: true, id }`；**304（已启/已停）⇒ 幂等成功**；404 ⇒ 404 `not_found`；余 ⇒ 502；审计行（`container_start` ∥ `container_stop`） |
@@ -155,7 +160,7 @@
 | `GET /api/admin/sandbox/pending` ∥ `POST /api/admin/sandbox/pending/:id/resolve` | 待批表 ∥ 裁定 `{ decision: "once" ∥ "remember" ∥ "deny" }`（remember ⇒ 规则入表 source=approval；审计 `sandbox_event`） |
 | `GET/PATCH /api/admin/sandbox/settings` | 设置读写（全局默认——值 = JSON 文本）：`cpus`（数） ∥ `memMb`/`pids`/`diskMb`/`idleTtlMinutes`/`wallclockTtlHours`/`checkpointEveryMinutes`/`checkpointKeep`/`pendingTimeoutSeconds`/`tmpfsMb`（正整数） ∥ `image`（字符串）；PATCH 逐键（键级合并——值 = 整键替换；形/范围校验不过 ⇒ 400 库零变）⇒ `rulesRev` +1（即生效）；**「默认单」非本表键**（= `sandbox_rules` 种子行——上行）；**每键有 UI 写入口**——`webui/SANDBOX.md` §2.1 |
 | `POST /api/admin/sandbox/onboarding` | 托管接入起步（runner-admin-console 批增补——#1236/#1237）：`{ host, sshPort?, sshUser, auth: { kind: "key"∥"password", secret }, sudoSecret?, name?, model, credentialMode: "burn"∥"keep" }` ⇒ 200 `{ run }`（**异步起跑**——agent 逐案执行；进度经列表/详情读时轮询）；形非法 ∥ 无可用模型 ∥ 同主机任务在途 ⇒ 400（零落库）；判权 `requireAdmin`；审计 `onboarding_start` |
-| `GET /api/admin/sandbox/onboarding` | 任务列表（最近）：`{ runs: [{ id, host, sshUser, name, status, step, steps, credential: { mode, state }, runnerId?, startedAt, finishedAt }] }`——**零秘密字段** |
+| `GET /api/admin/sandbox/onboarding` | 任务列表（最近）：`{ runs: [{ id, host, sshUser, name, status, step, steps, credential: { mode, state }（`state` ∈ `sealed` ∥ `burned` ∥ `revoked` ∥ `moved`——移交（凭据已入主机表行）；admin-chat-creds-merge 批）, runnerId?, startedAt, finishedAt }] }`——**零秘密字段** |
 | `GET /api/admin/sandbox/onboarding/:id` | 单任务详情（同上形 + 步骤读数明细 `steps[].readings`）；不存在 ⇒ 404 |
 | `DELETE /api/admin/sandbox/onboarding/:id/credential` | 撤销凭据（server 侧清密列——只及存留；目标机账号须到机处置）+ 审计 `onboarding_credential_revoke`；无凭据在留 ⇒ 400；不存在 ⇒ 404 |
 
@@ -196,6 +201,36 @@
 - **执行不依赖连接**（断连照跑到终态——落库单源；重读详情即全量）；重启恢复（`running` ⇒ `idle` + notice + 审计）在装配期执行（无端点）。
 - 审计 = `agent_event` 逐调用（`accounts/ACCOUNTS.md` §2.1）；用例 = `agent/ADMIN-AGENT.md` §8；不做面 = 其 §10。
 
+### 2.9 项目面（成员 · 管理）——team-projects-permissions 批（B2）；机制全文 = `project/PROJECTS.md`
+
+（端点族 = `/api/projects*`（会话——能力矩阵三档）+ `/api/admin/git-sources*` ∥ `/api/admin/projects*`（`requireAdmin`——`user` ⇒ 403）+ `POST /api/hooks/git-sources/:id`（**公开**——验签门）；共 **十七行**（成员面六 ∥ 管理面十 ∥ 接收面一）；错误形 = §3 全码沿用——**零新码**；
+可见性口径 = 未授权即不可见（列表零出现 ∥ 直取 404 不辨——KD-SV-120）；同步/体检/拉列表三读动作走**自含状态形**（成 ⇒ `{ ok: true, … }`；败 ⇒ `{ ok: false, error: { kind, message }, ms }`——
+`kind` 六值：`auth` ∥ `scope_missing` ∥ `unreachable` ∥ `timeout` ∥ `http_error` ∥ `bad_response`；沿代理测试/镜像源先例）；写端点 JSON 型门同 §1 前言）
+
+| 方法 + 路径 | 语义 |
+|---|---|
+| `GET /api/projects?q=` | 可见项目列表：admin ⇒ 全量 ∥ 其余 ⇒ 成员行 ∪ 负责人命中集（恒过滤——非成员零出现）；`q` = 显示名/地址子串过滤；行 = `{ id, displayName, address, source: { id, name, platform } ∥ null, owner, level, memberCount }` |
+| `GET /api/projects/:id` | 详情：`{ project: {…行形}, members: [{ username, level, origin, syncedRole }], my: { level, owner, admin, can: { view, write, manageMembers, rename, editAddress, delete } } }`——非成员（非 admin/负责人）⇒ **404 `not_found`**（消息「项目不存在或不可见」——两态不辨） |
+| `PATCH /api/projects/:id` | 项目改（一次一件）：`{ displayName? }`（负责人 ∥ admin）∥ `{ address? }`（**仅 admin**——归一 + 唯一；非 admin ⇒ 403「改仓地址仅管理员」；撞 ⇒ 400 库零变）∥ `{ owner? }`（**仅 admin**——须命中现存成员；非 admin ⇒ 403）；逐件审计 `project_update`（detail = 键名 + 值） |
+| `POST /api/projects/:id/members` | 加成员 `{ username, level }`（负责人 ∥ 档位 manage ∥ admin——其余 403）：username 形校验（trim 非空 ∥ ≤64 ∥ 无 `/`）；同名已在 ⇒ 400；⇒ 200 `{ member: { username, level, origin, syncedRole } }` + 审计 `member_add` |
+| `PATCH /api/projects/:id/members/:username` | 改档 `{ level }`（同权——负责人保护：目标 = 负责人 ∧ 非 admin ⇒ 403）；不存在 ⇒ 404 ∥ 枚举外 ⇒ 400；审计 `member_update` |
+| `DELETE /api/projects/:id/members/:username` | 移除成员（同权；负责人保护同）；不存在 ⇒ 404；审计 `member_remove`（manual 行移除 = 永久 ∥ sync 行随下次同步按平台态回写——设计在册） |
+| `GET /api/admin/git-sources` | 源列表：`{ sources: [{ id, name, platform, baseURL, scope, token: { set, hint }, hookSecret: { set, hint }, enabled, syncMode, intervalMinutes, lastSyncAt, lastSyncResult, tokenState, tokenCheckedAt, createdAt }] }`——`token`/`hookSecret` 恒掩码（`…`+末 4——永不回显原文）；零审计（读动作） |
+| `POST /api/admin/git-sources` | 增源 `{ name, platform, baseURL?, scope?, token, enabled?, syncMode?, intervalMinutes? }`（名 ≤40 ∥ 平台四值 ∥ 自建须基址 ∥ 间隔 5–1440）⇒ 200 `{ source }` + 审计 `source_add`；撞名/形错 ⇒ 400 库零变 |
+| `PATCH /api/admin/git-sources/:id` | 改源（键级：出现键 = 应用；`token` 明填 = 替换 ∥ 缺省 = 不动——掩码三态沿 provider apiKey 口径）；不存在 ⇒ 404；审计 `source_update`（detail = 键名——值零入；`token`/`hookSecret` 键只记「已替换」） |
+| `DELETE /api/admin/git-sources/:id` | 删源：**还挂项目 ⇒ 400**（消息「尚有 N 个项目挂此源」——删源防护；库零变）∥ 零挂 ⇒ 200 `{ ok: true }` + 审计 `source_delete`；不存在 ⇒ 404 |
+| `POST /api/admin/git-sources/:id/sync` | 立即同步（成员同步即触发——**手动钮永在**）：进行中 ⇒ 400（「该源正在同步中」）∥ 否则自含形（成 ⇒ `{ ok: true, ms, counts: { projects, roster, added, updated, removed }, truncated? }`；败 ⇒ 分类；`auth` ⇒ `token_state='invalid'`）+ `last_sync_*` 随写 + 审计 `source_sync`（trigger=manual） |
+| `POST /api/admin/git-sources/:id/check` | PAT 体检：自含形（成 ⇒ `{ ok: true, ms }` + `token_state='ok'`；败 ⇒ 分类 + `auth` ⇒ `invalid`）+ `token_checked_at` + 审计 `source_check`；不存在 ⇒ 404 |
+| `GET /api/admin/git-sources/:id/repos` | 拉列表（读类 10s——自含形）：成 ⇒ `{ ok: true, repos: [{ fullName, address, private, known }], truncated, ms }`（≤300 行——`truncated` 如实；`known` = **跨形归一命中在册项目** ⇒ 界面「已添加」标 + 禁提交）；败 ⇒ 分类；零审计 |
+| `POST /api/admin/git-sources/:id/hook-secret` | 生成/轮换 webhook 密钥（事件进路）：⇒ 200 `{ hookSecret: { plain } }`（**一次性明文**——此后读面恒掩码；轮换 ⇒ 旧密钥即刻失效）；审计 `source_update`（keys 含 `hookSecret`——值零入）；不存在 ⇒ 404 |
+| `POST /api/admin/projects` | 加仓（两形一件）：`{ sourceId, repos: [{ address, displayName? }] }`（批量——勾选提交）∥ `{ address, displayName?, owner? }`（手输保底——源缺省 NULL）；校验逐条（地址形/归一/唯一 ∥ 负责人须现存成员）；**全成或全拒**（撞 ⇒ 400 列重复项、零落库）；每项目一行审计 `project_add`（detail = sourceId） |
+| `DELETE /api/admin/projects/:id` | 项目删除（仅 admin——`can.delete`）：载荷 `{ confirm: true }`（缺/非真 ⇒ 400 人话）；`project_members` 同事务随删（零孤儿）+ 审计 `project_event`/`project_delete`（detail = projectId/displayName/address/memberCount）；不存在 ⇒ 404——机制 = `project/PROJECTS.md` §14 |
+| `POST /api/hooks/git-sources/:id` | **事件接收端（公开）**：门 = `X-Hub-Signature-256` HMAC-SHA256（raw body ∥ 该源密钥——`timingSafeEqual`）；`X-GitHub-Event: member` ⇒ 200 `{ ok: true, triggered: true }` + 异步触发该源一次同步（`trigger='event'` ∥ actor=`webhook`；载荷不解析）；忽略面（非 member ∥ 源停用 ∥ `poll` 模式）⇒ 200 `{ ok: true, ignored: true }`；验签败 ⇒ 401 + `log.warn`（不入审计）；未知源 ⇒ 404——机制 = `project/PROJECTS.md` §13 |
+
+- **详情 `my` 形**（`GET /api/projects/:id`）= 判定函数逐值（`project/PROJECTS.md` §3）：`{ level, owner, admin, can }`；`can` 六键（含 `delete`——「删除项目」钮渲法源）；`admin` 布尔随 `my` 下发（「更换负责人」控件渲法源）；控制台渲法源口径 = `webui/PROJECTS.md` §2.1。
+- 调度器（定时成员同步——装配期接线）：判据与算法 = `project/PROJECTS.md` §5（**两模式同跑**——`event` 源照跑 = 对账兜底）；审计 actor = `scheduler` ∥ 事件触发 = `webhook`（后两者无 actorId）。
+- 用例 = `project/PROJECTS.md` §10（N1–N23 ∥ B1–B3 ∥ E1–E4）；控制台消费 = `webui/PROJECTS.md` §2。
+
 ## 3. 错误形（全码单源）
 
 - 统一形：`{ "error": { "message": "…", "type": "…", "code": "…" } }`。
@@ -205,6 +240,7 @@
 - 账号面（`/api/*`——同形）：401 `unauthorized`（无 ∥ 过期会话）· 401 `invalid_credentials`（登录失败 ∥ 旧密错误——同措辞同耗时）· 403 `forbidden`（角色不足）· 404 `not_found`（成员 ∥ key 不存在）· 429 `too_many_attempts`（登录锁定期——`Retry-After` 头（秒）；两维同文案——`accounts/ACCOUNTS.md` §2）。
 - 客户端面（`/api/client/*`——同形）：401 `invalid_api_key`（无/无效 token——三态不区分）· 401 `invalid_credentials` ∥ 429 `too_many_attempts`（登录——沿账号面同码）；**零新码**（全码单源不变——机制 = `client/CLIENT.md` §1/§2）。
 - 沙盒面（`/api/admin/sandbox/*` ∥ `/api/me/sandbox/*`——同形前置）：503 `sandbox_unavailable`（无可用节点——**一码新增**）；余码沿用族口径（`user` ⇒ 403）。
+- 项目面（`/api/projects*` ∥ `/api/admin/git-sources*` ∥ `/api/admin/projects*` ∥ `/api/hooks/*`——同形前置）：**零新码**（400/403/404/401 沿用；「不可见」直取 = 404 不辨——KD-SV-120）；同步/体检/拉列表三读动作 = **自含状态形**（不成统一信封——沿代理测试/镜像源先例）；接收面 = 验签败 401（零细节）+ `log.warn`（不入审计）∥ 忽略/受理 200 两形。
 - **上游已到达的错误**（4xx/5xx）：状态码与 body **原样透传**（不包不改）；仍记 error 行（token 未知记 NULL）。
 - **消息语言口径**：服务端消息 = 中文单语（机器面零改——CLI/curl 消费方口径不变）；控制台按 `code` 前端映射本地化（中文 ∥ English——机制 = `webui/I18N.md` §2.1）；上游透传错误照原样（控制台原文回显）。
 
@@ -250,6 +286,7 @@
 | 管理面 agent 会话面（admin-agent-chat 批——台账 #1254） | 判据全文 = `agent/ADMIN-AGENT.md` §7 聊天式行 ∥ §8（N54/N55 ∥ B48/B49 ∥ E40/E41）；端点面机检 = 本节 §2.8（四端点三态码 ∥ 帧形逐帧 ∥ 流前信封/流中 `end` 帧分界 ∥ 会话/在途门/重启收尾） | 批内件 |
 | 对话页壳面对齐（chat-shell-align 批——台账 #1292；功能点 41 ∥ AC-41） | 端点面机检 = 本节 §2.8 六端点（新增 `PATCH …/:id` ∥ `POST …/:id/abort`——三态码：`user` ⇒ 403 ∥ 不存在 ⇒ 404 ∥ idle 态 abort ⇒ 400；`images` 三门 ∥ 非视觉模型 ⇒ 400）∥ 帧序（`turn(n)` 前 ∥ `usage` 后 ∥ `end` 两可字段——缺 usage ⇒ 零帧）∥ 详情 user 行仅 `imageCount`；判据全文 = `agent/ADMIN-AGENT.md` §7 本批行 ∥ §8（N64–N67 ∥ B65/B66 ∥ E50/E51）∥ 网页面 = `webui/CHAT.md` §4 | 批内件 + 收口轮 |
 | 卷族（sandbox-volumes 批——台账 #1291；用户 2026-10-11 21:18 三件 + 21:22 裁；AC-40——已落需求档；表 = §2.5 卷族两行） | 列表逐值（`{ volumes: [{ name, driver, createdAt }] }`——`Volumes` 缺/null ⇒ `[]`；零审计）∥ 删名形校验（`../x` ∥ 含空格 ⇒ 400 **零外呼**）∥ 引擎 404 ⇒ 404 ∥ **409（在用卷）⇒ 400 人话 + 处置句**（零新码）∥ 204 ⇒ 200 + 审计 `volume_delete`（detail 键集 = `accounts/ACCOUNTS.md` §2.1）∥ 502 不可达 ∥ 判权三态（`user` ⇒ 403 ∥ 无会话 ⇒ 401）∥ 建容器卷字段 = 只改入口形（`Binds` 逐值零改——§2.5 创建容器行零动）；判据全文 = `sandbox/SANDBOX.md` §11 卷族行 ∥ §12（N62/N63 ∥ B63–B65 ∥ E48/E49）∥ §14 KD-SV-104/105 | 批内件 + 收口轮（真机） |
+| AC-44（功能点 44——团队项目与权限；已落需求档——`docs/server/requirements/PROJECT.md` 验收表；team-projects-permissions 批（B2）——表 = §2.9 **十七行**（成员面六 ∥ 管理面十 ∥ 接收面一）） | 端点面机检：仓表一对一（重复挂仓 400 零落库——**跨形归一单键** ∥ 只 admin 能加——`user` ⇒ 403）∥ 三档权限（能力读数 + 动作面 403/404）∥ 负责人边界（改仓地址 ⇒ 非 admin 403）∥ 单向同步（名册减人 ⇒ sync 行落掉 ∥ 零反向出站 = 出站全 GET——登记步手动）∥ 手动钮 + 定时（两模式同跑）+ 事件接收端（§13——验签/忽略面/撞锁合并）∥ 单源锁 ∥ 源表七字段 + 掩码 + 删源防护 + webhook 密钥面 ∥ 项目删除（§14）；判据全文 = `project/PROJECTS.md` §9/§10（N1–N23 ∥ B1–B3 ∥ E1–E4） | 批内件 + 收口轮（浏览器实走） |
 | AC-28（功能点 28——配置控制台写面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | GET = 文件面值（有效值回填 ∥ 密钥掩码零泄漏 ∥ `bootstrap.password` 面零列）∥ PATCH：白名单（未知键 ⇒ 400）∥ 合并保未知键 ∥ 校验门（非法值 ∥ `env:` 缺位 ⇒ 400 且文件字节零变）∥ 原子写（tmp 零残留 ∥ rename 覆盖）∥ 审计 `config_update`（detail = 键名 ∥ 值零入）∥ 并发（同步段单写者）∥ 写后 GET 回读逐值（round-trip）∥ 草稿探活（test 端点明传优先——缺省回落）∥ **缺段创建**（缺 `embedding` 段 ⇒ PATCH 建段 ⇒ 门通过 ∥ 缺段档 PATCH 他键过门；2026-10-09 embed 解耦批） | 批内件 |
 
 ## 6. 关键决策（本域）
@@ -411,3 +448,7 @@
 - 2026-10-12（**console-reasoning-levels 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-console-reasoning-levels.md` §1 · 台账 #1303；用户 11:45 走查 + 11:46 口径四条「行」；功能点 42 ∥ AC-42）：§2.2 GET providers 行补 `modelReasoning`（稀疏 map——机制 = `agent/ADMIN-AGENT.md` §11.4）+ 增思考档位条目；§2.8 增**会话行形条目**（四端点同源 + `reasoning`）+ 建会话行补 `reasoning` + **`PATCH …/:id` 行重写**（会话设置面：一次一件 ∥ 换模型清档 ∥ 表外 400）；§4 `provider-admin.mjs` 行实读复读（**349** ⇒ ≈362）+ 新档行一（`reasoning-levels.mjs` 拟新增 ≈45）+ 小计 +58；§8 管理面 agent 会话面不做行随正（去「推理」词——D8；+ 逐条覆写/状态行段）。同源随动 = `agent/ADMIN-AGENT.md` §6/§7/§8/§9/§10/§11.4/§13 ∥ `webui/CHAT.md` §1/§2.1/§3/§4/§5/§6 ∥ `store/STORE.md` §1–§4。**产品码零触（设计轮）。**
 - 2026-10-12（**console-reasoning-levels 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-console-reasoning-levels.md` §3 轮次 1 之 5；父侧定形 = 明写解析径）：§2.8 `PATCH …/:id` 值域句补上游真名解析（会话 `model` = 对外标识——别名反查 = KD-SV-59；机制 = `agent/ADMIN-AGENT.md` §11.4）。**零新语义**（评审发现直接导出项）。
 - 2026-10-12（**console-reasoning-levels 批 · 落地后回填 · 主 agent 直接执行 · 可 revert**）：§2.2 `reasoning-levels.mjs` 行账估 ≈45 ⇒ **实读 88**（本批落地后）。
+- 2026-10-12（**team-projects-permissions 批（B2）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §1 · 台账 #1216；用户 13:33 裁定收束 + 13:39 起批；需求 44 ∥ AC-44）：§1 路由族表增两行（项目面（成员） ∥ 项目管理面（admin））；**增 §2.9**（十四端点：成员面六 + 管理面八——可见性口径 ∥ 自含状态形六分类 ∥ 掩码 ∥ 删源防护 ∥ 加仓两形全成或全拒 ∥ 调度器接线）；§3 增项目面错误形行（零新码 + 自含形）；§5 增 AC-44 判据行。同源随动 = `project/PROJECTS.md`（新档） ∥ `webui/PROJECTS.md`（新档） ∥ `store/STORE.md` §2 v17 ∥ `accounts/ACCOUNTS.md` §2.1（十四型）。**产品码零触（设计轮）。**
+- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277）∥ 用户 2026-10-12 授权两件）：§1 路由族表：项目管理面行随正（+ webhook 密钥/项目删除）+ **增接收面行**（公开——验签门）；§2.9 preamble 随正（共 **十七行**）+ 三新行（`POST …/hook-secret` ∥ `POST /api/hooks/git-sources/:id` ∥ `DELETE /api/admin/projects/:id`）+ `hookSecret` 读面/`known` 标/`source_update` 键注随正 ∥ §3 项目面行随正（+ `/api/hooks/*`）∥ §5 AC-44 行随正（十七行 ∥ 跨形归一 ∥ 事件/删除面 ∥ N1–N23 ∥ B1–B3 ∥ E1–E4）。**产品码零触（设计轮）。**
+- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮 2（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3 轮次 2（评审 #280 之 1））：§2.9 详情行 `my` 补 `admin` 布尔 + `can` 补 `delete`（六键逐值 = `project/PROJECTS.md` §3 判定函数）+ 增「详情 `my` 形」条目（渲法源口径）；同源随动 = `webui/PROJECTS.md` §2.1。**零新语义**（评审发现直接导出项）。
+- 2026-10-12（**admin-chat-creds-merge 批 · 冻结域随正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-admin-chat-creds-merge.md` §2（R72② 清单——父侧解冻后落） · 台账 #1326）：§1 沙盒控制台面行方法面补 `PUT` ∥ §2.5 **增两端点行**（`PUT`/`DELETE …/runners/:id/credential`——形校验 400 ∥ 零秘密响应 ∥ 审计两 kind）+ 主机表行形增 `ssh` 元数据（`overview` 元素 ∥ `POST /runners` 200 行形）+ 托管接入列表行 `credential.state` 四值（+ `moved`）。同源随动 = `sandbox/SANDBOX.md` §3（主机凭据块——单源） ∥ `accounts/ACCOUNTS.md` §2.1 ∥ `store/STORE.md` §2 v19 段。**零新语义**（R72② 清单逐项转录）。

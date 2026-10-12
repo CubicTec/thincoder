@@ -253,7 +253,7 @@ test("B69 默认静默：未设 ⇒ 出口零 `reasoningEffort` 键 ∥ 表外�
 test("④ v16 零迁移：空库直落 16 ∥ v15 库升 16 ∥ 幂等 ∥ 列面六列（尾插）∥ 存量行 NULL 零变 ∥ 存量其余列保形", () => {
   const fresh = DB.openDatabase(":memory:")
   try {
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [16, 16], "空库直落 16")
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [17, 17], "空库直落 17")
     const cols = fresh.prepare("SELECT name FROM pragma_table_info('agent_chats') ORDER BY cid").all().map((row) => row.name)
     assert.deepEqual(cols, ["id", "model", "status", "created_by", "created_at", "updated_at", "reasoning"], "列面六列 + `reasoning` 尾插（加列——表不重建）")
   } finally {

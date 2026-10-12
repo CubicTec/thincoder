@@ -595,8 +595,8 @@ test("E45 user ∥ 无会话打镜像源七端点 ⇒ 403 ∥ 401 ∥ 改/删不
 test("v15 迁移：空库直落 16 ∥ v14 升后 16 ∥ 幂等（再开零变）∥ 五列 ∥ 两 UNIQUE 拒重 ∥ 存量表零变", () => {
   // 空库直落 16
   const fresh = DB.openDatabase(":memory:")
-  assert.equal(DB.readVersion(fresh), 16, "空库直落 16")
-  assert.equal(DB.SCHEMA_VERSION, 16, "结构版本读数 = 链尾")
+  assert.equal(DB.readVersion(fresh), 17, "空库直落 17")
+  assert.equal(DB.SCHEMA_VERSION, 17, "结构版本读数 = 链尾")
   const freshTables = fresh.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((row) => row.name)
   assert.ok(freshTables.includes("image_sources"), "image_sources 在表集")
   // 五列在场 + 两 UNIQUE 拒重

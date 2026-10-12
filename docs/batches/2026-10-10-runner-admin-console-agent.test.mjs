@@ -581,7 +581,7 @@ test("腿 F Docker 客户端缓存驱逐：首打失败（微态）⇒ 自愈后
 test("v13 建表：空库直落 16 ∥ v12 库升后 16 ∥ 幂等 ∥ 十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒", async () => {
   const file = join(tempRoot, "v13.db")
   const fresh = DB.openDatabase(file)
-  assert.equal(DB.readVersion(fresh), 16, "空库直落 16")
+  assert.equal(DB.readVersion(fresh), 17, "空库直落 17")
   const cols = fresh.prepare("PRAGMA table_info(sandbox_onboarding)").all().map((row) => row.name)
   assert.equal(cols.length, 18, `列面十八列在场（实 ${cols.length}）`)
   for (const name of ["host", "ssh_port", "ssh_user", "auth_kind", "secret_cipher", "sudo_cipher", "credential_mode", "credential_state", "name", "model", "status", "step", "steps_json", "runner_id", "created_by", "created_at", "finished_at"]) {

@@ -417,6 +417,75 @@ ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;
 -- ② 审计 CHECK 零动（三 kind 不扩——档位写 = 会话设置面，沿 KD-SV-108 先例；十三型不变）
 `
 
+/** v17 增段（git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型）——store/STORE.md §2 v17 段逐字；project 域——team-projects-permissions 批）。
+ *  ① 三表（源 ∥ 项目（仓） ∥ 项目成员）+ 两索引；② 审计表重建（十三型 ⇒ 十四型：+ `project_event`——步序与 v10/v11/v14 同构）。
+ *  语义/机制 = `project/PROJECTS.md` §2/§4/§5（单源）；PAT 密文包形 = `store/credential-crypto.mjs`（KD-SV-119）；判据 = `store/STORE.md` §3 v17 行。 */
+const DDL_V17 = `
+-- ① 三表（源 ∥ 项目（仓） ∥ 项目成员）
+CREATE TABLE IF NOT EXISTS git_sources (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,                    -- 源名（≤40——应用层校验）
+  platform TEXT NOT NULL CHECK (platform IN ('gitee','github','gitlab','selfhosted')),
+  base_url TEXT,                                -- 自建平台基址（其余平台 NULL——客户端用固定基址）
+  scope TEXT,                                   -- 组织/企业/组标识（成员同步用；NULL = 未配置）
+  token_cipher TEXT NOT NULL,                   -- PAT 密文（AES-256-GCM \`iv|tag|ct\`——KD-SV-119；永不回显原文）
+  hook_secret_cipher TEXT,                      -- webhook 密钥密文（事件进路——github 专用；按需生成 ⇒ NULL 缺省；生成时一次性明示 ∥ 读面恒掩码——project/PROJECTS.md §13）
+  enabled INTEGER NOT NULL DEFAULT 1,           -- 启用/停用（停用 ⇒ 定时停、已挂项目保留——需求 44⑤）
+  sync_mode TEXT NOT NULL DEFAULT 'poll' CHECK (sync_mode IN ('poll','event')),
+  interval_minutes INTEGER NOT NULL DEFAULT 60, -- 定时拉取间隔（5–1440——应用层校验）
+  last_sync_at TEXT,                            -- 上次同步尝试时刻（成敗同记——需求 44⑤「上次同步时间 + 结果」）
+  last_sync_result_json TEXT NOT NULL DEFAULT '{}',
+  token_state TEXT NOT NULL DEFAULT 'unknown' CHECK (token_state IN ('unknown','ok','invalid')),
+  token_checked_at TEXT,
+  created_by INTEGER,                           -- 无 FK——沿先例
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS projects (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  source_id INTEGER,                            -- 所属源（手输仓 ⇒ NULL）；无 FK——删源防护走应用层（KD-SV-122）
+  address TEXT NOT NULL UNIQUE,                 -- git 地址（跨形归一后 = 记账键——规范形 \`host[:port]/path\`；归一口径 = project/PROJECTS.md §5）
+  display_name TEXT NOT NULL,                   -- 显示名（负责人可改——需求 44②）
+  owner_username TEXT,                          -- 负责人（统一用户名键；NULL = 未指派；admin 指派）
+  created_by INTEGER,
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS project_members (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id INTEGER NOT NULL,
+  username TEXT NOT NULL COLLATE NOCASE,        -- 统一用户名键（大小写不敏感唯一——KD-SV-116）
+  level TEXT NOT NULL CHECK (level IN ('read','readwrite','manage')),
+  origin TEXT NOT NULL DEFAULT 'manual' CHECK (origin IN ('manual','sync')),
+  synced_role TEXT,                             -- 平台角色原文（sync 行携带——展示用；manual 行 NULL）
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE (project_id, username)
+);
+CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(username);
+CREATE INDEX IF NOT EXISTS idx_projects_source ON projects(source_id);
+
+-- ② 审计 CHECK 再扩（十三型 ⇒ 十四型：+ 'project_event'——表重建，步序与 v10/v11/v14 同构）
+--    kind 枚举（十一 kind）：source_add ∥ source_update ∥ source_delete ∥ source_sync ∥ source_check ∥ project_add ∥ project_update ∥
+--    project_delete ∥ member_add ∥ member_update ∥ member_remove（kind 非 CHECK 枚举——逐 kind 归 accounts/ACCOUNTS.md §2.1）
+CREATE TABLE audit_events_v17 (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts          INTEGER NOT NULL,              -- unix ms（事件时刻）
+  type        TEXT NOT NULL CHECK (type IN ('login_success','login_failure','login_locked',
+    'key_rotate','key_issue','key_revoke','password_change','password_reset','member_create','config_update',
+    'sandbox_rule','sandbox_event','agent_event','project_event')),
+  actor_id    INTEGER,                       -- 行为人成员 id（无会话 ∥ 未知用户名 ⇒ NULL；无 FK——历史记录自足）
+  actor_name  TEXT NOT NULL,                 -- 行为人名快照（用户名 ∥ 展示名 ∥ 'cli' ∥ 'scheduler' ∥ 'webhook'）
+  target_id   INTEGER,                       -- 对象成员 id（无对象 ⇒ NULL）
+  target_name TEXT NOT NULL DEFAULT '',      -- 对象名快照（无对象 ⇒ 空串；项目类事件 = 'project:<id>' 可读形）
+  detail      TEXT NOT NULL DEFAULT '{}'     -- 附加形（JSON：kind ∥ sourceId ∥ projectId ∥ keys 等）
+);
+INSERT INTO audit_events_v17 (id, ts, type, actor_id, actor_name, target_id, target_name, detail)
+  SELECT id, ts, type, actor_id, actor_name, target_id, target_name, detail FROM audit_events;
+DROP TABLE audit_events;
+ALTER TABLE audit_events_v17 RENAME TO audit_events;
+CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
+CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -435,6 +504,7 @@ export const MIGRATIONS = [
   { v: 14, up: (db) => db.exec(DDL_V14) },
   { v: 15, up: (db) => db.exec(DDL_V15) },
   { v: 16, up: (db) => db.exec(DDL_V16) },
+  { v: 17, up: (db) => db.exec(DDL_V17) },
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

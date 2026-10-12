@@ -173,6 +173,7 @@ export const EN_SYSTEM = Object.freeze({
   "audit.type.agent_event": "Console chat",
   "audit.type.sandbox_event": "Sandbox event",
   "audit.type.sandbox_rule": "Sandbox rule decision",
+  "audit.type.project_event": "Project event",
   "audit.sandboxKind.container_create": "Container created",
   "audit.sandboxKind.container_start": "Container started",
   "audit.sandboxKind.container_stop": "Container stopped",

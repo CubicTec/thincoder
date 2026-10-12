@@ -117,7 +117,7 @@ const chat = (base, plain, model = "mock/mock-chat") => post(base, "/v1/chat/com
 test("① v8 迁移：空库直落 10 ∥ v7 库升 10（存量回填 key-N 按签发序）∥ 幂等 ∥ 新列在场 ∥ 空串零残留", () => {
   const fresh = DB.openDatabase(":memory:")
   try {
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [16, 16], "空库直落 v16")
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [17, 17], "空库直落 v17")
     const column = fresh.prepare("PRAGMA table_info(api_keys)").all().find((item) => item.name === "name")
     assert.ok(column, "api_keys.name 缺位")
     assert.deepEqual([column.type, column.notnull, column.dflt_value], ["TEXT", 1, "''"], "常量默认 = ''")

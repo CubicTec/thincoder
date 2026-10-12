@@ -2,12 +2,14 @@
  * views-audit.mjs — 管理·审计（webui/WEBUI.md §2/§2.3④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
- * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十三型——全型收编）；
+ * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十四型——全型收编）；
  * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10）
- * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11））
+ * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11）
+ * ∥ project 行（`project_event`——kind 族 + 源/项目/成员三面逐值；team-projects-permissions 批（B2）））
  * 按在场渲染；对象与操作者同名 ⇒「—」（名快照口径——改/删后记录自足）。渲染一律节点 + textContent；文案经 `t()` 取值。
  */
 import { t } from "./i18n.mjs"
+import { countsText, levelLabel, readKindLabel } from "./views-projects.mjs"
 
 /** 审计类型枚举（类型值 ∥ 文案键——accounts/ACCOUNTS.md §2.1；未知型 ⇒ 原值兜底——未来新型零遗漏）。 */
 const AUDIT_TYPES = [
@@ -24,6 +26,7 @@ const AUDIT_TYPES = [
   ["agent_event", "audit.type.agent_event"],
   ["sandbox_event", "audit.type.sandbox_event"],
   ["sandbox_rule", "audit.type.sandbox_rule"],
+  ["project_event", "audit.type.project_event"],
 ]
 
 export async function renderAudit(ctx, mount) {
@@ -75,7 +78,7 @@ function eventsTable(ctx, events) {
     typeLabel(event.type),
     event.actor,
     event.target && event.target !== event.actor ? event.target : "—",
-    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : detailText(event.detail),
+    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : event.type === "project_event" ? projectDetailText(event.detail) : detailText(event.detail),
   ])
   return ctx.table([t("audit.col.time"), t("audit.col.type"), t("audit.col.actor"), t("audit.col.target"), t("audit.col.detail")], rows, { foot: true })
 }
@@ -108,6 +111,45 @@ export function agentDetailText(detail) {
   if (detail?.resultCode !== undefined && detail?.resultCode !== null) parts.push(Number(detail.resultCode) === 0 ? t("audit.agentOk") : t("audit.agentFail"))
   if (detail?.truncated === true) parts.push(t("audit.agentTruncated"))
   if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary)
+  return parts.length === 0 ? "—" : parts.join(" · ")
+}
+
+/** 项目 kind 文案键（`project_event` detail.kind——十一 kind；枚举外 ⇒ 原值兜底）。 */
+const PROJECT_KIND_KEYS = {
+  source_add: "admin.projects.kind.source_add",
+  source_update: "admin.projects.kind.source_update",
+  source_delete: "admin.projects.kind.source_delete",
+  source_sync: "admin.projects.kind.source_sync",
+  source_check: "admin.projects.kind.source_check",
+  project_add: "admin.projects.kind.project_add",
+  project_update: "admin.projects.kind.project_update",
+  project_delete: "admin.projects.kind.project_delete",
+  member_add: "admin.projects.kind.member_add",
+  member_update: "admin.projects.kind.member_update",
+  member_remove: "admin.projects.kind.member_remove",
+}
+
+/** 项目 kind 文案（导出——批内件断言面；枚举外 ⇒ 原值兜底）。 */
+export function projectKindLabel(kind) {
+  return PROJECT_KIND_KEYS[kind] === undefined ? String(kind ?? "—") : t(PROJECT_KIND_KEYS[kind])
+}
+
+/** 项目事件详情（`project_event`——kind 族 + 源/项目/成员三面逐值；`level`/计数/分类人话 = 项目部件单源）。 */
+function projectDetailText(detail) {
+  const parts = []
+  if (typeof detail?.kind === "string" && detail.kind !== "") parts.push(projectKindLabel(detail.kind))
+  if (detail?.sourceId !== undefined && detail?.sourceId !== null) parts.push(`#${detail.sourceId}`)
+  if (detail?.projectId !== undefined && detail?.projectId !== null) parts.push(`#${detail.projectId}`)
+  if (typeof detail?.name === "string" && detail.name !== "") parts.push(detail.name)
+  if (typeof detail?.displayName === "string" && detail.displayName !== "") parts.push(detail.displayName)
+  if (typeof detail?.address === "string" && detail.address !== "") parts.push(detail.address)
+  if (typeof detail?.username === "string" && detail.username !== "") parts.push(detail.username)
+  if (typeof detail?.level === "string" && detail.level !== "") parts.push(levelLabel(detail.level))
+  if (typeof detail?.trigger === "string" && detail.trigger !== "") parts.push(detail.trigger)
+  if (detail?.ok === true) parts.push(t("admin.gitSources.resultOk"))
+  if (detail?.ok === false) parts.push(`${t("admin.gitSources.resultFail")}${detail?.errorKind === undefined ? "" : ` · ${readKindLabel(detail?.errorKind)}`}`)
+  if (detail?.counts !== undefined && detail?.counts !== null) parts.push(countsText(detail.counts))
+  if (detail?.memberCount !== undefined && detail?.memberCount !== null) parts.push(`${t("admin.projects.col.memberCount")} ${detail?.memberCount}`)
   return parts.length === 0 ? "—" : parts.join(" · ")
 }
 

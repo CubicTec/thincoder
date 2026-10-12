@@ -10,7 +10,7 @@
 
 - **一句话**：一台内网常驻的 Node 单进程——OpenAI 兼容入口（chat ∥ embeddings ∥ models），网关代持全部真实 provider key，逐请求记账、按成员限额度；
   另配登录制控制台（vanilla 静态前端——侧栏分组导航；页集 = `webui/WEBUI.md` §2（单源）∥ 多语言 = `webui/I18N.md` §2.1）与本机运维 CLI（兜底）；首版完备化面 = `/healthz` ∥ 登录防爆破 ∥ 用量保留窗 ∥ 控制台系统页（版本/更新/接入——§7 AC-13）∥ 可见面二轮六面（向量/看板/总览/审计/健康/key 细节——§7 AC-15）。
-- **落点**：代码 = `thincoder-server/`（新顶层目录——与 `thincoder-core/` ∥ `thincoder-cli/` ∥ `thincoder-vscode/` ∥ `thincoder-desktop/` ∥ `thincoder-render-core/` 同级）；设计档 = `docs/server/design/`（板 2 档 + 域 9 档——webui 域另含面档 8；见 §2.1 ∥ §3）。
+- **落点**：代码 = `thincoder-server/`（新顶层目录——与 `thincoder-core/` ∥ `thincoder-cli/` ∥ `thincoder-vscode/` ∥ `thincoder-desktop/` ∥ `thincoder-render-core/` 同级）；设计档 = `docs/server/design/`（板 2 档 + 域 10 档——webui 域另含面档 9；见 §2.1 ∥ §3）。
 - **形态**：单进程单库（`node:http` + `node:sqlite`）；无构建步骤；纯 ESM（`.mjs`）。
 - **零第三方运行期依赖**（沿仓纪律）：import 限 `node:*` 标准库 + 相对路径 + 从核引面（`@thincoder/core`——本仓包，非第三方；口径 = §2.3 ∥ §5 KD-SV-78）。
 
@@ -19,8 +19,8 @@
 ### 2.1 模块边界与责任地图
 
 **三层结构（板 → 域 → 档——代码与文档同拍，用户 2026-10-06 08:14 令）**：代码 = `thincoder-server/src/<域>/<档>.mjs`（入口 `bin/` 与静态 `public/` 除外）；文档 = `docs/server/design/<域>/<档>.md`。
-**九域 = gateway ∥ accounts ∥ metering ∥ store ∥ webui ∥ ops ∥ client ∥ sandbox ∥ agent**（前六域目录自第一步立；client 域 = 2026-10-10 B1 批新立；
-sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-console 批（托管接入）新立；拆分落域内——`EVOLUTION.md` §1-G4）。
+**十域 = gateway ∥ accounts ∥ metering ∥ store ∥ webui ∥ ops ∥ client ∥ sandbox ∥ agent ∥ project**（前六域目录自第一步立；client 域 = 2026-10-10 B1 批新立；
+sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-console 批（托管接入）新立；project 域 = 2026-10-12 B2 批（team-projects-permissions——团队项目与权限）新立；拆分落域内——`EVOLUTION.md` §1-G4）。
 
 | 域 | 代码（本域档） | 职责 | 域档（文档） |
 |---|---|---|---|
@@ -29,11 +29,12 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | accounts | `thincoder-server/src/accounts/`（档单/计数 = `accounts/ACCOUNTS.md` §4——单源） | 团队 key ∥ 账号/成员 ∥ 会话/登录 ∥ 密码 ∥ 登录防爆破 ∥ 审计事件（§2.1） ∥ 自助/管理端点 | `accounts/ACCOUNTS.md` |
 | metering | `thincoder-server/src/metering/`（档单/计数 = `metering/METERING.md` §5——单源） | 记账（同事务三写：usage + 派生两表） ∥ 配额（三级计数准入） ∥ 用量/配额端点（含报表/导出——§3） ∥ 保留窗清理 | `metering/METERING.md` |
 | store | `thincoder-server/src/store/`（一档——`db`；档单/计数 = `store/STORE.md` §4——单源） | 库 ∥ DDL ∥ 迁移链（各域共用；v5 = 模型标识两字段拆列 + 派生两表 + 成员配额列） | `store/STORE.md` |
-| webui | `thincoder-server/src/webui/`（一档——`static`）+ `thincoder-server/public/`（档单/计数 = `webui/WEBUI.md` §1——单源；含 favicon 全目录） | 页面路由 ∥ HTML/JS/CSS ∥ 静态直发（**双根：`public/` + `/rc/*` → `@thincoder/render-core`**） ∥ IA/导航（`webui/WEBUI.md` §2） ∥ 多语言（`webui/I18N.md` §2.1） ∥ 可见面二轮（`webui/READINGS.md` §2.1） ∥ 弹窗与成员/服务模型/Provider 面（`webui/ADMIN.md` §2.1） ∥ 样式族与布局壳（`webui/STYLE.md` §2.1/§2.2） ∥ 系统页配置面（`webui/SYSTEM.md` §2.1/§2.2） ∥ 沙盒页（运行面 + 容器面/镜像族 + 拉取认源 + 卷族——`webui/SANDBOX.md` §2.1/§2.2；六面分五轮）∥ 管理面对话页（`webui/CHAT.md` §2.1——呈现面复用渲染核，KD-SV-101；**壳面四轴对齐——布局/消息形态/输入区全件/状态行，KD-SV-106**） | `webui/WEBUI.md`（面档 8——§3） |
+| webui | `thincoder-server/src/webui/`（一档——`static`）+ `thincoder-server/public/`（档单/计数 = `webui/WEBUI.md` §1——单源；含 favicon 全目录） | 页面路由 ∥ HTML/JS/CSS ∥ 静态直发（**双根：`public/` + `/rc/*` → `@thincoder/render-core`**） ∥ IA/导航（`webui/WEBUI.md` §2） ∥ 多语言（`webui/I18N.md` §2.1） ∥ 可见面二轮（`webui/READINGS.md` §2.1） ∥ 弹窗与成员/服务模型/Provider 面（`webui/ADMIN.md` §2.1） ∥ 样式族与布局壳（`webui/STYLE.md` §2.1/§2.2） ∥ 系统页配置面（`webui/SYSTEM.md` §2.1/§2.2） ∥ 沙盒页（运行面 + 容器面/镜像族 + 拉取认源 + 卷族——`webui/SANDBOX.md` §2.1/§2.2；六面分五轮）∥ 管理面对话页（`webui/CHAT.md` §2.1——呈现面复用渲染核，KD-SV-101；**壳面四轴对齐——布局/消息形态/输入区全件/状态行，KD-SV-106 ∥ 活流按步交错——与终态同形，KD-SV-132**） | `webui/WEBUI.md`（面档 8——§3） |
 | ops | `thincoder-server/src/ops/` + 部署档组（`thincoder-server/deploy/**` ∥ `Dockerfile` ∥ `.dockerignore` ∥ `docker-compose.yml`）+ 模板/说明档（档单/计数 = `ops/OPS.md` §6——单源） | 配置（含 provider 预设） ∥ 日志 ∥ 运维 CLI ∥ 更新机制（自检/自升/收敛） ∥ 部署面（npm ∥ Docker ∥ systemd ∥ 备份） | `ops/OPS.md` |
 | client | `thincoder-server/src/client/`（一档——`routes`；档单/计数 = `client/CLIENT.md` §3——单源） | 客户端接入：客户面登录 ∥ 退出（token 吊销） ∥ 当前态读数（`me`）——token = 具名成员 key（复用 accounts key 面） | `client/CLIENT.md` |
-| sandbox | `thincoder-server/src/sandbox/`（档单/计数 = `sandbox/SANDBOX.md` §13——单源）+ 执行面档组（重做批定形） | 沙盒：节点与容器（§3）∥ 容器面补齐 + 镜像族（§3）∥ 镜像源族 + 一键拉取 + 拉取认源（§3）∥ 卷族（§3）∥ 托管接入（§3——agent 代做） ∥ 控制面（登记/工作区/规则/待批/凭据/控制台——§1–§9）；执行面随重做批重建 | `sandbox/SANDBOX.md` |
-| agent | `thincoder-server/src/agent/`（档单/计数 = `agent/ADMIN-AGENT.md` §6——单源） | 管理面 agent：两驱动形态（任务式 §2 ∥ 聊天式 §11） ∥ 任务模型 ∥ 工具面（任务五件 §3 + 管理面七件 §12 + 环境五族七件 §14） ∥ **环境感知（四块装配——§14）** ∥ 会话与流式通路 ∥ 无人值守裁剪 ∥ 自主边界与失败处置 | `agent/ADMIN-AGENT.md` |
+| sandbox | `thincoder-server/src/sandbox/`（档单/计数 = `sandbox/SANDBOX.md` §13——单源）+ 执行面档组（重做批定形） | 沙盒：节点与容器（§3）∥ 容器面补齐 + 镜像族（§3）∥ 镜像源族 + 一键拉取 + 拉取认源（§3）∥ 卷族（§3）∥ 托管接入（§3——agent 代做）∥ 主机表 + 凭据（§3 主机凭据块——SSH 凭据托管 ∥ `exec` 进 chat ∥ run 退场路线） ∥ 控制面（登记/工作区/规则/待批/凭据/控制台——§1–§9）；执行面随重做批重建 | `sandbox/SANDBOX.md` |
+| agent | `thincoder-server/src/agent/`（档单/计数 = `agent/ADMIN-AGENT.md` §6——单源） | 管理面 agent：两驱动形态（任务式 §2 ∥ 聊天式 §11） ∥ 任务模型 ∥ 工具面（任务五件 §3 + 管理面**八件** §12〔`exec` 入 chat——KD-SV-136〕+ 环境六族八件 §14） ∥ **环境感知（四块装配——§14）** ∥ **唤醒与投递面（§15——timer 空闲唤醒 ∥ bash 异步）** ∥ 会话与流式通路 ∥ 无人值守裁剪 ∥ 自主边界与失败处置 | `agent/ADMIN-AGENT.md` |
+| project | `thincoder-server/src/project/`（档单/计数 = `project/PROJECTS.md` §8——单源） | 团队项目与权限：git 源接入（四平台 PAT——加密存） ∥ 项目/仓表（一对一；项目删除 = §14） ∥ 成员三档与可见性（能力矩阵——未授权即不可见） ∥ 成员单向同步（定时 + 手动 + **github 事件接收端 §13**） + PAT 体检 ∥ 源/项目/成员管理端点 | `project/PROJECTS.md` |
 
 （各域「不做」面 = 各域档「本域边界」段；全局范围 = 头注「范围注」；逐档行数 = 各域档「本域文件与行数预算」。）
 
@@ -77,7 +78,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 - 同仓直连的优势（协议两端一提交同改同审）保留待用：非 OpenAI 协议翻译类需求（现为不做项）出现时再按批直连，不预先耦合。
 - 存储选 `node:sqlite` 与核 `thincoder-core/ledger-db.mjs` 同技术（`DatabaseSync`），零代码共享——各持各的库与 DDL。
 
-## 3. 文档地图（板 2 + 域 9）
+## 3. 文档地图（板 2 + 域 10）
 
 | 档 | 层 | 域 | 内容（各档自带决策段与变更记录） |
 |---|---|---|---|
@@ -87,13 +88,14 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | `accounts/ACCOUNTS.md` | 域 | accounts | 团队 key 面 ∥ 账号/会话/角色 ∥ 自助/管理端点表 ∥ 改密/重置 ∥ 本域文件与预算 ∥ 验收判据 ∥ 用例 |
 | `metering/METERING.md` | 域 | metering | 记账 ∥ 配额 ∥ 查询与额度端点 ∥ 本域文件与预算 ∥ 验收判据 ∥ 用例 |
 | `store/STORE.md` | 域 | store | 库 ∥ DDL ∥ 迁移链 ∥ 本域文件与预算 ∥ 决策 |
-| `webui/WEBUI.md` | 域 | webui | 壳面：静态面 ∥ 控制台 IA（§2——页集/档目链单源） ∥ 判权与自托管 ∥ 壳面文件与预算余行 ∥ 验收（非功能·前端自洽 ∥ AC-12） ∥ 边界；面档 8 = `webui/ADMIN.md`（管理数据面） ∥ `webui/CHAT.md`（管理面对话） ∥ `webui/I18N.md`（多语言） ∥ `webui/ME.md`（我的面） ∥ `webui/READINGS.md`（读数面——可见面二轮六面） ∥ `webui/SANDBOX.md`（沙盒面） ∥ `webui/STYLE.md`（样式与版式） ∥ `webui/SYSTEM.md`（系统页）——各档 §1 KD ∥ §2 机制 ∥ §3 文件账/键族 ∥ §4 验收 ∥ §5 边界 ∥ §6 上抛/余项 |
+| `webui/WEBUI.md` | 域 | webui | 壳面：静态面 ∥ 控制台 IA（§2——页集/档目链单源） ∥ 判权与自托管 ∥ 壳面文件与预算余行 ∥ 验收（非功能·前端自洽 ∥ AC-12） ∥ 边界；面档 9 = `webui/ADMIN.md`（管理数据面） ∥ `webui/CHAT.md`（管理面对话） ∥ `webui/I18N.md`（多语言） ∥ `webui/ME.md`（我的面） ∥ `webui/READINGS.md`（读数面——可见面二轮六面） ∥ `webui/SANDBOX.md`（沙盒面） ∥ `webui/STYLE.md`（样式与版式） ∥ `webui/SYSTEM.md`（系统页） ∥ `webui/PROJECTS.md`（团队项目与权限面——2026-10-12 B2 批建档）——各档 §1 KD ∥ §2 机制 ∥ §3 文件账/键族 ∥ §4 验收 ∥ §5 边界 ∥ §6 上抛/余项 |
 | `ops/OPS.md` | 域 | ops | 配置面 ∥ 首启引导 ∥ 运维 CLI ∥ 启动/停机/部署面 ∥ 日志 ∥ 本域文件与预算 ∥ 验收判据 ∥ 用例 |
 | `client/CLIENT.md` | 域 | client | 客户端接入：客户端 token 面 ∥ `/api/client/*` 数据面骨架 ∥ 端点表 ∥ 本域文件与预算 ∥ 验收判据（AC-31）∥ 用例 ∥ 边界 ∥ 上抛/余项（§8——自板档 §9 迁入）（2026-10-10 B1 批建档） |
-| `sandbox/SANDBOX.md` | 域 | sandbox | 沙盒：形态 ∥ 对象模型与存储（v11–v13 ∥ v15） ∥ 节点与容器（最小切片——§3；**容器面补齐 + 镜像族——§3**；**镜像源族——§3**；**卷族——§3**） ∥ 托管接入（§3——步骤表/凭据定形/网络路径） ∥ 出站规则单源 ∥ 工作区生命周期与节点绑定 ∥ 待批队列 ∥ 盒内凭据 ∥ 控制台六面（必交面——每配置项有 UI 写入口） ∥ 端点与判权 ∥ 已裁决策与披露 ∥ 验收判据 ∥ 用例 ∥ 本域文件与行数预算 ∥ 决策（含 KD-SV-79/80/81/83–86/92–100 ∥ 104/105） ∥ 边界（2026-10-10 沙盒批建档；runner-admin-console 批随正；托管接入增补 2026-10-10；sandbox-docker-admin 批 2026-10-11；sandbox-image-sources 批 2026-10-11；sandbox-volumes 批 2026-10-11） ∥ 上抛/余项（§16——自板档 §9 迁入） |
-| `agent/ADMIN-AGENT.md` | 域 | agent | 管理面 agent：形态与定位 ∥ 任务模型 ∥ 工具面五件 ∥ 自主边界与失败处置 ∥ 无人值守裁剪 ∥ **聊天式驱动（§11）** ∥ **工具面扩展七件（§12）** ∥ **环境感知与环境工具面（§14——四块装配 ∥ 五族七件 ∥ 限幅 ∥ 审计详情与 timer 投递 ∥ 核可达性）** ∥ 本域预算 ∥ 验收 ∥ 本域决策（KD-SV-82/87/88/89/90/91 ∥ **107/108/109/110** ∥ **112/113/114**） ∥ 边界（2026-10-10 runner-admin-console 批建档；2026-10-11 admin-agent-chat 批增 §11/§12；chat-shell-align 批增 §11.2/§11.3；console-reasoning-levels 批增 §11.4；admin-agent-awareness 批增 §14） ∥ 上抛/余项（§13——自板档 §9 迁入） |
+| `sandbox/SANDBOX.md` | 域 | sandbox | 沙盒：形态 ∥ 对象模型与存储（v11–v13 ∥ v15） ∥ 节点与容器（最小切片——§3；**容器面补齐 + 镜像族——§3**；**镜像源族——§3**；**卷族——§3**；**主机凭据——§3**） ∥ 托管接入（§3——步骤表/凭据定形/网络路径） ∥ 出站规则单源 ∥ 工作区生命周期与节点绑定 ∥ 待批队列 ∥ 盒内凭据 ∥ 控制台六面（必交面——每配置项有 UI 写入口） ∥ 端点与判权 ∥ 已裁决策与披露 ∥ 验收判据 ∥ 用例 ∥ 本域文件与行数预算 ∥ 决策（含 KD-SV-79/80/81/83–86/92–100 ∥ 104/105 ∥ **133–135**） ∥ 边界（2026-10-10 沙盒批建档；runner-admin-console 批随正；托管接入增补 2026-10-10；sandbox-docker-admin 批 2026-10-11；sandbox-image-sources 批 2026-10-11；sandbox-volumes 批 2026-10-11；admin-chat-creds-merge 批 2026-10-12） ∥ 上抛/余项（§16——自板档 §9 迁入） |
+| `agent/ADMIN-AGENT.md` | 域 | agent | 管理面 agent：形态与定位 ∥ 任务模型 ∥ 工具面五件 ∥ 自主边界与失败处置 ∥ 无人值守裁剪 ∥ **聊天式驱动（§11）** ∥ **工具面扩展八件（§12）** ∥ **环境感知与环境工具面（§14——四块装配 ∥ 六族八件 ∥ 限幅 ∥ 审计详情与 timer 投递 ∥ 核可达性）** ∥ **唤醒与投递面（§15——唤醒器一器两源 ∥ 投递汇 ∥ 对齐表 ∥ 开放点四条）** ∥ **会话历史与出口改道（§16——`read_history` ∥ 网关链 loopback ∥ 管理面 sk）** ∥ 本域预算 ∥ 验收 ∥ 本域决策（KD-SV-82/87/88/89/90/91 ∥ **107/108/109/110** ∥ **112/113/114** ∥ **125/126 ∥ 129/130/131** ∥ **136**） ∥ 边界（2026-10-10 runner-admin-console 批建档；2026-10-11 admin-agent-chat 批增 §11/§12；chat-shell-align 批增 §11.2/§11.3；console-reasoning-levels 批增 §11.4；admin-agent-awareness 批增 §14；server-wake-face 批增 §15/§16（修订轮）；admin-chat-creds-merge 批增 §12 扩容/§9 KD-SV-136） ∥ 上抛/余项（§13——自板档 §9 迁入） |
+| `project/PROJECTS.md` | 域 | project | 团队项目与权限：定位与词表 ∥ 关键决策（KD-SV-115–123 ∥ **127/128**） ∥ 权限模型（能力矩阵/判据句九条） ∥ 平台接入（能力矩阵 + 角色映射表四张 + 客户端口径） ∥ 同步机制（三径/调度/算法/锁/体检/源生命周期/加仓两径 ∥ **事件接收端 §13**） ∥ **项目删除（§14）** ∥ 端点摘要（单源 = `gateway/API.md` §2.9） ∥ 界面承载（⇒ `webui/PROJECTS.md`） ∥ 本域文件与预算 ∥ 验收（AC-44 ①–⑨ 对位 + R63/R64 补面） ∥ 用例 ∥ 边界 ∥ 上抛/余项（§12——自板档 §9 迁入）（2026-10-12 B2 批建档） |
 
-## 4. 决策索引（KD-SV-1–114——域 → 域档 KD 节）
+## 4. 决策索引（KD-SV-1–136——域 → 域档 KD 节）
 
 > 编号 = `KD-SV-N`（全局唯一 ∥ 不随域分号段）；每条全形（决策 ∥ 理由 ∥ 被否候选） = 其所在档 KD 节（单一权威源）——本表只作域级索引；板级 KD 全形 = 本档 §5。
 
@@ -104,11 +106,12 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | accounts | `accounts/ACCOUNTS.md` §6 |
 | metering | `metering/METERING.md` §6 |
 | store | `store/STORE.md` §5 |
-| webui | `webui/WEBUI.md` §7 + 各面档 §1 |
+| webui | `webui/WEBUI.md` §7 + 各面档 §1（KD-SV-132——对话页活流分步；console-chat-live-step 批） |
 | ops | `ops/OPS.md` §8 |
 | client | `client/CLIENT.md` §5 |
-| sandbox | `sandbox/SANDBOX.md` §14 |
-| agent | `agent/ADMIN-AGENT.md` §9 |
+| sandbox | `sandbox/SANDBOX.md` §14（KD-SV-133–135——主机表扩展 ∥ 凭据入口弹窗 ∥ run 退场三步；admin-chat-creds-merge 批） |
+| agent | `agent/ADMIN-AGENT.md` §9（KD-SV-125–131——抓醒/异步/历史/出口四面；server-wake-face 批）（+ KD-SV-136——`exec` 八件入 chat；admin-chat-creds-merge 批） |
+| project | `project/PROJECTS.md` §2（KD-SV-115–123 ∥ **127/128**） ∥ `webui/PROJECTS.md` §1（KD-SV-124） |
 
 > 迁移前 §4（原 101 行决策索引）⇒ 档末「历史段·原 §4·决策索引（迁移前 ≤ 2026-10-11）」——旧坐标 `§4 KD-SV-N` 至此解析。
 
@@ -138,7 +141,8 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | client | `client/CLIENT.md` §3 |
 | sandbox | `sandbox/SANDBOX.md` §13 |
 | agent | `agent/ADMIN-AGENT.md` §6 |
-| 板级件 | `thincoder-server/package.json`（`prepublishOnly` 门禁链——链长/件数实读 = 该件自身，不载存量数；文档链 = `ops/OPS.md` §5.1） ∥ `.gitignore`（仓根——运行期/本地配置排除两行） ∥ `docs/batches/*.test.mjs`（批内件——随批留存；逐批登记 = 各批档 §2 + 各域档文件账） |
+| project | `project/PROJECTS.md` §8 ∥ `webui/PROJECTS.md` §3 |
+| 板级件 | `thincoder-server/package.json`（`prepublishOnly` = 3×`node --check`——2026-10-12 用户裁：批内件不入发布门，门禁链撤除；沿革 = `ops/OPS.md` §5.1） ∥ `.gitignore`（仓根——运行期/本地配置排除两行） ∥ `docs/batches/*.test.mjs`（批内件——随批留存、不入任何门；逐批登记 = 各批档 §2 + 各域档文件账） |
 
 > 迁移前 §6（原总账 + 注①–⑳）⇒ 档末「历史段·原 §6·总账 + 注①–⑳（迁移前 ≤ 2026-10-11）」——旧坐标 `§6 注№` / `§6 各批行` 至此解析。
 
@@ -149,15 +153,16 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 
 | 域 | 验收节 | AC 号（该域判据行涉及） |
 |---|---|---|
-| gateway | `gateway/API.md` §5 | AC-2 ∥ AC-6 ∥ AC-11 ∥ AC-13①③ ∥ AC-15①③ ∥ AC-17 ∥ AC-21 ∥ AC-23 ∥ AC-24 ∥ AC-27 ∥ AC-28 ∥ AC-29 ∥ AC-30 |
-| accounts | `accounts/ACCOUNTS.md` §5 | AC-1 ∥ AC-5 ∥ AC-7 ∥ AC-13② ∥ AC-15④ ∥ AC-23 ∥ AC-25 ∥ AC-29④ ∥ AC-31 ∥ AC-36 ∥ AC-38 |
+| gateway | `gateway/API.md` §5 | AC-2 ∥ AC-6 ∥ AC-11 ∥ AC-13①③ ∥ AC-15①③ ∥ AC-17 ∥ AC-21 ∥ AC-23 ∥ AC-24 ∥ AC-27 ∥ AC-28 ∥ AC-29 ∥ AC-30 ∥ **AC-44** |
+| accounts | `accounts/ACCOUNTS.md` §5 | AC-1 ∥ AC-5 ∥ AC-7 ∥ AC-13② ∥ AC-15④ ∥ AC-23 ∥ AC-25 ∥ AC-29④ ∥ AC-31 ∥ AC-36 ∥ AC-38 ∥ **AC-44** |
 | metering | `metering/METERING.md` §4 | AC-3 ∥ AC-4 ∥ AC-13⑥ ∥ AC-15②⑥ ∥ AC-21 ∥ AC-22 ∥ AC-23 ∥ AC-26 ∥ AC-29④ |
-| store | `store/STORE.md` §3 | AC-15④ ∥ AC-22 ∥ AC-25 ∥ AC-29 ∥ AC-36 ∥ AC-38 |
-| webui | `webui/WEBUI.md` §6 + 各面档 §4 | AC-11–AC-30（控制台面） ∥ 非功能·前端自洽 ∥ AC-36 ∥ AC-38 ∥ AC-39 ∥ AC-40 ∥ **AC-41** ∥ **AC-42** |
+| store | `store/STORE.md` §3 | AC-15④ ∥ AC-22 ∥ AC-25 ∥ AC-29 ∥ AC-36 ∥ AC-38 ∥ **AC-44** |
+| webui | `webui/WEBUI.md` §6 + 各面档 §4 | AC-11–AC-30（控制台面） ∥ 非功能·前端自洽 ∥ AC-36 ∥ AC-38 ∥ AC-39 ∥ AC-40 ∥ **AC-41** ∥ **AC-42** ∥ **AC-44（控制台面）** |
 | ops | `ops/OPS.md` §7 | AC-6 ∥ AC-8 ∥ AC-9 ∥ AC-10 ∥ AC-11 ∥ AC-13⑤ ∥ 功能点 8 ∥ AC-27 ∥ AC-28 ∥ AC-29①③ ∥ 非功能·仅内网 |
 | client | `client/CLIENT.md` §4 | AC-31①–⑤ |
-| sandbox | `sandbox/SANDBOX.md` §11 | AC-36 ∥ AC-38 ∥ AC-40 |
-| agent | `agent/ADMIN-AGENT.md` §7/§8 | AC-36（托管接入） ∥ 管理面 agent 会话面（AC-37） ∥ **AC-43（环境感知与环境工具面）** |
+| sandbox | `sandbox/SANDBOX.md` §11 | AC-36 ∥ AC-38 ∥ AC-40 ∥ **AC-47（主机表 + `exec` 进 chat——已入册 2026-10-12；`sandbox/SANDBOX.md` §16 R72①）** |
+| project | `project/PROJECTS.md` §9 | **AC-44 ①–⑨** ∥ R63/R64 补面（§13/§14） |
+| agent | `agent/ADMIN-AGENT.md` §7/§8 | AC-36（托管接入） ∥ 管理面 agent 会话面（AC-37） ∥ **AC-43（环境感知与环境工具面）** ∥ **唤醒与投递面（server-wake-face 批——台账 #1317 ∥ #1319；AC-46 已入册 2026-10-12——`agent/ADMIN-AGENT.md` §13 R71①）** ∥ **AC-47（主机表与 SSH 凭据——已入册 2026-10-12；`sandbox/SANDBOX.md` §16 R72①）** |
 | 板级 | 本档 §1 ∥ §2.3 ∥ §5 | 非功能·零第三方运行期依赖 ∥ 文档面 |
 
 **跨域/留板行（判不决——原址）**：
@@ -199,6 +204,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | AC-36（沙盒 · server-exec-sandbox 批——台账 #1224；需求 §5 沙盒块 + 14:00 裁定 + 14:08 必交面行；**AC-36 = 已落需求档**（2026-10-10 沙盒批回笔）；**分五轮落**：① 运行面 + 容器区（runner-admin-console 批）∥ ① 续：容器面补齐 + 镜像族（sandbox-docker-admin 批）∥ ① 续二：镜像源族 + 一键拉取（sandbox-image-sources 批 ∥ sandbox-image-quick-pull 批）∥ ① 续三：拉取认源（sandbox-pull-by-source 批）∥ ① 续四：卷族（sandbox-volumes 批）∥ ②–⑥ 余面（沙盒余面批）） | 分面判据：`sandbox/SANDBOX.md` §11 判据行（出站两类型/两闸/显式 deny 先/通配 ∥ 待批三态 ∥ 凭据 ∥ 必交面六面 + 每配置项有 UI 写入口）∥ §12 用例 ∥ `gateway/API.md` §2.5（端点面机检——节点登记/工作区/规则/待批）∥ `webui/SANDBOX.md` §4 沙盒行（控制台机检）∥ `store/STORE.md` §3 v11 段（迁移判据）；执行面判据随重做批重建；**最小切片（runner-admin-console 批——台账 #1252）**：`sandbox/SANDBOX.md` §11 最小切片行 ∥ §3 ∥ §12（N40 ∥ N46–N48 ∥ B41–B43 ∥ E34–E36）∥ `gateway/API.md` §2.5 前七行 ∥ `webui/SANDBOX.md` §2.1① ∥ `store/STORE.md` §2 v12 段/§3 v12 + 真机（10.0.0.6）；**托管接入（runner-admin-console 批增补——#1236/#1237）**：`sandbox/SANDBOX.md` §11 托管接入行 ∥ §12（N49–N52 ∥ B44–B46 ∥ E37/E38）∥ `agent/ADMIN-AGENT.md` §7 ∥ `gateway/API.md` §2.5 托管接入四行 ∥ `store/STORE.md` §2 v13 段/§3 v13 + 真机（无 Docker 机：只给地址+凭据 ⇒ 「已就绪」）；**容器面补齐 + 镜像族（sandbox-docker-admin 批；台账 #1265）**：`sandbox/SANDBOX.md` §11 sandbox-docker-admin 批判据行 ∥ §3（sandbox-docker-admin 批块）∥ §12（N53–N56 ∥ B47–B51 ∥ E39–E42）∥ `gateway/API.md` §2.5 新八行 ∥ `webui/SANDBOX.md` §2.1① + §4 沙盒行（sandbox-docker-admin 批随正） ∥ `accounts/ACCOUNTS.md` §2.1（四 kind——型面计数零增）+ 真机（10.0.0.6：真容器详/日志/重启/强杀/用量 ∥ 真镜像列/删） | 批内件 + 收口轮（浏览器实走 + 真机） |
 | AC-31（功能点 31——三端登录与接入；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 分两面判据：① 服务面 = `client/CLIENT.md` §4（login 三态 ∥ token 兼用 /v1 ∥ logout 即吊销——§6 用例 N37/B27/E28/N39）∥ ② 端侧面 = `docs/core/design/TEAM.md` §5（三端入口 ∥ token 落本地 ∥ 派生 provider ∥ 未登录态 ∥ 退出关闭） | 批内件 + 收口轮（三端实走） |
 | AC-38（功能点 38——沙盒镜像源族；已落需求档——`docs/server/requirements/PROJECT.md` §2:38 + 验收表；2026-10-11 入册） | `sandbox/SANDBOX.md` §3（sandbox-image-sources 批块——源清单四端点 + 预选 ∥ v2/Hub 两面读取 ∥ 匿名 Bearer 挑战 ∥ 有界首页 ∥ 五分类如实读绪；**一键拉取块——sandbox-image-quick-pull 批**；**拉取认源块——sandbox-pull-by-source 批**）+ §11（sandbox-image-sources 批判据行 ∥ 一键拉取行 ∥ 拉取认源行）∥ §12 用例（N57–N59 ∥ B52–B56 ∥ E43–E45 ∥ N60 ∥ B57/B58 ∥ E46 ∥ N61 ∥ B59–B62 ∥ E47）∥ `gateway/API.md` §2.5 镜像源七行 ∥ `webui/SANDBOX.md` §4（镜像源族行 + 一键拉取行 + 拉取认源行——沙盒页镜像源卡/本地镜像表过滤/一键拉取/拉取认源）∥ `store/STORE.md` §2 v15 段/§3 v15（`image_sources`）∥ `accounts/ACCOUNTS.md` §2.1（三 kind——型面计数零增）∥ §14 KD-SV-100 | 批内件 + 收口轮（浏览器实走 + 整条旅程真机（ECS `.6`——加源 ⇒ 经源拉 ⇒ 建容器）） |
+| AC-44（功能点 44——团队项目与权限；已落需求档——`docs/server/requirements/PROJECT.md` 验收表；team-projects-permissions 批（B2）——2026-10-12 入册） | 分面判据：机制面 = `project/PROJECTS.md` §9（AC-44 ①–⑨ 对位表 + R63/R64 补面行）+ §3/§4/§5（权限/平台/同步）+ §13/§14（接收端/项目删除） ∥ 端点面 = `gateway/API.md` §5 AC-44 行 + §2.9 **十七行** ∥ 存储面 = `store/STORE.md` §2 v17 段/§3 v17（三表 + `hook_secret_cipher` + 审计十四型） ∥ 控制台面 = `webui/PROJECTS.md` §4 ∥ 审计面 = `accounts/ACCOUNTS.md` §2.1 `project_event` 行 + §7 用例 ∥ 用例 = `project/PROJECTS.md` §10（N1–N23 ∥ B1–B3 ∥ E1–E4） | 批内件 + 收口轮（浏览器实走） |
 | 非功能 · 零第三方运行期依赖 | 本档 §1 ∥ §2.3 ∥ §5 KD-SV-2 / KD-SV-78（口径与范围）；import 扫描断言 = 批内件 | 批内件 |
 | 非功能 · 仅内网 | → `ops/OPS.md` §7 非功能·仅内网 行（as-of 2026-10-11） | —— |
 | 非功能 · 前端自洽 | `webui/WEBUI.md` §6 验收判据（零外部引用扫描） | 批内件 |
@@ -280,6 +286,16 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | R59 | → `sandbox/SANDBOX.md` §16（上抛/余项·R59 行——as-of 2026-10-11） | —— | —— |
 | R61 | → `agent/ADMIN-AGENT.md` §13（上抛/余项·R61 行——as-of 2026-10-12；console-reasoning-levels 批：随正件（测试链 13 件坐标） ∥ 披露（核缺位退化 ∥ 路由形名字） ∥ 部署收尾） | —— | —— |
 | R62 | → `agent/ADMIN-AGENT.md` §13（上抛/余项·R62 行——as-of 2026-10-12；admin-agent-awareness 批：需求档两括注收正（父侧已受理） ∥ 随正件（`prepublishOnly` **57 ⇒ 58**；i18n 两表 +3 键/表） ∥ 披露（无围栏 ∥ 掩蔽面不含文件内容 ∥ `process.kill` 自伤面 ∥ timer 无空闲唤醒 ∥ 核文案指引落空 ∥ 核可达性结论） ∥ 部署收尾） | —— | —— |
+| R63 | → `project/PROJECTS.md` §13（**已裁（乙案）——用户 2026-10-12 授权：github 成员事件接收端落章**；原上抛行已销——as-of 2026-10-12） | —— | —— |
+| R64 | → `project/PROJECTS.md` §14（**已裁（补面）——用户 2026-10-12 授权：项目删除落章**；原上抛行已销——as-of 2026-10-12） | —— | —— |
+| R65 | → `project/PROJECTS.md` §12（上抛/余项·R65 行——as-of 2026-10-12；三端可见性） | —— | —— |
+| R66 | → `project/PROJECTS.md` §12（上抛/余项·R66 行——as-of 2026-10-12；成员同步作用域） | —— | —— |
+| R67 | → `project/PROJECTS.md` §12（上抛/余项·R67 行——as-of 2026-10-12；「读写能写」机检口径） | —— | —— |
+| R68 | → `project/PROJECTS.md` §12（上抛/余项·R68 行——as-of 2026-10-12；admin-agent 工具面缺项） | —— | —— |
+| R69 | → `project/PROJECTS.md` §12（上抛/余项·R69 行——as-of 2026-10-12；gitee 企业成员端点未接 ∥ 自建平台协议口径） | —— | —— |
+| R70 | → `project/PROJECTS.md` §12（上抛/余项·R70 行——as-of 2026-10-12；**需求档计数回笔（主 agent 笔）**：我的 3 ⇒ 4（本批）⇒ 5 ∥ 管理 九 ⇒ 十一 ∥ 侧栏 **十二（现盘面）** ⇒ 十五 ⇒ 十六） | —— | —— |
+| R71 | → `agent/ADMIN-AGENT.md` §13（上抛/余项·R71 行——as-of 2026-10-12；server-wake-face 批：**需求档回笔建议**（功能点 46 ∥ AC-46——或只收正功能点 43 边界句；主 agent 择一） ∥ **开放点四条**（身份与审计行 ∥ 消息形与呈现 ∥ 计费与制动 ∥ 防自激——均附推荐与代价，待裁） ∥ 随正件（门禁件数断言七件 58 ⇒ 59 + `package.json`；旧批件三处） ∥ 披露（日志落核 config 目录 ∥ 跨回合任务不随后续中止而杀 ∥ 唤醒耗 token ∥ 提醒行以 `user` 行落库） ∥ 部署收尾） | —— | —— |
+| R72 | → `sandbox/SANDBOX.md` §16（上抛/余项·R72 行——as-of 2026-10-12；admin-chat-creds-merge 批：需求档回笔（**已闭合**——功能点 47 ∥ AC-47 在册） ∥ 冻结域随正（**已办**——三档落定） ∥ 随正件（门禁件数 58 ⇒ 59 ∥ 档目 +1 名 `host-credential.mjs` ∥ i18n 三组键） ∥ 披露 ∥ 部署收尾） | —— | —— |
 
 ## 历史段（迁移前冻结——≤ 2026-10-11）
 
@@ -373,7 +389,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | KD-SV-87 | 模型选择 = 任务提交时选择（注册表现有模型；无模型 ⇒ 不可提交） | `agent/ADMIN-AGENT.md` §9 |
 | KD-SV-88 | 聊天式驱动 = 管理面 chat 会话（会话语义/回合/NDJSON 帧流/每回合预算——执行不依赖连接） | `agent/ADMIN-AGENT.md` §9 ∥ §11 |
 | KD-SV-89 | 会话持久化 = v14 两表 + OpenAI 消息形 + notice 行 + `status` 在途标记（重启如实收尾） | `agent/ADMIN-AGENT.md` §9 ∥ `store/STORE.md` §2 v14 段 |
-| KD-SV-90 | 工具面扩展 = 管理面七件（members/providers/models/usage/audit/runners/docker——进程内直取域件；exec 不入 chat） | `agent/ADMIN-AGENT.md` §9 ∥ §12 |
+| KD-SV-90 | 工具面扩展 = 管理面八件（members/providers/models/usage/audit/runners/docker——进程内直取域件；`runners` 动词 + `revoke_credential`；**`exec`（SSH）入 chat**——主机表行绑定，KD-SV-136） | `agent/ADMIN-AGENT.md` §9 ∥ §12 |
 | KD-SV-91 | 审计型面 = `agent_event`（十三型——`chat_start`/`chat_call`/`chat_stop`；不双记既有域型） | `agent/ADMIN-AGENT.md` §9 ∥ `accounts/ACCOUNTS.md` §2.1 |
 | KD-SV-92 | 容器读数三件 = 读时读直取（详情 = `containers/{id}/json` ∥ 用量 = `stats?stream=false&one-shot=true` + `json?size=1` ∥ 日志 = `logs?tail` 有界；零缓存零落库） | `sandbox/SANDBOX.md` §14 |
 | KD-SV-93 | 日志 = tail 有界（缺省 200 ∥ 1–2000）+ 非 TTY 多路复用解复用 + 截断 256 KiB | `sandbox/SANDBOX.md` §14 |
@@ -674,10 +690,36 @@ app +21 ∥ views-auth +2 ∥ views-me +1 ∥ views-admin +2 ∥ views-providers
    ∥ `style.css` **344** ⇒ ±0（收窄行改一 id——行数零变） ∥ 两 i18n 表 **±0**（核件词面已在册——零新键））；
   零新档（public 档目 **43 ∥ 42** 不变）；`prepublishOnly` 链 **56 ⇒ 57**（本批批内件入链；另 **20 件**结构版本断言（15 ⇒ 16）+ 门禁件数/行形随正（设计枚举 11 件 ⇒ 实盘收正 20 件——逐行见批档 §5 ④）——见 `agent/ADMIN-AGENT.md` §13 R61）；批内件 ≈1 档（`docs/batches/2026-10-12-console-reasoning-levels.test.mjs`；**入 server 链**）；**产品码零触（设计轮）**。
 
+**console-chat-live-step 批（台账 #1325；用户 2026-10-12 15:58/16:02/16:03 三句；AC-41 ② 缺陷收正；KD-SV-132）**：服务端 **±0**（步界帧既有——`thincoder-server/src/agent/chat.mjs:499`/`:530`/`:559`/`:565` 零动；零新帧 ∥ 零新字段）；
+  webui ≈**+36**（= 分项和——`views-chat.mjs` **实读 500** ⇒ ≈**431**（净 ≈−69——活流按步 +≈25 ∥ 帧面纯函数/回读装配外拆 ≈−94） ∥ `views-chat-messages.mjs`（拟新增）≈105 ∥ 零新 `:root` 变量/悬停规则；
+  档目步 **42 ∥ 43**（as-of 本设计轮）⇒ **43 ∥ 44**（本批 +1——链单源 = `webui/WEBUI.md` §1；现尾 = 48 ∥ 49〔含本批 +1〕，2026-10-12 本设计轮复读）——逐档实读见 `webui/CHAT.md` §3 面小计）；
+  批内件一件（`docs/batches/2026-10-12-console-chat-live-step.test.mjs`——**不入发布门**〔用户 2026-10-12 追加裁定：`prepublishOnly` 门禁链已撤除；原「链 +2 ⇒ 63」条目作废〕；拆档新档 `docs/batches/2026-10-11-chat-shell-align-ui.test.mjs` 同则）；随正件 = `webui/CHAT.md` §3 末段（测试四件 ∥ `webui/WEBUI.md`）；**产品码零触（设计轮）**。
+
+**admin-chat-creds-merge 批（台账 #1326；用户 2026-10-12 裁：SSH 凭据进管理面 chat ∥ 托管接入将来并入 chat ∥ 设主机表管 SSH 凭据；KD-SV-133–136）**：服务端 ≈**+278**（分项和——`src/sandbox/hosts.mjs`（拟新增） 新 ≈140 ∥ `registry.mjs` **实读 536** ⇒ ≈561 ∥ `onboarding.mjs` **实读 373** ⇒ ≈400 ∥ `routes.mjs` ⇒ ≈459 ∥ `db.mjs` **实读 488** ⇒ ≈**646**；
+  （`db.mjs` 段链 = `store/STORE.md` §4：v17 ⇒ ≈560 ∥ v18 +≈14 ∥ v19 +≈72——as-of，含在途批；实施当刻以链尾实读为准；拆档预案两条 = `sandbox/SANDBOX.md` §13）；
+  agent ≈**+75**（`chat-tools.mjs` **实读 477** ⇒ ≈540 ∥ `chat.mjs` **实读 588** ⇒ ≈600 ∥ `chat-env.mjs` ⇒ ≈97）；
+  webui ≈**+193**（分项和——`public/host-credential.mjs`（拟新增） 新 ≈110 ∥ `views-sandbox.mjs` ⇒ ≈415（盘面实读 499——现读；档链为陈估——列报） ∥ `views-chat.mjs` ≈431 ⇒ ≈441；
+  两 i18n 沙盒表 +≈12 键/表 ∥ 两 i18n admin 表 +3 键/表 ∥ 两 i18n system 表 +2 键/表（`audit.sandboxKind.*` 26 ⇒ 28）；档目现行 **43 ∥ 44** ⇒ **44 ∥ 45**（+1 档——`host-credential.mjs`））；
+  批内件一件（`docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`；**入 server 链**；`prepublishOnly` 链 **+1**——现盘面 58 ⇒ 59，以实施当刻盘面实读为准）；
+  冻结域随正清单 = `sandbox/SANDBOX.md` §16 R72；**产品码零触（设计轮）。**
+
 **admin-agent-awareness 批（台账 #1310；用户 2026-10-12 12:29/12:39/12:41/12:47 四句；功能点 43 ∥ AC-43 ①–⑥；KD-SV-112/113/114）**：服务端 ≈**+420**（`thincoder-server/src/agent/chat-env.mjs`（拟新增）≈150（四块装配——三活体行 + 能力边界段） ∥ `thincoder-server/src/agent/chat-env-tools.mjs`（拟新增）≈230（环境五族七件——核件复用 + 限幅 + timer 挂表） ∥
   `thincoder-server/src/agent/chat.mjs` **实读 599** ⇒ ≈**640**（环境行装配 ∥ 工具面合并 ∥ `invoke` 携 ctx ∥ 审计详情扩字段；越 500 软线——拆档预案 = `agent/ADMIN-AGENT.md` §6）；零新端点 ∥ 零迁移（结构版本 v16 不变） ∥ `bin` ±0）；
   webui ≈**+19**（`thincoder-server/public/views-audit.mjs` **实读 150** ⇒ ≈166（agent 行详情模板 +≈16） ∥ `i18n-{zh,en}-system.mjs` **实读 201 ∥ 201** ⇒ ≈204 ∥ ≈204（+3 键/表——审计 agent 行三键）；`style.css` ±0 ∥ 零新档（public 档目 **43 ∥ 42** 不变））；
   批内件 ≈1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`；**入 server 链**）；`prepublishOnly` 链 **57 ⇒ 58**（本批件入链）；随正件/披露清单 = `agent/ADMIN-AGENT.md` §13 R62；**产品码零触（设计轮）**。
+
+**team-projects-permissions 批（B2——台账 #1216；需求 44 ∥ AC-44 ①–⑨；KD-SV-115–124 ∥ 127/128）**：服务端 ≈**+1570**（新域七档：`src/project/` 七档（`git-sources.mjs` ≈200 ∥ `platform-client.mjs` ≈300 ∥ `projects.mjs` ≈190 ∥ `sync.mjs` ≈240
+  ∥ `routes.mjs` ≈200 ∥ `admin-routes.mjs` ≈255 ∥ `webhooks.mjs` ≈90——合计 ≈1475；**逐档 = `project/PROJECTS.md` §8 单源**）+ `src/store/credential-crypto.mjs`（拟新增）≈65（凭据三件 + 键路径派生——外迁共享；KD-SV-119）
+  + 随动（`store/db.mjs` **实读 488** ⇒ ≈560（v17 段——维持判定 = `store/STORE.md` §4） ∥ `thincoder-server/src/sandbox/onboarding.mjs` −≈50 + ≈2 再导出 ∥ `accounts/audit.mjs` **实读 116** ⇒ ≈118（+1 型） ∥ `bin/thincoder-server.mjs` **实读 192** ⇒ +≈8（三注册行 + 调度器接线））；零新第三方依赖 ∥ 零新错误码；
+  webui ≈**+965**（`views-projects.mjs` 新 ≈220 ∥ `views-admin-projects.mjs` 新 ≈120 ∥ `views-git-sources.mjs` 新 ≈300 ∥ `i18n-{zh,en}-project.mjs` 新 ≈140/档
+   ∥ `nav.mjs` +≈4 ∥ `app.mjs` +≈7 ∥ `views-audit.mjs` +≈12 ∥ `i18n.mjs` +≈4 ∥ `style.css` +≈18；档目 **42 ∥ 43** ⇒ **47 ∥ 48**（本批 +5）；逐档实读见 `webui/WEBUI.md` §5 ∥ `webui/PROJECTS.md` §3——两端小计均按行和收正、R63/R64 增量在含）；
+  批内件 ≈3 档（`docs/batches/2026-10-12-team-projects-permissions.test.mjs` ∥ `…-sync.test.mjs` ∥ `…-ui.test.mjs`；**入 server 链**）；`prepublishOnly` 链 **58 ⇒ 61**；
+  跨批守卫件随正（`docs/batches/2026-10-08-server-public-structure.test.mjs` **实读 163**——PARTS/DOMAINS + `project` ∥ 指纹/键数 ∥ 新档入行数核清单）；随正件/披露清单 = `project/PROJECTS.md` §12（**R63/R64 已裁落章**——事件接收端 §13 ∥ 项目删除 §14（用户 2026-10-12 授权）；余 R65–R70）；**产品码零触（设计轮）**。
+- 2026-10-12（**server-wake-face 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §1 · 台账 #1317 ∥ #1319；用户 14:57–15:07 五句；定性 = 跨端差异缺陷；**修订轮**〔条目 ③④ 入批——用户 15:40/15:44；台账 #1323 ∥ #1324〕）：
+  服务端 agent 域 **≈+342**（`chat-wake.mjs` 新增 ≈130 ∥ `chat-env-tools.mjs` ≈+100 ∥ `chat.mjs` ≈+100 ∥ `chat-routes.mjs` ≈+10 ∥ `chat-env.mjs` +2）；webui 域 **±0**（零页面改动）；
+  **修订轮另计 ≈+154**（`chat-store.mjs` +48 ∥ `chat-env-tools.mjs` +20 ∥ `chat.mjs` +22 ∥ `accounts/keys.mjs` +36 ∥ `thincoder-server/src/accounts/routes.mjs` +8 ∥ `store/db.mjs` +14 ∥ `bin` +6）；
+  零新端点 ∥ **迁移面 = v18**（`api_keys.key_plain` 加列——修订轮；段号 as-of：v17 在占，实施当刻以链尾实读为准） ∥ `bin` +≈6（修订轮 `selfBaseUrl` 取数器）；批内件 ≈1 档（`docs/batches/2026-10-12-server-wake-face.test.mjs`——**≈380** 行〔修订轮 +≈80：§16.4 四腿〕；**入 server 链**）；
+  `prepublishOnly` 链 **58 ⇒ 59**（本批件入链；as-of 本设计轮实读——若 B2 批先落则链值顺延，以实施当刻实读为准）；随正件/披露清单 = `agent/ADMIN-AGENT.md` §13 R71；**产品码零触（设计轮）**。
 
 ## 变更记录
 
@@ -782,3 +824,16 @@ app +21 ∥ views-auth +2 ∥ views-me +1 ∥ views-admin +2 ∥ views-providers
 - 2026-10-12（**console-reasoning-levels 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-console-reasoning-levels.md` §1 · 台账 #1303；用户 11:45 走查 + 11:46 四条口径；功能点 42 ∥ AC-42）：§4 索引标题 1–109 ⇒ **1–111**（KD-SV-110/111 在册）∥ §7 webui 行补 **AC-42** ∥ §9 增 R61 保位 stub（⇒ `agent/ADMIN-AGENT.md` §13）∥ §6 添本批预算块（服务端 ≈+97 ∥ webui ≈+23；`prepublishOnly` **56 ⇒ 57**）。同源随动 = `webui/CHAT.md` §1/§2.1/§3/§4/§5/§6 ∥ `agent/ADMIN-AGENT.md` §6/§7/§8/§9/§10/§11.4/§13 ∥ `gateway/API.md` §2.2/§2.8/§4/§8 ∥ `store/STORE.md` §1/§2/§3/§4。**产品码零触（设计轮）**。
 - 2026-10-12（**console-reasoning-levels 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-console-reasoning-levels.md` §3 轮次 1 之 6/7；父侧受理全单）：§6 本批预算块 webui 行收平（**+23** = 分项和 +≈10 + ≈10 + ≈3；`views-models.mjs` 现读 **267** ⇒ ≈270 ∥ `style.css` 现读 **344** ⇒ ±0——受改件行数注补齐）+ 与 `webui/CHAT.md` §3 面小计 +≈20 同拍；同源随动 = `webui/CHAT.md` §3 ∥ `agent/ADMIN-AGENT.md` §13 R61①。**零新语义**（评审发现直接导出项）。
 - 2026-10-12（**console-reasoning-levels 批 · 落地后回填 · 主 agent 直接执行 · 可 revert**）：本批行账补实读（服务端 **+172** ∥ webui **+28**——逐件在行）+ 「同源收正」句枚举随正（随正件 11 ⇒ **20 件**）。
+- 2026-10-12（**team-projects-permissions 批（B2）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §1 · 台账 #1216；需求功能点 44 ∥ AC-44 ①–⑨）：§1 落点随正（域 9 ⇒ **10 档**——project 域新立 ∥ webui 面档 8 ⇒ **9**）∥ §2.1 十域句 + 增 project 行（git 源/项目/成员三档/同步/端点）∥ §3 文档地图增 `project/PROJECTS.md` 行 + webui 行（面档 8 ⇒ 9 + `webui/PROJECTS.md`）∥ §4 索引标题 1–114 ⇒ **1–124**（KD-SV-115–123 = `project/PROJECTS.md` §2 ∥ KD-SV-124 = `webui/PROJECTS.md` §1）+ 增 project 行 ∥ §6 域账索引增 project 行 ∥ §7 网关/账号/存储/webui 四行补 **AC-44** + 增 project 行（AC-44 ①–⑨）+ 跨域块增 AC-44 行 ∥ §9 增 R63–R70 保位 stub（⇒ `project/PROJECTS.md` §12）∥ §6 添本批预算块（服务端 ≈+1400 ∥ webui ≈+740；`prepublishOnly` **58 ⇒ 61**；批内件三档）。同源随动 = `project/PROJECTS.md`（新档） ∥ `webui/PROJECTS.md`（新档） ∥ `store/STORE.md` §1–§4 ∥ `gateway/API.md` §1/§2.9/§3/§5 ∥ `accounts/ACCOUNTS.md` §1/§2.1/§5/§6/§7 ∥ `webui/WEBUI.md` §1/§2/§3/§5/§6/§7/§8 ∥ `webui/I18N.md` §2.1/§3/§4 ∥ `webui/READINGS.md` §2.1④/§3/§4。**产品码零触（设计轮）。**
+- 2026-10-12（**server-wake-face 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §1 · 台账 #1317 ∥ #1319；用户 14:57「为啥给主agent bash的时候还加那么多限制，连异步都不支持？」∥ 14:58「我说的就是异步啊！」∥ 15:00「有process在，跑死了可以杀的，你没事加那么多限制干嘛！」∥ 15:06「定时器server能用吗」∥ 15:07「为啥要有这些差异？我真服了。」；定性 = 跨端用户可闻差异 = 缺陷）：§2.1 agent 行补唤醒与投递面 ∥ §3 `agent/ADMIN-AGENT.md` 行补 §15 + KD 125/126 + 建档注 ∥ §4 索引标题 1–124 ⇒ **1–126**（KD-SV-125/126 在册——115–124 已占于 B2 批，本批自取现盘最大 +1）∥ §7 agent 行补唤醒与投递面（AC-46 待入册——R71①）∥ §9 增 R71 保位 stub（⇒ `agent/ADMIN-AGENT.md` §13）∥ §6 添本批预算块（服务端 ≈+270 ∥ webui ±0；`prepublishOnly` **58 ⇒ 59**）。同源随动 = `agent/ADMIN-AGENT.md` §6/§7/§8/§9/§10/§13/§14.2/§14.4/§15（新增）。**产品码零触（设计轮）。**
+- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277：8🟡+3🔵）∥ 用户 2026-10-12 授权两件（R63 乙案 ∥ R64 补面））：§2.1 project 行随正（+ 事件接收端 §13 ∥ 项目删除 §14）∥ §3 标题板 2 + 域 **10**（陈值「域 9」——收正）+ project 行随正（KD 127/128；判据句九条；§13/§14）∥ §4 标题 1–126 ⇒ **1–128** + project 行随正 ∥ §7 project 行 + 跨域 AC-44 行随正（§2.9 十 ⇒ **十七行**；用例 N1–N23/B1–B3/E1–E4；§13/§14）∥ §9 R63/R64 stub 改「已裁落章」形（⇒ `project/PROJECTS.md` §13/§14）+ R70 stub 链头收正（侧栏 十三 ⇒ **十二（现盘面）**）∥ §6 本批预算块随正（服务端 ≈+1400 ⇒ **≈+1570**（七档 ≈1475）；webui ≈+740 ⇒ **≈+965**（按行和收正）；`prepublishOnly` **58 ⇒ 61** 不变；批内件三档不变）。同源随动 = `project/PROJECTS.md` §2–§14 ∥ `webui/PROJECTS.md` §2/§3/§4/§5 ∥ `store/STORE.md` §2/§3/§4 ∥ `gateway/API.md` §1/§2.9/§3/§5 ∥ `accounts/ACCOUNTS.md` §2.1/§4 ∥ `webui/READINGS.md` §2.1④ ∥ `webui/I18N.md` §2.1。**产品码零触（设计轮）。**
+- 2026-10-12（**server-wake-face 批 · 修订轮（fix 轮「加宽」）· eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §1.3/§1.4（条目 ③④）；用户 15:40「管理端目前没有查会话历史的工具，这个也需要打开。」∥ 15:44「应该走我们自己的模型代理服务，这样才能确保用量统计的准确，也应该跟客户端一样，登陆时分配一个sk给管理会话用。」；台账 #1323 ∥ #1324）：§4 索引标题 1–128 ⇒ **1–131** + agent 行补 KD-SV-125–131 注（本修订轮自取 **129/130/131**——128 已占于 B2 批；收口轮请核重号）。同源随动 = `agent/ADMIN-AGENT.md` §5/§6/§7/§8/§9/§10/§11/§13/§14.2/§15/§15.3/§15.4/§16（新增） ∥ `store/STORE.md` §1/§2/§3/§4（v18） ∥ `accounts/ACCOUNTS.md` §1/§2.1/§3 ∥ `metering/METERING.md` §1。**产品码零触（设计轮）。**
+- 2026-10-12（**console-chat-live-step 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-console-chat-live-step.md` §1 · 台账 #1325；用户 2026-10-12 15:58 实走判 + 16:02/16:03；**AC-41 ② 缺陷收正**）：§2.1 webui 行补对话页活流句（KD-SV-132）∥ §4 索引标题 1–131 ⇒ **1–132**（KD-SV-132 自取现盘最大 +1——收口轮请核重号）+ webui 行补注 ∥ §6 添本批预算块（服务端 ±0 ∥ webui ≈+35；档目 42 ∥ 43 ⇒ **43 ∥ 44**；`prepublishOnly` +1——58 ⇒ 59）。同源随动 = `webui/CHAT.md` §1/§2.1/§3/§4/§5/§6/变更记录 ∥ `agent/ADMIN-AGENT.md` §11.3/变更记录 ∥ `webui/WEBUI.md` §1/§5。**产品码零触（设计轮）。**
+- 2026-10-12（**admin-chat-creds-merge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-admin-chat-creds-merge.md` §1 · 台账 #1326；用户 2026-10-12 裁：SSH 凭据进管理面 chat ∥ 托管接入将来并入 chat ∥ 设主机表管 SSH 凭据）：§2.1 十域句随正（sandbox 行补主机表/凭据 + `exec` 进 chat；agent 行工具面七 ⇒ **八件** + KD-SV-136 注）∥ §3 文档地图 sandbox/agent 两行随正（主机凭据/§12 扩容 + 批记）∥ §4 索引标题 1–132 ⇒ **1–136**（KD-SV-133–135 = `sandbox/SANDBOX.md` §14 ∥ KD-SV-136 = `agent/ADMIN-AGENT.md` §9）∥ §6 添本批预算块 ∥ §7 sandbox/agent 两行补 **AC-47** ∥ §9 增 R72 保位 stub。同源随动 = `sandbox/SANDBOX.md` §2/§3/§11/§12/§13/§14/§15/§16 ∥ `agent/ADMIN-AGENT.md` §5/§6/§7/§8/§9/§10/§11/§12/§13/§16.2 ∥ `webui/SANDBOX.md` §2.1①/§3/§4 ∥ `webui/CHAT.md` §2.1/§3/§4。**产品码零触（设计轮）。**
+
+- 2026-10-12（**admin-chat-creds-merge 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-admin-chat-creds-merge.md` §3 轮次 1 之 1/9/10/14）：#1 §4 索引 KD-SV-90 行按 KD-SV-136 收正（八件 ∥ `runners.revoke_credential` ∥ `exec` 入 chat）∥ #9 §2.1 agent 行 + §3 地图 agent 行「七件 ⇒ 八件」（同族：地图行「五族七件 ⇒ 六族八件」+ KD 枚举补 129/130/131/136）∥ #10 本批预算块两处按分项和收平（服务端 ⇒ ≈+278 ∥ webui ⇒ ≈+193）＋ `db.mjs` 段链终值 ≈646（as-of）∥ #14 本批块两处合一（`:828` 重复块删——D8；用户三裁句并入 §6 块头）+ 补本批变更记录两条（设计轮回填 + 本条）；§9 增 R72 stub（⇒ `sandbox/SANDBOX.md` §16）。**零新语义**（评审发现直接导出项 + 同类连带收正——逐条列报于批档 §2）。
+- 2026-10-12（**server-wake-face 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §3 轮次 1 之 2/4/5）：§3 文档地图 agent 行折入修订轮（建档注 §15/§16 + **会话历史与出口改道（§16）** 入段列）∥ §7 agent 行 AC-46 收「已入册 2026-10-12」∥ §6 本批块折入修订轮（服务端：≈+270 ⇒ **≈+342** ＋ **修订轮另计 ≈+154** ∥ 迁移面 = v18 ∥ 批内件 ≈300 ⇒ **≈380**）。**零新语义**（评审发现直接导出项）；**产品码零触（设计轮）。**
+- 2026-10-12（**console-chat-live-step 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-console-chat-live-step.md` §3 轮次 1 之 1/2/5）：§6 本批块收正——webui ≈+35 ⇒ **≈+36**（= 分项和）；`prepublishOnly` 链 +1（58 ⇒ 59）⇒ **+2**（现读 **61** ⇒ **63**——本批件 +1 ∥ `…-chat-shell-align.test.mjs` 拆档新档 +1）；档目步补现尾（42 ∥ 43 ⇒ 43 ∥ 44——链单源 = `webui/WEBUI.md` §1，现尾 48 ∥ 49）；随正件「测试三件」⇒「测试四件（含拆档新档）」。同源随动 = `webui/CHAT.md` §3/§6⑥/变更记录 ∥ `agent/ADMIN-AGENT.md` §7/§11/变更记录。**零新语义**（评审发现直接导出项）；产品码零触。
+- 2026-10-12（**门禁链撤除 · 主 agent 直接执行 · 机械 · 可 revert**——用户裁「单元测试纪律：批内件不入发布门」）：§6 板级行 `prepublishOnly` 表述收正（门禁链 ⇒ 3×`node --check`；`docs/batches/*.test.mjs` 句 ⇒ 「随批留存、不入任何门」）；源头 = `thincoder-server/package.json` 清单撤除（首版 6 档起、至 61 档止——`e4632dfc` 起源实证）∥ `.github/workflows/test.yml` 注释随正（CI 自动随动）；旧门禁台账冻结于 `ops/OPS.md` §5.1。各批 §9 R-行内「入链/链件数」历史项 = 记录面，不再维护。**零新语义**（裁令落笔）。
+- 2026-10-12（**追加裁定落笔 · eng-designer**——用户裁：`thincoder-server` `prepublishOnly` 门禁链已撤除）：本批（console-chat-live-step）fix 轮条目内「链 +2（现读 61 ⇒ 63）∥ 门禁件数断言件七件同拍」**作废**（§6 本批块改「不入发布门」）；同源随动 = `webui/CHAT.md` §3 末段/§3 测试面/§6⑥/变更记录。测试件零触（批内件零维护）；**零新语义**（裁令落笔）。
+

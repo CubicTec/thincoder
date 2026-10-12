@@ -24,6 +24,9 @@ import { renderAudit } from "./views-audit.mjs"
 import { renderModels } from "./views-models.mjs"
 import { renderSandbox } from "./views-sandbox.mjs"
 import { renderChat } from "./views-chat.mjs"
+import { renderMeProjects } from "./views-projects.mjs"
+import { renderAdminProjects } from "./views-admin-projects.mjs"
+import { renderGitSources } from "./views-git-sources.mjs"
 
 const appEl = document.getElementById("app")
 const navEl = document.getElementById("nav")
@@ -95,9 +98,12 @@ const PAGES = {
   "/me/keys": renderMeKeys,
   "/me/usage": renderMeUsage,
   "/me/account": renderMeAccount,
+  "/me/projects": renderMeProjects,
   "/admin/overview": renderOverview,
   "/admin/chat": renderChat,
   "/admin/members": renderMembers,
+  "/admin/projects": renderAdminProjects,
+  "/admin/git-sources": renderGitSources,
   "/admin/providers": renderProviders,
   "/admin/models": renderModels,
   "/admin/usage": renderAdminUsage,

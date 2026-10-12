@@ -116,10 +116,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
 
 - **版本身份 = npm 包**（两路同源）：升级 = 装 npm 新版 + 重启（§5.4）；**镜像 tag 不承担版本语义**（tag 只标壳——除 Node 基座换代外无需重建镜像）。
 - **npm 路（包体就绪——发布动作 = 发布面轮）**：`thincoder-server/package.json` 转可发布形——撤 `private` ∥ 包名 = `@thincoder/server`（拟——发布轮验 registry 占用/scope 权限；更优命名可上抛） ∥ `bin` = `thincoder-server`
-  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁（全树 `node --check` + 批内件 30 ⇒ 31 ⇒ 32 ⇒ 33 ⇒ 34 ⇒ 35 ⇒ 36 ⇒
-  **38 件**（八 + #962/#963/i18n/#972 件 + 弹窗批件 + 后续各批 18 ⇒ 19 ⇒ 20 ⇒ 21 ⇒ 22 ⇒ 23 ⇒ 25 件——alias ∥ 代理页批件已入链；以当刻盘面实读为准：盘面实读 **36**（2026-10-10 现读——含 server-face-residues 件）⇒ 本批（server-small-fixes 两件入链）**+2 ⇒ 38** ⇒ server-exec-sandbox 批两件入链 **+2 ⇒ 40**
-  ⇒ runner-admin-console 批三件入链（服务两件 + 托管增补一件）⇒ **42**
-  ⇒ （中间各批增链——docker-admin ∥ 镜像源族 ∥ 一键拉取 ∥ 拉取认源）⇒ console-chat-align 批件入链 ⇒ **52**（**以当刻盘面实读为准**——2026-10-11 实读（51 ⇒ +1）；本批同拍收正）））。
+  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁 = 3×`node --check`（`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`）——2026-10-12 用户裁：**批内件不入发布门**（单元测试纪律——随批档留存、不入仓套件）；旧「门禁链」台账（30 ⇒ … ⇒ 61）自本日废，不再随批维护。
   - `files` 白名单 = bin ∥ src ∥ public ∥ config.example.json ∥ README.md（`deploy/` 档组 = 仓内部署面——不入包）。
 - **npm 路装机 = 前缀式**（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议 `/opt/thincoder-server/.npm-global`——与配置/数据同根）⇒ 装机（`npm i -g @thincoder/server`）与自升（服务进程内——§5.4）同前缀、免 sudo 重写；安放后该根目录整归服务账号（`chown -R`）。
 - **Docker 路 = 壳镜像**（`thincoder-server/Dockerfile`——重设计）：基座 `node:24-slim` + 引导层（`thincoder-server/deploy/docker-entrypoint.sh`（已落盘 7 行） ∥ `thincoder-server/deploy/converge.mjs`（已落盘 197 行））；**App 代码由 npm 取装**——镜像本体只含壳（不带版本身份）。
@@ -408,3 +405,5 @@ first-release-completeness 面回填（2026-10-06——批 `docs/batches/2026-10
 - 2026-10-10（**runner-admin-console 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-runner-admin-console.md` §3 轮次 1 之 9/12）：#9 §5.1 门禁链随正（runner-admin-console 批两件入链 **+2 ⇒ 42** ⇒ 托管接入增补件入链 **+1 ⇒ 43 件**）+ §6 Dockerfile 行补本批 +≈3（`openssh-client` + `sshpass`——设计估）∥ #12 §5.10 增托管接入部署前提行（宿主缺 `sshpass` ⇒ S2 停 + 报因——检查并报）。**零新语义**（评审发现直接导出项）。
 - 2026-10-11（**server-doc-split 批 · 设计复评轮 2 新增项修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2.13 ∥ §3 轮次 2 #9，本档面）：§6 小计行「控制面计」引用收正为带路径形（`sandbox/SANDBOX.md` §13——引用一律带路径；腿⑤ Δ 式口径直接导出项）；同档逐处复核零裸形。**零新语义**（评审发现直接导出项）。
 - 2026-10-11（**console-chat-align 批 · 部署随正 · 主 agent 直接执行 · 机械 · 可 revert**——承批档 `docs/batches/2026-10-11-console-chat-align.md` §5.2（R58②③ 在册））：§5.1 构建期预装行 上下文 ⇒ **仓根**（双包一次装——`-f thincoder-server/Dockerfile`）∥ §5.1 配套行 `.dockerignore` ⇒ **仓根白名单形**（server 侧件不复读取）∥ §5.7 Docker 路 ② 构建命令随正（仓根上下文 + `-f`）∥ §5.1 门禁链 42 ⇒ **52**（以当刻盘面实读为准——2026-10-11 实读 51 ⇒ +1）。同源随动 = `thincoder-server/Dockerfile`（双包/仓根）∥ 仓根 `.dockerignore`（新建）∥ `thincoder-server/README.md` :16/:93 ∥ `docs/TEST-ENV-ECS.md` §3。零新语义（部署面随正）。
+- 2026-10-12（**门禁链撤除 · 主 agent 直接执行 · 机械 · 可 revert**——用户裁「单元测试纪律：批内件不入发布门」）：§5.1 `prepublishOnly` 表述收正（门禁链 ⇒ **3×`node --check`**——`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`；旧链台账「30 ⇒ … ⇒ 61」自本日废、不再随批维护）——源头随正 = `thincoder-server/package.json`（61 档清单撤除）∥ `.github/workflows/test.yml:69`（注释随正——CI 只调脚本，自动随动）∥ `design/PROJECT.md` §6 板级行（批内件句 ⇒ 「随批留存、不入任何门」）。**零新语义**（裁令落笔）。
+

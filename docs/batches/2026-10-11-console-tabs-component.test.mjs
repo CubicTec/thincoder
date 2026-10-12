@@ -46,12 +46,12 @@ const APP = readPublic("app.mjs")
 
 /** 本批新增键（2——两表逐键同步）；zh 值逐字。 */
 const NEW_KEYS = { "admin.sandbox.tabImages": "镜像与镜像源", "admin.sandbox.imageNode": "节点" }
-/** public/ 档集快照（本批 +1：`tabs.mjs`——档目 43 ∥ 42）。 */
-const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs",
-  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
+/** public/ 档集快照（本批 +1：`tabs.mjs`——档目 43 ∥ 42 ⇒ 48 ∥ 47（2026-10-12 team-projects-permissions 批后））。 */
+const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-project.mjs", "i18n-en-sandbox.mjs",
+  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-project.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
   "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
-  "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
-  "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
+  "views-admin-projects.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-git-sources.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
+  "views-projects.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
   "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"]
 
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
@@ -440,16 +440,16 @@ test("⑥ i18n：本批 2 键两表逐键在场 ∥ 键集双向相等 ∥ zh �
   }
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
-  assert.equal(Object.keys(ZH).length, 696, "zh 键数 696（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
-  assert.equal(Object.keys(EN).length, 701, "en 键数 701（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3——实读）")
+  assert.equal(Object.keys(ZH).length, 854, "zh 键数 854（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
+  assert.equal(Object.keys(EN).length, 859, "en 键数 859（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读）")
   assert.deepEqual([...base(ZH)].filter((key) => !base(EN).has(key)), [], "仅 zh 键（自称名族除外）")
   assert.deepEqual([...base(EN)].filter((key) => !base(ZH).has(key)), [], "仅 en 键")
 })
 
-test("⑥ 静态面：档目 43 ∥ 42 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合", () => {
+test("⑥ 静态面：档目 48 ∥ 47 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（本批 +1：`tabs.mjs`）")
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（test 口径——2026-10-12 team-projects-permissions 批后）")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
     const lines = source.split("\n").length

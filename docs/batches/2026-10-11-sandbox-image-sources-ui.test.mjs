@@ -477,7 +477,7 @@ test("④ 本地镜像表过滤：名/标签匹配 ∥ 无匹配空态 ∥ 零�
 test("⑤ 静态面：档目 43 ∥ 42 ∥ 新档在册 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 门禁链完整", () => {
   // 档目（43 ∥ 42——2026-10-11 走查轮后；test 口径 = [总档数, 除 favicon 档数]）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（test 口径——2026-10-12 team-projects-permissions 批后）")
   assert.ok(names.includes("views-sandbox-image-sources.mjs"), "新档在册：views-sandbox-image-sources.mjs")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {

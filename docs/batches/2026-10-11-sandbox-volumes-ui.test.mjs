@@ -42,11 +42,11 @@ const NEW_KEYS = ["admin.sandbox.volumeFromNode", "admin.sandbox.volumeNew", "ad
   "admin.sandbox.volumeDeleteTitle", "admin.sandbox.volumeDeleteConfirm", "admin.sandbox.volumeDeleted"]
 const REUSED_KEYS = ["admin.sandbox.name", "admin.sandbox.colCreated", "admin.sandbox.colActions", "admin.sandbox.remove"]
 /** public/ 档集快照（本批 +1：`views-sandbox-volumes.mjs` ⇒ 43 ∥ 42——含并行批 chat-shell-align 新档 `views-chat-composer.mjs`；落笔当刻实读）。 */
-const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-sandbox.mjs",
-  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
+const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-project.mjs", "i18n-en-sandbox.mjs",
+  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-project.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
   "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
-  "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
-  "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
+  "views-admin-projects.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-git-sources.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
+  "views-projects.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
   "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"]
 
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
@@ -386,7 +386,7 @@ test("④ i18n：本批 7 键两表逐键在场 ∥ zh 逐字 ∥ 占位符对�
 test("⑤ 静态面：档目 43 ∥ 42（集合快照）∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合 ∥ canon 不破 ∥ 接线 ∥ 链", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（本批 +1：`views-sandbox-volumes.mjs`——含并行批 chat-shell-align 新档）")
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [43, 42], "档目 43 ∥ 42（test 口径——实读）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（test 口径——实读；2026-10-12 team-projects-permissions 批后）")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
     const lines = source.split("\n").length

@@ -51,6 +51,16 @@
   --diff-del-bg: var(--danger-fill);
   --overlay: var(--backdrop);
   --shadow: none; /* 核件浮层阴影 ⇒ 平（控制台零阴影族——零新值） */
+  /* ── 核件 `--vscode-*` 族桥（2026-10-12 走查实修·模型菜单黑底黑字）：核件模型菜单/输入区消费 VSC 变量名，
+        核件侧兜底为深色值（`#252526` 等）⇒ 控制台浅底下取值错位（字 `--fg` 深墨 × 底 `#252526` 深）；逐键桥到既有变量（零新值 ∥ 零颜色字面量）── */
+  --vscode-dropdown-background: var(--panel);
+  --vscode-list-hoverBackground: var(--hover);
+  --vscode-list-activeSelectionBackground: var(--selected);
+  --vscode-focusBorder: var(--accent);
+  --vscode-input-background: var(--panel);
+  --vscode-input-foreground: var(--text);
+  --vscode-input-border: var(--border);
+  --vscode-editorWarning-foreground: var(--warn);
 }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: var(--font); font-size: var(--fs); line-height: var(--lh); background: var(--bg); color: var(--text); }

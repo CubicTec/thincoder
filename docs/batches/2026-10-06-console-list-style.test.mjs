@@ -63,9 +63,14 @@ const BASE_VARS = {
   "--btn-hover": "var(--accent-hover)", "--hover-bg": "var(--hover)", "--hover-bg-strong": "var(--selected)",
   "--error-fg": "var(--danger)", "--red": "var(--danger)", "--diff-del-bg": "var(--danger-fill)",
   "--overlay": "var(--backdrop)", "--shadow": "none",
+  // `--vscode-*` 族桥（2026-10-12 走查实修——核件模型菜单/输入区消费面；两核件 CSS 该类引用共八名）
+  "--vscode-dropdown-background": "var(--panel)", "--vscode-list-hoverBackground": "var(--hover)",
+  "--vscode-list-activeSelectionBackground": "var(--selected)", "--vscode-focusBorder": "var(--accent)",
+  "--vscode-input-background": "var(--panel)", "--vscode-input-foreground": "var(--text)",
+  "--vscode-input-border": "var(--border)", "--vscode-editorWarning-foreground": "var(--warn)",
 }
 
-test("① 底座：`:root` 变量族 50（值表同拍）∥ 块外零颜色字面量", () => {
+test("① 底座：`:root` 变量族 58（值表同拍）∥ 块外零颜色字面量", () => {
   const clean = stripComments(CSS)
   const rootMatch = clean.match(/:root\s*\{[^{}]*\}/)
   assert.ok(rootMatch !== null, ":root 变量底座缺位")

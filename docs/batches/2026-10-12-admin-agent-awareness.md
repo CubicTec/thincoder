@@ -33,6 +33,13 @@
 ### 1.5 批内件与落点
 设计轮交卷时补（父侧估 ≈1 件；落点表逐行 file:line = 设计轮交付面）。
 
+### 1.9 评审与修复轮（父侧 2026-10-12 13:45）
+
+- **设计评审 #269 = VERDICT pass**（0🔴 ∥ 2🟡 ∥ 4🔵；发现表 + VERDICT 逐字在 §3）——无阻塞项，token 已发。
+- **父侧裁定（逐条，详表在回复流）**：#1 需求侧半笔**已落**（`requirements/PROJECT.md:250` 边界句收正——cwd 在册、三项不做，与 43⑤ 工作目录并存）+ 设计侧 R62 登记半随修复轮；#2/#3/#4/#6 = **修复轮**（eng-designer，在途；写入域仅 `agent/ADMIN-AGENT.md`）；#5 需求侧坐标**已落**（`:241` `chat.mjs:43-44` ⇒ `:47-56`）+ 行数 ±1 口径 = 实施轮「以当刻盘面实读为准」复读（不设设计面改动）。
+- **修复轮边界**（派发时明写）：机制零改 ∥ 不扩面 ∥ 需求档与批档零触 ∥ 只动四条点位。
+- **纪律**：修复轮落定并经父侧核验前**不请 §4 批准**（在途状态只报不请）。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：设计完成 2026-10-12（文档面 5 档随正 + 本段落笔；门禁自查 = 本批零新增悬空坐标 ∥ 零新增超宽行（存量为既有：悬空 25 ∥ 超宽 4）；待父侧点火）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
@@ -108,6 +115,22 @@
 2. 实施派发时提醒：① 批内件写面若受阻 ⇒ 落 `.thincoder/tmp/` 父侧 copy（沿先例）；② `prepublishOnly` 链 57 ⇒ 58（本批件入链）+ 门禁件数断言件七件同拍；③ i18n 两表 +3 键/表（两表同步 ∥ en 零 CJK）。
 
 ## §3 设计评审（评审子代理）
+
+### 轮次 1（评审子代理）
+
+| # | Category | Severity | Issue | Suggestion |
+|---|----------|----------|-------|------------|
+| 1 | Requirements / 边界口径 | 🟡 | 需求边界清单含 `cwd`，设计把它落成行内字段并写进机检判据，且把需求清单字面改写后仍引其为源——同一项两处判相反：需求 =「不做 = 三端中**服务端无对应物**的项（cwd ∥ git 上下文 ∥ 项目档注入 ∥ 同目录实例）」（`docs/server/requirements/PROJECT.md:250`）；设计 = 行形携 `cwd: {工作目录}`（`docs/server/design/agent/ADMIN-AGENT.md:247`）、不做对位改写成「cwd 之外的 git 上下文 ∥ 项目档注入 ∥ 同目录实例（三端有、服务端无对应物——需求 43 边界句）」（`:258`）、§7 判据列「注入 now ∥ 假 db ∥ 注入 cwd」（`:85`）；§13 R62 只登记另外两条括注上抛（`:233`），本条未登记 | 二选一对齐：① 需求边界句收正为「cwd 锚定的项目/git 上下文等项不做」（与 43⑤「工作目录」限幅并存），并把 cwd 字段一并纳入 R62 登记；或 ② 撤下环境行 `cwd` 字段与对应判据断言，只保留工具 `ctx.cwd` 基（43⑤ 面）并把该取值列入 R62 披露。两种改法均以「需求与设计字面一致」为验收 |
+| 2 | Clarity / 一致性 | 🟡 | 同行两种降级粒度：`ADMIN-AGENT.md:256`「块级——该块任一读失败 ⇒ **整行略去**（无半真值上屏）」vs `:252`「判据明列，探测失败 ⇒ 该字段略去（不猜）」（② 行部署身份探针）——字段级略去会留下「半真值行」，与块级口径及 §7 判据（`:85`「块级降级」）相抵 | 收成一种粒度：探针异常 ⇒ 该行整体略去（沿块级），或明写例外并给同效兜底（如探针异常按「独立进程」落值），使 §14.1 取值源/降级两句与 §7 判据同口径 |
+| 3 | Clarity / 秘密面 | 🔵 | `subject` 未写掩蔽链：KD-SV-114（`:135`）「`detail` 增 `subject`（主语原文 ≤2000 字——命令/路径；逾限截断并注记）」与 §14.4（`:289`）「`detail` 增 `subject`（命令原文/路径——≤2000 字，逾限截断并注记）」只有长度截断；`:292` 掩蔽句「掩蔽口径沿会话面（入参敏感键 ∥ 本轮已见敏感值）」未点 `subject`，R62③（`:233`）披露只含「读文件内容不在掩蔽面内」 | 在 KD-SV-114 或 §14.4 补一句：`subject` 落库前与 `call` 同链过会话面掩蔽（「原文」= 未经摘要重写的完整命令，非免掩蔽）；如确为免掩蔽径 ⇒ 并入 R62③ 披露（命令行含凭据面） |
+| 4 | Doc hygiene / 行账 | 🔵 | §6 陈旧读数与「拟新增」标记（前批已落盘未回填；本批未改这三档）：`:59`「实读 **288 ⇒ ≈200**（docker 十动词执行器迁出 ⇒ `docker-ops.mjs`——两驱动单源）」↔ 盘面 **242**；`:62`「`thincoder-server/src/agent/chat-tools.mjs`（拟新增——admin-agent-chat 批）」+「≈400」↔ 盘面 **477**；`:63`「`thincoder-server/src/agent/docker-ops.mjs`（拟新增——admin-agent-chat 批）」+「≈140」↔ 盘面 **91** | 三处就地翻正（拟新增 ⇒ 已落盘 ∥ ≈ 值 ⇒ 实读值），与两档已在盘的实态同拍 |
+| 5 | Affected-file annotations / Spot-check | 🔵 | Spot-check 记录（判据 8）+ 可行性证据：正向——受改件 `chat.mjs`「实读 **599**」相符；核件契约/坐标逐一相符（`agent-tools/timer.mjs` 写 `_pendingTimers` + 帽 `TIMER_MAX_PENDING`、`agent/timers.mjs` 注入走 `agent.history` ⇒ 设计垫片「（`{ _pendingTimers, history }`——核 `timer` 工具直写；帽 = 核 `TIMER_MAX_PENDING` 8）」成立；`agent/setup.mjs:181-185` ∥ `:176-185`、`agent/setup-reminders.mjs:40-42` ∥ `:152`、`tools/shared.mjs:26` `BASH_TIMEOUT_MS = 120_000`、`tools/bash.mjs:15` `MAX_STREAM_BUF`、`tools/ops.mjs:51` ∥ `:140`、`thincoder-server/package.json:16` `@thincoder/core: ^0.10.4`、`prepublishOnly` 现 57 件、核包 `files` 含 `tools/`/`agent-tools/`/`tool-docs/` + `exports` `./*` 均在盘相符）；偏差项——受影响件行数注与直接读盘差 ≤1 行（`views-audit.mjs` 150 ↔ 151；`i18n-{zh,en}-system` 201 ↔ 202 ∥ 202；`chat-routes.mjs` 190 ↔ 191——全部远离 500/800 档位线），`docs/server/requirements/PROJECT.md:241` 引简报坐标 `chat.mjs:43-44` ↔ 现盘 `:47-56` | 实施轮按「以当刻盘面实读为准」复读一次受影响件行数；如需消除 ±1 口径差，在注行写明计数口径（含/不含尾空行）。核件坐标与垫片契约已核，无需动作 |
+| 6 | Doc hygiene / 自名 | 🔵 | §6 「本批」自名残（读者位 = admin-agent-awareness 轮，指代前批）：`:67`「小计 **≈+872**（本批：新增四档 ≈960 ∥ `tools.mjs` −≈88）」、`:60`「实读 **599**（2026-10-12 本批落地后）」、`:61`「实读 **190**（2026-10-12 本批落地后）」 | 自名改批名（沿同表「chat-shell-align 批另计」「console-reasoning-levels 批另计」形）：如「admin-agent-chat 批：…」「（console-reasoning-levels 批落地后）」 |
+
+VERDICT: pass
+
+计数：🔴 0 ∥ 🟡 2 ∥ 🔵 4（共 6 条）。结论：无 Critical；两条 🟡 为需求边界口径与降级粒度收正项，四条 🔵 为行账/自名/掩蔽措辞与 spot-check 记录。评审范围 = 六档（`agent/ADMIN-AGENT.md` ∥ `accounts/ACCOUNTS.md` ∥ `webui/READINGS.md` ∥ `webui/SYSTEM.md` ∥ `design/PROJECT.md` ∥ `requirements/PROJECT.md`）；无项目标准档、无文档地图声明（口径降级已述）。
+
 ## §4 用户批准（主 agent）
 ## §5 实施记录（eng-coder）
 ## §6 验证与收口（父代理）

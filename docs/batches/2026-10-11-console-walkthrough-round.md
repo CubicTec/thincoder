@@ -42,6 +42,38 @@
 
 **冻结**：计入本轮（#1299）；收口评审一并审。上游面（核件硬编码英文词面 ∥ 核件哨兵值自身无键）⇒ 台账 #1302 在册（另轮）。
 
+### 1.9 用户走查第二轮（2026-10-12 08:5x）· 三缺陷实修（轻通道② · 父侧直笔 · 可 revert）
+
+**用户原话**：「我自己检查的时候发现模型选择器的字看不清，背景和字都是黑的。」「会话输出为啥是右对齐的？」
+
+**① 模型菜单黑底黑字** —— 根因（实读）：核件 `model-menu.css:15/:32` 取 `var(--vscode-dropdown-background, #252526)`（VSC 深色兜底）∥ `:18/:34` 取 `var(--fg, #ccc)`；控制台 `style.css` 既未定义 `--vscode-*` 族、又把 `--fg` 桥成**深墨**（`--fg: var(--text)`）⇒ 深字 × 深底（实测字 `rgb(31,36,48)` × 底 `rgb(37,37,38)`）。
+**修**：`:root` 核件桥补 `--vscode-*` 族八名（两核件 CSS 该类引用全量——逐键 `var(--既有)`：dropdown-bg/input-bg ⇒ `--panel` ∥ list-hover ⇒ `--hover` ∥ activeSelection ⇒ `--selected` ∥ focusBorder ⇒ `--accent` ∥ input-fg ⇒ `--text` ∥ input-border ⇒ `--border` ∥ editorWarning-fg ⇒ `--warn`）。变量族 **50 ⇒ 58**（两处计数锁随正：`-console-list-style` ① ∥ `-console-layout` 附加）。
+**读数**：`.5` 实测面板 `color rgb(31,36,48)` × `background rgb(255,255,255)` ⇒ 可读 ✓（截图在案）。
+
+**② `.content` 撞名 ⇒ 助手输出右推 200px** —— 根因（实读）：控制台布局类 `.content { margin-left: var(--nav-w) }`（侧栏缩进）与核件消息泡类撞名——`views-chat.mjs:284` 发射 `class="bubble content"` ⇒ 助手泡实测 `left 420 ∥ margin-left 200px`（用户面 = 「输出右对齐」）。
+**修**：四条 `.content` 布局规则全部 `body >` 直子限定（`:80` 缩进 ∥ `:320` 高度链 ∥ `:334` 回退 ∥ `:343` 窄屏）——壳行为零变（`body > .content` 实测仍在 `left 200 ∥ ml 200px` ✓）。**围栏**：`-console-layout` 腿 B 补断言「一切 `.content` 规则须 `body >` 直子限定」（防复发）。
+**读数**：`.5` 实测助手泡 `left 220 ∥ ml 0px` ✓（与用户泡同列）。
+
+**③ 模型菜单管理三项未隐藏（同根因类）** —— 根因：控制台 `style.css:284` 本意隐藏（`chat-shell-align` §2 载「模型菜单 footer 管理三项 ⇒ 控制台落点 = Provider 页」），但核件 `.mm-row{display:flex}` 表后加载、同特征度（0,1,0）⇒ 盖过 `.mm-manage{display:none}`。
+**修**：特征度升形 `.mm-row.mm-manage`（0,2,0 ≻ 0,1,0）；锁件随正（`-chat-shell-align:792` 改断言升形形 + 「核件发射类」登记表补 `mm-row` 两处——DOM 实证核件发射）。
+**读数**：`.5` 实测三管理行 `display:none` ✓，可见行只剩三 provider。
+
+**④ 同根因类全量扫描（父侧 · 一次性）**：控制台选择器 ∩ 核件两 CSS（`composer.css` ∥ `model-menu.css`）同 token 特征度比对——同名选择器 `#toolbar` ∥ `#reasoning-btn` ∥ `.mm-sep` 逐条核过：`#toolbar` 双方零冲突属性（控制台 = sticky 位；核件 = 内距/边/底）∥ `#reasoning-btn` 核件侧**无 `display` 声明** ⇒ 控制台隐藏生效（六无源钮实测全 `none` ✓）∥ `.mm-sep` 同理 ✓；`.active`/`.open` 族 = 不同上下文假阳性。**结论：无新增活缺陷**。方法在案（核件表后加载 ⇒ 平特征度覆写必被盖——控制台侧覆写须升形）。
+
+**链**：三修均 `-chat-shell-align`/`-console-layout`/`-console-list-style` 锁件随正 ⇒ 四件复跑 **32/32 绿**；部署链 = 键面 `3397979cb70d` → 桥 `40fd55dae641` → 缩进 `8222545c19d3` → 收窄 `53eab1afaa0e`（末次 healthy ∥ 回滚锚 `pre-20261012-0900/-0920/-0930/-0940`）；`.5` 三处读数如上（含截图复核）。
+
+### 1.10 收口评审驱动实修（2026-10-12 09:0x · 轻通道② · 父侧直笔 · 可 revert）
+
+**来源** = 本轮独立评审（评审 #261，判决 pass；🟡①② 可选）——裁定：**①② 当场修**（同一交付面「审计页沙盒可见」的补齐，非另轮债）。
+
+**① kind 词表补全（🟡①）**：`views-audit.mjs:SANDBOX_KIND_KEYS` 22 键 ⇒ **26 键**——补 `box_start`/`box_stop`/`box_destroy`（服务端 `registry.mjs:309/312/313/316` 实发）∥ `runner_selfcheck_failed`（`routes.mjs:173` 实发）；两表逐键同步（`i18n-zh-system.mjs:187/190-192` ∥ `i18n-en-system.mjs:187/190-192`：节点自检失败 ∥ 工作区盒启动/停止/销毁）。全量扫描确认服务端 kind 发射面**再无他漏**（`join`/`snapshot`/`checkpoint` 类 kind 现无发射点——grep 实证）。
+
+**② 计数锁全量随正（本次发现的系统面）**：`reasoning.off`（1.8）+ kind 四键（本笔）⇒ 键数 **687/692 ⇒ 691/696**；又 1.9 的 `--vscode-*` 族桥 ⇒ `style.css` 变量族 **50 ⇒ 58** ⇒ **全仓 16 件测试的计数锁逐件随正**（键数终值 5 件：结构①/runner-ui:484/small-fixes:68-75/admin-agent-chat-ui:274-292/console-tabs:443-444；core 部件族 53⇒54：console-chat-align:306；`audit.` 键族 56⇒60：console-completeness-2:457；`:root` 50⇒58：me-usage-charts:352 ∥ provider-model-metadata:486 ∥ quota-v2:737 ∥ runner-admin-ui:523 ∥ admin-agent-chat-ui:365 ∥ console-tabs:478 ∥ sandbox-docker-admin-ui:417 ∥ sandbox-image-quick-pull:433 ∥ sandbox-image-sources-ui:508 ∥ sandbox-pull-by-source:459——含各自标题/头注同拍）+ ANCHOR 重算（zh `c6f959bb…` ∥ en `97cc22ff…`）。**教训（在案）**：控制台计数锁散在多批——改一处必须全仓 grep 随正，否则全链红。
+
+**③ 文档读数收正（🟡⑥）**：`READINGS.md:40/:65` 该档行数记「实读 144」（盘面 146——当轮少计 2）⇒ 收正为「144〔当轮〕⇒ 复核 146 ⇒ +4 ⇒ **实读 150**」；`webui/SANDBOX.md:46` 「kind 族 22 键」⇒「26 键」。
+
+**验证读数**：全链 `npm run prepublishOnly`（thincoder-server）**501/501 绿 · fail 0 · exit 0**（56 件）——收口前唯一一次全跑（日志 `.thincoder/tmp/full-chain-3.log`）。部署 = 见 §6 尾行。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：（eng-designer 写入时更新）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
@@ -61,3 +93,5 @@
 **结算（未达——评审前置）**：本轮台账行（#1299）保持**在途**；评审通过 + 修复落地 + 批准后转待核销 → 已核销（本 §6 追加结算行）。
 
 **父侧 `.5` 实走复核（2026-10-12 08:4x–09:0x · 收口链前置证据）**：① **标签页**——点按切（URL 随写 `#/admin/sandbox/images` ⇒ `#/admin/sandbox/runners`）∥ 键盘 `←`/`→`（焦点随移、`role=tablist`/`aria-selected`/roving tabindex 实读）∥ 整页直达 `#/admin/sandbox/images` 落 tab2（节点选单 `runner01`、两张表在）∥ 弹窗保活（建节点窗跨两次切换 = 同一 `<dialog>` 节点未关）。② **卷族**——卷表 2 行（名/创建/操作）∥ 建容器弹窗卷选单 = 已有卷 + 「新建卷（手输）」+ 说明句 ∥ 删卷确认窗「卷内数据会一并消失，且不可恢复」+ 取消（零实删）。③ **日志窗**——`walk-logtest` 单时间线实读：输出两行 + `[操作] 容器重启` 按时间并流（截断句/行数选单/刷新在位）。④ **对话页**——壳面（会话条/消息流/状态行/核件输入区）+ **真发一条**：08:45 发 → 助手 4s 回（状态行「运行中…轮次 1·耗时 0s」⇒ 落定「轮次 1·耗时 4s」，无告警）。**走查发现 1 缺陷并当场修**：推理档钮显裸键 ⇒ §1.8（键 +1、六处断言随正、部署 `3397979cb70d` healthy、`.5` 复读「关闭」✓）。上游两挂账 = #1302 ∥ #1303；browser 工具陈旧进程面 = #1304。
+
+**收口评审（2026-10-12 09:0x · 独立评审 #261 · 判 pass）**：0 🔴 ∥ 2 🟡（均标「可选、不阻断」）∥ 4 🔵；父侧逐条裁定 = 🟡①② 当场修（§1.10）∥ 🟡⑥ 当场修（读数收正）∥ 🔵③④⑤ 挂账（#1306/#1307/#1308）+ 评审另提 `sandbox_rule` 详情定形项挂 #1305。**收口前全链读数**：`npm run prepublishOnly`（thincoder-server）**501/501 绿 · fail 0 · exit 0**（56 件——含本轮 16 件计数锁随正）。评审局限在案：评审无执行面 ⇒ 其「未验证项」清单（实跑读数/指纹/部署）由本侧读数补足。

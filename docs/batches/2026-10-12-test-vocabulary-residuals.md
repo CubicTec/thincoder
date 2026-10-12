@@ -25,6 +25,13 @@
 
 **待办（本笔未做，指向）**：① 提交 —— 与在飞四批同面的 6 档暂缓提交（不为他作者落笔）；核心面已 path-limited 提交。② `#1273` 悬空 28（存量红）——口径待用户裁。③ 收口链（§2 形式化 → §3 独立评审（用户触发）→ §4 批准 → §6 收口结算）。
 
+**笔 4 —— `#1273` 悬空 28 就地办结**（轻通道 · 细节面 ∥ 坐标清洗；回滚 = revertable；用户令 2026-10-12 22:38「处置」）
+- 定性（按机检解析序实证）：28 条 = **引用形未全限定 / 目标档已改名**（非文件缺失）——检查器解析序 = 仓根 → 域根 → 本档目录 → 唯一 basename；`views/chat.mjs` 族 shorthand 与 `src/project/projects.mjs` 族相对形皆解析不到。
+- 逐条定法：**现值句 → 全限定**（`thincoder-desktop/renderer/views/chat.mjs` ∥ `thincoder-desktop/src/main/projects.mjs` ∥ `thincoder-server/src/project/projects.mjs` ∥ `thincoder-server/src/agent/chat.mjs:367-390` 等，共 23 条）∥ **已删档史实句 → 迁移期引文标记**（`mount-settings-team.mjs` 族 4 条——沿 `2026-10-10-login-entry-completion` 批既定裁法「现值句收正 ∥ 史实句加标记」）∥ **活映射表 → 改指活档**（`API-CONTRACT.md:2011` `createTeam` ⇒ `mount-team.mjs:46`，实读坐标）。
+- 落点：`docs/core/design/{API-CONTRACT,TEAM}.md` ∥ `docs/desktop/design/{ACTIVITY,CHAT,MENU,PROJECT,RENDERER,SETTINGS,SHELL,UI}.md` ∥ `docs/render-core/design/RENDER-CORE.md` ∥ `docs/server/design/project/PROJECTS.md` ∥ `docs/server/requirements/PROJECT.md`；行内替换为主，两处折行（MENU.md:73 ∥ SETTINGS.md:211——加前缀后越 300，机械收正）。
+- **机检两读（`node scripts/doc-check.mjs` · 仓根）**：首读 = 悬空 **28** ∥ 行宽 0（另一处 304 字符 = 笔 2 落点，已收）⇒ 28 处落改后复读 = 悬空 **1**（TEAM.md:130 标记形断行）⇒ 收正后终读 = **EXIT 0**（悬空 **0** ∥ 行宽 **0** ∥ 迁移期引文 343 ∥ 拟新增 52 ∥ 注记豁免 303 ∥ 声明源缺位 0）。
+- 记录面处置：`mount-settings-team.mjs` 族 4 条**保留原路径 + 标记**（史实为真，不篡改）；余 23 条 = 引用形收正（词面/语义零改）。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：（eng-designer 写入时更新）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>

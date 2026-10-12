@@ -153,6 +153,28 @@
 
 VERDICT: changes-required
 
+### 轮次 2（评审子代理）
+
+复核口径：轮 2 复评（核验 fix 轮 1 之 14 件落点）——范围 = 五档现文（`sandbox/SANDBOX.md` ∥ `agent/ADMIN-AGENT.md` ∥ `webui/SANDBOX.md` ∥ `webui/CHAT.md` ∥ `design/PROJECT.md`）；fix 记录 14 件中 13 件落点核实到位（#1 三处「待父侧落 ⇒ 已落」∥ #2 凭据类例外两行 ∥ #3 R72①② ∥ #4 七列/两类/B76 双腿 ∥ #6 四字段 + 指针 ∥ #7 现读 + 档目 +1 名 ∥ #8 `'moved'` 读数口径 ∥ #9 七 ⇒ 八三处 ∥ #10 服务端 ≈+278 与 db 段链 ≈646（488 ⇒ 560 ⇒ 574 ⇒ 646 复算平） ∥ #11 i18n 三组键 ∥ #12 sudo 口令口径 ∥ #13 「运行面动作」 ∥ #14 §6 块合一），#5 只半落（两 kind 句在，批名改写未落）。
+
+| # | Category | Severity | Issue | Suggestion |
+|---|----------|----------|-------|------------|
+| 1 | 文档卫生（fix 落点核验） | 🟡 | fix 轮自陈「同句陈指「（本批）」改批名」（`sandbox/SANDBOX.md:625`），但该句现文仍为「**主机凭据增补（本批）**：`sandbox_event` 增两 kind」（`sandbox/SANDBOX.md:39`）——同族两句皆作批名（`:37`「（v13 批）」∥ `:38`「（sandbox-image-sources 批）」）。 | 将 `sandbox/SANDBOX.md:39` 括注改为批名（`admin-chat-creds-merge 批`），与同族同形。 |
+| 2 | 受影响文件尺寸注解 | 🟡 | `views-sandbox.mjs` 实读 499 ⇒ ≈511（`webui/SANDBOX.md:68`：「越 500 软线，处置另裁」）——跨 500 软线无拆分预案/维持判句；同批姊妹件皆有（`registry.mjs` ⇒ ≈561 预案 `sandbox/SANDBOX.md:482` ∥ `db.mjs` ⇒ ≈646 预案 `:496` ∥ `chat-tools.mjs` ⇒ ≈540「维持 + 上限 700」`agent/ADMIN-AGENT.md:64`）。 | 按姊妹件同形补一句（维持 + 触发线，或拆分预案；口径沿 `store/STORE.md` §4 先例）。 |
+| 3 | 文档状态一致（fix 落点核验） | 🟡 | `PROJECT.md:392`（历史段·原 §4 冻结块内）KD-SV-90 行已改写为「管理面八件…`revoke_credential`…KD-SV-136」——含 2026-10-12 事实，与冻结声明「原样（旧坐标至此解析）——历史记录，不逐条改写」（`:302`）相抵；同块姊妹行 `:384` 仍为迁移前原样（「本批扩管理面七件——KD-SV-90」）⇒ 同块混代；该改写 = fix 记录 `:833` #1 所陈「§4 索引 KD-SV-90 行收正」之落点。 | 冻结块回归迁移前原样（现值以域档 KD 节/live 段为准）；若要索引面携 KD-SV-136 指针，落在 live §4 的 sandbox/agent 两行并同步姊妹行口径。 |
+| 4 | 清晰度 / 验收可判 | 🟡 | `exec` 的 `timeoutS` 无缺省值与上下界：`agent/ADMIN-AGENT.md:262`（§12 行）与 `:31`（§3 任务件行）皆只列签名；而 `:144` E61 以「`timeoutS` 非法」为判据——该腿无可机检锚点（对照：同档 `bash` 超时有明确定形 `:332`「缺省 120_000 ms ∥ **无上限**…」）。 | 补 `timeoutS` 缺省值与取值范围（越界 ⇒ 工具级错误的判据），使 E61 可机检。 |
+| 5 | 数字漂移 | 🔵 | `PROJECT.md:701` webui ≈**+193** 自称「分项和」，按行内分项与他处增幅复算 ≈166（≈110 ＋ ≈12 ＋ 10 ＋ 24 ＋ 6 ＋ 4）差 ≈27；同行 `views-sandbox.mjs` 仍书目标值「⇒ ≈415」（陈估），与拥有档「实读 499 ⇒ ≈511」（`webui/SANDBOX.md:68`）不同值；`webui/SANDBOX.md:79` 面小计仍 ≈2226 未折本批（对照 `webui/CHAT.md:129` 已折 +≈10）。 | 补齐分项（或补列未列件）；`views-sandbox.mjs` 目标值与面小计取当刻实读。 |
+| 6 | 数字漂移 | 🔵 | `sandbox/SANDBOX.md:481` routes 行「余量 ≈41（450 ⇒ ≈459）」与本行实读 442（volumes +2 ∥ 本批 +≈14 ⇒ ≈458、余量 ≈42）及 `:502`「≈444——余量 ≈56」两条链不齐；「450」来源未注。 | 统一基数（442 起点）并按同链复算余量。 |
+| 7 | 文档卫生 | 🔵 | `sandbox/SANDBOX.md:491`（`ssh.mjs`）与 `:493`（`onboarding-routes.mjs`）两行仍标「拟新增」+设计估，与 `agent/ADMIN-AGENT.md:31`「`thincoder-server/src/sandbox/ssh.mjs`（已落盘——系统 openssh，KD-SV-85）」相抵；`:504` 清账句只点名 `rules.mjs`/`credentials.mjs` 两档。 | 两行标记随实读收正，或纳入同批清账句口径。 |
+| 8 | 数字漂移 | 🔵 | 规范面计数陈值两处：`webui/CHAT.md:47`「管理面工具**七件**无文件编辑族」（现口径八件——`agent/ADMIN-AGENT.md:249` §12 题 ∥ `:262` `exec` 行）；`sandbox/SANDBOX.md:488`「预选表**六条**」（现七条——`:153` 清单七条 ∥ `:382`「预选七条在册」）。 | 两处计数随现口径收正（结论句不变）。 |
+| 9 | 边界情形覆盖 | 🔵 | 口令径宿主前提在 chat `exec` 面无对应句：任务面有「S2 先检本机 `sshpass`…缺 ⇒ 停 + 报因」（`sandbox/SANDBOX.md:113`），而 §3 主机凭据块/`agent/ADMIN-AGENT.md:262` `exec` 行与用例 E59/B77/B79 皆未提该前提。 | 补该前提的处置句（检查并报因，或明确沿「传输级失败 ⇒ `ok:false` + 人话」兜底）并落对应用例腿。 |
+
+范围外注（无严重度）：本设计对范围外档的断言（`store/STORE.md` §2 v19 段/CHECK 重建/回填移交 ∥ `gateway/API.md` §2.5（已落）两端点 ∥ `accounts/ACCOUNTS.md` §2.1 两 kind ∥ 需求档功能点 47 ∥ AC-47）与 R72③ 内测试件的「现读/净变」数，按本次评审范围（五档）不可核——未视为缺陷，登记为不可核项。项目标准档与文档地图未声明 ⇒ Document-ownership 判据降级（仅对 Project Guide 核对）。
+
+计数：🔴 0 ∥ 🟡 4 ∥ 🔵 5
+
+VERDICT: pass
+
 ## §4 用户批准（主 agent）
 ## §5 实施记录（eng-coder）
 ## §6 验证与收口（父代理）

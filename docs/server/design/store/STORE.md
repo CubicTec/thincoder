@@ -8,15 +8,15 @@
 
 - 单库单连接（`DatabaseSync`）；PRAGMA：WAL ∥ `synchronous=NORMAL` ∥ `busy_timeout=5000` ∥ `foreign_keys=ON`。
 - 库文件默认 = `thincoder-server/data/gateway.db`（运行期生成，不入 git）。
-- 结构版本 = `PRAGMA user_version`（当前 = **15**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
+- 结构版本 = `PRAGMA user_version`（当前 = **16**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
   v5 增模型标识两字段拆列 + 派生两表 + 成员配额列 ∥ v6 增成员模型禁用列（详见 §2 v5/v6 段） ∥ v7 增 provider 模型元数据留存列 ∥ **v8 增 key 名称列（`api_keys.name`——me-keys 批）**（详见 §2 v7/v8/v9 段） ∥
   v9 增 provider 上游代理旗（`providers.proxy`——server 代理批） ∥ **v10 增审计型 `config_update`（`audit_events` 重建——CHECK 扩型；配置控制台批）**（详见 §2 v10 段） ∥ **v11 增沙盒七表 + 审计 CHECK 再扩（十二型——server-exec-sandbox 批）**（详见 §2 v11 段） ∥
   **v12 `sandbox_runners` 表重建（Docker 节点形态——runner-admin-console 批）**（详见 §2 v12 段） ∥ **v13 增 `sandbox_onboarding` 表（托管接入——runner-admin-console 批增补）**（详见 §2 v13 段） ∥
-  **v14 增 agent chat 两表 + 审计 CHECK 再扩（十三型——admin-agent-chat 批）**（详见 §2 v14 段） ∥ **v15 增 `image_sources` 表（镜像源清单——sandbox-image-sources 批）**（详见 §2 v15 段）；
+  **v14 增 agent chat 两表 + 审计 CHECK 再扩（十三型——admin-agent-chat 批）**（详见 §2 v14 段） ∥ **v15 增 `image_sources` 表（镜像源清单——sandbox-image-sources 批）**（详见 §2 v15 段） ∥ **v16 增会话级思考档位列（`agent_chats.reasoning`——console-reasoning-levels 批）**（详见 §2 v16 段）；
   未发布期连续演进，无历史库迁移包袱——旧库启动自动升；迁移链机制自 v1 起备）。
 - server-model-alias 批（2026-10-09——台账 #1153）：**零结构变更**（别名落 `models_json` 元素——JSON 文本内演进；无新列/新表/新段——结构版本保持 **10**）。
 
-## 2. DDL（v1 基线四表 + v2–v15 增段）
+## 2. DDL（v1 基线四表 + v2–v16 增段）
 
 ### v1 基线（四表——逐字）
 
@@ -404,6 +404,20 @@ CREATE TABLE IF NOT EXISTS image_sources (
 - 圈界：`created_by` 无 FK（沿 `audit_events`/沙盒瞬态表口径）；**清单不镜像远端**（远端态不落库——读时读；KD-SV-79 精神）。
 - **判据（批内件）**：空库直落 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场（`pragma_table_info`）∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
 
+### v16 增段（`agent_chats.reasoning` 增列——agent 域；console-reasoning-levels 批）
+
+（背景：控制台对话页思考档位选择器——会话级档位（与 `model` 同层）；对象模型/机制 = `agent/ADMIN-AGENT.md` §11.4；**列级 `ALTER`——表不重建**。）
+
+```sql
+-- ① 会话档位列（NULL = 未设——默认态；值域 = 该模型核枚举 `reasoningEffortEnum`，应用层校验）
+ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;
+-- ② 审计 CHECK 零动（三 kind 不扩——档位写 = 会话设置面，沿 KD-SV-108 先例；十三型不变）
+```
+
+- 语义/机制 = `agent/ADMIN-AGENT.md` §11.4（单源）；端点 = `gateway/API.md` §2.8（会话设置面 + 会话行形）；控制台面 = `webui/CHAT.md` §2.1⑤。
+- 圈界：**零迁移**——存量行保持 NULL（= 未设 = 今日行为逐字同；无回填 ∥ 无改写）；**档位词表不入库**（核单源——列只存该模型枚举内的串）；NULL 与字面 `off` 不等价（缺省 ≠ 原子档位哨兵——`off` = 核件**显示**哨兵，写面不收）。
+- **判据（批内件）**：空库直落 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ `agent_chats` 列面六列在场（`pragma_table_info`——`reasoning` 尾插）∥ 存量行 `reasoning IS NULL` 零变 ∥ 存量其余列逐值保形。
+
 ## 3. 迁移链（`user_version` 逐版升）
 
 - `thincoder-server/src/store/db.mjs`（已落盘）持 `MIGRATIONS` 数组——每段 = `{ v, up(db) }`（v = 目标 `user_version`，自 1 起递增；v1 = 基线段 = §2 全量 DDL）。
@@ -427,12 +441,13 @@ CREATE TABLE IF NOT EXISTS image_sources (
 - v13 = `sandbox_onboarding` 建表（托管接入任务 + 凭据——**runner-admin-console 批增补** ∥ 台账 #1236/#1237）：**加表**（零重建——见 §2 v13 段）；旧库（v1–v12）启动自动升 ∥ 空库直落 v13；判据（批内件）= 空库读数 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 存量表零变。
 - v14 = agent chat 两表 + 审计 CHECK 再扩（十三型——**admin-agent-chat 批** ∥ 台账 #1254）：**加两表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11 同构；见 §2 v14 段）；旧库（v1–v13）启动自动升 ∥ 空库直落 v14；判据（批内件）= 空库读数 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场 + `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写。
 - v15 = `image_sources` 建表（镜像源清单——**sandbox-image-sources 批** ∥ 台账 #1274）：**加表**（零重建——见 §2 v15 段）；旧库（v1–v14）启动自动升 ∥ 空库直落 v15；判据（批内件）= 空库读数 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场 ∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
+- v16 = `agent_chats.reasoning` 增列（会话级思考档位——**console-reasoning-levels 批** ∥ 台账 #1303）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v16 段）；旧库（v1–v15）启动自动升 ∥ 空库直落 v16；判据（批内件）= 空库读数 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ 列面六列在场 ∥ 存量行 NULL 零变。
 
 ## 4. 本域文件与行数预算（本域族行）
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/src/store/db.mjs`（已落盘） | **124 ⇒ ≈160 ⇒ 144**（实读——v3 落地后）**⇒ ≈155**（服务模型配置面批 +≈11 = v4 段（ALTER + 迁移段））**⇒ 实读 150 ⇒ ≈205**（配额分模型批 +≈55 = v5 段：拆列 ALTER/UPDATE ∥ 建两表 ∥ 两回填 INSERT ∥ 成员列增删）**⇒ 实读 202 ⇒ ≈214**（配额 v2 批 +≈12 = v6 段（ALTER + 迁移段））**⇒ 实读 210（v6 落地后）⇒ ≈218**（模型元数据批 +≈8 = v7 段（ALTER + 迁移段——与 v6 段同构））**⇒ ≈228**（me-keys 批 +≈10 = v8 段（ALTER + 回填 UPDATE + 迁移段——较 v6/v7 段多一条回填））**⇒ 实读 ≈224（2026-10-09）⇒ ≈234**（本批代理：v9 段 +≈10——实读待回填）**⇒ 实读 231（2026-10-09——本设计轮复读）⇒ ≈256（配置控制台批：v10 重建段 +≈25——建新表/拷贝/换名/索引重建 ∥ 迁移段；实读待回填）⇒ 实读 255（2026-10-09——配置控制台批落地后）∥ ±0（2026-10-09 alias 批：零结构变更）⇒ ≈350（server-exec-sandbox 批：v11 段 +≈95 = 七表 + 种子 + 审计重建——实读待回填）** ⇒ 实读 **365**（2026-10-10——runner-admin-console 批现读）⇒ ≈400（本批：v12 段 +≈35——实读待回填）⇒ **≈425**（托管接入增补：v13 段 +≈25——实读待回填）** ⇒ 实读 **409**（2026-10-11——admin-agent-chat 批设计轮现读）⇒ 实读 **458**（2026-10-11——sandbox-image-sources 批设计轮现读；v14 段入盘 +49）⇒ ≈490（本批：v15 段 +≈32——建表 + 两唯一约束 + 迁移段；实读待回填）** | 开库 ∥ PRAGMA ∥ DDL ∥ 迁移链 ∥ 语句封装 |
+| `thincoder-server/src/store/db.mjs`（已落盘） | **124 ⇒ ≈160 ⇒ 144**（实读——v3 落地后）**⇒ ≈155**（服务模型配置面批 +≈11 = v4 段（ALTER + 迁移段））**⇒ 实读 150 ⇒ ≈205**（配额分模型批 +≈55 = v5 段：拆列 ALTER/UPDATE ∥ 建两表 ∥ 两回填 INSERT ∥ 成员列增删）**⇒ 实读 202 ⇒ ≈214**（配额 v2 批 +≈12 = v6 段（ALTER + 迁移段））**⇒ 实读 210（v6 落地后）⇒ ≈218**（模型元数据批 +≈8 = v7 段（ALTER + 迁移段——与 v6 段同构））**⇒ ≈228**（me-keys 批 +≈10 = v8 段（ALTER + 回填 UPDATE + 迁移段——较 v6/v7 段多一条回填））**⇒ 实读 ≈224（2026-10-09）⇒ ≈234**（本批代理：v9 段 +≈10——实读待回填）**⇒ 实读 231（2026-10-09——本设计轮复读）⇒ ≈256（配置控制台批：v10 重建段 +≈25——建新表/拷贝/换名/索引重建 ∥ 迁移段；实读待回填）⇒ 实读 255（2026-10-09——配置控制台批落地后）∥ ±0（2026-10-09 alias 批：零结构变更）⇒ ≈350（server-exec-sandbox 批：v11 段 +≈95 = 七表 + 种子 + 审计重建——实读待回填）** ⇒ 实读 **365**（2026-10-10——runner-admin-console 批现读）⇒ ≈400（本批：v12 段 +≈35——实读待回填）⇒ **≈425**（托管接入增补：v13 段 +≈25——实读待回填）** ⇒ 实读 **409**（2026-10-11——admin-agent-chat 批设计轮现读）⇒ 实读 **458**（2026-10-11——sandbox-image-sources 批设计轮现读；v14 段入盘 +49）⇒ ≈490（本批：v15 段 +≈32——建表 + 两唯一约束 + 迁移段；实读待回填）** ⇒ 实读 **476**（2026-10-12 本设计轮复读）⇒ ≈**485**（console-reasoning-levels 批：v16 段 +≈9——`ALTER` + 迁移段）** | 开库 ∥ PRAGMA ∥ DDL ∥ 迁移链 ∥ 语句封装 |
 
 ## 5. 关键决策（本域）
 

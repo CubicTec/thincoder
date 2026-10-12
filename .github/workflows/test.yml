@@ -66,7 +66,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
-      # 包装发布门禁（node --check ×3 + 十件批内件单测）——零依赖，免 install
+      # server 发布门禁（node --check ×3）——零依赖，免 install
       - run: npm run prepublishOnly
   docs:
     name: repo-wide doc machine checks

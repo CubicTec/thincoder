@@ -71,13 +71,13 @@
 - 小计 **≈+872**（admin-agent-chat 批：新增四档 ≈960 ∥ `tools.mjs` −≈88 ⇒ 实读 **−46**〔288 ⇒ 242——原估偏大 42〕）；`bin/thincoder-server.mjs` 实读 **187 ⇒ ≈189**（import + 注册两行——本域首经 bin 注册点）；**chat-shell-align 批另计 ≈+145**（`chat.mjs` 498 ⇒ ≈600 ∥ `chat-routes.mjs` 105 ⇒ ≈150；零新档）
   ⇒ **console-reasoning-levels 批另计 ≈+30**（`chat.mjs` 实读 575 ⇒ ≈585 ∥ `chat-routes.mjs` 实读 158 ⇒ ≈178；零新档——值域桥件行账 = `gateway/API.md` §4）。
   ⇒ **admin-agent-awareness 批另计实读 +423**（`chat-env.mjs` 实读 94 ∥ `chat-env-tools.mjs` 实读 229 ⇒ **231**〔2026-10-12 轻车道：撤 600s 顶 +2 ∥ 上界守卫 +1〕 ∥ `chat-store.mjs` 实读 112〔拆档 A 产物〕 ∥ `chat.mjs` 实读 587 ⇒ 净 −12；零新端点 ∥ 零迁移 ∥ `bin` ±0）；
-  批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **467**〔含轻车道 700000 受理形 ∥ 守卫两腿〕；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
+  批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **467**〔含轻车道 700000 受理形 ∥ 守卫两腿〕；**不入任何门**（2026-10-12 用户裁））。
   ⇒ **server-wake-face 批另计 ≈+342**（`chat-wake.mjs` 新增 ≈130 ∥ `chat-env-tools.mjs` ≈+100〔垫片扩面 + 投递汇 + 异步接线〕∥ `chat.mjs` ≈+100 ∥ `chat-routes.mjs` ≈+10 ∥ `chat-env.mjs` +2；零新端点 ∥ 零迁移）。
-  批内件 1 档（`docs/batches/2026-10-12-server-wake-face.test.mjs`——≈380 行〔修订轮 +≈80：§16.4 四腿〕；**入 server 链**，`prepublishOnly` 58 ⇒ 59）。
+  批内件 1 档（`docs/batches/2026-10-12-server-wake-face.test.mjs`——≈380 行〔修订轮 +≈80：§16.4 四腿〕；**不入任何门**（2026-10-12 用户裁））。
   ⇒ **修订轮另计 ≈+154**：`chat-store.mjs` 112 ⇒ ≈160 ∥ `chat-env-tools.mjs` ≈350 ∥ `chat.mjs` ≈712 ∥ `thincoder-server/src/accounts/keys.mjs` 144 ⇒ ≈180 ∥ `thincoder-server/src/accounts/routes.mjs` 152 ⇒ ≈160 ∥ `thincoder-server/src/store/db.mjs` 488 ⇒ ≈502
   ∥ `thincoder-server/bin/thincoder-server.mjs` 现读 **192** ⇒ ≈198（`selfBaseUrl` 取数器）；零新档 ∥ 零新端点 ∥ 零迁移面 = `api_keys.key_plain`（v18——B2 批 v17 在占未落；批序定段号））。
   ⇒ **admin-chat-creds-merge 批另计 ≈+75**（`chat-tools.mjs` +≈63 ∥ `chat.mjs` +≈12 ∥ `chat-env.mjs` +1；零新档 ∥ 零新端点）；
-  批内件 1 档（`docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`——≈420 行，含 chat `exec` 工具腿；**入 server 链**——`prepublishOnly` 现读 **58** ⇒ +1，以实施当刻实读为准；webui 面 = `webui/WEBUI.md` §5 ∥ sandbox 域 = `sandbox/SANDBOX.md` §13）。
+  批内件 1 档（`docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`——≈420 行，含 chat `exec` 工具腿；**不入任何门**（2026-10-12 用户裁）；webui 面 = `webui/WEBUI.md` §5 ∥ sandbox 域 = `sandbox/SANDBOX.md` §13）。
 - `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `sandbox/SANDBOX.md` §16 R53③（as-of 2026-10-11）。
 - sandbox 域件（`ssh.mjs` ∥ `onboarding.mjs` ∥ `onboarding-routes.mjs`）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 

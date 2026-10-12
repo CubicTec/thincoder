@@ -133,7 +133,7 @@
 | `thincoder-server/src/sandbox/onboarding.mjs`（已落盘 · 实读 373） | −≈50（三件外迁）+ ≈2（再导出）；`keyPath` 取件改指 `credentialKeyPath(config)`（同行同值） | 零语义（KD-SV-119） |
 | `thincoder-server/src/accounts/audit.mjs`（已落盘 · 实读 116） | +1 型（`project_event` 入 `AUDIT_TYPES`——≈+2 行含注释） | 型面 十三 ⇒ 十四 |
 | `thincoder-server/bin/thincoder-server.mjs`（已落盘 · 实读 192） | +≈8（三注册行（含接收面）+ 调度器接线） | 装配 |
-| `thincoder-server/package.json`（已落盘 · 实读 30） | 机械（门禁链 + 批内件三档——清单单行；`prepublishOnly` 58 ⇒ 61） | 门禁链 |
+| `thincoder-server/package.json`（已落盘 · 实读 30） | 机械（2026-10-12 已落：`prepublishOnly` = 3×`node --check`——链撤；批内件不入任何门，本批零剩余改动） | 发布钩 |
 
 （webui 面文件与 i18n 键族 = `webui/PROJECTS.md` §3 单源；域小计 = 服务端七档行和 **≈1475**（≈1310 ⇒ ≈1475——R63/R64 增量 ≈+165；原「≈1150」系粗估——本轮按行和收正）+ 共享件改动 ≈+95 净。）
 

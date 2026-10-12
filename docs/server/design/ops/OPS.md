@@ -116,7 +116,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
 
 - **版本身份 = npm 包**（两路同源）：升级 = 装 npm 新版 + 重启（§5.4）；**镜像 tag 不承担版本语义**（tag 只标壳——除 Node 基座换代外无需重建镜像）。
 - **npm 路（包体就绪——发布动作 = 发布面轮）**：`thincoder-server/package.json` 转可发布形——撤 `private` ∥ 包名 = `@thincoder/server`（拟——发布轮验 registry 占用/scope 权限；更优命名可上抛） ∥ `bin` = `thincoder-server`
-  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁 = 3×`node --check`（`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`）——2026-10-12 用户裁：**批内件不入发布门**（单元测试纪律——随批档留存、不入仓套件）；旧「门禁链」台账（30 ⇒ … ⇒ 61）自本日废，不再随批维护。
+  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁 = 3×`node --check`（`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`）——2026-10-12 用户裁：**批内件不入任何门**（单元测试纪律——随批档留存、零维护；红不作门禁判据、不扫旧件）；旧「门禁链」台账（30 ⇒ … ⇒ 61）自本日废，不再随批维护。
   - `files` 白名单 = bin ∥ src ∥ public ∥ config.example.json ∥ README.md（`deploy/` 档组 = 仓内部署面——不入包）。
 - **npm 路装机 = 前缀式**（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议 `/opt/thincoder-server/.npm-global`——与配置/数据同根）⇒ 装机（`npm i -g @thincoder/server`）与自升（服务进程内——§5.4）同前缀、免 sudo 重写；安放后该根目录整归服务账号（`chown -R`）。
 - **Docker 路 = 壳镜像**（`thincoder-server/Dockerfile`——重设计）：基座 `node:24-slim` + 引导层（`thincoder-server/deploy/docker-entrypoint.sh`（已落盘 7 行） ∥ `thincoder-server/deploy/converge.mjs`（已落盘 197 行））；**App 代码由 npm 取装**——镜像本体只含壳（不带版本身份）。

@@ -27,7 +27,8 @@ export function modelAliasOf(models, model) {
 }
 
 /** 服务模型行集（与 `/v1/models` 同源——纯函数，批内件直测）：providers 展平（**嵌入引擎模型不入本列表**——
- *  单独命名空间，KD-SV-58）。行形 = `{ id（**对外标识**——配别名 ⇒ 别名 ∥ 未配 ⇒ 前缀形）, provider, upstream（上游真名）, surface（恒 chat） }`。
+ *  单独命名空间，KD-SV-58）。行形 = `{ id（**对外标识**——配别名 ⇒ 别名 ∥ 未配 ⇒ 前缀形）, provider, upstream（上游真名）, surface（恒 chat）, reasoning }`。
+ *  `reasoning` = 该模型思考档位枚举（服务端 `modelReasoning[上游真名]`——无档 ⇒ `[]`；**控制台零二次改写**——KD-SV-111）。
  *  条目两形（字符串 ∥ `{ name, alias }`——KD-SV-59①）；零迁移：存量字符串条目 ⇒ `id` 仍回落前缀形。 */
 export function deriveModels(providers) {
   const rows = []
@@ -35,7 +36,7 @@ export function deriveModels(providers) {
     for (const item of provider.models ?? []) {
       const upstream = modelNameOf(item)
       const alias = typeof item === "string" ? null : modelAliasOf([item], upstream)
-      rows.push({ id: alias ?? `${provider.name}/${upstream}`, provider: provider.name, upstream, surface: "chat" })
+      rows.push({ id: alias ?? `${provider.name}/${upstream}`, provider: provider.name, upstream, surface: "chat", reasoning: provider.modelReasoning?.[upstream] ?? [] })
     }
   }
   return [...rows].sort((a, b) => a.id.localeCompare(b.id)) // id 升序（2026-10-07 走查收正——服务模型页长清单可找；同弹窗清单口径）

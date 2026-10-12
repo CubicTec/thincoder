@@ -157,5 +157,62 @@ N71（PATCH 设档 + 装配携值 + 三面行形）∥ B69（未设/表外/换�
 VERDICT: pass
 
 ## §4 用户批准（主 agent）
+
+**用户批准（父侧代签——用户 2026-10-12 12:11 授权「其他自动走的自动走」，批档 §1.5 在册）**
+
+**三条件齐备**：① **设计评审 #263 pass**（0 🔴 ∥ 5 🟡 ∥ 2 🔵——发现表 = §3；裁决表 = §1.6，七条全采纳）；② **修正轮 #264 已落地并逐条核验**（父侧实测读数：规范面「六钮/六 id/六枚」grep 清零——余 3 处 = 变更记录/变更指令行；「面退役」括注规范面清零；「无 reasoning 文本通道」3 处在场；别名解析径 3 档在场；拆分计划 2 处到场；复算闭 = CHAT 面小计 953 ∥ PROJECT webui +23；`git status` = 仅文档改动、产品码零触）；③ **token 已签发**（评审 #263 回执，值不落档——凭据只活在运行态）。
+**依据** = §1.5 授权 + §1.6 裁决表 + §3 发现表 + 上列核验读数。
+**批准范围** = 本批设计面（功能点 42 ∥ AC-42 五条）；实施轮 = eng-coder（设计 token + 本档 §2 落点表）。
+
 ## §5 实施记录（eng-coder）
+
+### 实施记录（eng-coder · console-reasoning-levels）
+
+**状态行**：实施完成（1 轮 fix · 内审 CLEAN · 代码评审 2 轮 pass）
+
+#### ① 交付摘要（实落 11 件）
+
+| 文件 | 落点 |
+|---|---|
+| `thincoder-server/src/gateway/reasoning-levels.mjs`（新 88 行） | 值域桥：懒载核 `specForModel` + 缓存（失败同缓存）∥ `setReasoningLevelsDeps({ specLookup })` 注入缝 ∥ `levelsOf`／`modelReasoningMap`（稀疏图）／`levelsOfRef`（别名反解 KD-SV-59）／`noteDegraded`（一进程一条 + `cause` 真因）∥ 缺核抛（调用侧退化） |
+| `src/gateway/provider-admin.mjs` | 注册签名 + `specLookup = null`；**GET 改 async**，逐 provider 取 `modelReasoning`（缺核 ⇒ `{}` + 一条警告，**不 5xx**）；头注补档位段 |
+| `src/agent/chat-routes.mjs` | PATCH 重写为**会话设置面**：`{ model }` ∥ `{ reasoning }` 一次一件（同携 ⇒ 400）；`{ reasoning }` 值域 = 当刻模型核枚举（表外/非串 ⇒ 400 库零变；`null` = 清）；建会话/回执行形补 `reasoning` |
+| `src/agent/chat.mjs` | `chatView` 行形补 `reasoning`；`buildChatExit({ …, reasoning, log })` 装配（值 ∈ 枚举才携 `reasoningEffort`；未设/表外/缺核 ⇒ 零字段，回合不阻断）；`:502` 调用点传 `chat.reasoning`；头注补档位面 |
+| `src/store/db.mjs` | v16 段：`DDL_V16`（`ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;` + 审计 CHECK 零动）+ `MIGRATIONS` 尾追 `{ v: 16 }`（`SCHEMA_VERSION` 派生零改）；v14 段注句随正括注 |
+| `public/views-models.mjs` | `deriveModels` 行携 `reasoning: provider.modelReasoning?.[upstream] ?? []`（核行非恒空） |
+| `public/views-chat-composer.mjs` | `coreRowOf` 携真档位 ∥ `prefs.reasoning` = 当刻会话档位 ∥ `post` 映射 + `selectReasoning`（失败 ⇒ 显示面重派生）；四面注随正（收窄 **五** id） |
+| `public/views-chat.mjs`（**500 行**——贴 500 软线） | deps 注入 `onSelectReasoning`；档位写 = 单变量串行链（会话 id 随拾取捕获）+ 回执卫（`activeId === chatId` 才落详）；`onSend` 发送前 `await reasoningWrite`；失败 ⇒ `ctx.fail` + 假 |
+| `public/style.css` | 无源钮收窄六 ⇒ 五 id（`#reasoning-btn` 出列 = 解隐藏）+ 注释随正 |
+| `docs/batches/2026-10-12-console-reasoning-levels.test.mjs`（新 620 行） | 批内件九腿：①源在册/缺核退化 ∥ N71/E54/B69 ∥ ④v16 结构 ∥ ③界面结构腿 ∥ B70 壳面 ∥ N72/E55/B70 页级实驱动（含连写串行 + 回执卫） |
+| `thincoder-server/package.json` | `prepublishOnly` 链尾插本批件（56 ⇒ 57） |
+
+#### ② 判据与读数（我跑的）
+
+- 批内件：`node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-12-console-reasoning-levels.test.mjs`（自 `thincoder/` 仓根）⇒ **9/9 pass**（含页级实驱动：真核件 + 假 DOM，点选 ⇒ PATCH 恰一条 ∥ 切会话回读 ∥ 失败人话 + 重派生 ∥ 串行链 ∥ 回执卫）。
+- `2026-10-11-admin-agent-chat-ui.test.mjs` ⇒ **7/7 pass**（`views-chat.mjs` 500 行 ≤ 软线腿绿）。
+- 全链读数（`npm run prepublishOnly`）⇒ 20 处红 = **13 件他批测试件的版本涟漪/门禁件数/行形随正**（写闸禁跨批 ⇒ 父侧代做，逐行清单见交付报告）。
+- 未跑：集成套件（本批非前端集成面）；仓套件 = 父侧收口门（本批不内跑）。
+
+#### ③ 决策透明表
+
+| # | 决策 | 依据/代价 |
+|---|---|---|
+| D1 | 值域桥单源直读核枚举 + 注入缝（开发机无 `@thincoder/core`） | 口径①；注入缝 = 批内件替身，缺省懒载真核 ⇒ 生产行为不变 |
+| D2 | 缺核 ⇒ 抛，调用侧退化（GET `{}` ∥ PATCH 400 ∥ 装配零字段） | 口径②；回合不阻断 |
+| D3 | 换模型 PATCH 随写 `reasoning = NULL`（同一写） | 口径②（换模型回中性） |
+| D4 | PATCH = 一次一件（同携 ⇒ 400）——不为模型换档位连带清档 | §2.8 字面；库零变可判 |
+| D5 | `views-chat.mjs` 收正为**恰 500 行**（dense `.then` 一行式，本档既有风格） | 设计预算 ≈498 实需 +19 ⇒ 越线；按"≤500 软线"收面（详交付报告偏离节） |
+| D6 | 档位写**串行链 + 回执卫**（会话 id 随拾取捕获；`activeId === chatId` 才落详） | 设计"单变量串行"；回执卫 = 评审 🟡 收正（免跨会话套写） |
+| D7 | `noteDegraded(log, where, error)` 第三参携带真因 | 评审 🔵 收正（免「核未装载」与「核 API 漂移」同形不可辨） |
+| D8 | 批内件 `tick` = 微任务排空（零墙钟）+ 缺核腿模块级注入 | 评审 🔵 收正（确定性 + 免依赖环境） |
+
+#### ④ 内审 / 代码评审轮次与终态
+
+- **内审（explore · 只读偏离审计）1 轮**：结论 `CLEAN`——四类偏离（半实现 ∥ 越界改动 ∥ 注释不符 ∥ 档面越界）均无；五条 AC 逐点落位；事实备注 2 条（行数读数；`views-chat.mjs:438` 跨会话回执窗口）。
+- **代码评审（advisor）2 轮**：①轮 `pass`（0 🔴 ∥ 3 🟡 ∥ 4 🔵——竞态窗口、两处行数 advisory、测试确定性/可观测项）；②轮收正复核 `pass`（4 项收正实读证实：回执卫 ∥ `noteDegraded` 真因 ∥ 测试免依赖注入 ∥ 零墙钟；新增回归腿；未引入新 🔴）。
+- **fix round = 1 轮**（4 项收正 + 1 条回归腿）；余项 = 3 条 advisory/🔵（`chat.mjs` 599 行 ∥ 批内件 620 行 ∥ 设计档行数注回填）+ 1 条既有同形残余（`onSelectModel` 回执卫）——均非 must-fix，父侧可裁。
+- **终态 = `clean`**（内审 CLEAN + 评审两轮 pass；无未决 🔴）。
+
+**更正（同段追加 · 写后读回发现）**：上「判据与读数」第二段末句笔误——全链红面实读 = **28 处测试 / 20 件文件**（非「20 处红 = 13 件」）；另 + 1 件 `2026-10-11-chat-shell-align.test.mjs`「绿但义陈旧」（六 id 收窄腿 + hover 名单待收正，id 字面仍在 CSS 注释内故 `includes` 判据仍真）。逐行随正清单（file:line → 原值 → 新值）见交付报告「待父侧机械随正」节，共 25 处缝（版本 21 缝 ∥ 门禁件数 7 缝 ∥ 行形 5 缝，其中 3 件为「一行多缝」）。
+
 ## §6 验证与收口（父代理）

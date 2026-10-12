@@ -164,7 +164,7 @@ function probeDb(db) {
 test("① v6 迁移：空库直落 10 ∥ v5 库自动升 10（存量行得 '{}'）∥ 幂等 ∥ 新列常量默认在场", () => {
   const fresh = DB.openDatabase(":memory:")
   try {
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [15, 15])
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [16, 16])
     const column = fresh.prepare("PRAGMA table_info(members)").all().find((item) => item.name === "model_disabled_json")
     assert.ok(column, "members.model_disabled_json 缺位")
     assert.deepEqual([column.type, column.notnull, column.dflt_value], ["TEXT", 1, "'{}'"]) // 常量默认 = '{}'（默认全可用）
@@ -181,11 +181,11 @@ test("① v6 迁移：空库直落 10 ∥ v5 库自动升 10（存量行得 '{}'
     legacy.close()
     const db = DB.openDatabase(file) // 启动自动升
     try {
-      assert.equal(DB.readVersion(db), 15)
+      assert.equal(DB.readVersion(db), 16)
       const row = db.prepare("SELECT model_quotas_json, model_disabled_json FROM members WHERE username = 'old'").get()
       assert.deepEqual([row.model_quotas_json, row.model_disabled_json], ['{"mock/m":1}', "{}"], "存量行即刻得 '{}'——默认全可用")
       // 幂等：再跑迁移链 ⇒ 版本不变 ∥ 存量值不动
-      assert.equal(DB.migrate(db), 15)
+      assert.equal(DB.migrate(db), 16)
       assert.equal(db.prepare("SELECT model_disabled_json FROM members WHERE username = 'old'").get().model_disabled_json, "{}")
     } finally {
       db.close()
@@ -421,11 +421,11 @@ test("⑦ #1001②：模型禁用与配额覆盖同一键形助手（空白/空�
   }
 })
 
-// ── ⑧ 门禁清单（`prepublishOnly` 五十六件含本批两件 ∥ 清单在盘）──────────────────
+// ── ⑧ 门禁清单（`prepublishOnly` 五十七件含本批两件 ∥ 清单在盘）──────────────────
 
-test("⑧ 门禁清单：`prepublishOnly` 五十六件含本批件（新建 ∥ 随正）∥ 清单目标在盘", () => {
+test("⑧ 门禁清单：`prepublishOnly` 五十七件含本批件（新建 ∥ 随正）∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 57, `门禁清单件数（⇒ 五十七——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-quota-v2-member-models.test.mjs"), "本批件应入列")
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-quota-per-model.test.mjs"), "随正件应在列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)

@@ -12,7 +12,7 @@
  *
  * 取数：列表/详情 = `GET /api/admin/agent/chats` ∥ `.../:id`（读时读）；发送 = `POST .../:id/messages`（体 = `{ content, images? }`）
  * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`delta` 追加当前块 ∥ `call`/`result` 工具卡嵌块内 ∥
- * `end` ⇒ 重读详情〔读时单源〕）；中止 = `POST .../:id/abort`；换模型 = `PATCH .../:id`（下回合生效）。
+ * `end` ⇒ 重读详情〔读时单源〕）；中止 = `POST .../:id/abort`；换模型 ∥ 设档位 = `PATCH .../:id`（明选即改、下回合生效——KD-SV-108/110）。
  * 断连/离页 = 读流中止（回合照跑——落库单源；回来「重读」即全量）；发送失败/流前错误 = 就地人话（`ctx.fail`——`mapError` 口径）。
  * 批内件直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`）。
  */
@@ -187,6 +187,7 @@ export async function renderChat(ctx, mount) {
   let liveRaw = ""
   let liveTools = new Map()
   let turnLabeled = false // 一回合一个助手标签（本回合已画 ⇒ 真）
+  let reasoningWrite = null // 在飞档位写（单变量串行——发送前 await；选中即改 ⇒ 下回合生效——KD-SV-110）
 
   mount.append(h("h2", { text: t("admin.chat.title") }))
 
@@ -212,6 +213,7 @@ export async function renderChat(ctx, mount) {
     onSend,
     onAbort,
     onSelectModel,
+    onSelectReasoning,
     onEcho,
     onNewChat,
     onHelp,
@@ -353,6 +355,7 @@ export async function renderChat(ctx, mount) {
    *  返回 `{ accepted, ended }`：`accepted` = 落库已起（调用方不还原草稿）∥ `ended` = 收到 `end`（队首发起前提）。 */
   async function onSend(text, images = []) {
     if (activeId === null) return { accepted: false, ended: false }
+    await reasoningWrite // 在飞档位写落地（选中即改 ⇒ 本回合生效——单变量串行；无在飞 ⇒ 直过）
     const chatId = activeId
     liveReset()
     const payload = Array.isArray(images) && images.length > 0 ? { content: text, images } : { content: text }
@@ -425,6 +428,14 @@ export async function renderChat(ctx, mount) {
       renderSelector()
       return true
     } catch (error) { ctx.fail(error); return false }
+  }
+
+  /** 设档位（KD-SV-110——会话级归属）：`PATCH …/:id { reasoning }` 一次一件；连写按序串行（单变量链——`onSend` 发送前 await 尾）；失败 ⇒ 就地人话 + 假。 */
+  function onSelectReasoning(reasoning, chatId = activeId) { // 会话 id 随拾取捕获（链式调用晚于拾取——不可迟读 `activeId`）
+    if (chatId === null || reasoning === "") return false
+    const write = (reasoningWrite ?? Promise.resolve()).then(() => ctx.api(`/api/admin/agent/chats/${chatId}`, { method: "PATCH", body: { reasoning } }))
+    reasoningWrite = write.then(() => {}, () => {}) // 尾链吞错（不阻断后续 ∥ 发送前 await 不炸）
+    return write.then((data) => { if (activeId === chatId && detail !== null && data?.chat) { detail.chat = data.chat; renderSelector() } return true }, (error) => { ctx.fail(error); return false })
   }
 
   /** 新会话弹窗（斜径 `/new` 同门——`run` 返真 = 已受理）。 */

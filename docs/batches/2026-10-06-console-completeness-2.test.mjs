@@ -143,13 +143,13 @@ function fold(rows, pick, key = "name") {
 
 // ── ① store v3 迁移链（STORE §3 判据）────────────────────────────────────────
 
-test("① store：空库直落 15 ∥ v2 旧库自动升（链尾）∥ 幂等 ∥ audit_events 十三型 CHECK", () => {
+test("① store：空库直落 16 ∥ v2 旧库自动升（链尾）∥ 幂等 ∥ audit_events 十三型 CHECK", () => {
   const dir = mkdtempSync(join(tmpdir(), "tc2-db-"))
   const file = join(dir, "gateway.db")
   try {
     // 空库直落（七索引——含 v14 对话面索引）∥ 十三型 CHECK 全可插 + 枚举外拒
     const fresh = DB.openDatabase(":memory:")
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [15, 15])
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [16, 16])
     const indexes = fresh.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'").all().map((row) => row.name)
     for (const index of ["idx_audit_ts", "idx_audit_type_ts", "idx_usage_key_ts"]) assert.ok(indexes.includes(index), index)
     assert.equal(indexes.length, 7)
@@ -170,9 +170,9 @@ test("① store：空库直落 15 ∥ v2 旧库自动升（链尾）∥ 幂等 �
     legacy.exec("INSERT INTO members (username, name, password_hash, created_at) VALUES ('old', 'old', 'scrypt$fixture', '2026-10-06')")
     legacy.close()
     const upgraded = DB.openDatabase(file)
-    assert.equal(DB.readVersion(upgraded), 15)
+    assert.equal(DB.readVersion(upgraded), 16)
     assert.ok(upgraded.prepare("SELECT name FROM sqlite_master WHERE name = 'audit_events'").get())
-    assert.deepEqual([upgraded.prepare("SELECT COUNT(*) AS n FROM members").get().n, DB.migrate(upgraded)], [1, 15])
+    assert.deepEqual([upgraded.prepare("SELECT COUNT(*) AS n FROM members").get().n, DB.migrate(upgraded)], [1, 16])
     assert.equal(upgraded.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'").get().n, 7)
     upgraded.close()
   } finally {

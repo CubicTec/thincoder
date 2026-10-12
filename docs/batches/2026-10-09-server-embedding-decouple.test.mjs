@@ -518,8 +518,8 @@ test("E3 在场自动探活不回归：恰一次 ∥ 体不携草稿（运行配
 test("E4 派生零引擎行（KD-SV-58）：`deriveModels(providers)` 去第二参 ∥ 清单全 chat（引擎模型名传入亦不产行）", () => {
   const rows = MODELS_VIEW.deriveModels([{ name: "p", models: ["m1", "org/m2"] }], "bge-m3") // 第二参传入亦不产行（签名已去）
   assert.deepEqual(rows, [
-    { id: "p/m1", provider: "p", upstream: "m1", surface: "chat" },
-    { id: "p/org/m2", provider: "p", upstream: "org/m2", surface: "chat" },
+    { id: "p/m1", provider: "p", upstream: "m1", surface: "chat", reasoning: [] },
+    { id: "p/org/m2", provider: "p", upstream: "org/m2", surface: "chat", reasoning: [] },
   ], "行集 = 仅 chat（id 升序）")
   assert.equal(MODELS_VIEW.deriveModels.length, 1, "签名去第二参")
   assert.deepEqual(MODELS_VIEW.deriveModels([]), [], "空清单零行")

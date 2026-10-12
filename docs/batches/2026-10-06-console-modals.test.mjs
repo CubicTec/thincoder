@@ -325,10 +325,10 @@ test("③ 服务模型：`deriveModels` 同源派生 ∥ 列表/空态/失败态
     { name: "deepseek", models: ["deepseek-chat", "meta/llama-3"] },
     { name: "openai", models: [] },
   ]), [
-    { id: "deepseek/deepseek-chat", provider: "deepseek", upstream: "deepseek-chat", surface: "chat" },
-    { id: "deepseek/meta/llama-3", provider: "deepseek", upstream: "meta/llama-3", surface: "chat" },
+    { id: "deepseek/deepseek-chat", provider: "deepseek", upstream: "deepseek-chat", surface: "chat", reasoning: [] },
+    { id: "deepseek/meta/llama-3", provider: "deepseek", upstream: "meta/llama-3", surface: "chat", reasoning: [] },
   ])
-  assert.deepEqual([MODELS.deriveModels([]), MODELS.deriveModels([{ name: "p", models: ["m"] }])], [[], [{ id: "p/m", provider: "p", upstream: "m", surface: "chat" }]])
+  assert.deepEqual([MODELS.deriveModels([]), MODELS.deriveModels([{ name: "p", models: ["m"] }])], [[], [{ id: "p/m", provider: "p", upstream: "m", surface: "chat", reasoning: [] }]])
   const src = readFileSync(join(PUBLIC_DIR, "views-models.mjs"), "utf8")
   assert.ok(src.includes('import { openModal } from "./modal.mjs"'), "详情弹窗复用公共组件")
 

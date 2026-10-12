@@ -405,7 +405,7 @@ test("D4 零别名配置 ⇒ 零迁移回落 `provider/model`（v10 结构零动
   USAGE.recordUsage(db, { ts: now, memberId: 1, keyId: 1, provider: "mock", model: "mock-chat", endpoint: "chat", status: "ok", stream: false, promptTokens: 1, completionTokens: 1, totalTokens: 7, durationMs: 1 })
   assert.equal(USAGE.queryUsage(db, {})[0].model, "mock/mock-chat", "无别名 ⇒ 外标回落前缀形（存量零迁移）")
   assert.equal(USAGE.usageSummary(db, { now }).byModel[0].model, "mock/mock-chat", "summary 同口径")
-  assert.equal(DB.readVersion(db), 15, "结构版本 = 链尾 v15（零迁移——STORE §3）")
+  assert.equal(DB.readVersion(db), 16, "结构版本 = 链尾 v16（零迁移——STORE §3）")
 })
 
 // ── E 界面面（AC-29①②③ ∥ #1151）──────────────────────────────────────────────
@@ -433,7 +433,7 @@ test("E2 派生两形（AC-29①）：`deriveModels` id = 外标 ∥ `modelsWith
   const rows = MODELS.deriveModels([{ name: "p", models: ["m1", { name: "m2", alias: "fast" }, { name: "org/m3", alias: "trio" }] }])
   assert.deepEqual(rows.map((r) => [r.id, r.upstream]), [["fast", "m2"], ["p/m1", "m1"], ["trio", "org/m3"]], "id = 外标（别名 ⇒ 别名）∥ upstream = 真名")
   assert.equal(rows.every((r) => r.surface === "chat"), true, "零引擎行")
-  assert.deepEqual(MODELS.deriveModels([{ name: "p", models: ["m1"] }]), [{ id: "p/m1", provider: "p", upstream: "m1", surface: "chat" }], "零别名 ⇒ 前缀形（零迁移）")
+  assert.deepEqual(MODELS.deriveModels([{ name: "p", models: ["m1"] }]), [{ id: "p/m1", provider: "p", upstream: "m1", surface: "chat", reasoning: [] }], "零别名 ⇒ 前缀形（零迁移）")
   const models = ["a", { name: "b", alias: "bee", extra: 1 }, { name: "c", alias: "cee" }]
   assert.deepEqual(MODELS.modelsWithout(models, "b"), ["a", { name: "c", alias: "cee" }], "停用减项按名匹配保形")
   assert.deepEqual(MODELS.modelsWithAlias(models, "c", "quick"), ["a", { name: "b", alias: "bee", extra: 1 }, { name: "c", alias: "quick" }], "别名改写保形（两形与别名不动）")

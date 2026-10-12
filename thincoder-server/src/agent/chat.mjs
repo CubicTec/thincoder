@@ -10,6 +10,8 @@
  * 重启天然空）+ **双通道生效**：① `AbortSignal` 透传模型出口（在途调用当即中断）∥ ② 环内检查点（每模型调用前 ∥ 每工具调用前）。
  * 帧面读数（KD-SV-106——§11.3）：`{ type: "turn", n }`（每次模型调用前）∥ `{ type: "usage", … }`（每次模型调用后、有源才发）∥ `end` 增 `durationMs`/`calls`（可字段）；**零落库**（帧面 = 视图面）。
  * 图片面（KD-SV-109）：`images`（dataURL 串列——两门已过）⇒ user 行 `data_json.imageParts`（parts 数组素形 ∥ 回放 `content` 数组）；详情响应仅 `imageCount`。
+ * 档位面（KD-SV-110——console-reasoning-levels 批）：起跑读行（与 `model` 同点）⇒ 出口装配：行值 ∈ 当刻模型核枚举
+ * （别名解上游真名后）⇒ provider 配置携 `reasoningEffort`；**未设 ∥ 表外 ∥ 缺核 ⇒ 零字段**（默认静默——与今日同形；档位不阻断回合）。
  * ②③ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行）；零文本 ⇒ 零 `assistant` 行。
  *
  * 口径：**执行不依赖连接**（断连照跑到终态——落库单源；`emit` 写失败即吞，回合不受影响）；消息逐条增量落库（KD-SV-89）；
@@ -20,6 +22,7 @@
 import { recordAudit } from "../accounts/audit.mjs"
 import { findMemberById } from "../accounts/members.mjs"
 import { HttpError } from "../gateway/errors.mjs"
+import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
 import { createChatTools } from "./chat-tools.mjs"
 import { DEFAULT_MAX_CALLS, DEFAULT_MAX_DURATION_MS, loadCoreChat } from "./run.mjs"
 import { maskSecrets } from "./tools.mjs"
@@ -128,6 +131,7 @@ export function chatView(db, row) {
   return {
     id: row.id,
     model: row.model,
+    reasoning: row.reasoning ?? null, // 会话级思考档位（v16——`null` = 未设；KD-SV-110）
     status: row.status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -379,15 +383,34 @@ export function capSummary(text, secrets = []) {
   return capText(maskSecrets(raw, secrets), CHAT_RESULT_SUMMARY_MAX)
 }
 
-/** 模型出口装配（§5/§11——与任务面同源：库单源 `providers` ⇒ 核 provider 客户端；**透传 `onToken`** ⇒ `delta` 帧增量）。 */
-export async function buildChatExit({ db, ref, chatImpl = null, env = process.env } = {}) {
+/** 模型出口装配（§5/§11——与任务面同源：库单源 `providers` ⇒ 核 provider 客户端；**透传 `onToken`** ⇒ `delta` 帧增量）。
+ *  档位（KD-SV-110）：`reasoning` 非空且 ∈ 当刻模型核枚举（别名解上游真名后——dispatch 命中名）⇒ provider 配置携
+ *  `reasoningEffort`；**未设 ∥ 表外 ∥ 缺核 ⇒ 零字段**（默认静默——与今日行为逐字同；核载荷门/枚举门单源消费）。 */
+export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null, env = process.env, log = null } = {}) {
   const { createProviderRegistry, listProviderEntries } = await import("../gateway/providers.mjs")
   const registry = createProviderRegistry(listProviderEntries(db), { env })
   const hit = registry.dispatch(ref)
   if (hit.miss) throw new Error(`模型不可用：${String(ref)}（注册表未命中——建会话时已校验，此处为复检）`)
   const chat = chatImpl ?? (await loadCoreChat())
+  let reasoningEffort = null
+  if (typeof reasoning === "string" && reasoning !== "") {
+    try {
+      if ((await levelsOf(hit.model)).includes(reasoning)) reasoningEffort = reasoning
+    } catch (e) {
+      noteDegraded(log, "chat_assembly", e) // 缺核 ⇒ 零字段（档位面退中性——回合不阻断；真因入日志）
+    }
+  }
   return async ({ messages, tools, onToken, signal }) => // `signal` 透传核（回合中止——KD-SV-107；缺 ⇒ 核不挂取消链）
-    chat({ baseURL: hit.provider.baseURL, apiKey: hit.provider.apiKey, model: hit.model, name: hit.provider.name }, { messages, tools, onToken, signal })
+    chat(
+      {
+        baseURL: hit.provider.baseURL,
+        apiKey: hit.provider.apiKey,
+        model: hit.model,
+        name: hit.provider.name,
+        ...(reasoningEffort === null ? {} : { reasoningEffort }), // 未设 ∥ 表外 ⇒ 零字段（口径②）
+      },
+      { messages, tools, onToken, signal },
+    )
 }
 
 /** `usage` 帧成形（§11.3——核 `chat()` 返回的 usage 形 ⇒ 帧面短键；入参缺 ∥ 非对象 ⇒ `null` = 无源零帧；单键缺/非数 ⇒ 0）。 */
@@ -476,7 +499,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     // 模型出口装配（§5）：注册表缺位/引用缺位 ⇒ 按「模型错误」收尾（五终态不外溢第三形）
     let modelExit
     try {
-      modelExit = deps.chat ?? injectedChat ?? (await buildChatExit({ db, ref: chat.model, env: deps.env ?? process.env }))
+      modelExit = deps.chat ?? injectedChat ?? (await buildChatExit({ db, ref: chat.model, reasoning: chat.reasoning ?? null, env: deps.env ?? process.env, log }))
     } catch (e) {
       return closeFailed("model_error", e?.message ?? String(e), "")
     }

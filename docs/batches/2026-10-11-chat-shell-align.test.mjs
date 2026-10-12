@@ -788,7 +788,7 @@ test("结构腿：零自持渲染 ∥ 核件调用面逐件 ∥ 类闭合域 ∥
   const orphans = [...used].filter((name) => !emitted.has(name) && !CSS.includes(`.${name}`) && !["text", "#text"].includes(name))
   assert.deepEqual(orphans, [], `类名闭合域（核件发射 ∪ 样式面）：${orphans.join("∕")}`)
   // ③ 无源钮收窄（六 id + 菜单 footer 两族）
-  for (const id of ["#reasoning-btn", "#auto-btn", "#advisor-btn", "#eng-btn", "#plan-btn", "#settings-btn"]) assert.ok(CSS.includes(id), `无源钮隐藏规则缺位：${id}`)
+  for (const id of ["#auto-btn", "#advisor-btn", "#eng-btn", "#plan-btn", "#settings-btn"]) assert.ok(CSS.includes(id), `无源钮隐藏规则缺位：${id}`)
   for (const cls of [".mm-sep", ".mm-row.mm-manage"]) assert.ok(CSS.includes(cls), `模型菜单式项收窄缺位（特征度升形 ≻ 核件 \`.mm-row\`）：${cls}`)
   // ④ 四段面子（会话条/消息流/状态行/输入区）与旧面退役
   for (const name of [".chat-bar", ".chat-select", ".chat-thread", "#toolbar", "#status-line", ".status-sep", ".status-warn", ".message", ".message.notice", ".message.pending", ".msg-label", ".msg-time", ".bubble"]) {
@@ -804,7 +804,7 @@ test("结构腿：零自持渲染 ∥ 核件调用面逐件 ∥ 类闭合域 ∥
     assert.match(match[2].trim(), /^var\(--[\w-]+\)$|^none$/, `别名值须逐键 var(--既有)：--${match[1]} = ${match[2]}`)
   }
   const hover = [...CSS.matchAll(/([^{}\n]*):hover[^{]*\{/g)].map((match) => match[1]).join(" ")
-  for (const face of ["chat-bar", "chat-select", "chat-thread", "toolbar", "status-line", "bubble", "message", "reasoning-btn", "auto-btn", "eng-btn", "plan-btn", "advisor-btn", "settings-btn", "mm-sep", "mm-manage"]) {
+  for (const face of ["chat-bar", "chat-select", "chat-thread", "toolbar", "status-line", "bubble", "message", "auto-btn", "eng-btn", "plan-btn", "advisor-btn", "settings-btn", "mm-sep", "mm-manage"]) {
     assert.ok(!hover.includes(face), `零新悬停规则：${face}`)
   }
   // ⑥ 档目随正（本批 +1 档：`views-chat-composer.mjs`；实读 = 43 ∥ 42（非 favicon）∥ 40 `.mjs`——**精确计数归跨批结构件**

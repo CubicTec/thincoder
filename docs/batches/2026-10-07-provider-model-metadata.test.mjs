@@ -148,7 +148,7 @@ test("① 保留集抽取：deepseek/kimi/vLLM 三形逐字段 ∥ ark 状态命
 test("② v7 迁移：空库直落 10 ∥ v6 库自动升 10（存量行得 '{}'）∥ 幂等 ∥ 新列常量默认在场 + rowToEntry 往返/坏 JSON", () => {
   const fresh = DB.openDatabase(":memory:")
   try {
-    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [15, 15])
+    assert.deepEqual([DB.SCHEMA_VERSION, DB.readVersion(fresh)], [16, 16])
     const column = fresh.prepare("PRAGMA table_info(providers)").all().find((item) => item.name === "model_meta_json")
     assert.ok(column, "providers.model_meta_json 缺位")
     assert.deepEqual([column.type, column.notnull, column.dflt_value], ["TEXT", 1, "'{}'"]) // 常量默认 = '{}'（未存 = 无元数据）
@@ -165,10 +165,10 @@ test("② v7 迁移：空库直落 10 ∥ v6 库自动升 10（存量行得 '{}'
     legacy.close()
     const db = DB.openDatabase(file) // 启动自动升
     try {
-      assert.equal(DB.readVersion(db), 15)
+      assert.equal(DB.readVersion(db), 16)
       assert.equal(db.prepare("SELECT model_meta_json FROM providers WHERE name = 'old'").get().model_meta_json, "{}", "存量行即刻得 '{}'")
       // 幂等：再跑迁移链 ⇒ 版本不变 ∥ 存量值不动
-      assert.equal(DB.migrate(db), 15)
+      assert.equal(DB.migrate(db), 16)
       assert.equal(db.prepare("SELECT model_meta_json FROM providers WHERE name = 'old'").get().model_meta_json, "{}")
       // rowToEntry 往返逐值 ∥ 坏 JSON ∥ 非对象 ⇒ 行数据损坏抛（沿 settings_json 口径）
       const spec = { m: { displayName: "M", contextWindow: 8192, vision: true, status: "Shutdown" } }
@@ -488,7 +488,7 @@ test("⑥ i18n + 静态面：两表 7 键在场（en 零 CJK ∥ 占位符一致
   assert.deepEqual(hover, [".nav-item:hover", "tbody tr:hover", "button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"].sort(), "悬停声明清单（八条——2026-10-11 走查轮后基线）")
   // 门禁链 52 件（历批入链合计——2026-10-11 六批后）∥ 清单目标在盘
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 57, `门禁清单件数（⇒ 五十七——2026-10-11 批组后）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-07-provider-model-metadata.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

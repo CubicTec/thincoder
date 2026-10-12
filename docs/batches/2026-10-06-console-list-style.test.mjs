@@ -245,11 +245,11 @@ test("⑥ 静态面：档目 43 ∥ 42 逐名同拍（2026-10-11 console-chat-al
   }
 })
 
-// ── ⑦ 门禁清单：`prepublishOnly` 五十六件（含本批件）∥ 清单目标在盘 ─────────────────────────────
+// ── ⑦ 门禁清单：`prepublishOnly` 五十七件（含本批件）∥ 清单目标在盘 ─────────────────────────────
 
-test("⑦ 门禁清单：`prepublishOnly` 五十六件含本批件 ∥ 清单目标在盘", () => {
+test("⑦ 门禁清单：`prepublishOnly` 五十七件含本批件 ∥ 清单目标在盘", () => {
   const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.equal(batchFiles.length, 56, `门禁清单件数（⇒ 五十六——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
+  assert.equal(batchFiles.length, 57, `门禁清单件数（⇒ 五十七——2026-10-11 批组后 ∥ 历批入链在案）：${batchFiles.length}`)
   assert.ok(batchFiles.includes("docs/batches/2026-10-06-console-list-style.test.mjs"), "本批件应入列")
   for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
 })

@@ -631,13 +631,13 @@ test("在途门先行（§2.8 行序）：`running` + 模型已撤 ⇒ 回「本
 
 // ── ⑥⑦ 存储 v14（三径 ∥ 两表/索引/CHECK ∥ agent_event 可写）────────────────────
 
-test("⑥v14 空库直落 15：两表列面在场 ∥ (chat_id,seq) 索引在场 ∥ role/status CHECK 放行与越值拒", async () => {
+test("⑥v14 空库直落 16：两表列面在场 ∥ (chat_id,seq) 索引在场 ∥ role/status CHECK 放行与越值拒", async () => {
   const db = DB.openDatabase(":memory:")
   try {
-    assert.equal(DB.readVersion(db), 15, "空库直落 15")
-    assert.equal(DB.SCHEMA_VERSION, 15)
+    assert.equal(DB.readVersion(db), 16, "空库直落 16")
+    assert.equal(DB.SCHEMA_VERSION, 16)
     const chatCols = db.prepare("SELECT name FROM pragma_table_info('agent_chats') ORDER BY cid").all().map((row) => row.name)
-    assert.deepEqual(chatCols, ["id", "model", "status", "created_by", "created_at", "updated_at"])
+    assert.deepEqual(chatCols, ["id", "model", "status", "created_by", "created_at", "updated_at", "reasoning"])
     const msgCols = db.prepare("SELECT name FROM pragma_table_info('agent_chat_messages') ORDER BY cid").all().map((row) => row.name)
     assert.deepEqual(msgCols, ["id", "chat_id", "seq", "role", "content", "data_json", "created_at"])
     const indexes = db.prepare("SELECT name FROM pragma_index_list('agent_chat_messages')").all().map((row) => row.name)
@@ -666,7 +666,7 @@ test("⑥⑦v13 库升后 15：存量审计行逐值保形 + 两索引在场 + `
 
   const db = DB.openDatabase(file)
   try {
-    assert.equal(DB.readVersion(db), 15, "v13 库升后读数 15")
+    assert.equal(DB.readVersion(db), 16, "v13 库升后读数 16")
     const row = db.prepare("SELECT * FROM audit_events WHERE id = ?").get(legacyAudit)
     assert.deepEqual(
       { ts: row.ts, type: row.type, actor_name: row.actor_name, target_name: row.target_name, detail: row.detail },
@@ -690,7 +690,7 @@ test("⑥⑦v13 库升后 15：存量审计行逐值保形 + 两索引在场 + `
     db.close()
     const again = DB.openDatabase(file)
     try {
-      assert.equal(DB.readVersion(again), 15, "v14/v15 段幂等（再开零变）")
+      assert.equal(DB.readVersion(again), 16, "v14–v16 段幂等（再开零变）")
       assert.equal(again.prepare("SELECT COUNT(*) AS n FROM audit_events").get().n, 2, "行数不变")
     } finally {
       again.close()

@@ -4,7 +4,7 @@
  *
  * 适配层四面（§2.1③——逐面）：① **容器自建**（控制台建 `#toolbar`——核件不造容器）+ 两样式 `<link>` 幂等注（`data-rc-css`）；
  * ② **变量别名桥** = `:root` 别名块（落 `style.css`——核壳族变量名 ⇒ 控制台既有变量，零新值）；③ **注入口桥** = 本档 `post`/`state`/`hooks` 三件；
- * ④ **无源钮收窄** = 六 id CSS 隐藏（`style.css`——本档零钮面逻辑）。
+ * ④ **无源钮收窄** = 五 id CSS 隐藏（`style.css`——本档零钮面逻辑；`#reasoning-btn` 经 KD-SV-111 解隐藏——档位通道三段补齐，钮字/选中态/下拉全归核件）。
  * 状态行（§2.1④——段表 ⊆ 有源）：`#status-line` = `#toolbar` 首子；段源 = `turn`/`usage`/`call`/`result`/`end` 帧 + 客户端时钟；
  * `statusSegments` 纯函数 = 批内件直测面；`✦reasoning` 与模型名段不做（无源——§2.1④ 表）。
  * 排队面（§2.1③）：在途提交 ⇒ 核面板出泡（`markPending`）+ `queuedUserMessage` ⇒ 入队（容量 = 核 `QUEUED_MAX_ITEMS`）；
@@ -85,8 +85,9 @@ export function createSlashCommands(handlers = {}) {
 
 /**
  * 输入区 + 状态行装配（本档 = 核件全件消费的适配层）。
- * `deps`（装配面六件）：`root` = 挂载根（`#toolbar` 建于此）· `currentChat()` ⇒ `{ id, model } | null` · `onProviders()` ⇒ `/api/admin/providers` 载荷 ·
+ * `deps`（装配面六件）：`root` = 挂载根（`#toolbar` 建于此）· `currentChat()` ⇒ `{ id, model, reasoning } | null` · `onProviders()` ⇒ `/api/admin/providers` 载荷 ·
  * `onSend(text, images)` ⇒ `{ accepted, ended }`（整轮——含 `end` 后重读）· `onAbort()` · `onSelectModel(model)` ⇒ 布尔（`PATCH`）·
+ * `onSelectReasoning(reasoning)` ⇒ 布尔（`PATCH` 档位写——KD-SV-110）·
  * `onEcho(text, ts)` ⇒ 用户块元素（核 `buildUserMessage` 宿主）· `onNewChat()` ⇒ 布尔（新会话弹窗）· `onHelp(rows)` ⇒ 布尔（行集就地打印）。
  * 返回面：`{ el, panel, statusLine, commands, applyFrame, resetTurn, refreshModels, syncModel, queueCount }`。
  */
@@ -131,16 +132,18 @@ export function createChatComposer(ctx, deps = {}) {
   // ── 模型候选（`deriveModels` 同源——核行形补 `label`/`reasoning`）──────────────
   let modelRows = []
   let pushHandler = null
-  const coreRowOf = (row) => ({ id: row.id, provider: row.provider, group: row.provider, label: row.id, reasoning: [] })
+  const coreRowOf = (row) => ({ id: row.id, provider: row.provider, group: row.provider, label: row.id, reasoning: row.reasoning ?? [] })
 
-  /** 推送（核面板 `applyModels` 消费）：携 `rollback: true` = **显示面重派生**（零槽写——本档刷新专用：钮面字随当刻会话模型，免系统回声径回写）。 */
+  /** 推送（核面板 `applyModels` 消费）：携 `rollback: true` = **显示面重派生**（零槽写——本档刷新专用：钮面字随当刻会话模型，免系统回声径回写）。
+   *  `prefs.reasoning` = 当刻会话档位（`null` = 未设 ⇒ 核中性面 `—`；KD-SV-111）。 */
   function pushModels() {
-    const model = String(deps.currentChat?.()?.model ?? "")
+    const chat = deps.currentChat?.() ?? null
+    const model = String(chat?.model ?? "")
     const row = modelRows.find((item) => item.id === model)
     pushHandler?.({
       type: "models",
       models: modelRows,
-      prefs: model === "" ? {} : { model, provider: row?.provider ?? "" },
+      prefs: model === "" ? {} : { model, provider: row?.provider ?? "", reasoning: chat?.reasoning ?? null },
       rollback: true,
     })
   }
@@ -182,6 +185,7 @@ export function createChatComposer(ctx, deps = {}) {
     if (type === "interrupt") { interrupt(String(payload?.message ?? "")); return }
     if (type === "abort") { void deps.onAbort?.(); return }
     if (type === "selectModel") { void selectModel(String(payload?.model ?? "")); return }
+    if (type === "selectReasoning") { void selectReasoning(String(payload?.reasoning ?? "")); return }
   }
 
   const panel = createComposerPanel({ root: el, post, state, hooks, slash: { commands } })
@@ -289,6 +293,14 @@ export function createChatComposer(ctx, deps = {}) {
   async function selectModel(model) {
     if (model === "") return
     const ok = await deps.onSelectModel?.(model)
+    if (ok !== true) pushModels()
+  }
+
+  /** 设档位（核推理菜单拾取 ⇒ `selectReasoning` 出站）：`PATCH …/:id { reasoning }`（值域 = 当刻模型核枚举——KD-SV-110；
+   *  下回合生效）；失败 ⇒ 钮面回当刻会话档位（显示面重派生——沿 `selectModel` 同形）。 */
+  async function selectReasoning(reasoning) {
+    if (reasoning === "") return
+    const ok = await deps.onSelectReasoning?.(reasoning)
     if (ok !== true) pushModels()
   }
 

@@ -343,7 +343,7 @@ CREATE TABLE IF NOT EXISTS sandbox_onboarding (
 `
 
 /** v14 增段（agent chat 两表 + 审计 CHECK 再扩（十三型）——store/STORE.md §2 v14 段逐字；agent 域——admin-agent-chat 批）。
- *  ① `agent_chats`（会话：`model` ∥ `status` 在途标记）+ `agent_chat_messages`（消息序：`role` 四值 ∥ `content` ∥ `data_json`）+ `(chat_id, seq)` 索引；
+ *  ① `agent_chats`（会话：`model` ∥ `status` 在途标记——v16 增 `reasoning` 会话级思考档位）+ `agent_chat_messages`（消息序：`role` 四值 ∥ `content` ∥ `data_json`）+ `(chat_id, seq)` 索引；
  *  ② 审计表重建（十二型 ⇒ 十三型：+ `agent_event`——步序与 v10/v11 同构）。对象模型 = `agent/ADMIN-AGENT.md` §11/§12（单源）。 */
 const DDL_V14 = `
 -- ① 管理面 chat 两表（KD-SV-89——消息逐条增量落库；无 FK——沿 audit_events 口径）
@@ -407,6 +407,16 @@ CREATE TABLE IF NOT EXISTS image_sources (
 -- ② 无审计 CHECK 变更（三 kind 走 sandbox_event——kind 非枚举；十三型不变）
 `
 
+/** v16 增段（`agent_chats.reasoning` 增列——store/STORE.md §2 v16 段逐字；agent 域——console-reasoning-levels 批）。
+ *  ① 会话档位列（NULL = 未设——默认态；值域 = 该模型核枚举 `reasoningEffortEnum`，应用层校验；KD-SV-110）；
+ *  ② 零迁移（存量行保持 NULL = 今日行为逐字同——无回填 ∥ 无改写；档位词表不入库——核单源）。
+ *  语义/机制 = `agent/ADMIN-AGENT.md` §11.4（单源）；端点 = `gateway/API.md` §2.8；控制台面 = `webui/CHAT.md` §2.1⑤。 */
+const DDL_V16 = `
+-- ① 会话档位列（NULL = 未设——默认态；值域 = 该模型核枚举 \`reasoningEffortEnum\`，应用层校验）
+ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;
+-- ② 审计 CHECK 零动（三 kind 不扩——档位写 = 会话设置面，沿 KD-SV-108 先例；十三型不变）
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -424,6 +434,7 @@ export const MIGRATIONS = [
   { v: 13, up: (db) => db.exec(DDL_V13) },
   { v: 14, up: (db) => db.exec(DDL_V14) },
   { v: 15, up: (db) => db.exec(DDL_V15) },
+  { v: 16, up: (db) => db.exec(DDL_V16) },
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

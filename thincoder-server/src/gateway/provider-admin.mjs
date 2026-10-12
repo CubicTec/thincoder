@@ -15,6 +15,10 @@
  * 非布尔 ⇒ 400 库与运行时零变）；候选注册表携顶层 `proxy.uri`（保存即热生效——换表随动）；
  * discover 代理判定 = 明传优先 ∥ `providerId` 条目旗兜底 ∥ 皆无 ⇒ 直连（与 chat 转发同判定；出口 = `proxyFetch`）。
  *
+ * 思考档位（KD-SV-110——console-reasoning-levels 批）：读面 = GET 行载 `modelReasoning` **稀疏图**（键 = 上游真名 ∥
+ * 值 = 核 `specForModel(上游).reasoningEffortEnum`——单源桥件 `reasoning-levels.mjs`；空档零键）；缺核 ⇒ `{}` +
+ * 一条警告（不 5xx——档位面退中性；生产镜像内核为声明依赖）。写面 = 会话设置面（`agent/chat-routes.mjs`）。
+ *
  * 保存即热生效（四步——§2.2）：① 校验（单源 = `ops/config.mjs` 导出——与配置种子同规）→
  * ② 建候选注册表（`env:` 解析——缺位 ⇒ 400 不落库；**别名全服唯一对既有集**——撞 ⇒ 400 库与运行时零变，KD-SV-59③）
  * → ③ 落库 → ④ `runtime.set(候选)`（原子换表）；
@@ -30,6 +34,7 @@ import { HttpError, sendJson } from "./errors.mjs"
 import { upstreamUrl } from "./forward.mjs"
 import { proxyFetch } from "./proxy.mjs"
 import { createProviderRegistry, listProviderEntries, modelEntriesOf, resolveProviderKey, rowToEntry } from "./providers.mjs"
+import { modelReasoningMap, noteDegraded } from "./reasoning-levels.mjs"
 import { readJsonBody } from "./server.mjs"
 
 /** 模型发现超时（§2.2——10s；注入口径 = 注册参数 `discoverTimeoutMs`）。 */
@@ -284,27 +289,38 @@ export async function discoverProviderModels(ctx = {}, { baseURL, apiKey, provid
 /**
  * 注册 provider 管理面六端点（§2.2）：`db` = openDatabase 产物 ∥ `config` = 校验后配置 ∥
  * `runtime` = gateway 注册行装配期引导的**同一实例**（换表两族同见）。
- * 注入口径（批内件替身）：`env` ∥ `fetchImpl` ∥ `discoverTimeoutMs` 走可覆盖参数（缺省 = 生产行为不变）；
- * `fetchImpl` 缺省 = `proxyFetch`（KD-SV-55——discover 出口同转发；无代理串 ⇒ 原生 fetch 直连）。
+ * 注入口径（批内件替身）：`env` ∥ `fetchImpl` ∥ `discoverTimeoutMs` ∥ `specLookup`（档位值域桥——缺省 null ⇒ 懒载真核）
+ * 走可覆盖参数（缺省 = 生产行为不变）；`fetchImpl` 缺省 = `proxyFetch`（KD-SV-55——discover 出口同转发；无代理串 ⇒ 原生 fetch 直连）。
  */
-export function registerProviderAdminRoutes(routes, { db, config, runtime, log = null, env = process.env, fetchImpl = proxyFetch, discoverTimeoutMs = PROVIDER_DISCOVER_TIMEOUT_MS } = {}) {
+export function registerProviderAdminRoutes(routes, { db, config, runtime, log = null, env = process.env, fetchImpl = proxyFetch, discoverTimeoutMs = PROVIDER_DISCOVER_TIMEOUT_MS, specLookup = null } = {}) {
   if (!db || !config || !runtime) throw new Error("registerProviderAdminRoutes：缺少 db ∥ config ∥ runtime（同一实例——装配面接线）")
   const ctx = { db, config, runtime, log, env, fetchImpl, discoverTimeoutMs } // 共享写面上下文（六端点与 chat 工具面同源——§12 KD-SV-90）
 
-  routes.add("GET", "/api/admin/providers", (req, res) => {
+  routes.add("GET", "/api/admin/providers", async (req, res) => {
     requireAdmin(db, req)
-    const providers = listProviderEntries(db).map((entry) => ({
-      id: entry.id,
-      name: entry.name,
-      baseURL: entry.baseURL,
-      apiKey: maskApiKey(entry.apiKey), // 回显形——明文不出库面（§2.2）
-      models: entry.models,
-      settings: entry.settings, // 模型设置全图（v4——读面；§2.2）
-      modelMeta: entry.modelMeta, // 上游模型元数据留存图（v7——恒在场；未存 ⇒ {}；§2.2）
-      proxy: entry.proxy, // 上游代理旗（v9——布尔；KD-SV-55）
-      createdAt: entry.createdAt,
-      updatedAt: entry.updatedAt,
-    }))
+    const providers = []
+    for (const entry of listProviderEntries(db)) {
+      // 档位值域稀疏图（KD-SV-110——键 = 上游真名 ∥ 空档零键）；缺核 ⇒ `{}` + 一条警告（不 5xx——档位面退中性）
+      let modelReasoning = {}
+      try {
+        modelReasoning = await modelReasoningMap(modelEntriesOf(entry.models).map((item) => item.name), { specLookup })
+      } catch (e) {
+        noteDegraded(log, "provider_admin", e) // 真因入日志（不 5xx 语义不变）
+      }
+      providers.push({
+        id: entry.id,
+        name: entry.name,
+        baseURL: entry.baseURL,
+        apiKey: maskApiKey(entry.apiKey), // 回显形——明文不出库面（§2.2）
+        models: entry.models,
+        settings: entry.settings, // 模型设置全图（v4——读面；§2.2）
+        modelMeta: entry.modelMeta, // 上游模型元数据留存图（v7——恒在场；未存 ⇒ {}；§2.2）
+        modelReasoning, // 思考档位稀疏图（v16 配套——键 = 上游真名；KD-SV-110；§2.2）
+        proxy: entry.proxy, // 上游代理旗（v9——布尔；KD-SV-55）
+        createdAt: entry.createdAt,
+        updatedAt: entry.updatedAt,
+      })
+    }
     sendJson(res, 200, { providers })
   })
 

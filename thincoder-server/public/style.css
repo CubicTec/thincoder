@@ -278,9 +278,9 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .bubble { white-space: pre-wrap; overflow-wrap: anywhere; }
 .message.assistant .bubble:empty { display: none; }
 
-/* 无源钮收窄（§2.1③④——CSS 隐藏 + 逐条无源实证）：推理（会话级 reasoning 通道无）∥ 四模式位（无人值守裁剪）∥ 设置（开发壳面）∥
-   模型菜单 footer 管理三项（provider 增删/密钥——控制台落点 = Provider 页） */
-#reasoning-btn, #auto-btn, #advisor-btn, #eng-btn, #plan-btn, #settings-btn { display: none; }
+/* 无源钮收窄（§2.1③④——CSS 隐藏 + 逐条无源实证）：四模式位（无人值守裁剪）∥ 设置（开发壳面）∥
+   模型菜单 footer 管理三项（provider 增删/密钥——控制台落点 = Provider 页）；档位钮（`#reasoning-btn`）经 KD-SV-111 解隐藏——档位通道三段补齐 */
+#auto-btn, #advisor-btn, #eng-btn, #plan-btn, #settings-btn { display: none; }
 .mm-sep, .mm-row.mm-manage { display: none; } /* 特征度升形（`.mm-row.mm-manage` ≻ 核件 `.mm-row` 0,1,0）——核件表后加载，平形同胜者会盖掉收窄（2026-10-12 走查实修） */
 
 /* ── 对话页·核件族（console-chat-align 批——§2.10；chat-shell-align 批：md 块级宿主随消息块换壳 ⇒ `.bubble`）：

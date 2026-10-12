@@ -200,6 +200,8 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.sandboxKind.onboarding_failed": "托管接入失败",
   "audit.sandboxKind.onboarding_credential_revoke": "托管接入凭据撤销",
   "audit.sandboxKind.approval": "审批裁定",
+  "audit.sandboxKind.host_credential_set": "主机凭据录入",
+  "audit.sandboxKind.host_credential_revoke": "主机凭据撤销",
   "audit.sandboxKept": "保留",
   "audit.sandboxRemoved": "清除",
 })

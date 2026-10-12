@@ -95,6 +95,21 @@ export function createOnboardingService({ db, config = {}, deps = {}, now = Date
     db.prepare("UPDATE sandbox_onboarding SET secret_cipher = NULL, sudo_cipher = NULL, credential_state = 'burned' WHERE id = ?").run(Number(runId))
   }
 
+  /** 凭据移交（§3——`keep` ∧ 成功）：主机行**七列全写入**（缺列 ⇒ 主机行凭据对 `exec` 不可用）+ run 行密列零化 + `'moved'`（一次性终态：
+   *  真伪以主机行 `credential_state` 为准——主机行随后撤销（N82）不复写本行）。无密文可移交 ∥ 主机行已不在 ⇒ 留 run 行（零伪造 ∥ 零吞密）。 */
+  function handoverCredential(runId, runnerId, finishedAt) {
+    const row = db.prepare("SELECT * FROM sandbox_onboarding WHERE id = ?").get(runId)
+    if (!row || ((row.secret_cipher ?? null) === null && (row.sudo_cipher ?? null) === null)) return
+    const written = db.prepare(`UPDATE sandbox_runners SET ssh_port = ?, ssh_user = ?, auth_kind = ?, secret_cipher = ?, sudo_cipher = ?,
+      credential_state = 'sealed', credential_updated_at = ? WHERE id = ?`)
+      .run(row.ssh_port, row.ssh_user, row.auth_kind, row.secret_cipher, row.sudo_cipher, finishedAt, runnerId)
+    if (written.changes === 0) {
+      log?.warn("onboarding_credential_handover_missed", { runId, runnerId }) // 主机行已删 ⇒ 凭据留 run 行（如实：无接收方）
+      return
+    }
+    db.prepare("UPDATE sandbox_onboarding SET secret_cipher = NULL, sudo_cipher = NULL, credential_state = 'moved' WHERE id = ?").run(runId)
+  }
+
   function finalize(runId, { status, terminal, runnerId = null, extraNote = null }) {
     const row = db.prepare("SELECT * FROM sandbox_onboarding WHERE id = ?").get(Number(runId))
     if (!row) return
@@ -110,8 +125,10 @@ export function createOnboardingService({ db, config = {}, deps = {}, now = Date
       },
     })
     // `step` 列 = 停在哪步（appendStep 会把它推到 S8——此处按终态收正；成功兼 report.step = S8）
-    db.prepare("UPDATE sandbox_onboarding SET status = ?, step = ?, runner_id = ?, finished_at = ? WHERE id = ?").run(status, stoppedAt, runnerId, new Date(now()).toISOString(), Number(runId))
+    const finishedAt = new Date(now()).toISOString()
+    db.prepare("UPDATE sandbox_onboarding SET status = ?, step = ?, runner_id = ?, finished_at = ? WHERE id = ?").run(status, stoppedAt, runnerId, finishedAt, Number(runId))
     if (row.credential_mode === "burn") burnCredential(runId)
+    if (row.credential_mode === "keep" && status === "succeeded" && runnerId) handoverCredential(Number(runId), Number(runnerId), finishedAt)
     const actor = auditActorOf(db, row)
     if (status === "succeeded") {
       recordAudit(db, { type: "sandbox_event", actor, target: row.host, detail: { kind: "onboarding_done", runId: row.id, runnerId }, ts: now() })

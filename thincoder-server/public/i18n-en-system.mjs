@@ -200,6 +200,8 @@ export const EN_SYSTEM = Object.freeze({
   "audit.sandboxKind.onboarding_failed": "Onboarding failed",
   "audit.sandboxKind.onboarding_credential_revoke": "Onboarding credential revoked",
   "audit.sandboxKind.approval": "Approval decision",
+  "audit.sandboxKind.host_credential_set": "Host credential set",
+  "audit.sandboxKind.host_credential_revoke": "Host credential revoked",
   "audit.sandboxKept": "Kept",
   "audit.sandboxRemoved": "Removed",
 })

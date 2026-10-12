@@ -486,6 +486,77 @@ CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 `
 
+/** v18 增段（主机表七列 + `sandbox_onboarding` CHECK 重建（`'moved'`）+ 回填移交——store/STORE.md §2 v18 段逐字；sandbox 域——admin-chat-creds-merge 批）。
+ *  ① `sandbox_runners` 七列 ALTER（**主机表 = 本表扩展**——KD-SV-133；密列恒 `iv|tag|ct`，不落明文 ∥ 零回显）；
+ *  ② `sandbox_onboarding.credential_state` 三态 ⇒ 四态（+ `'moved'` = 凭据已移交主机行；表重建，列面 = v13 段 18 列）；
+ *  ③ 回填移交（存量 `keep` ∧ 成功行按 id 序移交——同 runner 多行后者胜；移交行 ⇒ 密列零化 + `'moved'`；余行 NULL/`'none'`——零伪造回填）。
+ *  语义/机制 = `sandbox/SANDBOX.md` §3 主机凭据块（单源）；端点 = `gateway/API.md` §2.5；执行面 = `thincoder-server/src/sandbox/hosts.mjs`。 */
+const DDL_V18 = `
+-- ① 主机表七列（加性——存量行 NULL／'none'；SSH 目标主机 = 行 address 的 host 部分，不另设 ssh_host 列）
+ALTER TABLE sandbox_runners ADD COLUMN ssh_port INTEGER;               -- SSH 端口（NULL = 未设——写面缺省 22）
+ALTER TABLE sandbox_runners ADD COLUMN ssh_user TEXT;                  -- SSH 用户（NULL = 未设）
+ALTER TABLE sandbox_runners ADD COLUMN auth_kind TEXT;                 -- 认证形（key ∥ password——应用层校验）
+ALTER TABLE sandbox_runners ADD COLUMN secret_cipher TEXT;             -- 凭据密文（AES-256-GCM iv|tag|ct；NULL = 无凭据）
+ALTER TABLE sandbox_runners ADD COLUMN sudo_cipher TEXT;               -- sudo 口令密文（可选——NULL = 无）
+ALTER TABLE sandbox_runners ADD COLUMN credential_state TEXT NOT NULL DEFAULT 'none';  -- none ∥ sealed ∥ revoked（应用层校验）
+ALTER TABLE sandbox_runners ADD COLUMN credential_updated_at TEXT;     -- 最近设/撤时刻（NULL = 未设）
+
+-- ② sandbox_onboarding CHECK 重建（三态 ⇒ 四态：+ 'moved'——表重建，列面 = v13 段 18 列逐字）
+CREATE TABLE sandbox_onboarding_v18 (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  host TEXT NOT NULL,                          -- 主机地址原文
+  ssh_port INTEGER NOT NULL DEFAULT 22,
+  ssh_user TEXT NOT NULL,
+  auth_kind TEXT NOT NULL CHECK (auth_kind IN ('key','password')),
+  secret_cipher TEXT,                          -- AES-256-GCM 包（iv|tag|ct —— base64 三段）；零化后 NULL
+  sudo_cipher TEXT,                            -- 可选（同形）
+  credential_mode TEXT NOT NULL CHECK (credential_mode IN ('burn','keep')),
+  credential_state TEXT NOT NULL DEFAULT 'sealed' CHECK (credential_state IN ('sealed','burned','revoked','moved')),
+  name TEXT,                                   -- 节点名（可选；缺省取探测主机名）
+  model TEXT NOT NULL,                         -- 提交时所选模型
+  status TEXT NOT NULL CHECK (status IN ('running','succeeded','failed','interrupted')),
+  step TEXT,                                   -- 当前/最后一步 id
+  steps_json TEXT NOT NULL DEFAULT '[]',       -- 步骤日志（读数面）
+  runner_id INTEGER,                           -- 成功后关联（未成 NULL）
+  created_by INTEGER,                          -- admin 成员 id
+  created_at TEXT NOT NULL,
+  finished_at TEXT
+);
+INSERT INTO sandbox_onboarding_v18 (id, host, ssh_port, ssh_user, auth_kind, secret_cipher, sudo_cipher, credential_mode, credential_state,
+  name, model, status, step, steps_json, runner_id, created_by, created_at, finished_at)
+  SELECT id, host, ssh_port, ssh_user, auth_kind, secret_cipher, sudo_cipher, credential_mode, credential_state,
+    name, model, status, step, steps_json, runner_id, created_by, created_at, finished_at FROM sandbox_onboarding;
+DROP TABLE sandbox_onboarding;
+ALTER TABLE sandbox_onboarding_v18 RENAME TO sandbox_onboarding;
+`
+
+/** v18 回填移交（存量 `keep` ∧ 成功行 ⇒ 主机行七列 + run 行密列零化 + `'moved'`——`sandbox/SANDBOX.md` §3 主机凭据块）。
+ *  同类两口径：**接收行** = 逐列值（同 runner 多行 ⇒ 后者胜——id 序）∥ **未接收行**（`keep` 未成功 ∥ 密文已零化 ∥ 余既有行）⇒ 新列 NULL/`'none'`（零伪造回填）。
+ *  密文原样搬运（同一 `data/credentials.key`——KD-SV-84 单源；零解密零重加密）。 */
+function backfillHostCredentials(db) {
+  const rows = db.prepare(`SELECT id, runner_id, ssh_port, ssh_user, auth_kind, secret_cipher, sudo_cipher, finished_at, created_at
+    FROM sandbox_onboarding WHERE credential_mode = 'keep' AND status = 'succeeded' AND secret_cipher IS NOT NULL ORDER BY id`).all()
+  const writeHost = db.prepare(`UPDATE sandbox_runners SET ssh_port = ?, ssh_user = ?, auth_kind = ?, secret_cipher = ?, sudo_cipher = ?,
+    credential_state = 'sealed', credential_updated_at = ? WHERE id = ?`)
+  const zeroRun = db.prepare(`UPDATE sandbox_onboarding SET secret_cipher = NULL, sudo_cipher = NULL, credential_state = 'moved' WHERE id = ?`)
+  for (const row of rows) {
+    const written = writeHost.run(row.ssh_port ?? null, row.ssh_user ?? null, row.auth_kind ?? null, row.secret_cipher, row.sudo_cipher ?? null, row.finished_at ?? row.created_at, row.runner_id)
+    if (written.changes === 0) continue // 接收行不在（runner_id NULL ∥ 行已删）⇒ 留 run 行（与 live 径同判——零吞密）
+    zeroRun.run(row.id)
+  }
+}
+
+/** v19 增段（`api_keys.key_plain` 增列——store/STORE.md §2 v19 段逐字；accounts 域——server-wake-face 批 · 修订轮）。
+ *  ① 管理面 sk 明文列（NULL = 常规 key——服务端不留明文，既有行为零变；非空 = 服务端自持面——管理会话出口经网关链
+ *  回环，每回合需真凭据送验）；② 写面唯一 = `issueKey({ keepPlain: true })` ∥ 读面 = `agentKeyOf`（逐请求查库 ⇒ 吊销即断）；
+ *  ③ 零回填（存量行 NULL——常规 key 语义零变）。
+ *  语义/机制 = `agent/ADMIN-AGENT.md` §16.3（单源）；键面 = `accounts/ACCOUNTS.md` §1；判据 = `store/STORE.md` §3 v19 行。 */
+const DDL_V19 = `
+-- ① 管理面 sk 明文列（NULL = 常规 key（服务端不留明文）∥ 非空 = 服务端自持面——服务端即消费方；同沙盒工作区 key_plain 先例）
+ALTER TABLE api_keys ADD COLUMN key_plain TEXT;
+-- ② 审计 CHECK 零动（三 kind 不扩——管理面 sk 属 key 面，沿 KD-SV-108 先例；十四型不变）
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -505,6 +576,8 @@ export const MIGRATIONS = [
   { v: 15, up: (db) => db.exec(DDL_V15) },
   { v: 16, up: (db) => db.exec(DDL_V16) },
   { v: 17, up: (db) => db.exec(DDL_V17) },
+  { v: 18, up: (db) => { db.exec(DDL_V18); backfillHostCredentials(db) } }, // v18：主机表七列 + 四态 CHECK + 回填移交（迁移段 = 结构变 + 回填——单事务同段）
+  { v: 19, up: (db) => db.exec(DDL_V19) }, // v19：`api_keys.key_plain` 增列（管理面 sk 明文面——零回填）
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

@@ -180,6 +180,8 @@ const SANDBOX_KIND_KEYS = {
   onboarding_done: "audit.sandboxKind.onboarding_done",
   onboarding_failed: "audit.sandboxKind.onboarding_failed",
   onboarding_credential_revoke: "audit.sandboxKind.onboarding_credential_revoke",
+  host_credential_set: "audit.sandboxKind.host_credential_set",
+  host_credential_revoke: "audit.sandboxKind.host_credential_revoke",
   approval: "audit.sandboxKind.approval",
 }
 

@@ -8,13 +8,15 @@
  * 快速拒绝；两维同文案——防枚举面保持）；成功 ⇒ 清计（该用户名 + 该 IP）。
  * 审计写（§2.1——`recordAudit`）：login 成/败 ∥ key_rotate ∥ key_issue ∥ key_revoke ∥ password_change
  * （锁触发行 = login-guard `onLock` 接线）。
+ * 管理面 sk（§16.3 ∥ KD-SV-130——本档 = 登录 ensure 接线）：login 成功 ∧ `role = "admin"` ⇒ `ensureAgentKey`（幂等）；
+ * 首发一条 `key_issue`（`detail.surface = "admin_agent"`——`ACCOUNTS.md` §2.1 surface 取值域扩）；非 admin 零动作。
  */
 import { HttpError, sendJson } from "../gateway/errors.mjs"
 import { readJsonBody } from "../gateway/server.mjs"
 import { monthlyCountersByMember } from "../metering/aggregates.mjs"
 import { keyUsageStats, monthlyTokensForMember } from "../metering/usage.mjs"
 import { recordAudit } from "./audit.mjs"
-import { activeKeysOf, countActiveKeys, getKeyById, issueKey, MAX_ACTIVE_KEYS, normalizeKeyName, revokeKey, rotateKey } from "./keys.mjs"
+import { activeKeysOf, countActiveKeys, ensureAgentKey, getKeyById, issueKey, MAX_ACTIVE_KEYS, normalizeKeyName, revokeKey, rotateKey } from "./keys.mjs"
 import { clientIp, defaultLoginGuard } from "./login-guard.mjs"
 import { findMemberByUsername, parseModelDisables, parseModelQuotas, setMemberPassword, validatePassword, verifyPassword } from "./members.mjs"
 import {
@@ -91,6 +93,14 @@ export function registerAccountRoutes(routes, { db, guard = defaultLoginGuard } 
     recordAudit(db, { type: "login_success", actor: member.username, actorId: member.id, detail: { ip } }) // §2.1 成功路径（recordSuccess 后）
     deleteExpiredSessions(db) // 过期行顺手清（ACCOUNTS §2）
     const { token } = createSession(db, member.id)
+    // 管理面 sk（KD-SV-130——§16.3）：admin 登录 ⇒ ensure（幂等：在册 ⇒ 复用零重签）；首发一条 `key_issue`
+    // （`surface: "admin_agent"`）；非 admin 登录零动作；免 20 上限（服务端签发面沿客户端/CLI 先例）。
+    if (member.role === "admin") {
+      const ensured = ensureAgentKey(db, member.id)
+      if (ensured.created) {
+        recordAudit(db, { type: "key_issue", actor: member.name, actorId: member.id, detail: { keyHint: ensured.key.hint, surface: "admin_agent" } })
+      }
+    }
     res.setHeader("Set-Cookie", serializeSessionCookie(token))
     sendJson(res, 200, { ok: true, member: { id: member.id, name: member.name, username: member.username, role: member.role } })
   })

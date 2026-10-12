@@ -40,6 +40,7 @@ const CORE_FILE = await load("thincoder-core/tools/file.mjs")
 const CORE_BASH = await load("thincoder-core/tools/bash.mjs")
 const CORE_SHARED = await load("thincoder-core/tools/shared.mjs")
 const CORE_TIMERS = await load("thincoder-core/agent/timers.mjs")
+const CORE_HISTORY = await load("thincoder-core/agent-tools/read-history.mjs")
 const CORE_TOOLS = Object.freeze({
   getCurrentTimeTool: CORE_OPS.getCurrentTimeTool,
   processTool: CORE_OPS.processTool,
@@ -48,6 +49,7 @@ const CORE_TOOLS = Object.freeze({
   readTool: CORE_FILE.readTool,
   grepTool: CORE_SEARCH.grepTool,
   bashTool: CORE_BASH.bashTool,
+  readHistoryTool: CORE_HISTORY.readHistoryTool,
   toOpenAISchema: CORE_SHARED.toOpenAISchema,
   takeExpiredTimers: CORE_TIMERS.takeExpiredTimers,
   injectTimerReminders: CORE_TIMERS.injectTimerReminders,
@@ -58,7 +60,7 @@ const MODEL = "fake/fake-model"
 const SERVER_VERSION = JSON.parse(readFileSync(join(ROOT, "thincoder-server", "package.json"), "utf8")).version
 const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone
 const PREFIX = CHAT_ENV.ENV_LINE_PREFIX
-const ADMIN_TOOL_NAMES = ["members", "providers", "models", "usage", "audit", "runners", "docker"]
+const ADMIN_TOOL_NAMES = ["members", "providers", "models", "usage", "audit", "runners", "docker", "exec"] // exec = admin-chat-creds-merge 批入册（2026-10-13）
 const SYSTEM_RE = /^\[System reminder: /
 const tempRoot = mkdtempSync(join(tmpdir(), "tc-env-"))
 
@@ -262,7 +264,7 @@ test("腿② 块级降级（B70①）：现况读源抛 ⇒ 该行整行略去 �
   assert.ok(lines.some((line) => line.includes("current time is")))
 })
 
-test("腿② timer（B70②③）：未到期零行 ∥ 到期投一次（出列幂等）∥ 零行落库", async () => {
+test("腿② timer（B70②③）：未到期零行 ∥ 到期不进用户回合（投递归唤醒面——本夹具零落库）", async () => {
   const fx = await envFixture()
   const set = await fx.send("设个 1 秒提醒", {
     turns: [toolTurn([{ name: "timer", args: { seconds: 1, message: "看日志" } }]), { content: "定了" }],
@@ -276,13 +278,13 @@ test("腿② timer（B70②③）：未到期零行 ∥ 到期投一次（出列
   CHAT_ENV_TOOLS.timerPadOf(fx.chat.id)._pendingTimers[0].expiresAt = Date.now() - 1 // 确定性到期（免墙钟 flake——到期判决 = 核件 `takeExpiredTimers`）
   const due = await fx.send("再看", { turns: [{ content: "好" }] })
   const timerLines = envLinesOf(due.messages).filter((line) => line.includes("⏰ timer"))
-  assert.equal(timerLines.length, 1, "到期 ⇒ 该回合含一行")
-  assert.equal(timerLines[0], `${PREFIX}⏰ timer — 看日志]`, "行文 = 核件单源逐字")
-  assert.equal(CHAT_ENV_TOOLS.pendingTimerCount(fx.chat.id), 0, "出列 ⇒ 垫片清空")
+  assert.equal(timerLines.length, 0, "到期件不在用户回合投（投递归空闲自唤醒面——2026-10-13 唤醒批；行文逐字 = 唤醒批件）")
+  assert.equal(CHAT_ENV_TOOLS.pendingTimerCount(fx.chat.id), 1, "本夹具无唤醒泵 ⇒ 到期件留垫片（等待唤醒面出列）")
 
   const again = await fx.send("还有吗？", { turns: [{ content: "没了" }] })
-  assert.ok(!envLinesOf(again.messages).some((line) => line.includes("⏰ timer")), "出列幂等——只投一次")
-  assert.ok(fx.messages().every((row) => !String(row.content).includes("⏰ timer")), "timer 行零落库（瞬态）")
+  assert.ok(!envLinesOf(again.messages).some((line) => line.includes("⏰ timer")), "用户回合零 timer 行（投递归空闲自唤醒面）")
+  const landed = fx.messages().filter((row) => String(row.content).includes("⏰ timer"))
+  assert.equal(landed.length, 0, "本夹具无唤醒泵 ⇒ 零落库（落库/唤醒深腿 = 唤醒批批内件）")
 })
 
 // ── 腿③：零新端点 ─────────────────────────────────────────────────────────────
@@ -301,28 +303,27 @@ test("腿③ 零新端点：两新档源零 `routes.add(` ∥ `chat-routes.mjs` 
 
 // ── 腿④：工具面五族七件 ∥ get_current_time 真读数 ∥ 限幅三形 ∥ E55 ──────────────
 
-test("腿④ 五族七件出场（核真件）：names/schemas/描述三面同源 ∥ 五族覆盖全七件", async () => {
+test("腿④ 六族八件出场（核真件）：names/schemas/描述三面同源 ∥ 六族覆盖全八件", async () => {
   const env = await CHAT_ENV_TOOLS.createEnvTools({ coreTools: CORE_TOOLS })
-  assert.deepEqual([...env.names], ["get_current_time", "process", "timer", "ls", "read", "grep", "bash"])
-  assert.equal(env.schemas.length, 7)
+  assert.deepEqual([...env.names], ["get_current_time", "process", "timer", "ls", "read", "grep", "bash", "read_history"])
+  assert.equal(env.schemas.length, 8)
   for (const schema of env.schemas) {
     assert.equal(schema.type, "function")
     assert.ok(typeof schema.function.description === "string" && schema.function.description.length > 40, `描述应取核件原文：${schema.function.name}`)
     assert.equal(schema.function.parameters.type, "object", `schema 形应与核件同源：${schema.function.name}`)
   }
-  assert.equal(CHAT_ENV_TOOLS.ENV_TOOL_FAMILIES.length, 5, "五族")
+  assert.equal(CHAT_ENV_TOOLS.ENV_TOOL_FAMILIES.length, 6, "六族")
   assert.deepEqual(
     CHAT_ENV_TOOLS.ENV_TOOL_FAMILIES.flatMap((family) => family.tools).sort(),
     [...CHAT_ENV_TOOLS.ENV_TOOL_NAMES].sort(),
-    "五族应恰好覆盖七件（无重无漏）",
+    "六族应恰好覆盖八件（无重无漏）",
   )
   assert.equal(CHAT_ENV_TOOLS.ENV_BASH_TIMEOUT_DEFAULT_MS, 120000)
   assert.equal(CHAT_ENV_TOOLS.ENV_BASH_TIMEOUT_MAX_MS, undefined, "自造超时上限常量已撤（用户 2026-10-12 15:00）")
 
-  // 端池参数处置（§14.2）——运行期拒、零静默钳制
-  const refusedAsync = await env.invoke("bash", { command: "echo x", async: true }, { cwd: tempRoot })
-  assert.equal(refusedAsync.ok, false)
-  assert.match(refusedAsync.message, /async 不可用/)
+  // 端池参数处置（§14.2/§16.1）——运行期拒、零静默钳制；async 已改受理（2026-10-13 唤醒批——旧显式拒撤）
+  const acceptedAsync = await env.invoke("bash", { command: "echo x", async: true }, { cwd: tempRoot })
+  assert.ok(!/async 不可用/.test(acceptedAsync.message ?? ""), "async 受理（深腿 = 唤醒批批内件）")
   const refusedTimeout = await env.invoke("bash", { command: "echo x", timeout: 0 }, { cwd: tempRoot })
   assert.equal(refusedTimeout.ok, false)
   assert.match(refusedTimeout.message, /非法/)
@@ -372,11 +373,12 @@ test("腿④ get_current_time 真读数 ∥ bash 限幅三形 ∥ cwd 生效 ∥
   const exit3Row = toolRowOf(rows, "bash")[2]
   assert.match(exit3Row.content, /\(exit code 3\)/, "非零退出 = 调用完成（退出码在输出文本内）")
   assert.equal(JSON.parse(exit3Row.data_json).ok, true, "非零退出 ⇒ ok:true（不解析退出码）")
-  for (const [index, needle] of [[4, /非法/], [5, /async 不可用/]]) {
+  for (const [index, needle] of [[4, /非法/]]) {
     const row = toolRowOf(rows, "bash")[index]
     assert.match(row.content, needle, "端池参数 ⇒ 工具级错误人话回灌")
     assert.equal(JSON.parse(row.data_json).ok, false)
   }
+  assert.ok(!/async 不可用/.test(toolRowOf(rows, "bash")[5].content), "async 受理（回执形——深腿见唤醒批件；2026-10-13）")
   const readRow = toolRowOf(rows, "read")[0]
   assert.equal(JSON.parse(readRow.data_json).ok, false)
   assert.ok(!readRow.content.startsWith("{"), "错误形回灌 = 人话 message（非 JSON 壳）")

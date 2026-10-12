@@ -3,7 +3,7 @@
  * 「运行面」∥「镜像与镜像源」；公共件 = `tabs.mjs`；机制全文 = `webui/TABS.md` §2.2；子段形 `#/admin/sandbox/<tab>`）——
  * 标签① = 可用性提示 ∥ 节点表（节点行展开 ⇒ 容器区 + 卷区——懒加载；件 = `views-sandbox-containers.mjs`（sandbox-docker-admin 批外拆）∥ `views-sandbox-volumes.mjs`（sandbox-volumes 批）
  * ∥ 添加/删除节点弹窗 ∥ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态「撤销凭据」钮；在途 3s
- * 读时轮询、定终态停））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
+ * 读时轮询、定终态停）∥ 节点行「SSH 凭据」动作（admin-chat-creds-merge 批——弹窗件 = `host-credential.mjs`（与对话页会话条钮**同件**）；KD-SV-134））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
  * 全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。
  * 契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；
  * 窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
@@ -11,6 +11,7 @@
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+import { openHostCredentialModal } from "./host-credential.mjs"
 import { createTabs } from "./tabs.mjs"
 import { deriveModels } from "./views-models.mjs"
 import { createContainerSection, createVolumeSection } from "./views-sandbox-containers.mjs"
@@ -207,6 +208,7 @@ export async function renderSandbox(ctx, mount, sub = null) {
         h("td", { text: counts }),
         h("td", {},
           h("button", { type: "button", class: "tiny", text: t(expandedNodes.has(runner.id) ? "admin.sandbox.collapse" : "admin.sandbox.expand"), onclick: toggle }),
+          h("button", { type: "button", class: "tiny", text: t("admin.sandbox.hostCredBtn"), onclick: () => openHostCredentialModal(ctx, { runner, onSaved: loadRunners }) }), // 主机凭据（弹窗件两页共用——KD-SV-134）
           h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveRunnerModal(ctx, { runner, reload: loadRunners }) }))))
       if (expandedNodes.has(runner.id)) body.push(h("tr", { class: "detail-row" }, h("td", { colspan: String(headers.length) },
         h("div", { class: "stack-box" }, containerArea(runner), volumes.area(runner, { reload: loadRunners, refresh: refreshOf(runner) }))))) // 展开体 = 容器区 + 卷区（sandbox-volumes 批）

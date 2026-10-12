@@ -257,13 +257,14 @@ test("① 纯函数：行切分（跨块/残行）∥ 帧解析（坏行 null）
 // ── ②–⑦ 页面行为腿（旧页类名断言——**页件经 chat-shell-align 批重写后失效**）────────────
 // 承继关系：本页 = 同一页件的后续重构（`views-chat.mjs` 改写 + `views-chat-composer.mjs` 拆件；类面改由核件发射
 // `message user`/`message assistant`/`bubble`，会话选取 = `select.chat-select` 换 `chat-row` 行点）。②–⑦ 的旧类名断言
-// 已不可机检——**语义覆盖移至承继件**（同一门禁链）：`docs/batches/2026-10-11-chat-shell-align.test.mjs`
+// 已不可机检——**语义覆盖移至承继件**（同一门禁链）：`docs/batches/2026-10-11-chat-shell-align.test.mjs` ∥ `docs/batches/2026-10-11-chat-shell-align-ui.test.mjs`（2026-10-13 拆档）
 // （N68 装配 ∥ N69 回读装配 ∥ N64 帧序 ∥ N67 中止 ∥ N70 状态行 ∥ 结构腿核件调用面）。
 
 test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效——指针腿）", () => {
   const successor = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align.test.mjs")
-  assert.ok(existsSync(successor), "承继件在盘（行为面覆盖所归——同一门禁链）")
-  const successorSrc = readFileSync(successor, "utf8")
+  const successorUi = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align-ui.test.mjs")
+  assert.ok(existsSync(successor) && existsSync(successorUi), "承继件在盘（行为面覆盖所归——同一门禁链；2026-10-13 拆档两档）")
+  const successorSrc = readFileSync(successor, "utf8") + readFileSync(successorUi, "utf8")
   for (const leg of ["N68 装配", "N69 回读装配", "N64 帧序", "N67/B65 中止", "N70 状态行", "结构腿"]) {
     assert.ok(successorSrc.includes(leg), `承继腿在册：${leg}`)
   }
@@ -271,7 +272,7 @@ test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效—�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 854 ∥ 859", () => {
+test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 872 ∥ 877", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -289,7 +290,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-   assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [854, 859], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读）")
+   assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [872, 877], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读）——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -318,13 +319,13 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
 
 // ── ⑩ 静态面（档目 ∥ nav ∥ app 接线 ∥ 非壳页 ∥ 行数/行宽 ∥ 零外链 ∥ 键/类闭合 ∥ canon）─────
 
-test("⑩ 静态面：档目 43 ∥ 42 ∥ nav 管理 9（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
+test("⑩ 静态面：档目 50 ∥ 49 ∥ nav 管理 11（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（2026-10-12 team-projects-permissions 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [50, 49], "档目 50 ∥ 49（2026-10-13 父侧收正：+admin-chat-creds-merge host-credential.mjs ∥ +console-chat-live-step views-chat-messages.mjs）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
   // nav（管理 9 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
-  assert.equal(admin.items.length, 9, "管理 9（对话 +1）")
+  assert.equal(admin.items.length, 11, "管理 11（2026-10-13 父侧收正——B2 批 +2 管理页后实读；对话位次不变）")
   assert.deepEqual(admin.items[1], { key: "chat", labelKey: "nav.page.admin.chat", path: "/admin/chat" }, "对话 = 管理组第 2 位（labelKey 单源）")
   assert.deepEqual(NAV.resolveRoute("/admin/chat", "admin"), { path: "/admin/chat" }, "admin 面可达")
   assert.equal(NAV.resolveRoute("/admin/chat", "user").denied, true, "user ⇒ 页面级 denied（判权仍在服务端）")
@@ -369,7 +370,7 @@ test("⑩ 静态面：档目 43 ∥ 42 ∥ nav 管理 9（对话位次 2）∥ a
 // ── ⑪ 收尾：`t` 键族闭包（本批键全被消费）────────────────────────────────────
 
 test("⑪ 键消费闭包：`admin.chat.*` 键族在档面被消费（零死键）∥ notice 四形经映射表消费", () => {
-  const source = stripComments(VIEW_SRC) + stripComments(readPublic("views-chat-composer.mjs"))
+  const source = stripComments(VIEW_SRC) + stripComments(readPublic("views-chat-composer.mjs")) + stripComments(readPublic("views-chat-messages.mjs"))
   const consumed = new Set([
     ...[...source.matchAll(/\bt\(\s*"([^"]+)"/g)].map((match) => match[1]),
     ...[...source.matchAll(/"([a-zA-Z][\w]*(?:\.[\w]+)+)"/g)].map((match) => match[1]), // 全字符串字面量（键可作映射表值——如 NOTICE_KEYS）
@@ -387,8 +388,9 @@ test("⑪ 键消费闭包：`admin.chat.*` 键族在档面被消费（零死键�
 
 test("⑫ 流归属：由承继件覆盖（页件重写后生效——指针腿）", () => {
   const successor = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align.test.mjs")
-  assert.ok(existsSync(successor), "承继件在盘（流归属面覆盖所归）")
-  const successorSrc = readFileSync(successor, "utf8")
+  const successorUi = join(ROOT, "docs", "batches", "2026-10-11-chat-shell-align-ui.test.mjs")
+  assert.ok(existsSync(successor) && existsSync(successorUi), "承继件在盘（流归属面覆盖所归；2026-10-13 拆档两档）")
+  const successorSrc = readFileSync(successor, "utf8") + readFileSync(successorUi, "utf8")
   for (const leg of ["N64 帧序", "N67/B65 中止", "B67 队列"]) {
     assert.ok(successorSrc.includes(leg), `承继腿在册：${leg}`)
   }

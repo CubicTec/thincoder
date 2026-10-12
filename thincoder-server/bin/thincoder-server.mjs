@@ -163,7 +163,10 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     // 沙盒面（§2.5/§2.6——server-exec-sandbox 批）：控制台 ∥ 成员面 + runner 通道（无 runner ⇒ 仅沙盒功能面不可用——KD-SV-71）
     registerSandboxRoutes(routes, { db, config, log })
     registerImageSourceRoutes(routes, { db }) // 镜像源族（gateway/API.md §2.5 镜像源七行——sandbox-image-sources 批）
-    registerChatRoutes(routes, { db, log, deps: { runtime: providerRuntime, config, guard: loginGuard } }) // 管理面 agent 会话面（gateway/API.md §2.8——四端点 + 重启恢复钩）
+    // 管理面 chat 出口自环取数（§16.2——管理会话出口 = 本进程网关链 loopback）：惰性读监听地址（listen 后才有值；
+    // 列名 = `selfBaseUrl`——取数器返回 `server.address()` 原形，通配/环回换算归 `chat.mjs` `selfBaseOf`）
+    let serverRef = null
+    registerChatRoutes(routes, { db, log, deps: { runtime: providerRuntime, config, guard: loginGuard, selfBaseUrl: () => serverRef?.address() ?? null } }) // 管理面 agent 会话面（gateway/API.md §2.8——六端点 + 重启恢复钩）
     // 项目面（gateway/API.md §2.9——team-projects-permissions 批）：成员面六 ∥ 管理面十 ∥ 接收面一（公开——验签门）；
     // 调度器单例（三径共锁——手动 ∥ 定时 ∥ 事件；周期 60s）
     projectSync = createSyncScheduler({ db, config, log })
@@ -173,6 +176,7 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     projectSync.start()
     // D4 面：webui 静态面（`public/` 直发——注册路由优先；`/v1/*` ∥ `/api/*` 不走静态面）
     const server = createGatewayServer({ config, routes, log, staticSite: createStaticSite() })
+    serverRef = server // 自环取数接点（§16.2——路由注册时惰性闭包，此处落真值）
     app = { server, db }
     await new Promise((resolve, reject) => {
       server.once("error", reject)

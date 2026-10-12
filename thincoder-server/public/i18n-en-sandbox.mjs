@@ -211,4 +211,19 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.volumeDeleteTitle": "Delete data volume",
   "admin.sandbox.volumeDeleteConfirm": "Delete data volume «{name}»? Everything inside it is deleted too and cannot be recovered.",
   "admin.sandbox.volumeDeleted": "Data volume deleted: {name}",
+
+  // ── Admin · sandbox · host credential (§2.1① — admin-chat-creds-merge batch) ──────
+  "admin.sandbox.hostCredBtn": "SSH credential",
+  "admin.sandbox.hostCredTitle": "Host credential",
+  "admin.sandbox.hostCredTarget": "Host: {name}",
+  "admin.sandbox.hostCredState": "Credential state",
+  "admin.sandbox.hostCredUpdated": "Updated",
+  "admin.sandbox.hostCredStateNone": "Not set",
+  "admin.sandbox.hostCredStateSealed": "Sealed",
+  "admin.sandbox.hostCredStateRevoked": "Revoked",
+  "admin.sandbox.hostCredSealedNote": "A credential is on file — the secret is never echoed; to change it, revoke first, then record a new one",
+  "admin.sandbox.hostCredSave": "Save credential",
+  "admin.sandbox.hostCredSaved": "Host credential saved: {name}",
+  "admin.sandbox.hostCredRevokeConfirm": "Revoke the SSH credential of host «{name}»? Only the server-side copy is cleared — the account on that machine must be handled there.",
+  "admin.sandbox.hostCredRevoked": "Host credential revoked: {name}",
 })

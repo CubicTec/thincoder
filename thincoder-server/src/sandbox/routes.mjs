@@ -20,6 +20,7 @@ import {
   sandboxPublicBase, sweepStuckTasks,
 } from "./registry.mjs"
 import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "./docker.mjs"
+import { parseHostCredentialInput, revokeHostCredential, setHostCredential } from "./hosts.mjs"
 import { registerContainerRoutes } from "./container-routes.mjs"
 import { registerImageRoutes } from "./image-routes.mjs"
 import { registerVolumeRoutes } from "./volume-routes.mjs"
@@ -182,7 +183,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       throw new HttpError("invalid_request_error", e.message)
     }
     recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: name, detail: { kind: "runner_add", runnerId: row.id, address: row.address }, ts: now() })
-    sendJson(res, 200, { runner: { id: row.id, name: row.name, address: row.address, status: row.status, selfCheck: check.readings, createdAt: row.created_at } })
+    sendJson(res, 200, { runner: runnerView(row) }) // 行形与 overview 同拍（`ssh` 元数据同携——KD-SV-133）
   })
 
   // 删除节点（§3——二选一「保留 ∥ 连删」；链全文 = `registry.deleteRunnerChain`（chat 工具面同函数——KD-SV-90 §12））
@@ -200,6 +201,32 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       ts: now(),
     })
     sendJson(res, 200, { ok: true, id: runner.id, kept, removed })
+  })
+
+  // 主机凭据（§3 主机凭据块 ∥ §9：两端点——路由体归 `hosts.mjs`（单源）；密列零回显（响应 = `runnerView` 元数据））
+  routes.add("PUT", "/api/admin/sandbox/runners/:id/credential", async (req, res, ctx) => {
+    const { member: admin } = requireAdmin(db, req)
+    const runner = runnerRowOr404(db, ctx.params.id)
+    const body = await readJsonBody(req)
+    let input
+    try {
+      input = parseHostCredentialInput(body) // 形非法 ⇒ 400；库零变（E59）
+    } catch (e) {
+      throw new HttpError("invalid_request_error", e.message)
+    }
+    sendJson(res, 200, { runner: runnerView(setHostCredential(db, runner, input, { config, actor: admin.name, actorId: admin.id, now })) })
+  })
+
+  routes.add("DELETE", "/api/admin/sandbox/runners/:id/credential", (req, res, ctx) => {
+    const { member: admin } = requireAdmin(db, req)
+    const runner = runnerRowOr404(db, ctx.params.id)
+    let updated
+    try {
+      updated = revokeHostCredential(db, runner, { actor: admin.name, actorId: admin.id, now }) // 无凭据在留 ⇒ 400（零副作用）
+    } catch (e) {
+      throw new HttpError("invalid_request_error", e.message)
+    }
+    sendJson(res, 200, { runner: runnerView(updated) })
   })
 
   // ── ② 工作区 ──────────────────────────────────────────────────────────────

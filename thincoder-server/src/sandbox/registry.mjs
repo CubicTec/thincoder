@@ -14,7 +14,7 @@
  */
 import { HttpError } from "../gateway/errors.mjs"
 import { recordAudit } from "../accounts/audit.mjs"
-import { clientForRunner } from "./docker.mjs"
+import { clientForRunner, normalizeDockerAddress } from "./docker.mjs"
 
 /** 指令悬挂回收界（§3「缺省 5 分钟——常量」）。 */
 export const CLAIM_TIMEOUT_MS = 5 * 60 * 1000
@@ -164,7 +164,18 @@ export function normalizeRunnerName(raw) {
   return trimText(raw, RUNNER_NAME_MAX, { field: "节点名" })
 }
 
-/** 节点读数（§3 `overview` 基础行——`online`/`version`/`containers` 三值由路由面读时探活并上）。 */
+/** 主机 SSH 元数据（§3 行形：`ssh: { user, port, authKind, credential: { state, updatedAt } }`——**密文零回显**：本件只出元数据，密列永不出库面）。
+ *  状态三值 `none` ∥ `sealed` ∥ `revoked`（列缺省 `'none'`——存量行零回填）。 */
+export function sshMetaOf(row) {
+  return {
+    user: row.ssh_user ?? null,
+    port: row.ssh_port ?? null,
+    authKind: row.auth_kind ?? null,
+    credential: { state: row.credential_state ?? "none", updatedAt: row.credential_updated_at ?? null },
+  }
+}
+
+/** 节点读数（§3 `overview` 基础行——`online`/`version`/`containers` 三值由路由面读时探活并上；`ssh` = 主机凭据元数据——KD-SV-133）。 */
 export function runnerView(row) {
   return {
     id: row.id,
@@ -172,6 +183,7 @@ export function runnerView(row) {
     address: row.address,
     status: row.status,
     selfCheck: parseJson(row.runtime_json, {}),
+    ssh: sshMetaOf(row),
     createdAt: row.created_at,
   }
 }
@@ -190,6 +202,22 @@ export function runnerRowOr404(db, id) {
   const row = db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(Number(id))
   if (!row) throw new HttpError("not_found", `节点不存在：${id}`)
   return row
+}
+
+/** 节点寻址 = 名 ∥ 地址两形（§12：`docker`/`exec` 两工具**单源**——自 `agent/chat-tools.mjs` `resolveNode` 迁入）。
+ *  判据 = 原值逐等（name ∥ address）∪ 地址归一后逐等（`normalizeDockerAddress` 同规则）；未在册 ∥ 多命中（歧义）⇒ 抛（工具级错误人话；不猜）。 */
+export function runnerByRef(db, raw, { field = "host（注册节点名 ∥ 地址）", max = 300 } = {}) {
+  const value = trimText(raw, max, { field })
+  const hits = db.prepare("SELECT * FROM sandbox_runners WHERE name = ? OR address = ? ORDER BY id").all(value, value)
+  try {
+    hits.push(...db.prepare("SELECT * FROM sandbox_runners WHERE address = ? ORDER BY id").all(normalizeDockerAddress(value))) // 归一形同判（两形皆命中 ⇒ 下方歧义收口）
+  } catch {
+    /* 非地址形（归一抛）⇒ 只按原值判——下方未在册收口 */
+  }
+  const rows = [...new Map(hits.map((row) => [row.id, row])).values()]
+  if (rows.length === 0) throw new Error(`节点未在册：${value}（先 runners.add 登记，或用 runners.list 查已登记节点）`)
+  if (rows.length > 1) throw new Error(`节点名歧义：${value} 命中 ${rows.length} 个注册节点（#${rows.map((row) => row.id).join(" ∥ #")}）——改用不重名的名字或地址`)
+  return rows[0]
 }
 
 /** 登记一行（连通自检通过后落库——§3；`runtime` = 自检读数逐值）。重名 ⇒ 抛（调用方 400——零落库）。 */

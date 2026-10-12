@@ -8,6 +8,8 @@
  * **依赖方向单源**：唯一方向 = `chat.mjs` → 本档（本档零反引——不 import `chat.mjs`；零循环）。回合环 ∥ 帧流 ∥ 环境块 ∥
  * 工具面 ∥ 在途门 ∥ 重放编解码 = `chat.mjs` 面（本档只出库面）。
  * 导出面经 `chat.mjs` 重导出（既有导入方零改——含单元测试档经 `CHAT.CHAT_EXCERPT_MAX` 的命名空间取法）。
+ * 会话历史读面（§16.1 ∥ KD-SV-131——server-wake-face 批 · 修订轮）：`recordStoreOf(db, chatId)` = 核件
+ * `read_history` 的 `_recordStore` 注入面（库面单源——行 ⇒ 核记录形；本档只出读面，不过写）。
  */
 import { HttpError } from "../gateway/errors.mjs"
 
@@ -109,4 +111,45 @@ export function appendMessage(db, chatId, { role, content = "", data = null, now
     .run(Number(chatId), Number(chatId), role, String(content ?? ""), data === null ? null : JSON.stringify(data), ts)
   db.prepare("UPDATE agent_chats SET updated_at = ? WHERE id = ?").run(ts, Number(chatId))
   return db.prepare("SELECT * FROM agent_chat_messages WHERE id = ?").get(Number(info.lastInsertRowid))
+}
+
+// ── 会话历史记录面（§16.1——核件 `read_history` 的 `_recordStore` 注入面；库面单源）──────────────
+
+/** 行 ⇒ 核记录形（§16.1 逐形）：`user`/`notice` ⇒ `{ role, content, ts }` ∥ `assistant`（携 `toolCalls`）⇒
+ *  `{ role, content, ts, tool_calls }` ∥ `tool` ⇒ `{ role, name, tool_call_id, content, ts }`；
+ *  `ts` = `created_at` 解析毫秒（解析失败 ⇒ 该键缺席——核件作 `ts:null` 读，时间窗永不命中）。 */
+function recordOfRow(row) {
+  const ts = Date.parse(row.created_at)
+  const base = { role: row.role, content: row.content }
+  if (Number.isFinite(ts)) base.ts = ts
+  if (row.role === "assistant") {
+    const data = parseJson(row.data_json, null)
+    const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : [] // 重建形（同 `replayMessages` 口径）
+    if (calls.length > 0) {
+      base.tool_calls = calls.map((call) => ({
+        id: call.id,
+        type: "function",
+        function: { name: call.name, arguments: typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? {}) },
+      }))
+    }
+    return base
+  }
+  if (row.role === "tool") {
+    const data = parseJson(row.data_json, null)
+    return { ...base, name: data?.name ?? "", tool_call_id: data?.toolCallId ?? "" }
+  }
+  return base
+}
+
+/** 记录存储（§16.1——`pad._recordStore` 取值面）：`iterate(direction)` 生成器逐行出记录形
+ *  （`newest` = 自尾向前——核件按方向取 limit 窗，输出自身反转回时间序；`oldest` = 自首向后）。 */
+export function recordStoreOf(db, chatId) {
+  const id = Number(chatId)
+  return {
+    *iterate(direction = "newest") {
+      const order = direction === "oldest" ? "ASC" : "DESC"
+      const rows = db.prepare(`SELECT * FROM agent_chat_messages WHERE chat_id = ? ORDER BY seq ${order}`).all(id)
+      for (const row of rows) yield recordOfRow(row)
+    },
+  }
 }

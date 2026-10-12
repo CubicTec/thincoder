@@ -172,4 +172,9 @@ export const EN_ADMIN = Object.freeze({
   "admin.chat.noticeEmpty": "Empty turn — nothing was produced; the turn has been closed out",
   "admin.chat.noticeAborted": "Aborted by hand — the turn has been closed out",
   "admin.chat.streamBroken": "Stream reading stopped — the turn keeps running server-side; click “Reload” to see the full text",
+
+  // ── Admin · chat · host credential button (§2.1 — admin-chat-creds-merge batch) ────
+  "admin.chat.hostCred": "Host credential",
+  "admin.chat.hostCredPick": "Pick a host (record its SSH credential)",
+  "admin.chat.hostCredNone": "No hosts — add a node on the Sandbox page first",
 })

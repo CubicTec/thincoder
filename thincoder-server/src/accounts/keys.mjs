@@ -7,6 +7,9 @@
  * 自助面 active 上限 = `MAX_ACTIVE_KEYS`（计数函数归本档；判归路由——轮转 ∥ CLI 不受限）。
  * 校验 = 逐请求查库（KD-SV-11——无缓存；吊销下一次请求即判）；成员行携 `modelQuotas`（分模型覆盖）
  * 与 `modelDisables`（模型禁用集）——均随鉴权行零查询（KD-SV-38 ∥ KD-SV-42）。
+ * 管理面 sk（§1 管理面 sk 条 ∥ `agent/ADMIN-AGENT.md` §16.3）：名常量 `AGENT_KEY_NAME` ∥ `ensureAgentKey`（登录 ensure 幂等——
+ * 非 admin 零动作）∥ `agentKeyOf`（管理会话出口凭据读数）∥ `issueKey({ keepPlain: true })`（v19 `key_plain` 唯一写面——
+ * 服务端即消费方；落面语义 = `store/STORE.md` §2 v19 段）。
  */
 import { createHash, randomBytes } from "node:crypto"
 
@@ -17,6 +20,10 @@ export const KEY_PREFIX = "sk-tc-"
 
 /** 自助面 active 上限（§1.1——第 21 把签发 ⇒ 400；轮转 ∥ CLI 不受限）。 */
 export const MAX_ACTIVE_KEYS = 20
+
+/** 管理面 sk 名（§1 管理面 sk 条 ∥ `agent/ADMIN-AGENT.md` §16.3——常量单源：登录 ensure 的寻址名；
+ *  经网关链回环的管理会话出口凭据 = 该行 `key_plain`）。 */
+export const AGENT_KEY_NAME = "admin-agent"
 
 /** key 名称上限（§1.1——trim 后；超长 ∥ 非字符串 ⇒ 400）。 */
 const MAX_KEY_NAME_LENGTH = 40
@@ -81,15 +88,42 @@ function nextDefaultKeyName(db, memberId) {
   return `key-${n + 1}`
 }
 
-/** 签发一行（新行——轮转不复用旧行）：`{ id, plain, hint, name }`；携名（§1.1——trim 后空 ⇒ 默认名 `key-N` 落库）。 */
-export function issueKey(db, memberId, { name = null, now = Date.now() } = {}) {
+/** 签发一行（新行——轮转不复用旧行）：`{ id, plain, hint, name }`；携名（§1.1——trim 后空 ⇒ 默认名 `key-N` 落库）。
+ *  `keepPlain`（§1 管理面 sk 条——v19 列）：**唯一明文落库写面**（NULL = 常规 key——服务端不留明文）。 */
+export function issueKey(db, memberId, { name = null, keepPlain = false, now = Date.now() } = {}) {
   const plain = generateApiKey()
   const hint = keyHint(plain)
   const resolved = normalizeKeyName(name) ?? nextDefaultKeyName(db, memberId)
-  const info = db
-    .prepare("INSERT INTO api_keys (member_id, key_hash, key_hint, name, status, created_at) VALUES (?, ?, ?, ?, 'active', ?)")
-    .run(memberId, hashKey(plain), hint, resolved, new Date(now).toISOString())
+  const ts = new Date(now).toISOString()
+  const info = keepPlain
+    ? db
+      .prepare("INSERT INTO api_keys (member_id, key_hash, key_hint, name, key_plain, status, created_at) VALUES (?, ?, ?, ?, ?, 'active', ?)")
+      .run(memberId, hashKey(plain), hint, resolved, plain, ts)
+    : db
+      .prepare("INSERT INTO api_keys (member_id, key_hash, key_hint, name, status, created_at) VALUES (?, ?, ?, ?, 'active', ?)")
+      .run(memberId, hashKey(plain), hint, resolved, ts)
   return { id: Number(info.lastInsertRowid), plain, hint, name: resolved }
+}
+
+/** 管理面 sk 读数（§1 管理面 sk 条 ∥ §16.3——管理会话出口的凭据单源）：该成员 active 的 `admin-agent` 行；
+ *  `key_plain` 缺（NULL/空 —— 非常规路径产物）⇒ null（调用侧按「凭据缺位」人话收尾）；出 = `{ id, name, hint, plain }`。 */
+export function agentKeyOf(db, memberId) {
+  if (memberId === null || memberId === undefined) return null
+  const row = db
+    .prepare("SELECT * FROM api_keys WHERE member_id = ? AND name = ? AND status = 'active' ORDER BY id DESC LIMIT 1")
+    .get(Number(memberId), AGENT_KEY_NAME)
+  if (!row || typeof row.key_plain !== "string" || row.key_plain === "") return null
+  return { id: row.id, name: row.name, hint: row.key_hint, plain: row.key_plain }
+}
+
+/** 登录 ensure（§16.3 ∥ KD-SV-130——幂等）：在册（active ∧ 明文在场）⇒ 复用零重签；缺 ⇒ 签一枚
+ *  `admin-agent`（`keepPlain: true`——明文落 v19 列）；**不判 20 上限**（服务端签发面沿客户端/CLI 先例）。
+ *  出 = `{ key, created }`（`created` = 本次是否新签——调用侧据此落首发审计行）。 */
+export function ensureAgentKey(db, memberId, { now = Date.now() } = {}) {
+  const existing = agentKeyOf(db, memberId)
+  if (existing !== null) return { key: existing, created: false }
+  const issued = issueKey(db, memberId, { name: AGENT_KEY_NAME, keepPlain: true, now })
+  return { key: { id: issued.id, name: issued.name, hint: issued.hint, plain: issued.plain }, created: true }
 }
 
 /** 该成员 active key 计数（§1.1 上限判据——签发前计数；与 INSERT 同同步段调用）。 */
@@ -133,7 +167,8 @@ export function revokeKey(db, keyId, { now = Date.now() } = {}) {
   return Number(info.changes) > 0
 }
 
-/** 轮转（§1）：吊销该成员全部 active key + 新签一枚（无旧 ⇒ 等同首签）。 */
+/** 轮转（§1）：吊销该成员全部 active key + 新签一枚（无旧 ⇒ 等同首签）。
+ *  **管理面 sk 披露**（§16.3——已知摩擦）：全换连带吊销 sk ⇒ 管理会话转 `model_error`，下次登录补发。 */
 export function rotateKey(db, memberId, { now = Date.now() } = {}) {
   db.prepare("UPDATE api_keys SET status = 'revoked', revoked_at = ? WHERE member_id = ? AND status = 'active'").run(
     new Date(now).toISOString(),

@@ -168,4 +168,9 @@ export const ZH_ADMIN = Object.freeze({
   "admin.chat.noticeEmpty": "空回合——本轮无内容，已收尾",
   "admin.chat.noticeAborted": "已手动中止——本轮已收尾",
   "admin.chat.streamBroken": "读流中断——回合仍在服务端执行；点「重读」可见全文",
+
+  // ── 管理·对话·主机凭据钮（§2.1——admin-chat-creds-merge 批）─────────────────────
+  "admin.chat.hostCred": "主机凭据",
+  "admin.chat.hostCredPick": "选择主机（录入 SSH 凭据）",
+  "admin.chat.hostCredNone": "无主机——先在沙盒页添加节点",
 })

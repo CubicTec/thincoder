@@ -21,8 +21,10 @@
 
 **【2026-10-12 用户裁 · 门禁链撤除（批内件不入发布门）】**`thincoder-server` `prepublishOnly` 链已撤（回 3×`node --check`；CI 注释随动；`ops/OPS.md` §5.1 ∥ `design/PROJECT.md` §6 板级行同拍收正）。**本批 §2 随正件/落点中一切「`prepublishOnly` 入链 ∥ 链件数 N ⇒ N+1 ∥ 门禁件数断言件随正」相关项一律作废**——实施时：不增链、不碰旧断言件（批内件零维护——随批留存、不入任何门）。
 
+**段号收正（父侧 · 2026-10-13 01:2x · db 迁移版本）**：本批 db 段 = **v18**（原设计 v19——两批对调）。依据 = 代码实读 `thincoder-server/src/store/db.mjs:521-529`（开库序只升 `v > 当前` ⇒ 空档不可回填）+ 实落次序（本批实施先落 ∥ server-wake-face 后落）。落点：`store/STORE.md` §1 链 ∥ §2 两段 ∥ §3 两行 ∥ §4 预算行逐处同拍 + 变更记录一行（**父侧直接执行 · 可 revert**）；wake 批自身文档编号由其修正轮随正；本档 §2 内原 v19 编号处随本读（实施面 = #341 已按 v18 落，批内件读数随 v18）。
+
 ## §2 批次任务与设计（eng-designer）
-**状态行**：✅ 设计完成 · 2026-10-12（admin-chat-creds-merge 批（台账 #1326）——设计轮 + fix 轮 1（§3 轮次 1 之 1–14 逐条落，另同类连带收正 5 处——逐条列报）；闸面：行宽 OK ∥ 悬空 28（+2 非本笔面）；待父侧项见 §2 披露段）
+**状态行**：✅ 设计完成 · 2026-10-13（admin-chat-creds-merge 批（台账 #1326）——设计轮 + fix 轮 1 + fix 轮 2（`timeoutS` 上界判据——`agent/ADMIN-AGENT.md` §12） + fix 轮 3（`sandbox/SANDBOX.md` db 段号残留收正——11 处）；闸面：复跑零新增红（悬空 0 ∥ 行宽 OK）；待父侧项见 §2 披露段）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
 
 ### admin-chat-creds-merge 批（台账 #1326）——批任务与设计（eng-designer · 设计轮）
@@ -126,6 +128,54 @@
 
 **交付面**：五档（`sandbox/SANDBOX.md` ∥ `agent/ADMIN-AGENT.md` ∥ `webui/SANDBOX.md` ∥ `webui/CHAT.md` ∥ `PROJECT.md`）+ 本批档 §2；产品码/测试件零触（设计档面笔）。
 
+### admin-chat-creds-merge 批 · fix 轮 2（`timeoutS` 上界判据——父侧裁定落笔）
+
+**轮次与授权**：fix 轮 2（父侧派单 2026-10-13——承 §3 轮次 2 #4 ＋ §5 fix round 清单 3 实施席上抛 ＋ 父侧 2026-10-13 裁定）。内容 = `exec` `timeoutS` 上界判据（**零新语义**——评审发现 ＋ 父侧裁定直接导出项）；产品码/测试件零触（设计条文笔）。
+
+**落点（file:line = 落笔后实读）**
+
+| # | 落点 |
+|---|---|
+| 1 | `agent/ADMIN-AGENT.md:262`（§12 `exec` 行）：补 `timeoutS` 取值判据——缺省 = `SSH_COMMAND_TIMEOUT_S`（`thincoder-server/src/sandbox/ssh.mjs` 单源常量，60 s）∥ 上界 **86 400**（24 小时）∥ 越界 ⇒ 工具级错误人话「超时上限 24 小时」＋库零变 ∥ 非正/非数 ⇒ 工具级错误（E61）∥ 上界依据 = 86 400 000 ms ≪ Node 计时器量程 2 147 483 647 ms（逾量程被归 1 ms——即刻假超时）＋单命令 24 h 以上超出本工具用途 |
+| 2 | `agent/ADMIN-AGENT.md:459`（变更记录）：本笔一笔 |
+
+**单源判定**：`exec` 工具形/参数单源 = `agent/ADMIN-AGENT.md` §12（依据 = `sandbox/SANDBOX.md:254` 既有句「工具形/参数 = `agent/ADMIN-AGENT.md` §12」）⇒ SANDBOX 侧零改（D2 单源，不重述）；§8 E61 未动（「`timeoutS` 非法」经 §12 取值判据获得机检锚点——合法域 = 正数 ∧ ≤86 400）。
+
+**口径翻译（列报）**：派单词「400 人话」——chat 工具面无 HTTP 面（`exec` 无端点）⇒ 落为「工具级错误人话」（E61/B77/B79 同族；评审轮 2 #4 原文亦作「工具级错误」）；「库零变」落为域面零写入口径（校验先于一切域动作；回合自身消息/审计行照落）。
+
+**闸面终读（本笔收尾后单跑一次；工具 = `node scripts/doc-check.mjs`，仓根 = `d:\teamcode\thincoder`）**：悬空 **0**（闸态 OK——本笔零新增）∥ 行宽 OK；列报数 = 拟新增 43 ∥ 迁移期引文 343（实时值——他批在途）。
+
+**后续**：实现 + 用例由实施席据此续落（父侧口径「本条文落笔后，实施席据此落实现 + 用例」）。
+
+### admin-chat-creds-merge 批 · fix 轮 3（`sandbox/SANDBOX.md` db 段号残留收正——评审 #351 列报 ①）
+
+**轮次与授权**：fix 轮 3（父侧派单 2026-10-13——评审 #351 列报 ①：本批 db 段号残留 **v19**——规范面 11 处 + 记录面 1 处）。单源 = `store/STORE.md` §1/§4（creds-merge = **v18** ∥ server-wake-face = **v19**——2026-10-13 段号收正）。内容 = 逐处 **v19 ⇒ v18** 最小收正（**零新语义**——as-of 句按史判：规范面收正 ∥ 记录面留旧号）；产品码/测试/他档零触（设计档面笔）。
+
+**落点（逐处——行 = 落笔前读数；行号本笔零位移）**
+
+| 行 | 旧文要点 | 收正后 |
+|---|---|---|
+| `:19` | §2 标题（v11–v13 ∥ v15 ∥ **v19**） | ⇒ **v18** |
+| `:21` | **v19** 增主机凭据七列……（DDL 全文 = §2 **v19** 段；段号 as-of：v17/v18 归在途批……） | ⇒ **v18**（两处）；as-of 句 ⇒「**段号收正 2026-10-13：实落次序在先**」（沿 `store/STORE.md` §1 同句落形） |
+| `:25` | 列面 **v19 新增** | ⇒ **v18 新增** |
+| `:237` | 新增七列（**v19**） | ⇒（**v18**） |
+| `:253` | **v19** 迁移回填 | ⇒ **v18 迁移回填** |
+| `:269` | ③ **v19** 回填移交存量 `keep` 行 | ⇒ **v18** |
+| `:471` | B76：**v18 库升 v19**（存量回填腿） | ⇒ **v17 库升 v18**（交叉核 = `store/STORE.md` §2 v18 判据「v17 库升后读数 **18**」） |
+| `:496` | 段链（488 ⇒ ≈560 ⇒ **≈574（v18 +≈14——wake）** ⇒ ≈646（**v19 +≈72**））∥ 段号 **v19** 段（行内 + 职责列） | 段链重排 ⇒ ≈560 ⇒ **≈632（v18 +≈72）** ⇒ ≈646（**v19 +≈14——server-wake-face**）；段号 ⇒ **v18**（×2——终值 646 不变）；中段「段链 = §4——as-of，含在途批」保留（对象 = 链内含在途批之估值，未述本批段号，仍成立） |
+| `:514` | 批内件小句 **v19** 迁移（回填三用例） | ⇒ **v18 迁移** |
+| `:553` | KD-SV-133：**v19** 增七列 ∥ + **v19** 回填 | ⇒ **v18**（×2） |
+| `:591` | R72②：§2 **v19** 段 ∥ §3 迁移链 **v19** 行 ∥ §1 版本 16 ⇒ 19（as-of） ∥（**v19** 含表重建一步） | ⇒ §2 **v18** 段 ∥ §3 迁移链 **v18** 行 ∥ 删失效「（as-of）」标记（段号已定盘） ∥（**v18** 含表重建一步） |
+| `:623` | 变更记录（设计轮条）：§2 增 **v19** 句……+ v19 回填 | **未改——记录面留旧号**（按史判：2026-10-12 设计轮史实；同 `store/STORE.md` 旧条目留存之例） |
+
+**闸面终读（本笔前后各跑一次；工具 = `node scripts/doc-check.mjs`，仓根 = `d:\teamcode\thincoder`）**：两份输出 **SHA256 全等**（零新增红）——悬空 **0** ∥ 行宽 OK ∥ 拟新增 41 ∥ 迁移期引文 343；批档域不在闸扫描域内（日志含 `docs/batches` 零命中——本段写入不动闸面）。
+
+**列报 / 披露**
+- [上抛·知会] 派单引例「`:165` 行『批注：`migrations` 序列……v19 待实施批持号』」在本档现文与全 `docs` 域（grep「持号 ∥ 待实施批 ∥ migrations 序列」）零命中——实文 as-of 句 = `:21` ∥ `:496`（已逐一判、收）。
+- [上抛·知会] 本档变更记录未加「段号收正」新条（不在派单逐处面）——如需沿 `store/STORE.md` 2026-10-13 同例补一行，待父侧一句话。
+- [上抛·知会] 他档抽查（`agent/ADMIN-AGENT.md` ∥ `design/PROJECT.md` ∥ `webui/SANDBOX.md` ∥ `webui/CHAT.md`）：本批段相关提及已随 wake 批修正轮同拍（creds = v18 口径在档）——零残留、零改。
+- [上抛·知会] 非本笔面（承 §5 列报 ⑤——读数漂移两项：批内件估 ≈420 ⇒ 实读 606；段链终值 ≈646 ⇒ 实读 630）＝他笔主另办——**【已办 2026-10-13】**：设计档三处回填（`sandbox/SANDBOX.md` §13 两处 ∥ 行号口径 = 内容行；原记 631 系 split 口径差 1）∥ 本批批内件 606。
+
 ## §3 设计评审（评审子代理）
 
 ### 轮次 1（评审子代理）
@@ -175,6 +225,115 @@ VERDICT: changes-required
 
 VERDICT: pass
 
+### 轮次 3（评审子代理）
+
+**评审对象**：admin-chat-creds-merge 设计面（SSH 凭据进 chat ∥ exec 入 chat ∥ run 合并方向）——重开复核轮（对象 = 已 pass 设计面；本轮 = 复核 + 重签）。范围 = `sandbox/SANDBOX.md` ∥ `agent/ADMIN-AGENT.md` ∥ `webui/SANDBOX.md` ∥ `webui/CHAT.md` ∥ `design/PROJECT.md`（五档全文已读）。
+
+| # | Category | Severity | Issue | Suggestion |
+|---|----------|----------|-------|------------|
+| 1 | Affected-file size annotations | 🟡 | `views-sandbox.mjs` 实读 499 ⇒ ≈511（+≈12）跨 >500 档位，行文仅「越 500 软线，处置另裁」（`webui/SANDBOX.md` §3）/「列报」（`design/PROJECT.md` §6），未携拆分预案——同批 `registry.mjs`（536 ⇒ ≈561，预案 = 队列死件面外拆）∥ `db.mjs`（488 ⇒ ≈646，预案 = `store/schema.mjs`）行均有预案可对照 | 补一行拆档预案（或以「维持 + 触发线 ⇒ 起拆档审查」形式收口——沿 `chat-tools.mjs` 先例），使该行满足跨 500 档位须携拆分预案 |
+| 2 | Clarity（同批两档口径差） | 🔵 | 门禁残余：`agent/ADMIN-AGENT.md` §6 同批单元测试档句 =「不入任何门（2026-10-12 用户裁）」；而 `sandbox/SANDBOX.md` §16 R72③（「58 ⇒ 59——本批单元测试档入链」）/§13（「入 server 链」）∥ `design/PROJECT.md` §6 批块（「入 server 链；`prepublishOnly` 链 +1」）仍为入链口径——2026-10-12 门禁链撤除裁定已明「R-行内入链/链件数 = 记录面，不再维护」 | 按裁定可维持现状；如需同批口径一致 ⇒ 沿 console-chat-live-step 先例就地作废/改「不入发布门（随批留存）」 |
+| 3 | Clarity（陈值） | 🔵 | `sandbox/SANDBOX.md` §13 `ssh.mjs` 行仍标「（拟新增——托管接入增补）」，而同档变更记录 2026-10-11 走查轮已载「产品码触 = `ssh.mjs` 口令径一条」、本批 §3 以「既有判定/单源复用」引用该件；同页已为 `rules.mjs`/`credentials.mjs` 登记同类陈值「清账另轮」——`ssh.mjs`（与 `onboarding-routes.mjs` 待核）未入该名单 | 将 `ssh.mjs`（及 `onboarding-routes.mjs`，如已落盘）并入已登记的「拟新增 = 陈值」清账名单，或就地翻正标记 |
+| 4 | Numeric drift（spot-check） | 🔵 | 读数微差一处：§13 `routes.mjs` 行「余量 ≈41（450 ⇒ ≈459）」——基线 450 与同行现读链 442 ＋ 在途 sandbox-volumes +2（同页注 =「≈444——余量 ≈56」）不合（净估 ≈458）；余（499/536/488/373/477/587/442 与 i18n 链 214 ⇒ ≈226 ∥ 854 ⇒ ≈871 等）逐项交叉一致 | 基线改 444（或注明 450 取数来源），或加 as-of 注 |
+| 5 | 评审面限制（登记） | 🔵 | 无文档地图、无标准档声明；需求单源（`docs/server/requirements/PROJECT.md`）不在评审范围 ⇒ 文档归属/需求覆盖按降级口径核（以 Project Guide ＋ 范围内交叉指针为准）：本批落点 = 域档机制节 ＋ KD-SV-133–136 ＋ AC-47 指针（R72① 已闭合），未见重复建档/机制级复述冲突 | 无（登记） |
+
+**计数**：🔴 0 ∥ 🟡 1 ∥ 🔵 4
+
+VERDICT: pass
+
 ## §4 用户批准（主 agent）
+
+**父侧代签（2026-10-13 01:2x）**（承用户 2026-10-13 01:05「自动跑」∥ 01:08「还不赶紧跑起来！」∥ 01:1x「评审已经回来了」——本批全程放行）。
+
+**三条件核验**：
+① **评审 pass 0🔴** ✓——轮次 3 重签通过（🔴 0 ∥ 🟡 1 ∥ 🔵 4）；非阻塞 5 条父侧裁定 = **受领不阻塞**（🟡1「批名括注」+ 🔵4 走收口前小修或随手带——不阻实施）。
+② **修正落地并核验** ✓——轮 2 复评 13/14 落位在册（#5 半落 = 即轮 3 之 🟡1）。
+③ **token 已签发** ✓（designId ∥ 令牌值 = 运行时凭据，不落档）。
+
+**批准范围** = 本批设计面（凭据进 chat ∥ `exec` 进 chat ∥ run 合并方向——实现按 §2 逐条落点）。
+**实施轮已派** = eng-coder（round=initial；任务书 = 本档 §2 + 五档设计面；批内件零维护——不入门、不碰旧断言件，沿用户 2026-10-12 裁定）。
+
 ## §5 实施记录（eng-coder）
+**状态行**：实施完成 · 2026-10-13（fix 轮落定（timeoutS 上界 ＋ advisor 评审轮 1/2 pass → clean；实跑 9/9 ∥ 19 档语法 0 失败））
+
+
+
+**实施记录（eng-coder）**
+
+### 交付摘要（实施完成面）
+本批实施面全部落盘并**实跑**：v18 迁移段（主机表七列 + `sandbox_onboarding` 四态 CHECK 重建 + 回填移交）∥ 主机凭据面（hosts.mjs 形校验/密文/撤销/exec）∥ `exec` 进 chat（工具面八件 + `runners.revoke_credential` 动词）∥ 两端点判权/判据 ∥ 前端两挂载点（弹窗件两页共用）∥ i18n 六表。
+
+- 批内单测件 = `docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`（9 用例；实跑命令与读数：`node --test docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs` ⇒ `tests 9 ∥ pass 9 ∥ fail 0`）。
+- 改动件清单与各自状态：
+  - `src/store/db.mjs`（v18 段）——**成链**（空库直落 18 ∥ v17→18 回填三径 + 无接收行两腿 ∥ 幂等，实跑）
+  - `src/sandbox/hosts.mjs`（新）——**成链**（形校验六形 400 ∥ 密文非明文 ∥ exec 假件退出码/掩蔽/私钥即删 ∥ 解密失败/超时人话，实跑）
+  - `src/sandbox/registry.mjs`——**成链**（`runnerByRef` 三形 + 歧义/未在册 ∥ `sshMetaOf`/`runnerView` 行形，实跑）
+  - `src/sandbox/onboarding.mjs`——**成链**（N81 全链：假 ssh/假 fetch + 假模型 ⇒ 主机行七列 + run 行 `'moved'` + 随后 exec 可跑，实跑）
+  - `src/sandbox/routes.mjs`——**成链**（两端点：200 密封/零秘密/审计三键 ∥ 400 四支库零变 ∥ 401/403/404 ∥ DELETE 撤销 + 无凭据 400，实跑）
+  - `src/agent/chat-tools.mjs` / `src/agent/chat.mjs` / `src/agent/chat-env.mjs`——**成链**（chat 一轮 exec：帧序 ∥ 六字段结果形 ∥ subject=命令原文 ∥ resultCode=exitCode ∥ 截断位 ∥ 掩蔽 ∥ 撤销两径两行 ∥ 工具级错误六径零 ssh 调用，实跑）
+  - `public/host-credential.mjs`（新）/ `public/views-sandbox.mjs` / `public/views-chat.mjs` / `public/views-audit.mjs`——**半成链**（node 侧：语法面 + 接线源码断言 + i18n 键面断言；**浏览器实走未做**——收口轮父侧实走）
+  - `public/i18n-{zh,en}-{sandbox,admin,system}.mjs`——**成链**（键面在场 ∥ 沙盒族两表逐键同步 ∥ en 零 CJK，实跑）
+- 未验面（如实）：① 浏览器实走（弹窗开合/选单/撤销二次确认的交互与视觉）；② 仓套件（收口轮父侧单跑）；③ 内部 advisor 代码评审轮**未跑**（轮帽到，转收敛——见下）。
+
+### 决策透明表（微决策 + 自定项，逐条）
+1. **段号 v18**（父裁：链连续优先）——设计面 v19 编号由父侧收正；我**未动任何 `docs/**` 设计文本**。
+2. `src/sandbox/hosts.mjs` **不**被 `registry.mjs` 引用（`sshMetaOf` 落 registry）——避免 `registry → hosts → agent/tools → registry` 环。
+3. 回填跳过「接收行不在」行（`runner_id` NULL ∥ 悬空）⇒ 留 run 行（零吞密）——与 live 径 `written.changes === 0 ⇒ return` 同判（审计轮 1 分歧 1 的修法）。
+4. `credential_updated_at` 取值源：设/撤 = 当刻 ∥ 移交 = run `finished_at` ∥ 迁移 = `finished_at ?? created_at`（设计未点名取值源——报备项）。
+5. i18n 键数：沙盒 **+13**（设计估 ≈12）——复用既有键 `onboardingUser/onboardingPort/authKind/secretKey/secretPassword/secretPh/sudoSecret/fieldRequired/submitting/revoke`，零重复键；admin +3 ∥ kind +2。
+6. 对话页「主机选单（picker）」落 `host-credential.mjs` 而非 `views-chat.mjs`——`views-chat.mjs` 已近 500 软线；选单与其弹窗同住「主机凭据面」一件（接线侧只 +3 行）。
+7. **超清单改动**：`public/views-audit.mjs`（+2 行 kind 映射 `host_credential_set`/`host_credential_revoke`）——新 kind 的渲染接线；设计只点「系统部件两表同步」未点名该档。**列报，不撤**（无它则新 kind 在审计页显原值串）。
+8. 新增 `execImpl` 注入口（`createChatTools` / `buildChatToolFace`）——批内件「假 ssh」所需（设计测试清单要求）；生产缺省零变（缺省 = 真 spawn）。
+9. 旧批断言件**未触**（用户 2026-10-12 裁：批内件零维护、不入任何门）——红点列报见下。
+
+### 审计与代码评审轮次与终态
+- **explore 分歧审计（只读）1 轮**（对全部交付面 + 设计三档逐条对照）：总判定「有分歧 3 条」，其中 🟡1（迁移回填吞密边）+ 🔵2（注释四处未随正 ∥ `views-audit.mjs` 超清单）。
+- **自修 1 轮**（3 条中 2 条已修）：
+  ① 分歧 1（🟡 真缺陷）⇒ `db.mjs` 回填循环加 `written.changes === 0 ⇒ continue`（与 live 径同判）+ 批内件补「无接收行（`runner_id` NULL）∥ 接收行已删（悬空）」两腿 ⇒ 复跑仍 9/9 绿；
+  ② 分歧 2（🔵 注释漂移）⇒ `chat-tools.mjs`（装配七工具⇒八工具 ∥ runners 三动词⇒四动词 ∥ 逐件 schema 七件⇒八件）+ `chat.mjs`（工具面合并「管理面七件⇒八件」）四处已随正；
+  ③ 分歧 3（🔵 超清单）⇒ 见决策透明表 7（列报不撤）。
+- **内部 advisor 代码评审轮：未跑**（轮帽到——按父侧「立即转收敛」指示停下）。**终态 = `stalled`**（分歧审计 + 自修已收敛；advisor 代码评审与浏览器实走属未验面，待父侧续派）。
+
+### 旧件红点清单（列报——按裁不改）
+1. `docs/batches/2026-10-11-admin-agent-chat.test.mjs`：4 红（「空库直落 17」×2 ∥ 「v13 库升后读 17」∥ 「本件入链」）+ 1 红（「七件在场」工具名列表 ⇒ 现八件）——同件内共 4 红。
+2. `docs/batches/2026-10-10-runner-admin-console.test.mjs`：1 红（「空库/v11 库升后读数 = 17」）。
+3. `docs/batches/2026-10-10-runner-admin-console-agent.test.mjs`：2 红（「空库直落 17」∥ 「链含本批件」）。
+4. `docs/batches/2026-10-10-runner-admin-console-ui.test.mjs`：2 红（「键数终值」854/859 ⇒ 实读 872/877 = 本批 +18 ∥ 「档目 48 ⇒ 47」实读 50/49）。
+   红因 = 本批结构版本 17⇒18 与键数/档目计数增量——**断言件按裁零维护**；收口轮若需绿，请父侧裁随正口径。
+5. `docs/batches/2026-10-11-admin-agent-chat-ui.test.mjs`：1 红（**非本批**——`views-chat.mjs` 现引 `/rc/flow/*` 浏览器绝对路径，node 侧不可载；该引用属在途 `console-chat-live-step` 批面）。
+
+### fix round（父侧续做清单）
+1. 内部 advisor 代码评审轮（本批未跑）——建议面 = 本批 16 件 + 批内件。
+2. 浏览器实走（弹窗两挂载点 ∥ 选单 ∥ 撤销二次确认 ∥ 元数据只读面）。
+3. `timeoutS` 上界设计缺口（评审轮 2 #4 提请未落设计）：`timeoutS` 极大时 `setTimeout` 溢出被 Node 钳到 ~1ms ⇒ 即刻假超时；我未自设上界（设计无此判据）——请父侧裁（设计补判据 ⇒ 我落实现 + 用例）。
+4. 旧件红点随正口径（列报 1–4）——按裁办理。
+
+### fix 轮（2026-10-13——`timeoutS` 上界落实现 ＋ 内部 advisor 代码评审；父侧派单）
+
+**轮次**：fix（承本段「fix round（父侧续做清单）」1 ∥ 3 ＋ 父侧 2026-10-13 裁定；不重跑探索）。清单 2（浏览器实走）= 父侧收口轮 ∥ 清单 4（旧件红点）= 按裁零维护——均不属本轮。
+
+**① `timeoutS` 上界落实现**（条文 = `docs/server/design/agent/ADMIN-AGENT.md:262` §12 `exec` 行 · fix 轮 2；实现点 = `thincoder-server/src/agent/chat-tools.mjs` `timeoutOf`）：
+- `TIMEOUT_S_MAX = 86400`（`:65`）；越界 ⇒ 工具级错误人话「超时上限 24 小时：timeoutS = … 越界（上界 86400 秒；缺省 60）」（回合不停 ∥ 零 ssh ∥ 库零变——求值序 `resolveNode → requireText → timeoutOf` 保证越界时未触传输面）；形门 = `typeof raw === "number" ∧ finite ∧ >0`（不 `Number` 收编——advisor 轮 1 🔵 导出项，`:70`）；schema 描述同拍（`:494`）。
+- 批内件 `docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`：⑦ 用例增腿「越界二值（86401 ∥ 10¹²）⇒ 工具级错误 + 零 ssh + 库零变（主机表逐行回读 ∥ 审计零行）」∥「界内（= 86 400）⇒ 行为不变（`timeoutMs` = 86 400 000 透传）」（`:498–521`）；cases 表增 `timeoutS: true ∥ "120"` 二腿（`:480/:481`）；fake ssh 记 `timeoutMs`（`:48`）。
+- **v18 钉改前向兼容**（父侧裁定；沿 B2 先例 `docs/batches/2026-10-12-team-projects-permissions.test.mjs:133`）：`SCHEMA_VERSION >= 18` ∥ 三处 `readVersion >= 18`（`:195/:197/:224/:241`）——段链递升不回红（v19 已落链尾）。
+
+**② 内部 advisor 代码评审轮（协议尾节点——前段因轮帽未跑）**：
+- 轮 1（全量面 19 档 + 批内件，全读现盘）：**pass**（🔴 0 ∥ 🟡 3 ∥ 🔵 5）。
+- 修（2 条，均在盘）：
+  - 🔵 形门收紧（`timeoutOf` 不 `Number` 收编）+ 用例二腿；
+  - 🔵 N80 `summary ≤300` 腿：result 帧逐帧（`:420`）∥ tool 行 `data_json.summary`（`:434`）；构造腿加长 stderr（`:398`）⇒ 原始摘要 ≈415 字 > 300 ⇒ 实截断（单源 = `chat.mjs:323` `capText(…, 300)`）。
+- 轮 2（复验两修复主张）：**pass**——两主张逐字成立，无新 🔴。
+- **终态 = `clean`**（轮 1 pass → 修 2 → 轮 2 pass 收敛）。
+- 列报（不修——他面/加固项/零维护）：
+  ① `sandbox/SANDBOX.md` 本批 db 段号残留 **v19**（规范面 11 处：`:19/:21/:25/:237/:253/:269/:471/:496/:514/:553/:591` + 变更记录 `:623`）＝父侧文档席收正（`store/STORE.md:16` 已 v18）；
+  ② `public/views-sandbox.mjs` 实读 **502** 越 500 软线、无拆档预案在册（文档面）；
+  ③ 短值凭据（<4 字符）掩蔽门（`agent/tools.mjs` 共享 helper 的长度门——`hosts.mjs` 掩蔽含行凭据值在该形下落空；加固项，需动范围外单源）；
+  ④ 批内件 `waitFor` 墙钟轮询（零维护件，只列报）；
+  ⑤ 档面读数漂移（`SANDBOX.md:514` 批内件估 ≈420 ⇒ 实读 **606**；`:496` 段链终值 ≈646 ⇒ 实读 **631**）。
+
+**③ 实跑读数（本轮终）**：`node --test docs/batches/2026-10-12-admin-chat-creds-merge.test.mjs`（仓根 `thincoder/`）⇒ **tests 9 ∥ pass 9 ∥ fail 0**（含新腿）；19 档 `node --check` ⇒ **19 / 19 OK**（18 产品档 + 批内件）。
+**阻塞项（父侧裁定口径）**：②③⑥⑧ 曾因在途 wake-face 批未提交 WIP（`ensureAgentKey`）登录 500 而红——其修复落定后**随绿**（终读全绿）；按父侧裁定该面不计本批红。
+**超清单改动**：**无**（本轮只触 `chat-tools.mjs` ＋ 批内件；设计档零触——需改项已列报；他批面/旧断言件零触）。
+**微决策（列报）**：a) 上界常量落 `chat-tools.mjs`（工具面参数域——不动 `ssh.mjs` 他批面）；b) 用例腿取 `data_json.summary`（`content` 为截断 JSON 不可 parse——初版误用、就地修）；c) 长输出腿把 stderr 一并加长（否则原始摘要 ~215 字 ≤300，断言退化为平凡）。
+
 ## §6 验证与收口（父代理）

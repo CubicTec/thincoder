@@ -211,4 +211,19 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.volumeDeleteTitle": "删除数据卷",
   "admin.sandbox.volumeDeleteConfirm": "删除数据卷「{name}」？卷内数据会一并消失，且不可恢复。",
   "admin.sandbox.volumeDeleted": "已删除数据卷：{name}",
+
+  // ── 管理·沙盒·主机凭据（§2.1①——admin-chat-creds-merge 批） ─────────────────────
+  "admin.sandbox.hostCredBtn": "SSH 凭据",
+  "admin.sandbox.hostCredTitle": "主机凭据",
+  "admin.sandbox.hostCredTarget": "主机：{name}",
+  "admin.sandbox.hostCredState": "凭据状态",
+  "admin.sandbox.hostCredUpdated": "更新时间",
+  "admin.sandbox.hostCredStateNone": "未登记",
+  "admin.sandbox.hostCredStateSealed": "已登记",
+  "admin.sandbox.hostCredStateRevoked": "已撤销",
+  "admin.sandbox.hostCredSealedNote": "已有凭据——密文不回显；改 = 先撤销、再重新录入",
+  "admin.sandbox.hostCredSave": "保存凭据",
+  "admin.sandbox.hostCredSaved": "主机凭据已保存：{name}",
+  "admin.sandbox.hostCredRevokeConfirm": "撤销主机「{name}」的 SSH 凭据？只清服务器侧存留——目标机账号须到机处置。",
+  "admin.sandbox.hostCredRevoked": "主机凭据已撤销：{name}",
 })

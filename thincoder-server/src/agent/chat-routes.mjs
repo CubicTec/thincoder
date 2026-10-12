@@ -11,6 +11,8 @@
  * 中止（KD-SV-107）= 在途门（非 `running` ⇒ 400「本会话不在执行中」——零副作用）+ 登记表置位（终态经流/详情形呈）。
  * 流形：`application/x-ndjson`（每行一帧 `turn`/`delta`/`usage`/`call`/`result`/`end`；`Cache-Control: no-store`）；**流中失败 = `end` 帧**（headers 已发——不再走信封）。
  * 重启恢复（`running` ⇒ `idle` + notice + `chat_stop` 审计）= **装配期执行**（无端点——本注册行内跑；KD-SV-86 如实收尾）。
+ * 唤醒器接线（§15.1 三链尾①——server-wake-face 批）：用户回合尾 = `pumpChatWake`（有交付 ⇒ 撤旧闩 + 消化：已到期/留件
+ * 不武装 0ms 闩；否则再武装——防自旋/惊群）；唤醒器本体 = `chat-wake.mjs`（结算钩子 = 每回合环境 ctx 段装配）。
  * 审计写（`agent_event`——KD-SV-91）：`chat_start`（会话创建）∥ 重启 `chat_stop` 在本档；逐调用 `chat_call` 与异常/中止 `chat_stop` 在 `chat.mjs`。
  * 注入口径（单元测试档替身）：`deps`（`chat` 假模型出口 ∥ `tools` 假工具面 ∥ `imageGate` 图片门核件替身 ∥ `runtime`/`config`/`env`/`fetchImpl`/`guard` 工具面装配上下 ∥ `budget`）。
  */
@@ -21,6 +23,7 @@ import { listProviderEntries } from "../gateway/providers.mjs"
 import { levelsOfRef } from "../gateway/reasoning-levels.mjs"
 import { readJsonBody } from "../gateway/server.mjs"
 import { assertChatIdle, chatRowOr404, claimChatTurn, createChat, getChatDetail, listChats, requestChatAbort, resumeRunningChats, runChatTurn } from "./chat.mjs"
+import { pumpChatWake } from "./chat-wake.mjs"
 import { providerModelRefs } from "./run.mjs"
 
 /** 模型可用性判（KD-SV-87 同判——建会话 ∥ 发消息 ∥ 换模型三处同门）：不合 ⇒ 抛（调用侧转 400 信封；消息人话）。 */
@@ -127,6 +130,9 @@ export function registerChatRoutes(routes, { db, log = null, deps = {}, now = Da
       log?.error("chat_turn_failed", { chatId: row.id, message: e?.message ?? String(e) })
       emit({ type: "end", status: "failed", reason: `回合异常：${e?.message ?? e}` })
     } finally {
+      // 链尾①（§15.1）：回合尾再武装/消化（异步不阻响应——开轮失败零反噬；唤醒轮无路由无帧面）
+      void pumpChatWake({ chatId: row.id, db, deps, now, log }).catch((e) =>
+        log?.warn("chat_wake_failed", { chatId: row.id, message: e?.message ?? String(e) }))
       if (!res.writableEnded && !res.destroyed) res.end()
     }
   })

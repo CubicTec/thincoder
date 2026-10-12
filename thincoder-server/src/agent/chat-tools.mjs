@@ -1,13 +1,13 @@
 /**
- * chat-tools.mjs — 管理面工具面七件（`agent/ADMIN-AGENT.md` §12 ∥ KD-SV-90；admin-agent-chat 批——台账 #1254）：
- * `members`（六动词）∥ `providers`（五）∥ `models`（五）∥ `usage`（summary ∥ rows）∥ `audit`（query）∥ `runners`（list ∥ add ∥ remove）
- * ∥ `docker`（十动词——**绑定 = 注册节点**；未在册 ⇒ 工具级错误回灌）。
+ * chat-tools.mjs — 管理面工具面八件（`agent/ADMIN-AGENT.md` §12 ∥ KD-SV-90/136；admin-agent-chat 批——台账 #1254）：
+ * `members`（六动词）∥ `providers`（五）∥ `models`（五）∥ `usage`（summary ∥ rows）∥ `audit`（query）∥ `runners`（list ∥ add ∥ remove ∥ revoke_credential）
+ * ∥ `docker`（十动词——**绑定 = 注册节点**；未在册 ⇒ 工具级错误回灌）∥ `exec`（SSH——**绑定 = 主机表行**，本批——KD-SV-136；凭据 = 行密列，缺 ⇒ 工具级错误人话）。
  *
  * 口径（KD-SV-90）：**进程内直取域件**（零 HTTP 回环——KD-SV-82 延续）；**写链与控制台路由同函数**（provider 写面 = `gateway/provider-admin.mjs`
  * 共享写函数 ∥ 成员重置链 = `accounts/members.mjs` 的 `resetMemberPassword` ∥ 节点删除链 = `sandbox/registry.mjs` 的 `deleteRunnerChain`——
  * 两调用点单源）；每次动作落审计行 = **驱动层**职责（`chat.mjs` 逐调用一条 `agent_event`/`chat_call`——本档不写审计，零双记 KD-SV-91）；
  * 工具结果形 = `{ ok, … }`（结构化；错误 ⇒ `ok: false` + 人话 `message`——回灌模型自纠，**回合不停**）。
- * 密钥面：provider 回显走 `maskApiKey`（明文不出）；`exec`（SSH）**不入 chat**（凭据 = 任务表单专有——KD-SV-84 面不破）。
+ * 密钥面：provider 回显走 `maskApiKey`（明文不出）；`exec`（SSH）**入 chat**（凭据 = 主机表行密列，经弹窗录入——文本非通道；KD-SV-136），结果/摘要/subject 同链过 `hosts.mjs` 掩蔽（行凭据值零入四面）。
  */
 import { queryAudit } from "../accounts/audit.mjs"
 import { getKeyById, revokeKey } from "../accounts/keys.mjs"
@@ -21,11 +21,13 @@ import { listProviderEntries, modelEntriesOf } from "../gateway/providers.mjs"
 import { usageSummary } from "../metering/report.mjs"
 import { queryUsage } from "../metering/usage.mjs"
 import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "../sandbox/docker.mjs"
-import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerRowOr404, sandboxPublicBase } from "../sandbox/registry.mjs"
+import { execOnHost, revokeHostCredential } from "../sandbox/hosts.mjs"
+import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerByRef, runnerRowOr404, sandboxPublicBase, sshMetaOf } from "../sandbox/registry.mjs"
+import { SSH_COMMAND_TIMEOUT_S } from "../sandbox/ssh.mjs"
 import { DOCKER_OPS, assertDockerOp, runDockerOp } from "./docker-ops.mjs"
 
-/** 工具名全集（七件——§12 表；断言）。 */
-export const CHAT_TOOL_NAMES = Object.freeze(["members", "providers", "models", "usage", "audit", "runners", "docker"])
+/** 工具名全集（八件——§12 表；断言）。 */
+export const CHAT_TOOL_NAMES = Object.freeze(["members", "providers", "models", "usage", "audit", "runners", "docker", "exec"])
 
 /** 各工具动词集（§12 逐行——参数校验先于动作；断言）。 */
 export const CHAT_TOOL_OPS = Object.freeze({
@@ -34,7 +36,7 @@ export const CHAT_TOOL_OPS = Object.freeze({
   models: Object.freeze(["list", "enable", "disable", "settings", "alias"]),
   usage: Object.freeze(["summary", "rows"]),
   audit: Object.freeze(["query"]),
-  runners: Object.freeze(["list", "add", "remove"]),
+  runners: Object.freeze(["list", "add", "remove", "revoke_credential"]),
 })
 
 /** 用法面限制（§12）：`usage.rows` limit ≤ 100（控制台账为 ≤500——工具面收窄）。 */
@@ -58,14 +60,26 @@ function optionalText(value, field, max = 2000) {
   return text
 }
 
+/** `exec` 超时秒数上界（86 400 s = 24 h——父侧 2026-10-13 裁；`agent/ADMIN-AGENT.md` §12 `exec` 行）。
+ *  依据 = 86 400 000 ms ≪ Node 计时器量程 2 147 483 647 ms（逾量程被归 1 ms——即刻假超时）＋单命令 24 h 以上超出本工具用途。 */
+const TIMEOUT_S_MAX = 86400
+
+/** `exec` 超时秒数（E61：非数/非正 ⇒ 工具级错误——不 `Number` 收编（布尔/数字串/数组皆拒）；越界 ⇒ 工具级错误人话「超时上限 24 小时」；缺省 = `ssh.mjs` 单源常量）。 */
+function timeoutOf(raw) {
+  if (raw === undefined || raw === null || raw === "") return SSH_COMMAND_TIMEOUT_S
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) throw new Error(`timeoutS 非法：${String(raw)}（正数秒数；缺省 ${SSH_COMMAND_TIMEOUT_S}）`)
+  if (raw > TIMEOUT_S_MAX) throw new Error(`超时上限 24 小时：timeoutS = ${String(raw)} 越界（上界 ${TIMEOUT_S_MAX} 秒；缺省 ${SSH_COMMAND_TIMEOUT_S}）`)
+  return raw
+}
+
 /**
- * 装配七工具（§12）：`db` = openDatabase 产物 ∥ `runtime` = gateway 注册行引导的**同一实例**（provider 写面换表——与路由同见）
+ * 装配八工具（§12）：`db` = openDatabase 产物 ∥ `runtime` = gateway 注册行引导的**同一实例**（provider 写面换表——与路由同见）
  * ∥ `guard` = 登录守卫（重置链清计——装配面注入）∥ `fetchImpl` = Docker 传输注入面（单元测试档替身）
  * ∥ `discoverFetchImpl` = 上游探针出口（缺省 = `proxyFetch`——与控制台 discover 同出口，代理旗判定不丢；测试替身走此参）。
  * `invoke(name, args)` 出 = **结果对象**（各动词自带字段，至少 `{ ok }`；失败 ⇒ `{ ok:false, message }`——不抛，交模型自纠）。
  * `summary` 面：docker 等结果自带则沿用，余由驱动层派生（`chat.summaryOfResult`——掩蔽 + 截断）。
  */
-export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, discoverFetchImpl = proxyFetch, guard = null, log = null } = {}) {
+export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, discoverFetchImpl = proxyFetch, guard = null, log = null, actor = "admin", actorId = null, execImpl = null } = {}) {
   if (!db) throw new Error("createChatTools：缺少 db（openDatabase 产物）")
   const providerCtx = { db, runtime, config, env, fetchImpl: discoverFetchImpl, log }
   const publicBase = sandboxPublicBase(config) // 删除链续放置载荷与控制台同源（§12「与控制台同函数同效」）
@@ -80,19 +94,9 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
     return findMemberByUsername(db, String(raw)) ?? findMemberByName(db, String(raw)) ?? (() => { throw new Error(`成员不存在：${String(raw)}`) })()
   }
 
-  /** 节点寻址（注册节点名 ∥ 地址——§12 docker 行「绑定 = 注册节点」；未在册 ⇒ 工具级错误）。 */
+  /** 节点寻址（名 ∥ 地址两形——**单源 = `registry.runnerByRef`**（`docker`/`exec` 两工具同判，未在册/歧义 ⇒ 工具级错误）。 */
   function resolveNode(raw) {
-    const value = requireText(raw, "host（注册节点名 ∥ 地址）", 300)
-    let row = db.prepare("SELECT * FROM sandbox_runners WHERE name = ? OR address = ?").get(value, value)
-    if (!row) {
-      try {
-        row = db.prepare("SELECT * FROM sandbox_runners WHERE address = ?").get(normalizeDockerAddress(value))
-      } catch {
-        row = null
-      }
-    }
-    if (!row) throw new Error(`节点未在册：${value}（先 runners.add 登记，或用 runners.list 查已登记节点）`)
-    return row
+    return runnerByRef(db, raw)
   }
 
   /** provider 条目定位（id ∥ 名——§12 providers/models 两工具共用）。 */
@@ -302,7 +306,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
     }
   }
 
-  // ── ④ usage（summary ∥ rows）∥ ⑤ audit（query）∥ ⑥ runners（三动词）──────────
+  // ── ④ usage（summary ∥ rows）∥ ⑤ audit（query）∥ ⑥ runners（四动词——`revoke_credential` = admin-chat-creds-merge 批）──
   function usageOp(op, args) {
     const filters = {
       memberId: memberFilterOf(args.member),
@@ -359,9 +363,27 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
         const out = await deleteRunnerChain(db, runner, { containers, confirm: args.confirm === true }, { fetchImpl, publicBase })
         return { ok: true, summary: `已删除节点 ${out.name}（保留容器 ${out.kept} ∥ 连删 ${out.removed}）`, id: out.id, name: out.name, kept: out.kept, removed: out.removed }
       }
+      case "revoke_credential": {
+        const runner = runnerRowOr404(db, args.id) // 不存在 ⇒ 工具级错误
+        let updated
+        try {
+          updated = revokeHostCredential(db, runner, { actor, actorId, now: () => Date.now() }) // 域行（`host_credential_revoke`）随落——加 chat 侧 `chat_call` = **两行**（凭据类例外——KD-SV-91）；零秘密
+        } catch (e) {
+          throw new Error(e?.message ?? String(e)) // 无凭据在留 ⇒ 工具级错误人话
+        }
+        return { ok: true, summary: `已撤销主机「${updated.name}」的 SSH 凭据（服务器侧零化——目标机账号须到机处置）`, id: updated.id, name: updated.name, ssh: sshMetaOf(updated) }
+      }
       default:
         return { ok: false, message: `未知 runners 动词：${String(op)}（${CHAT_TOOL_OPS.runners.join(" ∥ ")}）` }
     }
+  }
+
+  /** `exec`（SSH——§12 exec 行）：绑定 = 主机表行（`resolveNode` 单源）；凭据 = 行密列（缺 ⇒ 工具级错误人话）；出 = `{ ok, exitCode, stdout, stderr, summary, subject }`。
+   *  命令非零退出 ⇒ `ok:true`（退出码在结果内）；传输级失败 ⇒ 抛（`invoke` catch 转 `{ ok:false, message }`——B79）。掩蔽/私钥清理 = `hosts.mjs` 单源。 */
+  async function execOp(args) {
+    const node = resolveNode(args.host)
+    const command = requireText(args.command, "command（命令原文）", 8000) // E61：空串/超长 ⇒ 工具级错误（零 ssh 调用）
+    return await execOnHost(node, { command, timeoutS: timeoutOf(args.timeoutS) }, { config, ...(execImpl === null ? {} : { execImpl }) })
   }
 
   /** 工具调用入口（不抛——未知工具/动词/参数不合 ⇒ `{ ok:false, message }`；命令面错误同收）。 */
@@ -379,6 +401,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
         return { ok: true, summary: `${head}${preview}`, resultCode: out.resultCode, data: out.data }
       }
       const op = params.op === undefined || params.op === null || params.op === "" ? null : String(params.op)
+      if (name === "exec") return await execOp(params)
       if (op === null) return { ok: false, message: `缺 op（${name} 的动词：${(CHAT_TOOL_OPS[name] ?? []).join(" ∥ ")}）` }
       if (name === "members") return await membersOp(op, params)
       if (name === "providers") return await providersOp(op, params)
@@ -392,7 +415,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
     }
   }
 
-  /** 逐件 schema 构造（名 ∥ 描述 ∥ 属性表 ∥ 必填——七件同构；行压义不压）。 */
+  /** 逐件 schema 构造（名 ∥ 描述 ∥ 属性表 ∥ 必填——八件同构；行压义不压）。 */
   const fn = (name, description, properties, required = ["op"]) => ({ type: "function", function: { name, description, parameters: { type: "object", properties, required } } })
   /** 长描述拼接（行宽 ≤300——单行不越线）。 */
   const desc = (...parts) => parts.join("")
@@ -452,11 +475,11 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
       to: { type: "number", description: "结束时刻（unix ms）" },
       limit: { type: "number", description: "行数（≤ 500）" },
     }),
-    fn("runners", `运行节点管理（控制台沙盒页运行面同函数）。动词：${CHAT_TOOL_OPS.runners.join(" ∥ ")}。list；add ⟮name,address⟯（连通自检 + 落行）；remove ⟮id,containers?,confirm?⟯——有承载工作区须 confirm:true；节点上有容器须选 containers: "keep"（原样留机）∥ "remove"（逐个强删）。`, {
+    fn("runners", `运行节点管理（控制台沙盒页运行面同函数）。动词：${CHAT_TOOL_OPS.runners.join(" ∥ ")}。list；add ⟮name,address⟯（连通自检 + 落行）；remove ⟮id,containers?,confirm?⟯——有承载工作区须 confirm:true；节点上有容器须选 containers: "keep"（原样留机）∥ "remove"（逐个强删）；revoke_credential ⟮id⟯（撤销该主机的 SSH 凭据——服务器侧零化）；list 行携 ssh 元数据（用户/端口/认证形/凭据状态——零秘密）。`, {
       op: { type: "string", enum: CHAT_TOOL_OPS.runners, description: "动词" },
       name: { type: "string", description: "add：节点名（≤ 40）" },
       address: { type: "string", description: "add：Docker API 地址（如 10.0.0.5:2375）" },
-      id: { type: "number", description: "remove：节点 id" },
+      id: { type: "number", description: "remove ∥ revoke_credential：节点 id" },
       containers: { type: "string", enum: ["keep", "remove"], description: "remove：容器处置" },
       confirm: { type: "boolean", description: "remove：确认丢弃承载工作区绑定" },
     }),
@@ -465,6 +488,11 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
       op: { type: "string", enum: DOCKER_OPS, description: "Docker 动词" },
       args: { type: "object", description: "动词参数（如 { image, tag } ∥ { name, body } ∥ { id } ∥ { all }）" },
     }, ["host", "op"]),
+    fn("exec", `在**已注册主机**上执行一条命令（SSH——非交互、逐条；回读退出码与 stdout/stderr）。host = 主机行（注册节点名 ∥ 地址；未在册 ⇒ 报错）；凭据 = 该主机的 SSH 凭据（未登记 ⇒ 报错——到「主机凭据」弹窗录入；不要请用户把凭据发在聊天里）。需要提权时用 \`sudo -S <命令>\`（口令由系统注入 stdin，不要写进口令）。命令非零退出不是工具失败（退出码在结果内）。`, {
+      host: { type: "string", description: "主机（注册节点名 ∥ 地址）" },
+      command: { type: "string", description: "要执行的命令原文" },
+      timeoutS: { type: "number", description: `超时秒数（缺省 ${SSH_COMMAND_TIMEOUT_S}——正数，上界 ${TIMEOUT_S_MAX} = 24 小时）` },
+    }, ["host", "command"]),
   ]
 
   return {

@@ -19,12 +19,14 @@ import { listRunners } from "../sandbox/registry.mjs"
 /** 族前缀（三端同形——行形判别面）。 */
 export const ENV_LINE_PREFIX = "[System reminder: "
 
-/** 第四块静态段（§14.1 ④——工具族清单 ∥ 限额 ∥ 边界；活体面 = 当回合 `tools.schemas`——能力清单的真体现）。 */
+/** 第四块静态段（§14.1 ④——工具族清单 ∥ 限额 ∥ 边界；活体面 = 当回合 `tools.schemas`——能力清单的真体现）。
+ *  对位约束：每件注册工具名须以独立 token 在场（§14.2 八件——server-wake-face 批：`read_history` 入册 ∥ `bash.async` 在册 ∥
+ *  timer 空闲唤醒在册）。 */
 export const CHAT_LIMITS_BLOCK = [
   "# 能力与边界",
-  "工具族：环境族 = get_current_time（时间）∥ process（进程 list ∥ kill）∥ timer（提醒）∥ ls ∥ read ∥ grep（文件读取族）∥ bash（命令）；管理族 = members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker。",
-  "限额：bash 超时缺省 120000 ms（可加大——无上限）；bash async（后台任务）不可用（显式拒）；单次工具结果对模型可见 ≤4000 字（超长自行收窄：read 用 offset/limit ∥ grep 带 glob ∥ bash 用 filter）。",
-  "边界：无路径围栏（工作目录 = server 进程 cwd）；无文件编辑族工具（写入仍可经 bash 抵达）；命令非零退出不是工具失败（退出码在输出文本内）；timer 提醒只在下一回合开场投递（无空闲唤醒、不自动开轮）。",
+  "工具族：环境族 = get_current_time（时间）∥ process（进程 list ∥ kill）∥ timer（提醒）∥ ls ∥ read ∥ grep（文件读取族）∥ bash（命令）∥ read_history（本会话历史查询——只读）；管理族 = members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec（在已注册主机上跑一条命令——凭据在「主机凭据」弹窗录入）。",
+  "限额：bash 超时缺省 120000 ms（可加大——无上限）；bash async（后台任务）可用（帽 4——回执即工具结果，结算摘要随下一轮送达）；单次工具结果对模型可见 ≤4000 字（超长自行收窄：read 用 offset/limit ∥ grep 带 glob ∥ bash 用 filter）。",
+  "边界：无路径围栏（工作目录 = server 进程 cwd）；无文件编辑族工具（写入仍可经 bash 抵达）；命令非零退出不是工具失败（退出码在输出文本内）；timer 到期且会话空闲 ⇒ 自唤醒一轮投递；read_history 作用域 = 本会话（path 不可用）。",
 ].join("\n")
 
 /** 部署身份（§14.1——判据明列；探针非抛）。 */

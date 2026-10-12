@@ -1,8 +1,10 @@
 /**
  * views-chat.mjs — 管理·对话（`webui/CHAT.md` §2.1——`#/admin/chat`；机制全文 = `agent/ADMIN-AGENT.md` §11）：
  * **页四段**（会话条 sticky 顶 ∥ 消息流文档流 ∥ 状态行 + 输入区 sticky 底）——原三卡（会话卡/对话卡/输入卡）去卡片化（本页零 `.card` 面）。
- * 会话条（选择器 + 「新会话」 + 「重读」）∥ 消息装配（核 `flow/block.mjs`——回读 ∥ 活流）∥ NDJSON 帧分发
+ * 会话条（选择器 + 「新会话」 + 「主机凭据」（admin-chat-creds-merge 批——弹窗件 = `host-credential.mjs`，与沙盒页节点行动作**同件**） + 「重读」）∥ 消息装配（核 `flow/block.mjs`——回读归 `views-chat-messages.mjs` ∥ 活流本档）∥ NDJSON 帧分发
  * （`delta`/`call`/`result`/`turn`/`usage`/`end`）∥ 队列（待发泡/队首发起——承接归 `views-chat-composer.mjs`）∥ 新会话弹窗 ∥ 取数。
+ * **活流按步交错**（console-chat-live-step 批——KD-SV-132/§2.1②）：**块 = 步**（`turn` 帧到达 ⇒ 上一步收束、新步起）；
+ * 一步 = 该步文本泡（有文本才建）+ 该步工具卡组（随到随嵌——不堆块尾 ∥ 不跨步）；泡恒为块首子（结构插入——与到达序无关）。
  * 输入区与状态行 = `views-chat-composer.mjs`（核 `composer/panel.mjs` **全件消费**适配层——§2.1③④）。
  *
  * 呈现面单源（§2.1②——本页零自持渲染）：文本/块 = 核 `buildUserMessage`/`buildAssistantRestore`/`renderBlock`（md 归核）；
@@ -11,23 +13,28 @@
  * ⇒ 事件桥见下，判定与写口仍走核件）；核件词面 = `setStrings` 装订。
  *
  * 取数：列表/详情 = `GET /api/admin/agent/chats` ∥ `.../:id`（读时读）；发送 = `POST .../:id/messages`（体 = `{ content, images? }`）
- * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`delta` 追加当前块 ∥ `call`/`result` 工具卡嵌块内 ∥
- * `end` ⇒ 重读详情〔读时单源〕）；中止 = `POST .../:id/abort`；换模型 ∥ 设档位 = `PATCH .../:id`（明选即改、下回合生效——KD-SV-108/110）。
+ * ——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读 NDJSON：`turn` ⇒ 步界 ∥ `delta` 追加当步泡 ∥
+ * `call`/`result` 工具卡嵌当步块 ∥ `end` ⇒ 重读详情〔读时单源——重读与活流同形 ⇒ 置换零位差〕）；
+ * 中止 = `POST .../:id/abort`；换模型 ∥ 设档位 = `PATCH .../:id`（明选即改、下回合生效——KD-SV-108/110）。
  * 断连/离页 = 读流中止（回合照跑——落库单源；回来「重读」即全量）；发送失败/流前错误 = 就地人话（`ctx.fail`——`mapError` 口径）。
- * 单元测试档直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`）。
+ * 单元测试档直测面 = `renderChat` + 纯函数（`splitLines`/`parseFrame`/`argsText`/`noticeText`/`messageNodes`——外拆件本档**兼容重导出**，既有测试档零改）。
  */
 import { mapError, t, langTag } from "./i18n.mjs"
 import { openModal, showNote } from "./modal.mjs"
+import { openHostCredentialPicker } from "./host-credential.mjs"
 import { deriveModels } from "./views-models.mjs"
-import { buildAssistantRestore, buildUserMessage, renderBlock } from "/rc/flow/block.mjs"
-import { finishToolCard, renderToolCard, renderToolHistory } from "/rc/flow/tool-card.mjs"
-import { isToolFailure } from "/rc/lib.mjs"
+import { buildUserMessage, renderBlock } from "/rc/flow/block.mjs"
+import { finishToolCard, renderToolCard } from "/rc/flow/tool-card.mjs"
 import { createStreamRenderer } from "/rc/flow/stream.mjs"
 import { applyPin, createPinWatch, nearBottom } from "/rc/scroll.mjs"
 import { setStrings } from "/rc/i18n.mjs"
 import { createChatComposer } from "./views-chat-composer.mjs"
 import { ZH_CORE } from "./i18n-zh-core.mjs"
 import { EN_CORE } from "./i18n-en-core.mjs"
+import { argsText, messageNodes, noticeText, parseFrame, resultText, splitLines } from "./views-chat-messages.mjs"
+
+// ── 消息面兼容重导出（外拆件 `views-chat-messages.mjs`——既有测试档**用例级**零改〔文件级随正清单在册〕；`resultText` = 件间内部件，不重导出）──
+export { argsText, messageNodes, noticeText, parseFrame, splitLines }
 
 /** 重渲代际（重渲 ⇒ 在途读流中止）+ 挂载点卫（离页 ＝ 路由卸载——`mount.isConnected === false`）——零全局清理钩子；
  *  沿 `views-sandbox.mjs` 先例（回合照跑——落库单源）。 */
@@ -39,96 +46,7 @@ const PIN_FLAG = "_chatFollowPin"
 /** 核件词面部件（当前语言别持——门面同源档；`langTag()` ⇒ `zh-CN` ∥ `en`）。 */
 const coreStrings = () => (langTag() === "en" ? EN_CORE : ZH_CORE)
 
-// ── 纯函数（单元测试档直测）────────────────────────────────────────────────────
-
-/** NDJSON 行切分（流式读取帧切面）：`buffer + chunk` ⇒ 完整行 + 残行（不足一行留待下一块——末帧无换行由调用方再切一次）。 */
-export function splitLines(buffer, chunk) {
-  const parts = `${buffer}${chunk}`.split("\n")
-  const rest = parts.pop() ?? ""
-  return { lines: parts.filter((line) => line.trim() !== ""), rest }
-}
-
-/** 帧解析（坏行/非对象 ⇒ `null`——调用方跳过：零未押异常）。 */
-export function parseFrame(line) {
-  let frame = null
-  try { frame = JSON.parse(String(line)) } catch { return null }
-  return frame !== null && typeof frame === "object" && typeof frame.type === "string" ? frame : null
-}
-
-/** 工具参数摘要取读（两形兼容）：流帧 `args` 恒字符串（§11）∥ 存量对象形 ⇒ JSON 串；空 ⇒ 空串。 */
-export function argsText(args) {
-  if (typeof args === "string") return args
-  if (args === null || args === undefined) return ""
-  try { return JSON.stringify(args) } catch { return String(args) }
-}
-
-/** notice 行文案映射（§2.1「notice 行文案映射」）：`data.reason` **五值**各一键（`restart` ∥ `budget` ∥ `model_error` ∥
- *  `empty_turn` ∥ `aborted`）；枚举外/缺位 ⇒ 服务端原文兜底（`content`——零信息丢）。精确值判定（子串匹配会误吞未来新值）。 */
-const NOTICE_KEYS = {
-  restart: "admin.chat.noticeInterrupted",
-  budget: "admin.chat.noticeBudget",
-  model_error: "admin.chat.noticeModelError",
-  empty_turn: "admin.chat.noticeEmpty",
-  aborted: "admin.chat.noticeAborted",
-}
-
-/** notice 行文案（纯函数——单元测试档直测）。 */
-export function noticeText(message) {
-  const reason = typeof message?.data?.reason === "string" ? message.data.reason : ""
-  const key = NOTICE_KEYS[reason]
-  if (key !== undefined) return t(key)
-  const content = String(message?.content ?? "")
-  return content === "" ? "—" : content
-}
-
-/** 工具结果文案（核件入参单点——**失败判据 = 核 `isToolFailure`** 单源：本页零自持判据）。
- *  服务端结构化失败位（`ok:false`——§12「错误 ⇒ `ok:false` + 人话 message」）在文本面无判形（人话 message 不携
- *  `Error:` 头 ∥ 状态位行）⇒ 判据不命中的失败立核判据头（核件红面 ∥ 自动展开的唯一入口；呈现零自持）。 */
-function resultText(summary, ok) {
-  const text = String(summary ?? "")
-  return ok === false && !isToolFailure(text) ? `Error: ${text}` : text
-}
-
-/** 回读装配（§2.1②——库行 ⇒ 块模型 ⇒ 核件节点，序 = `seq` 升序）：`user` 行 ⇒ 用户块（核 `buildUserMessage`）∥
- *  `assistant` 行 + 其 `data.toolCalls` 对应 `tool` 行 ⇒ 助手块（`turnStart` = **本回合首个 assistant 行**——一回合一个助手标签）
- *  + 嵌套工具卡（核 `buildFinishedToolCard`）∥ `notice` 行 ⇒ 控制台 notice 行（自持灰条——VSC 无对应件）。
- *  悬空 `tool` 行（无主）⇒ 顶层历史卡兜底（防御——服务端消息序不产此行）。 */
-export function messageNodes(ctx, messages = []) {
-  const { h } = ctx
-  const models = []
-  const byCallId = new Map()
-  let labeled = true // 「本回合标签已用」——初值真：首行即 assistant（无 user 前导）时仍出一枚标签
-  for (const row of messages) {
-    if (row?.role === "user") {
-      labeled = false
-      models.push({ kind: "user", text: String(row.content ?? ""), ts: row.createdAt })
-      continue
-    }
-    if (row?.role === "assistant") {
-      const model = { kind: "assistant", text: String(row.content ?? ""), tools: [], turnStart: labeled === false }
-      labeled = true
-      models.push(model)
-      for (const call of Array.isArray(row.data?.toolCalls) ? row.data.toolCalls : []) byCallId.set(String(call?.id ?? ""), model)
-      continue
-    }
-    if (row?.role === "tool") {
-      const model = byCallId.get(String(row.data?.toolCallId ?? ""))
-      const text = resultText(row.data?.summary, row.data?.ok)
-      if (model === undefined) models.push({ kind: "tool", name: String(row.data?.name ?? "tool"), text })
-      else model.tools.push({ id: row.data?.toolCallId, name: String(row.data?.name ?? "tool"), args: argsText(row.data?.args), result: text })
-      continue
-    }
-    if (row?.role === "notice") models.push({ kind: "notice", text: noticeText(row) })
-  }
-  const nodes = []
-  for (const model of models) {
-    if (model.kind === "user") nodes.push(buildUserMessage(model.text, model.ts))
-    else if (model.kind === "assistant") nodes.push(buildAssistantRestore(model))
-    else if (model.kind === "tool") nodes.push(renderToolHistory(model.name, model.text))
-    else nodes.push(h("div", { class: "message notice", text: model.text }))
-  }
-  return nodes
-}
+// ── 消息面（外拆件 `views-chat-messages.mjs`——帧面纯函数 ∥ notice/结果文案 ∥ 回读装配；兼容重导出见上）──
 
 /** 新会话弹窗（模型下拉 = `deriveModels` 同源；缺省 = 最近一条会话所用模型——KD-SV-87「最近一次成功所用」的**列表面读法**
  *  （会话行无逐轮成功位：取倒序首行〔最近〕所用模型为近似，实施当刻数据面无更近读源；未在列表 ⇒ 空选）∥ 无模型/未选 ⇒ 提交门）；
@@ -182,8 +100,8 @@ export async function renderChat(ctx, mount) {
   let chats = []
   let activeId = null
   let detail = null
-  let liveBlock = null // 活流助手块（核 `renderBlock`）
-  let liveBubble = null // 活流文本泡（核 `paintLiveMd` 目标）
+  let liveBlock = null // 活流当步块（核 `renderBlock`——一步一块：`turn` 帧开合）
+  let liveBubble = null // 活流当步文本泡（核 `paintLiveMd` 目标——有文本才建）
   let liveRaw = ""
   let liveTools = new Map()
   let turnLabeled = false // 一回合一个助手标签（本回合已画 ⇒ 真）
@@ -198,8 +116,9 @@ export async function renderChat(ctx, mount) {
     if (Number.isFinite(picked) && picked !== activeId) selectChat(picked)
   })
   const newChatBtn = h("button", { type: "button", text: t("admin.chat.newChat"), onclick: () => openNewChatModal(ctx, { chats, created }) })
+  const hostCredBtn = h("button", { type: "button", class: "tiny", text: t("admin.chat.hostCred"), onclick: () => openHostCredentialPicker(ctx) }) // 主机凭据（弹窗件与沙盒页同件——KD-SV-134）
   const rereadBtn = h("button", { type: "button", class: "tiny", text: t("admin.chat.reread"), disabled: true, onclick: () => { if (activeId !== null) { composer.resetTurn(); loadDetail(activeId) } } })
-  mount.append(h("div", { class: "chat-bar" }, selector, newChatBtn, rereadBtn))
+  mount.append(h("div", { class: "chat-bar" }, selector, newChatBtn, hostCredBtn, rereadBtn))
 
   // ── ② 消息流（文档流平铺——无卡无框）────────────────────────────────────────
   const threadBox = h("div", { class: "chat-thread" }, h("p", { class: "hint", text: t("admin.chat.noChatSelected") }))
@@ -267,9 +186,9 @@ export async function renderChat(ctx, mount) {
     loadDetail(chatId)
   }
 
-  // ── 活流面（核件装配——块内嵌工具卡 ∥ 一回合一个助手标签）────────────────────
+  // ── 活流面（核件装配——**块 = 步**（`turn` 帧开合）∥ 块内嵌当步工具卡 ∥ 一回合一个助手标签）──
 
-  /** 活流重置（每轮起点 ∥ 重读）：块/泡/工具指针归零 + 标签旗标复位。 */
+  /** 活流重置（每回合起点 ∥ 重读）：块/泡/工具指针归零 + 标签旗标复位。 */
   function liveReset() {
     liveBlock = null
     liveBubble = null
@@ -278,15 +197,33 @@ export async function renderChat(ctx, mount) {
     turnLabeled = false
   }
 
-  /** 首块随首帧建（核 `renderBlock`——`withLabel` = 本回合首个块；文本泡 = 核 `paintLiveMd` 目标）。 */
+  /** 步收束（`turn` 帧到达 ⇒ 上一步收束、新步起——§2.1②）：尾帧先画（rAF 未及者落地——零丢帧）⇒ 步指针复位。
+   *  `turnLabeled` 不随步复位（一回合首块恰一枚标签——块数 = 步数 ≠ 标签数）。 */
+  function closeStep() {
+    streamRenderer.flush()
+    liveBlock = null
+    liveBubble = null
+    liveRaw = ""
+  }
+
+  /** 步块随首内容建（核 `renderBlock`——`withLabel` = 本回合首个块；一步一块——不跨步 ∥ 不堆块尾）。 */
   function ensureBlock() {
     if (liveBlock !== null) return liveBlock
     liveBlock = renderBlock({ withLabel: turnLabeled === false })
     turnLabeled = true
-    liveBubble = h("div", { class: "bubble content" })
-    liveBlock.append(liveBubble)
     appendLive(liveBlock)
     return liveBlock
+  }
+
+  /** 步内文本泡（**恒为块首子**——结构插入，与到达序无关：同一步 `call` 先于 `delta`，泡仍落卡前；§2.1②）。
+   *  有文本才建（`trim` 判——与回读装配「文本空不建泡」同形；零文本步 ⇒ 零泡 —— 零空块）。 */
+  function ensureBubble() {
+    if (liveBubble !== null) return liveBubble
+    liveBubble = h("div", { class: "bubble content" })
+    const head = liveBlock.firstChild
+    if (head !== null && head.classList?.contains("msg-label") === true) liveBlock.insertBefore(liveBubble, head.nextSibling)
+    else liveBlock.prepend(liveBubble)
+    return liveBubble
   }
 
   /** 对话区重渲（读时单源——`end` ⇒ 重读即此；流式视图随重读丢弃）。 */
@@ -308,14 +245,16 @@ export async function renderChat(ctx, mount) {
     followPinned()
   }
 
-  /** `delta` 帧（核流式画件——增量重渲 + 帧尾跟底；助手块随首块建）。 */
+  /** `delta` 帧（核流式画件——增量重渲 + 帧尾跟底；步块 ∥ 文本泡**同门**随首段非空白文本建——空白 token 零块零泡）。 */
   function appendDelta(text) {
-    ensureBlock()
     liveRaw += String(text ?? "")
+    if (liveRaw.trim() === "") return // 空白 token：零块零泡（`turn` 后零内容 ⇒ 零空块——KD-SV-132①）
+    ensureBlock()
+    if (liveBubble === null) ensureBubble()
     streamRenderer.markToken()
   }
 
-  /** `call` 帧（核件建卡——名 + 参数摘要，结果位「执行中…」；**嵌助手块内**，不挂顶层——§2.1②）。 */
+  /** `call` 帧（核件建卡——名 + 参数摘要，结果位「执行中…」；**嵌当步块内**——不挂顶层 ∥ 不跨步——§2.1②）。 */
   function appendCall(frame) {
     ensureBlock()
     const name = String(frame.name ?? "")
@@ -333,9 +272,10 @@ export async function renderChat(ctx, mount) {
     followPinned()
   }
 
-  /** 视图帧分发（`turn`/`usage`/`end` 归状态行面——`composer.applyFrame` 恒先收全帧）。 */
+  /** 视图帧分发（`turn` = 步界〔上步收束、新步起〕；`usage`/`end` 归状态行面——`composer.applyFrame` 恒先收全帧）。 */
   function applyFrame(frame) {
     if (frame === null) return
+    if (frame.type === "turn") { closeStep(); return }
     if (frame.type === "delta") { appendDelta(frame.text); return }
     if (frame.type === "call") { appendCall(frame); return }
     if (frame.type === "result") { applyResult(frame); return }

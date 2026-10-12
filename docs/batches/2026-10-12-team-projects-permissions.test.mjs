@@ -130,8 +130,8 @@ function seedMember(app, projectId, username, level, origin = "manual") {
 test("N1 空库直落 v17：版本读数 ∥ 三表列面/两索引 ∥ 审计 CHECK 十四型（`project_event` 可写）", () => {
   const db = DB.openDatabase(":memory:")
   try {
-    assert.equal(DB.SCHEMA_VERSION, 17, "链尾段号 = 17")
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 17, "空库直落 17")
+    assert.ok(DB.SCHEMA_VERSION >= 17, "链尾段号 ≥ 17（本批落地 17；后续批递升——2026-10-13 父侧收正）")
+    assert.ok(db.prepare("PRAGMA user_version").get().user_version >= 17, "空库直落 ≥ 17（同上）")
     assert.deepEqual(
       db.prepare("PRAGMA table_info(git_sources)").all().map((c) => c.name),
       ["id", "name", "platform", "base_url", "scope", "token_cipher", "hook_secret_cipher", "enabled", "sync_mode", "interval_minutes", "last_sync_at", "last_sync_result_json", "token_state", "token_checked_at", "created_by", "created_at"],
@@ -170,8 +170,8 @@ test("N2 v16 库升 17：读数/幂等（再开零变）∥ 存量审计行逐�
       AUDIT.recordAudit(db, { type: "sandbox_event", actor: "admin", detail: { kind: "onboarding_start" }, ts: 1700000000001 }),
     ]
     const snapshot = db.prepare("SELECT * FROM audit_events ORDER BY id").all()
-    assert.equal(DB.migrate(db), 17, "升后读数 17")
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 17, "持久读数 17")
+    assert.ok(DB.migrate(db) >= 17, "升后读数 ≥ 17（本批落地 17；后续批递升——2026-10-13 父侧收正）")
+    assert.ok(db.prepare("PRAGMA user_version").get().user_version >= 17, "持久读数 ≥ 17（同上）")
     assert.deepEqual(db.prepare("SELECT * FROM audit_events ORDER BY id").all(), snapshot, "存量审计行逐值保形")
     const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index'").all().map((r) => r.name)
     for (const name of ["idx_audit_ts", "idx_audit_type_ts"]) assert.ok(indexes.includes(name), `重建后索引在场：${name}`)

@@ -58,7 +58,8 @@
 - **运行面读数**（`GET /api/admin/sandbox/overview`）：每节点现打 `GET <base>/v<ver>/info`（3s ∥ 并发）⇒ 行 = `{ id, name, address, status, online, version, containers: { total, running } ∥ null, selfCheck, createdAt }`（`online=false` ⇒ `version`/`containers` = `null`——离线读数不外推）。
   `status = available ⇔ 至少一个节点在线`（无节点 ⇒ unavailable「无节点注册」；全离线 ⇒ unavailable「节点全部不可达」）；**节点面（添加/删除）恒可用**（不随门禁）。
   写门（`requireSandboxAvailable`——需节点的写路径（工作区创建/动作；规则 ∥ 设置 ∥ 待批裁定不设门）= 静态判据（存在 `active` 节点）；本批零改——实时门统一随重做批）。
-- **创建容器**（`POST …/runners/:id/containers`——提议②）：入参 `{ name, image, volume?, command? }`（名 = Docker 容器名形；镜像 = 控制台预填设置 `image` 值（现缺省 `thincoder-sandbox:1`）；卷 = Docker 卷名，空 = 不挂；**命令 = 启动命令（轻通道笔 10——用户 2026-10-12 11:51 裁「甲，应该有个默认，但是可覆盖」）**：缺省/`null` ⇒ 待命命令 ∥ 字符串 ⇒ 空格切分参数（不解析引号——本字段非壳）∥ 显式空串 ⇒ 400（空命令容器一亮即退））。
+- **创建容器**（`POST …/runners/:id/containers`——提议②）：入参 `{ name, image, volume?, command? }`（名 = Docker 容器名形；镜像 = 控制台预填设置 `image` 值（现缺省 `thincoder-sandbox:1`）；卷 = Docker 卷名，空 = 不挂；
+  **命令 = 启动命令（轻通道笔 10——用户 2026-10-12 11:51 裁「甲，应该有个默认，但是可覆盖」）**：缺省/`null` ⇒ 待命命令 ∥ 字符串 ⇒ 空格切分参数（不解析引号——本字段非壳）∥ 显式空串 ⇒ 400（空命令容器一亮即退））。
   ⇒ `POST <base>/v<ver>/containers/create?name=<名>`（体 = `{ Image, Cmd: ["sleep", "infinity"], HostConfig: { Binds: ["<卷>:/workspace"] } }`——**待命命令恒携**
   （盒语义——沿盒镜像自身 CMD；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 走查报，轻通道笔 3；**服务镜像面注**：镜像自带启动命令随之不生效（容器只待命、不跑其服务——按需自行换命令：**建容器窗「命令」字段可覆写**——轻通道笔 10；2026-10-11 评审 #249-2 的「按镜像择命令」句经笔 10 落地）；卷缺 ⇒ 省略 `HostConfig`）⇒ 201 ⇒ `{ container: { id, name, image, state: "created" } }` + 审计行（`container_create`）。
   引擎 404（无此镜像）∥ 409（名占用）⇒ 400（含引擎原文）；不可达 ⇒ 502。**创建 ≠ 启动**（两动作分列——用户四项逐条）。
@@ -142,7 +143,8 @@
   **拉取行为零改**（仍由节点引擎拉取——源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态——见下「拉取认源」块） ∥ 零自动选源）；端点七条 = `gateway/API.md` §2.5（镜像源七行）；存储 = `image_sources`（v15——`store/STORE.md` §2 v15 段）；
   UI 落点 = `webui/SANDBOX.md` §2.1①；审计 kind 单源 = `accounts/ACCOUNTS.md` §2.1（型面计数零增——十三型不变）。
   **源清单（四端点 + 预选一）**：
-  - **列**（`GET /api/admin/sandbox/image-sources`）：`{ sources: [{ id, name, address, kind, createdAt }] }`；`kind` = **按地址派生**（`hub` ⇔ 主机 ∈ Hub 四别名（`docker.io` ∥ `index.docker.io` ∥ `registry-1.docker.io` ∥ `hub.docker.com`）∥ `hub-mirror` ⇔ 主机 ∈ Hub 镜像两主机（`docker.m.daocloud.io` ∥ `docker.1ms.run`——走查轮 2026-10-11 甲）；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）；零审计（读动作）。
+  - **列**（`GET /api/admin/sandbox/image-sources`）：`{ sources: [{ id, name, address, kind, createdAt }] }`；
+    `kind` = **按地址派生**（`hub` ⇔ 主机 ∈ Hub 四别名（`docker.io` ∥ `index.docker.io` ∥ `registry-1.docker.io` ∥ `hub.docker.com`）∥ `hub-mirror` ⇔ 主机 ∈ Hub 镜像两主机（`docker.m.daocloud.io` ∥ `docker.1ms.run`——走查轮 2026-10-11 甲）；余 ⇒ `v2`）——派生不入库（单源 = `address`，零漂移）；零审计（读动作）。
   - **增**（`POST …/image-sources`）∥ **改**（`PATCH …/image-sources/:id`）∥ **删**（`DELETE …/image-sources/:id`）：增/改入参 `{ name, address }`（改 = 键级——出现键 = 应用）；
     ⇒ 200 `{ source }`（删 ⇒ `{ ok: true }`）+ 审计行（`image_source_add` ∥ `image_source_update` ∥ `image_source_delete`——detail 键集 = `accounts/ACCOUNTS.md` §2.1）；不存在 ⇒ 404；形非法/撞名/撞址 ⇒ 400（库零变）。
   - **形**：`name` = 非空（≤40 字符；首尾空白 trim）；`address` = `[http://|https://]主机[:端口]`（缺 scheme ⇒ 补 `https://`；**含路径/查询/空白 ⇒ 400**）；**名与址各自唯一**（撞 ⇒ 400 人话）。

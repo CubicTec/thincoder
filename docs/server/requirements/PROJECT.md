@@ -237,7 +237,9 @@
     边界：状态行显示面不做（口径④）∥ 档位/模型清单的**编辑**不做（只读消费核件单源）∥ 其余无源钮（四模式位 ∥ 设置）不动。
     来源 = 用户走查提出；四条口径 = 设计侧提议（用户核准）；台账 **#1303**。
 
-**43. 管理面 agent 环境感知对齐（CLI/VSC/桌面语义对位）（用户 2026-10-12 12:29 提——原话：「管理面的agent现在没有环境感知能力，我希望这一块要对齐cli/vsc和桌面。」；射程 12:3x 裁「甲」）**：管理面 agent（对话页，`agent/ADMIN-AGENT.md` §11）的**回合装配获得环境感知**——现盘 = 静态常量简报（`thincoder-server/src/agent/chat.mjs:43-44`）+ 历史重放 + 本轮，**零动态注入**；三端（CLI/VSC/桌面同核）每回合随 `thincoder-core/agent/setup-reminders.mjs` 收动态感知行（env 行 `:41` ∥ 项目相位 `:152` ∥ 同目录实例 `:210` ∥ 时间 reminder ∥ git 上下文 = `agent/helpers.mjs` collectGitContext）⇒ 本点 = **四块服务端语义对位**：
+**43. 管理面 agent 环境感知对齐（CLI/VSC/桌面语义对位）（用户 2026-10-12 12:29 提——原话：「管理面的agent现在没有环境感知能力，我希望这一块要对齐cli/vsc和桌面。」；射程 12:3x 裁「甲」）**：
+    管理面 agent（对话页，`agent/ADMIN-AGENT.md` §11）的**回合装配获得环境感知**——现盘 = 静态常量简报（`thincoder-server/src/agent/chat.mjs:43-44`）+ 历史重放 + 本轮，**零动态注入**；
+    三端（CLI/VSC/桌面同核）每回合随 `thincoder-core/agent/setup-reminders.mjs` 收动态感知行（env 行 `:41` ∥ 项目相位 `:152` ∥ 同目录实例 `:210` ∥ 时间 reminder ∥ git 上下文 = `agent/helpers.mjs` collectGitContext）⇒ 本点 = **四块服务端语义对位**：
     ① **时空** — 当前日期时间（含时区），每回合一条；
     ② **所在/身份** — 运行身份（thincoder-server ∥ 版本 ∥ 部署身份）+ 本会话的模型与档位；
     ③ **所管现况一行** — 注册节点数（在线数）∥ 服务模型数 ∥ 成员数（便宜一行现读；明细仍走工具）；

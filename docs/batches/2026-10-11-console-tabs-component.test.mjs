@@ -440,8 +440,8 @@ test("⑥ i18n：本批 2 键两表逐键在场 ∥ 键集双向相等 ∥ zh �
   }
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
-  assert.equal(Object.keys(ZH).length, 686, "zh 键数 686（2026-10-11 批组后——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
-  assert.equal(Object.keys(EN).length, 691, "en 键数 691（2026-10-11 批组后——实读）")
+  assert.equal(Object.keys(ZH).length, 687, "zh 键数 687（2026-10-11 批组 + 走查实修后——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
+  assert.equal(Object.keys(EN).length, 692, "en 键数 692（2026-10-11 批组 + 走查实修后——实读）")
   assert.deepEqual([...base(ZH)].filter((key) => !base(EN).has(key)), [], "仅 zh 键（自称名族除外）")
   assert.deepEqual([...base(EN)].filter((key) => !base(ZH).has(key)), [], "仅 en 键")
 })

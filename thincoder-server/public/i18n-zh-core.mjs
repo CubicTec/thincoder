@@ -52,6 +52,7 @@ export const ZH_CORE = Object.freeze({
   "reasoning.low": "低",
   "reasoning.minimal": "最小",
   "reasoning.none": "关闭",
+  "reasoning.off": "关闭", // 核件哨兵档（model-menu.mjs:394-395 无档模型取 "off" 字面——键面补足，免裸键外泄）
   "reasoning.enabled": "推理",
 
   // ── 状态与兜底词面（chat-shell-align 批——同上消费面） ─────────────────────────

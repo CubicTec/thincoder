@@ -49,6 +49,7 @@ export const EN_CORE = Object.freeze({
   "reasoning.low": "Low",
   "reasoning.minimal": "Minimal",
   "reasoning.none": "Off",
+  "reasoning.off": "Off", // 核件哨兵档（model-menu.mjs:394-395 无档模型取 "off" 字面——键面补足，免裸键外泄）
   "reasoning.enabled": "Reasoning",
 
   // ── 状态与兜底词面（chat-shell-align 批——同上消费面） ─────────────────────────

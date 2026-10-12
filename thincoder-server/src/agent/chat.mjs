@@ -13,6 +13,12 @@
  * 档位面（KD-SV-110——console-reasoning-levels 批）：起跑读行（与 `model` 同点）⇒ 出口装配：行值 ∈ 当刻模型核枚举
  * （别名解上游真名后）⇒ provider 配置携 `reasoningEffort`；**未设 ∥ 表外 ∥ 缺核 ⇒ 零字段**（默认静默——与今日同形；档位不阻断回合）。
  * ②③ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行）；零文本 ⇒ 零 `assistant` 行。
+ * 库面（会话 ∥ 消息序两表读写 + 行形展平 + 两条库面常量 + `parseJson`）= `chat-store.mjs`（admin-agent-awareness 批拆档：本档越 §6 预案触发线 650 ⇒
+ * 机械搬运 + 重导出，行为零改；依赖方向单源 = `chat.mjs` → `chat-store.mjs`）。
+ * 环境感知（KD-SV-112——admin-agent-awareness 批）：每回合三活体行（时空 ∥ 所在/身份 ∥ 所管现况——`chat-env.mjs` 造；块级降级）+ timer 到期行
+ * **尾插**于历史与本轮之后（瞬态不落库——值随实况）；第四块「能力与边界」= 简报静态段 `CHAT_LIMITS_BLOCK` + 活体面 `tools.schemas`。
+ * 环境工具面（KD-SV-113——`chat-env-tools.mjs`）：核件五族七件原文复用（ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅三件）；
+ * 工具动作审计（KD-SV-114）：`chat_call` detail 扩 `subject`（命令原文/路径——≤2000 字，与 `call` 同链掩蔽）∥ `truncated`（结果可见形截断位）。
  *
  * 口径：**执行不依赖连接**（断连照跑到终态——落库单源；`emit` 写失败即吞，回合不受影响）；消息逐条增量落库（KD-SV-89）；
  * 审计 = `agent_event`（`chat_call` 逐调用 ∥ `chat_stop` 异常收尾——KD-SV-91；`chat_start` 归 `chat-routes.mjs`）；
@@ -23,14 +29,30 @@ import { recordAudit } from "../accounts/audit.mjs"
 import { findMemberById } from "../accounts/members.mjs"
 import { HttpError } from "../gateway/errors.mjs"
 import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
+import { buildEnvLines, CHAT_LIMITS_BLOCK } from "./chat-env.mjs"
+import { createEnvTools, noteEnvToolsDegraded, takeTimerLines, timerPadOf } from "./chat-env-tools.mjs"
 import { createChatTools } from "./chat-tools.mjs"
+import { appendMessage, chatRowOr404, imagePartsOf, listMessages, parseJson } from "./chat-store.mjs"
 import { DEFAULT_MAX_CALLS, DEFAULT_MAX_DURATION_MS, loadCoreChat } from "./run.mjs"
 import { maskSecrets } from "./tools.mjs"
 
+// ── 库面重导出（拆档轮 2026-10-12——实现 = `chat-store.mjs`；既有导入方面零改）────────────────────
+export {
+  appendMessage,
+  chatRowOr404,
+  chatView,
+  createChat,
+  getChatDetail,
+  imagePartsOf,
+  listChats,
+  listMessages,
+  messageView,
+  CHAT_EXCERPT_MAX,
+  CHAT_ROLES,
+} from "./chat-store.mjs"
+
 /** 会话状态（库 CHECK 两值——v14 段）。 */
 export const CHAT_STATUSES = Object.freeze(["idle", "running"])
-/** 消息角色（库 CHECK 四值——v14 段；notice = 回放滤除的收尾行）。 */
-export const CHAT_ROLES = Object.freeze(["user", "assistant", "tool", "notice"])
 /** notice `data.reason` 枚举（**五值**——重启收尾 ∥ 预算超限 ∥ 模型错误 ∥ 空回合 ∥ 手动中止；末位 = chat-shell-align 批 KD-SV-107）。 */
 export const CHAT_NOTICE_REASONS = Object.freeze(["restart", "budget", "model_error", "empty_turn", "aborted"])
 
@@ -40,11 +62,11 @@ export const CHAT_TOOL_CONTENT_MAX = 4000
 export const CHAT_CALL_ARGS_MAX = 500
 /** `result` 帧摘要上限（掩蔽后——同上）。 */
 export const CHAT_RESULT_SUMMARY_MAX = 300
-/** 会话列表 `excerpt` 上限（首条用户消息截断——`gateway/API.md` §2.8）。 */
-export const CHAT_EXCERPT_MAX = 40
+/** 审计 `subject` 上限（命令原文/路径——≤2000 字，逾限截断并注记；KD-SV-114）。 */
+export const CHAT_SUBJECT_MAX = 2000
 
-/** 系统简报（§11——管理面用途句 + 行动纪律句；提示词级，非机制门）。 */
-export const CHAT_SYSTEM_BRIEF = [
+/** 系统简报基础段（§11——管理面用途句 + 行动纪律句；提示词级，非机制门）。 */
+const CHAT_SYSTEM_BASE = [
   "你是 ThinCoder server 的管理面 agent（聊天式驱动）。用途 = 运维/管理：托管接入 ∥ 机队（节点/容器）∥ 成员与 provider 管理 ∥ 审查排障——非开发用途。",
   "你可以调用管理面工具（members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker）直接读写 server 管理面；工具结果 = `{ ok, … }`（`ok:false` 时看 message 自行纠正或改路线）。",
   "",
@@ -54,6 +76,9 @@ export const CHAT_SYSTEM_BRIEF = [
   "- 破坏性动作（删节点 ∥ 吊销凭据 ∥ 重置密码 ∥ 删 provider ∥ 停模型）先说明将做什么、再执行。",
   "- 报错说清停在哪一步与原因；不臆测、不编造读数。",
 ].join("\n")
+
+/** 系统简报 = 基础段 + **第四块「能力与边界」**（§14.1 ④——`CHAT_LIMITS_BLOCK` 静态段；活体面 = 当回合 `tools.schemas`）。 */
+export const CHAT_SYSTEM_BRIEF = `${CHAT_SYSTEM_BASE}\n\n${CHAT_LIMITS_BLOCK}`
 
 /** 回合终态文案（②③④——人话；`content` 面；notice 行同落）。 */
 export function noticeTextOf(reason, detail = null) {
@@ -104,100 +129,6 @@ export function setChatTestDeps({ chat = null, tools = null } = {}) {
 /** 当前注入面（诊断/收尾复位用）。 */
 export function getChatTestDeps() {
   return { chat: injectedChat, tools: injectedTools }
-}
-
-// ── 库面（会话 ∥ 消息序——v14 两表；读时读，无后台常驻）───────────────────────
-
-function parseJson(text, fallback = null) {
-  try {
-    const value = JSON.parse(text ?? "")
-    return value === null || typeof value !== "object" ? fallback : value
-  } catch {
-    return fallback
-  }
-}
-
-/** 会话行 or 404（`not_found`）。 */
-export function chatRowOr404(db, id) {
-  const row = db.prepare("SELECT * FROM agent_chats WHERE id = ?").get(Number(id))
-  if (!row) throw new HttpError("not_found", `会话不存在：${String(id)}`)
-  return row
-}
-
-/** 会话读数（§2.8 行形——`excerpt` = 首条用户消息截断 ≤40 字；无消息 ⇒ 空串）。 */
-export function chatView(db, row) {
-  const first = db.prepare("SELECT content FROM agent_chat_messages WHERE chat_id = ? AND role = 'user' ORDER BY seq LIMIT 1").get(row.id)
-  const content = typeof first?.content === "string" ? first.content : ""
-  return {
-    id: row.id,
-    model: row.model,
-    reasoning: row.reasoning ?? null, // 会话级思考档位（v16——`null` = 未设；KD-SV-110）
-    status: row.status,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    excerpt: content.length > CHAT_EXCERPT_MAX ? content.slice(0, CHAT_EXCERPT_MAX) : content,
-  }
-}
-
-/** 会话列表（倒序——新在前）。 */
-export function listChats(db, { limit = 100 } = {}) {
-  const rows = db.prepare("SELECT * FROM agent_chats ORDER BY id DESC LIMIT ?").all(Number(limit))
-  return { chats: rows.map((row) => chatView(db, row)) }
-}
-
-/** 图片轮附加形（KD-SV-109——dataURL 数组 ⇒ parts 数组素形；空 ⇒ `null` 零键）。 */
-export function imagePartsOf(images = []) {
-  const list = Array.isArray(images) ? images : []
-  if (list.length === 0) return null
-  return { imageParts: list.map((url) => ({ type: "image_url", image_url: { url: String(url) } })) }
-}
-
-/** 消息读数（§2.8 行形；`data` = 附加形解码——**图片只出计数**（user 行 `imageCount`——dataURL 零下发）∥ 序 = `seq` 升序）。 */
-export function messageView(row) {
-  const data = parseJson(row.data_json, null)
-  if (row.role === "user" && Array.isArray(data?.imageParts)) {
-    return { seq: row.seq, role: row.role, content: row.content, data: { imageCount: data.imageParts.length }, createdAt: row.created_at }
-  }
-  return {
-    seq: row.seq,
-    role: row.role,
-    content: row.content,
-    data,
-    createdAt: row.created_at,
-  }
-}
-
-/** 消息全量（seq 升序）。 */
-export function listMessages(db, chatId) {
-  return db.prepare("SELECT * FROM agent_chat_messages WHERE chat_id = ? ORDER BY seq").all(Number(chatId))
-}
-
-/** 会话详情（`{ chat, messages }`——不存在 ⇒ null）。 */
-export function getChatDetail(db, id) {
-  const row = db.prepare("SELECT * FROM agent_chats WHERE id = ?").get(Number(id))
-  if (!row) return null
-  return { chat: chatView(db, row), messages: listMessages(db, row.id).map(messageView) }
-}
-
-/** 建会话（`model` 合法性归路由面——KD-SV-87 同判）：出 = 会话行。 */
-export function createChat(db, { model, createdBy = null, now = Date.now } = {}) {
-  const ts = new Date(now()).toISOString()
-  const info = db.prepare("INSERT INTO agent_chats (model, status, created_by, created_at, updated_at) VALUES (?, 'idle', ?, ?, ?)").run(String(model), createdBy, ts, ts)
-  return db.prepare("SELECT * FROM agent_chats WHERE id = ?").get(Number(info.lastInsertRowid))
-}
-
-/** 追加一条消息（`seq` = 会话内自增——逐条增量落库）。出 = 行。 */
-export function appendMessage(db, chatId, { role, content = "", data = null, now = Date.now } = {}) {
-  if (!CHAT_ROLES.includes(role)) throw new Error(`消息角色非法：${String(role)}（${CHAT_ROLES.join(" ∥ ")}）`)
-  const ts = new Date(now()).toISOString()
-  const info = db
-    .prepare(
-      `INSERT INTO agent_chat_messages (chat_id, seq, role, content, data_json, created_at)
-       VALUES (?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM agent_chat_messages WHERE chat_id = ?), ?, ?, ?, ?)`,
-    )
-    .run(Number(chatId), Number(chatId), role, String(content ?? ""), data === null ? null : JSON.stringify(data), ts)
-  db.prepare("UPDATE agent_chats SET updated_at = ? WHERE id = ?").run(ts, Number(chatId))
-  return db.prepare("SELECT * FROM agent_chat_messages WHERE id = ?").get(Number(info.lastInsertRowid))
 }
 
 // ── 在途门（`running` ⇒ 400 人话——单文单源：路由预检 ∥ 置位两处同用）────────
@@ -383,6 +314,52 @@ export function capSummary(text, secrets = []) {
   return capText(maskSecrets(raw, secrets), CHAT_RESULT_SUMMARY_MAX)
 }
 
+/** 审计 `subject` 口径（KD-SV-114——主语原文 ≤2000 字含注记；**与 `call` 同链过会话面掩蔽**——「原文」非免掩蔽）。 */
+export function capSubject(subject, secrets = []) {
+  return capText(maskSecrets(subject ?? "", secrets), CHAT_SUBJECT_MAX)
+}
+
+/** 环境工具结果 → 模型可见文本（核件 `output` 文本原文——**非 JSON 壳**，KD-SV-113 被否栏；错误 ⇒ 人话 message）。 */
+export function envToolText(result) {
+  if (typeof result?.output === "string") return result.output
+  if (typeof result?.message === "string") return result.message
+  return ""
+}
+
+/** 工具面合并（§14.2——管理面七件 ∪ 环境五族七件）：名/schema 并集；`invoke(name, args, ctx)` 按名路由（环境族携 ctx）。 */
+function mergeToolFaces(base, extra) {
+  if (extra === null) return base
+  const envNames = new Set(extra.names)
+  return {
+    names: [...base.names, ...extra.names],
+    schemas: [...base.schemas, ...extra.schemas],
+    invoke: (name, args, ctx) => (envNames.has(name) ? extra.invoke(name, args, ctx) : base.invoke(name, args)),
+  }
+}
+
+/** 聊天面工具面装配（§14.2）：管理面七件 + 环境五族七件（动载核件——沿 `loadCoreChat` 先例）。
+ *  缺核 ⇒ 环境族不注册 + 一条警告（回合不阻断——模型出口同源缺核时回合走 `model_error` 收尾）。 */
+async function buildChatToolFace({ db, deps, log }) {
+  const chatTools = createChatTools({
+    db,
+    runtime: deps.runtime ?? null,
+    config: deps.config ?? {},
+    env: deps.env ?? process.env,
+    fetchImpl: deps.fetchImpl ?? fetch,
+    ...(deps.discoverFetchImpl ? { discoverFetchImpl: deps.discoverFetchImpl } : {}),
+    guard: deps.guard ?? null,
+    log,
+  })
+  let envTools = null
+  try {
+    envTools = await createEnvTools({ coreTools: deps.coreTools ?? null })
+  } catch (e) {
+    noteEnvToolsDegraded(log, e) // 环境族不注册（回合不阻断）
+    return { tools: chatTools, envTools: null }
+  }
+  return { tools: mergeToolFaces(chatTools, envTools), envTools }
+}
+
 /** 模型出口装配（§5/§11——与任务面同源：库单源 `providers` ⇒ 核 provider 客户端；**透传 `onToken`** ⇒ `delta` 帧增量）。
  *  档位（KD-SV-110）：`reasoning` 非空且 ∈ 当刻模型核枚举（别名解上游真名后——dispatch 命中名）⇒ provider 配置携
  *  `reasoningEffort`；**未设 ∥ 表外 ∥ 缺核 ⇒ 零字段**（默认静默——与今日行为逐字同；核载荷门/枚举门单源消费）。 */
@@ -428,7 +405,8 @@ export function usageFrameOf(usage) {
 
 /**
  * 跑一个回合（§11——调用前须 `claimChatTurn` 置在途）：`content` = 本轮用户消息 ∥ `images` = 图片 dataURL 串列（空 = 纯文本轮；
- * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`）。
+ * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`
+ * ∥ `cwd`（环境工具面相对路径基准）∥ `coreTools`（核件注入口——环境族真件/替身））。
  * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
 export async function runChatTurn({ db, chatId, content, images = [], emit = null, deps = {}, now = Date.now, log = null } = {}) {
@@ -442,13 +420,13 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     }
   }
   const actor = actorNameOf(db, chat.created_by)
-  const auditChatCall = ({ tool, call, resultCode, summary }) =>
+  const auditChatCall = ({ tool, call, subject = null, resultCode, truncated = false, summary }) =>
     recordAudit(db, {
       type: "agent_event",
       actor,
       actorId: chat.created_by ?? null,
       target: `chat:${chat.id}`,
-      detail: { kind: "chat_call", chatId: chat.id, tool, call, resultCode, summary },
+      detail: { kind: "chat_call", chatId: chat.id, tool, call, subject, resultCode, truncated, summary },
       ts: now(),
     })
   const auditChatStop = (reason, summary) =>
@@ -464,16 +442,15 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
   try {
     appendMessage(db, chat.id, { role: "user", content, data: imagePartsOf(images), now }) // 逐条增量落库（本轮消息先落——断连亦留痕；图片轮携 parts 形）
     const messages = buildTurnMessages(listMessages(db, chat.id))
-    const tools = deps.tools ?? injectedTools ?? createChatTools({
-      db,
-      runtime: deps.runtime ?? null,
-      config: deps.config ?? {},
-      env: deps.env ?? process.env,
-      fetchImpl: deps.fetchImpl ?? fetch,
-      ...(deps.discoverFetchImpl ? { discoverFetchImpl: deps.discoverFetchImpl } : {}),
-      guard: deps.guard ?? null,
-      log,
-    })
+    // 环境块（§14.1/KD-SV-112）：三活体行尾插（历史与本轮之后——前缀缓存理由）+ timer 到期行随组同落；**瞬态不落库**（不进回放）。
+    const envLines = buildEnvLines({ db, model: chat.model, reasoning: chat.reasoning ?? null, cwd: deps.cwd ?? process.cwd(), now, env: deps.env ?? process.env })
+    const timerLines = await takeTimerLines(chat.id, { now, log, coreTools: deps.coreTools ?? null })
+    for (const line of [...envLines, ...timerLines]) messages.push({ role: "user", content: line })
+    // 工具面（§14.2）：注入面（deps.tools ∥ 模块级）优先；否则 = 管理面七件 + 环境五族七件合并。
+    const injectedFace = deps.tools ?? injectedTools ?? null
+    const face = injectedFace === null ? await buildChatToolFace({ db, deps, log }) : { tools: injectedFace, envTools: null }
+    const tools = face.tools
+    const envNames = new Set(face.envTools?.names ?? [])
 
     const started = now()
     let calls = 0
@@ -495,6 +472,8 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     // 中止信号（KD-SV-107——在途调用当即中断之口）：登记 ⇒ 路由 `…/abort` 即触发；`finally` 清登记。
     const controller = new AbortController()
     abortSignals.set(chat.id, controller)
+    // 环境工具面 ctx（§14.2）：`cwd` = 相对路径基准（无围栏）∥ `signal` = 中止信号透传（bash 树杀同源）∥ `agent` = timer 垫片（§14.4）∥ `depth: 0`。
+    const envCtx = { cwd: deps.cwd ?? process.cwd(), signal: controller.signal, agent: timerPadOf(chat.id), depth: 0 }
 
     // 模型出口装配（§5）：注册表缺位/引用缺位 ⇒ 按「模型错误」收尾（五终态不外溢第三形）
     let modelExit
@@ -581,14 +560,24 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         const args = parseToolArgs(call.arguments)
         const secrets = args === null ? [] : secretValuesOf(args)
         turnSecrets.push(...secrets)
-        const result = args === null ? { ok: false, message: "工具入参非 JSON 对象" } : await tools.invoke(call.name, args)
+        const result = args === null ? { ok: false, message: "工具入参非 JSON 对象" } : await tools.invoke(call.name, args, envCtx)
         const summary = summaryOfResult(result, secrets)
         emitFrame({ type: "result", id: call.id, ok: result?.ok === true, summary })
-        const resultText = maskSecrets(JSON.stringify(result ?? null), secrets)
+        // 模型可见形：环境族 = 核件文本原文（`output`——非 JSON 壳，KD-SV-113 被否栏）；管理族 = 结构化结果（既有形零变）
+        const rawText = envNames.has(call.name) ? envToolText(result) : JSON.stringify(result ?? null)
+        const resultText = maskSecrets(rawText, secrets)
+        const truncated = resultText.length > CHAT_TOOL_CONTENT_MAX // 结果可见形截断位（KD-SV-114——审计 `truncated`）
         const trimmed = capToolContent(resultText) // 模型可见形（≤4000 字含注记——回放逐字一致）
         appendMessage(db, chat.id, { role: "tool", content: trimmed, data: { toolCallId: call.id, name: call.name, ok: result?.ok === true, summary }, now })
         messages.push({ role: "tool", tool_call_id: call.id, content: trimmed })
-        auditChatCall({ tool: call.name, call: capText(maskSecrets(call.args, secrets), CHAT_CALL_ARGS_MAX), resultCode: result?.ok === true ? 0 : -1, summary }) // 逐调用一行（读动作同落——KD-SV-91）
+        auditChatCall({
+          tool: call.name,
+          call: capText(maskSecrets(call.args, secrets), CHAT_CALL_ARGS_MAX),
+          subject: envNames.has(call.name) ? capSubject(result?.subject ?? "", secrets) : null, // 主语原文（命令/路径——§14.4；管理族零主事词 ⇒ null）
+          resultCode: result?.ok === true ? 0 : -1,
+          truncated,
+          summary,
+        }) // 逐调用一行（读动作同落——KD-SV-91；详情扩字段——KD-SV-114）
       }
     }
   } finally {

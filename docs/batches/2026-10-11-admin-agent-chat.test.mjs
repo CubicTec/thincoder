@@ -341,7 +341,10 @@ test("N55：连发两轮——历史重放逐行（notice 滤除 ∥ 前轮全�
     await waitFor(() => app.chats()[0].status === "idle")
     await sendMessage(app, chat.id, "第二问")
     const second = app.scripted.state.calls[2].messages // 第三回合调用（第二轮里模型的第一跳）
-    assert.deepEqual(second.map((row) => row.role), ["system", "user", "assistant", "tool", "assistant", "user"])
+    assert.deepEqual(second.slice(0, 6).map((row) => row.role), ["system", "user", "assistant", "tool", "assistant", "user"])
+    const envTail = second.slice(6) // 尾位环境块（三活体行——不落库）
+    assert.equal(envTail.length, 3)
+    assert.ok(envTail.every((row) => row.role === "user" && String(row.content).startsWith("[System reminder: ")))
     assert.equal(second[1].content, "第一问")
     assert.equal(second[2].tool_calls[0].function.name, "members")
     assert.equal(second[2].tool_calls[0].function.arguments, '{"op":"list"}')

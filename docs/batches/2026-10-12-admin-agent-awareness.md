@@ -46,6 +46,20 @@
 - **修复轮两条同族派生补点（`:141` ∥ `:217`）已核收**（超出点名点位但同发现类——报备程序合规）。
 - **实施派发** = eng-coder **#271**（round=initial；designId+token 同槽；写入域 = 批档 §2.4 八件 + 随正件测试档〔超出声明面 ⇒ 报告内披露〕）。
 
+### 1.11 跨批随正件 + 机械改笔记账（父侧 2026-10-12 14:1x）
+
+**跨批随正件（写面 = 主 agent 机械落笔——子代理写门禁按「跨批」拒；均已标明 · 可 revert · 实跑验证）**：
+
+- ① **门禁件数断言七件：五十七 ⇒ 五十八（17 处）**——含 `2026-10-06-server-auto-update` 两处「五十二件」陈旧注释，及 `2026-10-07-provider-model-metadata` 三处阿拉伯数字陈旧计数（`:18` `30 件` ∥ `:462` `47 件` ∥ `:489` `52 件`）。**实跑七件 58/58 绿（`NODE_EXIT=0`）**。
+- ② **N55 随正**（`2026-10-11-admin-agent-chat.test.mjs:344`）⇒ `slice(0, 6)` + 尾位三行断言（`envTail` length 3 ∥ `role=user` ∥ `[System reminder: ` 前缀）；`:345-353` 零改（落库角色表六值不变——环境块不落库）。**实跑该件 19/19 绿**。
+
+**#271 两封上抛的裁定（父侧）**：
+
+- ① 门禁七件 = 父侧改（已核读数，见上）。
+- ② `chat.mjs` 实读 **667 内容行**（父侧独立核对）已越设计触发线 **650** ⇒ **拆档照 §6 预案执行**（库面段 ≈93 行抽 `chat-store.mjs`——机械搬运 + 重导出，既有导出面零变；新增档超出派单声明面 ⇒ #271 报告披露）；预案与实际不符 ⇒ 停下上抛。
+
+**注**：跨批随正件自本批起按「跨批 = 父侧机械落笔」执行（与子代理写门禁纪律一致）；§1.10 中「随正件测试档在 coder 写入域」的表述随本笔修正。
+
 ## §2 批次任务与设计（eng-designer）
 **状态行**：设计完成 2026-10-12（文档面 5 档随正 + 本段落笔；门禁自查 = 本批零新增悬空坐标 ∥ 零新增超宽行（存量为既有：悬空 25 ∥ 超宽 4）；待父侧点火）
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试面 / 验收对照 / 关键决策 / 上抛项>
@@ -148,4 +162,59 @@ VERDICT: pass
 **实施派发 = eng-coder（同刻）**；修复轮与实施同槽（fix 轮复用 token，槽未消费）。
 
 ## §5 实施记录（eng-coder）
+**状态行**：实施完成 2026-10-12（批内件 10/10 绿；审计 1 轮（1 条漂移已自修）∥ 代码评审 1 轮 pass（🔴0；🟡3 均非 must-fix））
+
+
+
+**§5 实施记录（eng-coder · 2026-10-12 · 全链自动批）**
+
+### 5.1 交付摘要（逐件实读——口径 = 内容行）
+| # | 文件 | 实读行数 | 交付形 |
+|---|---|---|---|
+| 1 | `thincoder-server/src/agent/chat-env.mjs`（新增） | 94 | 四块装配：三活体行（① 时空 ∥ ② 所在/身份 ∥ ③ 所管现况）+ `CHAT_LIMITS_BLOCK` 静态段 + `deployIdentity()`（容器/systemd/独立——探针非抛）；**块级降级**逐块 try（整行略去、不抛不阻断） |
+| 2 | `thincoder-server/src/agent/chat-env-tools.mjs`（新增） | 229 | 环境五族七件：核件动载（`loadCoreEnvTools`——七件 + `toOpenAISchema` + timer 两读面；缺件/缺核抛）∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（缺省 120000 ∥ 上限 600000 逾限拒 ∥ `async` 拒）∥ timer 垫片 + 回合边界出列 |
+| 3 | `thincoder-server/src/agent/chat.mjs` | 587 | 环境行尾插（历史与本轮之后——瞬态不落库）∥ 工具面合并（管理七 ∪ 环境七）∥ `invoke` 携 ctx ∥ 审计 `chat_call` 扩 `subject`/`truncated` ∥ 库面段抽 `chat-store.mjs`（重导出——导入方零改） |
+| 4 | `thincoder-server/src/agent/chat-store.mjs`（新增——**超 §2.4 声明面**，父侧裁「A 读法」产物） | 112 | 库面单源（会话 ∥ 消息序读写 + 行形展平 + `CHAT_ROLES`/`CHAT_EXCERPT_MAX` + `parseJson`）；依赖方向单源 = chat.mjs → 本档（零反引——实测零命中） |
+| 5 | `thincoder-server/public/views-audit.mjs` | 164 | agent 行详情模板 `tool · subject · 成败 · 结果截断 · summary`（导出 `agentDetailText`）+ 三路分派 + 死支清理 |
+| 6 | `thincoder-server/public/i18n-zh-system.mjs` | 204 | +3 键（值 = 设计键族登记单源逐字：完成 ∥ 失败 ∥ 结果截断）+ 型面计数注释陈旧收正（11 型 ⇒ 十三型） |
+| 7 | `thincoder-server/public/i18n-en-system.mjs` | 204 | 同上（Done ∥ Failed ∥ Result truncated ∥ 13 types here） |
+| 8 | `thincoder-server/package.json` | ±0 行 | `prepublishOnly` 链 57 ⇒ 58（本批件末位入链——实读 58 ∥ 尾位命中） |
+| 9 | `docs/batches/2026-10-12-admin-agent-awareness.test.mjs`（新增） | 463 | 批内件五腿 10 test（入 server 链） |
+
+**零触红线核实（`git status` 实读——我的改动面 = 上表九件，无第十件）**：`chat-routes.mjs` ∥ `chat-tools.mjs` ∥ `bin/thincoder-server.mjs` ∥ `store/db.mjs` ∥ `gateway/**` ∥ `views-chat*.mjs` 全部零触 ✓（盘面余下改动 = 父侧直改的随正件与两档记录面）。
+
+### 5.2 决策透明表（实施轮自决项 + 依据）
+| # | 决策 | 依据 |
+|---|---|---|
+| 1 | 缺核/装载失败 ⇒ 环境族**不注册** + 一条警告（一进程一条、携真因）+ 回合照跑 | 沿 `gateway/reasoning-levels.mjs` 缺核先例；模型出口同源缺核时回合走既有 `model_error` 收尾（不新造终态） |
+| 2 | `ok` = **调用完成**（未抛错）——bash 非零退出 ⇒ `ok:true` | KD-SV-113 被否栏逐字：不解析退出码（退出码在输出文本 `(exit code N)` 内） |
+| 3 | 结果可见形：环境族 = 核件文本原文（错误 ⇒ `message`）∥ 管理族 = 结构化 JSON（既有形零变）；判别 = `envNames.has(name)` | KD-SV-113「JSON 形回文本」被否栏；按名判别（不作结构嗅探） |
+| 4 | 审计 `subject`：环境族 = 主语原文（命令/路径/正则/主事词）；管理族 = `null`；`truncated` **只进审计 detail**（tool 行 data 不加） | KD-SV-114 字段面逐字；tool 行 data 保持既有键集（消费方零惊群） |
+| 5 | `bash.timeout` 逾 600000 ∥ <1 ∥ 非数 ⇒ **拒**（零静默钳制）；`bash.async === true` ⇒ 拒 | §14.2/§14.3 明文（逾限拒）；核参数名实核 = `timeout`（`tools/bash.mjs`） |
+| 6 | timer 垫片 `history` 逐次消费后清空 | 垫片 = 核注入单点落点；行文经返回值取证 ⇒ 免无界堆叠（**不自动开轮**、零持久化） |
+| 7 | 拆档（父侧裁 A）：库面段 + `parseJson` + 两常量入 `chat-store.mjs`；`CHAT_ROLES`/`CHAT_EXCERPT_MAX` 由 chat.mjs 重导出；`parseJson` 作 store 内部导出供 `replayMessages` | 零循环（唯一方向 chat.mjs → store）+ 既有导出面零变（11 名逐名同引用实测）；超预案 5 行（≈98）——父侧裁「≈量级内不追」 |
+| 8 | i18n 三键**取值** = 设计键族登记单源逐字（`webui/SYSTEM.md` §3）——初版我自拟「成功/〔截断〕/succeeded/(truncated)」，发散审计查出漂移 ⇒ 收正「完成/结果截断/Done/Failed/Result truncated」 | 设计登记 = 取值单源；漂移即缺陷（非风格） |
+| 9 | `views-audit.mjs` 删 `detailText` 的 `summary` 支 | agent 行改走专用模板后该支**无消费者**（死支 + 陈旧注释）；§2.1④ 判据亦未列 summary |
+| 10 | 型面计数注释「11 型」⇒「十三型」（两表） | `accounts/ACCOUNTS.md` §2.1 = 十三型 ∥ 本表 13 条 `audit.type.*` 键（11 为陈旧值） |
+| 11 | 批内件 timer 腿改**确定性**（拨垫片 `expiresAt` ⇒ 到期，免 `sleep(1200)` 墙钟） | 评审 🔵 建议（R4）；复跑绿且更快（1325ms ⇒ 93ms） |
+
+### 5.3 自含交付协议：审计与评审轮次 + 终态
+- **① 发散审计（只读 explore 子代理）· 1 轮**：结论 = **DEVIATIONS（1 条 · 低）**——i18n 三键取值 vs `webui/SYSTEM.md` §3 登记漂移（另：部分实现 0 ∥ 静默降级 0 ∥ 越面 0；六项重点核逐条对上）⇒ **当场自修**（两表 + 批内件断言）⇒ 复跑 10/10 绿。
+- **② 代码评审（advisor · type=code）· 1 轮**：**VERDICT pass**（🔴 0 ∥ 🟡 3 ∥ 🔵 4）。三条 🟡 均**非 must-fix**：a) `chat.mjs` 587 行越 500 软线（拆档后仍越——在册债务，沿 `ADMIN-AGENT.md` §6 触发线 650 持有）；b) 设计档 §6 文件行账未回填（父侧自认账的收口对账项）；c) `views-audit.mjs` 对 `sandbox_rule` 行无 `action`/`rule` 渲染支（**非本批引入**——判据在 `webui/READINGS.md` §2.1④，报而不改）。四条 🔵：i18n 计数注释陈旧（**已修**）∥ 批内件墙钟（**已修**）∥ 缺核退化时简报静态段与活体面不一致（沿设计 §14.1④ 可接受，收口轮披露）∥ 垫片表只增不删（无会话删除面 ⇒ 无可清点，如实登记）。
+- **终态 = `clean`**（无阻塞项、无待修项；评审轮次 2、自修 1 轮、无停滞）。
+
+### 5.4 验证记录（实跑命令 + 读数）
+- 批内件：`node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-12-admin-agent-awareness.test.mjs`（自 `thincoder/`）⇒ **10/10 pass**（含拆档后复跑 ∥ 取值收正后复跑 ∥ 确定性化后复跑）。
+- 回归组（同 run，拆档后）：`…-admin-agent-chat.test.mjs` **19/19** ∥ `…-admin-agent-chat-tools.test.mjs` **8/8** ∥ `…-console-reasoning-levels.test.mjs` **9/9** ∥ `2026-10-06-server-i18n.test.mjs` **6/6**。
+- 门禁：`node scripts/doc-check.mjs`（仓根）⇒ **悬空 25 = 存量基线（本批零新增）** ∥ 行宽 OK（源域零 >300 字符单行）。
+- 链：`package.json:13` 实读 **58** 条 ∥ 本批件在链尾命中。
+- **未跑整链**（纪律：repo 全跑 = 收口门，父侧一次）；**未跑** `…-admin-agent-chat-ui.test.mjs` 的两处待修断言（见 5.5）。
+
+### 5.5 上报与在办（父侧——跨批写门禁拒我改，均已给逐字修法）
+1. **已落并核**：七件门禁件数 57 ⇒ 58（父侧改 + 实跑 58/58 绿）∥ `…-admin-agent-chat.test.mjs:344` N55 尾位环境块断言（父侧改 + 我复跑 19/19 绿）。
+2. **待落（2 处）**：`…-admin-agent-chat-ui.test.mjs` —— a) `:274`/`:292` i18n 键数 693/698 ⇒ **696/701**（另 4 件同拍：`2026-10-08-server-public-structure`（含两枚指纹 `4725bfc2…` ∥ `b3372a7d…`）∥ `2026-10-10-server-small-fixes` ∥ `2026-10-10-runner-admin-console-ui` ∥ `2026-10-11-console-tabs-component`）；b) `:312` agent 行渲染断言改为 `cells.some((cell) => cell.includes("members list ⇒ ok（3 项）"))`。
+3. **设计档 §6 行账（收口对账项）**：无 `chat-store.mjs` 行 ∥ `chat.mjs` 实读未回填（599 ⇒ ≈640 系拆档前口径，实读 **587**）∥ 两新档仍标「拟新增」。
+4. **越声明面披露**：`chat-store.mjs`（拆档产物——父侧裁定在案）∥ `package.json`（§2.4 在册）。**无其他越面改动**（`git status` 实读）。
+5. **余项（评审 🔵，未动）**：`sandbox_rule` 行 `action`/`rule` 渲染缺位（判据 `webui/READINGS.md` §2.1④——非本批引入）；缺核退化径简报静态段披露（收口轮）。
+
 ## §6 验证与收口（父代理）

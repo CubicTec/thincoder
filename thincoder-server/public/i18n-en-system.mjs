@@ -137,7 +137,7 @@ export const EN_SYSTEM = Object.freeze({
   "usageReport.export": "Export CSV",
   "usageReport.exported": "CSV exported",
 
-  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 11 types here) ──
+  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 13 types here) ──
   "audit.title": "Audit",
   "audit.typeLabel": "Type",
   "audit.typeAll": "All types",
@@ -157,6 +157,9 @@ export const EN_SYSTEM = Object.freeze({
   "audit.keyHint": "API key",
   "audit.role": "Role",
   "audit.keys": "Keys",
+  "audit.agentOk": "Done",
+  "audit.agentFail": "Failed",
+  "audit.agentTruncated": "Result truncated",
   "audit.type.login_success": "Sign-in succeeded",
   "audit.type.login_failure": "Sign-in failed",
   "audit.type.login_locked": "Sign-in locked",

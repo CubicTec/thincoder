@@ -441,7 +441,7 @@ test("N66/B66/E50 图片：三门拒形 + 落库 parts + 回放数组 + 详情�
     assert.equal(reader.frames.at(-1).status, "succeeded", "图片随行不破流")
     const userRow = app.rows(chatId).find((row) => row.role === "user")
     assert.deepEqual(JSON.parse(userRow.data_json).imageParts, [{ type: "image_url", image_url: { url: PNG } }], "user 行 data_json.imageParts 逐值")
-    const sent = app.scripted.state.calls[0].messages.filter((message) => message.role === "user").at(-1)
+    const sent = app.scripted.state.calls[0].messages.filter((message) => message.role === "user" && !String(message.content).startsWith("[System reminder: ")).at(-1) // 尾位环境块（三活体行）除外——admin-agent-awareness 批随正
     assert.deepEqual(sent.content, [{ type: "text", text: "看图" }, { type: "image_url", image_url: { url: PNG } }], "回放 content = parts 数组（模型出口入参）")
     const detail = await call(app.base, "GET", `/api/admin/agent/chats/${chatId}`, { cookie: app.cookie })
     const viewUser = detail.json.messages.find((message) => message.role === "user")

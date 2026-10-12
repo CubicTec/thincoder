@@ -3,7 +3,8 @@
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
  * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十三型——全型收编）；
- * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11））
+ * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10）
+ * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11））
  * 按在场渲染；对象与操作者同名 ⇒「—」（名快照口径——改/删后记录自足）。渲染一律节点 + textContent；文案经 `t()` 取值。
  */
 import { t } from "./i18n.mjs"
@@ -65,7 +66,7 @@ export async function renderAudit(ctx, mount) {
   await loadEvents()
 }
 
-/** 事件表：时间 ∥ 类型 ∥ 操作者 ∥ 对象（与操作者同名 ⇒ 「—」）∥ 详情（按型模板：IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ keys ∥ agent_event 摘要）。 */
+/** 事件表：时间 ∥ 类型 ∥ 操作者 ∥ 对象（与操作者同名 ⇒ 「—」）∥ 详情（按型模板：IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ keys ∥ agent 行 ∥ agent_event 摘要）。 */
 function eventsTable(ctx, events) {
   const { h } = ctx
   if (events.length === 0) return h("p", { class: "hint", text: t("audit.empty") })
@@ -74,7 +75,7 @@ function eventsTable(ctx, events) {
     typeLabel(event.type),
     event.actor,
     event.target && event.target !== event.actor ? event.target : "—",
-    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : detailText(event.detail),
+    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : detailText(event.detail),
   ])
   return ctx.table([t("audit.col.time"), t("audit.col.type"), t("audit.col.actor"), t("audit.col.target"), t("audit.col.detail")], rows, { foot: true })
 }
@@ -85,7 +86,8 @@ function typeLabel(type) {
   return hit ? t(hit[1]) : String(type)
 }
 
-/** 详情按型模板（在场字段渲染）：IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ 配置变更键名清单 ∥ agent_event 会话摘要（§2.10）；无字段 ⇒ 「—」。 */
+/** 详情按型模板（在场字段渲染）：IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ 配置变更键名清单（§2.10）；无字段 ⇒ 「—」。
+ *  agent 行（`agent_event`）走专用模板 `agentDetailText`（沙盒两型走 `sandboxDetailText`）。 */
 function detailText(detail) {
   const parts = []
   if (detail?.ip) parts.push(`${t("audit.ip")}: ${detail.ip}`)
@@ -93,7 +95,19 @@ function detailText(detail) {
   if (detail?.keyHint) parts.push(`${t("audit.keyHint")}: ${detail.keyHint}`)
   if (detail?.role) parts.push(`${t("audit.role")}: ${detail.role}`)
   if (Array.isArray(detail?.keys) && detail.keys.length > 0) parts.push(`${t("audit.keys")}: ${detail.keys.join(", ")}`)
-  if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary) // agent_event（§2.10）
+  return parts.length === 0 ? "—" : parts.join(" · ")
+}
+
+/** agent 行详情模板（`agent_event`——KD-SV-114：`tool · subject · 成败 ·〔截断〕· summary`——非裸 JSON）：
+ *  成败 = 既有 `resultCode`（`0` ⇒ 成功 ∥ 其余 ⇒ 失败；缺 ⇒ 不渲）；`subject` 空（无主事词件）⇒ 略；
+ *  零字段行（`chat_start` 等）⇒ 「—」。导出 = 批内件断言面（同 `sandboxKindLabel` 先例）。 */
+export function agentDetailText(detail) {
+  const parts = []
+  if (typeof detail?.tool === "string" && detail.tool !== "") parts.push(detail.tool)
+  if (typeof detail?.subject === "string" && detail.subject !== "") parts.push(detail.subject)
+  if (detail?.resultCode !== undefined && detail?.resultCode !== null) parts.push(Number(detail.resultCode) === 0 ? t("audit.agentOk") : t("audit.agentFail"))
+  if (detail?.truncated === true) parts.push(t("audit.agentTruncated"))
+  if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary)
   return parts.length === 0 ? "—" : parts.join(" · ")
 }
 

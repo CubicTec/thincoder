@@ -61,18 +61,18 @@ const TERMS = [
   ["audit.type.key_rotate", "API Key 轮换", "API key rotated"],
   ["system.accessHint", "成员在各自端点新增一个渠道（provider），四项照下述填写；API Key 由本人在「我的 → API Key 与签发」自助签发（sk-tc-… 形，仅创建时显示一次）。", "Each member adds a provider in their own client using the four fields below; API keys are self-issued under “My → API keys & issuing” (sk-tc-… format, shown only once)."],
   ["audit.keyHint", "API Key", "API key"],
-  ["usage.col.key", "Key 名称", "Key name"],
+  ["usage.col.key", "API Key 名称", "API key name"],
   ["system.teamKey", "团队 API Key", "Team API key"],
 ]
 
-test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（854 ∥ 859——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158，实读）", () => {
+test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（872 ∥ 877——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读——本笔零键变），实读）", () => {
   assert.equal(TERMS.length, 14, "14 键面")
   for (const [key, zh, en] of TERMS) {
     assert.equal(ZH[key], zh, `zh 值不符：${key}`)
     assert.equal(EN[key], en, `en 值不符：${key}`)
   }
-     assert.equal(Object.keys(ZH).length, 854, "zh 键数 854（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读）")
-  assert.equal(Object.keys(EN).length, 859, "en 键数 859（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读；含 `.one` 变体族）")
+     assert.equal(Object.keys(ZH).length, 872, "zh 键数 872（2026-10-13 复读——本笔零键变；差值 = 在途批组键增）")
+  assert.equal(Object.keys(EN).length, 877, "en 键数 877（2026-10-13 复读——同上；含 `.one` 变体族）")
 })
 
 test("腿 A 交叉一致 ∥ 旧形扫描（14 键 zh）∥ 零触已合规面（me.keys 族）", () => {
@@ -339,11 +339,8 @@ test("腿 D me 页 `from=`：请求 URL 含 `from=` 且值 = 窗换算（钉钟�
   assert.equal(detailUrl.searchParams.get("from"), summaryUrl.searchParams.get("from"), "两读同参（同过滤面）")
 })
 
-// ── 腿 E（链自检——本批两件入 `prepublishOnly`）──────────────────────────────
+// ── 腿 E（批内件在盘——`prepublishOnly` 测试链已于 2026-10-12 撤除，成员断言不再适用）──────────────
 
-test("腿 E 链自检：`prepublishOnly` 含本批两件 ∥ 清单目标在盘（`includes` 形）", () => {
-  const PKG = JSON.parse(readFileSync(join(ROOT, "thincoder-server", "package.json"), "utf8"))
-  const batchFiles = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  for (const file of BATCH_FILES) assert.ok(batchFiles.includes(file), `本批件应入列：${file}（现 ${batchFiles.length} 件）`)
-  for (const file of batchFiles) assert.ok(existsSync(join(ROOT, file)), `清单目标缺档：${file}`)
+test("腿 E 链自检：本批件在盘", () => {
+  for (const file of BATCH_FILES) assert.ok(existsSync(join(ROOT, file)), `本批件缺档：${file}`)
 })

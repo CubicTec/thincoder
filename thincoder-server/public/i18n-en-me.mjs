@@ -9,7 +9,7 @@ export const EN_ME = Object.freeze({
   "usage.loadFailed": "Failed to load usage",
   "usage.col.time": "Time",
   "usage.col.member": "Member",
-  "usage.col.key": "Key name",
+  "usage.col.key": "API key name",
   "usage.col.endpoint": "Endpoint",
   "usage.col.model": "Model",
   "usage.col.status": "Status",

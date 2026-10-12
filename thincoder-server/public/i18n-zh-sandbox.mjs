@@ -43,6 +43,8 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.imagePh": "镜像（如 thincoder-sandbox:1）",
   "admin.sandbox.volume": "数据卷（可留空）",
   "admin.sandbox.volumeHint": "卷 = 给容器留一块持久盘：删了容器，里面的数据还在。拿不准就先留空。",
+  "admin.sandbox.command": "命令",
+  "admin.sandbox.commandHint": "默认就是待命命令：容器建好就挂着等你进去干活（不自动退出）。改成你自己的命令 ⇒ 用它启动；按空格切参数，不解析引号。",
   "admin.sandbox.volumePh": "起个名字，如 box-data（拿不准就留空）",
   "admin.sandbox.colState": "状态",
   "admin.sandbox.stateCreated": "已创建",

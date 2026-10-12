@@ -307,7 +307,7 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
     await byText(mount, ZH["admin.sandbox.createContainer"]).fire("click")
     const dialog = modal()
     const inputs = fFindAll(dialog, (node) => node.tag === "input")
-    assert.equal(inputs.length, 3, "三字段（名 ∥ 镜像 ∥ 卷）")
+    assert.equal(inputs.length, 4, "四字段（名 ∥ 镜像 ∥ 卷 ∥ 命令——轻通道笔 10）")
     await tick()
     assert.equal(inputs[1].value, "thincoder-sandbox:9", "镜像预填 = 设置读面值")
     // 轻通道笔 2：节点本地镜像 ⇒ 选单（选定回填 ∥ 「自定义（手输）」保底）
@@ -320,7 +320,7 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
     assert.equal(inputs[1].value, "nginx:1.27", "选定 ⇒ 回填镜像输入（可再改；提交取输入值）")
     inputs[0].value = "workspace-b"
     await fFind(dialog, (node) => node.tag === "form").fire("submit")
-    assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1), ["POST", "/api/admin/sandbox/runners/1/containers", { name: "workspace-b", image: "nginx:1.27" }], "卷空 ⇒ 省略键（镜像 = 选单回填值）")
+    assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1), ["POST", "/api/admin/sandbox/runners/1/containers", { name: "workspace-b", image: "nginx:1.27", command: "sleep infinity" }], "卷空 ⇒ 省略键（镜像 = 选单回填值；命令 = 预填）")
     assert.ok(calls.some(([tag, message]) => tag === "flash" && message === fill(ZH["admin.sandbox.containerCreated"], { name: "workspace-b" })), "建容器 flash")
   } finally { delete globalThis.document }
 })
@@ -481,7 +481,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [691, 696], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4——实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [693, 698], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────

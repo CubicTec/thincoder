@@ -65,14 +65,14 @@ const TERMS = [
   ["system.teamKey", "团队 API Key", "Team API key"],
 ]
 
-test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（691 ∥ 696——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4，实读）", () => {
+test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（693 ∥ 698——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2，实读）", () => {
   assert.equal(TERMS.length, 14, "14 键面")
   for (const [key, zh, en] of TERMS) {
     assert.equal(ZH[key], zh, `zh 值不符：${key}`)
     assert.equal(EN[key], en, `en 值不符：${key}`)
   }
-    assert.equal(Object.keys(ZH).length, 691, "zh 键数 691（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4——实读）")
-  assert.equal(Object.keys(EN).length, 696, "en 键数 696（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4——实读；含 `.one` 变体族）")
+    assert.equal(Object.keys(ZH).length, 693, "zh 键数 693（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2——实读）")
+  assert.equal(Object.keys(EN).length, 698, "en 键数 698（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2——实读；含 `.one` 变体族）")
 })
 
 test("腿 A 交叉一致 ∥ 旧形扫描（14 键 zh）∥ 零触已合规面（me.keys 族）", () => {

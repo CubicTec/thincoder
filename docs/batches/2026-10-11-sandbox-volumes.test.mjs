@@ -311,7 +311,7 @@ test("E49 删卷错误面：404 ∥ 名形非法 400 零外呼 ∥ 不可达 502
 
 // ── N63 建容器卷两腿（`Binds` 逐值 ∥ 零建卷调用）─────────────────────────────
 
-test("N63 建容器卷两腿：选已有卷 ∥ 手输新名——引擎体 `Binds` 逐值 ∥ 零建卷调用（假件断）", async () => {
+test("N63 建容器卷两腿：选已有卷 ∥ 手输新名——引擎体 `Binds` 逐值 ∥ 零建卷调用（假件断）∥ 命令三态（缺省 ⇒ 待命 ∥ 自定义 ⇒ 空格切分 ∥ 空串 ⇒ 400——轻通道笔 10）", async () => {
   const engine = await startFakeDocker()
   const app = await startApp()
   try {
@@ -321,6 +321,7 @@ test("N63 建容器卷两腿：选已有卷 ∥ 手输新名——引擎体 `Bin
     const create1 = engine.calls.filter((item) => item.path.endsWith("/containers/create")).at(-1)
     assert.equal(create1.query, "?name=box-v1", "名经 query 传")
     assert.deepEqual(create1.body.HostConfig, { Binds: ["vol-a:/workspace"] }, "Binds 逐值（选已有卷）")
+    assert.deepEqual(create1.body.Cmd, ["sleep", "infinity"], "命令键缺 ⇒ 待命命令零改（轻通道笔 10——默认不变）")
 
     const second = await api(app, "POST", `/api/admin/sandbox/runners/${runner.id}/containers`, { body: { name: "box-v2", image: "thincoder-sandbox:1", volume: "brand-new" } })
     assert.equal(second.status, 200, "建容器（手输新名腿）")
@@ -329,6 +330,14 @@ test("N63 建容器卷两腿：选已有卷 ∥ 手输新名——引擎体 `Bin
 
     const created = engine.calls.filter((item) => item.method === "POST" && item.path.endsWith("/volumes/create"))
     assert.equal(created.length, 0, "零建卷调用（我方零 `POST /volumes/create`——KD-SV-104）")
+
+    // 轻通道笔 10：命令三态（自定义 ∥ 空串拒）
+    const custom = await api(app, "POST", `/api/admin/sandbox/runners/${runner.id}/containers`, { body: { name: "box-v9", image: "thincoder-sandbox:1", command: "sh -c top -b" } })
+    assert.equal(custom.status, 200, "建容器（自定义命令腿）")
+    const create3 = engine.calls.filter((item) => item.path.endsWith("/containers/create")).at(-1)
+    assert.deepEqual(create3.body.Cmd, ["sh", "-c", "top", "-b"], "自定义命令 ⇒ 空格切分逐值（轻通道笔 10）")
+    const blank = await api(app, "POST", `/api/admin/sandbox/runners/${runner.id}/containers`, { body: { name: "box-v10", image: "thincoder-sandbox:1", command: "   " } })
+    assert.equal(blank.status, 400, "显式空串 ⇒ 400（空命令容器一亮即退——不给这个坑）")
   } finally {
     await app.close()
     await engine.close()

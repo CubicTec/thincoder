@@ -58,9 +58,9 @@
 - **运行面读数**（`GET /api/admin/sandbox/overview`）：每节点现打 `GET <base>/v<ver>/info`（3s ∥ 并发）⇒ 行 = `{ id, name, address, status, online, version, containers: { total, running } ∥ null, selfCheck, createdAt }`（`online=false` ⇒ `version`/`containers` = `null`——离线读数不外推）。
   `status = available ⇔ 至少一个节点在线`（无节点 ⇒ unavailable「无节点注册」；全离线 ⇒ unavailable「节点全部不可达」）；**节点面（添加/删除）恒可用**（不随门禁）。
   写门（`requireSandboxAvailable`——需节点的写路径（工作区创建/动作；规则 ∥ 设置 ∥ 待批裁定不设门）= 静态判据（存在 `active` 节点）；本批零改——实时门统一随重做批）。
-- **创建容器**（`POST …/runners/:id/containers`——提议②）：入参 `{ name, image, volume? }`（名 = Docker 容器名形；镜像 = 控制台预填设置 `image` 值（现缺省 `thincoder-sandbox:1`）；卷 = Docker 卷名，空 = 不挂）。
+- **创建容器**（`POST …/runners/:id/containers`——提议②）：入参 `{ name, image, volume?, command? }`（名 = Docker 容器名形；镜像 = 控制台预填设置 `image` 值（现缺省 `thincoder-sandbox:1`）；卷 = Docker 卷名，空 = 不挂；**命令 = 启动命令（轻通道笔 10——用户 2026-10-12 11:51 裁「甲，应该有个默认，但是可覆盖」）**：缺省/`null` ⇒ 待命命令 ∥ 字符串 ⇒ 空格切分参数（不解析引号——本字段非壳）∥ 显式空串 ⇒ 400（空命令容器一亮即退））。
   ⇒ `POST <base>/v<ver>/containers/create?name=<名>`（体 = `{ Image, Cmd: ["sleep", "infinity"], HostConfig: { Binds: ["<卷>:/workspace"] } }`——**待命命令恒携**
-  （盒语义——沿盒镜像自身 CMD；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 走查报，轻通道笔 3；**服务镜像面注**：镜像自带启动命令随之不生效（容器只待命、不跑其服务——按需自行换命令；按镜像择命令 = 未点不做，2026-10-11 评审 #249-2）；卷缺 ⇒ 省略 `HostConfig`）⇒ 201 ⇒ `{ container: { id, name, image, state: "created" } }` + 审计行（`container_create`）。
+  （盒语义——沿盒镜像自身 CMD；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 走查报，轻通道笔 3；**服务镜像面注**：镜像自带启动命令随之不生效（容器只待命、不跑其服务——按需自行换命令：**建容器窗「命令」字段可覆写**——轻通道笔 10；2026-10-11 评审 #249-2 的「按镜像择命令」句经笔 10 落地）；卷缺 ⇒ 省略 `HostConfig`）⇒ 201 ⇒ `{ container: { id, name, image, state: "created" } }` + 审计行（`container_create`）。
   引擎 404（无此镜像）∥ 409（名占用）⇒ 400（含引擎原文）；不可达 ⇒ 502。**创建 ≠ 启动**（两动作分列——用户四项逐条）。
 - **容器读取与动作**：列表 = `GET …/containers`（读时读 `GET <base>/v<ver>/containers/json?all=1` ⇒ `{ containers: [{ id, name, image, state, status }] }`——名去前导 `/`）。
   **启动** ∥ **停止** = `POST …/containers/:containerId/{start,stop}`（204 ⇒ 200；**304（已启/已停）⇒ 幂等成功**；`t` 不带 = 引擎缺省 10s）∥ **删除** = `DELETE …/containers/:containerId`（`?force=1`——运行中强停强删；**卷不随删**）。

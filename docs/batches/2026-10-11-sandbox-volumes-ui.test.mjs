@@ -288,7 +288,8 @@ test("③ N63/B63/B64 建容器卷选单：已有卷在单 ∥ 选定回填 ∥ 
     const volumeSelect = selects[1]
     assert.deepEqual(fFindAll(volumeSelect, (node) => node.tag === "option").map((option) => option.value), ["", "vol-a"], "卷选单 = 「新建卷（手输）」+ 节点已有卷")
     const inputs = fFindAll(dialog, (node) => node.tag === "input")
-    assert.equal(inputs.length, 3, "三输入（名 ∥ 镜像 ∥ 卷）")
+    assert.equal(inputs.length, 4, "四输入（名 ∥ 镜像 ∥ 卷 ∥ 命令——轻通道笔 10）")
+    assert.equal(inputs[3].value, "sleep infinity", "命令预填 = 待命命令（默认可覆写）")
     volumeSelect.value = "vol-a"
     await volumeSelect.fire("change")
     assert.equal(inputs[2].value, "vol-a", "选定 ⇒ 回填下方卷名（可再改）")
@@ -298,7 +299,7 @@ test("③ N63/B63/B64 建容器卷选单：已有卷在单 ∥ 选定回填 ∥ 
     await tick()
     await tick()
     assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1),
-      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v1", image: "thincoder-sandbox:1", volume: "vol-a" }], "选定腿：提交体 = 选值（`Binds` 形零改）")
+      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v1", image: "thincoder-sandbox:1", volume: "vol-a", command: "sleep infinity" }], "选定腿：提交体 = 选值 + 命令预填（`Binds` 形零改）")
     assert.equal(volumeGets(calls), getsBefore + 1, "容器动作后卷区随取（建容器成 ⇒ 卷表重取——首用即建清单随动）")
 
     // B64：留空 ⇒ 不挂（省略键——现行为零回归）
@@ -310,7 +311,7 @@ test("③ N63/B63/B64 建容器卷选单：已有卷在单 ∥ 选定回填 ∥ 
     await fFind(dialog2, (node) => node.tag === "form").fire("submit")
     await tick()
     assert.deepEqual(calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1),
-      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v2", image: "thincoder-sandbox:1" }], "卷空 ⇒ 省略键（不挂）")
+      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v2", image: "thincoder-sandbox:1", command: "sleep infinity" }], "卷空 ⇒ 省略键（不挂）∥ 命令恒携（笔 10 预填）")
 
     // B63：卷清单读败 ⇒ 选单只余「新建卷（手输）」；手输照常（提交不受阻——不反噬）
     const manual = await fMount({ routes: { "GET /api/admin/sandbox/runners/1/volumes": () => { throw new Error("节点不可达——测试样件") }, "POST /api/admin/sandbox/runners/1/containers": postOk } })
@@ -326,7 +327,7 @@ test("③ N63/B63/B64 建容器卷选单：已有卷在单 ∥ 选定回填 ∥ 
     await fFind(dialog3, (node) => node.tag === "form").fire("submit")
     await tick()
     assert.deepEqual(manual.calls.filter(([method, path]) => method === "POST" && path === "/api/admin/sandbox/runners/1/containers").at(-1),
-      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v3", image: "thincoder-sandbox:1", volume: "brand-new" }], "手输照常（读取败不反噬）")
+      ["POST", "/api/admin/sandbox/runners/1/containers", { name: "box-v3", image: "thincoder-sandbox:1", volume: "brand-new", command: "sleep infinity" }], "手输照常（读取败不反噬）")
 
     // B63：卷清单空表（读成而空）⇒ 选单亦只余「新建卷（手输）」；卷区空态在册
     const empty = await fMount({ volumes: [] })

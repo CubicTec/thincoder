@@ -41,6 +41,16 @@ export function normalizeVolumeName(raw) {
   return volume
 }
 
+/** 启动命令（缺省 —— 键缺/`null` ⇒ 待命命令 `sleep infinity`（盒语义）；显式空串 ⇒ 拒（空命令容器一亮即退——正是待命命令要防的）；形 = 空格切分参数数组（**不解析引号** —— 本字段非壳，带引号的复杂串按字面切分）。 */
+export function normalizeContainerCommand(raw) {
+  if (raw === undefined || raw === null) return ["sleep", "infinity"]
+  if (typeof raw !== "string") throw new Error("命令须为字符串")
+  const command = raw.trim()
+  if (command === "") throw new Error("命令不可为空（清空将建出「一亮即退」的容器——留默认即待命命令）")
+  if (command.length > 200) throw new Error(`命令超长（≤ 200 字符；实长 ${command.length}）`)
+  return command.split(/\s+/)
+}
+
 /** 引擎失败 → HTTP 错误（§2.5；`containerAction` = 动作/读面（404 ⇒ not_found）∥ 创建面（404/409 ⇒ 400 含引擎原文）∥ `kill` = 强杀面（409 ⇒ 400 人话——非幂等成功））。 */
 export function dockerFailure(e, { containerAction = false, kill = false } = {}) {
   if (e instanceof DockerError && e.kind === "api") {
@@ -167,16 +177,17 @@ export function registerContainerRoutes(routes, { db, fetchImpl = fetch, now = D
     const { member: admin } = requireAdmin(db, req)
     const runner = runnerRowOr404(db, ctx.params.id)
     const body = await readJsonBody(req)
-    let name, image, volume
+    let name, image, volume, cmd
     try {
       name = normalizeContainerName(body?.name)
       image = normalizeImageName(body?.image)
       volume = normalizeVolumeName(body?.volume)
+      cmd = normalizeContainerCommand(body?.command)
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message)
     }
-    // 待命命令（盒语义——沿盒镜像自身 CMD `sleep infinity`；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 实走报；轻通道笔 3）
-    const createBody = { Image: image, Cmd: ["sleep", "infinity"], ...(volume ? { HostConfig: { Binds: [`${volume}:/workspace`] } } : {}) }
+    // 待命命令（盒语义——沿盒镜像自身 CMD `sleep infinity`；缺它 ⇒ 无长驻进程的镜像一亮即退——用户 2026-10-11 实走报；轻通道笔 3）；**可覆写**（轻通道笔 10——建容器窗「命令」字段：默认预填待命命令，改成用户命令则用它启动）
+    const createBody = { Image: image, Cmd: cmd, ...(volume ? { HostConfig: { Binds: [`${volume}:/workspace`] } } : {}) }
     let response
     try {
       response = await clientOf(runner).createContainer(name, createBody)

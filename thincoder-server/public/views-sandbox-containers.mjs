@@ -292,7 +292,7 @@ export function openContainerLogsModal(ctx, { runner, container }) {
   loadOps()
 }
 
-/** 创建容器弹窗（名 + 镜像（**节点本地镜像选单回填** + 手输保底；预填设置 `image` 值）+ 卷（可空 = 不挂）⇒ POST 三件；卷空 ⇒ 省略键）。 */
+/** 创建容器弹窗（名 + 镜像（**节点本地镜像选单回填** + 手输保底；预填设置 `image` 值）+ 卷（可空 = 不挂）+ **命令（预填待命命令 `sleep infinity`，可覆写——轻通道笔 10）** ⇒ POST 四件；卷空 ⇒ 省略键）。 */
 function openCreateContainerModal(ctx, { runner, reload }) {
   const { h } = ctx
   const nameInput = h("input")
@@ -300,6 +300,7 @@ function openCreateContainerModal(ctx, { runner, reload }) {
   const imageSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.imageCustom") }))
   const volumeSelect = h("select", {}, h("option", { value: "", text: t("admin.sandbox.volumeNew") }))
   const volumeInput = h("input", { placeholder: t("admin.sandbox.volumePh") })
+  const commandInput = h("input", { value: "sleep infinity" }) // 默认 = 待命命令（可覆写——轻通道笔 10）
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.createContainer") })
   const modal = openModal({
@@ -308,7 +309,8 @@ function openCreateContainerModal(ctx, { runner, reload }) {
       field(h, "admin.sandbox.containerName", nameInput),
       field(h, "admin.sandbox.imageFromNode", imageSelect), field(h, "admin.sandbox.image", imageInput),
       field(h, "admin.sandbox.volumeFromNode", volumeSelect), field(h, "admin.sandbox.volume", volumeInput),
-      h("p", { class: "hint", text: t("admin.sandbox.volumeHint") }), note, submitBtn),
+      h("p", { class: "hint", text: t("admin.sandbox.volumeHint") }),
+      field(h, "admin.sandbox.command", commandInput), h("p", { class: "hint", text: t("admin.sandbox.commandHint") }), note, submitBtn),
   })
 
   // 节点本地镜像 ⇒ 选单（轻通道笔 2——手输改选：选定回填下方镜像（可再改））；读败/空表 ⇒ 仅「自定义（手输）」——手输照常，不反噬窗
@@ -347,7 +349,9 @@ function openCreateContainerModal(ctx, { runner, reload }) {
     const image = imageInput.value.trim()
     if (name === "") return showNote(note, t("admin.sandbox.fieldRequired", { field: t("admin.sandbox.containerName") }))
     if (image === "") return showNote(note, t("admin.sandbox.fieldRequired", { field: t("admin.sandbox.image") }))
-    const body = { name, image }
+    const command = commandInput.value.trim()
+    if (command === "") return showNote(note, t("admin.sandbox.fieldRequired", { field: t("admin.sandbox.command") }))
+    const body = { name, image, command }
     const volume = volumeInput.value.trim()
     if (volume !== "") body.volume = volume // 卷缺 ⇒ 省略键（不挂）
     submitBtn.disabled = true

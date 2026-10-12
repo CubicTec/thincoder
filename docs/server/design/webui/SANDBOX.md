@@ -88,6 +88,8 @@
 - **键族登记（sandbox-volumes 批——两表逐键同步；本批；2026-10-11）**：新增 **7 键**——`admin.sandbox.*`（sandbox 部件）续扩：建容器卷选单（`volumeFromNode`（「节点已有卷（选 ⇒ 回填下方，可再改）」——选单 label） ∥ `volumeNew`（「新建卷（手输）」——逃逸项））∥ 卷区（`volumesTitle`（「数据卷」——区题 h4） ∥ `volumesEmpty`（「暂无数据卷」））∥
   **删除确认**（`volumeDeleteTitle` ∥ `volumeDeleteConfirm`（「删除数据卷「{name}」？卷内数据会一并消失，且不可恢复。」——占位符 `{name}` 两表一致） ∥ `volumeDeleted`（「已删除数据卷：{name}」））；
   **零退役**；**复用 4 键（零新增）**——`admin.sandbox.name`（卷表列头「名称」） ∥ `admin.sandbox.colCreated`（列头「创建」） ∥ `admin.sandbox.colActions`（列头「操作」——卷表操作列头；同族容器表同键） ∥ `admin.sandbox.remove`（行钮「删除」）；跨批件指纹/键数随正 **601 ∥ 606 ⇒ 608 ∥ 613**；表体量：sandbox 两部件 **197 ⇒ ≈210（+7 键 + 段注/行随动）**（本档 §3 同拍）。
+- **键族登记（轻通道笔 10——建容器「命令」字段；两表逐键同步；2026-10-12）**：新增 **2 键**——`admin.sandbox.command`（「命令」——建容器窗字段 label） ∥ `admin.sandbox.commandHint`（「默认就是待命命令：容器建好就挂着等你进去干活（不自动退出）。改成你自己的命令 ⇒ 用它启动；按空格切参数，不解析引号。」——字段下说明行）；
+  **零退役**；**零复用**；键数 **691 ∥ 696 ⇒ 693 ∥ 698**（指纹两枚同拍随正）；表体量：sandbox 两部件 **实读 214 ∥ 214**（2026-10-12 现读——历批累积）。
 
 ## 4. 验收（本面 AC 行）
 

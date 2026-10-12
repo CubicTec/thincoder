@@ -43,6 +43,8 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.imagePh": "Image (e.g. thincoder-sandbox:1)",
   "admin.sandbox.volume": "Data volume (optional)",
   "admin.sandbox.volumeHint": "A volume keeps the container's data when the container is deleted. Not sure? Leave it empty (fine for a quick look).",
+  "admin.sandbox.command": "Command",
+  "admin.sandbox.commandHint": "The default keeps the container alive so you can attach to it. Replace it to start with your own command — split on spaces; quotes are not parsed.",
   "admin.sandbox.volumePh": "e.g. box-data — or leave empty",
   "admin.sandbox.colState": "State",
   "admin.sandbox.stateCreated": "Created",

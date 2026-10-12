@@ -61,7 +61,7 @@ const TERMS = [
   ["audit.type.key_rotate", "API Key 轮换", "API key rotated"],
   ["system.accessHint", "成员在各自端点新增一个渠道（provider），四项照下述填写；API Key 由本人在「我的 → API Key 与签发」自助签发（sk-tc-… 形，仅创建时显示一次）。", "Each member adds a provider in their own client using the four fields below; API keys are self-issued under “My → API keys & issuing” (sk-tc-… format, shown only once)."],
   ["audit.keyHint", "API Key", "API key"],
-  ["usage.col.key", "API Key", "API key"],
+  ["usage.col.key", "Key 名称", "Key name"],
   ["system.teamKey", "团队 API Key", "Team API key"],
 ]
 

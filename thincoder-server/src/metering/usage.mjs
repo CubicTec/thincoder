@@ -39,7 +39,7 @@ const STATUSES = ["ok", "error", "aborted"]
 
 /** 明细行 SELECT（明细 ∥ 导出共用——行形 = METERING §3；`model` = 对外标识回映射（`mapUsageRow`——KD-SV-59））。 */
 const ROW_SELECT = `SELECT u.id, u.ts, u.endpoint, u.provider, u.model, u.status, u.stream, u.prompt_tokens, u.completion_tokens,
-       u.total_tokens, u.duration_ms, m.name AS member_name, k.key_hint
+       u.total_tokens, u.duration_ms, m.name AS member_name, k.key_hint, k.name AS key_name
 FROM usage u JOIN members m ON m.id = u.member_id JOIN api_keys k ON k.id = u.key_id`
 
 /**
@@ -115,6 +115,7 @@ function mapUsageRow(row, aliases) {
     ts: row.ts,
     member: row.member_name,
     keyHint: row.key_hint,
+    keyName: row.key_name ?? "",
     endpoint: row.endpoint,
     model: aliases.externalId(row.provider, row.model),
     status: row.status,

@@ -134,11 +134,12 @@ test("计量：三写（usage + 日表 + 计数表）∥ 拆列回拼 ∥ /api/m
     assert.equal(mine.status, 200)
     assert.equal(mine.json.rows.length, 3) // 仅本人
     const row = mine.json.rows[0] // 倒序（新在前）
-    assert.deepEqual(Object.keys(row).sort(), ["completionTokens", "durationMs", "endpoint", "id", "keyHint", "member", "model", "promptTokens", "status", "stream", "totalTokens", "ts"])
+    assert.deepEqual(Object.keys(row).sort(), ["completionTokens", "durationMs", "endpoint", "id", "keyHint", "keyName", "member", "model", "promptTokens", "status", "stream", "totalTokens", "ts"])
     assert.equal(row.ts, now - 2000)
     assert.equal(row.member, "alice")
     assert.equal(row.model, "meta/inner/llama") // 回拼无损（model 含斜杠）
     assert.equal(row.keyHint, aliceKey.hint)
+    assert.equal(row.keyName, aliceKey.name) // 名称随行（无名/缺省 ⇒ 库内默认名 key-N）
     assert.deepEqual([row.promptTokens, row.completionTokens, row.totalTokens], [null, null, 10])
     const third = mine.json.rows[1]
     assert.deepEqual(

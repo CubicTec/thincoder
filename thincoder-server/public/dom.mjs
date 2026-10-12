@@ -81,16 +81,16 @@ async function copyText(value, code, button) {
   setTimeout(() => { button.textContent = t("common.copy") }, 2000)
 }
 
-/** 用量表（本人 ∥ 全队同构；全队加成员 + key 列；`foot = true` ⇒ 表尾计数行——仅我的·用量页〔壳面〕传）。 */
+/** 用量表（本人 ∥ 全队同构；成员列 = 全队专属；key 列两页共用——**名称优先**（无名/缺省 ⇒ 回退提示形）；`foot = true` ⇒ 表尾计数行——仅我的·用量页〔壳面〕传）。 */
 export function usageTable(rows, { withMember = false, foot = false } = {}) {
   if (rows.length === 0) return h("p", { class: "hint", text: t("usage.empty") })
   const headers = [
-    t("usage.col.time"), ...(withMember ? [t("usage.col.member"), t("usage.col.key")] : []), t("usage.col.endpoint"),
+    t("usage.col.time"), ...(withMember ? [t("usage.col.member")] : []), t("usage.col.key"), t("usage.col.endpoint"),
     t("usage.col.model"), t("usage.col.status"), t("usage.col.prompt"), t("usage.col.completion"), t("usage.col.total"), t("usage.col.duration"),
   ]
   const body = rows.map((row) => [
     fmtTs(row.ts),
-    ...(withMember ? [row.member, h("code", { text: row.keyHint ?? "—" })] : []),
+    ...(withMember ? [row.member] : []), h("code", { text: row.keyName || row.keyHint || "—" }),
     row.endpoint, row.model, row.status,
     fmtValue(row.promptTokens), fmtValue(row.completionTokens), fmtValue(row.totalTokens),
     String(row.durationMs),

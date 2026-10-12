@@ -9,7 +9,7 @@ export const ZH_ME = Object.freeze({
   "usage.loadFailed": "用量加载失败",
   "usage.col.time": "时间",
   "usage.col.member": "成员",
-  "usage.col.key": "API Key",
+  "usage.col.key": "Key 名称",
   "usage.col.endpoint": "端点",
   "usage.col.model": "模型",
   "usage.col.status": "状态",

@@ -62,12 +62,12 @@
 | `thincoder-server/src/agent/chat-tools.mjs`（已落盘——admin-agent-chat 批） | 实读 **477** | 管理面七件（§12）：members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker——参数校验 ∥ 结果结构化 ∥ 审计包装（进程内直取域件） |
 | `thincoder-server/src/agent/docker-ops.mjs`（已落盘——admin-agent-chat 批） | 实读 **91** | Docker 十动词执行器（自 `tools.mjs` 提取——任务面/聊天面两驱动单源；客户端 = `sandbox/docker.mjs`） |
 | `thincoder-server/src/agent/chat-env.mjs`（已落盘——admin-agent-awareness 批） | 实读 **94** | 环境块装配（§14.1）：时空 ∥ 所在/身份 ∥ 所管现况一行（三活体——块级降级）∥ 能力与边界段（`CHAT_LIMITS_BLOCK`——系统简报第四块） |
-| `thincoder-server/src/agent/chat-env-tools.mjs`（已落盘——admin-agent-awareness 批） | 实读 **229** | 环境工具面五族七件（§14.2/§14.3）：核件动载 ∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（超时 ∥ 输出 ∥ 工作目录）∥ timer 挂表与回合边界投递 |
+| `thincoder-server/src/agent/chat-env-tools.mjs`（已落盘——admin-agent-awareness 批） | 实读 **229** ⇒ **230**（2026-10-12 15:0x 轻车道撤超时上限：−1 删常量 ∥ +2 判据注释——父侧机械） | 环境工具面五族七件（§14.2/§14.3）：核件动载 ∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（超时 ∥ 输出 ∥ 工作目录）∥ timer 挂表与回合边界投递 |
 | `thincoder-server/src/agent/chat-store.mjs`（已落盘——admin-agent-awareness 批） | 实读 **112** | 库面单源（库面段 + `parseJson` + `CHAT_ROLES`/`CHAT_EXCERPT_MAX` 抽出；11 名重导出同引用 ∥ 零反引 `chat.mjs`——拆档 A〔父侧 2026-10-12 裁，触发线 650 越线〕） |
 
 - 小计 **≈+872**（admin-agent-chat 批：新增四档 ≈960 ∥ `tools.mjs` −≈88 ⇒ 实读 **−46**〔288 ⇒ 242——原估偏大 42〕）；`bin/thincoder-server.mjs` 实读 **187 ⇒ ≈189**（import + 注册两行——本域首经 bin 注册点）；**chat-shell-align 批另计 ≈+145**（`chat.mjs` 498 ⇒ ≈600 ∥ `chat-routes.mjs` 105 ⇒ ≈150；零新档）
   ⇒ **console-reasoning-levels 批另计 ≈+30**（`chat.mjs` 实读 575 ⇒ ≈585 ∥ `chat-routes.mjs` 实读 158 ⇒ ≈178；零新档——值域桥件行账 = `gateway/API.md` §4）。
-  ⇒ **admin-agent-awareness 批另计实读 +423**（`chat-env.mjs` 实读 94 ∥ `chat-env-tools.mjs` 实读 229 ∥ `chat-store.mjs` 实读 112〔拆档 A 产物〕 ∥ `chat.mjs` 实读 587 ⇒ 净 −12；零新端点 ∥ 零迁移 ∥ `bin` ±0）；批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **463**；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
+  ⇒ **admin-agent-awareness 批另计实读 +423**（`chat-env.mjs` 实读 94 ∥ `chat-env-tools.mjs` 实读 229 ⇒ 230〔2026-10-12 轻车道〕 ∥ `chat-store.mjs` 实读 112〔拆档 A 产物〕 ∥ `chat.mjs` 实读 587 ⇒ 净 −12；零新端点 ∥ 零迁移 ∥ `bin` ±0）；批内件 1 档（`docs/batches/2026-10-12-admin-agent-awareness.test.mjs`——实读 **463**；**入 server 链**，`prepublishOnly` 57 ⇒ 58）。
 - `thincoder-server/package.json`（`@thincoder/core` 钉版本依赖 ∥ `prepublishOnly` 件数）与**构建/发布形**（带核）复核 = `sandbox/SANDBOX.md` §16 R53③（as-of 2026-10-11）。
 - sandbox 域件（`ssh.mjs` ∥ `onboarding.mjs` ∥ `onboarding-routes.mjs`）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（四端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 
@@ -281,7 +281,7 @@
 
 | 限 | 值 | 依据 |
 |---|---|---|
-| 超时 | 缺省 120_000 ms ∥ 上限 600_000 ms（逾限 ⇒ 工具级错误——零静默） | 缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）；上限 = 核内既有时预算惯例值（`execute` ∥ `wait_for` 同值 600000） |
+| 超时 | 缺省 120_000 ms ∥ **无上限**（可指定任意 ≥1 ms 值；非有限值/小于 1 ⇒ 工具级错误——零静默） | 缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）；自造 600s 顶 = **用户 2026-10-12 15:00 裁撤**（核件本无上限——`bash.mjs:285` 直传；`process` 列表/杀 + 中止杀树在册 ⇒ 跑飞可杀）——父侧机械落笔 |
 | 输出上限 | 三层：工具层 200_000 字（核 `truncate`）+ 每流 2_000_000 字节缓冲（核 `MAX_STREAM_BUF`——`thincoder-core/tools/bash.mjs:15`）⇒ 落库/模型可见 ≤4_000 字（`CHAT_TOOL_CONTENT_MAX`——KD-SV-89 单源）⇒ 帧与审计摘要 ≤300 字 | 全为核件/会话面既有常量——零新口径 |
 | 工作目录 | `deps.cwd ?? process.cwd()`（相对路径解析基准；**无路径围栏**——沿核「无边界断言」口径） | 需求 43⑤ 三限之一；围栏 = 权限模型面（12:47 归用户——§10 边界） |
 

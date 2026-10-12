@@ -10,7 +10,7 @@
  * 结果归一（KD-SV-113）：`{ ok, subject, summary, output }`——`ok` = 调用完成（未抛错；命令非零退出 ⇒ `ok:true`，
  * 退出码在输出文本内 `(exit code N)`——**不解析**）；`output` = 核件文本原文（**模型可见形**——落库 ≤4000 字截断归会话面）；
  * `subject` = 主语原文（审计数据源——§14.4）；`summary` = 人话单行。**模型可见形 = 文本原文（非 JSON 壳——KD-SV-113 被否栏）**。
- * 限幅（§14.3——`bash` 三件）：超时缺省 120_000 ms（核 `BASH_TIMEOUT_MS`）∥ 上限 600_000 ms（逾限 ⇒ 工具级错误——零静默钳制）
+ * 限幅（§14.3——`bash` 三件）：超时缺省 120_000 ms（核 `BASH_TIMEOUT_MS`；无上限——自造 600s 顶已按用户 2026-10-12 15:00 裁撤）
  * ∥ 输出三层（工具层 200K 字 ∥ 每流 2MB = 核件；落库 ≤4_000 字 = 会话面；帧/审计摘要 ≤300 字）∥ 工作目录 = `ctx.cwd`。
  * 端池参数（§14.2——服务面无驻留池）：`bash.async:true` ⇒ 显式拒；`process.kill` 的 `id` 靶 ⇒ 核件自然报「未知后台任务 id」；
  * `kill pid` 在册（与 bash 等价——含杀 server 自身进程的操作者自伤面，R62②披露）。
@@ -29,9 +29,8 @@ export const ENV_TOOL_FAMILIES = Object.freeze([
   { family: "命令", tools: Object.freeze(["bash"]) },
 ])
 
-/** 限幅取值（§14.3）：缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）∥ 上限 = 核内既有时预算惯例值。 */
+/** 限幅取值（§14.3）：缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`）∥ 无上限（自造 600s 顶已撤——用户 2026-10-12 15:00）。 */
 export const ENV_BASH_TIMEOUT_DEFAULT_MS = 120_000
-export const ENV_BASH_TIMEOUT_MAX_MS = 600_000
 
 let coreToolsCache = null // 懒载缓存（真核七件 + 形转换 + timer 两读面）
 let coreToolsError = null // 装载失败缓存（零重试）
@@ -134,7 +133,7 @@ export async function createEnvTools({ coreTools = null } = {}) {
   return { names: ENV_TOOL_NAMES, schemas, invoke }
 }
 
-/** 端池参数处置（§14.2）：`bash.async` 显式拒 ∥ 超时逾限拒（零静默钳制）；过 ⇒ `null`。 */
+/** 端池参数处置（§14.2）：`bash.async` 显式拒 ∥ 超时取值校验（仅拒非有限值/小于 1——无上限）；过 ⇒ `null`。 */
 function refuseEndpointParams(name, params, subject) {
   if (name !== "bash") return null
   const refusal = (message) => ({ ok: false, subject, summary: message, message })
@@ -144,8 +143,10 @@ function refuseEndpointParams(name, params, subject) {
   const timeout = params.timeout
   if (timeout !== undefined && timeout !== null && timeout !== "") {
     const value = Number(timeout)
-    if (!Number.isFinite(value) || value < 1 || value > ENV_BASH_TIMEOUT_MAX_MS) {
-      return refusal(`bash timeout 非法：${String(timeout)}（须为 1..${ENV_BASH_TIMEOUT_MAX_MS} ms；缺省 ${ENV_BASH_TIMEOUT_DEFAULT_MS} ms——逾限拒，零静默钳制）`)
+    // 无上限（用户 2026-10-12 15:00 裁撤自造 600s 顶——核件本无上限，跑飞可由 process 杀）：
+    // 仅拒非有限值/小于 1（零静默钳制——取值范围外的输入显式报错，不静默改写）。
+    if (!Number.isFinite(value) || value < 1) {
+      return refusal(`bash timeout 非法：${String(timeout)}（须为 ≥1 的毫秒数；缺省 ${ENV_BASH_TIMEOUT_DEFAULT_MS} ms）`)
     }
   }
   return null

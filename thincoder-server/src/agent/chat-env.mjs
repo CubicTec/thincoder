@@ -23,7 +23,7 @@ export const ENV_LINE_PREFIX = "[System reminder: "
 export const CHAT_LIMITS_BLOCK = [
   "# 能力与边界",
   "工具族：环境族 = get_current_time（时间）∥ process（进程 list ∥ kill）∥ timer（提醒）∥ ls ∥ read ∥ grep（文件读取族）∥ bash（命令）；管理族 = members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker。",
-  "限额：bash 超时缺省 120000 ms ∥ 上限 600000 ms（逾限拒——零静默钳制）；bash async（后台任务）不可用（显式拒）；单次工具结果对模型可见 ≤4000 字（超长自行收窄：read 用 offset/limit ∥ grep 带 glob ∥ bash 用 filter）。",
+  "限额：bash 超时缺省 120000 ms（可加大——无上限）；bash async（后台任务）不可用（显式拒）；单次工具结果对模型可见 ≤4000 字（超长自行收窄：read 用 offset/limit ∥ grep 带 glob ∥ bash 用 filter）。",
   "边界：无路径围栏（工作目录 = server 进程 cwd）；无文件编辑族工具（写入仍可经 bash 抵达）；命令非零退出不是工具失败（退出码在输出文本内）；timer 提醒只在下一回合开场投递（无空闲唤醒、不自动开轮）。",
 ].join("\n")
 

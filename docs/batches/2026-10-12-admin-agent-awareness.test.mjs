@@ -166,7 +166,7 @@ test("腿① 四块装配在场（N72）：简报 = 基础段 + 能力段 ∥ �
   assert.equal(messages[0].role, "system")
   assert.equal(messages[0].content, CHAT.CHAT_SYSTEM_BRIEF)
   assert.ok(messages[0].content.includes(CHAT_ENV.CHAT_LIMITS_BLOCK), "简报应含能力与边界段")
-  assert.ok(CHAT_ENV.CHAT_LIMITS_BLOCK.includes("120000") && CHAT_ENV.CHAT_LIMITS_BLOCK.includes("600000"), "能力段应含 bash 限额两值")
+  assert.ok(CHAT_ENV.CHAT_LIMITS_BLOCK.includes("120000") && !CHAT_ENV.CHAT_LIMITS_BLOCK.includes("600000"), "能力段应含缺省值且不再含已撤上限")
 
   // 尾位三行（历史与本轮之后——沿核 setup 前缀缓存理由）
   const tail = messages.slice(-3)
@@ -317,15 +317,17 @@ test("腿④ 五族七件出场（核真件）：names/schemas/描述三面同�
     "五族应恰好覆盖七件（无重无漏）",
   )
   assert.equal(CHAT_ENV_TOOLS.ENV_BASH_TIMEOUT_DEFAULT_MS, 120000)
-  assert.equal(CHAT_ENV_TOOLS.ENV_BASH_TIMEOUT_MAX_MS, 600000)
+  assert.equal(CHAT_ENV_TOOLS.ENV_BASH_TIMEOUT_MAX_MS, undefined, "自造超时上限常量已撤（用户 2026-10-12 15:00）")
 
   // 端池参数处置（§14.2）——运行期拒、零静默钳制
   const refusedAsync = await env.invoke("bash", { command: "echo x", async: true }, { cwd: tempRoot })
   assert.equal(refusedAsync.ok, false)
   assert.match(refusedAsync.message, /async 不可用/)
-  const refusedTimeout = await env.invoke("bash", { command: "echo x", timeout: 600001 }, { cwd: tempRoot })
+  const refusedTimeout = await env.invoke("bash", { command: "echo x", timeout: 0 }, { cwd: tempRoot })
   assert.equal(refusedTimeout.ok, false)
   assert.match(refusedTimeout.message, /非法/)
+  const bigTimeout = await env.invoke("bash", { command: "echo big-ok", timeout: 700000 }, { cwd: tempRoot })
+  assert.equal(bigTimeout.ok, true, "超时无上限：700000 ms 被受理（自造上限已撤）")
   const unknown = await env.invoke("nope", {}, {})
   assert.equal(unknown.ok, false)
   assert.match(unknown.message, /未知环境工具/)
@@ -346,7 +348,7 @@ test("腿④ get_current_time 真读数 ∥ bash 限幅三形 ∥ cwd 生效 ∥
       { name: "bash", args: { command: CMD_BIG } },
       { name: "bash", args: { command: CMD_EXIT3 } },
       { name: "bash", args: { command: `echo ${SECRET}`, apiKey: SECRET } },
-      { name: "bash", args: { command: "echo x", timeout: 600001 } },
+      { name: "bash", args: { command: "echo x", timeout: 0 } },
       { name: "bash", args: { command: "echo x", async: true } },
       { name: "read", args: { path: MISSING } },
       { name: "grep", args: { pattern: "[" } },

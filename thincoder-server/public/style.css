@@ -77,7 +77,7 @@ h1, h2, h3, h4, h5, h6, th { font-weight: 400; } /* 零粗体（⑤——UA 700 
 .nav-item.active { background: var(--selected); color: var(--accent); } /* ① 选中/活动态（底 --selected ∥ 字 --accent） */
 .nav-bottom { margin-top: auto; display: flex; flex-direction: column; gap: var(--sp-3); padding: 0 var(--sp-3); }
 .nav-bottom .meta { font-size: var(--fs); color: var(--muted); min-height: 14px; }
-.content { margin-left: var(--nav-w); } /* 布局（底座：--nav-w = 侧栏宽 + 内容缩进） */
+body > .content { margin-left: var(--nav-w); } /* 布局（底座：--nav-w = 侧栏宽 + 内容缩进）；`body >` 限定 = 核件消息泡类亦名 `content`（views-chat.mjs:284 `"bubble content"`）——裸 `.content` 会连它一并右推 200px（2026-10-12 走查实修） */
 main { max-width: 1100px; margin: 0; padding: var(--sp-7); }
 
 /* ── 主区（⑤ 字排：页题/卡题同号同重——h2/h3 = --text ∥ h4 = --muted；层级 = 结构通道）───────── */
@@ -317,7 +317,7 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .bubble :is(p, pre, ul, ol, table, blockquote):last-child { margin-bottom: 0; }
 
 /* ── 数据表页视口高壳（§2.6②——高度链声明单源：页头固定 ∥ 表区吃剩高；表尾行计数 = 表内 tfoot〔吸附表底〕；回退见下）────── */
-body.data-shell .content { height: 100dvh; display: flex; flex-direction: column; }
+body.data-shell > .content { height: 100dvh; display: flex; flex-direction: column; } /* `>` 同因（核件消息泡类撞名——2026-10-12 走查实修） */
 body.data-shell main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 body.data-shell main > section { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .page-head { flex: none; }
@@ -331,7 +331,7 @@ body.data-shell main tfoot td { position: sticky; bottom: 0; z-index: 1; backgro
 
 /* ── 壳回退（≤760px 宽 ∥ ≤600px 高）：撤高度链——整页滚（吸附随壳失效；§2.6②）────────────────── */
 @media (max-width: 760px), (max-height: 600px) {
-  body.data-shell .content { height: auto; }
+  body.data-shell > .content { height: auto; }
 }
 
 /* ── 窄屏（≤760px）：侧栏降级为顶条（单条媒体查询——非移动端适配承诺——WEBUI §2）────────────── */
@@ -340,5 +340,5 @@ body.data-shell main tfoot td { position: sticky; bottom: 0; z-index: 1; backgro
   .nav-group { flex-direction: row; align-items: center; }
   .nav-group-title { padding: 0 var(--sp-1); }
   .nav-bottom { margin: 0 0 0 auto; flex-direction: row; align-items: center; }
-  .content { margin-left: 0; }
+  body > .content { margin-left: 0; }
 }

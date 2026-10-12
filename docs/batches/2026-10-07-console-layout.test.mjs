@@ -193,7 +193,7 @@ test("腿 A 壳机制源扫（`dom.mjs` + `app.mjs`）：`dataShell` 两段 + `S
 
 test("腿 B CSS：高度链声明表逐条 ∥ 吸附 ∥ 回退媒体查询 ∥ `main` 撤 auto ∥ `.model-picks` 零残留", () => {
   const CHAIN = [
-    ["body.data-shell .content", ["height: 100dvh", "display: flex", "flex-direction: column"]],
+    ["body.data-shell > .content", ["height: 100dvh", "display: flex", "flex-direction: column"]],
     ["body.data-shell main", ["flex: 1", "min-height: 0", "display: flex", "flex-direction: column"]],
     ["body.data-shell main > section", ["flex: 1", "min-height: 0", "display: flex", "flex-direction: column"]],
     [".page-head", ["flex: none"]],
@@ -212,7 +212,7 @@ test("腿 B CSS：高度链声明表逐条 ∥ 吸附 ∥ 回退媒体查询 ∥
   // 回退：≤760px 宽 ∥ ≤600px 高 ⇒ 撤链（height: auto）
   const media = CSS_CLEAN.match(/@media \(max-width: 760px\), \(max-height: 600px\)\s*\{([\s\S]*?)\n\}/)
   assert.ok(media !== null, "回退媒体查询缺位")
-  assert.match(media[1], /body\.data-shell \.content\s*\{\s*height:\s*auto;\s*\}/, "回退声明（height: auto）缺位")
+  assert.match(media[1], /body\.data-shell > \.content\s*\{\s*height:\s*auto;\s*\}/, "回退声明（height: auto）缺位")
   // `main` 撤 auto（左靠——§2.6④）
   const main = cssRule("main")
   assert.ok(main !== null && !main.body.includes("auto"), "main 仍含 auto 居中")
@@ -221,6 +221,13 @@ test("腿 B CSS：高度链声明表逐条 ∥ 吸附 ∥ 回退媒体查询 ∥
   for (const name of readdirSync(PUBLIC_DIR)) {
     if (!name.endsWith(".mjs") && name !== "index.html") continue
     assert.equal(readPublic(name).includes("model-picks"), false, `${name} 字面量残留：model-picks`)
+  }
+  // `.content` 撞名围栏（2026-10-12 走查实修）：核件消息泡类亦名 `content`（views-chat.mjs:284 `"bubble content"`）
+  // ⇒ 本档一切 `.content` 布局规则必须 `body >` 直子限定，禁裸 `.content`（否则助手输出泡被并入侧栏缩进 = 右推 200px）
+  const contentSelectors = [...CSS_CLEAN.matchAll(/(?:^|\})\s*([^{}@]+?)\s*\{/g)].map((m) => m[1].trim()).filter((sel) => /\.content\b/.test(sel))
+  assert.ok(contentSelectors.length >= 3, `\`.content\` 规则扫描失效：${contentSelectors.length}`)
+  for (const sel of contentSelectors) {
+    assert.match(sel, /^body(?:\.data-shell)?\s*>\s*\.content$/, `裸 \`.content\` 布局规则（须 body 直子限定——核件消息泡类撞名）：${sel}`)
   }
 })
 
@@ -453,12 +460,12 @@ test("腿 G 门禁：`prepublishOnly` 五十六件含本批件 ∥ 清单目标�
 
 // ── 附加（AC-19 canon 不破——本批零新变量/悬停/越刻度/未闭合类）────────────────
 
-test("附加 AC-19 canon 不破：`:root` 50 ∥ 悬停清单八条（七 + 页签一）∥ 内距 ∈ 刻度 ∥ 类名双向闭合", () => {
-  // 零新 `:root` 变量（本基线随历批同拍：2026-10-11 走查轮后 = 50）
+test("附加 AC-19 canon 不破：`:root` 58 ∥ 悬停清单八条（七 + 页签一）∥ 内距 ∈ 刻度 ∥ 类名双向闭合", () => {
+  // 零新 `:root` 变量（本基线随历批同拍：2026-10-12 走查实修后 = 58——`--vscode-*` 族桥八名）
   const rootMatch = CSS_CLEAN.match(/:root\s*\{[^{}]*\}/)
   assert.ok(rootMatch !== null, ":root 变量底座缺位")
   const rootVars = [...rootMatch[0].matchAll(/(--[\w-]+)\s*:/g)]
-  assert.equal(rootVars.length, 50, `:root 变量族计数：${rootVars.length}`)
+  assert.equal(rootVars.length, 58, `:root 变量族计数：${rootVars.length}`)
   // 悬停清单（行悬停二 + 交互件六）
   const ROW_HOVER = [".nav-item:hover", "tbody tr:hover"]
   const CTRL_HOVER = ["button:hover", "button.tiny:hover", "button.danger:hover", "button.link:hover", "button.tab:hover", ".modal-close:hover"]

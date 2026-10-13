@@ -82,7 +82,7 @@ function quotaStdout(command, workspaceId, diskMb = 4096) {
 
 /** 闸下发缺省读数（nft 在场——`nft -f -` 收体）。 */
 function egressStdout(command) {
-  if (command === "command -v nft") return "/usr/sbin/nft\n"
+  if (command === "sh -c 'command -v nft'") return "/usr/sbin/nft\n" // 探针命令随正（egress 修复轮 2026-10-14：sh -c 包裹——sudo 安全）
   return ""
 }
 
@@ -718,7 +718,7 @@ test("E54 v21 库升 v22：存量工作区行逐值保形 ∥ `sandbox_tasks` �
   legacy.close()
 
   const upgraded = DB.openDatabase(file)
-  assert.equal(DB.readVersion(upgraded), 22)
+  assert.equal(DB.readVersion(upgraded), DB.MIGRATIONS.at(-1).v) // 升到链头（原写死 22——v23/v24 他批已落，2026-10-14 随正）
   const row = upgraded.prepare("SELECT * FROM sandbox_workspaces WHERE name = 'legacy'").get()
   assert.equal(row.key_plain, "sk-tc-legacy")
   assert.equal(row.limits_json, '{"cpus":3}')
@@ -735,7 +735,7 @@ test("E54 v21 库升 v22：存量工作区行逐值保形 ∥ `sandbox_tasks` �
   upgraded.close()
 
   const again = DB.openDatabase(file)
-  assert.equal(DB.readVersion(again), 22)
+  assert.equal(DB.readVersion(again), DB.MIGRATIONS.at(-1).v) // 幂等 = 停链头（同上随正）
   assert.equal(again.prepare("SELECT COUNT(*) AS n FROM sandbox_workspaces").get().n, 1)
   again.close()
 })

@@ -251,7 +251,8 @@ async function ssh(exec, label, command, { stdin = null, allowNonZero = false } 
 
 /** 下发一份全量定义到节点（nft 优先 ∥ iptables 备径；返回实际径）。 */
 export async function pushEgressRuleset(exec, { text, iptablesCommands }) {
-  const probe = await ssh(exec, "nft 探针", `command -v nft`)
+  // 探针 = `sh -c` 包裹（sudo 前缀只吃二进制——裸内建 `command` 会被当可执行文件跑）；非零容忍（nft 缺席 ⇒ 走 iptables 备径，2026-10-14 真机实证）
+  const probe = await ssh(exec, "nft 探针", `sh -c 'command -v nft'`, { allowNonZero: true })
   const useNft = String(probe.stdout ?? "").trim() !== ""
   if (useNft) {
     await ssh(exec, "删旧表", `nft delete table inet ${NFT_TABLE}`, { allowNonZero: true })

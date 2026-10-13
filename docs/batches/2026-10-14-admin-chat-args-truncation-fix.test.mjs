@@ -42,6 +42,8 @@ test("① 落库全文：`argsFullOf` = 掩蔽原文（JSON 有效——不截�
   const parsed = JSON.parse(stored) // 不抛 = JSON 有效（本缺陷核心判据）
   assert.equal(parsed.apiKey, "***", "敏感键掩蔽保留")
   assert.ok(parsed.command.startsWith("node --input-type=module"), "原文留存（非截断残形）")
+  assert.equal(chat.argsFullOf("[{\"apiKey\":\"sk-x\"}]"), "{}", "非对象根（数组）⇒ 兜底 `{}`（评审 #122 收正）")
+  assert.equal(chat.argsFullOf("{broken"), "{}", "非法 JSON ⇒ 兜底 `{}`（同判）")
 })
 
 test("② 帧摘要不动：`argsTextOf` 同输入 ⇒ ≤500（帧/审计面口径零变）", () => {

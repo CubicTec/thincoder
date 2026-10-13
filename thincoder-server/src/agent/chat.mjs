@@ -261,11 +261,12 @@ export function argsTextOf(rawArguments) {
 
 /** 落库/回放 `args` = **掩蔽原文**（JSON 有效——不截断；`≤500` 摘要只落帧/审计面）。
  *  2026-10-14 缺陷修（轻通道轮）：截断残 JSON 回放撞严校验上游（dashscope code 系）400——落库面须保 JSON 有效；
- *  存量坏行由回放面兜底（`chat-store.mjs` `replayArgsOf`——非 JSON ⇒ `"{}"`）。 */
+ *  存量坏行由回放面兜底（`chat-store.mjs` `replayArgsOf`——非 JSON ⇒ `"{}"`）。
+ *  非对象根（数组/标量）∥ 非法 JSON ⇒ `"{}"`——评审 #122 收正（键掩蔽对非对象根不生效且全文留存的掩蔽缺口；执行面同判该入参为错）。 */
 export function argsFullOf(rawArguments) {
   const parsed = parseToolArgs(rawArguments)
-  const source = parsed === null ? String(rawArguments ?? "") : JSON.stringify(maskArgs(parsed))
-  return maskSecrets(source, [])
+  if (parsed === null) return "{}"
+  return maskSecrets(JSON.stringify(maskArgs(parsed)), [])
 }
 
 /** 敏感值集（本轮工具入参中的敏感键值——下游文本一并掩蔽；沿任务面 `maskSecrets(text, secrets)` 口径）。 */

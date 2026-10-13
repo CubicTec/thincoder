@@ -134,7 +134,7 @@ export async function specOfRef({ db, ref, coreSpecs = null, log = null } = {}) 
 /**
  * A1 工具轮回灌形（§17.3——核件构造）：回声族（`reasoningEcho:"required"`——deepseek/kimi/mimo）携 `reasoning_content`
  * 〔缺值 ⇒ `""`〕∥ 非回声族零字段；`extra_content` 在场才带。`toolCalls` = `[{ id, name, arguments, extraContent? }]`
- * （`arguments` = 上文串——面侧截断/掩蔽口径自持；chat 面传摘要形、run 面传原文）。
+ * （`arguments` = 上文串——面侧截断/掩蔽口径自持；chat 面 2026-10-14 起传**掩蔽原文**〔`argsFullOf`——评审 #122 随正〕、run 面传原文）。
  * 出 = `{ message, data }`：`message` = 回灌消息（核件构造；缺核 ⇒ **自建形回落**——零回声零签名字段不添，
  * `content` 空文本归 `null` 与核件同式）；`data` = 落库附加形（`{ toolCalls: [{ id, name, args, extraContent? }], reasoning? }`——
  * 回放逐值重建面：`reasoning` 键在场 ⇔ 消息携 `reasoning_content`——`""` 亦在场）。

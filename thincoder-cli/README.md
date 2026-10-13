@@ -231,6 +231,12 @@ Code conventions: pure `.mjs`, no semicolons, no third-party npm dependencies al
 
 ## Changelog
 
+### 0.12.72 (2026-10)
+- **Team command family (B1)** — `team` login / logout / status with completion and derived-entry hiding; rides the core `teamVerify` seam.
+- **Four-end timer completeness** — background timers delivered on all four faces.
+- **Core `^0.10.5`** — browser tool input/clipboard/async faces, the manifest tool, index self-maintenance, the team ledger tool, the read-before-ask prompt line, provider config parity, and more ride in with the core.
+- Fixed: TUI cmd-config / pickers / lifecycle, smoke scripts, doc-impact surfaces; ledger family anchors and status-line live refresh (via core).
+
 ### 0.12.71 (2026-10)
 - **Ledger variant detection (#935)** — first-run detection of stale drive-case ledger DB variants with a `migrate` pointer (no more silent splits).
 - **Digest accounting fixes (#930)** — delivery-vs-settlement split, retry cap with escalation, unsettled entries visible.

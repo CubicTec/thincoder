@@ -17,7 +17,7 @@
     "quickcheck": "node tools/web-quickcheck/run.mjs"
   },
   "dependencies": {
-    "@thincoder/core": "^0.10.4",
+    "@thincoder/core": "^0.10.5",
     "@thincoder/render-core": "file:../thincoder-render-core",
     "electron-updater": "^6.8.9"
   },

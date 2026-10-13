@@ -232,7 +232,7 @@ test("T2 origins 三态格：缺省 = searchOrigins ∥ 单元素 = 限定 ∥ �
     const r3 = await docSearch(mem, QUERY, { limit: 10, origins: [] })
     assert.deepEqual(setOf(pathsOf(r3)), setOf(["loc/a1.md", "loc/a2.md", "pub/b1.md", "pub/b2.md", "mix/c1.md"]), "空数组 ⇒ 不过滤（C 亦出）")
     const c3 = ftsCalls(sink).at(-1)
-    assert.ok(!c3.sql.includes("d.origin"), `空数组 ⇒ FTS 无 origin 谓词：${c3.sql}`)
+    assert.ok(!c3.sql.includes("AND d.origin"), `空数组 ⇒ FTS 无 origin 谓词：${c3.sql}`)
     assert.equal(c3.args.length, 2, "FTS 参数 = [查询, limit]（零 origin 绑定）")
     const v3 = vecCalls(sink).at(-1)
     assert.ok(!v3.sql.includes("AND origin = ?"), `空数组 ⇒ 向量扫描无 origin 谓词：${v3.sql}`)

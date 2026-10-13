@@ -78,6 +78,7 @@ function buildDeclaration(m, root = null) {
   const docExtensions = normalizeExtensions(m?.index?.docExtensions)
   const excludePaths = normalizePathList(m?.index?.excludePaths)
   const publicRepos = normalizePathList(m?.index?.publicRepos)
+  const batchRecords = batchSegments(m?.docRoot?.batches) // §6.14 面⑥ 声明值投影（`declared` 旗不涉——docRoot 族现状零改）
   const docMap = normalizeString(m?.advisor?.docMap)
   const standardsDoc = normalizeString(m?.advisor?.standardsDoc)
   const defaults = normalizeCodePaths(DEFAULT_MANIFEST.codePaths) ?? []
@@ -86,6 +87,7 @@ function buildDeclaration(m, root = null) {
   return Object.freeze({
     declared,
     codePaths: Object.freeze(codePaths),
+    batchRecords: Object.freeze(batchRecords.map((s) => Object.freeze(s))),
     index: Object.freeze({
       codeExtensions: Object.freeze(codeExtensions),
       docExtensions: Object.freeze(docExtensions),
@@ -101,22 +103,47 @@ function buildDeclaration(m, root = null) {
  *  consumer gets; built from `DEFAULT_MANIFEST` so the default values stay single-source. */
 export const DEFAULT_DECLARATION = buildDeclaration(null)
 
-/** 排除前缀谓词（单源——§6.14 面①）：`rel`（**`base` 相对**——缺省视为根相对）命中声明前缀（恰等
- *  ∨ 后随 `/`——`openclaw` 不吞 `openclaw-fork`）⇒ true；缺省 `[]` ⇒ 恒 false（零行为变化）。
+/** 段序列归一（面⑥ 目标集）：值（串 ∥ 串数组——元素层归一同 `normalizePathList`）⇒ 实义段序列
+ *  （空 ∥ `.` ∥ `..` 段剔除——空序列另剔，防恒真；去重保序）。 */
+function batchSegments(v) {
+  const out = []
+  for (const e of normalizePathList(Array.isArray(v) ? v : v == null ? [] : [v])) {
+    const segs = e.split("/").filter((s) => s && s !== "." && s !== "..")
+    if (segs.length && !out.some((q) => q.length === segs.length && q.every((s, i) => s === segs[i]))) out.push(segs)
+  }
+  return out
+}
+
+/** 约定段（面⑥——`DEFAULT_MANIFEST.docRoot.batches` 单源派生；默认值改名/迁移两处同动）。 */
+const DEFAULT_BATCH_SEGMENTS = batchSegments(DEFAULT_MANIFEST.docRoot.batches)
+
+/** 排除谓词（单源——§6.14 面① 前缀 ∥ 面⑥ 批次档段序列；两族同一谓词全判，非第二判定面）：
+ *  面⑥（2026-10-13 · 台账 #1366 · **无条件**——不看 `index.excludePaths` 是否配置）：`rel` 命中
+ *  约定段 ∪ 声明值段序列（`decl.batchRecords`——`docRoot.batches` 投影）于**路径任意深度**
+ *  （段边界 = 整段一致——`docs/batchesx` ∥ `doc/batches` 判假）⇒ true；`docRoot.batches: null`
+ *  ⇒ 约定段恒在（无逃生口）；`decl` 缺 ⇒ 约定段照判。
+ *  面①（前缀语义）：`rel`（**`base` 相对**——缺省视为根相对）命中声明前缀（恰等 ∨ 后随 `/`——
+ *  `openclaw` 不吞 `openclaw-fork`）⇒ true；缺省 `[]` ⇒ 恒 false（零行为变化）。
  *  `base`（调用面 cwd/origin·#700）= `rel` 的相对基：`resolve` + `relative` 换算至 `decl.root` 根面
- *  再比前缀（cwd = 项目根时与既有行为逐字等义）；换算越出根面（`..` 头 ∥ 根外绝对形）⇒ **不命中**
- *  （保守不排除——沉默洞方向收窄，与 D17 aux 面「indeterminate ⇒ 不匹配」同向）；`decl.root` 缺
- *  ⇒ `rel` 原样（根起步调用面等义）。 */
+ *  再判（cwd = 项目根时与既有行为逐字等义）；换算越出根面（`..` 头 ∥ 根外绝对形）⇒ 面① **不命中**
+ *  （保守不排除——沉默洞方向收窄，与 D17 aux 面「indeterminate ⇒ 不匹配」同向）∥ 面⑥ 按入参
+ *  **原样 `rel`** 判（段序列面不回退——面① 不命中口径逐字零改）；`decl.root` 缺 ⇒ `rel` 原样
+ *  （根起步调用面等义）。 */
 export function isExcludedRelPath(rel, decl, base = null) {
-  const list = decl?.index?.excludePaths
-  if (!Array.isArray(list) || list.length === 0) return false
   let s = String(rel ?? "").replace(/\\/g, "/")
   const root = decl?.root
+  let inRoot = true
   if (base != null && root) {
     const converted = relative(root, resolve(base, s)).replace(/\\/g, "/")
-    if (converted === ".." || converted.startsWith("../") || isAbsolute(converted)) return false
-    s = converted
+    if (converted === ".." || converted.startsWith("../") || isAbsolute(converted)) inRoot = false
+    else s = converted
   }
+  // 面⑥ 段序列（约定段 ∪ 声明值——任意深度连续命中）；越根（`inRoot=false`）⇒ `s` 即原样 rel
+  const segs = s.split("/").filter(Boolean)
+  if ([...DEFAULT_BATCH_SEGMENTS, ...(decl?.batchRecords ?? [])].some((seq) => segs.some((_, i) => seq.every((q, j) => segs[i + j] === q)))) return true
+  // 面① 前缀（既有口径逐字零改：缺省 `[]` ∥ 越根 ⇒ 不命中）
+  const list = decl?.index?.excludePaths
+  if (!Array.isArray(list) || list.length === 0 || !inRoot) return false
   return list.some((p) => p && (s === p || s.startsWith(`${p}/`)))
 }
 
@@ -188,7 +215,7 @@ function warnRetiredCarrier(root) {
  * A retired `.thincoder/conventions.json` at the manifest's project root → one warning
  * per cache miss (content zero-parsed, zero effect on the readings — KD-M1-34).
  * @param {string} cwd — project dir / anchor (root resolved by manifest.mjs)
- * @returns {Readonly<{declared: boolean, codePaths: readonly string[],
+ * @returns {Readonly<{declared: boolean, codePaths: readonly string[], batchRecords: readonly (readonly string[])[],
  *   index: {codeExtensions: string[], docExtensions: string[], excludePaths: string[], publicRepos: string[]},
  *   advisor: {docMap: string, standardsDoc: string}, root: string|null}>}
  */

@@ -3,8 +3,8 @@
  *
  * 机制（探明 ⇒ 三径择一 ⇒ 读回核）：探明工作区根的文件系统与挂载选项 ⇒
  *   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
- *   ② ext4（`prjquota` 挂载）⇒ `chattr -R +P` + `setquota -P`；
- *   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 + `mkfs.ext4` + 挂载到工作区路径——备选；落法细节以真机探明为准）；
+ *   ② ext4（`prjquota` 挂载）⇒ `chattr -R -p <id> +P`（**赋号＋继承同句**） + `setquota -P`；
+ *   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 + `mkfs.ext4` + 挂载到工作区路径 + chown 1000:1000——备选；落法细节以真机探明为准）；
  *   ④ 三者皆不可 ⇒ **抛（建盒停）**——人话 + 处置句（节点需 xfs/ext4 项目配额或 loop 设备）。
  * 读回核：应用后读回配额读数（xfs = `report -p -b` + `xfs_info` bsize；ext4 = `repquota -P` 千字节块）；读数不符 ⇒ 抛（同停）。
  * 幂等：重复应用同结果（project 已在 ⇒ 改限）；应用失败 ⇒ 抛（步名 + 原文；无部分成功即报）。
@@ -71,7 +71,8 @@ async function applyXfs({ exec, mount, path, projectId, diskMb }) {
 
 /** ext4 项目配额径（`chattr -R +P` + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
 async function applyExt4({ exec, mount, path, projectId, diskMb, mechanism }) {
-  await step(exec, "ext4 项目标记", `chattr -R +P ${path} 2>/dev/null || chattr -R -p ${projectId} +P ${path}`)
+  // 赋号＋继承同句（"chattr -R +P" 裸形恒成功——只打继承标记不赋项目号 ⇒ 赋号句必须直接在场；真机实证 2026-10-14）
+  await step(exec, "ext4 项目标记", `chattr -R -p ${projectId} +P ${path}`)
   const blocks = Number(diskMb) * 1024 // 千字节块（repquota/setquota 单位）
   await step(exec, "ext4 限额设置", `setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${mount} 2>/dev/null || setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${path}`)
   const report = await step(exec, "ext4 读回核", `repquota -P -n ${mount}`)
@@ -90,6 +91,7 @@ async function applyLoopback({ exec, path, projectId, diskMb }) {
     await step(exec, "loopback 镜像创建", `truncate -s ${Number(diskMb) + LOOP_IMAGE_SLACK_MB}M ${image} 2>/dev/null || fallocate -l ${Number(diskMb) + LOOP_IMAGE_SLACK_MB}M ${image}`)
     await step(exec, "loopback 格式化", `mkfs.ext4 -q -O project,quota -F ${image}`)
     await step(exec, "loopback 挂载", `mount -o loop,prjquota ${image} ${path}`)
+    await step(exec, "loopback 属主", `chown 1000:1000 ${path}`) // 新 fs 根 = root:root——挂载盖掉①的 chown（盒以 uid 1000 跑）
   }
   return applyExt4({ exec, mount: path, path, projectId, diskMb, mechanism: "loopback" })
 }

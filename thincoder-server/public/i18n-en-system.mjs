@@ -137,7 +137,7 @@ export const EN_SYSTEM = Object.freeze({
   "usageReport.export": "Export CSV",
   "usageReport.exported": "CSV exported",
 
-  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 13 types here) ──
+  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 15 types here; 17 in the type face — `member_event` / `mcp_event` pending) ──
   "audit.title": "Audit",
   "audit.typeLabel": "Type",
   "audit.typeAll": "All types",
@@ -203,6 +203,19 @@ export const EN_SYSTEM = Object.freeze({
   "audit.sandboxKind.approval": "Approval decision",
   "audit.sandboxKind.host_credential_set": "Host credential set",
   "audit.sandboxKind.host_credential_revoke": "Host credential revoked",
+  "audit.sandboxKind.terminal_open": "Container terminal opened",
+  "audit.sandboxKind.terminal_close": "Container terminal closed",
+  "audit.sandboxKind.workspace_base": "Workspace base updated",
+  "audit.sandboxKind.image_derive": "Derived image built",
+  "audit.sandboxKind.registry_credential_set": "Registry credential set",
+  "audit.sandboxKind.registry_credential_revoke": "Registry credential revoked",
+  "audit.sandboxKind.runner_connection": "Runner connection updated",
+  "audit.sandboxKind.workspace_destroy": "Workspace destroyed",
+  "audit.sandboxKind.checkpoint": "Checkpoint created",
+  "audit.sandboxKind.checkpoint_fail": "Checkpoint failed",
+  "audit.sandboxKind.egress_apply_failed": "Egress rules apply failed",
+  "audit.sandboxKind.quota_apply_failed": "Disk quota apply failed",
+  "audit.sandboxKind.placement_failed": "Placement failed",
   "audit.sandboxKept": "Kept",
   "audit.sandboxRemoved": "Removed",
 })

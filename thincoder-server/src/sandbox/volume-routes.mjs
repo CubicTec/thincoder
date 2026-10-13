@@ -48,13 +48,15 @@ export function volumeDeleteFailure(e) {
   return dockerFailure(e)
 }
 
-/** 注册卷族两路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。 */
-export function registerVolumeRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
+/** 注册卷族两路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）；`config`（TLS 档材料解密——增补 #2）∥ `requestImpl`（假件缝）同链下传。 */
+export function registerVolumeRoutes(routes, { db, fetchImpl = fetch, config = {}, requestImpl = null, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
   if (!db) throw new Error("registerVolumeRoutes：缺少 db")
 
   const clientOf = (runner) =>
     clientForRunner(runner, {
       fetchImpl,
+      config,
+      requestImpl,
       ...(readTimeoutMs ? { readTimeoutMs } : {}),
       ...(actionTimeoutMs ? { actionTimeoutMs } : {}),
     })

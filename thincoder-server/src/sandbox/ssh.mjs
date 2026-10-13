@@ -147,7 +147,8 @@ function classifyFailure(stderr, host) {
 }
 
 /**
- * SSH 执行器（§3）：`exec({ host, port, user, authKind, secret, sudoSecret, command, timeoutS })` ⇒ `{ exitCode, stdout, stderr }`。
+ * SSH 执行器（§3）：`exec({ host, port, user, authKind, secret, sudoSecret, command, stdin, timeoutS })` ⇒ `{ exitCode, stdout, stderr }`。
+ * `stdin` = 命令体（`nft -f -` ∥ `tar xzf -`；缺省 `null`——与 `sudo -S` 口令行拼合，口令在前）；
  * 传输级失败 ⇒ 抛 `SshError`（auth ∥ unreachable ∥ fingerprint_changed ∥ host_missing_binary ∥ timeout）；命令非零退出 = 正常返回（读数面）。
  * 注入口径：`execImpl`（spawn 替身——测试）∥ `baseDir`（数据目录——keyfile/known_hosts 落点）。
  */
@@ -156,7 +157,7 @@ export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeout
   const keyFile = keyName ? join(sshDir(baseDir), `${keyName}.key`) : null
   let keyWritten = false
 
-  async function exec({ host, port = 22, user, authKind = "key", secret = "", sudoSecret = null, command, timeoutS = defaultTimeoutS } = {}) {
+  async function exec({ host, port = 22, user, authKind = "key", secret = "", sudoSecret = null, command, stdin = null, timeoutS = defaultTimeoutS } = {}) {
     if (typeof command !== "string" || command.trim() === "") throw new SshError("spawn", "命令不可为空")
     if (typeof host !== "string" || host.trim() === "" || typeof user !== "string" || user.trim() === "") throw new SshError("spawn", "缺目标主机或用户名")
     const dir = ensureSshDir(baseDir)
@@ -192,8 +193,15 @@ export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeout
     } else {
       throw new SshError("spawn", `认证方式仅收 key ∥ password：${String(authKind)}`)
     }
-    // sudo 口令经 stdin（`sudo -S` 读取——§3；命令不含 sudo -S 则不喂）
-    const input = sudoSecret && /sudo\s+-S/.test(command) ? `${sudoSecret}\n` : null
+    // stdin 两段同喂（§3）：`sudo -S` 口令行在前 ∥ 命令体（`stdin`）在后——`nft -f -` ∥ `tar xzf -` 收体（sandbox-exec-rebuild 批：
+    // 闸下发 ∥ 恢复 SSH 备径）；命令不含 `sudo -S` ⇒ 只喂命令体；缺省 null = 既有行为逐字零变。
+    const wantsSudo = Boolean(sudoSecret) && /sudo\s+-S/.test(command)
+    let input = null
+    if (wantsSudo || (stdin !== null && stdin !== undefined)) {
+      const head = wantsSudo ? Buffer.from(`${sudoSecret}\n`, "utf8") : null
+      const body = stdin === null || stdin === undefined ? null : Buffer.isBuffer(stdin) ? stdin : Buffer.from(String(stdin), "utf8")
+      input = head === null ? body : body === null ? head : Buffer.concat([head, body])
+    }
     const result = await execImpl(cmd, args, { env, input, timeoutMs: Math.max(1000, Number(timeoutS) * 1000) })
     if (result.spawnError) {
       const message = authKind === "password"

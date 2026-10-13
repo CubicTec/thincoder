@@ -8,18 +8,22 @@
 
 - 单库单连接（`DatabaseSync`）；PRAGMA：WAL ∥ `synchronous=NORMAL` ∥ `busy_timeout=5000` ∥ `foreign_keys=ON`。
 - 库文件默认 = `thincoder-server/data/gateway.db`（运行期生成，不入 git）。
-- 结构版本 = `PRAGMA user_version`（当前 = **20**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
+- 结构版本 = `PRAGMA user_version`（当前 = **24**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
   v5 增模型标识两字段拆列 + 派生两表 + 成员配额列 ∥ v6 增成员模型禁用列（详见 §2 v5/v6 段） ∥ v7 增 provider 模型元数据留存列 ∥ **v8 增 key 名称列（`api_keys.name`——me-keys 批）**（详见 §2 v7/v8/v9 段） ∥
   v9 增 provider 上游代理旗（`providers.proxy`——server 代理批） ∥ **v10 增审计型 `config_update`（`audit_events` 重建——CHECK 扩型；配置控制台批）**（详见 §2 v10 段） ∥ **v11 增沙盒七表 + 审计 CHECK 再扩（十二型——server-exec-sandbox 批）**（详见 §2 v11 段） ∥
-  **v12 `sandbox_runners` 表重建（Docker 节点形态——runner-admin-console 批）**（详见 §2 v12 段） ∥ **v13 增 `sandbox_onboarding` 表（托管接入——runner-admin-console 批增补）**（详见 §2 v13 段） ∥
+   **v12 `sandbox_runners` 表重建（Docker 节点形态——runner-admin-console 批）**（详见 §2 v12 段） ∥ **v13 增 `sandbox_onboarding` 表（托管接入——runner-admin-console 批增补；2026-10-14 起 = 停机留史——数据不删 ∥ 零写入零读面）**（详见 §2 v13 段） ∥
   **v14 增 agent chat 两表 + 审计 CHECK 再扩（十三型——admin-agent-chat 批）**（详见 §2 v14 段） ∥ **v15 增 `image_sources` 表（镜像源清单——sandbox-image-sources 批）**（详见 §2 v15 段） ∥ **v16 增会话级思考档位列（`agent_chats.reasoning`——console-reasoning-levels 批）**（详见 §2 v16 段）
    ∥ **v17 增 git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型——team-projects-permissions 批）**（详见 §2 v17 段） ∥ **v18 增主机表七列 + `sandbox_onboarding` 凭据态四值（`'moved'`）+ 回填移交（admin-chat-creds-merge 批——段号收正 2026-10-13：实落次序在先）**（详见 §2 v18 段）
   ∥ **v19 增 `api_keys.key_plain` 列（管理面 sk 明文面——server-wake-face 批修订轮——段号收正 2026-10-13：实落次序在后）**（详见 §2 v19 段）
-  ∥ **v20 增团队台账表 + 审计 CHECK 再扩（十五型——team-ledger 批）**（详见 §2 v20 段）；
+  ∥ **v20 增团队台账表 + 审计 CHECK 再扩（十五型——team-ledger 批）**（详见 §2 v20 段）
+  ∥ **v21 增 `git_sources.scope_kind` 列 + 存量回填（gitee 范围三态——gitee-namespace-kinds 批）**（详见 §2 v21 段）；
+  ∥ **v22 收正段（`sandbox_workspaces` 表重建（去 `required_labels_json` ∥ 增 `stop_reason` ∥ 增 `base_image`）+ 增建 `registry_credentials` 表 + `sandbox_tasks` 删表 + 增 `sandbox_runners` 连接材料四列（TLS 档——本增补 #2）——sandbox 域；sandbox-exec-rebuild 批）**（详见 §2 v22 段）
+  ∥ **v23 增成员 git 凭据表 + 审计 CHECK 再扩（十六型——member-face-chat 批；会话两表不建——题一裁定会话真源在盒内）**（详见 §2 v23 段）；
+  ∥ **v24 增 `mcp_servers` 表 + 审计 CHECK 再扩（十七型——mcp 域；server-mcp 批）**（详见 §2 v24 段）；
   未发布期连续演进，无历史库迁移包袱——旧库启动自动升；迁移链机制自 v1 起备）。
 - server-model-alias 批（2026-10-09——台账 #1153）：**零结构变更**（别名落 `models_json` 元素——JSON 文本内演进；无新列/新表/新段——结构版本保持 **10**）。
 
-## 2. DDL（v1 基线四表 + v2–v20 增段）
+## 2. DDL（v1 基线四表 + v2–v23 增段）
 
 ### v1 基线（四表——逐字）
 
@@ -265,7 +269,7 @@ CREATE TABLE IF NOT EXISTS sandbox_workspaces (
   limits_json TEXT NOT NULL DEFAULT '{}',     -- 每工作区覆写（资源 + TTL；键集/取值序 = `sandbox/SANDBOX.md` §2；空 = 随全局默认）
   created_at TEXT NOT NULL
 );
--- 注：本表列面（去 `required_labels_json`）仍与实表有差——实现收正随执行面重做批（旁注 = v12 段）。
+-- 注：本表列面（去 `required_labels_json`）与实表已收正在态——v22 段表重建（sandbox-exec-rebuild 批）。
 CREATE TABLE IF NOT EXISTS sandbox_rules (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kind TEXT NOT NULL CHECK (kind IN ('cidr','domain')),
@@ -300,7 +304,7 @@ CREATE TABLE IF NOT EXISTS sandbox_tasks (
   finished_at INTEGER,
   result_json TEXT
 );
--- 注：本表列面（去 `claimed_at`）仍与实表有差——实现收正随执行面重做批（旁注 = v12 段）。
+-- 注：本表（指令队列）随执行面重做退场——v22 段删表（sandbox-exec-rebuild 批 KD-SV-161；本段 DDL 为历史形，保留在链）。
 CREATE TABLE IF NOT EXISTS sandbox_checkpoints (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   workspace_id INTEGER NOT NULL,
@@ -324,10 +328,10 @@ CREATE TABLE IF NOT EXISTS sandbox_settings (
 ```
 
 - 语义/对象模型 = `sandbox/SANDBOX.md` §2/§3–§7（单源）；端点 = `gateway/API.md` §2.5/§2.7。
-- 圈界：`sandbox_settings` = 键值设置面（全局默认——键全集/值形 = `gateway/API.md` §2.5）；`sandbox_*` 与 `members`/`api_keys` 的引用 = `owner_member_id` ∥ `key_id`（沿 `api_keys` 先例）；`sandbox_pending`/`sandbox_tasks`/`sandbox_checkpoints` 无 FK（历史/瞬态面自足——沿 `audit_events` 口径）。
+- 圈界：`sandbox_settings` = 键值设置面（全局默认——键全集/值形 = `gateway/API.md` §2.5）；`sandbox_*` 与 `members`/`api_keys` 的引用 = `owner_member_id` ∥ `key_id`（沿 `api_keys` 先例）；`sandbox_pending`/`sandbox_checkpoints` 无 FK（历史/瞬态面自足——沿 `audit_events` 口径）。
 
 - 表归属：`members` ∥ `api_keys` ∥ `sessions` ∥ `audit_events` = accounts 域（`accounts/ACCOUNTS.md`）；`usage` ∥ `usage_daily` ∥ `quota_counters` = metering 域（`metering/METERING.md`）；`providers` = gateway 域（provider 管理面 ∥ v4 模型设置——`gateway/API.md` §2.2）；
-  `sandbox_runners` ∥ `sandbox_workspaces` ∥ `sandbox_rules` ∥ `sandbox_pending` ∥ `sandbox_tasks` ∥ `sandbox_checkpoints` ∥ `sandbox_settings` = sandbox 域（`sandbox/SANDBOX.md` §2——对象模型单源）；结构单源 = 本档。
+  `sandbox_runners` ∥ `sandbox_workspaces` ∥ `sandbox_rules` ∥ `sandbox_pending` ∥ `sandbox_checkpoints` ∥ `sandbox_settings` ∥ **`registry_credentials`（本增补）** = sandbox 域（v22 后**七表**——`sandbox/SANDBOX.md` §2 对象模型单源；`sandbox_tasks` 随队列退场——v22 段删表）；结构单源 = 本档。
 
 ### v12 增段（`sandbox_runners` 表重建——sandbox 域；runner-admin-console 批）
 
@@ -336,17 +340,17 @@ CREATE TABLE IF NOT EXISTS sandbox_settings (
 - **重建步**（SQLite 不可改列集——沿 v10 表重建先例）：① 建 `sandbox_runners_v12`（列面 = v11 段所列：`id` ∥ `name`（NOT NULL UNIQUE） ∥ `address`（NOT NULL） ∥ `status`（NOT NULL DEFAULT `'active'` CHECK `active`/`disabled`） ∥ `runtime_json`（NOT NULL DEFAULT `'{}'`——连通自检读数） ∥ `created_at`（NOT NULL））。
   ⇒ ② **存量行弃**（不迁——旧通道行无地址可取、令牌/心跳语义整废；一次性过渡行为）⇒ ③ `DROP TABLE sandbox_runners` ⇒ ④ `RENAME` ⇒ 无索引/无 FK（沿先例——`sandbox_workspaces.runner_id` 无 FK）。
 - **判据（单元测试档）**：空库读数 12 ∥ v11 库升后读数 12 ∥ v12 段幂等（再开零变）∥ 列面五行在场（`pragma_table_info`）∥ 旧三列名不在（`token_hash` ∥ `labels_json` ∥ `last_heartbeat_at`）∥ 存量行弃（含旧行的 v11 库升后 ⇒ 空表）。
-- 同段旁注（不在本段射程——登记在案）：v11 段所列 `sandbox_workspaces`（去 `required_labels_json`）∥ `sandbox_tasks`（去 `claimed_at`）两处列面仍与实表有差——随执行面重做批收正。
+- 同段旁注（**收正在态——2026-10-13**）：v11 段所列 `sandbox_workspaces` 列面收正 = v22 段表重建（去 `required_labels_json`；增 `stop_reason` ∥ `base_image`——本增补）；`sandbox_tasks` = v22 段删表（队列退场——sandbox-exec-rebuild 批 KD-SV-161）。
 
-### v13 增段（`sandbox_onboarding` 建表——sandbox 域；runner-admin-console 批增补（托管接入））
+### v13 增段（`sandbox_onboarding` 建表——sandbox 域；runner-admin-console 批增补（托管接入）；**停机留史（2026-10-14——托管接入退场：数据不删 ∥ 零写入零读面）**）
 
-（背景：托管接入任务 + 凭据 = 单表；任务态/步骤读数/凭据密文共一行——机制 = `sandbox/SANDBOX.md` §3。）
+（背景：托管接入任务 + 凭据 = 单表；任务态/步骤读数/凭据密文共一行——**现状 = 停机留史（2026-10-14 托管接入退场；历史机制 as-of = `sandbox/SANDBOX.md` §2 停机留史注）。**）
 
 - **建表**（`CREATE TABLE sandbox_onboarding`——列面逐列）：`id`（INTEGER PRIMARY KEY）∥ `host`（TEXT NOT NULL——主机地址原文）∥ `ssh_port`（INTEGER NOT NULL DEFAULT 22）∥ `ssh_user`（TEXT NOT NULL）∥ `auth_kind`（TEXT NOT NULL CHECK `'key'`/`'password'`）∥
   `secret_cipher`（TEXT——AES-256-GCM 包 `iv|tag|ct` base64；零化后 NULL）∥ `sudo_cipher`（TEXT——可选，同形）∥ `credential_mode`（TEXT NOT NULL CHECK `'burn'`/`'keep'`）∥ `credential_state`（TEXT NOT NULL DEFAULT `'sealed'` CHECK `'sealed'`/`'burned'`/`'revoked'`）∥
   `name`（TEXT——节点名（可选；缺省取探测主机名））∥ `model`（TEXT NOT NULL——提交时所选模型）∥ `status`（TEXT NOT NULL CHECK `'running'`/`'succeeded'`/`'failed'`/`'interrupted'`）∥ `step`（TEXT——当前/最后一步 id）∥
   `steps_json`（TEXT NOT NULL DEFAULT `'[]'`——步骤日志（读数面））∥ `runner_id`（INTEGER——成功后关联；未成 NULL）∥ `created_by`（INTEGER——admin 成员 id）∥ `created_at`（TEXT NOT NULL）∥ `finished_at`（TEXT）。
-- **加密密钥** = `data/credentials.key`（32 字节；首用生成；0600——**不落库**；如实披露 = `sandbox/SANDBOX.md` §3）。
+- **加密密钥** = `data/credentials.key`（32 字节；首用生成；0600——**不落库**；如实披露 = `sandbox/SANDBOX.md` §14 KD-SV-84 ∥ 单源 = `thincoder-server/src/store/credential-crypto.mjs`）。
 - **判据（单元测试档）**：空库直落 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场（`pragma_table_info`）∥ 凭据列读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒。
 
 ### v14 增段（agent chat 两表 + 审计 CHECK 再扩——agent 域；admin-agent-chat 批）
@@ -547,6 +551,105 @@ CREATE INDEX IF NOT EXISTS idx_team_ledger_owner ON team_ledger_items(owner);
 - 圈界：无 FK（沿先例）；`repo` 非唯一（同仓 N 条）；`status` CHECK 六态（迁移表判在应用层——`ALLOWED_MIGRATIONS` 沿本机台账枚举）；归档 = 状态值（软删除——行保留）。
 - **判据（单元测试档）**：空库直落 **20** ∥ v19 库升后读数 **20** ∥ v20 段幂等（再开零变）∥ 表/两索引在场（`pragma_table_info` + `sqlite_master`）∥ 存量审计行逐值保形 + 两索引在场 ∥ `ledger_event` 型可写（CHECK 放行）。
 
+### v21 增段（`git_sources.scope_kind` 列 + 存量回填——project 域；gitee-namespace-kinds 批）
+
+```sql
+-- ① gitee 范围类型（personal ∥ org ∥ enterprise——KD-SV-151；非 gitee/NULL = 不适用）
+ALTER TABLE git_sources ADD COLUMN scope_kind TEXT CHECK (scope_kind IN ('personal','org','enterprise'));
+-- ② 存量回填（仅 gitee——零猜测：scope 在场 ⇒ 'org'（沿现行路由）∥ scope 空 ⇒ 'personal'；非 gitee 零动）
+UPDATE git_sources SET scope_kind = CASE WHEN scope IS NULL OR TRIM(scope) = '' THEN 'personal' ELSE 'org' END WHERE platform = 'gitee';
+```
+
+- 语义/机制 = `project/PROJECTS.md` §4（KD-SV-151——三态 ∥ 路由 ∥ 不符报错）；旧企业行（如 id=2）= 回填后 `org`——编辑窗改选「企业」保存即工作（迁移零猜测；端形 = `gateway/API.md` §2.9）。
+- 圈界：列级 `ALTER`（表不重建）；CHECK 三值（NULL 放行——非 gitee 恒 NULL）；非 gitee 行零动（回填体 `WHERE platform = 'gitee'`）；审计 CHECK 零动（十五型不变）。
+- **判据（单元测试档）**：空库直落 **21** ∥ v20 库升后读数 **21** ∥ v21 段幂等（再开零变）∥ 列面含 `scope_kind`（`pragma_table_info`——尾插）∥ 回填三用例（gitee ∧ scope 在场 ⇒ `org` ∥ gitee ∧ scope 空 ⇒ `personal` ∥ 非 gitee ⇒ NULL/零动）∥ 存量行余列逐值保形。
+
+### v22 收正段（`sandbox_workspaces` 表重建 + `registry_credentials` 建表 + `sandbox_tasks` 删表——sandbox 域；sandbox-exec-rebuild 批）
+
+```sql
+-- ① sandbox_workspaces 表重建（列面 = v11 段所列减 required_labels_json + 增 stop_reason + 增 base_image——放置判据去标签；停因注记；底座绑定）
+CREATE TABLE IF NOT EXISTS sandbox_workspaces_v22 (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  owner_member_id INTEGER NOT NULL REFERENCES members(id),
+  key_id INTEGER NOT NULL REFERENCES api_keys(id),
+  key_plain TEXT NOT NULL,
+  runner_id INTEGER,
+  limits_json TEXT NOT NULL DEFAULT '{}',
+  stop_reason TEXT,                            -- 停因注记（idle_ttl/wallclock_ttl/manual；NULL = 未停）
+  base_image TEXT,                             -- 底座绑定（归一引用「名:标签」；NULL = 标准镜像 settings.image——底座可换）
+  created_at TEXT NOT NULL
+);
+-- ② 存量行拷贝（逐列映射）⇒ DROP TABLE sandbox_workspaces ⇒ RENAME ⇒ （无索引/无 FK 重建）
+-- ③ DROP TABLE sandbox_tasks（指令队列退场——KD-SV-161）
+-- ④ 私有仓凭据表（sandbox 域——server 全局；底座可换：拉取/派生注入——KD-SV-188）
+CREATE TABLE IF NOT EXISTS registry_credentials (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  host TEXT NOT NULL UNIQUE,                   -- 注册表主机（归一：小写；Hub 别名归 docker.io）
+  username TEXT NOT NULL,
+  secret_cipher TEXT NOT NULL,                 -- AES-256-GCM（credential-crypto.mjs；密列零回显）
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,                    -- 最后编辑时间（创建 = 创建时刻；编辑刷新——写面维护；父侧 2026-10-13 收正 · 可 revert）
+  created_by INTEGER
+);
+-- ⑤ sandbox_runners 增连接材料四列（TLS 档——本增补 #2；列级 ALTER = 表不重建；存量行 NULL = 明文档零回填；机制 = `sandbox/SANDBOX.md` §3 连接方式块）
+ALTER TABLE sandbox_runners ADD COLUMN tls_ca TEXT;                                    -- CA 证书 PEM（仅 TLS 档）
+ALTER TABLE sandbox_runners ADD COLUMN tls_cert TEXT;                                  -- 客户端证书 PEM（仅 TLS 档）
+ALTER TABLE sandbox_runners ADD COLUMN tls_key_cipher TEXT;                            -- 客户端私钥密文（AES-256-GCM——密列零回显；仅 TLS 档）
+ALTER TABLE sandbox_runners ADD COLUMN tls_updated_at TEXT;                            -- 材料更新时间（NULL = 未设）
+```
+
+- 语义/机制 = `sandbox/EXECUTION.md` §3/§8/§9（KD-SV-161/162/184/188——直调链替换队列；`stop_reason` 写入点 = 服务器侧停盒动作；`base_image` 写入点 = 工作区 PATCH（`baseImage` 键）；`registry_credentials` 写入点 = 凭据四端点）；**本增补 #2**：`tls_*` 四列 = 列级 `ALTER`（存量行 NULL——零回填；不变量 `https` ⇔ 三件齐 = 应用层校验——`sandbox/SANDBOX.md` §3）。
+- 圈界：表重建（SQLite 不可改列集——沿 v12 表重建先例）；`required_labels_json` 列消（放置 = 在线 active 最少绑定者——EXECUTION §3）；`stop_reason`/`base_image` NULL 放行；无索引/无 FK（沿先例）；删表 = 队列退场（无消费者——瞬时态零迁移价值）；`registry_credentials` 新表：`host` 唯一（一主机一枚——`UNIQUE` 自携索引）；`created_by` 无 FK（沿先例）。
+- **判据（单元测试档）**：空库直落 **22** ∥ v21 库升后读数 **22** ∥ v22 段幂等（再开零变）∥ **`sandbox_workspaces` 列面十行在场**（`pragma_table_info`——含 `stop_reason` ∥ `base_image`；不含 `required_labels_json`）∥
+  `registry_credentials` 表在场且列面**七行**（含 `updated_at`） + `host` 唯一（`sqlite_master` ∥ 重复 host 插入 ⇒ 拒）∥ `sandbox_tasks` 表不在（`sqlite_master`）∥ **`sandbox_runners` 连接材料四列在场**（`pragma_table_info`——含 `tls_key_cipher`；存量行 NULL）∥ 存量行逐值保形（拷贝映射——`base_image` 全 NULL）。
+
+### v23 增段（成员 git 凭据表 + 审计 CHECK 再扩（十六型）——agent 域；member-face-chat 批）
+
+```sql
+-- ① 成员 git 凭据表（成员本人凭据——拉取/推送共用；KD-SV-204；密列零回显）
+CREATE TABLE IF NOT EXISTS member_git_credentials (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  member_id INTEGER NOT NULL,                  -- 归属（本人过滤键）
+  host TEXT NOT NULL,                          -- 托管主机（归一：小写）
+  username TEXT NOT NULL,
+  secret_cipher TEXT NOT NULL,                 -- AES-256-GCM（credential-crypto.mjs；密列零回显）
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_member_git_credentials ON member_git_credentials(member_id, host);
+-- ② audit_events 表重建（十五型 ⇒ 十六型：+ member_event——步序与 v10/v11/v14/v17/v20 同构）
+```
+
+- 语义/机制 = `agent/MEMBER-AGENT.md` §3.6/§2 KD-SV-204（成员本人凭据——绑定一次复用 ∥ 经盒按次 ∥ 用毕即清）；端点 = `gateway/API.md` §2.11。
+- 圈界：无 FK（沿先例）；`(member_id, host)` 唯一（UNIQUE 自携索引）；`secret_cipher` 单密列（读写单点）；**会话两表不建**（题一裁定——服务器零会话落库）；审计 CHECK 扩型 = 十六型（重建同构——CHECK **kind 非枚举**：`member_event` 六 kind = `chat_start` ∥ `chat_call` ∥ `chat_stop` ∥ `pull` ∥ `credential_set` ∥ `credential_revoke`）。
+- **判据（单元测试档）**：空库直落 **23** ∥ v22 库升后读数 **23** ∥ v23 段幂等（再开零变）∥ `member_git_credentials` 列面七行在场（`pragma_table_info`）+ `(member_id, host)` 唯一（重复插入 ⇒ 拒）∥ 存量审计行逐值保形 + 两索引在场 ∥ `member_event` 型可写（CHECK 放行）∥ **`member_sessions` 表不在**（`sqlite_master`——题一判据）。
+
+### v24 增段（`mcp_servers` 建表 + 审计 CHECK 再扩（十七型）——mcp 域；server-mcp 批）
+
+```sql
+-- ① MCP 服务器清单表（server 全局单份——非逐用户；KD-SV-197）
+CREATE TABLE IF NOT EXISTS mcp_servers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,                   -- 服务器名（工具前缀源——核 `{server}_{tool}`）
+  transport TEXT NOT NULL CHECK (transport IN ('stdio','http','ws')),
+  command TEXT,                                -- stdio：可执行（明文）
+  args_json TEXT,                              -- stdio：参数数组（JSON string[]；明文——可含秘密，指引 = 设计档）
+  url TEXT,                                    -- http：端点
+  ws_url TEXT,                                 -- ws：端点
+  secret_cipher TEXT,                          -- AES-256-GCM（credential-crypto.mjs；{ token?, headers?, env? } 合一；NULL = 零敏感字段；密列零回显）
+  enabled INTEGER NOT NULL DEFAULT 1,          -- 启用位（0/1——沿 providers.proxy 先例）
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+-- ② audit_events 表重建（十六型 ⇒ 十七型：+ 'mcp_event'——步序与 v10/v11/v14/v17/v20/v23 同构）
+--    kind 枚举（三 kind）：server_add ∥ server_update ∥ server_remove（kind 非 CHECK 枚举——逐 kind 归 accounts/ACCOUNTS.md §2.1）
+```
+
+- 语义/机制 = `mcp/MCP.md` §3（KD-SV-197/198——清单形/凭据形）；端点 = `gateway/API.md` §2.13；控制台面 = `webui/MCP.md` §2。
+- 圈界：无 FK（沿先例）；`name` 唯一（UNIQUE 自携索引——工具前缀须稳定可辨）；`transport` CHECK 三值；三传输列互斥 = 应用层校验（列 NULL 放行）；`secret_cipher` 单密列（三敏感面合一——读写单点）；审计 CHECK 扩型 = 十七型（重建同构）。
+- **判据（单元测试档）**：空库直落 **24** ∥ v23 库升后读数 **24** ∥ v24 段幂等（再开零变）∥ `mcp_servers` 列面十行在场（`pragma_table_info`）∥ `name` 唯一（重复插入 ⇒ 拒）∥ `transport` 枚举逐值（表外 ⇒ 拒）∥ 存量审计行逐值保形 + 两索引在场 ∥ `mcp_event` 型可写（CHECK 放行）。
+
 ## 3. 迁移链（`user_version` 逐版升）
 
 - `thincoder-server/src/store/db.mjs`（已落盘）持 `MIGRATIONS` 数组——每段 = `{ v, up(db) }`（v = 目标 `user_version`，自 1 起递增；v1 = 基线段 = §2 全量 DDL）。
@@ -578,13 +681,21 @@ CREATE INDEX IF NOT EXISTS idx_team_ledger_owner ON team_ledger_items(owner);
     判据（单元测试档）= 空库读数 19 ∥ v18 库升后读数 19 ∥ v19 段幂等（再开零变）∥ 列面含 `key_plain` ∥ 存量行 NULL 零变。
 - v20 = 团队台账表 + 审计 CHECK 重建（十五型）（**team-ledger 批** ∥ 台账 #1206）：**建表 + 两索引 + 表重建（审计 CHECK 扩型——同上四段同构）**（见 §2 v20 段）；旧库（v1–v19）启动自动升 ∥ 空库直落 v20；
     判据（单元测试档）= 空库读数 20 ∥ v19 库升后读数 20 ∥ v20 段幂等（再开零变）∥ 表/两索引在场 ∥ 存量审计行逐值保形 ∥ `ledger_event` 型可写。
+- v21 = `git_sources.scope_kind` 增列 + 存量回填（gitee 范围三态——**gitee-namespace-kinds 批** ∥ 台账 #1365）：**加列 + 回填**（`ALTER TABLE … ADD COLUMN` + 同段 `UPDATE`——表不重建；见 §2 v21 段）；旧库（v1–v20）启动自动升 ∥ 空库直落 v21；
+    判据（单元测试档）= 空库读数 21 ∥ v20 库升后读数 21 ∥ v21 段幂等（再开零变）∥ 列面含 `scope_kind` ∥ 回填三用例（gitee 在场 ⇒ `org` ∥ gitee 空 ⇒ `personal` ∥ 非 gitee 零动）。
+  - v22 = 沙盒两表收正（`sandbox_workspaces` 表重建 + `registry_credentials` 建表 + `sandbox_tasks` 删表 + `sandbox_runners` 连接材料四列（本增补 #2）——**sandbox-exec-rebuild 批** ∥ 台账 #1373）：**表重建 + 建表 + 删表 + 列级 ALTER**（步序与 v10/v12 同构；见 §2 v22 段）；旧库（v1–v21）启动自动升 ∥ 空库直落 v22；
+      判据（单元测试档）= 空库读数 22 ∥ v21 库升后读数 22 ∥ v22 段幂等（再开零变）∥ `sandbox_workspaces` 列面十行（含 `stop_reason` ∥ `base_image`；不含 `required_labels_json`）∥ `registry_credentials` 在场 + `host` 唯一 ∥ `sandbox_tasks` 表不在 ∥ `sandbox_runners` 连接材料四列在场（存量行 NULL）∥ 存量行逐值保形。
+- v23 = 成员 git 凭据表 + 审计 CHECK 再扩（十六型——**member-face-chat 批** ∥ 台账 #1215）：**加表 + 表重建**（步序与 v10/v11/v14/v17/v20 同构；见 §2 v23 段；**会话两表不建**——题一裁定）；旧库（v1–v22）启动自动升 ∥ 空库直落 v23；
+     判据（单元测试档）= 空库读数 23 ∥ v22 库升后读数 23 ∥ v23 段幂等（再开零变）∥ 凭据表列面七行与 `(member_id, host)` 唯一在场 ∥ `member_sessions` 表不在 ∥ 存量审计行逐值保形 ∥ `member_event` 型可写。
+- v24 = `mcp_servers` 建表 + 审计 CHECK 重建（十七型——**server-mcp 批** ∥ 台账 #1379）：**加表 + 表重建**（步序与 v10/v11/v14/v17/v20/v23 同构；见 §2 v24 段）；旧库（v1–v23）启动自动升 ∥ 空库直落 v24；
+    判据（单元测试档）= 空库读数 24 ∥ v23 库升后读数 24 ∥ v24 段幂等（再开零变）∥ 表列面十行 + `name` 唯一 + `transport` CHECK ∥ 存量审计行逐值保形 ∥ `mcp_event` 型可写。
 
 ## 4. 本域文件与行数预算（本域族行）
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/src/store/db.mjs`（已落盘） | **124 ⇒ ≈160 ⇒ 144**（实读——v3 落地后）**⇒ ≈155**（服务模型配置面批 +≈11 = v4 段（ALTER + 迁移段））**⇒ 实读 150 ⇒ ≈205**（配额分模型批 +≈55 = v5 段：拆列 ALTER/UPDATE ∥ 建两表 ∥ 两回填 INSERT ∥ 成员列增删）**⇒ 实读 202 ⇒ ≈214**（配额 v2 批 +≈12 = v6 段（ALTER + 迁移段））**⇒ 实读 210（v6 落地后）⇒ ≈218**（模型元数据批 +≈8 = v7 段（ALTER + 迁移段——与 v6 段同构））**⇒ ≈228**（me-keys 批 +≈10 = v8 段（ALTER + 回填 UPDATE + 迁移段——较 v6/v7 段多一条回填））**⇒ 实读 ≈224（2026-10-09）⇒ ≈234**（本批代理：v9 段 +≈10——实读待回填）**⇒ 实读 231（2026-10-09——本设计轮复读）⇒ ≈256（配置控制台批：v10 重建段 +≈25——建新表/拷贝/换名/索引重建 ∥ 迁移段；实读待回填）⇒ 实读 255（2026-10-09——配置控制台批落地后）∥ ±0（2026-10-09 alias 批：零结构变更）⇒ ≈350（server-exec-sandbox 批：v11 段 +≈95 = 七表 + 种子 + 审计重建——实读待回填）** ⇒ 实读 **365**（2026-10-10——runner-admin-console 批现读）⇒ ≈400（本批：v12 段 +≈35——实读待回填）⇒ **≈425**（托管接入增补：v13 段 +≈25——实读待回填）** ⇒ 实读 **409**（2026-10-11——admin-agent-chat 批设计轮现读）⇒ 实读 **458**（2026-10-11——sandbox-image-sources 批设计轮现读；v14 段入盘 +49）⇒ ≈490（本批：v15 段 +≈32——建表 + 两唯一约束 + 迁移段；实读待回填）** ⇒ 实读 **476**（2026-10-12 本设计轮复读）⇒ ≈**485**（console-reasoning-levels 批：v16 段 +≈9——`ALTER` + 迁移段）** ⇒ 实读 **488**（2026-10-12——team-projects-permissions 批设计轮现读）⇒ ≈**560**（本批：v17 段 +≈70——三表 + 两索引 + 审计重建（十四型）+ 迁移段；实读待回填）∥ **+≈72**（**admin-chat-creds-merge 批**：**v18** 段——七列 `ALTER` ∥ `sandbox_onboarding` CHECK 重建 ∥ 回填移交；段序收正 2026-10-13——实落次序在先） ∥ **+≈14**（**server-wake-face 批**修订轮：**v19** 段——`ALTER` + 迁移段；段序收正 2026-10-13——实落次序在后） ∥ **+≈44**（**team-ledger 批**：**v20** 段——建表 + 两索引 + 审计 CHECK 重建（十五型）+ 迁移段；实读待回填）；**>500 软线复核（评审发现 2）：判 = 维持 + 上限 700**——维持理由：迁移段 append-only（每段 ≈5–70 行——批增速 ≈每批 +10–35）∥ 本档 = 迁移链单源（开库序 ∥ 段序一读到底——外拆 = 跨档跳转）；硬限 800 未触（≈560 留 ≈240 余量 ⇒ ≈7 批以上）；**触发 = 实读 >700 ⇒ 起「迁移段外拆」轮**（v2–vN 段外迁 `src/store/migrations.mjs`（拟新增）——纯搬移零语义；本档保开库/PRAGMA/语句封装） | 开库 ∥ PRAGMA ∥ DDL ∥ 迁移链 ∥ 语句封装 |
-| `thincoder-server/src/store/credential-crypto.mjs`（已落——team-projects-permissions 批 · KD-SV-119） | ≈65（设计估——凭据三件（`loadOrCreateCredentialKey` ∥ `encryptSecret` ∥ `decryptSecret`）自 `sandbox/onboarding.mjs` 逐字抽出 + **键路径派生 `credentialKeyPath(config)` 同件收口**（单一出处——两域同址；消第二份路径规则）——sandbox ∥ project 两域共享） | 凭据加解密（AES-256-GCM + `data/credentials.key`——首用生成 ∥ 0600 ∥ 不落库） |
+| `thincoder-server/src/store/db.mjs`（已落盘） | **124 ⇒ ≈160 ⇒ 144**（实读——v3 落地后）**⇒ ≈155**（服务模型配置面批 +≈11 = v4 段（ALTER + 迁移段））**⇒ 实读 150 ⇒ ≈205**（配额分模型批 +≈55 = v5 段：拆列 ALTER/UPDATE ∥ 建两表 ∥ 两回填 INSERT ∥ 成员列增删）**⇒ 实读 202 ⇒ ≈214**（配额 v2 批 +≈12 = v6 段（ALTER + 迁移段））**⇒ 实读 210（v6 落地后）⇒ ≈218**（模型元数据批 +≈8 = v7 段（ALTER + 迁移段——与 v6 段同构））**⇒ ≈228**（me-keys 批 +≈10 = v8 段（ALTER + 回填 UPDATE + 迁移段——较 v6/v7 段多一条回填））**⇒ 实读 ≈224（2026-10-09）⇒ ≈234**（本批代理：v9 段 +≈10——实读待回填）**⇒ 实读 231（2026-10-09——本设计轮复读）⇒ ≈256（配置控制台批：v10 重建段 +≈25——建新表/拷贝/换名/索引重建 ∥ 迁移段；实读待回填）⇒ 实读 255（2026-10-09——配置控制台批落地后）∥ ±0（2026-10-09 alias 批：零结构变更）⇒ ≈350（server-exec-sandbox 批：v11 段 +≈95 = 七表 + 种子 + 审计重建——实读待回填）** ⇒ 实读 **365**（2026-10-10——runner-admin-console 批现读）⇒ ≈400（本批：v12 段 +≈35——实读待回填）⇒ **≈425**（托管接入增补：v13 段 +≈25——实读待回填）** ⇒ 实读 **409**（2026-10-11——admin-agent-chat 批设计轮现读）⇒ 实读 **458**（2026-10-11——sandbox-image-sources 批设计轮现读；v14 段入盘 +49）⇒ ≈490（本批：v15 段 +≈32——建表 + 两唯一约束 + 迁移段；实读待回填）** ⇒ 实读 **476**（2026-10-12 本设计轮复读）⇒ ≈**485**（console-reasoning-levels 批：v16 段 +≈9——`ALTER` + 迁移段）** ⇒ 实读 **488**（2026-10-12——team-projects-permissions 批设计轮现读）⇒ ≈**560**（本批：v17 段 +≈70——三表 + 两索引 + 审计重建（十四型）+ 迁移段；实读待回填）∥ **+≈72**（**admin-chat-creds-merge 批**：**v18** 段——七列 `ALTER` ∥ `sandbox_onboarding` CHECK 重建 ∥ 回填移交；段序收正 2026-10-13——实落次序在先） ∥ **+≈14**（**server-wake-face 批**修订轮：**v19** 段——`ALTER` + 迁移段；段序收正 2026-10-13——实落次序在后） ∥ **+≈44**（**team-ledger 批**：**v20** 段——建表 + 两索引 + 审计 CHECK 重建（十五型）+ 迁移段；实读待回填）∥ **+≈14**（**gitee-namespace-kinds 批**：**v21** 段——`ALTER` + 回填 `UPDATE` + 迁移段；现读 **675 ⇒ ≈690**——触发线 700 未触，余 ≈10 行） ∥ **±0（member-face-chat 批：**v23** 段入 `migrations.mjs`——凭据表 + 索引 + 审计 CHECK 重建（十六型）——拆案已落，本档零动）**）**；**>500 软线复核（评审发现 2）：判 = 维持 + 上限 700**——维持理由：迁移段 append-only（每段 ≈5–70 行——批增速 ≈每批 +10–35）∥ 本档 = 迁移链单源（开库序 ∥ 段序一读到底——外拆 = 跨档跳转）；硬限 800 未触（≈560 留 ≈240 余量 ⇒ ≈7 批以上）；**触发 = 实读 >700 ⇒ 起「迁移段外拆」轮**（v2–vN 段外迁 `src/store/migrations.mjs`（拟新增）——纯搬移零语义；本档保开库/PRAGMA/语句封装）**⇒ 实读 688（2026-10-13 本批现读）⇒ 触发达成（+ v22 段 ≈20 ⇒ ≈708）⇒ 拆案本批实施**（sandbox-exec-rebuild 批：`db.mjs` ≈300 + `migrations.mjs` ≈430——纯搬移 + v22 段；**本增补 +≈40**——`base_image` 列 + `registry_credentials` 建表 ⇒ `migrations.mjs` ≈**470**；**本增补 #2 +≈10**——连接材料四列 `ALTER` ⇒ `migrations.mjs` ≈**480**；**server-mcp 批 +≈20**——**v24** 段（`mcp_servers` 建表 + 审计 CHECK 重建（十七型））⇒ ≈**500**；**命名 = `migrations.mjs` 单源**——SANDBOX §13 旧称 `schema.mjs` 收正；**member-face-chat 批 ±0**——本档零动，v23 段入 `migrations.mjs`（+≈35——凭据表 + 索引 + 审计 CHECK 重建（十六型））⇒ ≈**535**） ∥ **本档实读 37**（2026-10-13 本批现读——拆案落定后）；`migrations.mjs` 实读 **711**（2026-10-13 本批现读——在册估低，以实施当刻实读为准） | 开库 ∥ PRAGMA ∥ 语句封装（DDL/迁移链 = `migrations.mjs`） |
+| `thincoder-server/src/store/credential-crypto.mjs`（已落——team-projects-permissions 批 · KD-SV-119） | ≈65（设计估——凭据三件（`loadOrCreateCredentialKey` ∥ `encryptSecret` ∥ `decryptSecret`）自 `thincoder-server/src/sandbox/onboarding.mjs` 逐字抽出 + **键路径派生 `credentialKeyPath(config)` 同件收口**（单一出处——两域同址；消第二份路径规则）——sandbox ∥ project 两域共享） | 凭据加解密（AES-256-GCM + `data/credentials.key`——首用生成 ∥ 0600 ∥ 不落库） |
 
 ## 5. 关键决策（本域）
 
@@ -598,6 +709,12 @@ CREATE INDEX IF NOT EXISTS idx_team_ledger_owner ON team_ledger_items(owner);
 - 归档/导出面不做（清理 = 保留窗删除式——`metering/METERING.md` §1；备份 = 部署侧面——`ops/OPS.md` §5.5）；多实例共享存储 = 触发项（`EVOLUTION.md` §2）；结构升级只走迁移链（不做手工脚本面）。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-onboarding-removal 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §1 · 台账 #1383；用户裁「撤」）：§1 版本链 v13 条注「停机留史」∥ §2 v13 段标题 + 背景行注「停机留史（数据不删 ∥ 零写入零读面）」+ 机制指针收正 ∥ 加密密钥披露指针收正（§14 KD-SV-84）。既落段零改写（v13/v18 段体 = as-of 历史；迁移链不可回填——零动）。**产品码零触（设计轮）。**
+
+- 2026-10-13（**server-mcp 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-server-mcp.md` §1 · 台账 #1379）：§1 版本链增 v24 句（当前 23 ⇒ 24）∥ §2 增 v24 段（`mcp_servers` 建表 + 审计 CHECK 重建（十七型）——DDL 逐字 + 圈界 + 判据）∥ §3 迁移链增 v24 行 ∥ §4 `migrations.mjs` 行（+≈20 ⇒ ≈500）。同源随动 = `mcp/MCP.md` §3 ∥ `accounts/ACCOUNTS.md` §2.1 ∥ `gateway/API.md` §2.13。**产品码零触（设计轮）。**
+
+- 2026-10-13（**sandbox-exec-rebuild 批 · 范围增补 #2（连接面 TLS 档——fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §1「2026-10-13 22:43 · 用户裁定」）：§1 v22 收正段句增一件（`sandbox_runners` 连接材料四列）；§2 v22 段 DDL 增 ⑤（四列 `ALTER`——`tls_ca`/`tls_cert`/`tls_key_cipher`/`tls_updated_at`；列级/存量 NULL）+ 语义句随正 ∥ 判据增「四列在场（存量行 NULL）」腿；§3 v22 行判据同拍；§4 `migrations.mjs` ≈470 ⇒ **≈480**（本增补 #2 +≈10）。同源随动 = `sandbox/SANDBOX.md`（§2/§3 连接方式块） ∥ `sandbox/EXECUTION.md` §9/§14 ∥ `gateway/API.md` §2.5 ∥ `accounts/ACCOUNTS.md` §2.1。**产品码零触（设计轮）。**
 
 - 2026-10-06：建档（批 `docs/batches/2026-10-06-server-gateway.md` 设计轮；同日补轮按三层结构 + B 案织入）——store 域：库 ∥ DDL（四表——members 扩列 + sessions） ∥ 迁移链；KD-SV-3。
 - 2026-10-06：实施后回填轮（fix）——§4 行数按实读回填（≈175 ⇒ 110）。
@@ -635,3 +752,11 @@ CREATE INDEX IF NOT EXISTS idx_team_ledger_owner ON team_ledger_items(owner);
 - 2026-10-13（**段号对调收正 · 父侧**——承 creds-merge 实施轮上抛（db 段号冲突）∥ 代码实读 `db.mjs:521-529`（开库序只升 `v > 当前` ⇒ 空档不可回填））：实落次序 = admin-chat-creds-merge 先（实施在落）∥ server-wake-face 后 ⇒ 两批段号对调——**creds-merge = v18 ∥ wake-face = v19**（§1 链 ∥ §2 两段 ∥ §3 两行 ∥ §4 预算行逐处同拍；wake 批自身文档面编号由其修正轮随正）。机械对调 · 零语义变化。（父侧直接执行 · 可 revert）
 - 2026-10-12（**server-wake-face 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-server-wake-face.md` §3 轮次 1 之 6）：§2 v14 段注补 user 行 `data.kind="reminder"` 键登（提醒投递行——timer 到期 ∥ 后台任务结算；同 `imageParts` 登记式；机制 = `agent/ADMIN-AGENT.md` §15.1）。**零结构变更**（版本号零动——列存 JSON 内键集扩展）；**产品码零触（设计轮）。**
 - 2026-10-13（**team-ledger 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §1 · 台账 #1206；需求功能点 32 ∥ AC-32）：§1 结构版本 **19 ⇒ 20**；§2 标题随正（v2–v19 ⇒ v2–v20）+ **增 v20 增段**（`team_ledger_items` 建表（十列——全局自增编号 ∥ 仓 = 归一地址（非 FK） ∥ 六态 CHECK）+ 两索引 ＋ 审计 CHECK 再扩十四 ⇒ **十五型**：+ `ledger_event`——重建步同 v10/v11/v14/v17 同构）∥ §3 迁移链补 v20 段（判据）∥ §4 `db.mjs` 行补 +≈44（实读待回填——v20 后 ≈675；既定触发 >700 未触）。同源随动 = `ledger/LEDGER.md`（新档） ∥ `gateway/API.md` §2.10 ∥ `accounts/ACCOUNTS.md` §2.1（十五型） ∥ `webui/LEDGER.md`（新档） ∥ `docs/core/design/TEAM-LEDGER.md`（新档）。**产品码零触（设计轮）。**
+- 2026-10-13（**gitee-namespace-kinds 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-gitee-namespace-kinds.md` §1 · 台账 #1365；需求功能点 44 ⑫ ∥ AC-44 ⑬）：§1 结构版本 **20 ⇒ 21**；§2 标题随正（v2–v20 ⇒ v2–v21）+ **增 v21 增段**（`git_sources.scope_kind` 列（三值 CHECK——NULL 放行）+ 存量回填（gitee：scope 在场 ⇒ `org` ∥ 空 ⇒ `personal`；非 gitee 零动）；审计 CHECK 零动（十五型不变））∥ §3 迁移链补 v21 段（判据）∥ §4 `db.mjs` 行补 +≈14（现读 675 ⇒ ≈690——触发线 700 余 ≈10 行，实施实读回填）。同源随动 = `project/PROJECTS.md` §2/§4/§8/§9/§10/§11/§12（KD-SV-151） ∥ `gateway/API.md` §2.9 ∥ `webui/PROJECTS.md` §2.4/§3/§4。**产品码零触（设计轮）。**
+- 2026-10-13（**member-face-chat 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-member-face-chat.md` §1 · 台账 #1215；需求功能点 50 ∥ AC-50）：§1 结构版本 **21 ⇒ 22**；§2 标题随正（v2–v21 ⇒ v2–v22）+ **增 v22 增段**（`member_sessions`（`workspace_id`/`member_id`/`model`/`reasoning`/`status`）+ `member_session_messages`（`seq`/`role` 四值/`data_json`）+ 两索引 ∥ 审计 CHECK 再扩十五 ⇒ **十六型**：+ `member_event`——重建步同 v10/v11/v14/v17/v20 同构）∥ §3 迁移链补 v22 段（判据）∥ §4 `db.mjs` 行补 +≈70（现读 ≈690 ⇒ ≈760——**越触发线 700 ⇒ 迁移段外拆 `src/store/migrations.mjs`（拟新增）本批先行落地**；触发条件已在案）。同源随动 = `agent/MEMBER-AGENT.md`（新档） ∥ `gateway/API.md` §2.11/§2.12 ∥ `accounts/ACCOUNTS.md` §2.1（十六型） ∥ `webui/CHAT.md` §2.2。**产品码零触（设计轮）。**
+- 2026-10-13（**member-face-chat 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-member-face-chat.md` §3 轮次 1 之 4（连带——闸面锚读数））：§2 v22 段新档路径 `src/store/migrations.mjs` 补「（拟新增）」标记（未落盘档须带标记，否则计悬空）。**零新语义**（闸面标记）；产品码零触（设计轮）。
+- 2026-10-13（**sandbox-exec-rebuild 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §1 · 台账 #1373）：§1 结构版本 **22 ⇒ 23** ∥ §2 标题（v2–v22 ⇒ **v2–v23**）+ **增 v22 收正段**（`sandbox_workspaces` 表重建（去 `required_labels_json` ∥ 增 `stop_reason`）+ `sandbox_tasks` 删表）+ 原 v22 段顺延 **v23** ∥ v11 段两处旁注收正 + 表归属七 ⇒ **六表** ∥ v12 段旁注收正 ∥ §3 增 v22/v23 两行 ∥ §4 `db.mjs` 行（实读 688 ⇒ 触发达成 ⇒ 拆案本批落；命名单源 `migrations.mjs`）。同源随动 = `sandbox/EXECUTION.md` §9 ∥ `agent/MEMBER-AGENT.md` §5 ∥ `accounts/ACCOUNTS.md` §2.1。**产品码零触（设计轮）**。
+- 2026-10-13（**sandbox-exec-rebuild 批 · 设计修订轮增补（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §1 「2026-10-13 21:32 · 用户裁定（底座可换 = 完整功能进本批）」）：§1 v22 收正段句增两件（`base_image` 列 ∥ `registry_credentials` 建表）；§2 v22 段：DDL ① 增 `base_image TEXT`（NULL = 标准镜像）+ ④ 增 `registry_credentials` 建表（`host` 唯一 ∥ `secret_cipher` 密列零回显）∥ 圈界/语义句随正 ∥ **判据收正**（列面八行 ⇒ **十行**——原值对 DDL 差 1，本笔随正纠偏；增 `registry_credentials` 在场 + `host` 唯一腿）；同段旁注（v12 段）+ 表归属（六表 ⇒ **七表**）随正；§3 v22 行判据同拍；§4 `db.mjs` 行：`migrations.mjs` ≈430 ⇒ **≈470**（本增补 +≈40——底座可换；全形 = `sandbox/EXECUTION.md` §8/§15 KD-SV-184/188）。同源随动 = `sandbox/EXECUTION.md` ∥ `sandbox/SANDBOX.md`（§2/§3） ∥ `gateway/API.md` §2.5 ∥ `accounts/ACCOUNTS.md` §2.1。**产品码零触（设计轮）。**
+- 2026-10-13（**sandbox-exec-rebuild 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §3 轮次 1（评审 #91 之 7）：§4 `db.mjs` 行链内 member-face-chat 段号 **v22 ⇒ v23**（按结构单源——v22 = 沙盒收正段 ∥ v23 = 成员面）；随正读数与拆案归属（拆案实施 = sandbox-exec-rebuild 批；v23 段入 `migrations.mjs`——该档面 ≈540，本档 ≈300）。**零新语义（段号/读数收正）；产品码零触。**
+- 2026-10-13（**member-face-chat 批 · 裁定修订轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-member-face-chat.md` §1（用户裁定：题一翻案——会话真源在盒内 / 题三补——成员 git 凭据））：§1 结构版本链 v23 行重定（**成员 git 凭据表 + 审计 CHECK 十六型**——会话两表不建）∥ §2 v23 段全重写（凭据表 DDL（`(member_id, host)` 唯一）+ 圈界（密列单点 ∥ kind 非枚举——六 kind）+ 判据（含 `member_sessions` 表不在））∥ §3 v23 行同拍（判据：凭据表列面/唯一 + 会话表不在）∥ §4 `db.mjs` 行链 member-face 段 **+≈70 ⇒ ±0**（v23 入 `migrations.mjs`）+ 两档实读回填（本档 **37** ∥ 该档 **711**——在册估低收正）。**产品码零触（设计轮）。**
+- 2026-10-13（**sandbox-exec-rebuild 批 · 实施上抛一裁 · 父侧直接执行（可 revert）**——承本批实施上抛（#106 底座舱 · 文档相抵）：`registry_credentials` 增 `updated_at TEXT`（§2 v22 段 DDL 于 `created_at` 后——**七列**）+ 判据「列面六行」⇒「**七行**（含 `updated_at`）」——消解 `gateway/API.md` §2.5（列表行 `updatedAt`）∥ `webui/SANDBOX.md` §2.1①（卡面「更新时间」）与 DDL 无该列之相抵（否则编辑后「更新时间」恒为创建时刻——用户可见失真）。落法：本档两处 = 父侧直接执行；`migrations.mjs` DDL 列 = steer 执行面舱（#104）；写面维护（update 径刷新）= 底座舱（#106）。API/webui 两处已含 `updatedAt`——零动。**产品码零触（设计档收正）。**

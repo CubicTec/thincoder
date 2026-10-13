@@ -212,7 +212,20 @@ const SANDBOX_KIND_KEYS = {
   onboarding_credential_revoke: "audit.sandboxKind.onboarding_credential_revoke",
   host_credential_set: "audit.sandboxKind.host_credential_set",
   host_credential_revoke: "audit.sandboxKind.host_credential_revoke",
+  terminal_open: "audit.sandboxKind.terminal_open",
+  terminal_close: "audit.sandboxKind.terminal_close",
   approval: "audit.sandboxKind.approval",
+  workspace_base: "audit.sandboxKind.workspace_base", // sandbox-exec-rebuild 批 · 修订轮增补「底座可换」（四 kind——系统部件两表同拍）
+  image_derive: "audit.sandboxKind.image_derive",
+  registry_credential_set: "audit.sandboxKind.registry_credential_set",
+  registry_credential_revoke: "audit.sandboxKind.registry_credential_revoke",
+  runner_connection: "audit.sandboxKind.runner_connection", // sandbox-exec-rebuild 批 · 增补 #2（连接面 TLS 档）
+  workspace_destroy: "audit.sandboxKind.workspace_destroy", // sandbox-exec-rebuild 批 · 执行面动作/失败族（服务端实发全量对齐——工作区拆 ∥ 快照 ∥ 闸/配额下发）
+  checkpoint: "audit.sandboxKind.checkpoint",
+  checkpoint_fail: "audit.sandboxKind.checkpoint_fail",
+  egress_apply_failed: "audit.sandboxKind.egress_apply_failed",
+  quota_apply_failed: "audit.sandboxKind.quota_apply_failed",
+  placement_failed: "audit.sandboxKind.placement_failed", // sandbox-exec-rebuild 批 · 收口修复轮（B 裁——补放置失败审计 kind）
 }
 
 /** 沙盒 kind 文案（导出——日志窗「操作记录」块同源消费；走查轮 2026-10-11）。 */

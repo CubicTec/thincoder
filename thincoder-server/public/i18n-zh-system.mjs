@@ -137,7 +137,7 @@ export const ZH_SYSTEM = Object.freeze({
   "usageReport.export": "导出 CSV",
   "usageReport.exported": "已导出 CSV",
 
-  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十三型在册） ────
+  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十五型在册；型面十七型——`member_event` ∥ `mcp_event` 待落） ────
   "audit.title": "审计",
   "audit.typeLabel": "类型",
   "audit.typeAll": "全部类型",
@@ -203,6 +203,19 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.sandboxKind.approval": "审批裁定",
   "audit.sandboxKind.host_credential_set": "主机凭据录入",
   "audit.sandboxKind.host_credential_revoke": "主机凭据撤销",
+  "audit.sandboxKind.terminal_open": "容器终端开启",
+  "audit.sandboxKind.terminal_close": "容器终端关闭",
+  "audit.sandboxKind.workspace_base": "工作区底座变更",
+  "audit.sandboxKind.image_derive": "派生镜像构建",
+  "audit.sandboxKind.registry_credential_set": "私有仓凭据录入",
+  "audit.sandboxKind.registry_credential_revoke": "私有仓凭据撤销",
+  "audit.sandboxKind.runner_connection": "节点连接变更",
+  "audit.sandboxKind.workspace_destroy": "工作区销毁",
+  "audit.sandboxKind.checkpoint": "快照创建",
+  "audit.sandboxKind.checkpoint_fail": "快照失败",
+  "audit.sandboxKind.egress_apply_failed": "出站规则下发失败",
+  "audit.sandboxKind.quota_apply_failed": "磁盘配额应用失败",
+  "audit.sandboxKind.placement_failed": "放置失败",
   "audit.sandboxKept": "保留",
   "audit.sandboxRemoved": "清除",
 })

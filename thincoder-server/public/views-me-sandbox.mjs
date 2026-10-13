@@ -1,6 +1,6 @@
 /**
  * views-me-sandbox.mjs — 我的·工作区（webui/SANDBOX.md §2.2——`#/me/sandbox`；sandbox-outbound-member-face 批；台账 #1233①/#1234）：
- * 页题 + 表六列（名 ∥ 盒状态（运行中/已停 + 回收原因）∥ 未提交改动 ∥ 快照数 ∥ 所属 runner ∥ 待批）+ 空态；**零写控件**
+ * 页题 + 表五列（名 ∥ 盒状态（运行中/已停 + 回收原因）∥ 快照数 ∥ 所属 runner ∥ 待批）+ 空态；**零写控件**
  * （成员写面随 #1216 ②——本页只读）。
  *
  * 待批发起方提示（判定单源 = `sandbox/SANDBOX.md` §8——文案 ∥ 出现/消失条件 ∥ 零静默）：`pending` 在场 ⇒ 行内可见提示
@@ -76,19 +76,18 @@ export async function renderMeSandbox(ctx, mount) {
     alertBox.hidden = hosts.length === 0
   }
 
-  /** 表六列（名 ∥ 盒状态 + 回收原因 ∥ 未提交改动 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批）∥ 空态。 */
+  /** 表五列（名 ∥ 盒状态 + 回收原因 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批）∥ 空态。 */
   const renderTable = (workspaces) => {
     tableBox.replaceChildren(workspaces.length === 0
       ? h("p", { class: "hint", text: t("me.sandbox.empty") })
       : ctx.table(
-          [t("me.sandbox.colName"), t("me.sandbox.colState"), t("me.sandbox.colDirty"), t("me.sandbox.colCheckpoints"), t("me.sandbox.colRunner"), t("me.sandbox.colPending")],
+          [t("me.sandbox.colName"), t("me.sandbox.colState"), t("me.sandbox.colCheckpoints"), t("me.sandbox.colRunner"), t("me.sandbox.colPending")],
           workspaces.map((workspace) => {
             const host = pendingHostOf(workspace)
             return [
               String(workspace?.name ?? "—"),
               [h("span", { class: boxStateClass(workspace?.boxState), text: boxStateLabel(workspace?.boxState) }),
                 workspace?.stopReason === null || workspace?.stopReason === undefined ? null : h("span", { class: "hint", text: stopReasonLabel(workspace.stopReason) })],
-              workspace?.dirty === true ? t("me.sandbox.dirtyYes") : workspace?.dirty === false ? t("me.sandbox.dirtyNo") : "—",
               String(workspace?.checkpointCount ?? "—"),
               workspace?.runnerName === null || workspace?.runnerName === undefined || workspace.runnerName === "" ? t("me.sandbox.unbound") : String(workspace.runnerName),
               host === null ? "—" : h("span", { class: "badge warn", text: host }),

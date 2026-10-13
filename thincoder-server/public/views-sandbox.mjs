@@ -3,8 +3,11 @@
  * 「运行面」∥「镜像与镜像源」；公共件 = `tabs.mjs`；机制全文 = `webui/TABS.md` §2.2；子段形 `#/admin/sandbox/<tab>`）——
  * 标签① = 可用性提示 ∥ 节点表（节点行展开 ⇒ 容器区 + 卷区——懒加载；件 = `views-sandbox-containers.mjs`（sandbox-docker-admin 批外拆）∥ `views-sandbox-volumes.mjs`（sandbox-volumes 批）
  * ∥ 添加/删除节点弹窗 ∥ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态「撤销凭据」钮；在途 3s
- * 读时轮询、定终态停）∥ 节点行「SSH 凭据」动作（admin-chat-creds-merge 批——弹窗件 = `host-credential.mjs`（与对话页会话条钮**同件**）；KD-SV-134））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
- * 全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。
+ * 读时轮询、定终态停）∥ 节点行「SSH 凭据」动作（admin-chat-creds-merge 批——弹窗件 = `host-credential.mjs`（与对话页会话条钮**同件**）；KD-SV-134）
+ * ∥ 节点行「连接」动作（sandbox-exec-rebuild 批 · 增补 #2——连接方式编辑；件 = `views-sandbox-connection.mjs`；行地址列附 scheme 派生徽标（http/https））
+ * ∥ 添加节点弹窗连接段（同件——缺省档不携键））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
+ * 全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）+ 底座卡 + 私有仓凭据卡（sandbox-exec-rebuild 批 · 修订轮——
+ * 底座可换；件 = `views-sandbox-base.mjs`）。
  * 契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（`webui/I18N.md` §2.1）；
  * 窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
  * 单元测试档直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表 ∥ 子段 ∥ 两面板划分）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
@@ -17,6 +20,8 @@ import { deriveModels } from "./views-models.mjs"
 import { createContainerSection, createVolumeSection } from "./views-sandbox-containers.mjs"
 import { createImageSection } from "./views-sandbox-images.mjs"
 import { createImageSourceSection } from "./views-sandbox-image-sources.mjs"
+import { connectionSchemeOf, createConnectionSection, openConnectionModal } from "./views-sandbox-connection.mjs"
+import { createBaseSection } from "./views-sandbox-base.mjs"
 
 /** 容器态文案（re-export——单源住 `views-sandbox-containers.mjs`；沿旧导出面）。 */
 export { containerStateLabel } from "./views-sandbox-containers.mjs"
@@ -139,6 +144,8 @@ export async function renderSandbox(ctx, mount, sub = null) {
     panels.images = true
     startRunners() // 节点清单 = 页级单源（先到者触发——只取一次）
     imagePanel.append(createImageSourceSection(ctx, { onPulled: (runner) => { images.reset(runner); loadRunners() } }).card) // 镜像源卡（全局面，非按节点）；一键拉取成 ⇒ 该节点镜像表重取
+    const base = createBaseSection(ctx) // 底座卡 + 私有仓凭据卡（sandbox-exec-rebuild 批 · 修订轮——两卡入标签②，件内自取数）
+    imagePanel.append(base.baseCard, base.credCard)
     renderNodeSelect()
     renderImages()
     return imagePanel
@@ -202,13 +209,14 @@ export async function renderSandbox(ctx, mount, sub = null) {
       const counts = runner.containers === null || runner.containers === undefined ? "—" : `${runner.containers.running}/${runner.containers.total}`
       const toggle = () => { toggleIn(expandedNodes, runner.id); if (!expandedNodes.has(runner.id)) volumes.reset(runner); renderNodes() } // 收起 ⇒ 卷区失缓存（再展开重取可重试——B65）
       body.push(h("tr", { class: online ? "" : "error" }, h("td", { text: runner.name }),
-        h("td", { text: runner.address }),
+        h("td", {}, h("span", { text: runner.address }), h("span", { class: "badge", text: connectionSchemeOf(runner.address) })), // 连接读数：地址 scheme 派生（http/https 徽标）
         h("td", {}, h("span", { class: online ? "badge ok" : "badge off", text: t(online ? "admin.sandbox.online" : "admin.sandbox.offline") })),
         h("td", { text: ctx.fmtValue(runner.version) }),
         h("td", { text: counts }),
         h("td", {},
           h("button", { type: "button", class: "tiny", text: t(expandedNodes.has(runner.id) ? "admin.sandbox.collapse" : "admin.sandbox.expand"), onclick: toggle }),
           h("button", { type: "button", class: "tiny", text: t("admin.sandbox.hostCredBtn"), onclick: () => openHostCredentialModal(ctx, { runner, onSaved: loadRunners }) }), // 主机凭据（弹窗件两页共用——KD-SV-134）
+          h("button", { type: "button", class: "tiny", text: t("admin.sandbox.connBtn"), onclick: () => openConnectionModal(ctx, { runner, reload: loadRunners }) }), // 连接方式（sandbox-exec-rebuild 批 · 增补 #2——与 SSH 凭据并列）
           h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveRunnerModal(ctx, { runner, reload: loadRunners }) }))))
       if (expandedNodes.has(runner.id)) body.push(h("tr", { class: "detail-row" }, h("td", { colspan: String(headers.length) },
         h("div", { class: "stack-box" }, containerArea(runner), volumes.area(runner, { reload: loadRunners, refresh: refreshOf(runner) }))))) // 展开体 = 容器区 + 卷区（sandbox-volumes 批）
@@ -346,16 +354,19 @@ export async function renderSandbox(ctx, mount, sub = null) {
   // 数据读取触发 = 首激活面板（buildRunnerPanel ∥ buildImagePanel——webui/TABS.md §2.2 读时口径）；本函数零直读。
 }
 
-/** 添加节点弹窗（名 + 地址）；提交 ⇒ 自检中态；成：关窗 + flash + 刷新；败：窗内就地人话 + 草稿不丢。 */
+/** 添加节点弹窗（名 + 地址 + 连接方式段（sandbox-exec-rebuild 批 · 增补 #2——连接段共用件；缺省明文 ⇒ 体不携 `connection`/`tls` 键——零行为变化））；
+ *  提交 ⇒ 自检中态；成：关窗 + flash + 刷新；败：窗内就地人话 + 草稿不丢。 */
 function openAddRunnerModal(ctx, { reload }) {
   const { h } = ctx
   const nameInput = h("input", { placeholder: t("admin.sandbox.namePh") })
   const addressInput = h("input", { placeholder: t("admin.sandbox.addressPh") })
+  const connection = createConnectionSection(ctx) // 连接段（二择 + TLS 档三件——零回填）
   const note = h("p", { class: "hint error", hidden: true })
   const submitBtn = h("button", { type: "submit", text: t("admin.sandbox.addRunner") })
   const modal = openModal({
     title: t("admin.sandbox.addRunner"),
-    body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit }, field(h, "admin.sandbox.name", nameInput), field(h, "admin.sandbox.address", addressInput), note, submitBtn),
+    body: h("form", { class: "provider-form stacked", novalidate: true, onsubmit: submit },
+      field(h, "admin.sandbox.name", nameInput), field(h, "admin.sandbox.address", addressInput), connection.node, note, submitBtn),
   })
 
   async function submit(event) {
@@ -365,10 +376,17 @@ function openAddRunnerModal(ctx, { reload }) {
     const address = addressInput.value.trim()
     if (name === "") return showNote(note, t("admin.sandbox.fieldRequired", { field: t("admin.sandbox.name") }))
     if (address === "") return showNote(note, t("admin.sandbox.fieldRequired", { field: t("admin.sandbox.address") }))
+    const body = { name, address }
+    if (connection.kind() === "tls") { // TLS 档：体增 `connection`/`tls`（缺件 ⇒ 窗内必填人话——服务端亦校验）；缺省档不携键
+      const missing = connection.missingKey()
+      if (missing !== null) return showNote(note, t("admin.sandbox.fieldRequired", { field: t(missing) }))
+      body.connection = "tls"
+      body.tls = connection.materials()
+    }
     submitBtn.disabled = true
-    showNote(note, t("admin.sandbox.checking"), false) // 自检中态（服务端连通自检——§2.5 添加节点行）
+    showNote(note, t("admin.sandbox.checking"), false) // 自检中态（服务端连通自检——按档走；§2.5 添加节点行）
     try {
-      await ctx.api("/api/admin/sandbox/runners", { method: "POST", body: { name, address } })
+      await ctx.api("/api/admin/sandbox/runners", { method: "POST", body })
       ctx.flash(t("admin.sandbox.added", { name }))
       modal.close()
       await reload()

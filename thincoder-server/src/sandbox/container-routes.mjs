@@ -151,12 +151,13 @@ export function parseLogTail(raw) {
 }
 
 /**
- * 注册容器面十路由（§3）：列表 ∥ 建 ∥ 启/停 ∥ 删 ∥ 详情/日志/重启/强杀/用量；`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。
+ * 注册容器面十路由（§3）：列表 ∥ 建 ∥ 启/停 ∥ 删 ∥ 详情/日志/重启/强杀/用量；`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）；
+ * `config`（连接面 TLS 档材料解密——增补 #2；明文行零涉）∥ `requestImpl`（`node:https` 假件缝）同链下传。
  */
-export function registerContainerRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
+export function registerContainerRoutes(routes, { db, fetchImpl = fetch, config = {}, requestImpl = null, now = Date.now, readTimeoutMs, actionTimeoutMs } = {}) {
   if (!db) throw new Error("registerContainerRoutes：缺少 db")
 
-  const clientOf = (runner) => clientForRunner(runner, { fetchImpl, ...(readTimeoutMs ? { readTimeoutMs } : {}), ...(actionTimeoutMs ? { actionTimeoutMs } : {}) })
+  const clientOf = (runner) => clientForRunner(runner, { fetchImpl, config, requestImpl, ...(readTimeoutMs ? { readTimeoutMs } : {}), ...(actionTimeoutMs ? { actionTimeoutMs } : {}) })
 
   // 列表（读时读——KD-SV-79）
   routes.add("GET", "/api/admin/sandbox/runners/:id/containers", async (req, res, ctx) => {

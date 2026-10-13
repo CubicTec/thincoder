@@ -1,6 +1,6 @@
 /**
  * docker.mjs — Docker API 客户端（sandbox/SANDBOX.md §3 ∥ §14 KD-SV-79/80/81；台账 #1251）：
- * 地址归一（缺协议补 `http://`、缺端口补 2375；`https:` 拒）∥ 版本协商（引导步 = 无前缀读数 → `max(1.44, MinAPIVersion)` ≤ `ApiVersion`
+ * 地址归一**按档**（缺协议补 `http://`/`https://`、缺端口按档补 2375/2376；显式 scheme 与档相抵 ⇒ 抛——见下行 TLS 档段）∥ 版本协商（引导步 = 无前缀读数 → `max(1.44, MinAPIVersion)` ≤ `ApiVersion`
  * → 带前缀复读）∥ **调用恒带版本前缀** ∥ 超时（读类 3s ∥ 动作类 15s ∥ 拉取 10 分钟——常量；测试可注入 `fetchImpl`）∥ 错误映射。
  *
  * 本批增补（sandbox-docker-admin 批——§3 容器面补齐/镜像族 ∥ KD-SV-92/93/94）：容器详情/日志/用量/重启/强杀 + 镜像列表/拉取/删除；
@@ -8,16 +8,27 @@
  * 拉取 = 同步 10 分钟超时 + 失败两形皆收（非 2xx ∥ 200 流内 `error`——`findStreamError`；KD-SV-94）∥ 镜像引用形校验（`parseImageRef`/`normalizeImageRef`）。
  * 本批增补（sandbox-volumes 批——§3 卷族 ∥ KD-SV-104）：卷列表（`GET /volumes`——读时读）∥ 删卷（`DELETE /volumes/<名>`——动作类 15s；名形 = 路由侧前置校验，本档直入路径段）。
  *
+ * 本批增补（sandbox-exec-rebuild 批——执行面重做）：`networks`（create ∥ inspect ∥ delete——`Options` 携桥名 `com.docker.network.bridge.name`，闸匹配锚）∥
+ * `archive`（get ∥ put——快照/恢复流式，专用长超时）∥ `containerState`（引擎 `State` 三值——墙钟判据 ∥ 探针读数）∥ `buildImage`/`imageDetail`（底座可换派生——KD-SV-185）∥
+ * 拉取 `auth` 参（`X-Registry-Auth`——KD-SV-188）。
+ * **连接面 TLS 档（增补 #2——KD-SV-192…195）**：地址归一按档（`normalizeDockerAddress(raw, { tls })`——裸 host 补 scheme + 缺省端口 2375/2376；显式 scheme 与档相抵 ⇒ 抛）；
+ * 两参透传（`config` ∥ `requestImpl`——与 `fetchImpl` 同形）：**明文行恒用注入 `fetchImpl`（零行为变化——不构造适配件）** ∥ TLS 行 ⇒ 材料按行解密 + `httpsFetchOf`（`docker-tls.mjs`）。
+ *
  * 消费面 = 控制台节点/容器/镜像面（`routes.mjs` ∥ `container-routes.mjs` ∥ `image-routes.mjs`）与 agent 工具面（`docker-ops.mjs`）——同一套调用（用户 22:25 口径）。
  * 错误映射（`DockerError.kind`）：`unreachable`（连不上/网络败）∥ `timeout`（超预算）∥ `api`（Docker 已到达且非 2xx——携状态码与引擎原文；
  * 拉取面 200 流内错误亦归 `api`——status 记 200）；
  * 路由侧映射 = §3：不可达/超时 ⇒ 502 `upstream_error`；引擎 404/409 ⇒ 400（创建/拉取/镜像删除面）∥ 404（动作/读面，目标不存在）；余 ⇒ 502。
  */
+import { connectionKindOf, httpsFetchOf, tlsMaterialsOf } from "./docker-tls.mjs"
+
 export const DOCKER_MIN_API_VERSION = "1.44"
 export const DEFAULT_DOCKER_PORT = 2375
+export const DEFAULT_DOCKER_TLS_PORT = 2376 // TLS 档缺省端口（§3 连接方式块）
 export const READ_TIMEOUT_MS = 3000    // 读类（version ∥ info ∥ 列表 ∥ 详情/日志/用量——§3）
 export const ACTION_TIMEOUT_MS = 15000 // 动作类（create/start/stop/delete ∥ 重启/强杀/镜像删除——§3）
 export const PULL_TIMEOUT_MS = 10 * 60 * 1000 // 拉取专用（同步——KD-SV-94；沿 agent 工具面同值）
+export const BUILD_TIMEOUT_MS = 10 * 60 * 1000 // 派生构建专用（同步——KD-SV-185）
+export const ARCHIVE_TIMEOUT_MS = PULL_TIMEOUT_MS  // 快照/恢复存档流（KD-SV-167——沿拉取常量）
 export const LOG_TAIL_DEFAULT = 200    // 日志 tail 缺省（§3）
 export const LOG_TAIL_MAX = 2000       // 日志 tail 上界（§3）
 export const LOG_TEXT_LIMIT_BYTES = 256 * 1024 // 日志文本截断上限（KD-SV-93）
@@ -49,23 +60,38 @@ export function compareApiVersions(a, b) {
   return 0
 }
 
-/** 地址归一（§3）：trim 非空 ∥ `https:` 拒（TLS 不做——提议①）∥ 缺协议补 `http://` ∥ 缺端口补 2375。 */
-export function normalizeDockerAddress(raw) {
+/** 地址归一（§3 连接方式块——**按档补 scheme + 缺省端口**）：明文档缺协议补 `http://`、缺端口补 2375；TLS 档（`{ tls: true }`）缺协议补 `https://`、缺端口补 2376。
+ *  显式 scheme 与档相抵 ⇒ 抛（零静默推断——调用方转 400 零外呼）；余形非法 ⇒ 抛。`tls` 缺省 `false` = 明文（**不携档零行为变化**——逐值同现状）。 */
+export function normalizeDockerAddress(raw, { tls = false } = {}) {
   const text = typeof raw === "string" ? raw.trim() : ""
   if (text === "") throw new Error("地址不可为空")
-  if (/^https:/i.test(text)) throw new Error(`地址不收 https:（TLS 不做——内网明文 2375）：${text}`)
-  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : `http://${text}`
+  const explicit = /^([a-z][a-z0-9+.-]*):\/\//i.exec(text)
+  let scheme = tls ? "https" : "http"
+  if (explicit !== null) {
+    const given = explicit[1].toLowerCase()
+    if (given !== "http" && given !== "https") throw new Error(`地址仅收 http:// ∥ https://：${text}`)
+    if ((given === "https") !== Boolean(tls)) {
+      throw new Error(
+        given === "https"
+          ? `地址 scheme 与连接档相抵：显式 https:// 但档 = 明文（TLS 档须携 connection: "tls" 与三件材料）：${text}`
+          : `地址 scheme 与连接档相抵：显式 http:// 但档 = TLS：${text}`,
+      )
+    }
+    scheme = given
+  }
   let url
   try {
-    url = new URL(withScheme)
+    url = new URL(`${scheme}://${explicit === null ? text : text.slice(explicit[0].length)}`)
   } catch {
     throw new Error(`地址形非法：${text}`)
   }
-  if (url.protocol !== "http:") throw new Error(`地址仅收 http://（缺协议自动补全）：${text}`)
   if (url.hostname === "") throw new Error(`地址缺主机名：${text}`)
-  const port = url.port === "" ? DEFAULT_DOCKER_PORT : Number(url.port)
+  if (url.username !== "" || url.password !== "" || (url.pathname !== "" && url.pathname !== "/") || url.search !== "" || url.hash !== "") {
+    throw new Error(`地址仅收 <host>:<port>（不收路径/查询/凭据——按档补全）：${text}`) // 零静默截断（与同档「零静默推断」同口径）
+  }
+  const port = url.port === "" ? (scheme === "https" ? DEFAULT_DOCKER_TLS_PORT : DEFAULT_DOCKER_PORT) : Number(url.port)
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`地址端口非法：${text}`)
-  return `http://${url.hostname}:${port}`
+  return `${scheme}://${url.hostname}:${port}`
 }
 
 /** 协商版本（KD-SV-81）：`ver = max(1.44, MinAPIVersion)`，须 ≤ `ApiVersion`；否则抛（拒登记——零落库）。 */
@@ -198,24 +224,25 @@ function apiMessageOf(text) {
  * Docker API 客户端（`baseUrl` = 归一地址；`apiVer` = 协商版本——`null` 时仅 `version()` 可调（引导步））。
  * 注入口径（单元测试档/agent 假件）：`fetchImpl`（缺省 = 全局 fetch）∥ 三超时可覆盖（读/动作/拉取）。
  */
-export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, readTimeoutMs = READ_TIMEOUT_MS, actionTimeoutMs = ACTION_TIMEOUT_MS, pullTimeoutMs = PULL_TIMEOUT_MS } = {}) {
+export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, readTimeoutMs = READ_TIMEOUT_MS, actionTimeoutMs = ACTION_TIMEOUT_MS, pullTimeoutMs = PULL_TIMEOUT_MS, buildTimeoutMs = BUILD_TIMEOUT_MS, archiveTimeoutMs = ARCHIVE_TIMEOUT_MS } = {}) {
   if (typeof baseUrl !== "string" || baseUrl === "") throw new Error("createDockerClient：缺 baseUrl")
   const prefix = () => {
     if (apiVer === null || apiVer === undefined || apiVer === "") throw new DockerError("api", "调用缺 API 版本前缀（须先经登记自检协商——KD-SV-81）")
     return `/v${apiVer}`
   }
 
-  /** 单请求（超时 → kind 分类；非 2xx ⇒ `DockerError("api")`——304 属成功面，调用方自判）。 */
-  async function request(method, path, { body = null, timeoutMs = READ_TIMEOUT_MS } = {}) {
+  /** 单请求（超时 → kind 分类；非 2xx ⇒ `DockerError("api")`——304 属成功面，调用方自判）。
+   *  `rawBody` = 字节体（archive put ∥ build——原样写）；`body` = JSON 体；两参互斥（rawBody 优先）。 */
+  async function request(method, path, { body = null, rawBody = null, headers = undefined, timeoutMs = READ_TIMEOUT_MS } = {}) {
     const url = `${baseUrl}${path}`
     const signal = AbortSignal.timeout(timeoutMs)
+    let init = { method, signal }
+    if (rawBody !== null) init = { ...init, headers: headers ?? {}, body: rawBody }
+    else if (body !== null) init = { ...init, headers: headers ?? { "content-type": "application/json" }, body: JSON.stringify(body) }
+    else if (headers !== undefined) init = { ...init, headers }
     let response
     try {
-      response = await fetchImpl(url, {
-        method,
-        signal,
-        ...(body === null ? {} : { headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
-      })
+      response = await fetchImpl(url, init)
     } catch (e) {
       const kind = signal.aborted ? "timeout" : "unreachable"
       const message = kind === "timeout" ? `节点响应超时（${timeoutMs}ms）：${url}` : `节点不可达：${url}（${e?.message ?? e}）`
@@ -264,6 +291,34 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
     info: () => request("GET", `${prefix()}/info`),
     /** 容器列表（读时读——KD-SV-79；`all=1` 含未运行）。 */
     containers: () => request("GET", `${prefix()}/containers/json?all=1`),
+    /** 容器态读数（引擎态三值——EXECUTION §2.1：墙钟判据 `StartedAt` ∥ 探针执行器 `ExitCode`；不在 ⇒ 引擎 404 ⇒ `api` 类可辨）。 */
+    containerState: async (id) => {
+      const res = await request("GET", `${prefix()}/containers/${encodeURIComponent(id)}/json`)
+      const state = res.json?.State ?? {}
+      return {
+        ...res,
+        state: {
+          status: state.Status ?? null,
+          running: state.Running === true,
+          startedAt: state.StartedAt ?? null,
+          finishedAt: state.FinishedAt ?? null,
+          exitCode: Number.isInteger(state.ExitCode) ? state.ExitCode : null,
+        },
+      }
+    },
+    /** 网络（§3 底座）：建 ∥ 查 ∥ 删（建/删 = 动作类 15s；`Options.com.docker.network.bridge.name` = 闸锚 `tcws<id>`）。 */
+    createNetwork: (body) => request("POST", `${prefix()}/networks/create`, { body, timeoutMs: actionTimeoutMs }),
+    inspectNetwork: (id) => request("GET", `${prefix()}/networks/${encodeURIComponent(id)}`),
+    deleteNetwork: (id) => request("DELETE", `${prefix()}/networks/${encodeURIComponent(id)}`, { timeoutMs: actionTimeoutMs }),
+    /** 存档流（快照/恢复——EXECUTION §3：取件 `GET …/archive?path=` ∥ 放件 `PUT …/archive?path=`；专用长超时，字节体原样）。 */
+    archiveGet: (id, path) =>
+      requestBytes("GET", `${prefix()}/containers/${encodeURIComponent(id)}/archive?path=${encodeURIComponent(path)}`, { timeoutMs: archiveTimeoutMs }),
+    archivePut: (id, path, tar) =>
+      request("PUT", `${prefix()}/containers/${encodeURIComponent(id)}/archive?path=${encodeURIComponent(path)}`, {
+        rawBody: tar,
+        headers: { "content-type": "application/x-tar" },
+        timeoutMs: archiveTimeoutMs,
+      }),
     /** 建容器（§3：`POST containers/create?name=<名>`——动作类超时）。 */
     createContainer: (name, body) => request("POST", `${prefix()}/containers/create?name=${encodeURIComponent(name)}`, { body, timeoutMs: actionTimeoutMs }),
     startContainer: (id) => request("POST", `${prefix()}/containers/${encodeURIComponent(id)}/start`, { timeoutMs: actionTimeoutMs }),
@@ -288,11 +343,28 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
     containerStats: (id) => request("GET", `${prefix()}/containers/${encodeURIComponent(id)}/stats?stream=false&one-shot=true`),
     /** 镜像列表（读类——§3）。 */
     images: () => request("GET", `${prefix()}/images/json`),
-    /** 拉取（同步——专用 10 分钟超时；KD-SV-94）：非 2xx ⇒ `request` 抛 api；200 流内 `error` ⇒ 同形抛（status 记 200）。 */
-    pullImage: async (fromImage, tag) => {
-      const response = await request("POST", `${prefix()}/images/create?fromImage=${encodeURIComponent(fromImage)}&tag=${encodeURIComponent(tag)}`, { timeoutMs: pullTimeoutMs })
+    /** 拉取（同步——专用 10 分钟超时；KD-SV-94）：非 2xx ⇒ `request` 抛 api；200 流内 `error` ⇒ 同形抛（status 记 200）。
+     *  `auth` = `X-Registry-Auth` 值（注册表凭据命中时携——KD-SV-188；缺省 `null` ⇒ 匿名，现状零改）。 */
+    pullImage: async (fromImage, tag, { auth = null } = {}) => {
+      const response = await request("POST", `${prefix()}/images/create?fromImage=${encodeURIComponent(fromImage)}&tag=${encodeURIComponent(tag)}`, {
+        timeoutMs: pullTimeoutMs,
+        ...(auth === null || auth === "" ? {} : { headers: { "x-registry-auth": auth } }),
+      })
       const streamError = findStreamError(response.text)
       if (streamError !== null) throw new DockerError("api", `引擎拉取失败：${streamError}`, { status: 200, apiMessage: streamError })
+      return response
+    },
+    /** 镜像详情（读类——`GET /images/<ref>/json`；`Id`/`RepoTags` 读面——EXECUTION §8 镜像就位：底座读/派生 tag 探/标准镜像 Id）。 */
+    imageDetail: (ref) => request("GET", `${prefix()}/images/${normalizeImageRef(ref)}/json`),
+    /** 构建（§8 派生构建流——`POST /build?t=<tag>`；体 = 单 Dockerfile tar；同步 10 分钟专用超时；流内 `error`/`errorDetail` 两形同收——沿 KD-SV-94）。 */
+    buildImage: async (tag, context, { timeoutMs = buildTimeoutMs } = {}) => {
+      const response = await request("POST", `${prefix()}/build?t=${encodeURIComponent(tag)}`, {
+        rawBody: context,
+        headers: { "content-type": "application/x-tar" },
+        timeoutMs,
+      })
+      const streamError = findStreamError(response.text)
+      if (streamError !== null) throw new DockerError("api", `引擎构建失败：${streamError}`, { status: 200, apiMessage: streamError })
       return response
     },
     /** 删除镜像（动作类；`ref` 含 `/`/`:` ⇒ 不经 `encodeURIComponent` 直入路径段——字符集已拒 `?`/`#`/`%`/空白；§3 KD-SV-95）。 */
@@ -306,27 +378,45 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
   }
 }
 
-/** 节点行 → 客户端（`runtime_json.apiVer` = 登记时协商版本——KD-SV-81）。 */
-export function clientForRunner(row, { fetchImpl = fetch, readTimeoutMs = READ_TIMEOUT_MS, actionTimeoutMs = ACTION_TIMEOUT_MS, pullTimeoutMs = PULL_TIMEOUT_MS } = {}) {
+/** 传输选择（单点——§2.1）：明文行 ⇒ 注入 `fetchImpl`（**零涉**——不构造适配件）∥ TLS 行 ⇒ 材料按行解密 + `httpsFetchOf(tls, { requestImpl })`。 */
+export function transportForRunner(row, { fetchImpl = fetch, config = {}, requestImpl = null } = {}) {
+  if (connectionKindOf(row?.address) !== "tls") return fetchImpl
+  return httpsFetchOf(tlsMaterialsOf(row, { config }), { requestImpl })
+}
+
+/** 节点行 → 客户端（`runtime_json.apiVer` = 登记时协商版本——KD-SV-81）。
+ *  两参透传（与 `fetchImpl` 同形）：`config`（材料解密所需）∥ `requestImpl`（`node:https` 假件缝）——全链：路由族/盒链/管理面 chat `docker` 工具。 */
+export function clientForRunner(row, { fetchImpl = fetch, config = {}, requestImpl = null, readTimeoutMs = READ_TIMEOUT_MS, actionTimeoutMs = ACTION_TIMEOUT_MS, pullTimeoutMs = PULL_TIMEOUT_MS, buildTimeoutMs = BUILD_TIMEOUT_MS, archiveTimeoutMs = ARCHIVE_TIMEOUT_MS } = {}) {
   let apiVer = null
   try {
     apiVer = JSON.parse(row?.runtime_json ?? "{}")?.apiVer ?? null
   } catch {
     apiVer = null
   }
-  return createDockerClient({ baseUrl: row.address, apiVer, fetchImpl, readTimeoutMs, actionTimeoutMs, pullTimeoutMs })
+  return createDockerClient({
+    baseUrl: row.address,
+    apiVer,
+    fetchImpl: transportForRunner(row, { fetchImpl, config, requestImpl }),
+    readTimeoutMs,
+    actionTimeoutMs,
+    pullTimeoutMs,
+    buildTimeoutMs,
+    archiveTimeoutMs,
+  })
 }
 
 /**
  * 连通自检（§3 引导步 → 协商 → 复读）：① 无前缀 `GET <base>/version` 取读数 ⇒ ② 协商（不兼容 ⇒ 抛）⇒ ③ 带前缀复读全量。
  * 出 = `{ baseUrl, apiVer, readings }`（readings 逐值落 `runtime_json`）；失败 ⇒ `DockerError`（调用方转 502 + 零落库 + 审计行）。
+ * `tls` = 三件材料（TLS 档——`{ ca, cert, key }`，未落库前的自检径；缺省 `null` = 明文，传输 = 注入 `fetchImpl`——零行为变化）。
  */
-export async function selfCheckDocker({ address, fetchImpl = fetch, readTimeoutMs = READ_TIMEOUT_MS } = {}) {
-  const baseUrl = normalizeDockerAddress(address)
-  const guide = createDockerClient({ baseUrl, apiVer: null, fetchImpl, readTimeoutMs })
+export async function selfCheckDocker({ address, fetchImpl = fetch, config = {}, requestImpl = null, tls = null, readTimeoutMs = READ_TIMEOUT_MS } = {}) {
+  const baseUrl = normalizeDockerAddress(address, { tls: tls !== null })
+  const transport = tls === null ? fetchImpl : httpsFetchOf(tls, { requestImpl })
+  const guide = createDockerClient({ baseUrl, apiVer: null, fetchImpl: transport, readTimeoutMs })
   const first = await guide.version() // ① 引导步（无前缀）
   const apiVer = negotiateApiVersion(first.json ?? {}) // ② 协商
-  const client = createDockerClient({ baseUrl, apiVer, fetchImpl, readTimeoutMs })
+  const client = createDockerClient({ baseUrl, apiVer, fetchImpl: transport, readTimeoutMs })
   const full = await client.version() // ③ 复读（带前缀）
   return { baseUrl, apiVer, readings: readingsOf(full.json ?? first.json ?? {}, apiVer) }
 }

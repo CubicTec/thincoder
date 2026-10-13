@@ -1,127 +1,76 @@
 /**
- * routes.mjs — 沙盒控制台面与成员面（sandbox/SANDBOX.md §3/§8/§9；端点表 = gateway/API.md §2.5/§2.7；runner-admin-console 批——
- * 节点增/删 + 运行面读数 + 托管接入转注册；容器面十路由与镜像族三路由已拆 `container-routes.mjs` ∥ `image-routes.mjs`——§13 预案①/分族成档）。
+ * routes.mjs — 沙盒控制台面与成员面（sandbox/SANDBOX.md §3/§8/§9；端点表 = gateway/API.md §2.5/§2.7；runner-admin-console 批——节点增/删 + 运行面读数）。
+ *
+ * sandbox-exec-rebuild 批收正（本档）：**队列死件删净**（原两处展示面 `sweepStuckTasks` 续跑调用随队列退场全删——KD-SV-161）∥
+ * **工作区面拆出**（workspace 列表/建/改/动作四路由 + 视图件外迁 `workspace-routes.mjs`——直调链重写归其档；本档零残留）∥
+ * **连接面 TLS 档**（增补 #2——KD-SV-192…195：添加节点体扩 `connection`/`tls`；新 `PUT …/runners/:id/connection` 全列覆写）。
+ * 容器面十路由与镜像族/卷族/托管接入三族已拆 `container-routes.mjs` ∥ `image-routes.mjs` ∥ `volume-routes.mjs` ∥ `onboarding-routes.mjs`（§13 分族成档）。
  * `/api/admin/sandbox/*`（判权 `requireAdmin`）∥ `/api/me/sandbox/*`（成员面——会话 + 恒本人过滤）。
  *
- * 节点面（§3）：添加 = 连通自检（引导步 → 协商 → 复读——`docker.mjs`）⇒ 落行 + **网段 deny 幂等带入**（§4 强制面 ⑤——节点段 ∥
- * 服务器段） + 审计（`runner_add` 携逐项带入读数 ∥ 自检失败行）；删除 = 二选一（保留 ∥ 连删）；
- * 运行面读数 = 读时探活（`GET <base>/v<ver>/info`——3s ∥ 并发；无心跳/无后台定时器——KD-SV-80）；节点面恒可用。
- * 可用性门（KD-SV-71）：`overview` 常回应（`status: unavailable` + 原因）；需要节点的写动作（工作区创建 ∥ 动作）⇒ 503（不降级）；
- * 规则 ∥ 设置 ∥ 待批裁定 = 不设门；成员面读 = 契约明文（API §2.7）——不可用 ⇒ 503。
+ * 节点面（§3）：添加 = 连通自检（引导步 → 协商 → 复读——`docker.mjs`；TLS 档三件入 `https.request` 选项）⇒ 落行 + **网段 deny 幂等带入**（§4 强制面 ⑤）
+ * + 审计（`runner_add` 携逐项带入读数 + `tls` 布尔 ∥ 自检失败行）；**连接方式编辑** = `PUT …/connection`（改地址/切档/换材料同径——先自检后落库，失败 ⇒ 库零变；关 TLS = 原子）；
+ * 删除 = 二选一（保留 ∥ 连删）；运行面读数 = 读时探活（`GET <base>/v<ver>/info`——3s ∥ 并发；无心跳/无后台定时器——KD-SV-80）；节点面恒可用。
+ * 可用性门（KD-SV-71/166）：`overview` 常回应（`status: unavailable` + 原因）；写动作（工作区创建 ∥ 动作/建盒）⇒ 503 `sandbox_unavailable`（实时探活——`registry.requireSandboxAvailable`，消费面随工作区拆档）；
+ * 规则 ∥ 设置 ∥ 待批裁定 = 不设门；成员面读 = 契约明文（API §2.7）——静态可用性不可用 ⇒ 503（读数语义沿既有）。
+ * 两参透传（增补 #2——与 `fetchImpl` 同形）：`config`（连接材料解密所需）∥ `requestImpl`（`node:https` 假件缝）——本档逐调用点下传（子族注册同携）。
  */
 import { HttpError, sendJson } from "../gateway/errors.mjs"
 import { readJsonBody } from "../gateway/server.mjs"
-import { findMemberById } from "../accounts/members.mjs"
-import { getKeyById } from "../accounts/keys.mjs"
 import { recordAudit } from "../accounts/audit.mjs"
 import { requireAdmin, requireSession } from "../accounts/session.mjs"
 import {
-  WORKSPACE_NAME_MAX, boxPayload, boxStateOf, deleteRunnerChain, enqueueTask, getSettings, insertRunner, lastTaskView, mergeLimits, normalizeRunnerName,
-  patchSettings, placeWorkspace, requireSandboxAvailable, resolveLimits, runnerRowOr404, runnerRows, runnerView, sandboxAvailability,
-  sandboxPublicBase, sweepStuckTasks,
+  boxStateOf, deleteRunnerChain, getSettings, insertRunner, normalizeRunnerName, patchSettings, runnerRowOr404, runnerRows, runnerView,
+  sandboxAvailability, sandboxPublicBase, tryPlacePending,
 } from "./registry.mjs"
 import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "./docker.mjs"
+import { normalizeConnectionKind, parseTlsMaterials, sealTlsMaterials } from "./docker-tls.mjs"
 import { parseHostCredentialInput, revokeHostCredential, setHostCredential } from "./hosts.mjs"
 import { registerContainerRoutes } from "./container-routes.mjs"
 import { registerImageRoutes } from "./image-routes.mjs"
 import { registerVolumeRoutes } from "./volume-routes.mjs"
 import { registerOnboardingRoutes } from "./onboarding-routes.mjs"
+import { registerWorkspaceRoutes } from "./workspace-routes.mjs"
+import { createHostExec, placePendingWorkspaces } from "./box.mjs"
+import { dispatchEgressAll } from "./egress.mjs"
 import { bumpRulesRev, createRule, deleteRule, getRulesRev, importSegmentDenies, listPending, listRules, openPendingOf, resolvePending, updateRule } from "./rules.mjs"
-import { issueWorkspaceKey, rotateWorkspaceKey, revokeWorkspaceKey } from "./credentials.mjs"
 
-export const WORKSPACE_ACTIONS = Object.freeze(["start", "stop", "destroy", "rotate-key", "restore"])
-
-/** 快照读数（`sandbox_checkpoints`——登记行由 checkpoint 上送面写入；本档 = 读取面）。 */
+/** 快照读数（`sandbox_checkpoints`——登记行由快照链写入；本档 = 成员面读取面）。 */
 function checkpointCount(db, workspaceId) {
   return Number(db.prepare("SELECT COUNT(*) AS n FROM sandbox_checkpoints WHERE workspace_id = ?").get(Number(workspaceId)).n)
 }
 
-function latestCheckpoint(db, workspaceId) {
-  return db.prepare("SELECT * FROM sandbox_checkpoints WHERE workspace_id = ? ORDER BY id DESC LIMIT 1").get(Number(workspaceId)) ?? null
-}
-
-/** 工作区名校验（trim）；唯一性在写前由 SQLite UNIQUE 兜（400 报文）。 */
-function normalizeWorkspaceName(raw) {
-  const name = typeof raw === "string" ? raw.trim() : ""
-  if (name === "") throw new Error("工作区名不可为空")
-  if (name.length > WORKSPACE_NAME_MAX) throw new Error(`工作区名超长（≤ ${WORKSPACE_NAME_MAX} 字符；实长 ${name.length}）`)
-  return name
-}
-
-/** 标签对象校验（键/值字符串；≤ 20 条）。 */
-function normalizeLabels(raw, { field = "requiredLabels" } = {}) {
-  if (raw === null || raw === undefined) return {}
-  if (typeof raw !== "object" || Array.isArray(raw)) throw new Error(`${field} 须为对象（{ <键>: <值> }）`)
-  const entries = Object.entries(raw)
-  if (entries.length > 20) throw new Error(`${field} 超上限（≤ 20 条）`)
-  const out = {}
-  for (const [key, value] of entries) {
-    const k = String(key).trim()
-    if (k === "") throw new Error(`${field} 含空键`)
-    out[k] = String(value)
-  }
-  return out
-}
-
-function workspaceRowOr404(db, id) {
-  const row = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(Number(id))
-  if (!row) throw new HttpError("not_found", `工作区不存在：${id}`)
-  return row
-}
-
-/** 工作区读数（控制台列表行——§2.5；密钥面零下发：只给提示形）。 */
-function workspaceView(db, workspace, { now = Date.now() } = {}) {
-  const runner = workspace.runner_id === null ? null : db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(workspace.runner_id)
-  const owner = findMemberById(db, workspace.owner_member_id)
-  const box = boxStateOf(workspace, runner)
-  const key = getKeyById(db, workspace.key_id)
-  let requiredLabels = {}
+/** 行地址取主机名（连接面切档缺省 = 保留主机 + 按目标档补 scheme/缺省端口——§3 连接方式块）。 */
+function hostOfAddress(address) {
   try {
-    requiredLabels = JSON.parse(workspace.required_labels_json) ?? {}
+    return new URL(String(address)).hostname
   } catch {
-    requiredLabels = {}
+    return String(address ?? "")
   }
-  let limits = {}
-  try {
-    limits = JSON.parse(workspace.limits_json) ?? {}
-  } catch {
-    limits = {}
-  }
-  return {
-    id: workspace.id,
-    name: workspace.name,
-    ownerMemberId: workspace.owner_member_id,
-    ownerName: owner?.name ?? null,
-    runnerId: workspace.runner_id,
-    runnerName: runner?.name ?? null,
-    runnerStatus: runner?.status ?? null,
-    boxState: box.boxState,
-    stopReason: box.stopReason,
-    dirty: box.dirty,
-    checkpointCount: checkpointCount(db, workspace.id),
-    pending: openPendingOf(db, workspace.id, { now }),
-    keyHint: key?.key_hint ?? null,
-    keyStatus: key?.status ?? null,
-    requiredLabels,
-    limits,
-    limitsResolved: resolveLimits(db, workspace),
-    lastTask: lastTaskView(db, workspace.id),
-    createdAt: workspace.created_at,
-  }
-}
-
-function enqueueForWorkspace(db, workspace, kind, payload = {}, { now = Date.now() } = {}) {
-  const id = enqueueTask(db, { runnerId: workspace.runner_id, kind, workspaceId: workspace.id, payload, now })
-  return id
 }
 
 /**
- * 注册沙盒控制台面 + 成员面 + 容器面 + 托管接入面。
- * 注入口径（单元测试档替身）：`now`（时钟——生产行为不变）∥ `fetchImpl`（Docker 传输——节点/容器面 ∥ 探活）∥ `deps`（托管接入面替身——见 `onboarding.mjs`）。
+ * 注册沙盒控制台面（节点/规则/待批/设置面）+ 成员面 + 子族（容器/镜像/卷/托管接入）。
+ * 注入口径（单元测试档替身）：`now`（时钟——生产行为不变）∥ `fetchImpl`（Docker 传输——节点面 ∥ 探活；明文行恒用之，零行为变化）∥
+ * `config`（TLS 连接材料解密所需——增补 #2）∥ `requestImpl`（`node:https` 假件缝——缺省 `null`）∥ `deps`（托管接入面替身——见 `onboarding.mjs`）。
  */
-export function registerSandboxRoutes(routes, { db, config = {}, log = null, now = Date.now, fetchImpl = fetch, deps = {} } = {}) {
+export function registerSandboxRoutes(routes, { db, config = {}, log = null, now = Date.now, fetchImpl = fetch, requestImpl = null, deps = {} } = {}) {
   if (!db) throw new Error("registerSandboxRoutes：缺少 db（openDatabase 产物）")
   const publicBase = sandboxPublicBase(config)
+  const hostExec = createHostExec({ config, execImpl: deps.execImpl ?? null, now }) // 主机命令面（闸下发用——SSH 逐条）
+  const execOf = (row) => hostExec.execOf(row)
+  /** 规则变更 ⇒ 逐节点全量重算下发（**同步**——落库后即下发；失败逐节点记读数 + 审计 + 响应告警，不反噬已落库事实；KD-SV-164）。 */
+  const pushEgress = async (reason) => {
+    let results = []
+    try {
+      results = await dispatchEgressAll({ db, config, now, log, reason, execOf, resolveImpl: deps.resolveImpl ?? null })
+    } catch (e) {
+      log?.warn("egress_dispatch_failed", { reason, message: e?.message ?? String(e) })
+      return { ok: false, results: [], error: String(e?.message ?? e), reason }
+    }
+    const failed = results.filter((item) => item.ok === false)
+    return { ok: failed.length === 0, results, reason, failed }
+  }
+  const injected = { importSegmentDenies: deps.importSegmentDenies ?? null, dnsGate: deps.dnsGate ?? null } // 单元测试档假件缝（事务回滚 ∥ 裁定回填）
 
   // ── ① 运行面（读时探活——KD-SV-80：每节点现打 `/info`，3s ∥ 并发）────────────────
   routes.add("GET", "/api/admin/sandbox/overview", async (req, res) => {
@@ -131,7 +80,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       rows.map(async (row) => {
         const base = runnerView(row)
         try {
-          const info = await clientForRunner(row, { fetchImpl }).info()
+          const info = await clientForRunner(row, { fetchImpl, config, requestImpl }).info()
           return {
             ...base,
             online: true,
@@ -149,14 +98,20 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
     sendJson(res, 200, { status: available ? "available" : "unavailable", ...(reason ? { reason } : {}), runners: probed })
   })
 
-  // 添加节点（§3——连通自检：引导步 → 协商 → 复读；失败 ⇒ 502 + 零落库 + 审计行）
+  // 添加节点（§3——连通自检：引导步 → 协商 → 复读；TLS 档（增补 #2）三件入 `https.request` 选项；
+  // 形非法/相抵/缺件 ⇒ 400 零外呼；自检失败 ⇒ 502 + 零落库 + 审计行）
   routes.add("POST", "/api/admin/sandbox/runners", async (req, res) => {
     const { member: admin } = requireAdmin(db, req)
     const body = await readJsonBody(req)
-    let name, address
+    let name, kind, materials, address
     try {
       name = normalizeRunnerName(body?.name)
-      address = normalizeDockerAddress(body?.address)
+      kind = normalizeConnectionKind(body?.connection)
+      materials = kind === "tls" ? parseTlsMaterials(body?.tls) : null
+      if (materials === null && body?.tls !== undefined && body?.tls !== null) {
+        throw new Error("明文档不携材料（`tls` 三件仅 TLS 档在场——不变量 https ⇔ 三件齐）")
+      }
+      address = normalizeDockerAddress(body?.address, { tls: kind === "tls" }) // 按档补 scheme + 缺省端口；显式 scheme 与档相抵 ⇒ 400（零外呼）
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message) // 重名/形非法 ⇒ 400（先库查后自检——网面零触）
     }
@@ -165,7 +120,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
     }
     let check
     try {
-      check = await selfCheckDocker({ address, fetchImpl })
+      check = await selfCheckDocker({ address, fetchImpl, config, requestImpl, ...(materials === null ? {} : { tls: materials }) })
     } catch (e) {
       recordAudit(db, {
         type: "sandbox_event",
@@ -178,16 +133,94 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       throw new HttpError("upstream_error", `连通自检失败：${e?.message ?? e}`) // 502 + 逐句人话 + 零落库
     }
     let row
+    let segments
+    db.exec("BEGIN") // #1351（KD-SV-174）：登记行 ∥ 带入行 ∥ 审计行 = 单事务（任一步失败 ⇒ 回滚零残留）
     try {
-      row = insertRunner(db, { name, address: check.baseUrl, runtime: check.readings, now: now() })
+      row = insertRunner(db, {
+        name,
+        address: check.baseUrl,
+        runtime: check.readings,
+        now: now(),
+        tls: materials === null ? null : sealTlsMaterials(materials, { config, now }), // 私钥 AES-256-GCM 落库（零回显——行形只出 state/updatedAt）
+      })
+      // 网段 deny 幂等带入（§4 强制面 ⑤——节点段 = 登记地址 host /24；服务器段 = 盒 env `OPENAI_BASE_URL` 地址 /24，取值点单源 = `publicBase`）：
+      // 首见 ⇒ 行入 + `rulesRev` +1 + 审计一行（「自动带入」）；段已在 ⇒ 零重行零动零审计；不可推导（通配/非 IPv4）⇒ 零行 + 登记读数如实标。
+      segments = (injected.importSegmentDenies ?? importSegmentDenies)(db, [{ kind: "runner", address: row.address }, { kind: "server", address: publicBase }], { now: now() })
+      recordAudit(db, {
+        type: "sandbox_event",
+        actor: admin.name,
+        actorId: admin.id,
+        target: name,
+        detail: { kind: "runner_add", runnerId: row.id, address: row.address, segments, tls: kind === "tls" }, // 增补 #2：detail 增 `tls` 布尔（零秘密）
+        ts: now(),
+      })
+      db.exec("COMMIT")
     } catch (e) {
-      throw new HttpError("invalid_request_error", e.message)
+      db.exec("ROLLBACK")
+      if (e instanceof HttpError) throw e
+      throw new HttpError("upstream_error", `登记事务回滚（零残留）：${e?.message ?? e}`) // 内部面炸 ⇒ 502 人话（输入形非法仍 400）
     }
-    // 网段 deny 幂等带入（§4 强制面 ⑤——节点段 = 登记地址 host /24；服务器段 = 盒 env `OPENAI_BASE_URL` 地址 /24，取值点单源 = `publicBase`）：
-    // 首见 ⇒ 行入 + `rulesRev` +1 + 审计一行（「自动带入」）；段已在 ⇒ 零重行零动零审计；不可推导（通配/非 IPv4）⇒ 零行 + 登记读数如实标。
-    const segments = importSegmentDenies(db, [{ kind: "runner", address: row.address }, { kind: "server", address: publicBase }], { now: now() })
-    recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: name, detail: { kind: "runner_add", runnerId: row.id, address: row.address, segments }, ts: now() })
-    sendJson(res, 200, { runner: runnerView(row) }) // 行形与 overview 同拍（`ssh` 元数据同携——KD-SV-133）
+    // 补放置（KD-SV-171 触发③——登记成功后后台：**不阻断响应**；绑定 + 建盒链驱动 = `box.mjs`；逐工作区失败 ⇒ 行留未绑 + 读数）
+    void placePendingWorkspaces(db, {
+      config,
+      now,
+      log,
+      fetchImpl,
+      requestImpl,
+      resolveImpl: deps.resolveImpl ?? null,
+      ...(deps.host ? { host: deps.host } : {}),
+      ...(deps.clientForRunner ? { clientForRunner: deps.clientForRunner } : {}),
+    }).catch((e) => log?.warn("sandbox_place_pending_failed", { message: e?.message ?? String(e) }))
+    sendJson(res, 200, { runner: runnerView(row) }) // 行形与 overview 同拍（`ssh` + `connection`/`tls` 元数据同携——零材料）
+  })
+
+  // 连接方式编辑（增补 #2——§3 连接方式块 ∥ gateway/API.md §2.5）：全列覆写（改地址 ∥ 切档 ∥ 换材料同径）；
+  // **先自检后落库**（失败 ⇒ 502 + 库零变）；**关 TLS = 原子**（地址回 `http` + 材料清零——单语句）；不存在 ⇒ 404。
+  routes.add("PUT", "/api/admin/sandbox/runners/:id/connection", async (req, res, ctx) => {
+    const { member: admin } = requireAdmin(db, req)
+    const runner = runnerRowOr404(db, ctx.params.id)
+    const body = await readJsonBody(req)
+    let kind, materials, address
+    try {
+      if (body?.connection === undefined || body?.connection === null) {
+        throw new Error('connection 必携（全列覆写——"plain" ∥ "tls"；`null` 亦拒——缺省携带会静默关 TLS，不接）') // API §2.5 PUT 体形：`connection` 无 `?`
+      }
+      kind = normalizeConnectionKind(body?.connection)
+      materials = kind === "tls" ? parseTlsMaterials(body?.tls) : null
+      if (materials === null && body?.tls !== undefined && body?.tls !== null) {
+        throw new Error("明文档不携材料（`tls` 三件仅 TLS 档在场——不变量 https ⇔ 三件齐）")
+      }
+      const given = typeof body?.address === "string" && body.address.trim() !== "" ? body.address : hostOfAddress(runner.address)
+      address = normalizeDockerAddress(given, { tls: kind === "tls" }) // 地址缺省 ⇒ 保留主机 + 按目标档补 scheme/缺省端口
+    } catch (e) {
+      throw new HttpError("invalid_request_error", e.message) // 形非法/相抵/缺件 ⇒ 400（库零变）
+    }
+    let check
+    try {
+      check = await selfCheckDocker({ address, fetchImpl, config, requestImpl, ...(materials === null ? {} : { tls: materials }) })
+    } catch (e) {
+      recordAudit(db, {
+        type: "sandbox_event",
+        actor: admin.name,
+        actorId: admin.id,
+        target: runner.name,
+        detail: { kind: "runner_selfcheck_failed", runnerId: runner.id, address, reason: e?.message ?? String(e) },
+        ts: now(),
+      })
+      throw new HttpError("upstream_error", `连通自检失败（库零变）：${e?.message ?? e}`)
+    }
+    const sealed = materials === null ? null : sealTlsMaterials(materials, { config, now })
+    db.prepare("UPDATE sandbox_runners SET address = ?, tls_ca = ?, tls_cert = ?, tls_key_cipher = ?, tls_updated_at = ? WHERE id = ?")
+      .run(check.baseUrl, sealed?.ca ?? null, sealed?.cert ?? null, sealed?.keyCipher ?? null, sealed?.updatedAt ?? null, runner.id)
+    recordAudit(db, {
+      type: "sandbox_event",
+      actor: admin.name,
+      actorId: admin.id,
+      target: runner.name,
+      detail: { kind: "runner_connection", runnerId: runner.id, address: check.baseUrl, tls: kind === "tls" }, // 零秘密（四键）
+      ts: now(),
+    })
+    sendJson(res, 200, { runner: runnerView(db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(runner.id)) })
   })
 
   // 删除节点（§3——二选一「保留 ∥ 连删」；链全文 = `registry.deleteRunnerChain`（chat 工具面同函数——KD-SV-90 §12））
@@ -195,7 +228,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
     const { member: admin } = requireAdmin(db, req)
     const runner = runnerRowOr404(db, ctx.params.id)
     const body = await readJsonBody(req).catch(() => ({}))
-    const { kept, removed } = await deleteRunnerChain(db, runner, { containers: body?.containers, confirm: body?.confirm === true }, { fetchImpl, now, publicBase })
+    const { kept, removed } = await deleteRunnerChain(db, runner, { containers: body?.containers, confirm: body?.confirm === true }, { fetchImpl, config, requestImpl })
     recordAudit(db, {
       type: "sandbox_event",
       actor: admin.name,
@@ -233,127 +266,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
     sendJson(res, 200, { runner: runnerView(updated) })
   })
 
-  // ── ② 工作区 ──────────────────────────────────────────────────────────────
-  routes.add("GET", "/api/admin/sandbox/workspaces", (req, res) => {
-    requireAdmin(db, req)
-    sweepStuckTasks(db, { now: now() }) // 悬挂回收的展示面续跑（B41）
-    const workspaces = db.prepare("SELECT * FROM sandbox_workspaces ORDER BY id").all().map((row) => workspaceView(db, row, { now: now() }))
-    sendJson(res, 200, { workspaces })
-  })
-
-  routes.add("POST", "/api/admin/sandbox/workspaces", async (req, res) => {
-    const { member: admin } = requireAdmin(db, req)
-    requireSandboxAvailable(db) // 写动作（B35）——无节点不降级
-    const body = await readJsonBody(req)
-    let name, owner, requiredLabels, initialLimits
-    try {
-      name = normalizeWorkspaceName(body?.name)
-      owner = findMemberById(db, Number(body?.ownerMemberId))
-      if (!owner) throw new Error(`负责人不存在：${String(body?.ownerMemberId)}`)
-      requiredLabels = normalizeLabels(body?.requiredLabels)
-      initialLimits = body?.limits === null || body?.limits === undefined ? {} : body.limits
-      for (const [key, value] of Object.entries(initialLimits)) {
-        if (value === null) throw new Error(`初始覆写值不可为 null（删键仅 PATCH 面）：${key}`)
-      }
-      initialLimits = mergeLimits("{}", initialLimits)
-    } catch (e) {
-      throw new HttpError("invalid_request_error", e.message)
-    }
-    if (db.prepare("SELECT id FROM sandbox_workspaces WHERE name = ?").get(name)) {
-      throw new HttpError("invalid_request_error", `工作区名已存在：${name}`)
-    }
-    const key = issueWorkspaceKey(db, { ownerMemberId: owner.id, workspaceName: name, now: now() }) // 先签发（行内 key_id NOT NULL 引用）
-    const info = db
-      .prepare(
-        `INSERT INTO sandbox_workspaces (name, owner_member_id, key_id, key_plain, runner_id, required_labels_json, limits_json, created_at)
-         VALUES (?, ?, ?, ?, NULL, ?, ?, ?)`,
-      )
-      .run(name, owner.id, key.id, key.plain, JSON.stringify(requiredLabels), JSON.stringify(initialLimits), new Date(now()).toISOString())
-    let workspace = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(Number(info.lastInsertRowid))
-    recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: workspace.name, detail: { kind: "workspace_create", workspaceId: workspace.id, owner: owner.name, requiredLabels }, ts: now() })
-    // 放置（§5）：命中 ⇒ 绑定 + create/start 入队；无满足者 ⇒ 排队等待（控制台明示；续跑触发点 = 节点删除面 ∥ 工作区动作面——旧心跳/注册面已退场，重做批补面）
-    const runner = placeWorkspace(db)
-    if (runner) {
-      db.prepare("UPDATE sandbox_workspaces SET runner_id = ? WHERE id = ?").run(runner.id, workspace.id)
-      workspace = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(workspace.id)
-      enqueueForWorkspace(db, workspace, "sandbox.create", boxPayload(db, workspace, runner, { publicBase }), { now: now() })
-      enqueueForWorkspace(db, workspace, "sandbox.start", boxPayload(db, workspace, runner, { publicBase }), { now: now() })
-    }
-    sendJson(res, 200, { workspace: workspaceView(db, workspace, { now: now() }) })
-  })
-
-  routes.add("PATCH", "/api/admin/sandbox/workspaces/:id", async (req, res, ctx) => {
-    const { member: admin } = requireAdmin(db, req)
-    const workspace = workspaceRowOr404(db, ctx.params.id)
-    const body = await readJsonBody(req)
-    const patch = body?.limits
-    if (patch === null || patch === undefined || typeof patch !== "object" || Array.isArray(patch)) {
-      throw new HttpError("invalid_request_error", "缺 limits（{ <键>: 值 }；值 null = 删键回落全局默认）")
-    }
-    let merged
-    try {
-      merged = mergeLimits(workspace.limits_json, patch)
-    } catch (e) {
-      throw new HttpError("invalid_request_error", e.message) // 校验不过 ⇒ 400 库零变
-    }
-    db.prepare("UPDATE sandbox_workspaces SET limits_json = ? WHERE id = ?").run(JSON.stringify(merged), workspace.id)
-    recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: workspace.name, detail: { kind: "workspace_limits", workspaceId: workspace.id, limits: merged }, ts: now() })
-    const updated = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(workspace.id)
-    sendJson(res, 200, { workspace: workspaceView(db, updated, { now: now() }) }) // 生效 = 下次建盒/重建（运行中盒零触——不回队指令）
-  })
-
-  routes.add("POST", "/api/admin/sandbox/workspaces/:id/:action", async (req, res, ctx) => {
-    const { member: admin } = requireAdmin(db, req)
-    const action = String(ctx.params.action)
-    if (!WORKSPACE_ACTIONS.includes(action)) throw new HttpError("invalid_request_error", `未知动作：${action}（${WORKSPACE_ACTIONS.join(" ∥ ")}）`)
-    const workspace = workspaceRowOr404(db, ctx.params.id)
-    requireSandboxAvailable(db, { detail: `工作区动作 ${action} 需要可用节点` })
-    if (workspace.runner_id === null) throw new HttpError("sandbox_unavailable", `工作区尚未放置（无满足标签的 runner——排队等待中）：${workspace.name}`)
-    const body = await readJsonBody(req).catch(() => ({}))
-    const tasks = []
-
-    if (action === "start") {
-      tasks.push(enqueueForWorkspace(db, workspace, "sandbox.start", boxPayload(db, workspace, db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(workspace.runner_id), { publicBase }), { now: now() }))
-    } else if (action === "stop") {
-      tasks.push(enqueueForWorkspace(db, workspace, "sandbox.stop", {}, { now: now() }))
-    } else if (action === "destroy") {
-      const runner = db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(workspace.runner_id)
-      const box = boxStateOf(workspace, runner)
-      if (body?.confirm !== true) {
-        throw new HttpError(
-          "invalid_request_error",
-          box.dirty
-            ? `工作区有未提交改动（dirty）——销毁需二次确认（confirm: true；快照数 = ${checkpointCount(db, workspace.id)}）`
-            : "销毁需二次确认（confirm: true）",
-        )
-      }
-      revokeWorkspaceKey(db, workspace, { now: now() }) // §7：工作区销毁 ⇒ 吊销旧 key
-      recordAudit(db, { type: "key_revoke", actor: admin.name, actorId: admin.id, target: workspace.name, detail: { keyHint: getKeyById(db, workspace.key_id)?.key_hint ?? null, workspaceId: workspace.id }, ts: now() })
-      tasks.push(enqueueForWorkspace(db, workspace, "sandbox.destroy", { deleteVolume: true }, { now: now() }))
-    } else if (action === "rotate-key") {
-      const issued = rotateWorkspaceKey(db, workspace, { now: now() }) // 吊销旧 + 签发新（旧 key 重建前即失效 ⇒ 401）
-      db.prepare("UPDATE sandbox_workspaces SET key_id = ?, key_plain = ? WHERE id = ?").run(issued.id, issued.plain, workspace.id)
-      const updated = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(workspace.id)
-      const runner = db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(updated.runner_id)
-      recordAudit(db, { type: "key_rotate", actor: admin.name, actorId: admin.id, target: updated.name, detail: { keyHint: issued.hint, workspaceId: updated.id }, ts: now() })
-      const payload = boxPayload(db, updated, runner, { publicBase })
-      tasks.push(enqueueForWorkspace(db, updated, "sandbox.destroy", { deleteVolume: false }, { now: now() })) // 拆容器（卷保留）
-      tasks.push(enqueueForWorkspace(db, updated, "sandbox.create", payload, { now: now() }))                 // 重建（新 key 注入 env）
-      tasks.push(enqueueForWorkspace(db, updated, "sandbox.start", payload, { now: now() }))
-      sendJson(res, 200, { ok: true, action, tasks, keyHint: issued.hint })
-      return
-    } else if (action === "restore") {
-      const checkpointId = body?.checkpointId === undefined || body?.checkpointId === null ? null : Number(body.checkpointId)
-      const checkpoint = checkpointId === null
-        ? latestCheckpoint(db, workspace.id)
-        : db.prepare("SELECT * FROM sandbox_checkpoints WHERE id = ? AND workspace_id = ?").get(checkpointId, workspace.id)
-      if (!checkpoint) throw new HttpError("invalid_request_error", `无快照可恢复（workspace = ${workspace.name}）`)
-      tasks.push(enqueueForWorkspace(db, workspace, "sandbox.restore", { checkpointId: checkpoint.id }, { now: now() }))
-    }
-    sendJson(res, 200, { ok: true, action, tasks })
-  })
-
-  // ── ③ 出站规则 ────────────────────────────────────────────────────────────
+  // ── ② 出站规则 ────────────────────────────────────────────────────────────
   routes.add("GET", "/api/admin/sandbox/rules", (req, res) => {
     requireAdmin(db, req)
     sendJson(res, 200, { rules: listRules(db), rulesRev: getRulesRev() })
@@ -369,7 +282,13 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       if (e instanceof HttpError) throw e
       throw new HttpError("invalid_request_error", e.message)
     }
-    sendJson(res, 200, { rule: created.rule, rulesRev: created.rulesRev })
+    const egressState = await pushEgress("规则新増") // 下发触发①：规则增删 ⇒ 全量重算（删行即生效——B73；盒零重建）
+    sendJson(res, 200, {
+      rule: created.rule,
+      rulesRev: created.rulesRev,
+      egressState,
+      ...(egressState.ok ? {} : { warning: `规则已落库，但下发未就位（${egressState.failed?.length ?? 0} 个节点）——见审计 egress_apply_failed` }),
+    })
   })
 
   routes.add("PATCH", "/api/admin/sandbox/rules/:id", async (req, res, ctx) => {
@@ -382,16 +301,28 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       if (e instanceof HttpError) throw e
       throw new HttpError("invalid_request_error", e.message)
     }
-    sendJson(res, 200, { rule: updated.rule, rulesRev: updated.rulesRev })
+    const egressState = await pushEgress("规则修改")
+    sendJson(res, 200, {
+      rule: updated.rule,
+      rulesRev: updated.rulesRev,
+      egressState,
+      ...(egressState.ok ? {} : { warning: `规则已落库，但下发未就位（${egressState.failed?.length ?? 0} 个节点）——见审计 egress_apply_failed` }),
+    })
   })
 
-  routes.add("DELETE", "/api/admin/sandbox/rules/:id", (req, res, ctx) => {
+  routes.add("DELETE", "/api/admin/sandbox/rules/:id", async (req, res, ctx) => {
     const { member: admin } = requireAdmin(db, req)
     const removed = deleteRule(db, ctx.params.id, { actor: admin.name, actorId: admin.id })
-    sendJson(res, 200, { rule: removed.rule, rulesRev: removed.rulesRev })
+    const egressState = await pushEgress("规则删除")
+    sendJson(res, 200, {
+      rule: removed.rule,
+      rulesRev: removed.rulesRev,
+      egressState,
+      ...(egressState.ok ? {} : { warning: `规则已落库，但下发未就位（${egressState.failed?.length ?? 0} 个节点）——见审计 egress_apply_failed` }),
+    })
   })
 
-  // ── ④ 待批队列 ────────────────────────────────────────────────────────────
+  // ── ③ 待批队列 ────────────────────────────────────────────────────────────
   routes.add("GET", "/api/admin/sandbox/pending", (req, res) => {
     requireAdmin(db, req)
     sendJson(res, 200, listPending(db, { now: now() }))
@@ -410,9 +341,10 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
       throw new HttpError("invalid_request_error", e.message)
     }
     sendJson(res, 200, { ok: true, pending: resolved.pending, rule: resolved.rule, rulesRev: resolved.rulesRev })
+    void injected.dnsGate?.notifyDecision?.(row.id) // 裁定回填（§6）：持答中的 DNS 请求 ⇒ 先下发再应答 ∥ 拒 ⇒ REFUSED
   })
 
-  // ── ⑤ 资源与 TTL（设置面）────────────────────────────────────────────────
+  // ── ④ 资源与 TTL（设置面）────────────────────────────────────────────────
   routes.add("GET", "/api/admin/sandbox/settings", (req, res) => {
     requireAdmin(db, req)
     sendJson(res, 200, { settings: getSettings(db) })
@@ -437,38 +369,42 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
   })
 
   // ── 成员面（本人——§2.7；恒本人过滤）──────────────────────────────────────
-  routes.add("GET", "/api/me/sandbox/workspaces", (req, res) => {
+  routes.add("GET", "/api/me/sandbox/workspaces", async (req, res) => {
     const { member } = requireSession(db, req)
-    const availability = sandboxAvailability(db)
+    const availability = sandboxAvailability(db) // 读面读数语义沿既有（API §2.7「不可用 ⇒ 503」）；写门 = 实时探活（写面）
     if (availability.status === "unavailable") throw new HttpError("sandbox_unavailable", `沙盒不可用：${availability.reason}`)
-    sweepStuckTasks(db, { now: now() })
-    const workspaces = db
-      .prepare("SELECT * FROM sandbox_workspaces WHERE owner_member_id = ? ORDER BY id")
-      .all(member.id)
-      .map((workspace) => {
-        const runner = workspace.runner_id === null ? null : db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(workspace.runner_id)
-        const box = boxStateOf(workspace, runner)
-        return {
-          id: workspace.id,
-          name: workspace.name,
-          runnerName: runner?.name ?? null, // 所属 runner（未绑定 ⇒ null——§8 成员面；端侧呈「未绑定」）
-          boxState: box.boxState,
-          stopReason: box.stopReason,
-          dirty: box.dirty,
-          checkpointCount: checkpointCount(db, workspace.id),
-          pending: openPendingOf(db, workspace.id, { now: now() }),
-        }
+    const clients = new Map() // 每节点一客户端（读时读引擎——EXECUTION §3）
+    const clientOf = (runner) => {
+      if (!clients.has(runner.id)) clients.set(runner.id, clientForRunner(runner, { fetchImpl, config, requestImpl }))
+      return clients.get(runner.id)
+    }
+    const workspaces = []
+    for (const workspace of db.prepare("SELECT * FROM sandbox_workspaces WHERE owner_member_id = ? ORDER BY id").all(member.id)) {
+      const runner = workspace.runner_id === null ? null : db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(workspace.runner_id)
+      const box = await boxStateOf(workspace, runner, { client: runner === null ? null : clientOf(runner) })
+      workspaces.push({
+        id: workspace.id,
+        name: workspace.name,
+        runnerName: runner?.name ?? null, // 所属 runner（未绑定 ⇒ null——§8 成员面；端侧呈「未绑定」）
+        boxState: box.boxState,
+        stopReason: box.stopReason,
+        checkpointCount: checkpointCount(db, workspace.id),
+        pending: openPendingOf(db, workspace.id, { now: now() }),
       })
+    }
     sendJson(res, 200, { workspaces })
   })
 
+  // ── 工作区面（拆分档 `workspace-routes.mjs`——列表/创建/PATCH(limits+baseImage)/派生/快照/五动作）──
+  registerWorkspaceRoutes(routes, { db, config, log, now, fetchImpl, requestImpl, deps: { ...deps, dnsGate: injected.dnsGate } })
+
   // ── 容器面（拆分档——SANDBOX §13 预案①）────────────────────────────────────
-  registerContainerRoutes(routes, { db, fetchImpl, now })
+  registerContainerRoutes(routes, { db, fetchImpl, config, requestImpl, now })
 
   // ── 镜像族（拆分档——SANDBOX §13 分族成档；sandbox-docker-admin 批）──────────
-  registerImageRoutes(routes, { db, fetchImpl, now })
+  registerImageRoutes(routes, { db, fetchImpl, config, requestImpl, now })
 
-  registerVolumeRoutes(routes, { db, fetchImpl, now }) // 卷族（拆分档——SANDBOX §13 分族成档；sandbox-volumes 批）
+  registerVolumeRoutes(routes, { db, fetchImpl, config, requestImpl, now }) // 卷族（拆分档——SANDBOX §13 分族成档；sandbox-volumes 批）
 
   // ── 托管接入面（四端点转注册——`bin` ±0；起跑后立即交回，进度经读时轮询）────
   const onboarding = registerOnboardingRoutes(routes, { db, config, log, now, deps })

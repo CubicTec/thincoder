@@ -7,13 +7,16 @@
  * 删除 = `ref` 走请求体（字符集含 `/`/`:`——路径段不兼容）+ `force` 缺省 false（KD-SV-95）。
  * 错误映射（§2.5 前括注）：不可达/超时 ⇒ 502 `upstream_error`；列表引擎失败 ⇒ 502；拉取引擎失败（两形）⇒ 400；
  * 删除引擎 404（无此镜像）⇒ 404 `not_found`、409（被容器引用/多标签）⇒ 400 人话 + 处置句；余 ⇒ 502。
- * 审计（键集单源 = `accounts/ACCOUNTS.md` §2.1）：拉取/删除各一行（`image_pull` ∥ `image_delete`）；列表零审计（读动作）。
+ * 私有仓凭据注入（底座可换增补 · sandbox-exec-rebuild 批——KD-SV-188）：拉取命中的注册表主机凭据 ⇒ 携 `X-Registry-Auth`（单源 = `registry-creds.mjs`；
+ * 未命中 ⇒ 匿名——现状零改）；解密失败 ⇒ 400 人话（不静默回落匿名）；`config` = 密钥文件落点所需（与库同数据目录——装配面传入）。
+ * 审计（键集单源 = `accounts/ACCOUNTS.md` §2.1）：拉取/删除各一行（`image_pull` ∥ `image_delete`）——`image_pull` detail 增 `auth` 布尔键（携凭据拉取 ⇒ true）；列表零审计（读动作）。
  */
 import { recordAudit } from "../accounts/audit.mjs"
 import { requireAdmin } from "../accounts/session.mjs"
 import { readJsonBody } from "../gateway/server.mjs"
 import { HttpError, sendJson } from "../gateway/errors.mjs"
 import { DockerError, clientForRunner, normalizeImageRef, parseImageRef } from "./docker.mjs"
+import { authForImageRef } from "./registry-creds.mjs"
 import { runnerRowOr404 } from "./registry.mjs"
 import { dockerFailure } from "./container-routes.mjs"
 
@@ -50,13 +53,16 @@ export function imageDeleteFailure(e) {
   return dockerFailure(e)
 }
 
-/** 注册镜像族三路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）。 */
-export function registerImageRoutes(routes, { db, fetchImpl = fetch, now = Date.now, readTimeoutMs, actionTimeoutMs, pullTimeoutMs } = {}) {
+/** 注册镜像族三路由（§3）：`fetchImpl` = Docker 传输注入口（单元测试档假件；缺省 = 全局 fetch——生产行为不变）；
+ *  `config`（TLS 档材料解密——增补 #2）∥ `requestImpl`（假件缝）同链下传（与容器/卷/终端三路由同形）。 */
+export function registerImageRoutes(routes, { db, fetchImpl = fetch, config = {}, requestImpl = null, now = Date.now, readTimeoutMs, actionTimeoutMs, pullTimeoutMs } = {}) {
   if (!db) throw new Error("registerImageRoutes：缺少 db")
 
   const clientOf = (runner) =>
     clientForRunner(runner, {
       fetchImpl,
+      config,
+      requestImpl,
       ...(readTimeoutMs ? { readTimeoutMs } : {}),
       ...(actionTimeoutMs ? { actionTimeoutMs } : {}),
       ...(pullTimeoutMs ? { pullTimeoutMs } : {}),
@@ -75,7 +81,7 @@ export function registerImageRoutes(routes, { db, fetchImpl = fetch, now = Date.
     sendJson(res, 200, { images: (Array.isArray(payload.json) ? payload.json : []).map(imageView) })
   })
 
-  // 拉取（同步 + 专用超时；失败两形 ⇒ 400 携引擎原文；审计 image_pull）
+  // 拉取（同步 + 专用超时；失败两形 ⇒ 400 携引擎原文；命中凭据 ⇒ 携 X-Registry-Auth；审计 image_pull + auth 键）
   routes.add("POST", "/api/admin/sandbox/runners/:id/images/pull", async (req, res, ctx) => {
     const { member: admin } = requireAdmin(db, req)
     const runner = runnerRowOr404(db, ctx.params.id)
@@ -86,8 +92,14 @@ export function registerImageRoutes(routes, { db, fetchImpl = fetch, now = Date.
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message)
     }
+    let authHit
     try {
-      await clientOf(runner).pullImage(parsed.image, parsed.tag)
+      authHit = authForImageRef(db, parsed.image, { config })
+    } catch (e) {
+      throw new HttpError("invalid_request_error", e.message)
+    }
+    try {
+      await clientOf(runner).pullImage(parsed.image, parsed.tag, { auth: authHit?.auth ?? null })
     } catch (e) {
       throw pullFailure(e)
     }
@@ -96,7 +108,7 @@ export function registerImageRoutes(routes, { db, fetchImpl = fetch, now = Date.
       actor: admin.name,
       actorId: admin.id,
       target: runner.name,
-      detail: { kind: "image_pull", runnerId: runner.id, image: `${parsed.image}:${parsed.tag}` },
+      detail: { kind: "image_pull", runnerId: runner.id, image: `${parsed.image}:${parsed.tag}`, auth: authHit !== null },
       ts: now(),
     })
     sendJson(res, 200, { ok: true, image: parsed.image, tag: parsed.tag })

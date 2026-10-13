@@ -1,37 +1,20 @@
 /**
- * registry.mjs — 沙盒编排核心（sandbox/SANDBOX.md §2/§3/§5/§8）：节点登记/读数/可用性（**Docker API 节点**——runner-admin-console 批重写）∥
- * 放置（本批 = 静态判据）∥ 任务队列（悬挂回收）∥ 全局设置与每工作区资源覆写 ∥ 盒读数与载荷。
+ * registry.mjs — 沙盒编排核心（sandbox/SANDBOX.md §2/§3/§5/§8；sandbox-exec-rebuild 批收正）：
+ * 节点登记/读数/可用性（**Docker API 节点**）∥ 放置（KD-SV-171——在线 active 最少绑定者）∥ 全局设置与每工作区资源覆写 ∥ 盒读数。
  *
- * 节点面（KD-SV-79/80/81）：登记 = 连通自检读数落 `runtime_json`（`address` ∥ `status` active/disabled）；读数 = 读时探活
- * （`docker.mjs` 现打 `/info`——无心跳 ∥ 无后台定时器）；可用性 = 静态判据（存在 active 节点——实时门随重做批）；容器不落库。
- * **心跳/队列死件**（`applyHeartbeat` ∥ `applyBoxReport` ∥ `claimTasks` ∥ `reportTask` ⋯）：执行面通道已随 2026-10-10 守护进程清除，
- * 无调用方——本批不动（收正随执行面重做批）；`runnerHealth` 已删（心跳面退场——设计明文）。
- *
- * 指令生命周期（§3——死件同注）：enqueue（queued）⇒ claim（poll 领取 ⇒ claimed）⇒ report（done/failed/unsupported）；
- * 悬挂回收 = `claimed` 逾期（5 分钟——常量）⇒ 幂等 kind 回 `queued`（重派）∥ 非幂等 ⇒ `failed`（不自动重跑；心跳判据已去）。
- * 资源取值序（§2）：全局默认（`sandbox_settings`）⇒ 逐键叠加工作区覆写（覆写优先）——解析结果随 create/重建载荷下发。
- * 本档导出协议常量（kind 全集 ∥ 幂等集）——enqueue 只校 kind 形不封集（KD-SV-72 可扩）。
+ * 节点面（KD-SV-79/80/81）：登记 = 连通自检读数落 `runtime_json`（`address` ∥ `status` active/disabled）；读数 = 读时探活（无心跳 ∥ 无后台定时器）；
+ * **写门 = 实时探活**（KD-SV-166——`requireSandboxAvailable`：候选 active 并发轻探 `GET /info`（3s），≥1 在线 ⇒ 过；全离线 ∥ 无行 ⇒ 503 `sandbox_unavailable`，不降级、零缓存）。
+ * **队列/心跳死件已删净**（KD-SV-161/166——原 `TASK_KINDS`/`enqueueTask`/`claimTasks`/`reportTask`/`sweepStuckTasks`/`lastTaskView`/心跳三件全退场：
+ * 动作 = 请求内直调链（`box.mjs`）；节点存活 = 读时探活；无 daemon ∥ 无心跳 ∥ 无领取方）。
+ * **连接面 TLS 档**（增补 #2——KD-SV-192…195）：行连接元数据（`connection` scheme 派生 ∥ `tls` state/updatedAt——零材料）；
+ * 材料四列写入走 `tls` 参（`docker-tls.mjs` 产物）；本档零材料回显。
+ * 资源取值序（§2）：全局默认（`sandbox_settings`）⇒ 逐键叠加工作区覆写（覆写优先）——解析结果随建盒/重建载荷下发（载荷构造 = `box.mjs`）。
  */
 import { HttpError } from "../gateway/errors.mjs"
-import { recordAudit } from "../accounts/audit.mjs"
 import { clientForRunner, normalizeDockerAddress } from "./docker.mjs"
+import { connectionKindOf, tlsMetaOf } from "./docker-tls.mjs"
 
-/** 指令悬挂回收界（§3「缺省 5 分钟——常量」）。 */
-export const CLAIM_TIMEOUT_MS = 5 * 60 * 1000
-
-/** 本批指令 kind（`sandbox.*`；`ci.*` 预留——KD-SV-72 可扩，故 enqueue 只校形不封集）。 */
-export const TASK_KINDS = Object.freeze([
-  "sandbox.create", "sandbox.start", "sandbox.stop", "sandbox.destroy",
-  "sandbox.exec", "sandbox.checkpoint", "sandbox.restore",
-])
-
-/** 幂等 kind（悬挂回收 ⇒ 回 queued 重派；`exec` = 非幂等 ⇒ failed——§3）。 */
-export const IDEMPOTENT_TASK_KINDS = Object.freeze([
-  "sandbox.create", "sandbox.start", "sandbox.stop", "sandbox.destroy", "sandbox.checkpoint", "sandbox.restore",
-])
-
-/** 盒状态取值（心跳上报——`stopReason` 词表 = gateway/API.md §2.7）。 */
-export const BOX_STATES = Object.freeze(["running", "stopped"])
+/** 停因词表（`stop_reason` 列——服务器动作注记；gateway/API.md §2.7）。 */
 export const STOP_REASONS = Object.freeze(["idle_ttl", "wallclock_ttl", "manual"])
 
 /** 每工作区覆写键集（SANDBOX §2——资源 + TTL）。 */
@@ -41,20 +24,22 @@ export const LIMIT_KEYS = Object.freeze(["cpus", "memMb", "pids", "diskMb", "idl
 export const WORKSPACE_NAME_MAX = 30
 export const RUNNER_NAME_MAX = 40
 
-/** 全局默认设置（键全集与值形 = gateway/API.md §2.5；缺省值 = 实现定值——控制台可改）。 */
+/** 全局默认设置（键全集与值形 = gateway/API.md §2.5；缺省值 = 实现定值——控制台可改）。
+ *  `maxBoxesPerRunner`/`workspaceRoot` = v22 两键（sandbox-exec-rebuild 批——放置容量 ∥ 节点侧工作区根路径）。 */
 export const DEFAULT_SETTINGS = Object.freeze({
-  cpus: 2,                       // 数（可小数）
-  memMb: 4096,                   // 正整数
+  cpus: 2,                              // 数（可小数）
+  memMb: 4096,                          // 正整数
   pids: 512,
   diskMb: 4096,
-  idleTtlMinutes: 30,            // 空闲超时（§3）
-  wallclockTtlHours: 24,         // 墙钟 TTL（§3）
-  checkpointEveryMinutes: 15,    // WIP 快照周期（U5）
-  checkpointKeep: 5,             // 快照保留份数（§5）
-  pendingTimeoutSeconds: 60,     // 待批挂起窗（§6）
-  joinTtlMinutes: 30,            // 加入令牌有效期（§3）——死件键：join 面已随守护进程清除（保留随重做批收正）
-  tmpfsMb: 256,                  // tmpfs /tmp 容积（披露 D1）
-  image: "thincoder-sandbox:1",  // 盒镜像（§3「镜像 = 控制台预填设置」缺省值）
+  idleTtlMinutes: 30,                   // 空闲超时（§3 定时器）
+  wallclockTtlHours: 24,                // 墙钟 TTL（§3 定时器）
+  checkpointEveryMinutes: 15,           // WIP 快照周期（§5）
+  checkpointKeep: 5,                    // 快照保留份数（§5）
+  pendingTimeoutSeconds: 60,            // 待批挂起窗（§6）
+  tmpfsMb: 256,                         // tmpfs /tmp 容积（披露 D1）
+  image: "thincoder-sandbox:1",         // 盒镜像（§3「镜像 = 控制台预填设置」缺省值）
+  maxBoxesPerRunner: 8,                 // 单节点盒数上限（放置容量——KD-SV-171）
+  workspaceRoot: "/var/lib/thincoder/workspaces", // 节点侧工作区根路径（卷 = `<workspaceRoot>/<ws-id>`——KD-SV-162）
 })
 
 export const SETTING_KEYS = Object.freeze(Object.keys(DEFAULT_SETTINGS))
@@ -97,9 +82,10 @@ export function getSettings(db) {
   return out
 }
 
-/** 单键值校验（API §2.5「值形逐键」）：cpus = 正数；余 = 正整数；image = 非空字符串。 */
+/** 单键值校验（API §2.5「值形逐键」）：cpus = 正数；余 = 正整数；`image`/`workspaceRoot` = 非空字符串。 */
 export function validateSettingValue(key, value) {
   if (key === "image") return trimText(value, 200, { field: "镜像名" })
+  if (key === "workspaceRoot") return trimText(value, 400, { field: "工作区根路径" })
   const num = Number(value)
   if (!Number.isFinite(num)) throw new Error(`${key} 须为数值：${JSON.stringify(value)}`)
   if (key === "cpus") {
@@ -149,7 +135,7 @@ export function mergeLimits(existingJson, patch) {
   return merged
 }
 
-/** 取值序（§2）：全局默认 ⇒ 逐键叠加工作区覆写（覆写优先）——create/重建载荷逐值。 */
+/** 取值序（§2）：全局默认 ⇒ 逐键叠加工作区覆写（覆写优先）——建盒/重建载荷逐值（载荷构造 = `box.mjs`）。 */
 export function resolveLimits(db, workspace, settings = getSettings(db)) {
   const overrides = parseJson(workspace.limits_json, {})
   const out = {}
@@ -175,7 +161,8 @@ export function sshMetaOf(row) {
   }
 }
 
-/** 节点读数（§3 `overview` 基础行——`online`/`version`/`containers` 三值由路由面读时探活并上；`ssh` = 主机凭据元数据——KD-SV-133）。 */
+/** 节点读数（§3 `overview` 基础行——`online`/`version`/`containers` 三值由路由面读时探活并上；`ssh` = 主机凭据元数据——KD-SV-133；
+ *  `connection`/`tls` = 连接面元数据（增补 #2——scheme 派生 + state/updatedAt，**零材料字段**））。 */
 export function runnerView(row) {
   return {
     id: row.id,
@@ -184,6 +171,8 @@ export function runnerView(row) {
     status: row.status,
     selfCheck: parseJson(row.runtime_json, {}),
     ssh: sshMetaOf(row),
+    connection: connectionKindOf(row.address),
+    tls: tlsMetaOf(row),
     createdAt: row.created_at,
   }
 }
@@ -204,15 +193,17 @@ export function runnerRowOr404(db, id) {
   return row
 }
 
-/** 节点寻址 = 名 ∥ 地址两形（§12：`docker`/`exec` 两工具**单源**——自 `agent/chat-tools.mjs` `resolveNode` 迁入）。
- *  判据 = 原值逐等（name ∥ address）∪ 地址归一后逐等（`normalizeDockerAddress` 同规则）；未在册 ∥ 多命中（歧义）⇒ 抛（工具级错误人话；不猜）。 */
+/** 节点寻址 = 名 ∥ 地址两形（§12：`docker`/`exec` 两工具**单源**）。判据 = 原值逐等（name ∥ address）∪ 地址归一后逐等
+ *  （`normalizeDockerAddress` 同规则——明文 ∥ TLS 两档各试；相抵形归一抛 ⇒ 跳过）；未在册 ∥ 多命中（歧义）⇒ 抛（工具级错误人话；不猜）。 */
 export function runnerByRef(db, raw, { field = "host（注册节点名 ∥ 地址）", max = 300 } = {}) {
   const value = trimText(raw, max, { field })
   const hits = db.prepare("SELECT * FROM sandbox_runners WHERE name = ? OR address = ? ORDER BY id").all(value, value)
-  try {
-    hits.push(...db.prepare("SELECT * FROM sandbox_runners WHERE address = ? ORDER BY id").all(normalizeDockerAddress(value))) // 归一形同判（两形皆命中 ⇒ 下方歧义收口）
-  } catch {
-    /* 非地址形（归一抛）⇒ 只按原值判——下方未在册收口 */
+  for (const tls of [false, true]) {
+    try {
+      hits.push(...db.prepare("SELECT * FROM sandbox_runners WHERE address = ? ORDER BY id").all(normalizeDockerAddress(value, { tls }))) // 归一形同判（两形皆命中 ⇒ 下方歧义收口）
+    } catch {
+      /* 非该档地址形（归一抛）⇒ 跳过该档 */
+    }
   }
   const rows = [...new Map(hits.map((row) => [row.id, row])).values()]
   if (rows.length === 0) throw new Error(`节点未在册：${value}（先 runners.add 登记，或用 runners.list 查已登记节点）`)
@@ -220,14 +211,19 @@ export function runnerByRef(db, raw, { field = "host（注册节点名 ∥ 地�
   return rows[0]
 }
 
-/** 登记一行（连通自检通过后落库——§3；`runtime` = 自检读数逐值）。重名 ⇒ 抛（调用方 400——零落库）。 */
-export function insertRunner(db, { name, address, runtime = {}, now = Date.now() } = {}) {
+/** 登记一行（连通自检通过后落库——§3；`runtime` = 自检读数逐值 ∥ `tls` = 连接材料四列值对（`sealTlsMaterials` 产物；
+ *  缺省 `null` = 明文档 ⇒ 四列全 NULL——不携档零行为变化）。重名 ⇒ 抛（调用方 400——零落库）。 */
+export function insertRunner(db, { name, address, runtime = {}, now = Date.now(), tls = null } = {}) {
   const resolved = normalizeRunnerName(name)
   if (typeof address !== "string" || address.trim() === "") throw new Error("登记缺节点地址（address）")
   try {
-    const info = db
-      .prepare("INSERT INTO sandbox_runners (name, address, status, runtime_json, created_at) VALUES (?, ?, 'active', ?, ?)")
-      .run(resolved, address.trim(), JSON.stringify(runtime ?? {}), new Date(now).toISOString())
+    const created = new Date(now).toISOString()
+    const info = tls === null
+      ? db.prepare("INSERT INTO sandbox_runners (name, address, status, runtime_json, created_at) VALUES (?, ?, 'active', ?, ?)")
+        .run(resolved, address.trim(), JSON.stringify(runtime ?? {}), created)
+      : db.prepare(`INSERT INTO sandbox_runners (name, address, status, runtime_json, created_at, tls_ca, tls_cert, tls_key_cipher, tls_updated_at)
+          VALUES (?, ?, 'active', ?, ?, ?, ?, ?, ?)`)
+        .run(resolved, address.trim(), JSON.stringify(runtime ?? {}), created, tls.ca, tls.cert, tls.keyCipher, tls.updatedAt)
     return db.prepare("SELECT * FROM sandbox_runners WHERE id = ?").get(Number(info.lastInsertRowid))
   } catch (e) {
     if (/UNIQUE constraint failed: sandbox_runners\.name/.test(String(e?.message))) {
@@ -237,12 +233,22 @@ export function insertRunner(db, { name, address, runtime = {}, now = Date.now()
   }
 }
 
-/** 可用节点（静态判据——§3：`status = 'active'`；实时探活归运行面读数——KD-SV-80）。 */
+/** 可用节点（静态面——`status = 'active'`；在线判 = `probeRunner` 实时探活，调用方组合）。 */
 export function usableRunners(db) {
   return runnerRows(db).filter((row) => row.status === "active")
 }
 
-/** 可用性门（KD-SV-71 语义保持；本批 = 静态判据：存在 `active` 节点——实时门随重做批；仅沙盒功能面不可用）。 */
+/** 单节点轻探（`GET /info`——读类 3s 超时；失败 ⇒ `false`——离线读数不外推、零缓存）。 */
+export async function probeRunner(row, { fetchImpl = fetch, config = {}, requestImpl = null } = {}) {
+  try {
+    await clientForRunner(row, { fetchImpl, config, requestImpl }).info()
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** 可用性读数（静态面——成员面读门用；**写门 = `requireSandboxAvailable`（实时探活——KD-SV-166）**）。 */
 export function sandboxAvailability(db) {
   const rows = runnerRows(db)
   if (rows.length === 0) return { status: "unavailable", reason: "无节点注册" }
@@ -250,244 +256,98 @@ export function sandboxAvailability(db) {
   return { status: "available" }
 }
 
-/** 写门（需要节点的写动作——B35：写动作 ⇒ 503 `sandbox_unavailable`，不降级）。 */
-export function requireSandboxAvailable(db, { detail = null } = {}) {
-  const availability = sandboxAvailability(db)
-  if (availability.status === "unavailable") {
-    throw new HttpError("sandbox_unavailable", detail ? `${detail}（${availability.reason}）` : `沙盒不可用：${availability.reason}`)
+/** 写门（KD-SV-166——**实时探活**：候选 `active` 并发轻探（3s、零缓存、不降级）；≥1 在线 ⇒ 过；全离线 ∥ 无行 ⇒ 503 `sandbox_unavailable`）。
+ *  调用面 = 写动作（建盒/盒动作/派生）；读面零门；节点面恒可用（登记/删除不受门限——B68）。 */
+export async function requireSandboxAvailable(db, { detail = null, fetchImpl = fetch, config = {}, requestImpl = null } = {}) {
+  const rows = usableRunners(db)
+  if (rows.length > 0) {
+    const online = await Promise.all(rows.map((row) => probeRunner(row, { fetchImpl, config, requestImpl })))
+    if (online.some(Boolean)) return
   }
+  const reason = rows.length > 0 ? "无可用节点（active 节点全部不可达）" : runnerRows(db).length > 0 ? "无可用节点（节点均非 active）" : "无节点注册"
+  throw new HttpError("sandbox_unavailable", detail ? `${detail}（${reason}）` : `沙盒不可用：${reason}`)
 }
 
-// ── 心跳/队列死件（执行面通道已清除——本批不动；收正随执行面重做批）────────────
-
-/** 心跳块读取（死件读取面——`boxStateOf` 仍读 `boxes`；写入面已无调用方）。 */
-function heartbeatBlock(row) {
-  const block = parseJson(row.runtime_json, {})
-  return {
-    version: typeof block.version === "string" ? block.version : null,
-    runtime: block.runtime ?? null,
-    runtimeAvailable: block.runtimeAvailable !== false,
-    diskFreeMb: Number.isFinite(block.diskFreeMb) ? block.diskFreeMb : null,
-    boxes: normalizeBoxes(block.boxes),
+/** 绑定节点门（§7 绑定面动作——启动/停止/销毁/轮换/快照/恢复 ⇒ **探绑定节点**；离线 ⇒ 503 `sandbox_unavailable` 人话——与创建面 `requireSandboxAvailable`（探任一）成对）。
+ *  `runner` = 绑定行（`sandbox_workspaces.runner_id` 解析所得；未绑 ⇒ 传 `null`）；三因分列人话：未绑定（先放置）∥ 非 active ∥ 不可达。零缓存、不降级（与写门同口径）。 */
+export async function requireRunnerAvailable(runner, { detail = null, fetchImpl = fetch, config = {}, requestImpl = null } = {}) {
+  const fail = (reason) => {
+    throw new HttpError("sandbox_unavailable", detail === null ? `沙盒不可用：${reason}` : `${detail}（${reason}）`)
   }
+  if (runner === null || runner === undefined) fail("未绑定节点——先放置")
+  if (runner.status !== "active") fail(`绑定节点非 active（${runner.name}——改档或重放置）`)
+  if (!(await probeRunner(runner, { fetchImpl, config, requestImpl }))) fail(`绑定节点不可达（${runner.name} @ ${runner.address}）`)
 }
 
-/** 盒清单归一（上报形：`[{ workspaceId, state, stopReason?, dirty? }]`——非法条目略过）。 */
-export function normalizeBoxes(input) {
-  if (!Array.isArray(input)) return []
-  const out = []
-  for (const raw of input.slice(0, 500)) {
-    if (raw === null || typeof raw !== "object") continue
-    const workspaceId = Number(raw.workspaceId)
-    if (!Number.isInteger(workspaceId)) continue
-    const state = raw.state === "running" ? "running" : "stopped"
-    const stopReason = raw.stopReason === null || raw.stopReason === undefined ? null : String(raw.stopReason)
-    out.push({ workspaceId, state, stopReason, dirty: raw.dirty === true })
+// ── 放置（KD-SV-171）────────────────────────────────────────────────────────
+
+/** 已绑工作区计数（放置判据——`sandbox_workspaces` 行派生；零新列）。 */
+function bindingCounts(db) {
+  const out = new Map()
+  for (const row of db.prepare("SELECT runner_id, COUNT(*) AS n FROM sandbox_workspaces WHERE runner_id IS NOT NULL GROUP BY runner_id").all()) {
+    out.set(row.runner_id, Number(row.n))
   }
   return out
 }
 
-/** 心跳（死件——通道已清除、无调用方；引 `last_heartbeat_at` 列已随 v12 退场）。 */
-export function applyHeartbeat(db, row, payload = {}, { now = Date.now() } = {}) {
-  const block = heartbeatBlock(row)
-  const next = { ...block }
-  if (payload.version !== undefined) next.version = payload.version === null ? null : String(payload.version).slice(0, 64)
-  if (payload.runtime !== undefined) next.runtime = payload.runtime ?? null
-  if (payload.runtimeAvailable !== undefined) next.runtimeAvailable = payload.runtimeAvailable === true
-  if (payload.diskFreeMb !== undefined) {
-    const disk = Number(payload.diskFreeMb)
-    next.diskFreeMb = Number.isFinite(disk) && disk >= 0 ? disk : null
-  }
-  let transitions = []
-  if (Array.isArray(payload.boxes)) {
-    const boxes = normalizeBoxes(payload.boxes)
-    transitions = boxTransitions(block.boxes, boxes)
-    next.boxes = boxes
-  }
-  db.prepare("UPDATE sandbox_runners SET runtime_json = ?, last_heartbeat_at = ? WHERE id = ?").run(JSON.stringify(next), now, row.id)
-  let status = row.status
-  if (payload.drain === true && row.status === "draining") {
-    db.prepare("UPDATE sandbox_runners SET status = 'drained' WHERE id = ?").run(row.id)
-    status = "drained"
-  }
-  if (transitions.length > 0) recordBoxTransitions(db, row, transitions, { now })
-  return { ...row, status, runtime_json: JSON.stringify(next), last_heartbeat_at: now }
+/** 放置：候选 = `active` ∧ 在线（实时探活）∧ 已绑工作区数 < `maxBoxesPerRunner`；取已绑数最少（并列 ⇒ id 最小）。
+ *  无候选 ⇒ `null`（保持未绑 + 明示「待人放」——**不降级**）。 */
+export async function placeWorkspace(db, { fetchImpl = fetch, config = {}, requestImpl = null, settings = null } = {}) {
+  const resolved = settings ?? getSettings(db)
+  const rows = usableRunners(db)
+  if (rows.length === 0) return null
+  const counts = bindingCounts(db)
+  const capacity = Number(resolved.maxBoxesPerRunner ?? DEFAULT_SETTINGS.maxBoxesPerRunner)
+  const probed = await Promise.all(rows.map(async (row) => ({ row, online: await probeRunner(row, { fetchImpl, config, requestImpl }) })))
+  const candidates = probed
+    .filter((item) => item.online && (counts.get(item.row.id) ?? 0) < capacity)
+    .map((item) => ({ row: item.row, bound: counts.get(item.row.id) ?? 0 }))
+  if (candidates.length === 0) return null
+  candidates.sort((a, b) => (a.bound - b.bound) || (a.row.id - b.row.id))
+  return candidates[0].row
 }
 
-/** 盒状态变化登记（死件——同注）。 */
-export function applyBoxReport(db, row, boxes, { now = Date.now() } = {}) {
-  const block = heartbeatBlock(row)
-  const normalized = normalizeBoxes(boxes)
-  const transitions = boxTransitions(block.boxes, normalized)
-  const next = { ...block, boxes: normalized }
-  db.prepare("UPDATE sandbox_runners SET runtime_json = ? WHERE id = ?").run(JSON.stringify(next), row.id)
-  if (transitions.length > 0) recordBoxTransitions(db, row, transitions, { now })
-  return { ...row, runtime_json: JSON.stringify(next) }
-}
-
-/** 变化对比：新盒 ⇒ box_start；running ⇒ stopped ⇒ box_stop；已知盒消失 ⇒ box_destroy。 */
-function boxTransitions(prev, next) {
-  const previous = new Map(prev.map((box) => [box.workspaceId, box]))
-  const seen = new Set()
-  const out = []
-  for (const box of next) {
-    seen.add(box.workspaceId)
-    const before = previous.get(box.workspaceId)
-    if (!before) {
-      if (box.state === "running") out.push({ kind: "box_start", workspaceId: box.workspaceId, stopReason: null })
-      continue
-    }
-    if (before.state === "stopped" && box.state === "running") out.push({ kind: "box_start", workspaceId: box.workspaceId, stopReason: null })
-    if (before.state === "running" && box.state === "stopped") out.push({ kind: "box_stop", workspaceId: box.workspaceId, stopReason: box.stopReason })
-  }
-  for (const before of prev) {
-    if (!seen.has(before.workspaceId)) out.push({ kind: "box_destroy", workspaceId: before.workspaceId, stopReason: before.stopReason })
-  }
-  return out
-}
-
-function recordBoxTransitions(db, row, transitions, { now = Date.now() } = {}) {
-  for (const transition of transitions) {
-    const workspace = db.prepare("SELECT name FROM sandbox_workspaces WHERE id = ?").get(transition.workspaceId)
-    recordAudit(db, {
-      type: "sandbox_event",
-      actor: `runner:${row.name}`,
-      target: workspace?.name ?? `#${transition.workspaceId}`,
-      detail: { kind: transition.kind, workspaceId: transition.workspaceId, ...(transition.stopReason ? { stopReason: transition.stopReason } : {}) },
-      ts: now,
-    })
-  }
-}
-
-// ── 放置（§5）───────────────────────────────────────────────────────────────
-
-/** 放置判据（本批静态——§3：取 id 最小 active 节点；标签/容量/实时探活随执行面重做批）。无 ⇒ null（排队等待）。 */
-export function placeWorkspace(db) {
-  return usableRunners(db)[0] ?? null
-}
-
-/** 未放置工作区补放置（节点登记触达——「无满足者 ⇒ 排队等待」的续跑点）：绑定 + create/start 入队。 */
-export function tryPlacePending(db, { now = Date.now(), publicBase = null } = {}) {
+/** 未放置工作区补放置（KD-SV-171 触发③——节点登记成功后后台调用，**不阻断响应**；绑定为限——建盒链驱动 = `box.mjs`（同批另档））。
+ *  出 = 已绑定工作区 id 列表；无候选 ⇒ 零动（行留未绑）。 */
+export async function tryPlacePending(db, { fetchImpl = fetch, config = {}, requestImpl = null, settings = null } = {}) {
   const unbound = db.prepare("SELECT * FROM sandbox_workspaces WHERE runner_id IS NULL ORDER BY id").all()
   const placed = []
   for (const workspace of unbound) {
-    const runner = placeWorkspace(db)
+    const runner = await placeWorkspace(db, { fetchImpl, config, requestImpl, settings })
     if (!runner) continue
     db.prepare("UPDATE sandbox_workspaces SET runner_id = ? WHERE id = ?").run(runner.id, workspace.id)
-    const bound = { ...workspace, runner_id: runner.id }
-    const payload = boxPayload(db, bound, runner, { publicBase })
-    enqueueTask(db, { runnerId: runner.id, kind: "sandbox.create", workspaceId: workspace.id, payload, now })
-    enqueueTask(db, { runnerId: runner.id, kind: "sandbox.start", workspaceId: workspace.id, payload, now })
     placed.push(workspace.id)
   }
   return placed
 }
 
-// ── 指令队列（§3——死件同注；悬挂回收面在）──────────────────────────────────
+// ── 盒读数（读时读引擎——EXECUTION §3）──────────────────────────────────────
 
-/** 入队（queued）：payload = `{ workspaceId, ...字段 }`（单存——投递时拆出 workspaceId）。返回行 id。 */
-export function enqueueTask(db, { runnerId, kind, workspaceId, payload = {}, now = Date.now() } = {}) {
-  if (typeof kind !== "string" || !/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(kind)) throw new Error(`指令 kind 形非法：${String(kind)}`)
-  if (!Number.isInteger(Number(runnerId))) throw new Error("指令须有目标 runner（runnerId）")
-  const info = db
-    .prepare("INSERT INTO sandbox_tasks (runner_id, kind, payload_json, status, created_at) VALUES (?, ?, ?, 'queued', ?)")
-    .run(Number(runnerId), kind, JSON.stringify({ workspaceId, ...payload }), new Date(now).toISOString())
-  return Number(info.lastInsertRowid)
+/** 工作区盒名（引擎面唯一名——幂等采用判据；§3）。 */
+export function containerNameOf(workspaceId) {
+  return `tc-ws-${Number(workspaceId)}`
 }
 
-/** 领取（poll——queued ⇒ claimed；返回投递形 `{ id, kind, workspaceId, payload }`）。死件（无调用方）。 */
-export function claimTasks(db, runnerId, { now = Date.now() } = {}) {
-  const rows = db.prepare("SELECT * FROM sandbox_tasks WHERE runner_id = ? AND status = 'queued' ORDER BY id").all(Number(runnerId))
-  const out = []
-  for (const row of rows) {
-    db.prepare("UPDATE sandbox_tasks SET status = 'claimed', claimed_at = ? WHERE id = ?").run(now, row.id)
-    const { workspaceId = null, ...payload } = parseJson(row.payload_json, {})
-    out.push({ id: row.id, kind: row.kind, workspaceId, payload })
-  }
-  return out
-}
-
-/** 上报指令结果：done ∥ failed ∥ unsupported（须属本 runner）。死件（无调用方）。 */
-export function reportTask(db, runnerId, { taskId, status, result = null, now = Date.now() } = {}) {
-  const id = Number(taskId)
-  const row = db.prepare("SELECT * FROM sandbox_tasks WHERE id = ? AND runner_id = ?").get(id, Number(runnerId))
-  if (!row) throw new HttpError("not_found", `指令不存在或不属于本 runner：${String(taskId)}`)
-  if (status !== "done" && status !== "failed" && status !== "unsupported") throw new Error(`指令结果状态须为 done ∥ failed ∥ unsupported：${String(status)}`)
-  db.prepare("UPDATE sandbox_tasks SET status = ?, finished_at = ?, result_json = ? WHERE id = ?").run(status, now, JSON.stringify(result ?? {}), id)
-  return db.prepare("SELECT * FROM sandbox_tasks WHERE id = ?").get(id)
-}
-
-/** 悬挂回收（§3）：`claimed` 逾期（5 分钟）⇒ 幂等 kind 回 queued（重派）∥ 非幂等 ⇒ failed + 原因。
- *  心跳判据已去（KD-SV-80——节点存活 = 读时探活；本批零改队列语义）。 */
-export function sweepStuckTasks(db, { now = Date.now() } = {}) {
-  const rows = db
-    .prepare("SELECT * FROM sandbox_tasks WHERE status = 'claimed' AND claimed_at IS NOT NULL AND claimed_at <= ?")
-    .all(now - CLAIM_TIMEOUT_MS)
-  const reclaimed = []
-  for (const row of rows) {
-    if (IDEMPOTENT_TASK_KINDS.includes(row.kind)) {
-      db.prepare("UPDATE sandbox_tasks SET status = 'queued' WHERE id = ?").run(row.id) // claimed_at 留作「重派中」标记
-      reclaimed.push({ id: row.id, kind: row.kind, action: "requeued" })
-    } else {
-      db.prepare("UPDATE sandbox_tasks SET status = 'failed', finished_at = ?, result_json = ? WHERE id = ?").run(
-        now,
-        JSON.stringify({ reason: "指令领取逾期（5 分钟）——非幂等指令不自动重跑" }),
-        row.id,
-      )
-      reclaimed.push({ id: row.id, kind: row.kind, action: "failed" })
-    }
-  }
-  return reclaimed
-}
-
-/** 工作区行可见面（B41）：最近一条指令（`queued` + 已领取过 = 重派中；`failed` 携原因）。 */
-export function lastTaskView(db, workspaceId) {
-  const row = db
-    .prepare("SELECT * FROM sandbox_tasks WHERE json_extract(payload_json, '$.workspaceId') = ? ORDER BY id DESC LIMIT 1")
-    .get(Number(workspaceId))
-  if (!row) return null
-  const result = parseJson(row.result_json, null)
-  return {
-    id: row.id,
-    kind: row.kind,
-    status: row.status,
-    requeued: row.status === "queued" && row.claimed_at !== null,
-    reason: row.status === "failed" && result !== null ? (result.reason ?? null) : null,
-    createdAt: row.created_at,
-    claimedAt: row.claimed_at ?? null,
-    finishedAt: row.finished_at ?? null,
+/** 工作区盒读数（**读时读引擎**：`containers/json` 按名匹配；不在 ⇒ 「未建/stopped」）。出 = `{ boxState, stopReason, containerId, unreachable }`：
+ *  `stopReason` = 服务器动作注记列（v22 增——引擎态零镜像；未迁库行 ⇒ `null`）∥
+ *  `unreachable` = 引擎不可达/无客户端 ⇒ 「读数不可得」（`boxState` 按 `stopped` 呈现 + 该旗如实标，调用方自决明示）。 */
+export async function boxStateOf(workspace, runner, { client = null } = {}) {
+  const stopReason = workspace?.stop_reason ?? null
+  const base = { boxState: "stopped", stopReason, containerId: null, unreachable: false }
+  if (!runner) return base // 未绑定 ⇒ 「未建」（零外呼）
+  if (client === null) return { ...base, unreachable: true }
+  try {
+    const res = await client.containers()
+    const name = containerNameOf(workspace.id)
+    const hit = (Array.isArray(res.json) ? res.json : []).find((item) => String(item?.Names?.[0] ?? "").replace(/^\//, "") === name)
+    if (!hit) return base
+    return { ...base, boxState: String(hit.State ?? "") === "running" ? "running" : "stopped", containerId: hit.Id ?? null }
+  } catch {
+    return { ...base, unreachable: true }
   }
 }
 
-// ── 盒读数与载荷（§2 取值序 / §7 env）───────────────────────────────────────
-
-/** 工作区盒读数（心跳块派生——死件读取面：新模型下 `boxes` 恒空 ⇒ 「stopped/无 dirty」；
- *  真实盒态随执行面重做批经 Docker API 读）。 */
-export function boxStateOf(workspace, runnerRow) {
-  if (!runnerRow) return { boxState: "stopped", stopReason: null, dirty: false }
-  const box = heartbeatBlock(runnerRow).boxes.find((item) => item.workspaceId === workspace.id)
-  if (!box) return { boxState: "stopped", stopReason: null, dirty: false }
-  return { boxState: box.state === "running" ? "running" : "stopped", stopReason: box.stopReason, dirty: box.dirty === true }
-}
-
-/** box 载荷（create/重建——取值序 = 全局默认 ⇒ 逐键覆写；env = 盒内唯一凭据面）。 */
-export function boxPayload(db, workspace, runner, { publicBase = null } = {}) {
-  const settings = getSettings(db)
-  return {
-    image: settings.image,
-    tmpfsMb: settings.tmpfsMb,
-    limits: resolveLimits(db, workspace, settings),
-    checkpoint: { everyMinutes: settings.checkpointEveryMinutes, keep: settings.checkpointKeep },
-    network: `tc-ws-${workspace.id}`,
-    volume: String(workspace.id),
-    env: {
-      OPENAI_BASE_URL: publicBase, // http://<server>:<port>/v1——config.host 为通配地址（0.0.0.0）时该值不可直连，执行面侧以其 --server 地址替换（实施注）
-      OPENAI_API_KEY: workspace.key_plain, // 工作区 key（盒内零服务器密钥——§7）
-    },
-  }
-}
-
-/** 服务基址（盒内 env `OPENAI_BASE_URL`——config.host/port 组成）。 */
+/** 服务基址（盒内 env `OPENAI_BASE_URL`——config.host/port 组成；取值点单源 = 网段自动带入同址）。 */
 export function sandboxPublicBase(config = {}) {
   const host = typeof config.host === "string" && config.host.trim() !== "" ? config.host.trim() : "127.0.0.1"
   const port = Number(config.port) > 0 ? Number(config.port) : 80
@@ -498,10 +358,11 @@ export function sandboxPublicBase(config = {}) {
 /**
  * 删节点链（SANDBOX §3 删除行 ∥ KD-SV-90 §12——**共享助手**：控制台删除路由与 chat 工具面两调用点单源）。
  * 步序：① 承载工作区确认（`confirm` 缺 ⇒ 400）⇒ ② 容器处置校验（`keep` ∥ `remove`）⇒ ③ 读时列容器（不可达 ⇒ 仅 `keep` 可过）
- * ⇒ ④ `remove` 逐删强删（任一失败 ⇒ 502 + 登记行保留）⇒ ⑤ 作废在途指令 + 工作区解绑 + 删登记行 ⇒ ⑥ 弃置工作区续放置。
+ * ⇒ ④ `remove` 逐删强删（任一失败 ⇒ 502 + 登记行保留）⇒ ⑤ 工作区解绑 + 删登记行 ⇒ ⑥ 弃置工作区续放置。
  * **审计写不随迁**（调用侧各留：控制台 = `sandbox_event`/`runner_delete` ∥ chat = 只 `chat_call` 行——KD-SV-91）。
- * 出 = `{ id, name, kept, removed }`（`fetchImpl` = Docker 传输注入面——单元测试档替身）。 */
-export async function deleteRunnerChain(db, runner, { containers = undefined, confirm = false } = {}, { fetchImpl = fetch, now = Date.now, publicBase = null } = {}) {
+ * 出 = `{ id, name, kept, removed }`（`fetchImpl`/`config`/`requestImpl` = Docker 传输注入面——单元测试档替身）。
+ */
+export async function deleteRunnerChain(db, runner, { containers = undefined, confirm = false } = {}, { fetchImpl = fetch, config = {}, requestImpl = null } = {}) {
   const bound = db.prepare("SELECT id, name FROM sandbox_workspaces WHERE runner_id = ? ORDER BY id").all(runner.id)
   if (bound.length > 0 && confirm !== true) {
     throw new HttpError(
@@ -516,7 +377,7 @@ export async function deleteRunnerChain(db, runner, { containers = undefined, co
   let listed = []
   let reachable = true
   try {
-    const res = await clientForRunner(runner, { fetchImpl }).containers()
+    const res = await clientForRunner(runner, { fetchImpl, config, requestImpl }).containers()
     listed = Array.isArray(res.json) ? res.json : []
   } catch {
     reachable = false
@@ -535,7 +396,7 @@ export async function deleteRunnerChain(db, runner, { containers = undefined, co
       const id = item.Id
       const name = String(item.Names?.[0] ?? id).replace(/^\//, "")
       try {
-        await clientForRunner(runner, { fetchImpl }).deleteContainer(id, { force: true })
+        await clientForRunner(runner, { fetchImpl, config, requestImpl }).deleteContainer(id, { force: true })
         removed += 1
       } catch (e) {
         failed.push(`${name}（${e?.message ?? e}）`)
@@ -551,13 +412,8 @@ export async function deleteRunnerChain(db, runner, { containers = undefined, co
   } else {
     kept = listed.length
   }
-  db.prepare("UPDATE sandbox_tasks SET status = 'failed', finished_at = ?, result_json = ? WHERE runner_id = ? AND status IN ('queued','claimed')").run(
-    now(),
-    JSON.stringify({ reason: "节点已退役——指令作废" }),
-    runner.id,
-  )
   db.prepare("UPDATE sandbox_workspaces SET runner_id = NULL WHERE runner_id = ?").run(runner.id)
   db.prepare("DELETE FROM sandbox_runners WHERE id = ?").run(runner.id)
-  tryPlacePending(db, { now: now(), publicBase }) // 弃置工作区续跑（有 active 节点即重放置）
+  await tryPlacePending(db, { fetchImpl, config, requestImpl }) // 弃置工作区续跑（有在线节点即重放置）
   return { id: runner.id, name: runner.name, kept, removed }
 }

@@ -1,14 +1,17 @@
 /**
  * views-sandbox-containers.mjs — 沙盒页·容器区件（webui/SANDBOX.md §2.1①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
- * 容器表（名/镜像/状态/操作：详情/启动/停止/重启/日志/删除）∥ 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块（懒取 + 刷新钮）
+ * 容器表（名/镜像/状态/操作：详情/启动/停止/重启/日志/删除/终端）∥ 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块（懒取 + 刷新钮）
  * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗（建窗卷字段 = 节点已有卷选单 + 「新建卷（手输）」保底——sandbox-volumes 批）。
- * **动作钮状态门 + 忙态 + 反馈（sandbox-container-actions 批——2026-10-13；台账 #1358）**：启动/停止/重启随容器态门矩阵（`actionGate`——重启锚定运行中）∥ 点击 ⇒ 该行六钮即时禁用 + 行闩（在飞零第二请求）⇒ 完成回门矩阵态（成功面另走既有重取；失败面按当刻态列重算）∥ 成功 `flash` 成功句（含容器名——三枚）/失败红条。
+ * **第七钮「终端」（sandbox-container-terminal 批——2026-10-13；台账 #1374）**：门 = 运行中（exec 需运行态）∥ 入行闩（窗类入口——在飞期不可开）∥ 点钮 ⇒
+ * 终端窗（件 = `views-sandbox-terminal.mjs`；`webui/SANDBOX.md` §2.1① ∥ `webui/TERMINAL.md`）。
+ * **动作钮状态门 + 忙态 + 反馈（sandbox-container-actions 批——2026-10-13；台账 #1358）**：启动/停止/重启随容器态门矩阵（`actionGate`——重启锚定运行中）∥ 点击 ⇒ 该行七钮即时禁用 + 行闩（在飞零第二请求）⇒ 完成回门矩阵态（成功面另走既有重取；失败面按当刻态列重算）∥ 成功 `flash` 成功句（含容器名——三枚）/失败红条。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（`webui/I18N.md` §2.1）；渲染一律节点 + textContent（零拼串）。
  * 拆档缘由 = `views-sandbox.mjs` 增量将越 500 硬线前外拆；窗体助手四件已迁 `modal.mjs`（避循环 import）。
  * 单元测试档直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { confirmModal, field, openModal, showNote, submitThen } from "./modal.mjs"
+import { openTerminalModal } from "./views-sandbox-terminal.mjs"
 import { sandboxKindLabel } from "./views-audit.mjs"
 
 export { createVolumeSection } from "./views-sandbox-volumes.mjs" // 卷区件工厂转出口（页装配单点取件——`views-sandbox.mjs` 行预算 ≤500）
@@ -102,11 +105,12 @@ export function createContainerSection(ctx) {
   return { area, reset }
 }
 
-/** 动作列（六钮——详情/启动/停止/重启/日志/删除）：三动作初值 = 门矩阵；点击 ⇒ 该行六钮即时禁用（发请求前）+ 行闩
- *  （在飞再触零第二请求）⇒ 完成回门矩阵态（成功面另走既有 `invalidate()` 重取——态列随新数据重渲；失败面按当刻态列重算——非六钮无条件全启）。 */
+/** 动作列（七钮——详情/启动/停止/重启/日志/删除/终端）：三动作初值 = 门矩阵（终端钮 = 运行中门）；点击 ⇒ 该行七钮即时禁用（发请求前）+ 行闩
+ *  （在飞再触零第二请求）⇒ 完成回门矩阵态（成功面另走既有 `invalidate()` 重取——态列随新数据重渲；失败面按当刻态列重算——非七钮无条件全启）。 */
 function actionCell(ctx, { runner, container, invalidate }) {
   const { h } = ctx
   const gate = actionGate(container.state)
+  const terminalGate = container.state !== "running" // 第七钮门：非运行禁用（exec 需运行态——`webui/SANDBOX.md` §2.1①）
   const buttons = {
     detail: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.detail"), onclick: () => openContainerDetailModal(ctx, { runner, container, invalidate }) }),
     start: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.start"), disabled: gate.start, onclick: () => run("start") }),
@@ -114,10 +118,11 @@ function actionCell(ctx, { runner, container, invalidate }) {
     restart: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.restart"), disabled: gate.restart, onclick: () => run("restart") }),
     logs: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logs"), onclick: () => openContainerLogsModal(ctx, { runner, container }) }),
     remove: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveContainerModal(ctx, { runner, container, reload: invalidate }) }),
+    terminal: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.terminal"), disabled: terminalGate, onclick: () => openTerminalModal(ctx, { runner, container }) }),
   }
-  const six = Object.values(buttons)
-  let busy = false // 行闩（在飞期——该行六钮零第二请求）
-  /** 门矩阵重算（当刻态列——完成恢复的落点；详情/日志/删除 = 读面不随门，忙态外恒可用）。 */
+  const seven = Object.values(buttons)
+  let busy = false // 行闩（在飞期——该行七钮零第二请求）
+  /** 门矩阵重算（当刻态列——完成恢复的落点；详情/日志/删除 = 读面不随门，忙态外恒可用；终端 = 运行中门）。 */
   const applyGate = () => {
     const matrix = actionGate(container.state)
     buttons.start.disabled = matrix.start
@@ -126,13 +131,14 @@ function actionCell(ctx, { runner, container, invalidate }) {
     buttons.detail.disabled = false
     buttons.logs.disabled = false
     buttons.remove.disabled = false
+    buttons.terminal.disabled = container.state !== "running"
   }
-  /** 三动作一路（启动 ∥ 停止 ∥ 重启——幂等成功面由服务端收编）：即时禁六钮 ⇒ 请求 ⇒ 成功 = flash 成功句 + 失缓存重取
+  /** 三动作一路（启动 ∥ 停止 ∥ 重启——幂等成功面由服务端收编）：即时禁七钮 ⇒ 请求 ⇒ 成功 = flash 成功句 + 失缓存重取
    *  ∥ 失败 = 红条照旧；完成（两路）⇒ 闩清 + 回门矩阵态。 */
   async function run(action) {
     if (busy) return
     busy = true
-    for (const button of six) button.disabled = true
+    for (const button of seven) button.disabled = true
     try {
       await ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers/${container.id}/${action}`, { method: "POST", body: {} })
       ctx.flash(t(ACTION_FLASH_KEYS[action], { name: container.name }))
@@ -144,7 +150,7 @@ function actionCell(ctx, { runner, container, invalidate }) {
       applyGate()
     }
   }
-  return h("td", {}, ...six)
+  return h("td", {}, ...seven)
 }
 
 /** 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块 + 强杀钮）。 */

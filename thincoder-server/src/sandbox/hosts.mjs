@@ -103,7 +103,7 @@ function clip(text, max = 200) {
  * 传输级失败 ⇒ 抛（`SshError`——调用侧转工具级错误人话）；**行凭据值零入四面**（stdout/stderr/summary/subject 同链掩蔽——KD-SV-136）。
  * 私钥临时档（key 认证形）用毕即删——`finally` 单点（零残留）。
  */
-export async function execOnHost(row, { command, timeoutS = SSH_COMMAND_TIMEOUT_S } = {}, { config = {}, execImpl = null, now = Date.now } = {}) {
+export async function execOnHost(row, { command, timeoutS = SSH_COMMAND_TIMEOUT_S, stdin = null } = {}, { config = {}, execImpl = null, now = Date.now } = {}) {
   const { secret, sudoSecret } = credentialOf(row, { config })
   const host = sshHostOf(row)
   const ssh = createSshExecutor({
@@ -121,6 +121,7 @@ export async function execOnHost(row, { command, timeoutS = SSH_COMMAND_TIMEOUT_
       sudoSecret,
       command,
       timeoutS,
+      stdin, // 命令体透传（sandbox-exec-rebuild 批：`nft -f -` ∥ `tar xzf -` 收体——盒链 ③/恢复备径用；缺省 null = 现状零变）
     })
     const secrets = [secret, sudoSecret].filter((value) => typeof value === "string" && value.length > 0)
     const stdout = maskSecrets(out.stdout, secrets)

@@ -23,7 +23,7 @@
  * `user` 行 + `data.kind="reminder"`）在每回合起跑投递（唤醒轮 = `runChatWakeTurn`——与用户回合同环同面、无路由无帧面）；
  * 空闲自唤醒 = `chat-wake.mjs`（会话键面闩 ＋ 结算钩子 ＋ 三链尾再武装）；`bash.async` 走核池（垫片即宿主）；
  * 非 interrupt 中止 ⇒ 回合尾 `discardAbortedChatTasks`（杀树 + 丢弃提醒入汇 + 墓碑）。
- * 出口改道（§16.2/§16.3——修订轮）：模型出口 = **本进程网关链 loopback**（`<selfBase>/v1` + 会话 owner 的 `admin-agent` sk 明文——
+ * 出口改道（§16.2/§16.3——修订轮；凭据主体 2026-10-13 收正——谁用谁）：模型出口 = **本进程网关链 loopback**（`<selfBase>/v1` + **本回合发送者**（登录成员）的 `admin-agent` sk 明文——
  * 鉴权/派发/准入/记账全链逐字复用）；`read_history` 记录面 = `pad._recordStore`（`chat-store.mjs` `recordStoreOf`——本会话作用域）。
  * 与核取核形（§17 ∥ KD-SV-137——server-core-unification 批）：**A1** 工具轮回灌形 = 核件构造（`assistantTurnOf`——回声族携
  * `reasoning_content`〔缺值 ⇒ `""`〕；签名 `extraContent` 落库-回放逐值）∥ **A2** 历史修复（`repairTurnHistory`——回合装配期施用）∥

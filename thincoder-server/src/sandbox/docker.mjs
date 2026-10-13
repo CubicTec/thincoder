@@ -233,7 +233,7 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
 
   /** 单请求（超时 → kind 分类；非 2xx ⇒ `DockerError("api")`——304 属成功面，调用方自判）。
    *  `rawBody` = 字节体（archive put ∥ build——原样写）；`body` = JSON 体；两参互斥（rawBody 优先）。 */
-  async function request(method, path, { body = null, rawBody = null, headers = undefined, timeoutMs = READ_TIMEOUT_MS } = {}) {
+  async function request(method, path, { body = null, rawBody = null, headers = undefined, timeoutMs = readTimeoutMs } = {}) {
     const url = `${baseUrl}${path}`
     const signal = AbortSignal.timeout(timeoutMs)
     let init = { method, signal }
@@ -263,7 +263,7 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
   }
 
   /** 单请求·字节体（日志面——帧头/载荷逐字节保形，不先转字串；错误映射同 `request`）。 */
-  async function requestBytes(method, path, { timeoutMs = READ_TIMEOUT_MS } = {}) {
+  async function requestBytes(method, path, { timeoutMs = readTimeoutMs } = {}) {
     const url = `${baseUrl}${path}`
     const signal = AbortSignal.timeout(timeoutMs)
     let response
@@ -374,7 +374,7 @@ export function createDockerClient({ baseUrl, apiVer = null, fetchImpl = fetch, 
     /** 删卷（动作类；名形已由路由前置校验——`[A-Za-z0-9_.-]` 字符集直入路径段；§3 KD-SV-104）。 */
     removeVolume: (name) => request("DELETE", `${prefix()}/volumes/${name}`, { timeoutMs: actionTimeoutMs }),
     /** 原动词面（agent `docker` 工具——images ∥ pull ∥ logs ⋯；§3 工具表）。 */
-    raw: (method, path, { body = null, timeoutMs = ACTION_TIMEOUT_MS } = {}) => request(method, `${prefix()}${path}`, { body, timeoutMs }),
+    raw: (method, path, { body = null, timeoutMs = actionTimeoutMs } = {}) => request(method, `${prefix()}${path}`, { body, timeoutMs }),
   }
 }
 

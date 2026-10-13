@@ -1,5 +1,5 @@
 /**
- * views-models.mjs — 管理·服务模型页（webui/WEBUI.md §2/§2.4③——KD-SV-32/34/59：`#/admin/models`——仅 admin）：
+ * views-models.mjs — 管理·服务模型页（webui/ADMIN.md §2.1③——KD-SV-32/34/59：`#/admin/models`——仅 admin）：
  * 列表 = `/v1/models` 同源（`GET /api/admin/providers` 的 `models` 展平——`id` = **对外标识**（配别名 ⇒ 别名 ∥ 未配 ⇒
  * `provider/model` 前缀形）；**嵌入引擎模型不入本列表**（单独命名空间——KD-SV-58））∥ 配额列（`settings[上游].quotaTokens`
  * ——未设 ⇒「不限」；与 F 组单源）∥ 行点击 ⇒ 详情弹窗（复用 `modal.mjs`）；配置**六组** = A 开放状态（停用流）∥
@@ -10,7 +10,7 @@
  * `models` 条目**两形**（KD-SV-59①）：字符串 = 无别名 ∥ `{ name, alias }` = 配别名；本页写面一律**按名匹配保形**
  * （停用减项 ∥ 别名改写——其余条目两形与对象他字段不动）；别名清空 ⇒ 回落字符串形（两形归一）。
  * 零新端点（目录来源 = provider 配置派生——需求边界）；**零上游探针**（列表/详情/停用皆不引发现面——退役项同口径
- * 可停）；判权全在后端（admin 面——服务端 403 为准）；渲染一律节点 + textContent；文案经 `t()` 取值（§2.2）。 */
+ * 可停）；判权全在后端（admin 面——服务端 403 为准）；渲染一律节点 + textContent；文案经 `t()` 取值（`webui/I18N.md` §2.1）。 */
 import { t } from "./i18n.mjs"
 import { openModal } from "./modal.mjs"
 import { specForDisplay } from "./model-specs-snapshot.mjs"

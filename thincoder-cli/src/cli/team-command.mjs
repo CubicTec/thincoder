@@ -23,7 +23,7 @@ const TEAM_USAGE = "Usage: thincoder team login [--server <url>] [--user <name>]
 
 /** 失败出词四句（TEAM.md §2.5 失败理由域；核 `reason` 四值闭集 ⇔ 四句——三端逐字同句）。 */
 export const FAILURE_TEXT = {
-  network: "网络不可达",
+  network: "网络不可达——请检查地址与端口",
   credentials: "用户名或密码错误",
   rate_limited: "登录尝试过于频繁",
   write_failed: "本机配置写入失败",
@@ -61,7 +61,7 @@ async function runLogin(rest) {
   }
   const input = createInput()
   try {
-    const server = flags.server ?? (await input.ask("Team server URL: ")).trim()
+    const server = flags.server ?? (await input.ask("Team server URL (e.g. http://host:8787): ")).trim()
     const username = flags.user ?? (await input.ask("Username: ")).trim()
     const password = await input.askHidden("Password (hidden): ")
     const result = await teamLogin({ server, username, password })

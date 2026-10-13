@@ -1,7 +1,7 @@
 /**
  * dom.mjs — 控制台渲染助手 + 提示条（webui/WEBUI.md §1——结构轮自 `app.mjs` 逐字外拆）：`h`（建元素）∥ `table`（表格 +
  * 一次性秘密区（`showSecret` + `copyText` 三路回退——复制面单源）∥
- * `usageTable`（用量表——本人 ∥ 全队同构）∥ `dataShell`（数据表页视口高壳——§2.6②）∥ `flash`（提示条——携 `flashEl`/计时器）。
+ * `usageTable`（用量表——本人 ∥ 全队同构）∥ `dataShell`（数据表页视口高壳——`webui/STYLE.md` §2.2）∥ `flash`（提示条——携 `flashEl`/计时器）。
  * 消费单点 = `app.mjs`（`viewCtx()` 装配——视图面零改）。
  */
 import { t, langTag } from "./i18n.mjs"
@@ -27,7 +27,7 @@ export function h(tag, props = {}, ...children) {
 }
 
 /** 表格（宽表横滚 = CSS `.table-wrap`）；cell = 值 ∥ 节点 ∥ 节点数组；`foot = true` ⇒ 表尾 `<tfoot>` 行计数
- *  （「共 N 项」= 渲染行数派生——§2.6③；用户 2026-10-07 08:26 收正：计数 = 表内 tfoot，非壳级行）。 */
+ *  （「共 N 项」= 渲染行数派生——`webui/STYLE.md` §2.2；用户 2026-10-07 08:26 收正：计数 = 表内 tfoot，非壳级行）。 */
 export function table(headers, rows, { foot = false } = {}) {
   return h("div", { class: "table-wrap" },
     h("table", {},

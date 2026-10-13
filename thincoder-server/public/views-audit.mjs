@@ -1,11 +1,12 @@
 /**
- * views-audit.mjs — 管理·审计（webui/WEBUI.md §2/§2.3④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
+ * views-audit.mjs — 管理·审计（webui/READINGS.md §2.1④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
- * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十四型——全型收编）；
- * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——§2.10）
+ * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十五型——全型收编；team-ledger 批 + `ledger_event`）；
+ * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——`agent/ADMIN-AGENT.md` §11）
  * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11）
- * ∥ project 行（`project_event`——kind 族 + 源/项目/成员三面逐值；team-projects-permissions 批（B2）））
+ * ∥ project 行（`project_event`——kind 族 + 源/项目/成员三面逐值；team-projects-permissions 批（B2））
+ * ∥ ledger 行（`ledger_event`——kind 族 + id/repo/两面逐值；team-ledger 批））
  * 按在场渲染；对象与操作者同名 ⇒「—」（名快照口径——改/删后记录自足）。渲染一律节点 + textContent；文案经 `t()` 取值。
  */
 import { t } from "./i18n.mjs"
@@ -27,6 +28,7 @@ const AUDIT_TYPES = [
   ["sandbox_event", "audit.type.sandbox_event"],
   ["sandbox_rule", "audit.type.sandbox_rule"],
   ["project_event", "audit.type.project_event"],
+  ["ledger_event", "audit.type.ledger_event"],
 ]
 
 export async function renderAudit(ctx, mount) {
@@ -78,7 +80,7 @@ function eventsTable(ctx, events) {
     typeLabel(event.type),
     event.actor,
     event.target && event.target !== event.actor ? event.target : "—",
-    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : event.type === "project_event" ? projectDetailText(event.detail) : detailText(event.detail),
+    event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : event.type === "project_event" ? projectDetailText(event.detail) : event.type === "ledger_event" ? ledgerDetailText(event.detail) : detailText(event.detail),
   ])
   return ctx.table([t("audit.col.time"), t("audit.col.type"), t("audit.col.actor"), t("audit.col.target"), t("audit.col.detail")], rows, { foot: true })
 }
@@ -150,6 +152,34 @@ function projectDetailText(detail) {
   if (detail?.ok === false) parts.push(`${t("admin.gitSources.resultFail")}${detail?.errorKind === undefined ? "" : ` · ${readKindLabel(detail?.errorKind)}`}`)
   if (detail?.counts !== undefined && detail?.counts !== null) parts.push(countsText(detail.counts))
   if (detail?.memberCount !== undefined && detail?.memberCount !== null) parts.push(`${t("admin.projects.col.memberCount")} ${detail?.memberCount}`)
+  return parts.length === 0 ? "—" : parts.join(" · ")
+}
+
+/** 台账 kind 文案键（`ledger_event` detail.kind——四 kind；枚举外 ⇒ 原值兜底）。 */
+const LEDGER_KIND_KEYS = {
+  create: "me.ledger.kind.create",
+  edit: "me.ledger.kind.edit",
+  close: "me.ledger.kind.close",
+  withdraw: "me.ledger.kind.withdraw",
+}
+
+/** 台账 kind 文案（导出——单元测试档断言；枚举外 ⇒ 原值兜底）。 */
+export function ledgerKindLabel(kind) {
+  return LEDGER_KIND_KEYS[kind] === undefined ? String(kind ?? "—") : t(LEDGER_KIND_KEYS[kind])
+}
+
+/** 台账写入面文案键（`surface` = console ∥ client——两面写入可辨；枚举外 ⇒ 原值兜底）。 */
+const LEDGER_SURFACE_KEYS = { console: "me.ledger.surface.console", client: "me.ledger.surface.client" }
+
+/** 台账事件详情（`ledger_event`——kind 族 + id/repo/两面逐值；team-ledger 批；导出 = 单元测试档断言）。 */
+export function ledgerDetailText(detail) {
+  const parts = []
+  if (typeof detail?.kind === "string" && detail.kind !== "") parts.push(ledgerKindLabel(detail.kind))
+  if (detail?.id !== undefined && detail?.id !== null) parts.push(`#${detail.id}`)
+  if (typeof detail?.repo === "string" && detail.repo !== "") parts.push(detail.repo)
+  if (typeof detail?.surface === "string" && detail.surface !== "") {
+    parts.push(LEDGER_SURFACE_KEYS[detail.surface] === undefined ? String(detail.surface) : t(LEDGER_SURFACE_KEYS[detail.surface]))
+  }
   return parts.length === 0 ? "—" : parts.join(" · ")
 }
 

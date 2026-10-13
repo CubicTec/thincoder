@@ -135,6 +135,11 @@ function teamRouteBody(model, handlers) {
       props: { class: "settings-form", "data-form": "wizard-team", "data-draft-scope": "wizard-team" },
       children: [
         ...fieldPair("wizard-team-server", "server", "text", "settings.team.serverLabel", team.server ?? "", true),
+        {
+          tag: "div",
+          props: { class: "settings-empty", "data-team-server-hint": "" },
+          children: [t("settings.team.serverHint")],
+        },
         ...fieldPair("wizard-team-username", "username", "text", "settings.team.usernameLabel", team.member?.username ?? "", true),
         ...fieldPair("wizard-team-password", "password", "password", "settings.team.passwordLabel", "", false),
         {

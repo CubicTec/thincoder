@@ -1,5 +1,5 @@
 /**
- * views-sandbox-image-sources.mjs — 沙盒页·镜像源卡件（webui/WEBUI.md §2.8①；sandbox-image-sources 批——台账 #1274；
+ * views-sandbox-image-sources.mjs — 沙盒页·镜像源卡件（webui/SANDBOX.md §2.1①；sandbox-image-sources 批——台账 #1274；
  * 一键拉取 = sandbox-image-quick-pull 批——台账 #1276）：
  * 源表（名 ∥ 地址 ∥ 面型提示（Hub 面/标准 v2——按 `kind` 派生）∥ 操作：目录/改/删）+「添加源」钮
  * ∥ 增/改弹窗（常用源预选下拉七条（选中回填名 + 址，可再改）+ 名/址两输入）∥ 删除确认（后果句——非原生 confirm）
@@ -7,7 +7,7 @@
  * 「按镜像名查标签」单输入（目录面 `unsupported` 人话呈）；五分类读绪各一键文案——窗内就地呈，不关窗）
  * ∥ 一键拉取（行尾「拉取」钮 ⇒ 节点选单（开窗读一次概览——无节点/全离线 ⇒ 禁用 + 一句人话）⇒ 既有拉取窗（预填
  * `<主机>[:<端口>]/<仓库>:<标签>` + 「目标节点」行；预填可改；携源 ⇒ 窗内「经由源」选单认源态——sandbox-pull-by-source 批）⇒ 既有拉取径——零新端点 ∥ 零新 kind）。
- * 契约 = gateway/API.md §2.5 镜像源七行；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）；零新端点。
+ * 契约 = gateway/API.md §2.5 镜像源七行；文案经 `t()`（`webui/I18N.md` §2.1）；渲染一律节点 + textContent（零拼串）；零新端点。
  * 单元测试档直测面 = `createImageSourceSection` ∥ `sourceKindLabel` ∥ `readKindLabel` ∥ `pullRefFor`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"

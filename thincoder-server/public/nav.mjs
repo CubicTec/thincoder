@@ -1,11 +1,12 @@
 /**
- * nav.mjs — 控制台导航单源（webui/WEBUI.md §2 ∥ KD-SV-20）：组/项数据（我的 4 ∥ 管理 11——2026-10-10 代理回迁批去代理项 ∥ 沙盒运行面批 +「沙盒」项 ∥ admin-agent-chat 批 +「对话」项〔总览后〕 ∥ team-projects-permissions 批 +三项〔我的·项目末位 ∥ 管理·项目 ∥ 管理·Git 源——「成员」后〕）∥ `resolveRoute` 纯函数
+ * nav.mjs — 控制台导航单源（webui/WEBUI.md §2 ∥ KD-SV-20）：组/项数据（我的 6 ∥ 管理 11——2026-10-10 代理回迁批去代理项 ∥ 沙盒运行面批 +「沙盒」项 ∥ admin-agent-chat 批 +「对话」项〔总览后〕 ∥ team-projects-permissions 批 +三项〔我的·项目末位 ∥ 管理·项目 ∥ 管理·Git 源——「成员」后〕
+ * ∥ sandbox-outbound-member-face 批 +「我的工作区」项〔我的·项目后〕 ∥ team-ledger 批 +「团队台账」项〔我的·末位〕）∥ `resolveRoute` 纯函数
  * （无 DOM——单元测试档直测：别名重定向 ∥ 角色默认 ∥ admin 面 `denied` ∥ 子段容许——console-tabs-component 批）∥ 侧栏渲染（品牌 ∥ 组标题/项/活动态 ∥
  * 底部 meta 槽（健康状态灯 + 版本行 + 语言切换器）+ 退出登录）。
  *
  * 文案单源 = 文案表（`i18n-zh.mjs` ∥ `i18n-en.mjs`）——本档数据持 `labelKey`（键——非字面量），渲染经 `t()` 取值
- * （§2.2）；判权全在后端——`denied` 仅页面级「无权限」块（服务端才是判据——§3）。零外部资源（内网自洽）。
- * 健康状态灯（§2.3⑤）= meta 槽 `#nav-health` 占位元素（点 + 文案）——app.mjs 轮询回调直更，无整页重渲。
+ * （`webui/I18N.md` §2.1）；判权全在后端——`denied` 仅页面级「无权限」块（服务端才是判据——§3）。零外部资源（内网自洽）。
+ * 健康状态灯（`webui/READINGS.md` §2.1⑤）= meta 槽 `#nav-health` 占位元素（点 + 文案）——app.mjs 轮询回调直更，无整页重渲。
  */
 import { t, langSwitch } from "./i18n.mjs"
 
@@ -16,6 +17,8 @@ export const NAV_GROUPS = [
     { key: "usage", labelKey: "nav.page.me.usage", path: "/me/usage" },
     { key: "account", labelKey: "nav.page.me.account", path: "/me/account" },
     { key: "projects", labelKey: "nav.page.me.projects", path: "/me/projects" },
+    { key: "sandbox", labelKey: "nav.page.me.sandbox", path: "/me/sandbox" },
+    { key: "ledger", labelKey: "nav.page.me.ledger", path: "/me/ledger" },
   ] },
   { key: "admin", labelKey: "nav.group.admin", adminOnly: true, items: [
     { key: "overview", labelKey: "nav.page.admin.overview", path: "/admin/overview" },

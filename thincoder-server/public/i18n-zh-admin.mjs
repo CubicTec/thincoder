@@ -1,5 +1,5 @@
 /**
- * i18n-zh-admin.mjs — 控制台文案表·中文·管理面（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键首段前缀（`admin.*`——
+ * i18n-zh-admin.mjs — 控制台文案表·中文·管理面（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键首段前缀（`admin.*`——
  * `.one` 变体随基键；`admin.sandbox.*` 族外拆 `i18n-{zh,en}-sandbox.mjs`——#1270）；门面 = `i18n-zh.mjs`（五部件展开合体 + `Object.freeze`——`ZH` 导出名不变）。
  * 键序 = 原档相对序（逐字搬移——零语义；段注释同移）。本档 = zh 族（唯一 CJK 载体——零 CJK 机检口径 §6 AC-14 按前缀排除）。
  */

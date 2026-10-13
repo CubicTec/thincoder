@@ -16,7 +16,7 @@ import { ansi, C } from "./ansi.mjs"
 /** 三问步定义（序 = 提交序）。`trim` 与 argv 面同口径（地址 ∥ 账号 trim；密码原样——零裁剪）；
  *  `prompt` 与 argv 面问句同词（password 去 "(hidden)" 后缀——TUI 掩码回显已可见该语义）。 */
 export const TEAM_ASK_STEPS = Object.freeze([
-  Object.freeze({ step: "server", field: "server", prompt: "Team server URL:", mask: false, trim: true }),
+  Object.freeze({ step: "server", field: "server", prompt: "Team server URL (e.g. http://host:8787):", mask: false, trim: true }),
   Object.freeze({ step: "username", field: "username", prompt: "Username:", mask: false, trim: true }),
   Object.freeze({ step: "password", field: "password", prompt: "Password:", mask: true, trim: false }),
 ])

@@ -1,5 +1,5 @@
 /**
- * model-specs-snapshot.mjs — 展示元数据快照（webui/WEBUI.md §2.4③ D 组——KD-SV-34；快照沿 KD-SV-17 先例）：
+ * model-specs-snapshot.mjs — 展示元数据快照（webui/ADMIN.md §2.1③ D 组——KD-SV-34；快照沿 KD-SV-17 先例）：
  * 源 = 核 `thincoder-core/model-specs.mjs` 的行表（只读对照——**运行期零 import 核件**，KD-SV-2）；
  * 子集 = 展示三面：上下文 `context` ∥ 最大输出 `maxOutput` ∥ 多模态 `multimodal`（未声明 ⇒ 位缺省）。
  *

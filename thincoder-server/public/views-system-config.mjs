@@ -1,5 +1,5 @@
 /**
- * views-system-config.mjs — 系统页「服务配置」卡（webui/WEBUI.md §2/§2.1——`#/admin/system` 五节之四）：只读三行
+ * views-system-config.mjs — 系统页「服务配置」卡（webui/SYSTEM.md §2.1——`#/admin/system` 五节之四）：只读三行
  * （`host` ∥ `port` ∥ `db`——部署拓扑项；定则「任何配置项必须有配置界面」之例外显式说明）∥ 可写四项（`autoUpdate`
  * ∥ `trustProxy` ∥ `usageRetentionDays` ∥ `proxy.uri`——2026-10-10 代理回迁批：自「代理」页放回本卡）∥ 连通测试块
  * （代理地址**真打**——目标预填首个 provider `baseURL`；按表单当前值（所见即所测——未保存亦可先验）；读数 = 状态 +
@@ -10,7 +10,7 @@
  * 值渲染 = 文件面（`GET /api/admin/config`——**有效值**（在场值 ∥ 缺省回填）；读档失败 ⇒ 就地错态）；
  * 排版 = 逐项竖排（`.provider-form.stacked`——标题行 + 控件成对；2026-10-09 走查收正：横排折行致标签/输入错位）；
  * 全部可写项统一标「重启生效」（配置文件不热载——`ops/OPS.md` §1 KD-SV-56）。渲染沿 `h`/`textContent`
- * （零拼串）；文案经 `t()` 取值（§2.2）；零 CJK（注释外）。单元测试档直测面 = `systemConfigSection`（取数注入 + 保存往返）。
+ * （零拼串）；文案经 `t()` 取值（`webui/I18N.md` §2.1）；零 CJK（注释外）。单元测试档直测面 = `systemConfigSection`（取数注入 + 保存往返）。
  */
 import { mapError, t } from "./i18n.mjs"
 

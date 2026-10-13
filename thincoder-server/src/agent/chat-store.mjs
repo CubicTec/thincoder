@@ -153,3 +153,94 @@ export function recordStoreOf(db, chatId) {
     },
   }
 }
+
+// ── 回放面（§11/KD-SV-89 ∥ §17.3 A3——库行 ⇒ 模型消息数组；压缩标记解析归此）────────────────────
+
+/** 压缩标记行判定（§17.3 A3——落库形：`role="user"` ∥ `data.kind="compaction"` ∥ `data.covers=[seq首, seq尾]`）。
+ *  出 = `[seq首, seq尾]` ∥ `null`（非标记行 ∥ 形不正——坏行按普通行回放，零误吞）。 */
+export function compactionCoversOf(row) {
+  if (row?.role !== "user") return null
+  const data = parseJson(row.data_json, null)
+  if (data?.kind !== "compaction") return null
+  const covers = data.covers
+  if (!Array.isArray(covers) || covers.length !== 2) return null
+  const [from, to] = covers.map(Number)
+  if (!Number.isInteger(from) || !Number.isInteger(to) || from > to) return null
+  return [from, to]
+}
+
+/** 行 ⇒ 消息（§11 ∥ §17.3 A1 逐值重建）：`user`（含图 parts——KD-SV-109）∥ `assistant`（携 `toolCalls` ⇒ 回灌形：
+ *  `data.reasoning` ⇒ `reasoning_content`（`""` 亦回插——回声族「缺值 ⇒ `""`」落库面同值）∥ `data.toolCalls[].extraContent`
+ *  ⇒ `extra_content`（在场才带）；空文本 ⇒ `content: null`——核件构造同式）∥ `tool`；`notice` ⇒ `null`（滤除）。 */
+function messageOfRow(row) {
+  if (row.role === "user") {
+    const data = parseJson(row.data_json, null)
+    const parts = Array.isArray(data?.imageParts) ? data.imageParts : []
+    // 图片轮 ⇒ `content` 数组（文本素 + parts——KD-SV-109）；无图轮恒字符串形（存量零变）
+    return parts.length === 0
+      ? { role: "user", content: row.content }
+      : { role: "user", content: [{ type: "text", text: row.content }, ...parts] }
+  }
+  if (row.role === "assistant") {
+    const data = parseJson(row.data_json, null)
+    const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : []
+    if (calls.length > 0) {
+      return {
+        role: "assistant",
+        content: row.content || null, // 核件构造（§17.3 A1）同式：空文本归 `null`
+        tool_calls: calls.map((call) => ({
+          id: call.id,
+          type: "function",
+          function: { name: call.name, arguments: typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? {}) },
+          ...(call.extraContent ? { extra_content: call.extraContent } : {}), // 假值按「不在场」归一（与核件真值判同式）
+        })),
+        ...(typeof data.reasoning === "string" ? { reasoning_content: data.reasoning } : {}),
+      }
+    }
+    return { role: "assistant", content: row.content }
+  }
+  if (row.role === "tool") {
+    const data = parseJson(row.data_json, null)
+    return { role: "tool", tool_call_id: data?.toolCallId ?? "", content: row.content }
+  }
+  return null // notice ⇒ 滤除（收尾行不入模型上下文——§11）
+}
+
+/**
+ * 回放条目（§11/§17.3 A3——库行 ⇒ `{ message, seq, covers }` 有序数组）：
+ * ① **覆盖区间以标记行代**——标记行 `covers` 内各行跳过，标记行内容（压缩产物原文）在区间前沿出 `user` 消息；
+ *    嵌套标记自然消解（先标记行落于后标记 `covers` 区间 ⇒ 随覆盖跳过，其注记由后标记统一代表）；
+ * ② `seq` = 源行 seq（标记条目 = 标记行自身 seq——压缩覆盖映射用）；`covers` = 标记条目的覆盖区间（普通行 `null`）。
+ */
+export function replayEntriesOf(rows = []) {
+  const marks = []
+  for (const row of rows) {
+    const covers = compactionCoversOf(row)
+    if (covers !== null) marks.push({ row, covers })
+  }
+  const covered = new Set()
+  for (const mark of marks) for (let seq = mark.covers[0]; seq <= mark.covers[1]; seq++) covered.add(seq)
+  const active = marks.filter((mark) => !covered.has(mark.row.seq)) // 嵌套 ⇒ 消解（先标记行入后标记覆盖集）
+  active.sort((a, b) => a.covers[0] - b.covers[0] || a.row.seq - b.row.seq) // 区间前沿序（映射面对齐）
+  const entries = []
+  let mi = 0
+  const emitMark = () => {
+    const mark = active[mi]
+    entries.push({ message: { role: "user", content: mark.row.content }, seq: mark.row.seq, covers: mark.covers })
+    mi += 1
+  }
+  for (const row of rows) {
+    while (mi < active.length && row.seq > active[mi].covers[0]) emitMark() // 区间前沿 ⇒ 以标记代段
+    if (covered.has(row.seq) || compactionCoversOf(row) !== null) continue
+    const message = messageOfRow(row)
+    if (message !== null) entries.push({ message, seq: row.seq, covers: null })
+  }
+  while (mi < active.length) emitMark() // 兜底（覆盖区间延至日志尾——正常不可达）
+  return entries
+}
+
+/** 历史重放（§11/KD-SV-89）：库行 ⇒ 模型消息数组（**notice 滤除**；压缩会话以标记行代覆盖段——§17.3 A3）。 */
+export function replayMessages(rows = []) {
+  return replayEntriesOf(rows).map((entry) => entry.message)
+}
+

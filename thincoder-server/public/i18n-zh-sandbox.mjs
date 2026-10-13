@@ -1,10 +1,10 @@
 /**
- * i18n-zh-sandbox.mjs — 控制台文案表·中文·沙盒面（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键二级前缀（`admin.sandbox.*`——
+ * i18n-zh-sandbox.mjs — 控制台文案表·中文·沙盒面（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键二级前缀（`admin.sandbox.*`——
  * 机器可判——#1270 沙盒族再拆）；门面 = `i18n-zh.mjs`（五部件展开合体 + `Object.freeze`——`ZH` 导出名不变）。
  * 键序 = 原档相对序（逐字搬移——零语义；段注释同移）。本档 = zh 族（唯一 CJK 载体——零 CJK 机检口径 §6 AC-14 按前缀排除）。
  */
 export const ZH_SANDBOX = Object.freeze({
-  // ── 管理·沙盒（运行面 + 容器区——§2.8①；runner-admin-console 批） ──────────────
+  // ── 管理·沙盒（运行面 + 容器区——`webui/SANDBOX.md` §2.1①；runner-admin-console 批） ──────────────
   "admin.sandbox.title": "沙盒",
   "admin.sandbox.runnersTitle": "运行面",
   "admin.sandbox.addRunner": "添加节点",

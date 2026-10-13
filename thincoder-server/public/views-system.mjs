@@ -1,12 +1,12 @@
 /**
- * views-system.mjs — 系统页（webui/WEBUI.md §2/§2.1：`#/admin/system`——仅 admin）：版本与更新 ∥ 成员接入 ∥
+ * views-system.mjs — 系统页（webui/SYSTEM.md §2.1：`#/admin/system`——仅 admin）：版本与更新 ∥ 成员接入 ∥
  * 向量服务 ∥ 服务配置（卡体 = `views-system-config.mjs`）∥ 服务健康五节。
  *
  * 数据 = `ctx.state.system`（`GET /api/system`——app.mjs 装配取一次；失败 ⇒ 留空静默）+ `GET /api/admin/config`
  * （配置面文件面——向量卡三输入 ∥ 密钥掩码回显；缺 `embedding` 段 ⇒ 「未配置」态——§8 KD-SV-57）+ `POST /api/admin/embedding/test`（探活/试跑单端点——诊断自含形，
- * 不落库不计量）+ 前端健康共享态（§2.3⑤——`ctx.onHealth` 订阅，30s 自动刷新）。接入卡 = `accessCard(ctx, variant)` 同源构件
+ * 不落库不计量）+ 前端健康共享态（`webui/READINGS.md` §2.1⑤——`ctx.onHealth` 订阅，30s 自动刷新）。接入卡 = `accessCard(ctx, variant)` 同源构件
  * （admin 面供分发给成员 ∥ 成员面 `#/me/keys`——me-keys 批）；成员面成文 = README「成员接入」节。渲染沿 `h`/`textContent`
- * （零拼串）；baseURL = 运行时 origin（`location.origin` + `/v1`——零硬编码，反代/改端口自动随动）；文案经 `t()` 取值（§2.2）。
+ * （零拼串）；baseURL = 运行时 origin（`location.origin` + `/v1`——零硬编码，反代/改端口自动随动）；文案经 `t()` 取值（`webui/I18N.md` §2.1）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { systemConfigSection } from "./views-system-config.mjs"

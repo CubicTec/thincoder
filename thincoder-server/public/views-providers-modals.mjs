@@ -1,18 +1,18 @@
 /**
- * views-providers-modals.mjs — Provider 双弹窗件（webui/WEBUI.md §2.4④——功能点 18 ∥ KD-SV-33；自
+ * views-providers-modals.mjs — Provider 双弹窗件（webui/ADMIN.md §2.1④——功能点 18 ∥ KD-SV-33；自
  * `views-providers.mjs` 拆出——双弹窗叠加破 300 软线）：添加弹窗（预设/自定义两径——预设表首开惰性拉取·
  * 已配名剔除）∥ 详情弹窗（信息段 + 候选勾选段——候选 = 上游发现；退役项只读注 + 恒保留；单脚区保存）；
  * 模型清单/候选勾选 = 表格形（列式——2026-10-07 收正：模型 ∥ 展示名 ∥ 上下文 ∥ 视觉 ∥ 状态；首格 `label` = 勾选 + 模型名；
  * 预设清单 = `code` 行）；
  * 候选行富信息（功能点 24——列式：`displayName` ∥ `contextWindow` ∥ `vision` ∥ `status`；数据 = 发现 ∪ 存储逐字段·
  * 发现优先；缺则空、零占位）；上游退役提示（`status` ⇒ 列内标 + 注行——**只提示**，勾选/保存/派发零涉）∥ 候选段加载态（#984——
- * 在飞 `.hint` 加载文案 + 触发钮禁用；一处落双窗）∥ 「走代理」勾选（2026-10-09 代理批——WEBUI §2.4④ 两窗：勾选态随探针
+ * 在飞 `.hint` 加载文案 + 触发钮禁用；一处落双窗）∥ 「走代理」勾选（2026-10-09 代理批——`webui/ADMIN.md` §2.1④ 两窗：勾选态随探针
  * （测试/刷新/获取模型——先验连通）；保存 = 变更才携（添加窗 = 勾才携 `proxy: true`）——KD-SV-55 前端面）。
  *
  * 端点零新（契约 = gateway/API.md §2.2）：`GET /api/admin/providers/presets`（拉表）∥ `POST /api/admin/providers/discover`
  * （探针——「测试连接」= 同径复用，key = 表单草稿口径：明填 ⇒ 明传 `apiKey`，留空且未勾清除 ⇒ `providerId` 库内回落，清除勾 ⇒ 显式空；失败 ⇒ 段内提示 + 重试；无手填兜底）∥ `POST` 全字段 ∥
  * `PATCH` 变更字段（`models` 全量数组——**按名匹配保形**：存量条目两形与别名随携不动，KD-SV-59；保存即热生效）∥ `DELETE`。弹窗 = 公共组件 `modal.mjs`（单例 ∥ 遮罩/关闭/焦点）；
- * 渲染一律节点 + textContent；文案经 `t()` 取值；错误经 `mapError` 映射（§2.2）。
+ * 渲染一律节点 + textContent；文案经 `t()` 取值；错误经 `mapError` 映射（`webui/I18N.md` §2.1）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { openModal } from "./modal.mjs"

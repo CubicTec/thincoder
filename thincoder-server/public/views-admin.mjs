@@ -1,13 +1,13 @@
 /**
- * views-admin.mjs — 管理·成员页（webui/WEBUI.md §2/§2.4②）：`#/admin/members`（视口高壳——§2.6②）——成员表（行点击 ⇒ 三态弹窗：
+ * views-admin.mjs — 管理·成员页（webui/ADMIN.md §2.1②）：`#/admin/members`（视口高壳——`webui/STYLE.md` §2.2）——成员表（行点击 ⇒ 三态弹窗：
  * 查看 ∥ 编辑 ∥ 新建）；现行操作（分模型配额覆盖 ∥ 禁用勾选 ∥ 重置密码 ∥ 逐 key 吊销）全迁入弹窗；表 = 概览 + 入口（key 数）；
  * 查看态 = 详情（分模型配额 = 覆盖计数）+ 分模型用量节 = 模型表直显（5 列：模型 ∥ 每月用量（覆盖 ∥「按平台」）∥ 平台默认
- * （∥「不限」）∥ 本月已用（`modelUsage` 逐行——缺 ⇒ 0）∥ 禁用勾选（即时写——KD-SV-43））+ key 表（表格形——§2.6⑤）；
+ * （∥「不限」）∥ 本月已用（`modelUsage` 逐行——缺 ⇒ 0）∥ 禁用勾选（即时写——KD-SV-43））+ key 表（表格形——`webui/STYLE.md` §2.2）；
  * 编辑态 = 分模型覆盖表（全 chat 模型行（`deriveModels` 同源序）：模型 ∥ 每月用量输入（空 = 按平台）∥ 平台默认）。
  * providers 取数 = 进窗即惰性拉（查看/编辑两态共用）；失败 ⇒ 窗内状态行 +「重试」；保存 = `POST /api/members/:id/model-quotas`
- * 键级合并（空 ⇒ 显式 null 删键）；禁用勾选 = `POST /api/members/:id/model-disables` 单键合并（true 禁 ∥ null 恢复）——机制全文 = §2.4②/KD-SV-41/43。
+ * 键级合并（空 ⇒ 显式 null 删键）；禁用勾选 = `POST /api/members/:id/model-disables` 单键合并（true 禁 ∥ null 恢复）——机制全文 = `webui/ADMIN.md` §2.1②/KD-SV-41/43。
  * 一次性秘密（新建初始密码 ∥ 重置临时密码）= `ctx.showSecret`（关窗 + 页级回显——仅一次，语义不变）。
- * 原「管理」单页堆叠拆开（一页一职责）；全队用量看板 = views-usage.mjs（二轮迁出——§2.3②）。
+ * 原「管理」单页堆叠拆开（一页一职责）；全队用量看板 = views-usage.mjs（二轮迁出——`webui/READINGS.md` §2.1②）。
  *
  * 判权全在后端（admin 面——服务端 403 为准）；弹窗 = 公共组件 `modal.mjs`（单例 ∥ 遮罩/关闭/焦点）；渲染一律
  * 节点 + textContent；文案经 `t()` 取值；弹窗开着 ⇒ 一切反馈落窗内（窗内状态行——§2.2/弹窗反馈定则）。

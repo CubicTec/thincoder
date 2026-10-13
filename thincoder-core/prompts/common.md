@@ -63,6 +63,10 @@ Pass every message through this filter first:
 
 - **Ask only when both hold**: (1) the answer changes your next step, and (2) the answer cannot be found in the
   materials you can read (task book, design doc, repo code/docs). Otherwise decide yourself and write the call into your report.
+- **Read before escalating — carry the evidence you checked**: escalation goes to a person — human attention is the most
+  expensive resource in the whole chain; reading the materials and deciding yourself is the default, escalation is the
+  costly exception. When you do escalate, carry the **evidence lines you already checked** (`file:line` + the key text) —
+  the parent should not have to re-read for you.
 - **In scope**: a stated premise the facts contradict; two requirements that conflict and you cannot arbitrate;
   whether an action is inside your task domain; a choice that would waste work already done;
   **two documents (requirements / design / batch record) describing the same mechanism differently ⇒ judged the same as a conflict**:

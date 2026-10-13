@@ -30,6 +30,8 @@ import { registerChatRoutes } from "../src/agent/chat-routes.mjs"
 import { registerProjectRoutes } from "../src/project/routes.mjs"
 import { registerProjectAdminRoutes } from "../src/project/admin-routes.mjs"
 import { registerProjectWebhookRoutes } from "../src/project/webhooks.mjs"
+import { registerLedgerRoutes } from "../src/ledger/routes.mjs"
+import { registerClientLedgerRoutes } from "../src/ledger/client-routes.mjs"
 import { createSyncScheduler } from "../src/project/sync.mjs"
 import { ensureBootstrap, findMemberByUsername } from "../src/accounts/members.mjs"
 import { createLoginGuard } from "../src/accounts/login-guard.mjs"
@@ -174,6 +176,9 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     registerProjectAdminRoutes(routes, { db, config, log, scheduler: projectSync })
     registerProjectWebhookRoutes(routes, { db, config, log, scheduler: projectSync })
     projectSync.start()
+    // 团队台账域（gateway/API.md §2.10——team-ledger 批）：控制台四行（会话 + 能力矩阵）∥ 端侧四行（Bearer）——同一域模块的薄适配两面
+    registerLedgerRoutes(routes, { db })
+    registerClientLedgerRoutes(routes, { db })
     // D4 面：webui 静态面（`public/` 直发——注册路由优先；`/v1/*` ∥ `/api/*` 不走静态面）
     const server = createGatewayServer({ config, routes, log, staticSite: createStaticSite() })
     serverRef = server // 自环取数接点（§16.2——路由注册时惰性闭包，此处落真值）

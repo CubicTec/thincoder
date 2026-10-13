@@ -1,12 +1,12 @@
 /**
- * health.mjs — 控制台健康轮询（webui/WEBUI.md §2.3⑤——结构轮自 `app.mjs` 逐字外拆）：`HEALTH_POLL_MS`（30s）∥ 三态文案键 ∥
+ * health.mjs — 控制台健康轮询（webui/READINGS.md §2.1⑤——结构轮自 `app.mjs` 逐字外拆）：`HEALTH_POLL_MS`（30s）∥ 三态文案键 ∥
  * `healthSnapshot` ∥ `onHealth` 视图订阅 ∥ 侧栏灯直更 ∥ `pollHealth` ∥ 启停 ∥ 订阅清零口（`clearHealthListeners`——
  * 原 `route()`/`logout()` 直写 `healthListeners = []` 之收口——行为不变）。三落点共用：侧栏灯（直更）∥ 系统页块 ∥
  * 总览卡（后两者经 `ctx.onHealth` 订阅——路由切换清空）。
  */
 import { t } from "./i18n.mjs"
 
-// ── 健康轮询（§2.3⑤——灯 ∥ 系统页块 ∥ 总览卡三落点共用）──────────────────────
+// ── 健康轮询（`webui/READINGS.md` §2.1⑤——灯 ∥ 系统页块 ∥ 总览卡三落点共用）──────────────────────
 
 /** 轮询周期（30s——§2.3⑤；登录后启动，登出停止）。 */
 export const HEALTH_POLL_MS = 30000

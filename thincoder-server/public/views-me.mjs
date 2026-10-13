@@ -1,14 +1,14 @@
 /**
  * views-me.mjs — 我的三页（webui/WEBUI.md §2）：`#/me/keys`（API Key 表六列——多把并存 ∥ 签发/逐把吊销双弹窗 ∥
- * 页级一次性秘密区 ∥ 接入指南卡（`accessCard` 成员变体——同源复用）——§2.3⑥）∥
- * `#/me/usage`（图表化——概览卡行 ∥ 筛选行四控件 ∥ KPI 行 ∥ 按日堆叠柱主图（维度切换 端点/模型）∥ 分模型区 ∥ 明细表——§2.3⑦）
+ * 页级一次性秘密区 ∥ 接入指南卡（`accessCard` 成员变体——同源复用）——`webui/ME.md` §2.1）∥
+ * `#/me/usage`（图表化——概览卡行 ∥ 筛选行四控件 ∥ KPI 行 ∥ 按日堆叠柱主图（维度切换 端点/模型）∥ 分模型区 ∥ 明细表——`webui/ME.md` §2.2）
  * ∥ `#/me/account`（基本信息 + 自助改密）；
  * 自 views.mjs 拆档（一页一职责）。
  *
  * 数据全经 /api/*（契约 = accounts/ACCOUNTS.md §3 ∥ metering/METERING.md §3；key 行形 = `memberView`——名称/`hint`/
  * 签发时间/最后使用/近 30 天）；一次性秘密（key 明文）只回显一次（ctx.showSecret——复制钮三路回退住 dom.mjs:63）；
- * 轮换（全换）按钮下架（多把并存下与逐把模型相抵——端点保留，WEBUI §2.3⑥）；提示条模型名经 `/api/system` 的
- * `embedding.model` 下发（零地址——§2.3①）；渲染一律节点 + textContent；文案经 `t()` 取值（§2.2）。
+ * 轮换（全换）按钮下架（多把并存下与逐把模型相抵——端点保留，`webui/ME.md` §2.1）；提示条模型名经 `/api/system` 的
+ * `embedding.model` 下发（零地址——`webui/READINGS.md` §2.1①）；渲染一律节点 + textContent；文案经 `t()` 取值（`webui/I18N.md` §2.1）。
  */
 import { mapError, t } from "./i18n.mjs"
 import { openModal } from "./modal.mjs"

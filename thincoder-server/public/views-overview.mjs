@@ -1,6 +1,6 @@
 /**
- * views-overview.mjs — 管理·总览（webui/WEBUI.md §2/§2.3③——admin 落地页 `#/admin/overview`）：卡集六枚——
- * 今日请求 ∥ 今日 token ∥ 成员数（`GET /api/overview`——与用量报表同源）∥ 服务健康（共享态——§2.3⑤，
+ * views-overview.mjs — 管理·总览（webui/READINGS.md §2.1③——admin 落地页 `#/admin/overview`）：卡集六枚——
+ * 今日请求 ∥ 今日 token ∥ 成员数（`GET /api/overview`——与用量报表同源）∥ 服务健康（共享态——`webui/READINGS.md` §2.1⑤，
  * `ctx.onHealth` 订阅）∥ 更新状态（`state.system.update.latest`；在场 ⇒ 高亮提示 + 导流系统页）∥ 快捷入口五链。
  *
  * 健康/更新两卡不走本页端点（前端共享态——零新请求；数据来源 = `/healthz` 轮询 ∥ `/api/system` 装配取一次）。

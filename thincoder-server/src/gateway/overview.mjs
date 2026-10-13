@@ -1,10 +1,10 @@
 /**
- * overview.mjs — 管理总览读数（控制台——仅 admin；gateway/API.md §2.4 ∥ KD-SV-29——`webui/WEBUI.md` §2.3③）：
+ * overview.mjs — 管理总览读数（控制台——仅 admin；gateway/API.md §2.4 ∥ KD-SV-29——`webui/READINGS.md` §2.1③）：
  * `GET /api/overview` ⇒ `{ today: { requests, totalTokens }, members: { count } }`。
  *
  * `today` = 服务器本地自然日窗（日界 = `localDayStart`——**同源**：与用量报表共用同一日界助手与同一聚合函数 `usageTotals`——§2.4）；
  * `requests` = 行数（含 error/aborted） ∥ `totalTokens` = `SUM(total_tokens)`（NULL 不计）。
- * 成员数 = `countMembers`（单源）；健康/更新两卡不走本端点（前端共享态——`webui/WEBUI.md` §2.3⑤）。
+ * 成员数 = `countMembers`（单源）；健康/更新两卡不走本端点（前端共享态——`webui/READINGS.md` §2.1⑤）。
  * 判权 = `requireAdmin`（`user` ⇒ 403 ∥ 无/过期会话 ⇒ 401）。
  */
 import { countMembers } from "../accounts/members.mjs"

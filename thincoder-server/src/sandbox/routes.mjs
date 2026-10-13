@@ -3,7 +3,8 @@
  * 节点增/删 + 运行面读数 + 托管接入转注册；容器面十路由与镜像族三路由已拆 `container-routes.mjs` ∥ `image-routes.mjs`——§13 预案①/分族成档）。
  * `/api/admin/sandbox/*`（判权 `requireAdmin`）∥ `/api/me/sandbox/*`（成员面——会话 + 恒本人过滤）。
  *
- * 节点面（§3）：添加 = 连通自检（引导步 → 协商 → 复读——`docker.mjs`）⇒ 落行 + 审计；删除 = 二选一（保留 ∥ 连删）；
+ * 节点面（§3）：添加 = 连通自检（引导步 → 协商 → 复读——`docker.mjs`）⇒ 落行 + **网段 deny 幂等带入**（§4 强制面 ⑤——节点段 ∥
+ * 服务器段） + 审计（`runner_add` 携逐项带入读数 ∥ 自检失败行）；删除 = 二选一（保留 ∥ 连删）；
  * 运行面读数 = 读时探活（`GET <base>/v<ver>/info`——3s ∥ 并发；无心跳/无后台定时器——KD-SV-80）；节点面恒可用。
  * 可用性门（KD-SV-71）：`overview` 常回应（`status: unavailable` + 原因）；需要节点的写动作（工作区创建 ∥ 动作）⇒ 503（不降级）；
  * 规则 ∥ 设置 ∥ 待批裁定 = 不设门；成员面读 = 契约明文（API §2.7）——不可用 ⇒ 503。
@@ -25,7 +26,7 @@ import { registerContainerRoutes } from "./container-routes.mjs"
 import { registerImageRoutes } from "./image-routes.mjs"
 import { registerVolumeRoutes } from "./volume-routes.mjs"
 import { registerOnboardingRoutes } from "./onboarding-routes.mjs"
-import { bumpRulesRev, createRule, deleteRule, getRulesRev, listPending, listRules, openPendingOf, resolvePending, updateRule } from "./rules.mjs"
+import { bumpRulesRev, createRule, deleteRule, getRulesRev, importSegmentDenies, listPending, listRules, openPendingOf, resolvePending, updateRule } from "./rules.mjs"
 import { issueWorkspaceKey, rotateWorkspaceKey, revokeWorkspaceKey } from "./credentials.mjs"
 
 export const WORKSPACE_ACTIONS = Object.freeze(["start", "stop", "destroy", "rotate-key", "restore"])
@@ -182,7 +183,10 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message)
     }
-    recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: name, detail: { kind: "runner_add", runnerId: row.id, address: row.address }, ts: now() })
+    // 网段 deny 幂等带入（§4 强制面 ⑤——节点段 = 登记地址 host /24；服务器段 = 盒 env `OPENAI_BASE_URL` 地址 /24，取值点单源 = `publicBase`）：
+    // 首见 ⇒ 行入 + `rulesRev` +1 + 审计一行（「自动带入」）；段已在 ⇒ 零重行零动零审计；不可推导（通配/非 IPv4）⇒ 零行 + 登记读数如实标。
+    const segments = importSegmentDenies(db, [{ kind: "runner", address: row.address }, { kind: "server", address: publicBase }], { now: now() })
+    recordAudit(db, { type: "sandbox_event", actor: admin.name, actorId: admin.id, target: name, detail: { kind: "runner_add", runnerId: row.id, address: row.address, segments }, ts: now() })
     sendJson(res, 200, { runner: runnerView(row) }) // 行形与 overview 同拍（`ssh` 元数据同携——KD-SV-133）
   })
 
@@ -447,6 +451,7 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
         return {
           id: workspace.id,
           name: workspace.name,
+          runnerName: runner?.name ?? null, // 所属 runner（未绑定 ⇒ null——§8 成员面；端侧呈「未绑定」）
           boxState: box.boxState,
           stopReason: box.stopReason,
           dirty: box.dirty,

@@ -7,15 +7,19 @@
  * 环语义：`messages`（system 简报 + user 任务）+ 模型 ⇒ 工具调用（逐条执行——结果结构化回灌）⇒ ⋯ ⇒ `report` 终态（成功/失败以 report.ok 为准）。
  * 模型出口 = provider 注册表现有渠道（server 自持 key——与网关同信任域）：`loadCoreChat()` 动载核 provider 客户端；
  * 单元测试档/agent 假件经 `chat` 注入口替身（缺省 = 核——生产行为不变）。进度 = 读时轮询（无后台常驻——KD-SV-86）。
+ * 与核取核形（§17.3 A1——server-core-unification 批）：tool 轮 assistant 消息经核件 `assistantToolCallMessage` 构造
+ * （回声族携 `reasoning_content`〔缺值 ⇒ `""`〕∥ 非回声族零字段；`extra_content` 在场才带）；核规格随出口携带（`exit.spec`——
+ * 上游真名解出；缺核 ⇒ `null` ⇒ 自建形回落——回合不阻断）。
  */
+import { assistantTurnOf, loadCoreSpecs } from "./chat-compact.mjs"
 import { modelEntriesOf } from "../gateway/providers.mjs"
 
 /** 预算缺省（§2——父侧提议：时长 20 分钟 ∥ 工具调用 60 次；超限 ⇒ 停 + 报告）。 */
 export const DEFAULT_MAX_CALLS = 60
 export const DEFAULT_MAX_DURATION_MS = 20 * 60 * 1000
 
-/** 无人值守裁剪面（§5——保留核 agent 环/工具协议/provider/审计挂钩；下列族不挂载）。 */
-export const TRIMMED_FACES = Object.freeze(["approval", "tty", "memory", "ledger", "subagent", "browser", "mcp"])
+/** 无人值守裁剪面（§5——保留核 agent 环/工具协议/provider/审计挂钩；下列族不挂载——`team_ledger`（团队台账核工具）：服务端 admin agent 零团队登录 ⇒ 工具不可达）。 */
+export const TRIMMED_FACES = Object.freeze(["approval", "tty", "memory", "ledger", "subagent", "browser", "mcp", "team_ledger"])
 
 /** 核装载（KD-SV-78）：动载 `@thincoder/core` provider 客户端（`chat(provider, { messages, tools })`）。
  *  部署前提 = `@thincoder/core` 依赖声明（`package.json`——钉版本）；本仓开发面经注入口替身零依赖。 */
@@ -33,7 +37,8 @@ export function providerModelRefs(entries = []) {
   return refs
 }
 
-/** 模型出口装配（§5）：任务所选 `ref` ⇒ `{ baseURL, apiKey, model }`（核 provider 形）+ 核 `chat` 绑定。
+/** 模型出口装配（§5）：任务所选 `ref` ⇒ `{ baseURL, apiKey, model }`（核 provider 形）+ 核 `chat` 绑定；
+ *  A1（§17.3）：上游真名规格随出口携带（`exit.spec`——`runAgentTask` 回灌形经核件构造；缺核 ⇒ `null` ⇒ 自建形回落）。
  *  取件 = 库单源 `providers` 行（`env:` 引用经注册表解析——缺位 ⇒ 抛（任务失败面，非静默））。 */
 export async function buildModelExit({ db, ref, chatImpl = null, env = process.env } = {}) {
   const { createProviderRegistry, listProviderEntries } = await import("../gateway/providers.mjs")
@@ -42,15 +47,23 @@ export async function buildModelExit({ db, ref, chatImpl = null, env = process.e
   if (hit.miss) throw new Error(`模型不可用：${String(ref)}（注册表未命中——提交时选择面已校验，此处为复检）`)
   const provider = hit.provider
   const chat = chatImpl ?? (await loadCoreChat())
-  return async ({ messages, tools }) => chat({ baseURL: provider.baseURL, apiKey: provider.apiKey, model: hit.model, name: provider.name }, { messages, tools })
+  const exit = async ({ messages, tools }) => chat({ baseURL: provider.baseURL, apiKey: provider.apiKey, model: hit.model, name: provider.name }, { messages, tools })
+  try {
+    exit.spec = (await loadCoreSpecs()).specForModel(hit.model) // 上游真名 ⇒ 核规格（A1 回灌形之键）
+  } catch (e) {
+    exit.spec = null // 缺核 ⇒ 自建形回落（回合不阻断）
+  }
+  return exit
 }
 
-/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形）。 */
+/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形；
+ *  `extra_content`（思考签名——§17.3 A1）在场 ⇒ 携 `extraContent`）。 */
 function normalizeToolCalls(toolCalls = []) {
   return (Array.isArray(toolCalls) ? toolCalls : []).map((call, index) => ({
     id: call?.id || `call_${index + 1}`,
     name: call?.name ?? call?.function?.name ?? "",
     arguments: typeof call?.arguments === "string" ? call.arguments : typeof call?.function?.arguments === "string" ? call.function.arguments : "{}",
+    ...(call?.extra_content === undefined || call?.extra_content === null ? {} : { extraContent: call.extra_content }),
   }))
 }
 
@@ -65,10 +78,11 @@ function parseArgs(text) {
 
 /**
  * 跑一个任务（§2）：`brief` = 系统简报（目标 ∥ 主机 ∥ 验收 ∥ 预算 ∥ 边界）∥ `userMessage` = 任务文本 ∥ `tools` = `tools.mjs` 产物
- * ∥ `chat({ messages, tools })` = 模型出口（注入口径）∥ `onEvent` = 观测（`text` ∥ `call` ∥ `budget` ∥ `terminal`——步骤日志/审计挂点）。
+ * ∥ `chat({ messages, tools })` = 模型出口（注入口径；`spec` = 上游真名核规格——A1 回灌形，缺 ⇒ 自建形回落）∥ `coreSpecs` = 核件注入口
+ * ∥ `onEvent` = 观测（`text` ∥ `call` ∥ `budget` ∥ `terminal`——步骤日志/审计挂点）。
  * 出 = `{ status: "succeeded"|"failed", reason, calls, durationMs, terminal }`（预算超限 ⇒ `failed` + reason 含「预算超限」）。
  */
-export async function runAgentTask({ brief, userMessage, tools, chat, maxCalls = DEFAULT_MAX_CALLS, maxDurationMs = DEFAULT_MAX_DURATION_MS, now = Date.now, onEvent = null } = {}) {
+export async function runAgentTask({ brief, userMessage, tools, chat, coreSpecs = null, maxCalls = DEFAULT_MAX_CALLS, maxDurationMs = DEFAULT_MAX_DURATION_MS, now = Date.now, onEvent = null } = {}) {
   if (typeof chat !== "function") throw new Error("runAgentTask：缺模型出口（chat——注入口径）")
   if (!tools || typeof tools.invoke !== "function") throw new Error("runAgentTask：缺工具面（tools.mjs 产物）")
   const messages = [
@@ -103,11 +117,9 @@ export async function runAgentTask({ brief, userMessage, tools, chat, maxCalls =
     const toolCalls = normalizeToolCalls(turn?.toolCalls)
     if (content.trim() !== "") onEvent?.({ type: "text", text: content })
     if (toolCalls.length > 0) {
-      messages.push({
-        role: "assistant",
-        content,
-        tool_calls: toolCalls.map((call) => ({ id: call.id, type: "function", function: { name: call.name, arguments: call.arguments } })),
-      })
+      // 回灌形（§17.3 A1——核件构造：回声族携 `reasoning_content`；签名在场才带；缺核 ⇒ 自建形回落）
+      const assistantTurn = await assistantTurnOf({ text: content, toolCalls, reasoning: turn?.reasoning, spec: chat.spec ?? null, coreSpecs })
+      messages.push(assistantTurn.message)
     } else {
       messages.push({ role: "assistant", content })
       const reason = content.trim() !== "" ? "模型未给出终态报告（report）即结束——停 + 报告" : "模型空回合（无工具调用/无文本）——停 + 报告"

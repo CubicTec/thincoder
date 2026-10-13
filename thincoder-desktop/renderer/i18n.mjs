@@ -24,7 +24,7 @@
  *      **「对齐第三批」增十九键** = 视图面词族**第二档**（`renderer/i18n-views.mjs` —— 在册拆分落形：新增词族出第二档，
  *      本档两语展开合并 ⇒ `HOST_DICT` 单一持有点不变；四组 = 对话流 6 / 输入区 2 / 审批面 1 / 设置面 agent 具名十键）；
  *      **同批退场一键** = `chat.empty.hint`（欢迎条三行取代单行提示 —— 项 15；树面消费归零 ⇒ 键面随退）
- *      —— 计 **159 + 19 − 1 = 177**（键数链随动 = `thincoder-desktop/test/views-chrome-vocab.test.mjs` U51）；
+ *      —— 计 **159 + 19 − 1 = 177**（键数链随动 = 批次单元测试档面——原指针 `thincoder-desktop/test/views-chrome-vocab.test.mjs` 已随「单元测试随批档留存」口径归位；2026-10-13 清账轮收正）；
  *      **输入面板上提批（R1）增二十八键** = 输入面板词族**第三档**（`renderer/i18n-composer.mjs` —— 核件
  *      `composer/` 组六件取词；**键名一字不改 ∕ 两语值皆 VSC 逐字** = `thincoder-vscode/locales/*` 同名键；
  *      合并点不变 = 本档 `HOST_DICT` 两语展开）；**同批退场四键** = 自建输入树三词 + 附件条移除控件名
@@ -123,6 +123,7 @@
  *      **首启向导保存面收正批（2026-10-11 · 台账 #1277 ∥ #1278 · KD-79）**：净删 `wizard.save`（消费归零 ⇒ 键面随退，零残键）+ 4 键 × 两语 =
  *      `wizard.saveAndNext` ∥ `wizard.finishGuard` ∥ `wizard.finishGuardGo` ∥ `wizard.finishGuardExit`（②③ 合并钮 + 完成护栏三词；
  *      ⑤ 校验面零新键——复用 `settings.providers.verify*` 五键）⇒ 实读 `HOST_DICT`（**合并表**，经合并点随动）**346 ⇒ 349**（两语同拍、键集相等；届盘实读续链）。
+ *      **prefs 写失败面批增一键（补链 · 2026-10-13 清账轮 · 台账 #1190 ∥ #101）**：`composer.prefs.failed`（「模型切换未生效（${reason}）」——写失败面词）两语同增——消费面 = `renderer/composer-sync.mjs`（`data-notice="prefs-failed"`）、键面单源 = `renderer/i18n-views.mjs` ② 组 ⇒ `VIEWS_DICT`（第二档）**149 ⇒ 150**（本行 = 补链登记——值已计入后续链行届盘实读 150；HOST 合并表经合并点随动已含）。
  *   ③ `t(key, params)` 解析序 = **宿主 → 核投影 → 键名自身**（缺键回落键名：不静默吞、不抛、
  *      永不返回空 / `undefined`）；插值 = **核同形** `${name}`（键值由核 `projectDictionary`
  *      原样投影 ⇒ 占位方言只能随核 —— `thincoder-core/i18n.mjs:12`「两端同约定」），缺参原样保留；
@@ -150,7 +151,7 @@ import { VIEWS_DICT } from "./i18n-views.mjs"
  *  消费面 = `src/main/context-menu.mjs` `contextMenuLabels`，主进程直取本表）· `pool.*` = 活动池（标题 / 三族标 / 折叠控件两态 `aria-label` / 空态提示 ——
  *  折叠字形住 `renderer/pool.css`）· `approval.*` = 审批卡两形三出口词面 + 批形计数（`${count}` 占位；
  *  键位闭集住 `renderer/views/approval.mjs`）· `question.*` = 提问卡（文本控件 `aria-label` / 提交键 / 取消键 ——
- *  键位闭集住 `renderer/views/question.mjs`）· `settings.*` = 设置面（**77 键** —— 单源 = `renderer/i18n-settings.mjs`）·
+ *  键位闭集住 `renderer/views/question.mjs`）· `settings.*` = 设置面（**78 键** —— 单源 = `renderer/i18n-settings.mjs`）·
  *  `wizard.*` = 首启向导（标题 / 退场 / 三步名 / 三推进键（下一步 ∥ 保存并继续 ∥ 完成）/ 完成护栏三词 / 目录步两词）·
  *  `composer.*` = 输入区（**换装后残余两族**：B21 发送失败行 `composer.send.failed`〔住 `renderer/i18n-views.mjs`〕+
  *  B22 降级提示行两键 `composer.attach.nonvision` ∕ `composer.attach.partial`——三键皆端侧自有词，非 VSC 源；

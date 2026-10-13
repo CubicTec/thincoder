@@ -1,5 +1,5 @@
 /**
- * modal.mjs — 控制台公共弹窗组件（webui/WEBUI.md §2.4①——KD-SV-31）：基座 = 原生 `<dialog>` + `showModal()`
+ * modal.mjs — 控制台公共弹窗组件（webui/ADMIN.md §2.1①——KD-SV-31）：基座 = 原生 `<dialog>` + `showModal()`
  * （平台承担模态语义——顶层渲染 ∥ 背景 inert ∥ ESC 缺省关闭（`cancel` 事件）∥ `::backdrop` 遮罩）；本档只补壳与策略。
  *
  * API：`openModal({ title, body, footer, onClose })` ⇒ 句柄 `{ close(), root }`；`title` = 字符串（textContent）；

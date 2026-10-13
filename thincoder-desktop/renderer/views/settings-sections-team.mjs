@@ -71,6 +71,7 @@ function loginFormNode(section, handlers, hint = true) {
       props: { class: "settings-form", "data-form": "team", "data-draft-scope": "team" },
       children: [
         ...fieldPair("team-server", "server", "text", "settings.team.serverLabel", str(section?.server) ?? "", true),
+        { tag: "div", props: { class: "settings-empty", "data-team-server-hint": "" }, children: [t("settings.team.serverHint")] },
         ...fieldPair("team-username", "username", "text", "settings.team.usernameLabel", str(section?.member?.username) ?? "", true),
         // 密码恒不保真（#604 口径）：不携 `data-draft` ⇒ 重建即清空（安全面有意）。
         ...fieldPair("team-password", "password", "password", "settings.team.passwordLabel", "", false),

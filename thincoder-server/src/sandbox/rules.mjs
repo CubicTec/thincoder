@@ -1,18 +1,25 @@
 /**
- * rules.mjs — 出站规则单源与待批队列（sandbox/SANDBOX.md §4/§6；端点 = gateway/API.md §2.5/§2.6）：
+ * rules.mjs — 出站规则单源与待批队列（sandbox/SANDBOX.md §4/§6；端点 = gateway/API.md §2.5/§2.7）：
  * 规则校验（两类形 ∥ 通配单层左 ∥ 端口/协议/优先级）∥ 增删改 + 审计（`sandbox_rule`——detail.action + 规则原文）∥
  * 修订号（`rulesRev`——进程内单调软状态：重启复位后「不等即全量」，runner 侧无漏配）∥ 求值序（参照实现——单源，
- * runner 侧强制同序）∥ 待批队列（挂起登记 ∥ 同 host 去重 hits++ ∥ 三态裁定 ∥ 超时懒惰结算 ∥ 三次批准建议）。
+ * runner 侧强制同序）∥ 网段幂等带入（§4 强制面 ⑤——节点登记）∥ 待批队列（挂起登记 ∥ 同 host 去重 hits++ ∥
+ * 三态裁定 ∥ 超时懒惰结算 ∥ 三次批准建议）。
  *
- * 求值序（§4 冲突序）：① 内置恒拒（`127.0.0.0/8` ∥ `169.254.0.0/16`——非行、不可改）② 显式 deny（admin/approval）
- * ③ 显式 allow ④ 种子 deny（source='default'）⑤ 种子 allow ⑥ 默认拒（无允许条目）。即：显式 deny 恒先于 allow；
- * 种子 deny ≺ 显式 allow（U2——显式 allow 可开 RFC1918/服务器网段）。`priority` = 同 rank 内排序（可读性 + 未来扩展）。
- * 两闸次序（域名路径）：域名命中 allow ⇒ 解析（全地址）⇒ 每个解析 IP 仍过 CIDR 闸（**禁单/deny 命中 ⇒ 拒**——防
- * 「白名单域名 + 内网解析」绕过；无 CIDR 条目 ⇒ 不拦——域名规则自身即允许面）。
+ * **强制面求值总序（§4——本档单源）= L1 ≻ 零地址闸 ≻ 内置允许 ≻ L2 ≻ L3**：① **L1 门级不变量**（`127.0.0.0/8` ∥ `169.254.0.0/16`——非行、
+ * 不可改、不可绕）：命中 ⇒ **即时拒**（`hard_deny`——零挂起、零待批行〔不可批准面〕）② **内置允许**（**生命线**：盒 → server 网关
+ * 地址:端口——系统注入、非用户规则、不可被 L2/L3 覆盖）：命中即放（`builtin_allow`）③ **L2 默认禁单**（种子 deny 行 `source='default'`：
+ * RFC1918 ∥ 服务器段 ∥ 节点段——可被显式 allow 开——U2-A 不变）④ **L3 用户规则**（显式 deny ≺ 显式 allow ≺ 种子 allow ≺ 默认拒；
+ * 种子 deny ≺ 显式 allow——U2；`priority` = 同 rank 内排序）。**解析零地址 ⇒ 拒**（fail-closed：`host` 在场而 `ips` 空 ⇒ `unresolved`
+ * ——不得以「未解析」放行）；**双径同判**：域名径（命中 allow ⇒ 解析全地址 ⇒ 每个解析 IP 仍过 CIDR 闸〔deny 命中 ⇒ 拒；无 CIDR 条目
+ * ⇒ 不拦——域名规则自身即允许面〕）与直连 IP 径同判同序（求值 = `evaluateEgress` 单源）。
+ *
+ * 网段带入（§4 强制面 ⑤——调用点 = `routes.mjs` 节点登记 handler）：节点段 = 登记地址 host /24 ∥ 服务器段 = 盒 env
+ * `OPENAI_BASE_URL` 地址 /24（单源 = `registry.mjs` `sandboxPublicBase`）——**幂等**：首见 ⇒ 行入（`source='default'`）+ `rulesRev` +1
+ * + 审计一行（「自动带入」+ 段值逐值）∥ 重复 ⇒ 零重行零动零审计；地址非 IPv4 字面（通配 ∥ 域名）⇒ **零行 + 读数如实标**（`underivable`）。
  *
  * 待批下发 = poll 拉取（§6：裁定经 poll 下发 ≤1s 级）；「已下发」簿记在 runner-api 进程内存（重启 ⇒ 至多重发一次；
  * 裁定按 id 匹配——重发幂等）。超时（缺省 60s——设置项 `pendingTimeoutSeconds`）⇒ 拒：懒惰结算（读面/裁定时顺手扫）。
- * rulesRev 变更点 = 本档规则增删改 ∥ 待批 remember ∥ join 动态网段（runner-api）∥ settings 写入（routes）——后两者调 `bumpRulesRev`。
+ * rulesRev 变更点 = 本档规则增删改 ∥ 待批 remember ∥ 节点登记网段带入（routes）∥ settings 写入（routes）——后两者调 `bumpRulesRev`。
  */
 import { HttpError } from "../gateway/errors.mjs"
 import { recordAudit } from "../accounts/audit.mjs"
@@ -199,16 +206,34 @@ export function listRules(db) {
 }
 
 /**
- * 求值（参照实现——单源求值序；runner 侧按 RUNNER.md §4 强制同序）。
- * 入：`{ host?, ips?, port?, protocol? }`；出：`{ action, reason, rule, ip? }`。
+ * 求值（参照实现——单源求值序；runner 侧强制同序）。**强制面总序 = L1 ≻ 内置允许 ≻ L2 ≻ L3**（§4——全文在档头）：
+ * ① L1 门级不变量：命中 ⇒ 即时拒（`hard_deny`——非行/不可绕；零挂起、零待批行）；
+ * ② 解析零地址 ⇒ 拒（fail-closed：`host` 在场而 `ips` 空 ⇒ `unresolved`——不得以「未解析」放行）；
+ * ③ 内置允许（生命线：盒 → server 网关地址:端口）：命中即放（`builtin_allow`——不可被 L2/L3 覆盖）；
+ * ④ 余按 `sortRules` 序逐条判（显式 deny ≺ 显式 allow ≺ 种子 deny ≺ 种子 allow ⇒ 默认拒）。
+ * 入：`{ host?, ips?, port?, protocol?, builtinAllow? }`（`builtinAllow` 条目形同规则 `{ kind, target, port? }`——`ruleMatches` 同判）；
+ * 出：`{ action, reason, rule, ip? }`（reason ∈ `hard_deny` ∥ `unresolved` ∥ `builtin_allow` ∥ `domain_no_match` ∥ `domain_deny`
+ * ∥ `ip_deny` ∥ `no_target` ∥ `ip_no_match` ∥ `domain_allow` ∥ `ip_allow`）。
  * - host 在场 ⇒ 域名闸（命中 allow 才继续）⇒ 每个解析 IP 过 CIDR 闸（deny 命中 ⇒ 拒；无条目 ⇒ 不拦）；
- * - 无 host ⇒ 直连 IP 径（网络层语义——默认拒，须命中 allow）。
+ * - 无 host ⇒ 直连 IP 径（网络层语义——默认拒，须命中 allow）——**两径同判同序**。
  */
-export function evaluateEgress(rules, { host = null, ips = [], port = null, protocol = null } = {}) {
+export function evaluateEgress(rules, { host = null, ips = [], port = null, protocol = null, builtinAllow = [] } = {}) {
   const sorted = sortRules(rules)
+  const builtins = Array.isArray(builtinAllow) ? builtinAllow : []
+  // ① L1 门级不变量（非行、不可改、不可绕——命中即拒）
   for (const ip of ips) {
     if (HARD_DENY_CIDRS.some((cidr) => cidrMatch(cidr, ip))) return { action: "deny", reason: "hard_deny", rule: null, ip }
   }
+  // ② 解析零地址 ⇒ 拒（fail-closed——不得以「未解析」放行）
+  if (host !== null && ips.length === 0) return { action: "deny", reason: "unresolved", rule: null }
+  // ③ 内置允许（生命线——命中即放；系统注入、非用户规则、不可被 L2/L3 覆盖）
+  if (host !== null && builtins.some((entry) => ruleMatches(entry, { host, port, protocol }))) {
+    return { action: "allow", reason: "builtin_allow", rule: null }
+  }
+  for (const ip of ips) {
+    if (builtins.some((entry) => ruleMatches(entry, { ip, port, protocol }))) return { action: "allow", reason: "builtin_allow", rule: null, ip }
+  }
+  // ④ L2 种子 deny ∥ L3 用户规则（显式 deny ≺ 显式 allow ≺ 种子 allow ≺ 默认拒）
   if (host !== null) {
     const hit = sorted.find((rule) => rule.kind === "domain" && ruleMatches(rule, { host, port, protocol }))
     if (!hit) return { action: "deny", reason: "domain_no_match", rule: null }
@@ -300,24 +325,59 @@ export function deleteRule(db, id, { actor = "", actorId = null } = {}) {
   return { rule, rulesRev: bumpRulesRev() }
 }
 
-/** 网段 deny 幂等带入（runner 注册——SANDBOX §4「服务器网段 ∥ runner 自身网段 = 注册时自动带入」）：
- *  同 kind/action/target 已在 ⇒ 零动作；否则插入种子 deny 行（source='default'——可改可删）+ 审计（`sandbox_rule`——
- *  `actor = "auto"`，行内 `created_by = 'auto'`——§4「每次增删一行」对自动项同拍）。 */
-export function ensureSegmentDeny(db, cidr, { note = "注册动态项", actor = "auto", now = Date.now() } = {}) {
-  const parsed = parseCidr(cidr)
+// ── 网段带入（§4 强制面 ⑤——节点登记）────────────────────────────────────────
+
+/** 地址（`host` ∥ `host:port` ∥ URL——Docker 登记地址 ∥ `OPENAI_BASE_URL` 形）⇒ host 部分；取不出 ⇒ 空串。 */
+function hostOfAddress(address) {
+  const text = typeof address === "string" ? address.trim() : ""
+  if (text === "") return ""
+  try {
+    return new URL(text.includes("://") ? text : `http://${text}`).hostname.replace(/^\[|\]$/g, "")
+  } catch {
+    return ""
+  }
+}
+
+/** 段值推导（§4 强制面 ⑤）：地址 ⇒ host 所属 /24 网段（归一形）；非 IPv4 字面（通配 `0.0.0.0` ∥ 域名 ∥ 空形）⇒ `null`——该项零行 + 读数如实标。 */
+export function segmentCidrOf(address) {
+  const value = parseIpv4(hostOfAddress(address))
+  if (value === null || value === 0) return null // `0.0.0.0` = 通配（不可直达——段值不可推导）
+  return `${(value >>> 24) & 255}.${(value >>> 16) & 255}.${(value >>> 8) & 255}.0/24`
+}
+
+/** 网段 deny 幂等带入（§4 强制面 ⑤）：同 kind/action/target（**归一形**——`10.0.0.7/24` ⇒ `10.0.0.0/24`）已在 ⇒ 零动作（`null`）；
+ *  否则插入种子 deny 行（`source='default'`——可改可删）+ `rulesRev` +1 + 审计一行 `sandbox_rule`（detail 明写「自动带入」+ 段值逐值）。 */
+export function ensureSegmentDeny(db, cidr, { note = "自动带入：节点登记网段", actor = "auto", now = Date.now() } = {}) {
+  const parsed = typeof cidr === "string" ? parseCidr(cidr) : null
   if (parsed === null) return null
-  const existing = db.prepare("SELECT id FROM sandbox_rules WHERE kind = 'cidr' AND action = 'deny' AND target = ?").get(cidr)
+  const mask = parsed.bits === 0 ? 0 : (0xffffffff << (32 - parsed.bits)) >>> 0
+  const base = (parsed.base & mask) >>> 0
+  const target = `${(base >>> 24) & 255}.${(base >>> 16) & 255}.${(base >>> 8) & 255}.${base & 255}/${parsed.bits}`
+  const existing = db.prepare("SELECT id FROM sandbox_rules WHERE kind = 'cidr' AND action = 'deny' AND target = ?").get(target)
   if (existing) return null
   const info = db
     .prepare(
       `INSERT INTO sandbox_rules (kind, action, target, port, protocol, priority, note, source, created_at, created_by)
        VALUES ('cidr', 'deny', ?, NULL, NULL, 0, ?, 'default', ?, 'auto')`,
     )
-    .run(cidr, note, new Date(now).toISOString())
+    .run(target, note, new Date(now).toISOString())
   const rule = rowToRule(db.prepare("SELECT * FROM sandbox_rules WHERE id = ?").get(Number(info.lastInsertRowid)))
-  recordAudit(db, { type: "sandbox_rule", actor, actorId: null, target: rule.target, detail: { action: "create", rule } })
+  recordAudit(db, { type: "sandbox_rule", actor, actorId: null, target: rule.target, detail: { action: "create", rule, autoImport: "自动带入", segment: rule.target } })
   bumpRulesRev()
   return rule.id
+}
+
+/** 节点登记带入（§4 强制面 ⑤——**调用点 = `routes.mjs` 节点登记 handler**）：逐项 = `{ kind: "runner" | "server", address }`（runner =
+ *  登记地址 ∥ server = 盒 env `OPENAI_BASE_URL`——单源 = `registry.mjs` `sandboxPublicBase`）。出 = 逐项读数（**如实标**）：
+ *  `imported`（本次行入 + `rulesRev` +1 + 审计一行）∥ `present`（段已在——零重行零动零审计）∥ `underivable`（非 IPv4 字面 ⇒ 零行——不猜、不静默）。 */
+export function importSegmentDenies(db, segments, { now = Date.now() } = {}) {
+  return (Array.isArray(segments) ? segments : []).map((segment) => {
+    const kind = segment?.kind === "server" ? "server" : "runner"
+    const address = typeof segment?.address === "string" ? segment.address : null
+    const cidr = segmentCidrOf(address)
+    if (cidr === null) return { kind, address, cidr: null, state: "underivable" }
+    return { kind, address, cidr, state: ensureSegmentDeny(db, cidr, { now }) === null ? "present" : "imported" }
+  })
 }
 
 // ── 待批队列（§6）────────────────────────────────────────────────────────────

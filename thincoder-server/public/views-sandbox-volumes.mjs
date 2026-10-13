@@ -2,7 +2,7 @@
  * views-sandbox-volumes.mjs — 沙盒页·卷区件（webui/SANDBOX.md §2.1①；sandbox-volumes 批——台账 #1291）：
  * 数据卷表（名 ∥ 创建时间 ∥ 操作：删除——节点行展开内，容器区之后）∥ 删除确认窗（后果句——`confirmModal` 复用；
  * 在用卷 ⇒ 服务端 400 就地在窗内呈——窗不关可重试）∥ 展开懒加载（读败 ⇒ 行内人话——区级失败不掀页）+ 容器动作后随取
- * （页装配层 `reset`——首用即建：新卷随容器动作上表）。契约 = gateway/API.md §2.5 卷族两行；文案经 `t()`（§2.2）；
+ * （页装配层 `reset`——首用即建：新卷随容器动作上表）。契约 = gateway/API.md §2.5 卷族两行；文案经 `t()`（`webui/I18N.md` §2.1）；
  * 渲染一律节点 + textContent（零拼串）。
  * 单元测试档直测面 = `createVolumeSection`（桩 ctx + 假 fetch 路由表）。
  */

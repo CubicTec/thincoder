@@ -1,5 +1,5 @@
 /**
- * i18n-zh-system.mjs — 控制台文案表·中文·系统与看板面（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键首段前缀
+ * i18n-zh-system.mjs — 控制台文案表·中文·系统与看板面（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键首段前缀
  * （`system.*` ∥ `vector.*` ∥ `proxy.*` ∥ `health.*` ∥ `overview.*` ∥ `usageReport.*` ∥ `audit.*`——`.one` 变体随基键）；
  * 门面 = `i18n-zh.mjs`（四部件展开合体 + `Object.freeze`——`ZH` 导出名不变）；键序 = 原档相对序（逐字搬移——零语义；段注释同移）。
  * 本档 = zh 族（唯一 CJK 载体——零 CJK 机检口径 §6 AC-14 按前缀排除）。
@@ -174,6 +174,7 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.type.sandbox_event": "沙盒事件",
   "audit.type.sandbox_rule": "沙盒规则裁定",
   "audit.type.project_event": "项目事件",
+  "audit.type.ledger_event": "团队台账",
   "audit.sandboxKind.container_create": "容器创建",
   "audit.sandboxKind.container_start": "容器启动",
   "audit.sandboxKind.container_stop": "容器停止",

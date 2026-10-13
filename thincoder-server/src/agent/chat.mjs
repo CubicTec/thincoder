@@ -25,6 +25,10 @@
  * 非 interrupt 中止 ⇒ 回合尾 `discardAbortedChatTasks`（杀树 + 丢弃提醒入汇 + 墓碑）。
  * 出口改道（§16.2/§16.3——修订轮）：模型出口 = **本进程网关链 loopback**（`<selfBase>/v1` + 会话 owner 的 `admin-agent` sk 明文——
  * 鉴权/派发/准入/记账全链逐字复用）；`read_history` 记录面 = `pad._recordStore`（`chat-store.mjs` `recordStoreOf`——本会话作用域）。
+ * 与核取核形（§17 ∥ KD-SV-137——server-core-unification 批）：**A1** 工具轮回灌形 = 核件构造（`assistantTurnOf`——回声族携
+ * `reasoning_content`〔缺值 ⇒ `""`〕；签名 `extraContent` 落库-回放逐值）∥ **A2** 历史修复（`repairTurnHistory`——回合装配期施用）∥
+ * **A3** 上下文压缩（`compactTurnHistory`——阈值触发 ⇒ 标记行落库 `data.kind="compaction"`；回放以标记行代覆盖段）；
+ * 三面缺核 ⇒ 退中性（回合不阻断）；回放面（含压缩标记解析）= `chat-store.mjs`。
  *
  * 口径：**执行不依赖连接**（断连照跑到终态——落库单源；`emit` 写失败即吞，回合不受影响）；消息逐条增量落库（KD-SV-89）；
  * 审计 = `agent_event`（`chat_call` 逐调用 ∥ `chat_stop` 异常收尾——KD-SV-91；`chat_start` 归 `chat-routes.mjs`）；
@@ -36,10 +40,11 @@ import { agentKeyOf } from "../accounts/keys.mjs"
 import { findMemberById } from "../accounts/members.mjs"
 import { HttpError } from "../gateway/errors.mjs"
 import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
+import { assistantTurnOf, COMPACTION_KIND, compactTurnHistory, repairTurnHistory, specOfRef } from "./chat-compact.mjs"
 import { buildEnvLines, CHAT_LIMITS_BLOCK } from "./chat-env.mjs"
 import { createEnvTools, deliverPending, discardAbortedChatTasks, loadCoreTurnDomains, noteEnvToolsDegraded, timerPadOf } from "./chat-env-tools.mjs"
 import { createChatTools } from "./chat-tools.mjs"
-import { appendMessage, chatRowOr404, imagePartsOf, listMessages, parseJson, recordStoreOf } from "./chat-store.mjs"
+import { appendMessage, chatRowOr404, imagePartsOf, listMessages, recordStoreOf, replayEntriesOf } from "./chat-store.mjs"
 import { armChatWake, installSettleHook } from "./chat-wake.mjs"
 import { DEFAULT_MAX_CALLS, DEFAULT_MAX_DURATION_MS, loadCoreChat } from "./run.mjs"
 import { maskSecrets } from "./tools.mjs"
@@ -55,6 +60,7 @@ export {
   listChats,
   listMessages,
   messageView,
+  replayMessages,
   CHAT_EXCERPT_MAX,
   CHAT_ROLES,
 } from "./chat-store.mjs"
@@ -193,57 +199,16 @@ function actorNameOf(db, memberId) {
 
 // ── 重放与编解码 ─────────────────────────────────────────────────────────────
 
-/** 历史重放（§11/KD-SV-89）：库行 ⇒ 模型消息数组（**notice 滤除**；assistant 携 `tool_calls`；tool 携 `tool_call_id`）。 */
-export function replayMessages(rows = []) {
-  const messages = []
-  for (const row of rows) {
-    if (row.role === "user") {
-      const data = parseJson(row.data_json, null)
-      const parts = Array.isArray(data?.imageParts) ? data.imageParts : []
-      // 图片轮 ⇒ `content` 数组（文本素 + parts——KD-SV-109）；无图轮恒字符串形（存量零变）
-      messages.push(parts.length === 0
-        ? { role: "user", content: row.content }
-        : { role: "user", content: [{ type: "text", text: row.content }, ...parts] })
-      continue
-    }
-    if (row.role === "assistant") {
-      const data = parseJson(row.data_json, null)
-      const calls = Array.isArray(data?.toolCalls) ? data.toolCalls : []
-      if (calls.length > 0) {
-        messages.push({
-          role: "assistant",
-          content: row.content,
-          tool_calls: calls.map((call) => ({
-            id: call.id,
-            type: "function",
-            function: { name: call.name, arguments: typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? {}) },
-          })),
-        })
-      } else {
-        messages.push({ role: "assistant", content: row.content })
-      }
-      continue
-    }
-    if (row.role === "tool") {
-      const data = parseJson(row.data_json, null)
-      messages.push({ role: "tool", tool_call_id: data?.toolCallId ?? "", content: row.content })
-    }
-    // notice ⇒ 滤除（收尾行不入模型上下文——§11）
-  }
-  return messages
-}
+/** 历史重放 = `chat-store.mjs`（§11/§17.3——本档经顶部重导出；条目形 `replayEntriesOf` 供 A3 覆盖映射——见 `runChatTurn` 装配段）。 */
 
-/** 回合装配（系统简报 + 历史重放 + 本轮消息——§11）。 */
-export function buildTurnMessages(rows = []) {
-  return [{ role: "system", content: CHAT_SYSTEM_BRIEF }, ...replayMessages(rows)]
-}
-
-/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形——同任务面口径）。 */
+/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形——同任务面口径；
+ *  `extra_content`（思考签名——§17.3 A1）在场 ⇒ 携 `extraContent`（落库/回放形）。 */
 export function normalizeToolCalls(toolCalls = []) {
   return (Array.isArray(toolCalls) ? toolCalls : []).map((call, index) => ({
     id: call?.id || `call_${index + 1}`,
     name: call?.name ?? call?.function?.name ?? "",
     arguments: typeof call?.arguments === "string" ? call.arguments : typeof call?.function?.arguments === "string" ? call.function.arguments : "{}",
+    ...(call?.extra_content === undefined || call?.extra_content === null ? {} : { extraContent: call.extra_content }),
   }))
 }
 
@@ -385,13 +350,13 @@ export function selfBaseOf(address) {
   return `http://${host.includes(":") ? `[${host}]` : host}:${address.port}`
 }
 
-/** 模型出口装配（§16.2 ∥ KD-SV-129——管理会话 = 本进程网关链的**进程内客户端**）：出口配置 = `<selfBase>/v1`
- *  ＋ 会话 owner 的 `admin-agent` sk 明文（§16.3——逐请求查库 ⇒ 吊销即断）＋ 会话行 `model`（**对外标识**——与会话创建面/四端客户端同形）；
- *  鉴权/派发/准入三件/转发/记账全链逐字复用（零第二份）。**本地 registry 复检保留**（缺模型 ⇒ 会话可建面的既有判据不变）。
- *  档位（KD-SV-110）：`reasoning` ∈ 当刻模型核枚举（别名解上游真名后）⇒ 携 `reasoningEffort`；未设 ∥ 表外 ∥ 缺核 ⇒ 零字段。
- *  失败面（§16.2）：sk 缺位（未登录/已吊销）∥ 自环基址缺位 ⇒ 抛（人话——含「重新登录控制台」）；网关侧拒 ⇒ 网关错误形即
- *  本出口错误（同径收尾——五终态零新形）。`chatImpl` = 核 `chat` 注入口（单元测试档；生产缺省 = 动载）。 */
-export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null, env = process.env, log = null, createdBy = null, selfBaseUrl = null } = {}) {
+/** 出口 provider 装配（§16.2/§17.3——loopback 描述子；两消费面同经此点：模型出口 `buildChatExit` ∥ 压缩垫片）：配置 =
+ *  `<selfBase>/v1` ＋ 会话 owner 的 `admin-agent` sk 明文（§16.3——逐请求查库 ⇒ 吊销即断）＋ 会话行 `model`（**对外标识**——
+ *  与会话创建面/四端客户端同形）＋ 档位（KD-SV-110——`reasoning` ∈ 当刻模型核枚举〔别名解上游真名后〕⇒ 携 `reasoningEffort`；
+ *  未设 ∥ 表外 ∥ 缺核 ⇒ 零字段）。**本地 registry 复检保留**（缺模型 ⇒ 会话可建面的既有判据不变）。
+ *  失败面（§16.2）：sk 缺位（未登录/已吊销）∥ 自环基址缺位 ⇒ 抛（人话——含「重新登录控制台」）。
+ *  出 = `{ provider, upstream }`（`upstream` = 上游真名——规格 ∥ 枚举取值键）。 */
+export async function chatProviderOf({ db, ref, reasoning = null, env = process.env, log = null, createdBy = null, selfBaseUrl = null } = {}) {
   const { createProviderRegistry, listProviderEntries } = await import("../gateway/providers.mjs")
   const registry = createProviderRegistry(listProviderEntries(db), { env })
   const hit = registry.dispatch(ref)
@@ -400,7 +365,6 @@ export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null
   if (sk === null) throw new Error("管理会话模型凭据缺位（admin-agent sk 未在册或已吊销）——请重新登录控制台")
   const base = selfBaseOf(typeof selfBaseUrl === "function" ? selfBaseUrl() : selfBaseUrl)
   if (base === null) throw new Error("管理会话模型出口不可用：自环基址缺位（server 监听地址未就绪）")
-  const chat = chatImpl ?? (await loadCoreChat())
   let reasoningEffort = null
   if (typeof reasoning === "string" && reasoning !== "") {
     try {
@@ -409,17 +373,28 @@ export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null
       noteDegraded(log, "chat_assembly", e) // 缺核 ⇒ 零字段（档位面退中性——回合不阻断；真因入日志）
     }
   }
-  return async ({ messages, tools, onToken, signal }) => // `signal` 透传核（回合中止——KD-SV-107；缺 ⇒ 核不挂取消链）
-    chat(
-      {
-        baseURL: `${base}/v1`, // 网关链 loopback（不经 nginx——KD-SV-129）
-        apiKey: sk.plain, // 管理面 sk 明文（服务端即消费方——§16.3）
-        model: ref, // 对外标识（模型 = 会话行外标）
-        name: hit.provider.name, // 日志面（provider 名）
-        ...(reasoningEffort === null ? {} : { reasoningEffort }), // 未设 ∥ 表外 ⇒ 零字段（口径②）
-      },
-      { messages, tools, onToken, signal },
-    )
+  return {
+    provider: {
+      baseURL: `${base}/v1`, // 网关链 loopback（不经 nginx——KD-SV-129）
+      apiKey: sk.plain, // 管理面 sk 明文（服务端即消费方——§16.3）
+      model: ref, // 对外标识（模型 = 会话行外标）
+      name: hit.provider.name, // 日志面（provider 名）
+      ...(reasoningEffort === null ? {} : { reasoningEffort }), // 未设 ∥ 表外 ⇒ 零字段（口径②）
+    },
+    upstream: hit.model, // 上游真名（规格 ∥ 档位枚举取值键）
+  }
+}
+
+/** 模型出口装配（§16.2 ∥ KD-SV-129——管理会话 = 本进程网关链的**进程内客户端**）：出口配置 = 出口 provider（`chatProviderOf`
+ *  ——鉴权/派发/准入三件/转发/记账全链逐字复用，零第二份）；`.provider` 随出口携带（§17.3 A3——压缩垫片同源）。
+ *  网关侧拒 ⇒ 网关错误形即本出口错误（同径收尾——五终态零新形）。`chatImpl` = 核 `chat` 注入口（单元测试档；生产缺省 = 动载）。 */
+export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null, env = process.env, log = null, createdBy = null, selfBaseUrl = null } = {}) {
+  const { provider } = await chatProviderOf({ db, ref, reasoning, env, log, createdBy, selfBaseUrl })
+  const chat = chatImpl ?? (await loadCoreChat())
+  const exit = async ({ messages, tools, onToken, signal }) => // `signal` 透传核（回合中止——KD-SV-107；缺 ⇒ 核不挂取消链）
+    chat(provider, { messages, tools, onToken, signal })
+  exit.provider = provider // 压缩垫片 provider（§17.3 A3.2——同一出口描述子）
+  return exit
 }
 
 /** `usage` 帧成形（§11.3——核 `chat()` 返回的 usage 形 ⇒ 帧面短键；入参缺 ∥ 非对象 ⇒ `null` = 无源零帧；单键缺/非数 ⇒ 0）。 */
@@ -438,7 +413,8 @@ export function usageFrameOf(usage) {
 /**
  * 跑一个回合（§11——调用前须 `claimChatTurn` 置在途）：`content` = 本轮用户消息 ∥ `images` = 图片 dataURL 串列（空 = 纯文本轮；
  * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`
- * ∥ `cwd`（环境工具面相对路径基准）∥ `coreTools`（核件注入口——环境族真件/替身）∥ `chatImpl`（核 `chat` 注入口）∥ `selfBaseUrl`（自环基址取数——§16.2））
+ * ∥ `cwd`（环境工具面相对路径基准）∥ `coreTools`（核件注入口——环境族真件/替身）∥ `chatImpl`（核 `chat` 注入口）∥ `selfBaseUrl`（自环基址取数——§16.2）
+ * ∥ `coreSpecs`/`coreHelpers`/`coreCompact`（§17.3 A1/A2/A3 核件注入口）∥ `compactProvider`（压缩垫片 provider 注入口））
  * ∥ `wake` = 唤醒轮面（非空 ⇒ **无本轮用户消息** ＋ 域文本瞬态尾插——§15.1；用户轮传 `null`）。
  * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
@@ -482,12 +458,14 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     } catch (e) {
       log?.warn("chat_delivery_failed", { chatId: chat.id, message: e?.message ?? String(e) }) // 件留汇面——下一回合边界/唤醒面兜底重试（零静默丢）
     }
-    const messages = buildTurnMessages(listMessages(db, chat.id))
-    // 唤醒轮域文本（§15.1——核常量单源；**瞬态尾插不落库**——沿 §14.1 口径）
-    if (wake !== null) messages.push({ role: "user", content: wake.domain })
-    // 环境块（§14.1/KD-SV-112）：三活体行尾插（历史与本轮之后——前缀缓存理由）；**瞬态不落库**（不进回放）。
+    // 历史装配（§17.3）：回放条目（A3 标记感知——覆盖区间以标记行代；`seq`/`covers` 供压缩覆盖映射）⇒ A2 修复（核 `repairHistory`；缺核 ⇒ 原样）
+    const entries = replayEntriesOf(listMessages(db, chat.id))
+    const history = await repairTurnHistory(entries.map((entry) => entry.message), { coreHelpers: deps.coreHelpers ?? null, log })
+    // 唤醒轮域文本（§15.1——核常量单源；**瞬态尾插不落库**——沿 §14.1 口径）∥ 环境块（§14.1/KD-SV-112——三活体行尾插；
+    // **瞬态不落库**）：先收集，压缩后统一入装配（§17.3 A3——压缩面只见历史段）
+    const wakeLine = wake === null ? null : { role: "user", content: wake.domain }
     const envLines = buildEnvLines({ db, model: chat.model, reasoning: chat.reasoning ?? null, cwd: deps.cwd ?? process.cwd(), now, env: deps.env ?? process.env })
-    for (const line of envLines) messages.push({ role: "user", content: line })
+      .map((line) => ({ role: "user", content: line }))
     // 工具面（§14.2）：注入面（deps.tools ∥ 模块级）优先；否则 = 管理面八件 + 环境六族八件合并。
     const injectedFace = deps.tools ?? injectedTools ?? null
     const face = injectedFace === null ? await buildChatToolFace({ db, deps, log, actor, actorId: chat.created_by ?? null }) : { tools: injectedFace, envTools: null }
@@ -538,6 +516,30 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
       return closeFailed("model_error", e?.message ?? String(e), "")
     }
 
+    // A1 规格（§17.3）：上游真名（别名反查——§11.4 解析单源）⇒ 核规格；缺核 ∥ 缺名 ⇒ `null`（自建形回落——回合不阻断）
+    const assistantSpec = await specOfRef({ db, ref: chat.model, coreSpecs: deps.coreSpecs ?? null, log })
+    // A3 压缩（§17.3——回合起跑段：本轮消息与投递落库后、模型调用前）：阈值触发 ⇒ 标记行落库（覆盖区间以标记行代——回放面解析）
+    const compacted = await compactTurnHistory({
+      entries,
+      history,
+      provider: deps.compactProvider ?? modelExit.provider ?? null, // loopback 描述子（缺位 ⇒ 跳过压缩）
+      systemPrompt: CHAT_SYSTEM_BRIEF,
+      tools: tools.schemas,
+      signal: controller.signal,
+      cwd: deps.cwd ?? process.cwd(),
+      coreCompact: deps.coreCompact ?? null,
+      pad,
+      chatId: chat.id,
+      log,
+    })
+    if (compacted.covers !== null) {
+      appendMessage(db, chat.id, { role: "user", content: compacted.note, data: { kind: COMPACTION_KIND, covers: compacted.covers }, now })
+    }
+    // 本轮消息装配（系统简报 + 压缩后历史 + 唤醒域文本 + 环境块——§11/§14.1/§17.3）
+    const messages = [{ role: "system", content: CHAT_SYSTEM_BRIEF }, ...compacted.history]
+    if (wakeLine !== null) messages.push(wakeLine)
+    for (const line of envLines) messages.push(line)
+
     let modelCalls = 0
     for (;;) {
       const elapsed = now() - started
@@ -580,19 +582,18 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         emitFrame({ type: "end", status: "succeeded", durationMs, calls }) // 帧面读数（§11.3）
         return { status: "succeeded", reason: null, calls, durationMs }
       }
-      // 有工具调用：assistant 行（文本 + `toolCalls` 摘要——回放据以重建消息数组）
+      // 有工具调用：assistant 行 + 回灌形（§17.3 A1——核件构造；回声族携 `reasoning_content`；签名在场才带；落库 ⇔ 回放逐值）
       const pending = toolCalls.map((call) => ({ ...call, args: argsTextOf(call.arguments) }))
-      appendMessage(db, chat.id, {
-        role: "assistant",
-        content: text,
-        data: { toolCalls: pending.map((call) => ({ id: call.id, name: call.name, args: call.args })) },
-        now,
+      const assistantTurn = await assistantTurnOf({
+        text,
+        toolCalls: pending.map((call) => ({ id: call.id, name: call.name, arguments: call.args, extraContent: call.extraContent })),
+        reasoning: turn?.reasoning,
+        spec: assistantSpec,
+        coreSpecs: deps.coreSpecs ?? null,
+        log,
       })
-      messages.push({
-        role: "assistant",
-        content: text,
-        tool_calls: pending.map((call) => ({ id: call.id, type: "function", function: { name: call.name, arguments: call.args } })),
-      })
+      appendMessage(db, chat.id, { role: "assistant", content: text, data: assistantTurn.data, now })
+      messages.push(assistantTurn.message)
       for (let index = 0; index < pending.length; index++) {
         const call = pending[index]
         const overBudget = calls >= budget.maxCalls || now() - started > budget.maxDurationMs

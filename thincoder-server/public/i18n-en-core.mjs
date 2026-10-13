@@ -1,9 +1,9 @@
 /**
- * i18n-en-core.mjs — 控制台文案表·英文·核件词面（webui/WEBUI.md §2.2——KD-SV-51 拆表；zh 档同源镜像）。
+ * i18n-en-core.mjs — 控制台文案表·英文·核件词面（webui/I18N.md §2.1——KD-SV-51 拆表；zh 档同源镜像）。
  * 域界/值源/门面口径 = `i18n-zh-core.mjs` 件头（单源）；en 面零 CJK（占位符与 zh 逐键一致）。
  */
 export const EN_CORE = Object.freeze({
-  // ── 工具卡词面（管理面 chat——console-chat-align 批；§2.10） ──────────────────────
+  // ── 工具卡词面（管理面 chat——console-chat-align 批；`agent/ADMIN-AGENT.md` §11） ──────────────────────
   "tool.running": "running…",
   "tool.initial": "Running…",
   "tool.truncated": "… (truncated at 64K — full text in history)",

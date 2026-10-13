@@ -34,7 +34,7 @@ const vsix = resolve(arg ?? join(ROOT, `${PKG.name}-${PKG.version}.vsix`))
 if (!existsSync(vsix)) { console.error(`✘ vsix 不存在：${vsix}（先 \`npm run package\`）`); process.exit(1) }
 const IN_VSIX = "extension/node_modules/@thincoder/core/"
 const IN_VSIX_RC = "extension/node_modules/@thincoder/render-core/"
-const EXPECT = { prompts: 16, "tool-docs": 50 } // 档数口径（T-C7 / `CORE-UNIFICATION.md` §2.8——枚举 16 + 50；prompts 由 15 收正为 16 = escalation-canon 批 · 父侧直接执行 · 可 revert；tool-docs 由 24 收正为 52 = #15 描述外置波后实盘计数 2026-09-29，复由 52 收正为 48 = ledger 统一入口批（#923）五退一增后实读 2026-10-05 · 父侧直接执行 · 可 revert；2026-10-08 收正为 50 = manifest-agent-tool 批（#1098）：仓内侧实读 49（10-05 后 +1 未随的既有漂移）∧ 本批工具描述档 +1 ⇒ 50 · 父侧直接执行 · 可 revert）
+const EXPECT = { prompts: 16, "tool-docs": 51 } // 档数口径（T-C7 / `CORE-UNIFICATION.md` §2.8——枚举 16 + 51；prompts 由 15 收正为 16 = escalation-canon 批 · 父侧直接执行 · 可 revert；tool-docs 由 24 收正为 52 = #15 描述外置波后实盘计数 2026-09-29，复由 52 收正为 48 = ledger 统一入口批（#923）五退一增后实读 2026-10-05 · 父侧直接执行 · 可 revert；2026-10-08 收正为 50 = manifest-agent-tool 批（#1098）：仓内侧实读 49（10-05 后 +1 未随的既有漂移）∧ 本批工具描述档 +1 ⇒ 50 · 父侧直接执行 · 可 revert；2026-10-13 收正为 51 = team-ledger 批（#1206）：工具描述档 `team_ledger.md` +1 ⇒ 实施当刻实读 51 · 父侧直接执行 · 可 revert）
 const sha = (buf) => createHash("sha256").update(buf).digest("hex")
 
 const failures = []

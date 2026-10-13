@@ -21,7 +21,7 @@ export function hostCredentialStateLabel(state) {
 }
 
 /**
- * 主机选单（对话页径——§2.1:会话条钮 ⇒ 选主机 ⇒ **同弹窗件**）：行 = 名 ∥ 地址 ∥ SSH 用户 ∥ 凭据状态（`ssh` 元数据——零秘密）；
+ * 主机选单（对话页径——`webui/CHAT.md` §2.1（会话条钮）⇒ 选主机 ⇒ **同弹窗件**）：行 = 名 ∥ 地址 ∥ SSH 用户 ∥ 凭据状态（`ssh` 元数据——零秘密）；
  * 列表读时读（概览既有端点——零新端点）；无主机 ∥ 读败 ⇒ 窗内就地人话（不静默）；点行 ⇒ 开主机凭据弹窗（单例弹窗：开新先关旧）。
  */
 export function openHostCredentialPicker(ctx, { onSaved = null } = {}) {

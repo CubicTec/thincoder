@@ -121,7 +121,7 @@ function afterChange() {
 /** 登录流（未登录 ∥ 已失效两态共用）：三问（server 预填留存值 → username → password 掩码）。 */
 async function loginFlow() {
   const st = teamStatus()
-  const server = await vscode.window.showInputBox({ prompt: t("settings.team.server"), value: st.server ?? "" })
+  const server = await vscode.window.showInputBox({ prompt: t("settings.team.server") + " — " + t("settings.team.serverHint"), value: st.server ?? "" })
   if (server === undefined) return
   const username = await vscode.window.showInputBox({ prompt: t("settings.team.username"), value: st.member?.username ?? "" })
   if (username === undefined) return

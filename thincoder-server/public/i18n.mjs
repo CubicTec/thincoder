@@ -1,5 +1,5 @@
 /**
- * i18n.mjs — 控制台多语言运行时（webui/WEBUI.md §2.2——KD-SV-26/44）：语言态 ∥ 检测/记忆 ∥ `t()`（含计数复数形）∥ 切换器组件
+ * i18n.mjs — 控制台多语言运行时（webui/I18N.md §2.1——KD-SV-26/44）：语言态 ∥ 检测/记忆 ∥ `t()`（含计数复数形）∥ 切换器组件
  * （`h` + `onChange` 注入——侧栏 meta 槽 ∥ 登录卡两处复用）∥ 错误码映射 ∥ `document` 接线。
  *
  * 模块顶层零浏览器全局访问——`document`/`localStorage`/`navigator` 仅在 init/绑定函数内触碰；检测输入经参数注入

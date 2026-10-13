@@ -1,5 +1,5 @@
 /**
- * views-sandbox-images.mjs — 沙盒页·镜像区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
+ * views-sandbox-images.mjs — 沙盒页·镜像区件（webui/SANDBOX.md §2.1①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 镜像表（名（多标签逐行 ∥ 无标签 ⇒「无标签」）∥ 大小 ∥ 创建 ∥ 操作：删除）+ 拉取镜像钮 + **本地镜像表过滤**（本批——
  * 表上方关键词输入（名/标签匹配；无匹配 ⇒ 空态句；零新端点））
  * ∥ 拉取窗（引用输入 `名[:标签]`；在飞态 + 钮禁用；sandbox-image-quick-pull 批：可选预填参 + 「目标节点」行）
@@ -7,7 +7,7 @@
  * 可再改）；不选 = 原样；认源态 ∥ 记忆预选（P2——`localStorage` 单键 `tc_pull_source`）；「目标节点」行恒显（P1）；无源 ∥ 读败 ⇒ 不选态 + 人话——拉取不阻断）
  * ∥ 删除确认窗（强制删除勾选——缺省不勾）。
  * console-tabs-component 批：本区随沙盒页分标签迁**标签②「镜像与镜像源」**（节点选单当刻节点的镜像表）——题行去重（卡 h3 承担）。
- * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。单元测试档直测面 = `createImageSection`
+ * 契约 = gateway/API.md §2.5；文案经 `t()`（`webui/I18N.md` §2.1）；渲染一律节点 + textContent（零拼串）。单元测试档直测面 = `createImageSection`
  * ∥ `openPullImageModal` ∥ `pullRefWithSource`（纯函数）。
  */
 import { mapError, t } from "./i18n.mjs"

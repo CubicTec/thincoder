@@ -1,8 +1,8 @@
 /**
- * views-sandbox-containers.mjs — 沙盒页·容器区件（webui/WEBUI.md §2.8①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
+ * views-sandbox-containers.mjs — 沙盒页·容器区件（webui/SANDBOX.md §2.1①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 容器表（名/镜像/状态/操作：详情/启动/停止/重启/日志/删除）∥ 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块（懒取 + 刷新钮）
  * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗（建窗卷字段 = 节点已有卷选单 + 「新建卷（手输）」保底——sandbox-volumes 批）。
- * 契约 = gateway/API.md §2.5；文案经 `t()`（§2.2）；渲染一律节点 + textContent（零拼串）。
+ * 契约 = gateway/API.md §2.5；文案经 `t()`（`webui/I18N.md` §2.1）；渲染一律节点 + textContent（零拼串）。
  * 拆档缘由 = `views-sandbox.mjs` 增量将越 500 硬线前外拆；窗体助手四件已迁 `modal.mjs`（避循环 import）。
  * 单元测试档直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
  */

@@ -557,6 +557,50 @@ ALTER TABLE api_keys ADD COLUMN key_plain TEXT;
 -- ② 审计 CHECK 零动（三 kind 不扩——管理面 sk 属 key 面，沿 KD-SV-108 先例；十四型不变）
 `
 
+/** v20 增段（团队台账表 + 审计 CHECK 再扩（十五型）——store/STORE.md §2 v20 段逐字；ledger 域——team-ledger 批）。
+ *  ① `team_ledger_items` 单表（全局编号 ∥ 仓 = 归一地址（`projects.address` 同形）∥ 六态枚举沿本机台账）+ 两索引（筛选主查询 ∥ 按负责人筛）；
+ *  ② 审计表重建（十四型 ⇒ 十五型：+ `ledger_event`——步序与 v10/v11/v14/v17 同构）；
+ *  ③ 零回填（新表空 ∥ 存量审计行逐值保形）。
+ *  语义/机制 = `ledger/LEDGER.md` §3/§4（单源）；端点 = `gateway/API.md` §2.10；判据 = `store/STORE.md` §3 v20 行。 */
+const DDL_V20 = `
+-- ① 团队台账表（单表——全局编号；仓 = 归一地址（\`projects.address\` 同形）；六态枚举沿本机台账）
+CREATE TABLE IF NOT EXISTS team_ledger_items (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT, -- 全局编号（全队一号空间——跨本引用可解析）
+  repo       TEXT NOT NULL,                     -- 仓标记（归一形 \`host[:port]/path\`；非 FK——项目删除不级联，KD-SV-147）
+  status     TEXT NOT NULL CHECK(status IN ('待讨论','待设计','在途','待核销','已核销','已废弃')),
+  title      TEXT NOT NULL,                     -- 标题（≤200——应用层校验）
+  detail     TEXT,                              -- 正文/说明（≤4000；追认核销须非空）
+  owner      TEXT NOT NULL,                     -- 负责人（统一用户名键——不要求现存账号）
+  created_by TEXT NOT NULL,                     -- 写入者（用户名）
+  created_at TEXT NOT NULL,
+  updated_at TEXT,                              -- 老化行龄源 = updated_at ?? created_at（未决态 ∧ >30 天 ⇒ aged）
+  closed_at  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_team_ledger_repo_status ON team_ledger_items(repo, status);
+CREATE INDEX IF NOT EXISTS idx_team_ledger_owner ON team_ledger_items(owner);
+
+-- ② 审计 CHECK 再扩（十四型 ⇒ 十五型：+ 'ledger_event'——表重建，步序与 v10/v11/v14/v17 同构）
+--    kind 枚举（四 kind）：create ∥ edit ∥ close ∥ withdraw（kind 非 CHECK 枚举——逐 kind 归 accounts/ACCOUNTS.md §2.1）
+CREATE TABLE audit_events_v20 (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts          INTEGER NOT NULL,              -- unix ms（事件时刻）
+  type        TEXT NOT NULL CHECK (type IN ('login_success','login_failure','login_locked',
+    'key_rotate','key_issue','key_revoke','password_change','password_reset','member_create','config_update',
+    'sandbox_rule','sandbox_event','agent_event','project_event','ledger_event')),
+  actor_id    INTEGER,                       -- 行为人成员 id（无会话 ∥ 未知用户名 ⇒ NULL；无 FK——历史记录自足）
+  actor_name  TEXT NOT NULL,                 -- 行为人名快照（用户名 ∥ 展示名 ∥ 'cli' ∥ 'scheduler' ∥ 'webhook'）
+  target_id   INTEGER,                       -- 对象成员 id（无对象 ⇒ NULL）
+  target_name TEXT NOT NULL DEFAULT '',      -- 对象名快照（无对象 ⇒ 空串；台账类事件 = 'ledger:<id>' 可读形）
+  detail      TEXT NOT NULL DEFAULT '{}'     -- 附加形（JSON：kind ∥ id ∥ repo ∥ surface 等）
+);
+INSERT INTO audit_events_v20 (id, ts, type, actor_id, actor_name, target_id, target_name, detail)
+  SELECT id, ts, type, actor_id, actor_name, target_id, target_name, detail FROM audit_events;
+DROP TABLE audit_events;
+ALTER TABLE audit_events_v20 RENAME TO audit_events;
+CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
+CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -578,6 +622,7 @@ export const MIGRATIONS = [
   { v: 17, up: (db) => db.exec(DDL_V17) },
   { v: 18, up: (db) => { db.exec(DDL_V18); backfillHostCredentials(db) } }, // v18：主机表七列 + 四态 CHECK + 回填移交（迁移段 = 结构变 + 回填——单事务同段）
   { v: 19, up: (db) => db.exec(DDL_V19) }, // v19：`api_keys.key_plain` 增列（管理面 sk 明文面——零回填）
+  { v: 20, up: (db) => db.exec(DDL_V20) }, // v20：团队台账表 + 两索引 + 审计 CHECK 重建（十五型：+ ledger_event——零回填）
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

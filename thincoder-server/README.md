@@ -10,7 +10,7 @@
 
 ## 1. 安装（分发两路——版本身份 = npm 包）
 
-- **npm 路**（包体就绪——发布动作 = 发布面轮）：`npm i -g @thincoder/server` —— 零依赖 ⇒ 装机无 install 步；
+- **npm 路**（包体就绪——发布动作 = 发布面轮）：`npm i -g @thincoder/server`——装机随包解析依赖（`@thincoder/core` ∥ `@thincoder/render-core`）；
   包内容 = `bin/` ∥ `src/` ∥ `public/` ∥ `config.example.json` ∥ `README.md`（`deploy/` 为仓内部署面，不入包）。
   - 前缀式装机（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议与配置/数据同根——见 §3）；装机与自升同前缀、免 sudo 重写。
 - **Docker 路**：`docker build -f thincoder-server/Dockerfile -t <registry>/thincoder-server:<tag> .`（构建上下文 = 仓根——含 `thincoder-server/` + `thincoder-render-core/` 双包）；镜像 = **壳**

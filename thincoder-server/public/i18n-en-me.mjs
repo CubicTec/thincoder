@@ -1,5 +1,5 @@
 /**
- * i18n-en-me.mjs — 控制台文案表·English·我的面（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键首段前缀（`usage.*` ∥
+ * i18n-en-me.mjs — 控制台文案表·English·我的面（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键首段前缀（`usage.*` ∥
  * `me.*`——`.one` 变体随基键）；门面 = `i18n-en.mjs`（四部件展开合体 + `Object.freeze`——`EN` 导出名不变）。
  * 键序 = 原档相对序（逐字搬移——零语义；段注释同移）。本档 = en 族（零 CJK——零 CJK 机检口径 §6 AC-14 按前缀排除）。
  */
@@ -66,4 +66,25 @@ export const EN_ME = Object.freeze({
   "me.account.newPwd": "New password (≥8 characters)",
   "me.account.pwdSubmit": "Change password",
   "me.account.pwdDone": "Password updated (other sessions were signed out).",
+
+  // ── My workspaces (sandbox member face — sandbox-outbound-member-face batch; read-only) ──
+  "me.sandbox.title": "My workspaces",
+  "me.sandbox.colName": "Name",
+  "me.sandbox.colState": "Box state",
+  "me.sandbox.colDirty": "Uncommitted changes",
+  "me.sandbox.colCheckpoints": "Checkpoints",
+  "me.sandbox.colRunner": "Runner",
+  "me.sandbox.colPending": "Pending",
+  "me.sandbox.stateRunning": "Running",
+  "me.sandbox.stateStopped": "Stopped",
+  "me.sandbox.stopIdle": "Idle reclaim",
+  "me.sandbox.stopWallclock": "Wall-clock reclaim",
+  "me.sandbox.stopManual": "Manual",
+  "me.sandbox.dirtyYes": "Changed",
+  "me.sandbox.dirtyNo": "Clean",
+  "me.sandbox.pending": "Waiting for admin approval: {host} (first visit to a new domain — usually ≤60s)",
+  "me.sandbox.empty": "No workspaces yet",
+  "me.sandbox.unbound": "Unbound",
+  "me.sandbox.unavailable": "Sandbox is unavailable — contact an administrator",
+  "me.sandbox.loadFailed": "Failed to load workspaces",
 })

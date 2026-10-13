@@ -1,11 +1,11 @@
 /**
- * views-sandbox.mjs — 管理·沙盒页（webui/WEBUI.md §2/§2.8①——`#/admin/sandbox`）：**两标签**（console-tabs-component 批——
+ * views-sandbox.mjs — 管理·沙盒页（webui/SANDBOX.md §2.1①——`#/admin/sandbox`）：**两标签**（console-tabs-component 批——
  * 「运行面」∥「镜像与镜像源」；公共件 = `tabs.mjs`；机制全文 = `webui/TABS.md` §2.2；子段形 `#/admin/sandbox/<tab>`）——
  * 标签① = 可用性提示 ∥ 节点表（节点行展开 ⇒ 容器区 + 卷区——懒加载；件 = `views-sandbox-containers.mjs`（sandbox-docker-admin 批外拆）∥ `views-sandbox-volumes.mjs`（sandbox-volumes 批）
  * ∥ 添加/删除节点弹窗 ∥ 托管接入（弹窗（八字段 + S5 预告知句）∥ 装机任务区（三态 + 步骤读数展开 + keep 态「撤销凭据」钮；在途 3s
  * 读时轮询、定终态停）∥ 节点行「SSH 凭据」动作（admin-chat-creds-merge 批——弹窗件 = `host-credential.mjs`（与对话页会话条钮**同件**）；KD-SV-134））；标签② = 镜像卡（节点选单 ⇒ 该节点镜像表；件 = `views-sandbox-images.mjs`）+ 镜像源卡（sandbox-image-sources 批——
  * 全局面；件 = `views-sandbox-image-sources.mjs`；一键拉取 = sandbox-image-quick-pull 批——拉取成 ⇒ `onPulled` 回调重取镜像表）。
- * 契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（§2.2）；
+ * 契约 = gateway/API.md §2.5；判权全在后端（服务端 403 为准）；渲染一律节点 + textContent（零拼串）；文案经 `t()` 取值（`webui/I18N.md` §2.1）；
  * 窗体助手四件住 `modal.mjs`（`showNote`/`field`/`submitThen`/`confirmModal`）。
  * 单元测试档直测面 = `renderSandbox`（桩 ctx + 假 fetch 路由表 ∥ 子段 ∥ 两面板划分）∥ `TASK_POLL_MS`/`runStateLabel` ∥ `containerStateLabel`（re-export——容器件单源）。
  */

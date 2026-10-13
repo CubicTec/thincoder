@@ -1,5 +1,5 @@
 /**
- * i18n-en-shell.mjs — 控制台文案表·English·壳族（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键首段前缀（`app.*` ∥
+ * i18n-en-shell.mjs — 控制台文案表·English·壳族（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键首段前缀（`app.*` ∥
  * `common.*` ∥ `col.*` ∥ `denied.*` ∥ `nav.*` ∥ `lang.*` ∥ `login.*` ∥ `err.*`——`.one` 变体随基键）；门面 = `i18n-en.mjs`
  * （四部件展开合体 + `Object.freeze`——`EN` 导出名不变）。键序 = 原档相对序（逐字搬移——零语义；段注释同移）。
  * 本档 = en 族（零 CJK——零 CJK 机检口径 §6 AC-14：扫描面按前缀排除 `i18n-zh*` ∥ `i18n-en*`）。
@@ -44,6 +44,8 @@ export const EN_SHELL = Object.freeze({
   "nav.page.me.usage": "My usage",
   "nav.page.me.account": "Account settings",
   "nav.page.me.projects": "Projects",
+  "nav.page.me.sandbox": "My workspaces",
+  "nav.page.me.ledger": "Team ledger",
   "nav.page.admin.overview": "Overview",
   "nav.page.admin.members": "Members",
   "nav.page.admin.projects": "Projects",

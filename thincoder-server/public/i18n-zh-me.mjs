@@ -1,5 +1,5 @@
 /**
- * i18n-zh-me.mjs — 控制台文案表·中文·我的面（webui/WEBUI.md §2.2——KD-SV-51 拆表）：域界 = 键首段前缀（`usage.*` ∥
+ * i18n-zh-me.mjs — 控制台文案表·中文·我的面（webui/I18N.md §2.1——KD-SV-51 拆表）：域界 = 键首段前缀（`usage.*` ∥
  * `me.*`——`.one` 变体随基键）；门面 = `i18n-zh.mjs`（四部件展开合体 + `Object.freeze`——`ZH` 导出名不变）。
  * 键序 = 原档相对序（逐字搬移——零语义；段注释同移）。本档 = zh 族（唯一 CJK 载体——零 CJK 机检口径 §6 AC-14 按前缀排除）。
  */
@@ -65,4 +65,25 @@ export const ZH_ME = Object.freeze({
   "me.account.newPwd": "新密码（≥8 字符）",
   "me.account.pwdSubmit": "改密",
   "me.account.pwdDone": "密码已更新（其他会话已失效）",
+
+  // ── 我的·工作区（沙盒成员面——sandbox-outbound-member-face 批；只读——成员写面随 #1216 ②）──────
+  "me.sandbox.title": "我的工作区",
+  "me.sandbox.colName": "名称",
+  "me.sandbox.colState": "盒状态",
+  "me.sandbox.colDirty": "未提交改动",
+  "me.sandbox.colCheckpoints": "快照数",
+  "me.sandbox.colRunner": "所属 runner",
+  "me.sandbox.colPending": "待批",
+  "me.sandbox.stateRunning": "运行中",
+  "me.sandbox.stateStopped": "已停",
+  "me.sandbox.stopIdle": "空闲回收",
+  "me.sandbox.stopWallclock": "墙钟回收",
+  "me.sandbox.stopManual": "手动",
+  "me.sandbox.dirtyYes": "有改动",
+  "me.sandbox.dirtyNo": "无改动",
+  "me.sandbox.pending": "等待管理员批准：{host}（首次访问新域名——通常 ≤60s）",
+  "me.sandbox.empty": "暂无工作区",
+  "me.sandbox.unbound": "未绑定",
+  "me.sandbox.unavailable": "沙盒当前不可用——请联系管理员",
+  "me.sandbox.loadFailed": "工作区读取失败",
 })

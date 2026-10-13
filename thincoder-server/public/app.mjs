@@ -1,8 +1,8 @@
 /**
  * app.mjs — 控制台前端入口（webui/WEBUI.md §1–§3——结构轮拆后）：哈希路由（`#/<组>/<页>`）∥ fetch 封装 ∥ 会话态 ∥
- * 视图装配（一页一职责）∥ 系统信息（`/api/system`——装配取一次；失败静默留空——§2.1）∥ 多语言接线（`initLang` ∥
- * 错误映射 ∥ `Retry-After` 捕捉 ∥ `rerender` 口 ∥ title——§2.2）。渲染助手 + 提示条（`dom.mjs`——§1）∥ 健康轮询
- * （`health.mjs`——§2.3⑤）为结构轮外拆档，本档经单点装配（`viewCtx()`——注入面名不变）。
+ * 视图装配（一页一职责）∥ 系统信息（`/api/system`——装配取一次；失败静默留空——`webui/SYSTEM.md` §2.1）∥ 多语言接线（`initLang` ∥
+ * 错误映射 ∥ `Retry-After` 捕捉 ∥ `rerender` 口 ∥ title——`webui/I18N.md` §2.1）。渲染助手 + 提示条（`dom.mjs`——§1）∥ 健康轮询
+ * （`health.mjs`——`webui/READINGS.md` §2.1⑤）为结构轮外拆档，本档经单点装配（`viewCtx()`——注入面名不变）。
  *
  * 判权全在后端：只做显隐与表单——`user` 直打管理端点由服务端 403（页面不是判据）；401 ⇒ 回 #/login；路由解析
  * （别名重定向 ∥ 角色默认 ∥ admin 面 denied）= nav.mjs 纯函数；旧链 `#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒
@@ -25,6 +25,8 @@ import { renderModels } from "./views-models.mjs"
 import { renderSandbox } from "./views-sandbox.mjs"
 import { renderChat } from "./views-chat.mjs"
 import { renderMeProjects } from "./views-projects.mjs"
+import { renderMeSandbox } from "./views-me-sandbox.mjs"
+import { renderMeLedger } from "./views-ledger.mjs"
 import { renderAdminProjects } from "./views-admin-projects.mjs"
 import { renderGitSources } from "./views-git-sources.mjs"
 
@@ -99,6 +101,8 @@ const PAGES = {
   "/me/usage": renderMeUsage,
   "/me/account": renderMeAccount,
   "/me/projects": renderMeProjects,
+  "/me/sandbox": renderMeSandbox,
+  "/me/ledger": renderMeLedger,
   "/admin/overview": renderOverview,
   "/admin/chat": renderChat,
   "/admin/members": renderMembers,

@@ -332,11 +332,11 @@ test("§A 机检：team-ledger.mjs 零 import 本机台账模块（KD-SV-145/D-T
 // §B 服务端面（ledger/LEDGER.md §11 ∥ store/STORE.md §3 v20）
 // ═══════════════════════════════════════════════════════════════════════════
 
-test("§B N1 空库直落 v20：版本读数 ∥ 十列 + 两索引 ∥ 审计 CHECK 十五型（ledger_event 可写）∥ 六态 CHECK", () => {
+test("§B N1 空库直落 v21（链尾）：版本读数 ∥ 十列 + 两索引 ∥ 审计 CHECK 十五型（ledger_event 可写）∥ 六态 CHECK", () => {
   const db = DB.openDatabase(":memory:")
   try {
-    assert.equal(DB.SCHEMA_VERSION, 20, "链尾段号 20（本批落地）")
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 20, "空库直落 20")
+    assert.equal(DB.SCHEMA_VERSION, 21, "链尾段号 21（gitee-namespace-kinds 批 v21 随正——本批落地段 = 20）")
+    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 21, "空库直落 21（链尾）")
     assert.deepEqual(
       db.prepare("PRAGMA table_info(team_ledger_items)").all().map((c) => c.name),
       ["id", "repo", "status", "title", "detail", "owner", "created_by", "created_at", "updated_at", "closed_at"],
@@ -361,14 +361,14 @@ test("§B N1 空库直落 v20：版本读数 ∥ 十列 + 两索引 ∥ 审计 C
   }
 })
 
-test("§B N2 v19 库升 20：读数 / 幂等（再开零变）∥ 存量审计行逐值保形 ∥ 索引重建 ∥ 新 id 不撞存量", () => {
+test("§B N2 v19 库升 21（链尾）：读数 / 幂等（再开零变）∥ 存量审计行逐值保形 ∥ 索引重建 ∥ 新 id 不撞存量", () => {
   const db = DB.openDatabase(":memory:", { migrations: DB.MIGRATIONS.slice(0, 19) })
   try {
     assert.equal(db.prepare("PRAGMA user_version").get().user_version, 19, "前置：v19")
     const first = AUDIT.recordAudit(db, { type: "project_event", actor: "admin", actorId: 1, target: "project:1", detail: { kind: "project_add" }, ts: 1700000000000 })
     const snapshot = db.prepare("SELECT * FROM audit_events ORDER BY id").all()
-    assert.equal(DB.migrate(db), 20, "升后读数 20")
-    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 20, "持久读数 20")
+    assert.equal(DB.migrate(db), 21, "升后读数 21（链尾）")
+    assert.equal(db.prepare("PRAGMA user_version").get().user_version, 21, "持久读数 21（链尾）")
     assert.deepEqual(db.prepare("SELECT * FROM audit_events ORDER BY id").all(), snapshot, "存量审计行逐值保形")
     const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index'").all().map((r) => r.name)
     for (const name of ["idx_audit_ts", "idx_audit_type_ts"]) assert.ok(indexes.includes(name), `重建后索引在场：${name}`)
@@ -908,8 +908,8 @@ test("§C ② AC-14 键集：ledger 两部件 65 键（键集相等 ∥ en 零 C
     assert.ok("audit.type.ledger_event" in table, `${lang} system 在盘：audit.type.ledger_event`)
   }
   // 门面并集与键数（实读；随批随正）
-  assert.equal(Object.keys(ZH).length, 962, "zh 门面 962（892 + 65 + 1 + 1 + 3——实读；+3 = sandbox-container-actions 批/表）")
-  assert.equal(Object.keys(EN).length, 967, "en 门面 967（897 + 65 + 1 + 1 + 3——实读；+3 = sandbox-container-actions 批/表）")
+  assert.equal(Object.keys(ZH).length, 970, "zh 门面 970（892 + 65 + 1 + 1 + 3 + 8——实读；+3 = sandbox-container-actions 批/表；+8 = gitee-namespace-kinds 批/表）")
+  assert.equal(Object.keys(EN).length, 975, "en 门面 975（897 + 65 + 1 + 1 + 3 + 8——实读；+3 = sandbox-container-actions 批/表；+8 = gitee-namespace-kinds 批/表）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（本批两视图 `t` 字面量 ⊆ 两表；nav labelKey 面见 ①）
   for (const name of ["views-ledger.mjs", "views-audit.mjs"]) {

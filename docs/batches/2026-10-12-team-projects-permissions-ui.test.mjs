@@ -211,8 +211,8 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
     assert.ok("audit.type.project_event" in table, `${lang} system 在盘：audit.type.project_event`)
   }
   // 门面并集（部件 ⊂ 门面；键数实读）
-  assert.equal(Object.keys(ZH).length, 962, "zh 门面键数 962（实读——2026-10-13 sandbox 批 + team-ledger 批 + sandbox-container-actions 批 +3/表随正）")
-  assert.equal(Object.keys(EN).length, 967, "en 门面键数 967（实读——含 `.one` 变体）")
+  assert.equal(Object.keys(ZH).length, 970, "zh 门面键数 970（实读——2026-10-13 sandbox 批 + team-ledger 批 + sandbox-container-actions 批 +3/表随正 + gitee-namespace-kinds 批 +8/表）")
+  assert.equal(Object.keys(EN).length, 975, "en 门面键数 975（实读——含 `.one` 变体；gitee-namespace-kinds 批 +8/表）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（三视图 + 审计面 `t` 字面量 ⊆ 两表——含 nav.mjs labelKey 面）
   for (const name of ["views-projects.mjs", "views-admin-projects.mjs", "views-git-sources.mjs", "views-audit.mjs"]) {
@@ -520,12 +520,14 @@ test("⑦ Git 源：七列五钮 ∥ 立即同步进行中禁 + 终态刷新 ∥
     assert.deepEqual(fFindAll(selects[0], (node) => node.tag === "option").map((option) => option.value), ["gitee", "github", "gitlab", "selfhosted"], "平台四值选单")
     const baseField = fFindAll(editor, (node) => node.tag === "label").find((label) => textOf(label).includes(ZH["admin.gitSources.baseUrl"]))
     assert.equal(baseField.hidden, true, "非自建 ⇒ 基址不显")
-    const eventOption = fFind(selects[1], (node) => node.tag === "option" && node.value === "event")
+    const modeSelect = selects.find((sel) => fFindAll(sel, (node) => node.tag === "option").some((option) => option.value === "event"))
+    assert.ok(modeSelect, "同步方式选单按 option 值定位（gitee-namespace-kinds 批类型选单插入后位次后移）")
+    const eventOption = fFind(modeSelect, (node) => node.tag === "option" && node.value === "event")
     assert.equal(eventOption.disabled, false, "github ⇒ 「事件」可选")
     const eventTitle = fFindAll(editor, (node) => node.tag === "h4").find((node) => node.textContent === ZH["admin.gitSources.eventTitle"])
     assert.equal(eventTitle.parent.hidden, true, "事件块默认隐（poll 模式）")
-    selects[1].value = "event"
-    await selects[1].fire("change")
+    modeSelect.value = "event"
+    await modeSelect.fire("change")
     assert.equal(eventTitle.parent.hidden, false, "事件块（github ∧ 事件）")
     assert.ok(textOf(editor).includes("/api/hooks/git-sources/1") && textOf(editor).includes(ZH["admin.gitSources.secretUnset"]), "地址行（id 在径）+ 密钥「未生成」态")
     assert.ok(textOf(editor).includes(ZH["admin.gitSources.registerSteps"]), "登记步说明在册")

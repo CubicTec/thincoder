@@ -4,7 +4,9 @@
  *
  * 语义（§5/§13）：一行一源（名字 ∥ 平台 ∥ PAT 密文 ∥ 启停 ∥ 同步方式 ∥ 上次同步时间+结果 ∥ webhook 密钥密文）；
  * PAT/密钥**永不回显原文**（读面掩码 = `…` + 末 4——本件 `sourceView`）；名唯一（库 UNIQUE + 人话报错）；
- * 平台四值枚举；自建须基址；间隔 5–1440；`sync_mode='event'` **平台门 = 仅 github**（KD-SV-118——其余平台无成员事件）。
+ * 平台四值枚举；自建须基址；间隔 5–1440；`sync_mode='event'` **平台门 = 仅 github**（KD-SV-118——其余平台无成员事件）；
+ * **gitee 范围三态**（`scope_kind` = `personal` ∥ `org` ∥ `enterprise`——建源必携 ∥ 个人范围必空 ∥ 组织/企业范围必填；
+ * 非 gitee 携非空 ⇒ 400；KD-SV-151——gitee-namespace-kinds 批 · 台账 #1365）。
  * 密钥材料 = `store/credential-crypto.mjs` 单源（KD-SV-119）；删源防护（还挂项目 ⇒ 拒）阅读 = 本件。
  * 端点面 = `admin-routes.mjs`；本档为纯存储/形面（单元测试档直测）。
  */
@@ -26,6 +28,9 @@ export const DEFAULT_INTERVAL_MINUTES = 60
 
 /** 同步方式两值（§5 触发三径：`poll` = 定时拉取 ∥ `event` = 事件触发 + 定时对账）。 */
 export const SYNC_MODES = Object.freeze(["poll", "event"])
+
+/** gitee 范围三态（§4/KD-SV-151——`personal` ∥ `org` ∥ `enterprise`；非 gitee 恒 NULL）。 */
+export const SCOPE_KINDS = Object.freeze(["personal", "org", "enterprise"])
 
 /** 事件进路平台门（KD-SV-118——接收端 v1 = github；其余平台选中即拒）。 */
 export const EVENT_PLATFORM = "github"
@@ -78,6 +83,25 @@ export function normalizeScope(raw) {
   return text === "" ? null : text
 }
 
+/** gitee 范围类型归一（三值；缺/空 ⇒ null（清空形——改源「切非 gitee」径）；表外 ⇒ 抛）。 */
+export function normalizeScopeKind(raw) {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return null
+  const kind = String(raw).trim()
+  if (!SCOPE_KINDS.includes(kind)) throw new Error(`范围类型非法：${JSON.stringify(raw)}（合法值：${SCOPE_KINDS.join(" ∥ ")}）`)
+  return kind
+}
+
+/** gitee 三态组合门（§4——建/改同判）：类型必选 ∧ 个人 ⇒ 范围必空 ∥ 组织/企业 ⇒ 范围必填。 */
+function checkGiteeScope(kind, scope) {
+  if (kind === null) throw new Error(`gitee 平台须选范围类型（${SCOPE_KINDS.join(" ∥ ")}）`)
+  if (kind === "personal") {
+    if (scope !== null) throw new Error("个人范围不带范围名——范围留空（或改选组织/企业）")
+  } else if (scope === null) {
+    throw new Error("组织/企业范围须填范围名（scope）")
+  }
+  return kind
+}
+
 /** 间隔归一（整数 5–1440；缺省 60）。 */
 export function normalizeInterval(raw) {
   if (raw === undefined || raw === null || raw === "") return DEFAULT_INTERVAL_MINUTES
@@ -123,7 +147,7 @@ export function hintOf(cipher, key) {
   }
 }
 
-/** 源读数行（§2.9 列形）：`{ id, name, platform, baseURL, scope, token{set,hint}, hookSecret{set,hint}, enabled, syncMode, intervalMinutes, lastSyncAt, lastSyncResult, tokenState, tokenCheckedAt, createdAt }`。 */
+/** 源读数行（§2.9 列形）：`{ id, name, platform, baseURL, scope, scopeKind, token{set,hint}, hookSecret{set,hint}, enabled, syncMode, intervalMinutes, lastSyncAt, lastSyncResult, tokenState, tokenCheckedAt, createdAt }`。 */
 export function sourceView(row, { key = null } = {}) {
   let lastSyncResult = {}
   try {
@@ -138,6 +162,7 @@ export function sourceView(row, { key = null } = {}) {
     platform: row.platform,
     baseURL: row.base_url,
     scope: row.scope,
+    scopeKind: row.scope_kind ?? null,
     token: { set: Boolean(row.token_cipher), hint: hintOf(row.token_cipher, key) },
     hookSecret: { set: Boolean(row.hook_secret_cipher), hint: hintOf(row.hook_secret_cipher, key) },
     enabled: row.enabled === 1 || row.enabled === true,
@@ -178,6 +203,9 @@ export function createSource(db, { input = {}, key, createdBy = null, now = Date
   const baseURL = normalizeBaseURL(input.baseURL)
   if (platform === "selfhosted" && baseURL === null) throw new Error("自建平台须填基址（形 = http(s)://主机[:端口]）")
   const scope = normalizeScope(input.scope)
+  const scopeKind = normalizeScopeKind(input.scopeKind)
+  if (platform === "gitee") checkGiteeScope(scopeKind, scope)
+  else if (scopeKind !== null) throw new Error("范围类型仅 gitee 适用")
   const token = normalizeToken(input.token)
   const enabled = normalizeEnabled(input.enabled)
   const syncMode = normalizeSyncMode(input.syncMode, platform)
@@ -185,10 +213,10 @@ export function createSource(db, { input = {}, key, createdBy = null, now = Date
   try {
     const info = db
       .prepare(
-        `INSERT INTO git_sources (name, platform, base_url, scope, token_cipher, enabled, sync_mode, interval_minutes, created_by, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO git_sources (name, platform, base_url, scope, scope_kind, token_cipher, enabled, sync_mode, interval_minutes, created_by, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-      .run(name, platform, platform === "selfhosted" ? baseURL : null, scope, encryptSecret(token, key), enabled ? 1 : 0, syncMode, intervalMinutes, createdBy, new Date(now).toISOString())
+      .run(name, platform, platform === "selfhosted" ? baseURL : null, scope, scopeKind, encryptSecret(token, key), enabled ? 1 : 0, syncMode, intervalMinutes, createdBy, new Date(now).toISOString())
     return db.prepare("SELECT * FROM git_sources WHERE id = ?").get(Number(info.lastInsertRowid))
   } catch (e) {
     uniqueOrRethrow(e, name)
@@ -204,22 +232,29 @@ export function updateSource(db, { id, input = {}, key, now = Date.now() } = {})
     platform: Object.hasOwn(body, "platform") ? normalizePlatform(body.platform) : row.platform,
     baseURL: Object.hasOwn(body, "baseURL") ? normalizeBaseURL(body.baseURL) : row.base_url,
     scope: Object.hasOwn(body, "scope") ? normalizeScope(body.scope) : row.scope,
+    scopeKind: Object.hasOwn(body, "scopeKind") ? normalizeScopeKind(body.scopeKind) : row.scope_kind ?? null,
     enabled: Object.hasOwn(body, "enabled") ? normalizeEnabled(body.enabled) : row.enabled === 1,
     intervalMinutes: Object.hasOwn(body, "intervalMinutes") ? normalizeInterval(body.intervalMinutes) : row.interval_minutes,
+  }
+  if (next.platform === "gitee") {
+    checkGiteeScope(next.scopeKind, next.scope) // 不携 ⇒ 沿行值；行值空 ⇒ 400（迁移后不可达的防御句）
+  } else {
+    if (Object.hasOwn(body, "scopeKind") && next.scopeKind !== null) throw new Error("范围类型仅 gitee 适用")
+    next.scopeKind = null // 平台（携值 ∥ 行值）非 gitee ⇒ 旧值随清（「非 gitee 恒 NULL」）
   }
   if (Object.hasOwn(body, "syncMode")) next.syncMode = normalizeSyncMode(body.syncMode, next.platform)
   else if (next.platform !== row.platform) next.syncMode = normalizeSyncMode(row.sync_mode, next.platform) // 换平台 ⇒ 原方式过平台门复核
   else next.syncMode = row.sync_mode
   if (next.platform === "selfhosted" && next.baseURL === null) throw new Error("自建平台须填基址（形 = http(s)://主机[:端口]）")
-  const keys = Object.keys(body).filter((k) => ["name", "platform", "baseURL", "scope", "enabled", "syncMode", "intervalMinutes"].includes(k))
+  const keys = Object.keys(body).filter((k) => ["name", "platform", "baseURL", "scope", "scopeKind", "enabled", "syncMode", "intervalMinutes"].includes(k))
   const replacesToken = Object.hasOwn(body, "token") && body.token !== undefined && body.token !== null && String(body.token).trim() !== ""
   if (replacesToken) keys.push("token") // 掩码三态：留空 = 不携（审计只记真正替换的键）
   const tokenCipher = replacesToken ? encryptSecret(normalizeToken(body.token), key) : row.token_cipher
   if (keys.length === 0) throw new Error("改源须携至少一键（键级——出现键 = 应用）")
   try {
     db.prepare(
-      `UPDATE git_sources SET name = ?, platform = ?, base_url = ?, scope = ?, token_cipher = ?, enabled = ?, sync_mode = ?, interval_minutes = ? WHERE id = ?`,
-    ).run(next.name, next.platform, next.platform === "selfhosted" ? next.baseURL : null, next.scope, tokenCipher, next.enabled ? 1 : 0, next.syncMode, next.intervalMinutes, row.id)
+      `UPDATE git_sources SET name = ?, platform = ?, base_url = ?, scope = ?, scope_kind = ?, token_cipher = ?, enabled = ?, sync_mode = ?, interval_minutes = ? WHERE id = ?`,
+    ).run(next.name, next.platform, next.platform === "selfhosted" ? next.baseURL : null, next.scope, next.scopeKind, tokenCipher, next.enabled ? 1 : 0, next.syncMode, next.intervalMinutes, row.id)
   } catch (e) {
     uniqueOrRethrow(e, next.name)
   }

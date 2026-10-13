@@ -11,7 +11,7 @@
 import { HttpError } from "../gateway/errors.mjs"
 import { credentialKeyPath, decryptSecret, loadOrCreateCredentialKey } from "../store/credential-crypto.mjs"
 import { recordAudit } from "../accounts/audit.mjs"
-import { PlatformError, READ_TIMEOUT_MS, checkToken, fetchRoster } from "./platform-client.mjs"
+import { PlatformError, checkToken, fetchRoster } from "./platform-client.mjs"
 import { recordCheckResult, recordSyncResult, sourceRowOr404 } from "./git-sources.mjs"
 
 /** 调度器检查周期（§5：60s）。 */
@@ -85,7 +85,7 @@ export function createSyncScheduler({ db, config = {}, log = null, deps = {}, no
   const pending = new Set() // 待跑旗（事件撞锁 ⇒ 合并为一次；§13）
   let timer = null
   const fetchImpl = deps.fetchImpl ?? fetch
-  const timeoutMs = deps.timeoutMs ?? READ_TIMEOUT_MS
+  const timeoutMs = deps.timeoutMs ?? null // 缺省 ⇒ 客户端按平台解析（`readTimeoutOf`）；注入面恒胜
 
   /** PAT 解密（不可解 ⇒ 归 `auth` 失败——键文件轮换/丢失面如实报）。 */
   function tokenOf(row) {
@@ -118,7 +118,7 @@ export function createSyncScheduler({ db, config = {}, log = null, deps = {}, no
     let result = null
     let tokenState = null
     try {
-      const roster = await fetchRoster({ platform: row.platform, baseURL: row.base_url, token: tokenOf(row), scope: row.scope, fetchImpl, timeoutMs })
+      const roster = await fetchRoster({ platform: row.platform, baseURL: row.base_url, token: tokenOf(row), scope: row.scope, scopeKind: row.scope_kind ?? null, fetchImpl, timeoutMs })
       counts.roster = roster.members.length
       const applied = applyRoster(db, projects, roster.members, { truncated: roster.truncated, at: new Date(now()).toISOString() })
       counts.added = applied.added

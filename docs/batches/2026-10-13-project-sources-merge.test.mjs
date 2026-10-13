@@ -322,7 +322,8 @@ test("⑤ 基址门：非自建 ⇒ `baseField.hidden === true` ∥「自建」�
     assert.equal(eventTitle.parent.hidden, true, "缺省（poll）⇒ 事件块隐（同规第二受压点）")
     platformSelect.value = "github"
     await platformSelect.fire("change")
-    const modeSelect = selects[1]
+    const modeSelect = selects.find((sel) => fFindAll(sel, (node) => node.tag === "option").some((option) => option.value === "event"))
+    assert.ok(modeSelect, "同步方式选单按 option 值定位（gitee-namespace-kinds 批类型选单插入后位次后移）")
     modeSelect.value = "event"
     await modeSelect.fire("change")
     assert.equal(eventTitle.parent.hidden, false, "github ∧ 事件 ⇒ 事件块显")
@@ -367,13 +368,13 @@ test("⑥ CSS 静态：全局 `[hidden]` 兜底在册 ∥ `!important` 计数 = 
 
 // ── ⑦ i18n 零触（两域部件键数零动 ∥ 标签词逐字 ∥ `t` 字面量闭合）──────────────────
 
-test("⑦ i18n 零触：shell ∥ project 两域部件键数零动（61 ∥ 154）∥ 标签词复用既有键（逐字）∥ 新壳 `t` 字面量闭合 ∥ en 零 CJK", () => {
+test("⑦ i18n 零触：shell ∥ project 两域部件键数（61 ∥ 162——project 随 gitee-namespace-kinds 批 +8）∥ 标签词复用既有键（逐字）∥ 新壳 `t` 字面量闭合 ∥ en 零 CJK", () => {
   // 本批文案面 = shell（标签词）∥ project（页题/表件）两域部件——逐表键数零动 + 两表键集对位；
   // 门面全局键数归跨批结构守卫件（他批增键不改本批判定——2026-10-13 并行批实证）
   assert.equal(Object.keys(ZH_SHELL).length, 61, "shell 部件 zh 键数 61（标签词复用既有键——零新增）")
   assert.equal(Object.keys(EN_SHELL).length, 61, "shell 部件 en 键数 61（含 `.one` 变体两枚）")
-  assert.equal(Object.keys(ZH_PROJECT).length, 154, "project 部件 zh 键数 154（页题/表件键面零增零减）")
-  assert.equal(Object.keys(EN_PROJECT).length, 154, "project 部件 en 键数 154")
+  assert.equal(Object.keys(ZH_PROJECT).length, 162, "project 部件 zh 键数 162（本批零增零减 ∥ gitee-namespace-kinds 批 +8/表）")
+  assert.equal(Object.keys(EN_PROJECT).length, 162, "project 部件 en 键数 162（同上）")
   const SELF = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF.has(key)).map((key) => key.replace(/\.one$/, "")))
   assert.deepEqual([...base(ZH_SHELL)].filter((key) => !base(EN_SHELL).has(key)), [], "shell 仅 zh 键（自称名族除外）")

@@ -14,7 +14,7 @@ import { recordAudit } from "../accounts/audit.mjs"
 import { credentialKeyPath, decryptSecret, loadOrCreateCredentialKey } from "../store/credential-crypto.mjs"
 import { createSource, deleteSource, listSources, rotateHookSecret, sourceRowOr404, sourceView, updateSource } from "./git-sources.mjs"
 import { createProjects, deleteProject, normalizeAddress, projectView } from "./projects.mjs"
-import { PlatformError, READ_TIMEOUT_MS, asHttpError, failureBody, listRepos } from "./platform-client.mjs"
+import { PlatformError, asHttpError, failureBody, listRepos } from "./platform-client.mjs"
 
 /** 源 PAT 解密（不可解 ⇒ 归 `auth` 自含形——与同步/体检面同口径；三读动作人话单源）。 */
 function sourceTokenOf(row, config) {
@@ -55,7 +55,7 @@ export function registerProjectAdminRoutes(routes, { db, config = {}, log = null
   if (!scheduler) throw new Error("registerProjectAdminRoutes：缺少 scheduler（三径共锁——单例由装配入口注入；自建实例会让锁与待跑旗静默失效）")
   const sync = scheduler
   const fetchImpl = deps.fetchImpl ?? fetch
-  const timeoutMs = deps.timeoutMs ?? READ_TIMEOUT_MS
+  const timeoutMs = deps.timeoutMs ?? null // 缺省 ⇒ 客户端按平台解析（`readTimeoutOf`）；注入面恒胜
 
   // 源列表（掩码面——`token`/`hookSecret` 恒 `{set,hint}`；零审计——读动作）
   routes.add("GET", "/api/admin/git-sources", (req, res) => {
@@ -132,14 +132,14 @@ export function registerProjectAdminRoutes(routes, { db, config = {}, log = null
     sendJson(res, 200, body)
   })
 
-  // 拉列表（读类 10s——自含形；`known` = 跨形归一命中在册项目 ⇒ 界面「已添加」标 + 禁提交；零审计）
+  // 拉列表（读类 = 平台口径（gitee 20s ∥ 余 10s——`readTimeoutOf`）——自含形；`known` = 跨形归一命中在册项目 ⇒ 界面「已添加」标 + 禁提交；零审计）
   routes.add("GET", "/api/admin/git-sources/:id/repos", async (req, res, ctx) => {
     requireAdmin(db, req)
     const row = sourceRowOr404(db, ctx.params.id)
     const started = now()
     try {
       const token = sourceTokenOf(row, config)
-      const { repos, truncated } = await listRepos({ platform: row.platform, baseURL: row.base_url, token, scope: row.scope, fetchImpl, timeoutMs })
+      const { repos, truncated } = await listRepos({ platform: row.platform, baseURL: row.base_url, token, scope: row.scope, scopeKind: row.scope_kind ?? null, fetchImpl, timeoutMs })
       const known = knownAddresses(db)
       const rows = repos.map((repo) => {
         let hit = false

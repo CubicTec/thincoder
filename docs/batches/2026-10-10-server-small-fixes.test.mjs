@@ -65,14 +65,14 @@ const TERMS = [
   ["system.teamKey", "团队 API Key", "Team API key"],
 ]
 
-test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（962 ∥ 967——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读）+ sandbox-outbound-member-face 批 +20/表（me 19 键 + shell 1 键）+ team-ledger 批 +67/表（ledger 65 键 + shell 1 + system 1）+ sandbox-container-actions 批 +3/表，实读）", () => {
+test("腿 A 术语值面：14 键 × 两语逐字 = 批 §2 2.1 表 ∥ 键集（970 ∥ 975——2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读）+ sandbox-outbound-member-face 批 +20/表（me 19 键 + shell 1 键）+ team-ledger 批 +67/表（ledger 65 键 + shell 1 + system 1）+ sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表，实读）", () => {
   assert.equal(TERMS.length, 14, "14 键面")
   for (const [key, zh, en] of TERMS) {
     assert.equal(ZH[key], zh, `zh 值不符：${key}`)
     assert.equal(EN[key], en, `en 值不符：${key}`)
   }
-     assert.equal(Object.keys(ZH).length, 962, "zh 键数 962（2026-10-13 复读 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表）")
-  assert.equal(Object.keys(EN).length, 967, "en 键数 967（2026-10-13 复读 + sandbox 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表；含 `.one` 变体族）")
+     assert.equal(Object.keys(ZH).length, 970, "zh 键数 970（2026-10-13 复读 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表）")
+  assert.equal(Object.keys(EN).length, 975, "en 键数 975（2026-10-13 复读 + sandbox 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表；含 `.one` 变体族）")
 })
 
 test("腿 A 交叉一致 ∥ 旧形扫描（14 键 zh）∥ 零触已合规面（me.keys 族）", () => {

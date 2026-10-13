@@ -601,6 +601,17 @@ CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 `
 
+/** v21 增段（`git_sources.scope_kind` 增列 + 存量回填——store/STORE.md §2 v21 段逐字；project 域——gitee-namespace-kinds 批 · 台账 #1365）。
+ *  ① gitee 范围类型列（`personal` ∥ `org` ∥ `enterprise`——NULL 放行；非 gitee 恒 NULL）；
+ *  ② 存量回填（仅 gitee——零猜测：scope 在场 ⇒ `'org'`（沿现行路由——组织零回归）∥ scope 空 ⇒ `'personal'`；非 gitee 行零动）。
+ *  语义/机制 = `project/PROJECTS.md` §2/§4（KD-SV-151 单源）；判据 = `store/STORE.md` §3 v21 行。 */
+const DDL_V21 = `
+-- ① gitee 范围类型（personal ∥ org ∥ enterprise——KD-SV-151；非 gitee/NULL = 不适用）
+ALTER TABLE git_sources ADD COLUMN scope_kind TEXT CHECK (scope_kind IN ('personal','org','enterprise'));
+-- ② 存量回填（仅 gitee——零猜测：scope 在场 ⇒ 'org'（沿现行路由）∥ scope 空 ⇒ 'personal'；非 gitee 零动）
+UPDATE git_sources SET scope_kind = CASE WHEN scope IS NULL OR TRIM(scope) = '' THEN 'personal' ELSE 'org' END WHERE platform = 'gitee';
+`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -623,6 +634,7 @@ export const MIGRATIONS = [
   { v: 18, up: (db) => { db.exec(DDL_V18); backfillHostCredentials(db) } }, // v18：主机表七列 + 四态 CHECK + 回填移交（迁移段 = 结构变 + 回填——单事务同段）
   { v: 19, up: (db) => db.exec(DDL_V19) }, // v19：`api_keys.key_plain` 增列（管理面 sk 明文面——零回填）
   { v: 20, up: (db) => db.exec(DDL_V20) }, // v20：团队台账表 + 两索引 + 审计 CHECK 重建（十五型：+ ledger_event——零回填）
+  { v: 21, up: (db) => db.exec(DDL_V21) }, // v21：`git_sources.scope_kind` 增列 + 存量回填（gitee 范围三态——零猜测；非 gitee 零动）
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

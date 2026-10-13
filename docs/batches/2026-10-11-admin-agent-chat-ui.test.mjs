@@ -290,7 +290,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-    assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [962, 967], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读 872 ∥ 877）+ sandbox-outbound-member-face 批 +20/表（`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键）+ team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表——实读）")
+    assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [970, 975], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读 872 ∥ 877）+ sandbox-outbound-member-face 批 +20/表（`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键）+ team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────

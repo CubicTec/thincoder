@@ -281,14 +281,14 @@ test("审计面：四型 detail 携 surface:\"client\" ∥ 控制台面同型键
 // ── 零迁移 ∥ sessions 零涉 ──────────────────────────────────────────────────
 
 test("零迁移：结构版本 v10 不动 ∥ 全流程后 sessions 表零涉", async () => {
-  assert.equal(DB.SCHEMA_VERSION, 20, "client 域零迁移（结构版本 = 链尾 v20——2026-10-13 收正）")
+  assert.equal(DB.SCHEMA_VERSION, 21, "client 域零迁移（结构版本 = 链尾 v21——2026-10-13 gitee-namespace-kinds 批随正）")
   const db = DB.openDatabase(":memory:")
   await makeMember(db)
   const server = await startServer({ db })
   try {
     const res = await login(server.base, { username: "alice", password: PASSWORD, label: LABEL })
     await post(server.base, "/api/client/logout", { token: res.json.token })
-    assert.equal(DB.readVersion(db), 20, "全流程后仍在链尾 v20（2026-10-13 收正）")
+    assert.equal(DB.readVersion(db), 21, "全流程后仍在链尾 v21（2026-10-13 gitee-namespace-kinds 批随正）")
     assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sessions").get().n, 0, "客户端 token 落 api_keys——sessions 表零涉")
   } finally {
     await server.close()

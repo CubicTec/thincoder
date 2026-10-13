@@ -106,8 +106,8 @@ const as = (app, who) => (method, path, options = {}) => call(app.base, method, 
 const api = (app, method, path, options = {}) => call(app.base, method, path, { cookie: app.adminCookie, ...options })
 
 /** 增源（多数腿共用——缺省 github/poll；出 = 源读数）。 */
-async function addSource(app, { name, platform = "github", token = "ghp_abcd1234", baseURL, scope, syncMode, intervalMinutes, enabled } = {}) {
-  const res = await api(app, "POST", "/api/admin/git-sources", { body: { name, platform, token, baseURL, scope, syncMode, intervalMinutes, enabled } })
+async function addSource(app, { name, platform = "github", token = "ghp_abcd1234", baseURL, scope, scopeKind, syncMode, intervalMinutes, enabled } = {}) {
+  const res = await api(app, "POST", "/api/admin/git-sources", { body: { name, platform, token, baseURL, scope, scopeKind, syncMode, intervalMinutes, enabled } })
   assert.equal(res.status, 200, `增源失败：${res.text}`)
   return res.json.source
 }
@@ -134,8 +134,8 @@ test("N1 空库直落 v17：版本读数 ∥ 三表列面/两索引 ∥ 审计 C
     assert.ok(db.prepare("PRAGMA user_version").get().user_version >= 17, "空库直落 ≥ 17（同上）")
     assert.deepEqual(
       db.prepare("PRAGMA table_info(git_sources)").all().map((c) => c.name),
-      ["id", "name", "platform", "base_url", "scope", "token_cipher", "hook_secret_cipher", "enabled", "sync_mode", "interval_minutes", "last_sync_at", "last_sync_result_json", "token_state", "token_checked_at", "created_by", "created_at"],
-      "git_sources 列面（含 hook_secret_cipher）",
+      ["id", "name", "platform", "base_url", "scope", "token_cipher", "hook_secret_cipher", "enabled", "sync_mode", "interval_minutes", "last_sync_at", "last_sync_result_json", "token_state", "token_checked_at", "created_by", "created_at", "scope_kind"],
+      "git_sources 列面（含 hook_secret_cipher ∥ v21 尾插 scope_kind）",
     )
     assert.deepEqual(
       db.prepare("PRAGMA table_info(projects)").all().map((c) => c.name),
@@ -191,7 +191,7 @@ test("N2 v16 库升 17：读数/幂等（再开零变）∥ 存量审计行逐�
 test("N3 源 CRUD：四平台各一 ∥ 掩码零明文 ∥ token_state 缺省 unknown ∥ 重名/枚举外/自建缺基址/间隔越界 ⇒ 400 ∥ 事件平台门", async () => {
   const app = await startApp()
   try {
-    const gitee = await addSource(app, { name: "gitee 组织", platform: "gitee", token: "gitee-secret-9999" })
+    const gitee = await addSource(app, { name: "gitee 组织", platform: "gitee", token: "gitee-secret-9999", scopeKind: "org", scope: "org-a" })
     const github = await addSource(app, { name: "github 组织", platform: "github", token: "ghp_abcd1234", scope: "acme", syncMode: "event", intervalMinutes: 15 })
     const gitlab = await addSource(app, { name: "gitlab 组", platform: "gitlab", token: "glpat-7777" })
     const self = await addSource(app, { name: "自建", platform: "selfhosted", baseURL: "https://git.example.com", token: "self-token-0001", enabled: false })
@@ -213,15 +213,15 @@ test("N3 源 CRUD：四平台各一 ∥ 掩码零明文 ∥ token_state 缺省 u
 
     // 冲突/形错面（库零变）
     const before = app.sourceRows()
-    const dup = await api(app, "POST", "/api/admin/git-sources", { body: { name: "gitee 组织", platform: "gitee", token: "x1" } })
+    const dup = await api(app, "POST", "/api/admin/git-sources", { body: { name: "gitee 组织", platform: "gitee", token: "x1", scopeKind: "org", scope: "org-a" } })
     assert.equal(dup.status, 400, "重名 ⇒ 400")
     const badPlatform = await api(app, "POST", "/api/admin/git-sources", { body: { name: "别的平台", platform: "bitbucket", token: "x1" } })
     assert.equal(badPlatform.status, 400, "平台枚举外 ⇒ 400")
     const noBase = await api(app, "POST", "/api/admin/git-sources", { body: { name: "自建二号", platform: "selfhosted", token: "x1" } })
     assert.equal(noBase.status, 400, "自建缺基址 ⇒ 400")
-    const badInterval = await api(app, "POST", "/api/admin/git-sources", { body: { name: "间隔越界", platform: "gitee", token: "x1", intervalMinutes: 1441 } })
+    const badInterval = await api(app, "POST", "/api/admin/git-sources", { body: { name: "间隔越界", platform: "gitee", token: "x1", intervalMinutes: 1441, scopeKind: "org", scope: "org-a" } })
     assert.equal(badInterval.status, 400, "间隔越界 ⇒ 400")
-    const eventGate = await api(app, "POST", "/api/admin/git-sources", { body: { name: "gitee 事件", platform: "gitee", token: "x1", syncMode: "event" } })
+    const eventGate = await api(app, "POST", "/api/admin/git-sources", { body: { name: "gitee 事件", platform: "gitee", token: "x1", syncMode: "event", scopeKind: "org", scope: "org-a" } })
     assert.equal(eventGate.status, 400, "非 github 平台选事件 ⇒ 400（平台门）")
     assert.match(eventGate.json.error.message, /无成员事件/, "平台门人话")
     assert.deepEqual(app.sourceRows(), before, "形错/冲突库零变")
@@ -591,9 +591,9 @@ test("E1 形错零变：源形/档位枚举/level/地址非法 ⇒ 400 ∥ 库�
     const before = { sources: app.sourceRows(), projects: app.projects(), members: app.memberRows(project.id), audits: app.auditCount() }
 
     const cases = [
-      ["POST", "/api/admin/git-sources", { name: "  ", platform: "gitee", token: "t" }, "空源名"],
-      ["POST", "/api/admin/git-sources", { name: "x".repeat(41), platform: "gitee", token: "t" }, "源名超长"],
-      ["POST", "/api/admin/git-sources", { name: "无 Pat", platform: "gitee", token: "  " }, "PAT 空"],
+      ["POST", "/api/admin/git-sources", { name: "  ", platform: "gitee", token: "t", scopeKind: "org" }, "空源名"],
+      ["POST", "/api/admin/git-sources", { name: "x".repeat(41), platform: "gitee", token: "t", scopeKind: "org" }, "源名超长"],
+      ["POST", "/api/admin/git-sources", { name: "无 Pat", platform: "gitee", token: "  ", scopeKind: "org" }, "PAT 空"],
       ["PATCH", `/api/admin/git-sources/${source.id}`, { syncMode: "scheduled" }, "同步方式枚举外"],
       ["POST", "/api/admin/projects", { address: "https://git.example.com/team/Shape" }, "撞地址"],
       ["POST", "/api/admin/projects", { address: "  " }, "空地址"],

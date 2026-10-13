@@ -1,9 +1,9 @@
 /**
  * views-git-sources.mjs — 管理·Git 源面板（webui/PROJECTS.md §2.4——KD-SV-124 ∥ KD-SV-149；team-projects-permissions 批（B2）∥ project-sources-merge 批（页转面板件——管理·项目页标签②；页题 h2 撤）；台账 #1216）：
- * `#/admin/projects/git-sources`（面板——admin 门；`renderGitSources` 导出名不变）——源表七列（名字 ∥ 平台 ∥ PAT 掩码 ∥ 状态（行内一键切）∥ 同步方式 ∥ 上次同步（时间 + 结果点 + 摘要人话）
+ * `#/admin/projects/git-sources`（面板——admin 门；`renderGitSources` 导出名不变）——源表七列（名字 ∥ 平台 ∥ PAT 掩码 ∥ 状态（行内一键切）∥ 同步方式 ∥ 上次同步（时间 + 结果点 + 摘要人话——失败面服务端原文优先于分类词）
  * ∥ 操作五钮恒显：「立即同步」（进行中禁 + 终态刷新结果列与时间）∥「拉列表」（共用添加仓对话框——预选本行源）∥「体检」（就地读数：成 ⇒ ok 行；
  * 败 ⇒ 分类人话 + PAT 列标红 + `token_state` 提示）∥「编辑」∥「删除」（确认窗 + 删源防护 400 就地呈））
- * + 添/编弹窗（名字 ∥ 平台四值（「自建」才显基址）∥ 组织/组 ∥ PAT（编辑留空 = 不改——掩码三态沿 provider apiKey 口径）∥ 启用
+ * + 添/编弹窗（名字 ∥ 平台四值（「自建」才显基址）∥ **gitee 范围三态**（`scopeKind` 选单「个人 ∥ 组织 ∥ 企业」——仅 gitee 显 ∥ 创建无默认 + 必选门 ∥ 个人 ⇒ 范围隐 + 附注 ∥ 组织/企业 ⇒ 范围显且必填；切「个人」⇒ 范围清空 ∥ 切非 gitee ⇒ `scopeKind` 不携——KD-SV-151）∥ 组织/组 ∥ PAT（编辑留空 = 不改——掩码三态沿 provider apiKey 口径）∥ 启用
  * ∥ 同步方式（「事件」仅 github 可选——平台门）∥ 间隔 5–1440 + 事件块（地址/一次性密钥/登记步——`project/PROJECTS.md` §13））。
  *
  * PAT/密钥恒掩码（读面永不回显原文——替换走明传）；判权全在后端（requireAdmin——页面不是判据）；文案经 `t()`；渲染一律节点 + textContent。
@@ -21,6 +21,9 @@ const PLATFORM_KEYS = {
   gitlab: "admin.gitSources.platform.gitlab",
   selfhosted: "admin.gitSources.platform.selfhosted",
 }
+
+/** gitee 范围三态值（服务端枚举 `personal`/`org`/`enterprise`——KD-SV-151；文案键 = `admin.gitSources.scopeKind.*`）。 */
+const SCOPE_KIND_VALUES = ["personal", "org", "enterprise"]
 
 /** 平台文案（纯函数——单元测试档断言；枚举外 ⇒ 原值兜底）。 */
 export function platformLabel(platform) {
@@ -93,7 +96,12 @@ function lastSyncCell(ctx, source) {
     resultDot(h, ok),
     h("span", { text: t(ok ? "admin.gitSources.resultOk" : "admin.gitSources.resultFail") }), " ",
     h("span", { text: ctx.fmtTs(source.lastSyncAt) }),
-    h("p", { class: ok ? "cell-hint hint" : "cell-hint hint error", text: ok ? countsText(result.counts) : readKindLabel(result.kind) }))
+    h("p", { class: ok ? "cell-hint hint" : "cell-hint hint error", text: ok ? countsText(result.counts) : failedText(result) }))
+}
+
+/** 失败面摘要（KD-SV-151——服务端原文（`result.message`）优先于分类词；缺 ⇒ 分类人话——该句可达）。 */
+function failedText(result) {
+  return typeof result.message === "string" && result.message !== "" ? result.message : readKindLabel(result.kind)
 }
 
 /** 操作五钮（恒显——需求 44③「手动拉取钮永在」=「立即同步」三模式下恒在）。 */
@@ -176,7 +184,13 @@ function openSourceModal(ctx, { source = null, reload }) {
   const platform = h("select", {}, ...Object.keys(PLATFORM_KEYS).map((value) => h("option", { value, text: platformLabel(value) })))
   const baseUrl = h("input", { placeholder: t("admin.gitSources.baseUrlPh") })
   const baseField = field(h, "admin.gitSources.baseUrl", baseUrl)
+  const scopeKind = h("select", {}, h("option", { value: "", text: t("admin.gitSources.scopeKindPh") }),
+    ...SCOPE_KIND_VALUES.map((value) => h("option", { value, text: t(`admin.gitSources.scopeKind.${value}`) })))
+  const kindNote = h("p", { class: "hint", text: t("admin.gitSources.kindNotePersonal"), hidden: true })
+  const scopeKindField = field(h, "admin.gitSources.scopeKind", scopeKind, kindNote)
+  const scopeLabel = h("span", { text: t("admin.gitSources.scope") })
   const scope = h("input", { placeholder: t("admin.gitSources.scopePh") })
+  const scopeField = h("label", {}, scopeLabel, scope)
   const pat = h("input", { type: "password", placeholder: editing ? t("admin.gitSources.patKeep") : t("admin.gitSources.patPh") })
   const enabled = h("input", { type: "checkbox", checked: editing ? enabledOf(source) : true })
   const eventOption = h("option", { value: "event", text: t("admin.gitSources.modeEventOpt") })
@@ -215,12 +229,20 @@ function openSourceModal(ctx, { source = null, reload }) {
   if (editing) {
     platform.value = source.platform
     baseUrl.value = source.baseURL ?? ""
+    scopeKind.value = source.scopeKind ?? ""
     scope.value = source.scope ?? ""
     mode.value = source.syncMode ?? "poll"
   }
-  /** 平台门与事件块显隐（github ∧ 事件 ⇒ 显；其余平台「事件」项选中即禁 + 括注理由）。 */
+  /** 平台门 / gitee 范围门与事件块显隐（范围类型仅 gitee 显；个人 ⇒ 范围隐 + 附注；组织/企业 ⇒ 范围显；github ∧ 事件 ⇒ 事件块显）。 */
   const applyGates = () => {
     baseField.hidden = platform.value !== "selfhosted"
+    const gitee = platform.value === "gitee"
+    const kind = gitee ? scopeKind.value : ""
+    scopeKindField.hidden = !gitee
+    scopeField.hidden = gitee && kind !== "org" && kind !== "enterprise"
+    scopeLabel.textContent = t(gitee ? "admin.gitSources.scopeGitee" : "admin.gitSources.scope")
+    scope.placeholder = gitee && kind === "enterprise" ? t("admin.gitSources.scopePhEnterprise") : t("admin.gitSources.scopePh")
+    kindNote.hidden = kind !== "personal"
     const github = platform.value === "github"
     eventOption.disabled = !github
     if (!github && mode.value === "event") mode.value = "poll"
@@ -229,12 +251,20 @@ function openSourceModal(ctx, { source = null, reload }) {
   }
   platform.addEventListener("change", applyGates)
   mode.addEventListener("change", applyGates)
+  scopeKind.addEventListener("change", () => {
+    if (scopeKind.value === "personal") scope.value = "" // 切「个人」⇒ 范围输入清空（提交 = 清除形——KD-SV-151）
+    applyGates()
+  })
 
   const submitForm = async (event) => {
     event.preventDefault()
     note.hidden = true
     if (name.value.trim() === "") return showNote(note, t("admin.gitSources.required", { field: t("admin.gitSources.name") }))
     if (platform.value === "selfhosted" && baseUrl.value.trim() === "") return showNote(note, t("admin.gitSources.required", { field: t("admin.gitSources.baseUrl") }))
+    if (platform.value === "gitee") {
+      if (scopeKind.value === "") return showNote(note, t("admin.gitSources.required", { field: t("admin.gitSources.scopeKind") }))
+      if (scopeKind.value !== "personal" && scope.value.trim() === "") return showNote(note, t("admin.gitSources.required", { field: t("admin.gitSources.scopeGitee") }))
+    }
     if (!editing && pat.value.trim() === "") return showNote(note, t("admin.gitSources.required", { field: t("admin.gitSources.pat") }))
     const body = {
       name: name.value.trim(), platform: platform.value,
@@ -242,6 +272,7 @@ function openSourceModal(ctx, { source = null, reload }) {
       scope: scope.value.trim() || null, enabled: enabled.checked ? 1 : 0,
       syncMode: mode.value, intervalMinutes: Number(interval.value),
     }
+    if (platform.value === "gitee") body.scopeKind = scopeKind.value // 仅 gitee 携（切非 gitee ⇒ 不携——清空形，不撞「仅 gitee 适用」400）
     if (pat.value.trim() !== "") body.token = pat.value.trim() // 编辑留空 = 不改（明填 = 替换）
     submit.disabled = true
     try {
@@ -266,7 +297,8 @@ function openSourceModal(ctx, { source = null, reload }) {
       field(h, "admin.gitSources.name", name),
       field(h, "admin.gitSources.platformLabel", platform),
       baseField,
-      field(h, "admin.gitSources.scope", scope),
+      scopeKindField,
+      scopeField,
       field(h, "admin.gitSources.pat", pat),
       field(h, "admin.gitSources.enabledLabel", enabled),
       field(h, "admin.gitSources.modeLabel", mode, modeNote),

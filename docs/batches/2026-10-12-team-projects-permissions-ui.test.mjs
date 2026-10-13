@@ -6,7 +6,7 @@
  * 射程：
  *   ① AC-12 IA 直测（我的 3 ⇒ 4——`#/me/projects` 末位 ∥ 管理 9 ⇒ 11——「成员」后两页 ∥ admin 组门 ∥ 别名/角色默认零改 ∥ 新径解析）
  *   ② AC-14 键集（project 两部件键集相等 ∥ en 零 CJK ∥ 域界三前缀 ∥ shell +3 ∥ system +1 ∥ 键引用闭合 ∥ kind 族 11 键 + 六分类）
- *   ③ AC-19/20 静态面（`:root` 58 变量零新 ∥ `:hover` 8 零新 ∥ 类名双向闭合 ∥ 零外链 ∥ 行宽/行数）
+ *   ③ AC-19/20 静态面（`:root` 76 变量（58 + 终端批 18——2026-10-14 收口随正） ∥ `:hover` 8 零新 ∥ 类名双向闭合 ∥ 零外链 ∥ 行宽/行数）
  *   ④ 三页在册/路由（三模块导出面 ∥ `PAGES` 三行 + 三 import ∥ 壳页集零改——三页非壳）
  *   ⑤ 行为形·我的·项目（列表五列 ∥ 搜索 `?q=` ∥ 空态 ∥ 行点击 ⇒ 详情弹窗：权限感知显隐 ∥ 负责人行保护 ∥ 删除钮 + 确认窗）
  *   ⑥ 行为形·添加仓对话框（源选单预选 ∥ 读取自含形 ∥ 已在册禁提交 ∥ 客户端过滤 ∥ 截断 ∥ 六分类 + 重试 ∥ 提交体 ∥ 手输区）
@@ -207,12 +207,12 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
     for (const key of ["nav.page.me.projects", "nav.page.admin.projects", "nav.page.admin.gitSources"]) assert.ok(key in table, `${lang} shell 在盘：${key}`)
   }
   for (const [table, lang] of [[zhSystem.ZH_SYSTEM, "zh"], [enSystem.EN_SYSTEM, "en"]]) {
-    assert.equal(Object.keys(table).length, 185, `${lang} system 键数 185（181 + 1 + 2 + 1——2026-10-13 在途批组 + team-ledger 批 audit.type.ledger_event）`)
+    assert.equal(Object.keys(table).length, 198, `${lang} system 键数 198（185〔2026-10-13〕+ 终端批 +2〔audit.sandboxKind.terminal_open/close〕+ 重做批 i18n 面 +10〔审计 kind 键〕+ B 审计 kind +1〔audit.placement_failed〕——2026-10-14 收口随正）`)
     assert.ok("audit.type.project_event" in table, `${lang} system 在盘：audit.type.project_event`)
   }
   // 门面并集（部件 ⊂ 门面；键数实读）
-  assert.equal(Object.keys(ZH).length, 970, "zh 门面键数 970（实读——2026-10-13 sandbox 批 + team-ledger 批 + sandbox-container-actions 批 +3/表随正 + gitee-namespace-kinds 批 +8/表）")
-  assert.equal(Object.keys(EN).length, 975, "en 门面键数 975（实读——含 `.one` 变体；gitee-namespace-kinds 批 +8/表）")
+  assert.equal(Object.keys(ZH).length, 1041, "zh 门面键数 1041（实读——975 链：+ 重做批 i18n 面 +10/表 ∥ 终端批 +14/表 ∥ B/D 修复轮 −2/表——2026-10-14 收口随正；全局同锚 = 守卫件 [1041, 1046]）")
+  assert.equal(Object.keys(EN).length, 1046, "en 门面键数 1046（实读——含 `.one` 变体；同链随正）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（三视图 + 审计面 `t` 字面量 ⊆ 两表——含 nav.mjs labelKey 面）
   for (const name of ["views-projects.mjs", "views-admin-projects.mjs", "views-git-sources.mjs", "views-audit.mjs"]) {
@@ -239,9 +239,9 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
 
 // ── ③ AC-19/20 静态面（零新变量 ∥ 零新悬停 ∥ 类名闭合 ∥ 零外链） ────────────────────
 
-test("③ AC-19/20：`:root` 58 变量（零新）∥ `:hover` 8（零新）∥ 新类在盘 ∥ 档面类闭合 ∥ 零外链 ∥ 行宽/行数", () => {
+test("③ AC-19/20：`:root` 76 变量（58 + 终端批 18）∥ `:hover` 8（零新）∥ 新类在盘 ∥ 档面类闭合 ∥ 零外链 ∥ 行宽/行数", () => {
   const clean = stripComments(CSS)
-  assert.equal([...clean.match(/:root\s*\{[\s\S]*?\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（零新颜色变量）")
+  assert.equal([...clean.match(/:root\s*\{[\s\S]*?\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（58 + 终端批 18〔--term-* 调色板〕——2026-10-14 收口随正；零新其他颜色变量）")
   assert.equal([...clean.matchAll(/:hover/g)].length, 8, "`:hover` 8（零新悬停规则）")
   assert.equal(/(#[0-9a-fA-F]{3,8}\b|rgba?\()/.test(clean.replace(/:root\s*\{[\s\S]*?\}/g, "")), false, ":root 块外零颜色字面量")
   for (const selector of [".sync-dot", ".sync-dot.ok", ".sync-dot.fail", ".badge.accent", ".badge.warn", ".cell-hint"]) {

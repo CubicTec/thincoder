@@ -143,7 +143,7 @@ export function openProjectDetail(ctx, { projectId, onChanged = null }) {
     }
   }
 
-  /** 动作收口：成 ⇒ flash + 重载（弹窗与列表同拍）；败 ⇒ 窗内状态行（钮复位可重试）。 */
+  /** 动作收口（`call` = thunk——house 约定沿 `modal.mjs` submitThen）：成 ⇒ flash + 重载（弹窗与列表同拍）；败 ⇒ 窗内状态行（编辑器保持——可重试；本档 `act` 无 submitThen 的钮 disable/复位两拍——评审 #133 收正）。 */
   const act = async (call, message) => {
     note.hidden = true
     try {
@@ -161,7 +161,7 @@ export function openProjectDetail(ctx, { projectId, onChanged = null }) {
     const input = h("input", { value })
     const save = h("button", { type: "button", class: "tiny", text: t("common.save") })
     const cancel = h("button", { type: "button", class: "tiny", text: t("common.cancel") })
-    save.addEventListener("click", () => act(call(input.value.trim()), message))
+    save.addEventListener("click", () => act(() => call(input.value.trim()), message))
     cancel.addEventListener("click", () => reload())
     cell.replaceChildren(input, save, cancel)
     input.focus()
@@ -190,7 +190,7 @@ export function openProjectDetail(ctx, { projectId, onChanged = null }) {
         select.value = project.owner ?? members[0].username
         const save = h("button", { type: "button", class: "tiny", text: t("common.save") })
         const cancel = h("button", { type: "button", class: "tiny", text: t("common.cancel") })
-        save.addEventListener("click", () => act(ctx.api(`/api/projects/${projectId}`, { method: "PATCH", body: { owner: select.value } }), t("me.projects.ownerSaved")))
+        save.addEventListener("click", () => act(() => ctx.api(`/api/projects/${projectId}`, { method: "PATCH", body: { owner: select.value } }), t("me.projects.ownerSaved")))
         cancel.addEventListener("click", () => reload())
         ownerCell.replaceChildren(select, save, cancel)
       })
@@ -240,11 +240,11 @@ function membersActions(ctx, { projectId, member, act }) {
   const select = h("select", {}, ...Object.keys(LEVEL_KEYS).map((level) => h("option", { value: level, text: levelLabel(level) })))
   select.value = member.level
   select.addEventListener("change", () => act(
-    ctx.api(`/api/projects/${projectId}/members/${encodeURIComponent(member.username)}`, { method: "PATCH", body: { level: select.value } }),
+    () => ctx.api(`/api/projects/${projectId}/members/${encodeURIComponent(member.username)}`, { method: "PATCH", body: { level: select.value } }),
     t("me.projects.memberUpdated", { username: member.username })))
   const remove = h("button", { type: "button", class: "tiny danger", text: t("me.projects.memberRemove") })
   remove.addEventListener("click", () => act(
-    ctx.api(`/api/projects/${projectId}/members/${encodeURIComponent(member.username)}`, { method: "DELETE" }),
+    () => ctx.api(`/api/projects/${projectId}/members/${encodeURIComponent(member.username)}`, { method: "DELETE" }),
     t("me.projects.memberRemoved", { username: member.username })))
   return h("td", {}, select, remove)
 }
@@ -258,7 +258,7 @@ function addMemberRow(ctx, { projectId, act, note }) {
   add.addEventListener("click", () => {
     const name = username.value.trim()
     if (name === "") { showNote(note, t("admin.projects.requiredField", { field: t("me.projects.memberPh") })); return }
-    return act(ctx.api(`/api/projects/${projectId}/members`, { method: "POST", body: { username: name, level: select.value } }),
+    return act(() => ctx.api(`/api/projects/${projectId}/members`, { method: "POST", body: { username: name, level: select.value } }),
       t("me.projects.memberAdded", { username: name }))
   })
   return h("div", { class: "row-form" }, username, select, add)

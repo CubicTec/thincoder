@@ -99,7 +99,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | `project/PROJECTS.md` | 域 | project | 团队项目与权限：定位与词表 ∥ 关键决策（KD-SV-115–123 ∥ **127/128**） ∥ 权限模型（能力矩阵/判据句九条） ∥ 平台接入（能力矩阵 + 角色映射表四张 + 客户端口径） ∥ 同步机制（三径/调度/算法/锁/体检/源生命周期/加仓两径 ∥ **事件接收端 §13**） ∥ **项目删除（§14）** ∥ 端点摘要（单源 = `gateway/API.md` §2.9） ∥ 界面承载（⇒ `webui/PROJECTS.md`） ∥ 本域文件与预算 ∥ 验收（AC-44 ①–⑨ 对位 + R63/R64 补面） ∥ 用例 ∥ 边界 ∥ 上抛/余项（§12——自板档 §9 迁入）（2026-10-12 B2 批建档） |
 | `ledger/LEDGER.md` | 域 | ledger | 团队台账：定位与形态 ∥ 关键决策（KD-SV-139–147） ∥ 数据形（单表/全局编号/仓标记/老化） ∥ 写路径 ∥ 读路径与端点摘要 ∥ 上送（零跨账代码路径） ∥ 审计 ∥ 承载指针 ∥ 本域文件与行数预算 ∥ 验收（AC-32 ①–⑥ 对位） ∥ 用例 ∥ 边界 ∥ 上抛/余项（§13——R74）（2026-10-13 team-ledger 批建档） |
 
-## 4. 决策索引（KD-SV-1–148——域 → 域档 KD 节；as-of 2026-10-13）
+## 4. 决策索引（KD-SV-1–150——域 → 域档 KD 节；as-of 2026-10-13）
 
 > 编号 = `KD-SV-N`（全局唯一 ∥ 不随域分号段）；每条全形（决策 ∥ 理由 ∥ 被否候选） = 其所在档 KD 节（单一权威源）——本表只作域级索引；板级 KD 全形 = 本档 §5。
 
@@ -110,7 +110,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | accounts | `accounts/ACCOUNTS.md` §6 |
 | metering | `metering/METERING.md` §6 |
 | store | `store/STORE.md` §5 |
-| webui | `webui/WEBUI.md` §7 + 各面档 §1（KD-SV-132——对话页活流分步；console-chat-live-step 批） |
+| webui | `webui/WEBUI.md` §7 + 各面档 §1（KD-SV-132——对话页活流分步；console-chat-live-step 批）（+ **KD-SV-149——项目面单入口合并；`webui/PROJECTS.md` §1** ∥ **KD-SV-150——隐藏切换语义；`webui/STYLE.md` §1**；project-sources-merge 批——2026-10-13） |
 | ops | `ops/OPS.md` §8 |
 | client | `client/CLIENT.md` §5 |
 | sandbox | `sandbox/SANDBOX.md` §14（KD-SV-133–135——主机表扩展 ∥ 凭据入口弹窗 ∥ run 退场三步；admin-chat-creds-merge 批） |
@@ -166,7 +166,7 @@ sandbox 域 = 2026-10-10 沙盒批新立；agent 域 = 2026-10-10 runner-admin-c
 | accounts | `accounts/ACCOUNTS.md` §5 | AC-1 ∥ AC-5 ∥ AC-7 ∥ AC-13② ∥ AC-15④ ∥ AC-23 ∥ AC-25 ∥ AC-29④ ∥ AC-31 ∥ AC-36 ∥ AC-38 ∥ **AC-44** |
 | metering | `metering/METERING.md` §4 | AC-3 ∥ AC-4 ∥ AC-13⑥ ∥ AC-15②⑥ ∥ AC-21 ∥ AC-22 ∥ AC-23 ∥ AC-26 ∥ AC-29④ |
 | store | `store/STORE.md` §3 | AC-15④ ∥ AC-22 ∥ AC-25 ∥ AC-29 ∥ AC-36 ∥ AC-38 ∥ **AC-44** |
-| webui | `webui/WEBUI.md` §6 + 各面档 §4 | AC-11–AC-30（控制台面） ∥ 非功能·前端自洽 ∥ AC-36 ∥ AC-38 ∥ AC-39 ∥ AC-40 ∥ **AC-41** ∥ **AC-42** ∥ **AC-44（控制台面）** |
+| webui | `webui/WEBUI.md` §6 + 各面档 §4 | AC-11–AC-30（控制台面） ∥ 非功能·前端自洽 ∥ AC-36 ∥ AC-38 ∥ AC-39 ∥ AC-40 ∥ **AC-41** ∥ **AC-42** ∥ **AC-44（控制台面）** ∥ **AC-48（控制台面——project-sources-merge 批；2026-10-13）** |
 | ops | `ops/OPS.md` §7 | AC-6 ∥ AC-8 ∥ AC-9 ∥ AC-10 ∥ AC-11 ∥ AC-13⑤ ∥ 功能点 8 ∥ AC-27 ∥ AC-28 ∥ AC-29①③ ∥ 非功能·仅内网 |
 | client | `client/CLIENT.md` §4 | AC-31①–⑤ |
 | sandbox | `sandbox/SANDBOX.md` §11 | AC-36 ∥ AC-38 ∥ AC-40 ∥ **AC-47（主机表 + `exec` 进 chat——已入册 2026-10-12；`sandbox/SANDBOX.md` §16 R72①）** |
@@ -740,6 +740,9 @@ app +21 ∥ views-auth +2 ∥ views-me +1 ∥ views-admin +2 ∥ views-providers
   webui 域 **±0**（零页面改动）；其余域 **±0**；
   零新端点 ∥ 零迁移 ∥ `bin` ±0 ∥ `thincoder-server/package.json` ±0（`@thincoder/core` 声明已对位——实读 `^0.10.4`）；单元测试档 1 档（`docs/batches/2026-10-13-server-core-unification.test.mjs`——≈350 ⇒ **486** 行；**不入任何门**）；逐档行账 = `agent/ADMIN-AGENT.md` §6；随正件/披露清单 = `agent/ADMIN-AGENT.md` §13 R73；**产品码零触（设计轮）。**
 
+**project-sources-merge 批（设计轮——2026-10-13；功能点 48 ∥ AC-48；KD-SV-149/150）**：服务端 **±0**（Git 源后端零触）；webui **净 ≈+40**（分项和 = +45 −2 ±0 −2 −1；`views-admin-projects.mjs` **实读 41** ⇒ ≈86（两标签壳 +≈45） ∥ `views-git-sources.mjs` **实读 278** ⇒ ≈276（页题 h2 撤 −2） ∥ `nav.mjs` **实读 104** ⇒ **±0**（删 `gitSources` 项 ∥ 别名 +1 行；管理 11 ⇒ **10**） ∥ `app.mjs` **实读 206** ⇒ ≈**204**（删 import/`PAGES` 行 −2 ∥ 重定向带子段（同行改）） ∥ `style.css` **实读 358** ⇒ 净 **−1**（全局 `[hidden]` 兜底 +1 ∥ 删两按例补丁 −2）；**零新档**（public 档目/JS 链/档目链不变） ∥ i18n 键集零动——实读以实施当刻盘面为准）；
+  单元测试档 1 档（`docs/batches/2026-10-13-project-sources-merge.test.mjs`；**不入任何门**）；跨批件随正清单（父侧笔）= 批档 §2.6（`docs/batches/2026-10-12-team-projects-permissions-ui.test.mjs` ∥ `docs/batches/2026-10-13-team-ledger.test.mjs` 两件）；随正件/披露清单 = `webui/PROJECTS.md` §6；**产品码零触（设计轮）。**
+
 ## 变更记录
 
 - 2026-10-06：建档（批 `docs/batches/2026-10-06-server-gateway.md` 设计轮 · eng-designer）——第一步 token 网关设计（单档）。
@@ -862,4 +865,6 @@ app +21 ∥ views-auth +2 ∥ views-me +1 ∥ views-admin +2 ∥ views-providers
 - 2026-10-13（**server-core-unification 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-server-core-unification.md` §3 轮次 1 之 2：目标态坐标 `:600` ⇒ **`:601`** 三处收正（§5 KD-SV-137 行 ∥ §6 本批预算块 ∥ 变更记录）。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。）
 - 2026-10-13（**team-ledger 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §3 轮次 1 之 4/5/6）：§7 验收索引增 **ledger** 域行（验收节 = `ledger/LEDGER.md` §10 ∥ `webui/LEDGER.md` §4 ∥ `docs/core/design/TEAM-LEDGER.md` §6；AC-32——域行 + 跨域块并存，AC-44 先例）∥ §9 R70 stub 链收正（我的 4 ⇒ 5 ∥ 6——在途两批各 +1；注⑱ 陈记清算 = 沙盒批预记未落）+ R74 stub 随动件补「+ 本档（板档）」。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。
 - 2026-10-13（**team-ledger 批 · 收口随正轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §2 · 台账 #1206）：§9 R70 stub 序落定（我的 **5**（sandbox-outbound-member-face 批——2026-10-13）⇒ **6**（team-ledger 批——实读）∥ 侧栏 **十六**（sandbox-outbound-member-face 批——2026-10-13）⇒ **十七**（team-ledger 批——实读））∥ §7 AC-32 行链随正（B1–B8 ⇒ **B1–B9**——`ledger/LEDGER.md` §11 增 B9）。**零新语义**（收口随正——实读）；产品码零触。
+- 2026-10-13（**project-sources-merge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §2 · 功能点 48 ∥ AC-48；用户 2026-10-13 16:07 两条）：§4 索引标题 1–148 ⇒ **1–150**（KD-SV-149 自 `webui/PROJECTS.md` §1 ∥ KD-SV-150 自 `webui/STYLE.md` §1）+ webui 行补注 ∥ §7 webui 行补 **AC-48**（控制台面）∥ §6 添本批预算块（服务端 ±0 ∥ webui 净 ≈+42；零新档）。同源随动 = `webui/PROJECTS.md` §1/§2.2/§2.3/§2.4/§3/§4/§5/§6 ∥ `webui/WEBUI.md` §1/§2/§2.12/§5/§6/§7 ∥ `webui/STYLE.md` §1/§2.3/§3/§4 ∥ `webui/TABS.md` §2.3/§5。**产品码零触（设计轮）。**
+- 2026-10-13（**project-sources-merge 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §3 轮次 1 之 1：§9 本批预算块基线收正（nav **104** ∥ app **206** ∥ style **358**——2026-10-13 盘面实读）+ 净额重算闭合（≈+42 ⇒ **≈+40** = 分项和 +45 −2 ±0 −2 −1）。**零新语义**（评审发现直接导出项）；产品码零触。
 

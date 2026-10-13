@@ -55,6 +55,8 @@
   中**消息流**（文档流平铺——无卡无框；原三卡（会话卡/对话卡/输入卡）去卡片化——AC-19 ⑦ 卡片族在本页不落）∥ 底**输入区**（sticky 底）＝ `#toolbar` 容器：**状态行** + 输入行 + 附件/粘贴条 + 控件行（核 `thincoder-render-core/composer/panel.mjs` 全件——见 ③）。
   滚动 = **文档流**（核 `scroll.mjs` 作用元素随正 ⇒ `document.scrollingElement`；近底 24px 判据 ∥ 上滚不夺阅读位两判据不变）；`SHELL_PAGES` 五路径不动（非壳页）；**宿主差异实证**：VSC = `#messages` 固定视口内滚；控制台 = 文档流 + sticky 段（宿主页形差异——滚动判据同源，零口径改）。
 
+  **最少一屏**（2026-10-13 轻通道笔 1——对话页输入区短会话不贴底；根因 = `#toolbar` sticky 底仅内容溢出视口时吸附）：页纵列最少一屏（`main:has(.chat-thread) > section`——`min-height: calc(100vh - var(--sp-7))`）∥ 消息区吃余高（`.chat-thread`——`flex: 1 1 auto`）⇒ 短会话输入区亦落视口底；页底沿让位（`main:has(.chat-thread)` 撤 `padding-bottom`）；作用域 = `:has(.chat-thread)` 仅对话页 ∥ 零新变量（坐标 = `style.css:264`/`:266-267`——2026-10-13 实读）；长会话 sticky 照旧。
+
   **② 消息形态（核 `thincoder-render-core/flow/block.mjs` 装配——平铺标签行体系）**：用户块 = `buildUserMessage(text, ts, idx)`（`.message.user` + 标签行 `❯ {msg.user}:` + 时间 + `.bubble`）∥ 助手块 = `renderBlock({ idx, withLabel })`（活流）∥ `buildAssistantRestore(msg)`（回读——`{ text, tools, turnStart }`）；
   工具卡 = 核 `renderToolCard`/`finishToolCard`（活）∥ `buildFinishedToolCard`（回读——**嵌助手块内**，不挂顶层）。
   **一回合一个助手标签**（`withLabel`/`turnStart` 恰一次——`thincoder-render-core/flow/block.mjs:124` 口径）；**无气泡底**（VSC 平铺形——`.message`/`.msg-label`/`.msg-time` 类名单源；样式 = `webui/STYLE.md` §2.1 新面登记）。
@@ -232,3 +234,5 @@
 - 2026-10-12（**console-chat-live-step 批 · 设计复评轮 2 修正（fix 轮 2）· eng-designer**——承批档 `docs/batches/2026-10-12-console-chat-live-step.md` §3 轮次 2 之 1–6；父侧受理（#7 另裁 Deferred））：① N73 活流夹具补 `turn`(3)（块数 = 步数 = 3——与 N74 三 assistant 行对位；预期句 ∥ §2.1② 规则句 ∥ KD-SV-132 零改）② 计数残留收正（§2.1 不做⑦「管理面工具七件 ⇒ **八件**」）③ 同一对测试件两处「现读」按当刻盘面收正（669/450 ⇒ **395**/**389**）④ 尸标删除三处（§2.1 缝件行 ∥ §3 末段 ∥ §6⑥——失效表达式离规范面；历史 = 本记录追加裁定条）⑤ §6⑥ 需求档回笔标闭合（回笔已落——`docs/server/requirements/PROJECT.md` :349/:227；该档变更记录 :659）⑥ 面小计基数重锚（实读和 ≈933 ⇒ ≈**958**——当刻盘面实读，已落批步进不重计；链 ⇒ ≈994 ∥ ≈1004）。同源随动 = `design/PROJECT.md` §7/§6 + 变更记录。**零新语义**（评审发现直接导出项）；产品码零触。
 - 2026-10-13（**console-chat-live-step 批 · 设计复评轮 2 修正（#7 落位）· eng-designer**——承批档 `docs/batches/2026-10-12-console-chat-live-step.md` §3 轮次 2 之 7；父侧裁定（采纳））：§6⑥ 核侧对位探针行「机检落点 = N74」⇒「**壳面**用例 N74（本档 §4）」——跨面重号面别限定（机制面同号用例 = `agent/ADMIN-AGENT.md` §8，零触）。**零新语义**（评审发现直接导出项）；产品码零触。
 - 2026-10-13（**console-chat-live-step 批 · 文档层收正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-console-chat-live-step.md` §5 上报（核侧对位探针读数在册；父侧裁定两处皆改）：① §2.1② 判据句入在案登记差异位白名单（**唯一项** = `span.tool-call-summary`；判据 = 剔除后逐字相等——白名单唯一项、非容差、其余位零剔除）② 「失败卡回读恒绿」限定为悬挂卡（附着卡两径一致 = 皆红 + 展开）。**零新语义**（探针读数直接导出项）；产品码零触。
+
+- 2026-10-13（**console-walkthrough-light 批（管理面走查·轻通道轮）· 设计归档（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-13-console-walkthrough-light.md` §1 笔 1 · 台账 #1359）：§2.1① 布局增「最少一屏」口径句（用户 16:20 走查「短会话输入面板不贴底」的设计面收正——页纵列最少一屏 ∥ 消息区吃余高 ⇒ 短会话输入区亦落视口底；`main:has` 作用域 ∥ 零新变量；坐标 = `style.css:264`/`:266-267`；实走读数 = 批档 §1）。同源随动 = `webui/STYLE.md` §3（行账随正）。**产品码零触（设计归档）。**

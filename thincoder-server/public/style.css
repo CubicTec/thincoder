@@ -261,8 +261,10 @@ dialog.modal::backdrop { background: var(--backdrop); }
    状态行 + 输入区 sticky 底（核件 `composer.css` 命中——本档零覆写）；核件发射类族补样式（零新变量值 ∥ 零新悬停规则）── */
 .chat-bar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-4); padding: var(--sp-4) 0; background: var(--panel); border-bottom: var(--bw) solid var(--border); } /* ① 顶会话条（底/边 = 既有族值） */
 .chat-select { min-width: 260px; max-width: 100%; } /* 尺寸字面（非刻度面——同 `.filter-row input` 先例） */
-.chat-thread { display: flex; flex-direction: column; gap: var(--sp-5); padding: var(--sp-6) 0; } /* ② 消息流 = 文档流平铺（无卡无框——滚动归 `document.scrollingElement`） */
+.chat-thread { display: flex; flex-direction: column; gap: var(--sp-5); padding: var(--sp-6) 0; flex: 1 1 auto; } /* ② 消息流 = 文档流平铺（无卡无框——滚动归 `document.scrollingElement`）；吃余高（2026-10-13 轻通道笔 1——短会话输入区亦贴底） */
 #toolbar { position: sticky; bottom: 0; z-index: 2; } /* ④ 输入区 sticky 底（核件容器——内距/边/底沿核 `composer.css`） */
+main:has(.chat-thread) { padding-bottom: 0; } /* 对话页底沿让位贴底输入区（2026-10-13 轻通道笔 1——仅对话页，`:has` 作用域） */
+main:has(.chat-thread) > section { display: flex; flex-direction: column; min-height: calc(100vh - var(--sp-7)); } /* 页最少一屏（短会话 ⇒ 输入区亦落视口底；长会话 sticky 照旧——零新变量） */
 #status-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); color: var(--muted); } /* ③ 状态行（输入区上方——`#toolbar` 首子） */
 #status-line:empty { display: none; }
 .status-sep { color: var(--border); }

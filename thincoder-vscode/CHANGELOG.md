@@ -2,6 +2,14 @@
 
 All notable changes to ThinCoder VS Code are documented here.
 
+## [0.10.6] — 2026-10-13
+
+> 0.10.5 → 0.10.6（月内 +1——发布时定号）
+
+### Changed
+
+- **核依赖升级**：`@thincoder/core` `^0.10.5` → `^0.10.6`（vsix 内嵌核 = 本次号；内嵌 = 源树实拷——核 0.10.5 的 `files` 白名单缺陷属 npm 发布面缺陷，vsix 不受影响）。
+
 ## [0.10.5] — 2026-10-13
 
 > 0.10.4 → 0.10.5（月内 +1——发布时定号）

@@ -231,6 +231,10 @@ Code conventions: pure `.mjs`, no semicolons, no third-party npm dependencies al
 
 ## Changelog
 
+### 0.12.73 (2026-10)
+- **Core `^0.10.6`** — P0 packaging hotfix: the published core now ships `browser/`, so fresh installs no longer crash at startup.
+- Fixed: startup `ERR_MODULE_NOT_FOUND` after install (missing `@thincoder/core/browser/*` in the tarball whitelist — fixed via core `0.10.6`).
+
 ### 0.12.72 (2026-10)
 - **Team command family (B1)** — `team` login / logout / status with completion and derived-entry hiding; rides the core `teamVerify` seam.
 - **Four-end timer completeness** — background timers delivered on all four faces.

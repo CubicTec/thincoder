@@ -459,7 +459,7 @@ test("腿⑤ 全链出账（N78）：真网关链 + 假上游 + 自环 ⇒ 帧�
 
     const usage = db.prepare("SELECT u.*, k.name AS key_name FROM usage u JOIN api_keys k ON k.id = u.key_id ORDER BY u.id DESC LIMIT 1").get()
     assert.ok(usage, "usage 行在场（网关链记账）")
-    assert.equal(usage.member_id, member.id, "归因 = 会话 owner")
+    assert.equal(usage.member_id, member.id, "归因 = 发送者（本用例发送者缺省回落 = 会话 owner——2026-10-13 收正）")
     assert.equal(usage.key_name, KEYS.AGENT_KEY_NAME, "归因 = admin-agent")
     assert.equal(usage.endpoint, "chat")
     assert.equal(usage.model, "mock-chat", "记账 model = 上游真名（网关链口径）")

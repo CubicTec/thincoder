@@ -100,7 +100,7 @@ export function registerChatRoutes(routes, { db, log = null, deps = {}, now = Da
   })
 
   routes.add("POST", "/api/admin/agent/chats/:id/messages", async (req, res, ctx) => {
-    requireAdmin(db, req)
+    const { member: admin } = requireAdmin(db, req) // 发送者 = 凭据主体（谁用谁——2026-10-13 16:39 裁）
     const row = chatRowOr404(db, ctx.params.id) // 不存在 ⇒ 404（信封）
     const body = await readJsonBody(req)
     const content = typeof body?.content === "string" ? body.content : ""
@@ -125,13 +125,13 @@ export function registerChatRoutes(routes, { db, log = null, deps = {}, now = Da
       res.write(`${JSON.stringify(frame)}\n`)
     }
     try {
-      await runChatTurn({ db, chatId: row.id, content, images, emit, deps, now, log })
+      await runChatTurn({ db, chatId: row.id, content, images, emit, deps, now, log, senderId: admin.id })
     } catch (e) {
       log?.error("chat_turn_failed", { chatId: row.id, message: e?.message ?? String(e) })
       emit({ type: "end", status: "failed", reason: `回合异常：${e?.message ?? e}` })
     } finally {
       // 链尾①（§15.1）：回合尾再武装/消化（异步不阻响应——开轮失败零反噬；唤醒轮无路由无帧面）
-      void pumpChatWake({ chatId: row.id, db, deps, now, log }).catch((e) =>
+      void pumpChatWake({ chatId: row.id, db, deps, now, log, senderId: admin.id }).catch((e) =>
         log?.warn("chat_wake_failed", { chatId: row.id, message: e?.message ?? String(e) }))
       if (!res.writableEnded && !res.destroyed) res.end()
     }

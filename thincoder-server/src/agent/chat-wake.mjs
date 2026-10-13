@@ -57,8 +57,8 @@ function watchOf(chatId, ctx) {
 }
 
 /** 装配上下文（闩回调与链尾共取）。 */
-const contextOf = ({ db, deps = {}, now = Date.now, log = null, core }) =>
-  ({ db, deps, now, log, core, wakeTimer: timerOf(deps), wakeClear: clearOf(deps) })
+const contextOf = ({ db, deps = {}, now = Date.now, log = null, core, senderId = null }) =>
+  ({ db, deps, now, log, core, senderId, wakeTimer: timerOf(deps), wakeClear: clearOf(deps) })
 
 /** 交付判据（**纯**——零消费、零副作用）：到期 timer ∨ 池在途结算 ∨ 汇面留件（零交付零开轮的钱货）。 */
 export function hasPendingDelivery(pad, { now = Date.now, core = null } = {}) {
@@ -87,7 +87,7 @@ function sourceOf(pad, { now, core }) {
 }
 
 /** 火（评估——核 `fireTimerWake` 策略复用）：非空闲 ⇒ 零动作；零交付 ⇒ 零开轮；真 ⇒ 开唤醒轮（`runChatWakeTurn`）。 */
-export async function fireChatWake({ chatId, db, deps = {}, now = Date.now, log = null, core = null } = {}) {
+export async function fireChatWake({ chatId, db, deps = {}, now = Date.now, log = null, core = null, senderId = null } = {}) {
   const timers = core ?? (await loadCoreTimers(deps))
   const key = Number(chatId)
   return timers.fireTimerWake({
@@ -95,17 +95,17 @@ export async function fireChatWake({ chatId, db, deps = {}, now = Date.now, log 
     deliver: () => hasPendingDelivery(timerPadOf(key), { now, core: timers }),
     openTurn: async () => {
       const { runChatWakeTurn } = await import("./chat.mjs") // 惰性（零静态环——环体单源 = chat.mjs）
-      await runChatWakeTurn({ db, chatId: key, source: sourceOf(timerPadOf(key), { now, core: timers }), deps, now, log })
+      await runChatWakeTurn({ db, chatId: key, source: sourceOf(timerPadOf(key), { now, core: timers }), deps, now, log, senderId })
     },
   })
 }
 
 /** 再武装（链尾共用——纯武装）：零在途/开关关 ⇒ 撤旧零注册；已到期 ⇒ 撤旧不武装 0ms 闩（交链尾/钩子消化）。
  *  出 = 武装延迟（毫秒）或 `null`（未武装）。 */
-export async function armChatWake({ chatId, db, deps = {}, now = Date.now, log = null } = {}) {
+export async function armChatWake({ chatId, db, deps = {}, now = Date.now, log = null, senderId = null } = {}) {
   const core = await loadCoreTimers(deps)
   const key = Number(chatId)
-  const watch = watchOf(key, contextOf({ db, deps, now, log, core }))
+  const watch = watchOf(key, contextOf({ db, deps, now, log, core, senderId }))
   const deadline = core.pendingTimerDeadline(timerPadOf(key))
   if (deadline !== null && deadline <= now()) {
     watch.disarm()
@@ -116,12 +116,12 @@ export async function armChatWake({ chatId, db, deps = {}, now = Date.now, log =
 
 /** 链尾消化（用户回合尾 ∥ 结算钩子）：有交付 ⇒ 撤旧闩 + 火一次（已到期/留件——不武装 0ms 闩）；否则纯再武装。
  *  出 = 链尾是否已动作：有交付 ⇒ `true`（开火已发起；撞忙/零件由 `fireChatWake` 自行零动作、不在出参）——零交付 ⇒ 武装成功 `true` ∥ 已到期不武装 `false`。 */
-export async function pumpChatWake({ chatId, db, deps = {}, now = Date.now, log = null } = {}) {
+export async function pumpChatWake({ chatId, db, deps = {}, now = Date.now, log = null, senderId = null } = {}) {
   const core = await loadCoreTimers(deps)
   const key = Number(chatId)
   if (hasPendingDelivery(timerPadOf(key), { now, core })) {
-    watchOf(key, contextOf({ db, deps, now, log, core })).disarm()
-    await fireChatWake({ chatId: key, db, deps, now, log, core })
+    watchOf(key, contextOf({ db, deps, now, log, core, senderId })).disarm()
+    await fireChatWake({ chatId: key, db, deps, now, log, core, senderId })
     return true
   }
   return (await armChatWake({ chatId: key, db, deps, now, log })) !== null
@@ -129,12 +129,12 @@ export async function pumpChatWake({ chatId, db, deps = {}, now = Date.now, log 
 
 /** 结算钩子（§15.1 ②——池结算尾唤醒面 `_asyncWaiters`）：核 `wakeAsyncWaiters` splice **一次性消费** ⇒
  *  钩子「**先自再武装、再评估**」。装配点 = `chat.mjs` 环境工具面 ctx 段（幂等同形覆写——单钩子）。 */
-export function installSettleHook({ chatId, db, deps = {}, now = Date.now, log = null } = {}) {
+export function installSettleHook({ chatId, db, deps = {}, now = Date.now, log = null, senderId = null } = {}) {
   const key = Number(chatId)
   const pad = timerPadOf(key)
   pad._asyncWaiters = [() => {
-    installSettleHook({ chatId: key, db, deps, now, log }) // 先自再武装（本钩子已被 splice 消费）
-    void pumpChatWake({ chatId: key, db, deps, now, log }).catch((e) =>
+    installSettleHook({ chatId: key, db, deps, now, log, senderId }) // 先自再武装（本钩子已被 splice 消费）
+    void pumpChatWake({ chatId: key, db, deps, now, log, senderId }).catch((e) =>
       log?.warn?.("chat_wake_failed", { chatId: key, message: e?.message ?? String(e) })) // 再评估（异步不阻结算尾）
   }]
   return pad._asyncWaiters

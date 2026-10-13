@@ -351,17 +351,17 @@ export function selfBaseOf(address) {
 }
 
 /** 出口 provider 装配（§16.2/§17.3——loopback 描述子；两消费面同经此点：模型出口 `buildChatExit` ∥ 压缩垫片）：配置 =
- *  `<selfBase>/v1` ＋ 会话 owner 的 `admin-agent` sk 明文（§16.3——逐请求查库 ⇒ 吊销即断）＋ 会话行 `model`（**对外标识**——
+ *  `<selfBase>/v1` ＋ **本回合发送者**（登录成员）的 `admin-agent` sk 明文（§16.3——逐请求查库 ⇒ 吊销即断；谁用谁——2026-10-13 16:39 裁）＋ 会话行 `model`（**对外标识**——
  *  与会话创建面/四端客户端同形）＋ 档位（KD-SV-110——`reasoning` ∈ 当刻模型核枚举〔别名解上游真名后〕⇒ 携 `reasoningEffort`；
  *  未设 ∥ 表外 ∥ 缺核 ⇒ 零字段）。**本地 registry 复检保留**（缺模型 ⇒ 会话可建面的既有判据不变）。
  *  失败面（§16.2）：sk 缺位（未登录/已吊销）∥ 自环基址缺位 ⇒ 抛（人话——含「重新登录控制台」）。
  *  出 = `{ provider, upstream }`（`upstream` = 上游真名——规格 ∥ 枚举取值键）。 */
-export async function chatProviderOf({ db, ref, reasoning = null, env = process.env, log = null, createdBy = null, selfBaseUrl = null } = {}) {
+export async function chatProviderOf({ db, ref, reasoning = null, env = process.env, log = null, senderId = null, selfBaseUrl = null } = {}) {
   const { createProviderRegistry, listProviderEntries } = await import("../gateway/providers.mjs")
   const registry = createProviderRegistry(listProviderEntries(db), { env })
   const hit = registry.dispatch(ref)
   if (hit.miss) throw new Error(`模型不可用：${String(ref)}（注册表未命中——建会话时已校验，此处为复检）`)
-  const sk = agentKeyOf(db, createdBy) // 管理面 sk（§16.3——登录 ensure 产物；非 admin 会话 owner ⇒ 缺位）
+  const sk = agentKeyOf(db, senderId) // 管理面 sk（§16.3——登录 ensure 产物；主体 = 本回合发送者——谁用谁（用户 2026-10-13 16:39 裁）；缺位 ⇒ 人话）
   if (sk === null) throw new Error("管理会话模型凭据缺位（admin-agent sk 未在册或已吊销）——请重新登录控制台")
   const base = selfBaseOf(typeof selfBaseUrl === "function" ? selfBaseUrl() : selfBaseUrl)
   if (base === null) throw new Error("管理会话模型出口不可用：自环基址缺位（server 监听地址未就绪）")
@@ -388,8 +388,8 @@ export async function chatProviderOf({ db, ref, reasoning = null, env = process.
 /** 模型出口装配（§16.2 ∥ KD-SV-129——管理会话 = 本进程网关链的**进程内客户端**）：出口配置 = 出口 provider（`chatProviderOf`
  *  ——鉴权/派发/准入三件/转发/记账全链逐字复用，零第二份）；`.provider` 随出口携带（§17.3 A3——压缩垫片同源）。
  *  网关侧拒 ⇒ 网关错误形即本出口错误（同径收尾——五终态零新形）。`chatImpl` = 核 `chat` 注入口（单元测试档；生产缺省 = 动载）。 */
-export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null, env = process.env, log = null, createdBy = null, selfBaseUrl = null } = {}) {
-  const { provider } = await chatProviderOf({ db, ref, reasoning, env, log, createdBy, selfBaseUrl })
+export async function buildChatExit({ db, ref, reasoning = null, chatImpl = null, env = process.env, log = null, senderId = null, selfBaseUrl = null } = {}) {
+  const { provider } = await chatProviderOf({ db, ref, reasoning, env, log, senderId, selfBaseUrl })
   const chat = chatImpl ?? (await loadCoreChat())
   const exit = async ({ messages, tools, onToken, signal }) => // `signal` 透传核（回合中止——KD-SV-107；缺 ⇒ 核不挂取消链）
     chat(provider, { messages, tools, onToken, signal })
@@ -418,7 +418,7 @@ export function usageFrameOf(usage) {
  * ∥ `wake` = 唤醒轮面（非空 ⇒ **无本轮用户消息** ＋ 域文本瞬态尾插——§15.1；用户轮传 `null`）。
  * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
-export async function runChatTurn({ db, chatId, content, images = [], emit = null, deps = {}, now = Date.now, log = null, wake = null } = {}) {
+export async function runChatTurn({ db, chatId, content, images = [], emit = null, deps = {}, now = Date.now, log = null, wake = null, senderId = null } = {}) {
   const chat = chatRowOr404(db, chatId)
   const budget = { maxCalls: deps.budget?.maxCalls ?? DEFAULT_MAX_CALLS, maxDurationMs: deps.budget?.maxDurationMs ?? DEFAULT_MAX_DURATION_MS }
   const emitFrame = (frame) => {
@@ -496,7 +496,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     // （timer ∥ 历史读面 ∥ 异步池宿主）∥ `depth: 0`；结算钩子装配（§15.1 ②——池结算尾唤醒面，幂等同形覆写）。
     const pad = timerPadOf(chat.id)
     pad._recordStore = recordStoreOf(db, chat.id) // 本会话历史读面（`read_history` 记录面——§16.1）
-    installSettleHook({ chatId: chat.id, db, deps, now, log })
+    installSettleHook({ chatId: chat.id, db, deps, now, log, senderId })
     const envCtx = { cwd: deps.cwd ?? process.cwd(), signal: controller.signal, agent: pad, depth: 0 }
 
     // 模型出口装配（§16.2）：注册表缺位/引用缺位/凭据缺位/基址缺位 ⇒ 按「模型错误」收尾（五终态不外溢第三形）
@@ -508,7 +508,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         reasoning: chat.reasoning ?? null,
         env: deps.env ?? process.env,
         log,
-        createdBy: chat.created_by ?? null,
+        senderId: senderId ?? chat.created_by ?? null, // 凭据主体 = 发送者（谁用谁）；唤醒轮随最近发送者（上下文缺位 ⇒ 主人兜底）
         selfBaseUrl: deps.selfBaseUrl ?? null,
         chatImpl: deps.chatImpl ?? null,
       }))
@@ -653,7 +653,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
  * 尾 = 再武装（§15.1 三链尾②——**不再消化**：零交付/落库失败面由下一回合边界/结算钩子兜底，防自旋）。
  * 出 = `{ status, reason, calls?, durationMs?, delivered }`。
  */
-export async function runChatWakeTurn({ db, chatId, source = "timer", deps = {}, now = Date.now, log = null } = {}) {
+export async function runChatWakeTurn({ db, chatId, source = "timer", deps = {}, now = Date.now, log = null, senderId = null } = {}) {
   try {
     claimChatTurn(db, chatId, { now })
   } catch (e) {
@@ -679,11 +679,11 @@ export async function runChatWakeTurn({ db, chatId, source = "timer", deps = {},
       return { status: "skipped", reason: "no_domain", delivered }
     }
     const domain = source === "settle" ? domains.AUTO_TURN_DIGEST_DOMAIN : domains.TIMER_TURN_DOMAIN
-    const result = await runChatTurn({ db, chatId, content: "", emit: null, deps, now, log, wake: { source, domain } })
+    const result = await runChatTurn({ db, chatId, content: "", emit: null, deps, now, log, wake: { source, domain }, senderId })
     return { ...result, delivered }
   } finally {
     try {
-      await armChatWake({ chatId, db, deps, now, log })
+      await armChatWake({ chatId, db, deps, now, log, senderId })
     } catch (e) {
       log?.warn("chat_wake_arm_failed", { chatId: Number(chatId), message: e?.message ?? String(e) })
     }

@@ -369,7 +369,7 @@ test("腿④ A3 压缩（真网关链 + 假上游）：标记行落库 ∥ 摘�
     const usage = db.prepare("SELECT u.*, k.name AS key_name FROM usage u JOIN api_keys k ON k.id = u.key_id ORDER BY u.id").all()
     assert.ok(usage.length >= 2, `摘要 + 回合两调用 ⇒ ≥2 条 usage（实读 ${usage.length}）`)
     for (const row of usage) {
-      assert.equal(row.member_id, member.id, "归因 = 会话 owner")
+      assert.equal(row.member_id, member.id, "归因 = 发送者（本用例发送者缺省回落 = 会话 owner——2026-10-13 收正）")
       assert.equal(row.key_name, KEYS.AGENT_KEY_NAME, "归因 = admin-agent sk（摘要调用同链）")
       assert.equal(row.endpoint, "chat")
     }

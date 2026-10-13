@@ -63,12 +63,12 @@
   --vscode-editorWarning-foreground: var(--warn);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* 隐藏语义兜底（KD-SV-150——webui/STYLE.md §2.3）：任何作者 display 不得复活 `hidden`（作者样式优先于 UA——逐点补丁已两度漏网）；全档唯一强制声明（机检计数 = 1） */
 body { margin: 0; font-family: var(--font); font-size: var(--fs); line-height: var(--lh); background: var(--bg); color: var(--text); }
 h1, h2, h3, h4, h5, h6, th { font-weight: 400; } /* 零粗体（⑤——UA 700 撤；强调 = 色通道，层级 = 结构通道） */
 
 /* ── 侧栏（① 列表面——分组导航：品牌 ∥ 组标题/项（悬停/活动态）∥ 底部 meta 槽）──────────────── */
 .sidebar { position: fixed; inset: 0 auto 0 0; width: var(--nav-w); padding: var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-5); background: var(--panel); border-right: var(--bw) solid var(--border); }
-.sidebar[hidden] { display: none; }
 .sidebar .brand { padding: 0 var(--sp-3); }
 .nav-group { display: flex; flex-direction: column; gap: var(--sp-1); }
 .nav-group-title { font-size: var(--fs); color: var(--muted); padding: 0 var(--sp-3); }
@@ -123,7 +123,6 @@ button.tab { border: none; background: none; color: var(--text); border-radius: 
 button.tab:hover { background: var(--hover); } /* ② 页签悬停（② 型表在册——取 --hover 底） */
 button.tab.active { background: var(--selected); color: var(--accent); } /* ① 选中态（同 `.lang-switch .active` 款） */
 .tab-panel { display: flex; flex-direction: column; gap: var(--sp-4); }
-.tab-panel[hidden] { display: none; } /* 非激活面板（显式压过上行 display——`hidden` 切换） */
 
 /* ── 反馈面（⑥ 色板 ∥ ⑨ 空/错/加载态——错 = `.hint error`；`.error` 独立生效）────────────────── */
 .hint { color: var(--muted); font-size: var(--fs); } /* ⑨ 加载/空（静态文案——零动画零 spinner） */

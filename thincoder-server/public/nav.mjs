@@ -1,6 +1,6 @@
 /**
- * nav.mjs — 控制台导航单源（webui/WEBUI.md §2 ∥ KD-SV-20）：组/项数据（我的 6 ∥ 管理 11——2026-10-10 代理回迁批去代理项 ∥ 沙盒运行面批 +「沙盒」项 ∥ admin-agent-chat 批 +「对话」项〔总览后〕 ∥ team-projects-permissions 批 +三项〔我的·项目末位 ∥ 管理·项目 ∥ 管理·Git 源——「成员」后〕
- * ∥ sandbox-outbound-member-face 批 +「我的工作区」项〔我的·项目后〕 ∥ team-ledger 批 +「团队台账」项〔我的·末位〕）∥ `resolveRoute` 纯函数
+ * nav.mjs — 控制台导航单源（webui/WEBUI.md §2 ∥ KD-SV-20）：组/项数据（我的 6 ∥ 管理 10——2026-10-10 代理回迁批去代理项 ∥ 沙盒运行面批 +「沙盒」项 ∥ admin-agent-chat 批 +「对话」项〔总览后〕 ∥ team-projects-permissions 批 +三项〔我的·项目末位 ∥ 管理·项目 ∥ 管理·Git 源——「成员」后〕
+ * ∥ sandbox-outbound-member-face 批 +「我的工作区」项〔我的·项目后〕 ∥ team-ledger 批 +「团队台账」项〔我的·末位〕 ∥ project-sources-merge 批：「管理·Git 源」项退场〔并入管理·项目页标签②——管理 11 ⇒ 10〕）∥ `resolveRoute` 纯函数
  * （无 DOM——单元测试档直测：别名重定向 ∥ 角色默认 ∥ admin 面 `denied` ∥ 子段容许——console-tabs-component 批）∥ 侧栏渲染（品牌 ∥ 组标题/项/活动态 ∥
  * 底部 meta 槽（健康状态灯 + 版本行 + 语言切换器）+ 退出登录）。
  *
@@ -25,7 +25,6 @@ export const NAV_GROUPS = [
     { key: "chat", labelKey: "nav.page.admin.chat", path: "/admin/chat" },
     { key: "members", labelKey: "nav.page.admin.members", path: "/admin/members" },
     { key: "projects", labelKey: "nav.page.admin.projects", path: "/admin/projects" },
-    { key: "gitSources", labelKey: "nav.page.admin.gitSources", path: "/admin/git-sources" },
     { key: "providers", labelKey: "nav.page.admin.providers", path: "/admin/providers" },
     { key: "models", labelKey: "nav.page.admin.models", path: "/admin/models" },
     { key: "usage", labelKey: "nav.page.admin.usage", path: "/admin/usage" },
@@ -37,8 +36,9 @@ export const NAV_GROUPS = [
 
 export const LOGIN_PATH = "/login"
 
-/** 旧链别名（重定向——旧书签可达）：`#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒ `#/admin/overview` ∥ `#/admin/proxy` ⇒ `#/admin/system`（2026-10-10 代理回迁批——§2）。 */
-export const ROUTE_ALIASES = { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system" }
+/** 旧链别名（重定向——旧书签可达）：`#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒ `#/admin/overview` ∥ `#/admin/proxy` ⇒ `#/admin/system`（2026-10-10 代理回迁批——§2）
+ * ∥ `#/admin/git-sources` ⇒ `#/admin/projects/git-sources`（2026-10-13 project-sources-merge 批——别名目标再走子段裁分 ⇒ `sub` 回传；重定向带子段）。 */
+export const ROUTE_ALIASES = { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system", "/admin/git-sources": "/admin/projects/git-sources" }
 
 const KNOWN_PAGES = new Set([...NAV_GROUPS.flatMap((group) => group.items.map((item) => item.path)), LOGIN_PATH])
 const ADMIN_PREFIX = "/admin/"
@@ -62,7 +62,8 @@ export function normalizePath(path) {
  * `denied: true`（admin 面非 admin——页面级块）。
  * 子段容许（console-tabs-component 批——2026-10-11 裁定「进」）：`#/<组>/<页>/<子段>`——裁末段试前缀（在册 ⇒ 记 `sub`
  * 供页面消费（页面自判；不认 ⇒ 忽略）∥ 未在册 ⇒ 照旧默认页回落）；登录面（`LOGIN_PATH`）除外——其不经 `PAGES` 分派；
- * 既有 hash 形行为逐字不变（webui/TABS.md §2.2）。
+ * 解析序 = 别名先行、别名目标再走子段裁分（别名指向带子段的规范址 ⇒ `sub` 回传——`#/admin/git-sources` ⇒ `/admin/projects` + `sub: "git-sources"`；
+ * 2026-10-13 project-sources-merge 批）；既有 hash 形行为逐字不变（webui/TABS.md §2.2）。
  */
 export function resolveRoute(path, role) {
   const clean = normalizePath(path)

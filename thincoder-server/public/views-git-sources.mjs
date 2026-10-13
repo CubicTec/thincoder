@@ -1,6 +1,6 @@
 /**
- * views-git-sources.mjs — 管理·Git 源（webui/PROJECTS.md §2.3——KD-SV-124；team-projects-permissions 批（B2）；台账 #1216）：
- * `#/admin/git-sources`（admin 门）——源表七列（名字 ∥ 平台 ∥ PAT 掩码 ∥ 状态（行内一键切）∥ 同步方式 ∥ 上次同步（时间 + 结果点 + 摘要人话）
+ * views-git-sources.mjs — 管理·Git 源面板（webui/PROJECTS.md §2.4——KD-SV-124 ∥ KD-SV-149；team-projects-permissions 批（B2）∥ project-sources-merge 批（页转面板件——管理·项目页标签②；页题 h2 撤）；台账 #1216）：
+ * `#/admin/projects/git-sources`（面板——admin 门；`renderGitSources` 导出名不变）——源表七列（名字 ∥ 平台 ∥ PAT 掩码 ∥ 状态（行内一键切）∥ 同步方式 ∥ 上次同步（时间 + 结果点 + 摘要人话）
  * ∥ 操作五钮恒显：「立即同步」（进行中禁 + 终态刷新结果列与时间）∥「拉列表」（共用添加仓对话框——预选本行源）∥「体检」（就地读数：成 ⇒ ok 行；
  * 败 ⇒ 分类人话 + PAT 列标红 + `token_state` 提示）∥「编辑」∥「删除」（确认窗 + 删源防护 400 就地呈））
  * + 添/编弹窗（名字 ∥ 平台四值（「自建」才显基址）∥ 组织/组 ∥ PAT（编辑留空 = 不改——掩码三态沿 provider apiKey 口径）∥ 启用
@@ -28,7 +28,7 @@ export function platformLabel(platform) {
   return key === undefined ? String(platform ?? "—") : t(key)
 }
 
-// ── 页：管理·Git 源 ─────────────────────────────────────────────────────────
+// ── 面板：管理·Git 源（管理·项目页标签②） ──────────────────────────────────
 
 export async function renderGitSources(ctx, mount) {
   const { h } = ctx
@@ -63,7 +63,7 @@ export async function renderGitSources(ctx, mount) {
       h("table", {}, h("thead", {}, h("tr", {}, ...headers.map((label) => h("th", { text: label })))), h("tbody", {}, ...rows))))
   }
   const addBtn = h("button", { type: "button", text: t("admin.gitSources.addBtn"), onclick: () => openSourceModal(ctx, { reload: load }) })
-  mount.append(h("h2", { text: t("admin.gitSources.title") }), h("div", { class: "row-form" }, addBtn), h("section", { class: "card" }, box))
+  mount.append(h("div", { class: "row-form" }, addBtn), h("section", { class: "card" }, box))
   await load()
 }
 

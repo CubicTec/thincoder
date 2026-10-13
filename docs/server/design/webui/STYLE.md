@@ -262,7 +262,7 @@
 |---|---|---|---|---|
 | 1 | `views-git-sources.mjs:223`（基址门） | `<label>`（`field()` 产物） | `label` `:102` ∥ `.provider-form > label` `:144` ∥ `.provider-form.stacked > label` `:150` | **受压——本批修**（全局规则接管） |
 | 2 | `views-git-sources.mjs:228`（github 事件块） | `div.stack-box` | `.stack-box` `:235` | **受压——本批修** |
-| 3 | `app.mjs:155/169`（侧栏） | `aside.sidebar` | `.sidebar` `:70` | 受压——原补丁 `:71` 已覆（本批删补丁，全局规则接管） |
+| 3 | `app.mjs:154/168`（侧栏——2026-10-13 随正：project-sources-merge 批 app.mjs 净 −1 行后指针移 1；父侧直笔） | `aside.sidebar` | `.sidebar` `:70` | 受压——原补丁 `:71` 已覆（本批删补丁，全局规则接管） |
 | 4 | `tabs.mjs:38/60`（标签面板） | `div.tab-panel` | `.tab-panel` `:125` | 受压——原补丁 `:126` 已覆（同接管） |
 | 5 | `dom.mjs:115/117`（提示条） | `p.flash` | 无（`.flash` 无 `display`） | 结构性安全 |
 | 6 | 余各档（`hidden` 字面全扫——`dom.mjs:57` ∥ `modal.mjs` ∥ `host-credential.mjs` ∥ `views-admin.mjs` ∥ `views-chat.mjs` ∥ `views-ledger.mjs` ∥ `views-me.mjs` ∥ `views-me-sandbox.mjs` ∥ `views-models.mjs` ∥ `views-projects.mjs` ∥ `views-providers-modals.mjs` ∥ `views-sandbox*.mjs`（四档）∥ `views-system*.mjs`（两档）） | `p/span.hint`·`.error`·`.secret`·无类 div | 无（族值规则无 `display`） | 结构性安全（面上全列；「安全」= 命中规则集内无 `display` 声明，非逐点实测） |
@@ -312,3 +312,4 @@
 - 2026-10-13（**project-sources-merge 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §3 轮次 1 之 1/5/10）：§2.2① 排除面补项目面两页（非壳定论——沿 key 表先例）∥ §2.3 机检补第 ⑤ 条（核对表穷尽性集合断言——`public/**` 含 `hidden` 档集 ⊆ 在册档集）∥ §3 style 行基线收正（实读 **358**）+ 面小计同拍。**零新语义**（评审发现直接导出项）；产品码零触。
 
 - 2026-10-13（**console-walkthrough-light 批（管理面走查·轻通道轮）· 设计归档（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-13-console-walkthrough-light.md` §1 笔 1 · 台账 #1359）：§3 `style.css` 行账随正（本笔净 **+2** = `:264` 行内补 `flex: 1 1 auto`（行数 ±0） ∥ `:266-267` 新增两行——对话页最少一屏（页纵列最少一屏 ∥ 消息区吃余高 ⇒ 短会话输入区亦落视口底）；实读 **358**（文末换行不计；split 计法 359）；机制 = `webui/CHAT.md` §2.1①）。**产品码零触（设计归档）。**
+- 2026-10-13（**project-sources-merge 批 · 实施后随正 · 主 agent 直接执行 · 机械 · 可 revert**——承 #44 交付报告列报）：§2.3 核对表行 3 指针随正（`app.mjs:155/169` ⇒ `:154/168`——app.mjs 净 −1 行后同一切换点移位）。**零新语义**（指针随正）。

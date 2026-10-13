@@ -63,16 +63,16 @@
 | 档 | 行数（设计估——实施实读为准） | 职责 |
 |---|---|---|
 | `thincoder-server/public/views-projects.mjs`（已落盘） | **415**（估 ≈220） | 我的·项目页 + 共用构建器（项目详情弹窗（权限感知 + 删除钮/确认窗）∥ 添加仓对话框——导出） |
-| `thincoder-server/public/views-admin-projects.mjs`（已落盘） | **41**（估 ≈120）⇒ ≈**86**（本批 2026-10-13：两标签壳——`sub` 第三参 ∥ `createTabs` ∥ 面板①②建） | 管理·项目页（两标签壳——面板①全量表 + 「添加仓」入口 ∥ 面板② `renderGitSources`） |
-| `thincoder-server/public/views-git-sources.mjs`（已落盘） | **278**（估 ≈300）⇒ ≈**276**（本批：页题 h2 撤——面板形；导出名不变） | Git 源面板（源表 + 添/编/删/确认三窗 + 行动作五钮 + 事件块） |
+| `thincoder-server/public/views-admin-projects.mjs`（已落盘） | **41**（估 ≈120）⇒ 实读 **69**（2026-10-13 实施后回填；估 ≈86——本批：两标签壳——`sub` 第三参 ∥ `createTabs` ∥ 面板①②建） | 管理·项目页（两标签壳——面板①全量表 + 「添加仓」入口 ∥ 面板② `renderGitSources`） |
+| `thincoder-server/public/views-git-sources.mjs`（已落盘） | **278**（估 ≈300）⇒ 实读 **278**（2026-10-13 实施后回填；估 ≈276——本批：页题 h2 撤——面板形；导出名不变） | Git 源面板（源表 + 添/编/删/确认三窗 + 行动作五钮 + 事件块） |
 | `thincoder-server/public/i18n-zh-project.mjs`（已落盘） | **169**（键 154；估 ≈140） | 文案表·zh·项目面（新部件） |
 | `thincoder-server/public/i18n-en-project.mjs`（已落盘） | **169**（键 154；估 ≈140） | 文案表·en·项目面（新部件；零 CJK） |
-| `thincoder-server/public/nav.mjs`（已落盘） | 实读 **101**（B2 批）⇒ **现读 104**（2026-10-13 设计轮实核）⇒ **±0**（本批：删 `gitSources` 项 −1 ∥ 别名 +1 行——解析序现成：别名先行、别名目标再走子段裁分 ⇒ `sub` 回传，零额外改；档头注随正；管理 11 ⇒ **10**） | IA 单源随正 |
+| `thincoder-server/public/nav.mjs`（已落盘） | 实读 **101**（B2 批）⇒ **现读 104**（2026-10-13 设计轮实核）⇒ **±0** ⇒ 实读 **105**（2026-10-13 实施后回填；本批：删 `gitSources` 项 −1 ∥ 别名 +1 行——解析序现成：别名先行、别名目标再走子段裁分 ⇒ `sub` 回传，零额外改；档头注随正；管理 11 ⇒ **10**） | IA 单源随正 |
 | `thincoder-server/public/app.mjs`（已落盘） | 实读 **202**（B2 批）⇒ **现读 206**（2026-10-13 设计轮实核）⇒ ≈**204**（本批：删 `renderGitSources` import + `PAGES` 行 −2 ∥ 重定向带子段（同行改）） | 页面挂载 |
 | `thincoder-server/public/views-audit.mjs`（已落盘） | 实读 **206**（型表 + `project_event` + 详情支（kind 族）） | 审计面随正 |
 | `thincoder-server/public/i18n.mjs`（已落盘） | 实读 **137**（原「+≈4」陈值收正——实施面 = 门面两档 `i18n-{zh,en}.mjs` 各 +2 行） | 部件装配随正 |
 | `thincoder-server/public/style.css`（已落盘） | 实读 **352**（B2 批）⇒ **现读 358**（2026-10-13 设计轮实核）⇒ 净 **−1**（本批：+1 全局 `[hidden]` 兜底 ∥ −2 按例补丁删——`webui/STYLE.md` §2.3） | 样式随正 |
-| 跨批单元测试档 `docs/batches/2026-10-08-server-public-structure.test.mjs`（已落盘 · 实读 **168**——2026-10-13 实核） | **B2 面已办**（守卫现盘含 `project` 域——与 team-ledger 批随正同盘：`ledger` 域 ∥ 指纹 zh `7ba6415a…` ∥ en `3d1a4cc7…` ∥ 键数 **959 ∥ 964**；复跑 6/6 绿——`webui/LEDGER.md` §3 在案）∥ **本批零改**（零新档 ∥ 键集零动 ⇒ PARTS/DOMAINS/键数/指纹逐件零动）；行数核清单在册者 = `app.mjs`（≤300——本批 ≈204，绿） ∥ `views-admin-projects.mjs` ∥ `views-git-sources.mjs`（三视图 ≤500——≈86 ∥ ≈276，绿）；`nav.mjs` ∥ `style.css` 零在册 | 结构守卫随正（本批零改） |
+| 跨批单元测试档 `docs/batches/2026-10-08-server-public-structure.test.mjs`（已落盘 · 实读 **168**——2026-10-13 实核） | **B2 面已办**（守卫现盘含 `project` 域——与 team-ledger 批随正同盘：`ledger` 域 ∥ 指纹 zh `7ba6415a…` ∥ en `3d1a4cc7…` ⇒ **实读 zh `3a3cdf31…` ∥ en `1d8e1612…`**（2026-10-13 sandbox-container-actions 批随正——父侧直笔）∥ 键数 **959 ∥ 964** ⇒ **实读 962 ∥ 967**；复跑 6/6 绿——`webui/LEDGER.md` §3 在案）∥ **本批零改**（零新档 ∥ 键集零动 ⇒ PARTS/DOMAINS/键数/指纹逐件零动）；行数核清单在册者 = `app.mjs`（≤300——本批 ≈204，绿） ∥ `views-admin-projects.mjs` ∥ `views-git-sources.mjs`（三视图 ≤500——≈86 ∥ ≈276，绿）；`nav.mjs` ∥ `style.css` 零在册 | 结构守卫随正（本批零改） |
 
 **面小计**：≈965（设计行和）⇒ 实施实读 **≈1126**（新档五件 1072 ∥ 随动净增 ≈54：nav +2 ∥ app +5 ∥ audit +41 ∥ style +7 ∥ i18n.mjs −1——逐件见上行；以实施实读为准）。
 
@@ -115,4 +115,5 @@
 - 2026-10-12（**B2 批 · 实施后回填 · 主 agent 直接执行 · 机械 · 可 revert**——承批档 §5（webui 面交付）上抛 3/4）：§3 文件账实施实读收正（`views-projects` **415** ∥ `views-admin-projects` **41** ∥ `views-git-sources` **278** ∥ 两 project 表 **169 ∥ 169**（键 154）∥ nav **101** ∥ app **202** ∥ `views-audit` **206** ∥ `i18n.mjs` **137**（「+≈4」陈值收正——实施面 = 门面两档各 +2 行）∥ `style.css` **352**）+ 面小计 ⇒ **≈1126**；「15 件跨批档未录」项随 2026-10-12 用户裁作废（批内件不入任何门、零维护——父侧扫尾单不再维护）。**零新语义**（实读收正）。
 - 2026-10-13（**project-sources-merge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §2 · 功能点 48 ∥ AC-48；用户 2026-10-13 16:07 两条）：§1 KD-SV-124 收正（两入口——原「三页承载」合并后作废）+ 增 KD-SV-149（单入口合并形）；§2.2 改面板①页形 ∥ **增 §2.3 合并形**（壳/子段/别名/懒读/零回归）∥ §2.3（原）⇒ **§2.4 Git 源面板**（页题 h2 撤 ∥ 基址门条入册）；§3 文件账随正（nav/app/壳/源档/style 五行——预估 Δ）∥ §4 增 AC-48 行 + AC-12 收正（管理 11 ⇒ 10）∥ §5 增合并批不做面行。同源随动 = `webui/WEBUI.md` §1/§2/§2.12/§5/§6/§7 ∥ `webui/STYLE.md` §2.3/§3/§4 ∥ `webui/TABS.md` §5。**产品码零触（设计轮）。**
 - 2026-10-13（**project-sources-merge 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §3 轮次 1 之 1/2/3/4/5/7/8：§2.2 面板①页形措辞收正（「添加仓」钮 = 面板①内）∥ §2.3 增壳面归属条（非壳页）+ 旧址条补解析序（别名先行、别名目标再走子段裁分 ⇒ `sub` 回传）∥ §2.4 卡题去重坐标收正（`webui/TABS.md` §2.2）∥ §3 nav 行补解析序注（Δ ±0 校正）+ 守卫件行改写（本批零改 ∥ 行数核清单在册者逐项 ∥ 实读 **168**）∥ §4 AC-19/AC-20 行收为定论（非壳页）∥ §5 边界补非壳定论 ∥ §6 随动句收为定论 ∥ §1 KD-SV-124 行去废标（D8——「原『三页承载』合并后作废」删；历史 = 本记录）。**零新语义**（评审发现直接导出项）；产品码零触。
+- 2026-10-13（**project-sources-merge 批 · 实施后行账回填 · 主 agent 直接执行 · 机械 · 可 revert**——承 #44 交付报告未做项②）：§3 三行按实施实读收正（`views-admin-projects` ≈86 ⇒ **69** ∥ `views-git-sources` ≈276 ⇒ **278** ∥ `nav.mjs` 104 ⇒ **105**）∥ 守卫件行两值随正（键数 959 ∥ 964 ⇒ **962 ∥ 967**；指纹 zh `3a3cdf31…` ∥ en `1d8e1612…`——2026-10-13 sandbox-container-actions 批随正）。**零新语义**（实读收正）。
 

@@ -6,7 +6,8 @@
  *
  * 判权全在后端：只做显隐与表单——`user` 直打管理端点由服务端 403（页面不是判据）；401 ⇒ 回 #/login；路由解析
  * （别名重定向 ∥ 角色默认 ∥ admin 面 denied）= nav.mjs 纯函数；旧链 `#/me` ⇒ `#/me/keys` ∥ `#/admin` ⇒
- * `#/admin/overview`。渲染一律 textContent；写请求一律 JSON 头 + JSON 体（型门）；零外部资源（内网自洽）；文案一律经 `t()` 取值。
+ * `#/admin/overview` ∥ `#/admin/git-sources` ⇒ `#/admin/projects/git-sources`（别名目标带子段 ⇒ 重定向拼回；2026-10-13 project-sources-merge 批）。
+ * 渲染一律 textContent；写请求一律 JSON 头 + JSON 体（型门）；零外部资源（内网自洽）；文案一律经 `t()` 取值。
  */
 import { t, mapError, initLang, setLang, applyDocument } from "./i18n.mjs"
 import { closeActiveModal } from "./modal.mjs"
@@ -28,7 +29,6 @@ import { renderMeProjects } from "./views-projects.mjs"
 import { renderMeSandbox } from "./views-me-sandbox.mjs"
 import { renderMeLedger } from "./views-ledger.mjs"
 import { renderAdminProjects } from "./views-admin-projects.mjs"
-import { renderGitSources } from "./views-git-sources.mjs"
 
 const appEl = document.getElementById("app")
 const navEl = document.getElementById("nav")
@@ -107,7 +107,6 @@ const PAGES = {
   "/admin/chat": renderChat,
   "/admin/members": renderMembers,
   "/admin/projects": renderAdminProjects,
-  "/admin/git-sources": renderGitSources,
   "/admin/providers": renderProviders,
   "/admin/models": renderModels,
   "/admin/usage": renderAdminUsage,
@@ -159,7 +158,7 @@ async function route() {
   if (path === "/login") { navigate(defaultPath(state.member.role)); return }
 
   const resolved = resolveRoute(path, state.member.role)
-  if (resolved.redirect) { navigate(resolved.path); return } // 别名/根/未知 ⇒ 替换 hash（URL 与视图对齐）
+  if (resolved.redirect) { navigate(resolved.sub === undefined ? resolved.path : `${resolved.path}/${resolved.sub}`); return } // 别名/根/未知 ⇒ 替换 hash（URL 与视图对齐；别名目标带子段 ⇒ 拼回——project-sources-merge 批）
   document.body.classList.toggle("data-shell", SHELL_PAGES.has(resolved.path)) // 壳页标记（五路径——§2.6②）
 
   const mount = h("section")

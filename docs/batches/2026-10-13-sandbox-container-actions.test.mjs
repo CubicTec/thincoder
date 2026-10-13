@@ -5,12 +5,12 @@
  *
  * 射程（腿 ↔ 验收对照）：
  *   ① 门矩阵两态：运行中 ⇒ 启动禁/停止与重启可用 ∥ 非运行（已创建/已退出/枚举外原值兜底）⇒ 启动可用/停止与重启禁
- *      （纯函数 `actionGate` + 渲染面逐行双核；六钮序不变 ∥ 详情/日志/删除不随门）
- *   ② 忙态 + 行闩：点停 ⇒ 该行六钮即时禁用（发请求前——`disabled` 非 `hidden`）∥ 在飞连点零第二请求（假 API 计数）∥
- *      完成 ⇒ 回门矩阵态（随新数据重渲）∥ 失败面专项：运行中「停止」失败 ⇒ 启动仍禁用（非六钮无条件全启）
+ *      （纯函数 `actionGate` + 渲染面逐行双核；七钮序不变〔末位终端 = sandbox-container-terminal 批 +1——2026-10-13 父侧随正〕∥ 详情/日志/删除不随门 ∥ 终端 = 运行中门）
+ *   ② 忙态 + 行闩：点停 ⇒ 该行七钮即时禁用（发请求前——`disabled` 非 `hidden`）∥ 在飞连点零第二请求（假 API 计数）∥
+ *      完成 ⇒ 回门矩阵态（随新数据重渲）∥ 失败面专项：运行中「停止」失败 ⇒ 启动仍禁用（非七钮无条件全启）
  *   ③ 反馈：成功 ⇒ `flash` 成功句（三动作三句——含容器名）∥ 失败 ⇒ 红条 `ctx.fail`（零成功句）
  *   ④ i18n：+3 键两表在册 ∥ 句形逐字 ∥ 占位符 `{name}` 两表一致 ∥ en 零 CJK ∥ 两表键集相等 ∥ 成功句键消费在册
- *   ⑤ 静态面：零新变量（`:root` 变量计数不变——本批零 CSS 触面）∥ 禁用态 = `button:disabled` 既有（零新样式件）
+ *   ⑤ 静态面：本批零 CSS 触面（`:root` 计数 2026-10-13 父侧随正 58 ⇒ 76——容器终端批 +18；他批改 `style.css` 时本件随之重核）∥ 禁用态 = `button:disabled` 既有（零新样式件）
  *
  * 桩说明：直调 `createContainerSection`（桩 ctx + 假 API 路由表；`reload`/`refresh` 入账）；DOM 桩 = `dom.mjs` `h`（结构轮自 `app.mjs` 外拆）
  * 语义近似（`disabled`/`hidden` 走受控属性——`.disabled` 可观察）。零网络零真模型。
@@ -152,8 +152,8 @@ const { ZH } = await load("i18n-zh.mjs")
 const SOURCE = readPublic("views-sandbox-containers.mjs")
 const CSS = readPublic("style.css")
 
-/** 六钮序（详情/启动/停止/重启/日志/删除——sandbox-docker-admin 批起未变）。 */
-const LABELS = [ZH["admin.sandbox.detail"], ZH["admin.sandbox.start"], ZH["admin.sandbox.stop"], ZH["admin.sandbox.restart"], ZH["admin.sandbox.logs"], ZH["admin.sandbox.remove"]]
+/** 七钮序（详情/启动/停止/重启/日志/删除/终端——sandbox-docker-admin 批起；末位终端 = sandbox-container-terminal 批 +1——2026-10-13 父侧随正）。 */
+const LABELS = [ZH["admin.sandbox.detail"], ZH["admin.sandbox.start"], ZH["admin.sandbox.stop"], ZH["admin.sandbox.restart"], ZH["admin.sandbox.logs"], ZH["admin.sandbox.remove"], ZH["admin.sandbox.terminal"]]
 const fill = (text, params) => String(text).replace(/\{(\w+)\}/g, (match, name) => (name in params ? String(params[name]) : match))
 const placeholders = (text) => [...String(text).matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort().join(",")
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
@@ -174,16 +174,16 @@ test("① 门矩阵两态：运行中 ⇒ 启动禁/停止与重启可用 ∥ �
   ]
   const { box } = await fMountSection({ containers })
   const view = box()
-  assert.deepEqual(buttonsOf(rowFor(view, "workspace-a")).map((button) => button.textContent), LABELS, "六钮序不变（详情/启动/停止/重启/日志/删除）")
-  assert.deepEqual(disabledOf(rowFor(view, "workspace-a")), [false, true, false, false, false, false], "运行中行：启动禁（详情/停止/重启/日志/删除可用）")
+  assert.deepEqual(buttonsOf(rowFor(view, "workspace-a")).map((button) => button.textContent), LABELS, "七钮序不变（详情/启动/停止/重启/日志/删除/终端）")
+  assert.deepEqual(disabledOf(rowFor(view, "workspace-a")), [false, true, false, false, false, false, false], "运行中行：启动禁（详情/停止/重启/日志/删除/终端可用）")
   for (const name of ["created-a", "exited-a", "paused-a"]) {
-    assert.deepEqual(disabledOf(rowFor(view, name)), [false, false, true, true, false, false], `非运行行（${name}）：停止/重启禁（启动可用）`)
+    assert.deepEqual(disabledOf(rowFor(view, name)), [false, false, true, true, false, false, true], `非运行行（${name}）：停止/重启/终端禁（启动可用）`)
   }
 })
 
 // ── ② 忙态 + 行闩（在飞零第二请求 ∥ 完成回门矩阵态 ∥ 失败面专项）────────────────────────
 
-test("② 忙态 + 行闩：点停 ⇒ 六钮即时禁用（`disabled` 非 `hidden`）∥ 在飞连点零第二请求 ∥ 完成回门矩阵态 ∥ 失败 ⇒ 启动仍禁用", async () => {
+test("② 忙态 + 行闩：点停 ⇒ 七钮即时禁用（`disabled` 非 `hidden`）∥ 在飞连点零第二请求 ∥ 完成回门矩阵态 ∥ 失败 ⇒ 启动仍禁用", async () => {
   const pending = deferred()
   const mount = await fMountSection({ routes: { "POST /api/admin/sandbox/runners/1/containers/c1/stop": () => pending.promise }, containers: [fContainer()] })
   const row = rowFor(mount.box(), "workspace-a")
@@ -191,10 +191,10 @@ test("② 忙态 + 行闩：点停 ⇒ 六钮即时禁用（`disabled` 非 `hidd
   assert.equal(postsOf(mount.calls).length, 0, "静置 ⇒ 零请求")
   const inflight = stopBtn.fire("click") // 不 await——在飞期立即观察
   assert.equal(postsOf(mount.calls).length, 1, "点停 ⇒ 恰一发（POST …/stop）")
-  assert.deepEqual(disabledOf(row), [true, true, true, true, true, true], "在飞期：该行六钮即时禁用（发请求前）")
-  assert.deepEqual(hiddenOf(row), [false, false, false, false, false, false], "禁用走 `disabled` 属性（非 `hidden`）")
+  assert.deepEqual(disabledOf(row), [true, true, true, true, true, true, true], "在飞期：该行七钮即时禁用（发请求前）")
+  assert.deepEqual(hiddenOf(row), [false, false, false, false, false, false, false], "禁用走 `disabled` 属性（非 `hidden`）")
   await stopBtn.fire("click") // 在飞连点：同钮
-  await restartBtn.fire("click") // 在飞连点：他钮（闩覆盖面 = 该行六钮）
+  await restartBtn.fire("click") // 在飞连点：他钮（闩覆盖面 = 该行七钮）
   await startBtn.fire("click")
   assert.equal(postsOf(mount.calls).length, 1, "在飞连点 ⇒ 零第二请求（行闩早退）")
   pending.resolve({ ok: true }) // 完成（成功）⇒ flash 成功句 + 失缓存重取 + 回门矩阵态
@@ -203,20 +203,20 @@ test("② 忙态 + 行闩：点停 ⇒ 六钮即时禁用（`disabled` 非 `hidd
   assert.deepEqual(flashOf(mount.calls), [fill(ZH["admin.sandbox.containerStopped"], { name: "workspace-a" })], "成功 ⇒ flash 成功句（含容器名）")
   assert.equal(failOf(mount.calls).length, 0, "成功 ⇒ 零红条")
   assert.equal(mount.reloads.length, 1, "成功 ⇒ 失缓存重取（既有 invalidate 路径）")
-  assert.deepEqual(disabledOf(row), [false, true, false, false, false, false], "完成 ⇒ 回门矩阵态（当刻态列 = 运行中）")
+  assert.deepEqual(disabledOf(row), [false, true, false, false, false, false, false], "完成 ⇒ 回门矩阵态（当刻态列 = 运行中）")
   mount.data.containers = [fContainer({ state: "exited" })] // 服务端态已变——重取后行随新数据重建
   mount.box() // 失缓存 ⇒ 新取（loading 占位）
   await tick()
   assert.equal(mount.calls.filter(([method, path]) => method === "GET" && path.endsWith("/containers")).length, 2, "重取 = 第二读（态列随新数据）")
-  assert.deepEqual(disabledOf(rowFor(mount.box(), "workspace-a")), [false, false, true, true, false, false], "新态列（已退出）⇒ 门矩阵随动")
-  // 失败面专项：运行中「停止」失败 ⇒ 启动仍禁用（非六钮无条件全启）
+  assert.deepEqual(disabledOf(rowFor(mount.box(), "workspace-a")), [false, false, true, true, false, false, true], "新态列（已退出）⇒ 门矩阵随动")
+  // 失败面专项：运行中「停止」失败 ⇒ 启动仍禁用（非七钮无条件全启）
   const bad = await fMountSection({ routes: { "POST /api/admin/sandbox/runners/1/containers/c1/stop": upstreamFail("docker down") }, containers: [fContainer()] })
   const badRow = rowFor(bad.box(), "workspace-a")
   await buttonsOf(badRow)[2].fire("click")
   assert.equal(postsOf(bad.calls).length, 1, "失败 ⇒ 恰一发（零重试）")
   assert.deepEqual(failOf(bad.calls), ["docker down"], "失败 ⇒ 红条 `ctx.fail`（引擎原文透传）")
   assert.equal(flashOf(bad.calls).length, 0, "失败 ⇒ 零成功句")
-  assert.deepEqual(disabledOf(badRow), [false, true, false, false, false, false], "失败恢复 = 按当刻态列重算（运行中 ⇒ 启动仍禁用）")
+  assert.deepEqual(disabledOf(badRow), [false, true, false, false, false, false, false], "失败恢复 = 按当刻态列重算（运行中 ⇒ 启动仍禁用）")
   assert.equal(bad.reloads.length, 0, "失败 ⇒ 零重取")
 })
 
@@ -266,9 +266,9 @@ test("④ i18n：+3 键两表在册 ∥ 句形逐字 ∥ 占位符 `{name}` 两�
 
 // ── ⑤ 静态面（零新变量 ∥ 禁用态既有件）────────────────────────────────────────────
 
-test("⑤ 静态面：零新变量（`:root` 计数不变——本批零 CSS 触面）∥ 禁用态 = `button:disabled` 既有", () => {
+test("⑤ 静态面：本批零 CSS 触面（`:root` 计数当刻实读 76——终端批 +18，他批改触时随之重核）∥ 禁用态 = `button:disabled` 既有", () => {
   const clean = stripComments(CSS)
   const rootVars = [...clean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].map((match) => match[1])
-  assert.equal(rootVars.length, 58, ":root 变量计数 = 实施当刻实读 58（2026-10-13；本批零 CSS 触面——他批改 style.css 时本件随之重核，非本批回归）")
+  assert.equal(rootVars.length, 76, ":root 变量计数 = 当刻实读 76（2026-10-13 父侧随正——容器终端批 +18；本批零 CSS 触面——他批改 style.css 时本件随之重核，非本批回归）")
   assert.ok(clean.includes("button:disabled"), "禁用态样式 = `button:disabled` 既有（零新样式件）")
 })

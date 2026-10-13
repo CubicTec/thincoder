@@ -22,7 +22,7 @@ import { usageSummary } from "../metering/report.mjs"
 import { queryUsage } from "../metering/usage.mjs"
 import { clientForRunner, normalizeDockerAddress, selfCheckDocker } from "../sandbox/docker.mjs"
 import { execOnHost, revokeHostCredential } from "../sandbox/hosts.mjs"
-import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerByRef, runnerRowOr404, sandboxPublicBase, sshMetaOf } from "../sandbox/registry.mjs"
+import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerByRef, runnerRowOr404, sshMetaOf } from "../sandbox/registry.mjs"
 import { SSH_COMMAND_TIMEOUT_S } from "../sandbox/ssh.mjs"
 import { DOCKER_OPS, assertDockerOp, runDockerOp } from "./docker-ops.mjs"
 
@@ -75,14 +75,14 @@ function timeoutOf(raw) {
 /**
  * 装配八工具（§12）：`db` = openDatabase 产物 ∥ `runtime` = gateway 注册行引导的**同一实例**（provider 写面换表——与路由同见）
  * ∥ `guard` = 登录守卫（重置链清计——装配面注入）∥ `fetchImpl` = Docker 传输注入面（单元测试档替身）
+ * ∥ `config`（连接面 TLS 档材料解密——增补 #2）∥ `requestImpl`（`node:https` 假件缝）——两参沿节点面同链（明文行零涉）
  * ∥ `discoverFetchImpl` = 上游探针出口（缺省 = `proxyFetch`——与控制台 discover 同出口，代理旗判定不丢；测试替身走此参）。
  * `invoke(name, args)` 出 = **结果对象**（各动词自带字段，至少 `{ ok }`；失败 ⇒ `{ ok:false, message }`——不抛，交模型自纠）。
  * `summary` 面：docker 等结果自带则沿用，余由驱动层派生（`chat.summaryOfResult`——掩蔽 + 截断）。
  */
-export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, discoverFetchImpl = proxyFetch, guard = null, log = null, actor = "admin", actorId = null, execImpl = null } = {}) {
+export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, requestImpl = null, discoverFetchImpl = proxyFetch, guard = null, log = null, actor = "admin", actorId = null, execImpl = null } = {}) {
   if (!db) throw new Error("createChatTools：缺少 db（openDatabase 产物）")
   const providerCtx = { db, runtime, config, env, fetchImpl: discoverFetchImpl, log }
-  const publicBase = sandboxPublicBase(config) // 删除链续放置载荷与控制台同源（§12「与控制台同函数同效」）
 
   /** 成员寻址（id ∥ 用户名 ∥ 展示名——§3 寻址口径）。 */
   function resolveMember(raw, field = "member") {
@@ -353,14 +353,14 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
         const name = normalizeRunnerName(args.name)
         const address = normalizeDockerAddress(args.address)
         if (db.prepare("SELECT id FROM sandbox_runners WHERE name = ?").get(name)) throw new Error(`节点名已存在：${name}（换一个名字，或先 runners.remove 清理旧登记）`)
-        const check = await selfCheckDocker({ address, fetchImpl })
+        const check = await selfCheckDocker({ address, fetchImpl, config, requestImpl })
         const row = insertRunner(db, { name, address: check.baseUrl, runtime: check.readings })
         return { ok: true, summary: `已登记节点 ${row.name}（#${row.id} @ ${row.address}）`, runner: { id: row.id, name: row.name, address: row.address, status: row.status, selfCheck: check.readings, createdAt: row.created_at } }
       }
       case "remove": {
         const runner = runnerRowOr404(db, args.id) // 不存在 ⇒ 工具级错误
         const containers = args.containers === undefined || args.containers === null || args.containers === "" ? undefined : args.containers
-        const out = await deleteRunnerChain(db, runner, { containers, confirm: args.confirm === true }, { fetchImpl, publicBase })
+        const out = await deleteRunnerChain(db, runner, { containers, confirm: args.confirm === true }, { fetchImpl, config, requestImpl })
         return { ok: true, summary: `已删除节点 ${out.name}（保留容器 ${out.kept} ∥ 连删 ${out.removed}）`, id: out.id, name: out.name, kept: out.kept, removed: out.removed }
       }
       case "revoke_credential": {
@@ -394,7 +394,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
       if (name === "docker") {
         const op = assertDockerOp(requireText(params.op, "op（Docker 动词）", 40))
         const node = resolveNode(params.host)
-        const client = clientForRunner(node, { fetchImpl })
+        const client = clientForRunner(node, { fetchImpl, config, requestImpl })
         const out = await runDockerOp({ client, op, args: params.args ?? {} }) // 动词语义单源（任务面同函数）
         const head = `节点 ${node.name}（${node.address}）docker ${op} ⇒ ${out.resultCode}`
         const preview = typeof out.data === "string" ? `；${out.data.slice(0, 200)}` : ""

@@ -161,15 +161,15 @@ test("config：缺省值 ∥ env: 解析 ∥ 库路径归一 ∥ 0.0.0.0 告警"
 
 // ── ③ db 迁移链 ──────────────────────────────────────────────────────────────
 
-test("db：迁移链 ⇒ 八表 + 七索引 + user_version=16 ∥ 约束生效", () => {
+test("db：迁移链 ⇒ 表清册 + 十一索引 + user_version=22 ∥ 约束生效（2026-10-14 随正）", () => {
   const db = DB.openDatabase(":memory:")
   try {
-    assert.equal(DB.SCHEMA_VERSION, 16)
-    assert.equal(DB.readVersion(db), 16)
+    assert.equal(DB.SCHEMA_VERSION, 22)
+    assert.equal(DB.readVersion(db), 22)
     const names = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((row) => row.name)
-    for (const table of ["members", "api_keys", "sessions", "usage", "providers", "audit_events", "usage_daily", "quota_counters", "sandbox_workspaces", "sandbox_rules", "sandbox_pending", "sandbox_tasks", "sandbox_checkpoints", "sandbox_settings", "sandbox_runners", "sandbox_onboarding"]) assert.ok(names.includes(table), `缺表：${table}`)
+    for (const table of ["members", "api_keys", "sessions", "usage", "providers", "audit_events", "usage_daily", "quota_counters", "sandbox_workspaces", "sandbox_rules", "sandbox_pending", "sandbox_checkpoints", "sandbox_settings", "sandbox_runners", "sandbox_onboarding", "registry_credentials"]) assert.ok(names.includes(table), `缺表：${table}`)
     const indexes = db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name LIKE 'idx_%'").all()
-    assert.equal(indexes.length, 7)
+    assert.equal(indexes.length, 11)
     assert.equal(db.prepare("PRAGMA foreign_keys").get().foreign_keys, 1)
 
     // FK：usage.member_id 引用不存在的成员 ⇒ 拒
@@ -183,7 +183,7 @@ test("db：迁移链 ⇒ 八表 + 七索引 + user_version=16 ∥ 约束生效",
       /CHECK/i,
     )
     // 幂等：同库再跑迁移 ⇒ 版本不变、不报错
-    assert.equal(DB.migrate(db), 16)
+    assert.equal(DB.migrate(db), 22)
   } finally {
     db.close()
   }
@@ -198,15 +198,15 @@ test("db：文件库重开幂等（旧库自动升 ∥ 数据保留）∥ 迁移
     first.close()
 
     const second = DB.openDatabase(file)
-    assert.equal(DB.readVersion(second), 16)
+    assert.equal(DB.readVersion(second), 22)
     assert.equal(second.prepare("SELECT count(*) AS n FROM members").get().n, 1)
 
     // 失败迁移：段内先建表再抛 ⇒ 整段回滚（表不落 ∥ 版本不动）
-    const failing = [...DB.MIGRATIONS, { v: 17, up: (handle) => { handle.exec("CREATE TABLE v17_probe (x INTEGER)"); throw new Error("boom") } }]
+    const failing = [...DB.MIGRATIONS, { v: 23, up: (handle) => { handle.exec("CREATE TABLE v23_probe (x INTEGER)"); throw new Error("boom") } }]
     try {
-      assert.throws(() => DB.migrate(second, { migrations: failing }), /迁移失败（v17）/)
-      assert.equal(DB.readVersion(second), 16)
-      assert.equal(second.prepare("SELECT count(*) AS n FROM sqlite_master WHERE name = 'v17_probe'").get().n, 0)
+      assert.throws(() => DB.migrate(second, { migrations: failing }), /迁移失败（v23）/)
+      assert.equal(DB.readVersion(second), 22)
+      assert.equal(second.prepare("SELECT count(*) AS n FROM sqlite_master WHERE name = 'v23_probe'").get().n, 0)
     } finally {
       second.close()
     }

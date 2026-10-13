@@ -592,11 +592,11 @@ test("E45 user ∥ 无会话打镜像源七端点 ⇒ 403 ∥ 401 ∥ 改/删不
 
 // ── 腿：v15 迁移（store/STORE.md §3 v15 判据）────────────────────────────────
 
-test("v15 迁移：空库直落 20 ∥ v14 升 15（仅 v15 段）⇒ 增量 image_sources 一表 ∥ 幂等（再开零变）∥ 五列 ∥ 两 UNIQUE 拒重 ∥ 存量表零变", () => {
-  // 空库直落 20（链尾）
+test("v15 迁移：空库直落 22 ∥ v14 升 15（仅 v15 段）⇒ 增量 image_sources 一表 ∥ 幂等（再开零变）∥ 五列 ∥ 两 UNIQUE 拒重 ∥ 存量表零变", () => {
+  // 空库直落 22（链尾——2026-10-14 随正）
   const fresh = DB.openDatabase(":memory:")
-  assert.equal(DB.readVersion(fresh), 20, "空库直落 20（链尾）")
-  assert.equal(DB.SCHEMA_VERSION, 20, "结构版本读数 = 链尾 v20（2026-10-13 收正）")
+  assert.equal(DB.readVersion(fresh), 22, "空库直落 22（链尾）")
+  assert.equal(DB.SCHEMA_VERSION, 22, "结构版本读数 = 链尾 v22（2026-10-14 随正）")
   const freshTables = fresh.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all().map((row) => row.name)
   assert.ok(freshTables.includes("image_sources"), "image_sources 在表集")
   // 五列在场 + 两 UNIQUE 拒重
@@ -618,9 +618,9 @@ test("v15 迁移：空库直落 20 ∥ v14 升 15（仅 v15 段）⇒ 增量 ima
   assert.deepEqual(afterTables.filter((name) => !beforeTables.includes(name)), ["image_sources"], "存量表零变（增量 = image_sources 一表）")
   down.close()
 
-  // 幂等（再开零变：版本升链尾 20 ∥ 列面零变 ∥ 存量行保形）
+  // 幂等（再开零变：版本升链尾 22 ∥ 列面零变 ∥ 存量行保形）
   const reopen = DB.openDatabase(file)
-  assert.equal(DB.readVersion(reopen), 20, "再开读数 20（链尾）")
+  assert.equal(DB.readVersion(reopen), 22, "再开读数 22（链尾）")
   assert.deepEqual(reopen.prepare("PRAGMA table_info(image_sources)").all().map((row) => row.name), ["id", "name", "address", "created_at", "created_by"], "再开列面零变")
   const auditTypes = reopen.prepare("SELECT sql FROM sqlite_master WHERE name = 'audit_events'").get().sql
   assert.match(auditTypes, /'agent_event'/, "审计 CHECK 十三型保形（v14 重建未受扰）")

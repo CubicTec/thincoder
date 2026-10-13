@@ -207,7 +207,7 @@ test("② 添加节点：两字段 ∥ 必填门 ∥ 自检中态 ∥ 提交体 
     const dialog = modal()
     assert.ok(dialog !== null, "弹窗开启")
     const inputs = fFindAll(dialog, (node) => node.tag === "input")
-    assert.equal(inputs.length, 2, "两字段（名 ∥ 地址）")
+    assert.equal(inputs.length, 4, "四件输入（名 ∥ 地址 ∥ 连接段两择 radio——明文 ∥ TLS；2026-10-14 随正）")
     assert.equal(inputs[0].attrs.placeholder, ZH["admin.sandbox.namePh"], "名称占位")
     assert.equal(inputs[1].attrs.placeholder, ZH["admin.sandbox.addressPh"], "地址占位")
     const form = fFind(dialog, (node) => node.tag === "form")
@@ -481,15 +481,15 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964 ⇒ 962 ∥ 967**（team-ledger 批 +67/表 ⇒ sandbox-container-actions 批 +3/表）⇒ **实读 970 ∥ 975**（gitee-namespace-kinds 批 +8/表）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [970, 975], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表——实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [1041, 1046], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表 + sandbox-container-terminal 批 +14/表 + 重做批 i18n 面 +10/表 + B/D 修复轮 −2/表（`audit.placement_failed` +1 ∥ me.sandbox 退三）——2026-10-14 随正；实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
 
-test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 10 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
-  // 档目（54 ∥ 53——2026-10-13 随正）
+test("⑧ 静态面：档目 62 ∥ 61 ∥ nav 管理 10 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
+  // 档目（62 ∥ 61——2026-10-14 随正）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [54, 53], "档目 54 ∥ 53（2026-10-13 随正：在途批组 +2 ⇒ sandbox-outbound-member-face 批 +1（views-me-sandbox.mjs）⇒ team-ledger 批 +3（views-ledger.mjs ∥ i18n-{zh,en}-ledger.mjs））")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [62, 61], "档目 62 ∥ 61（2026-10-14 随正：重做批新档——底座 ∥ 连接 ∥ 终端件合计 +8）")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 11 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
@@ -499,9 +499,9 @@ test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 10 ∥ app 接线 ∥ 行�
   const appSrc = readPublic("app.mjs")
   assert.ok(appSrc.includes('import { renderSandbox } from "./views-sandbox.mjs"'), "app 导入面")
   assert.ok(appSrc.includes('"/admin/sandbox": renderSandbox'), "app PAGES 行")
-  // 行数/行宽/零外链/零 CJK（视图档软线 300 ∥ 硬线 500——实读在断言消息）
+  // 行数/行宽/零外链/零 CJK（视图档软线 300——2026-10-14 随正：500 ⇒ 顾问线，硬线 800；本档 520 越顾问线在案——台账行 + 收口 §6 行账）
   const lines = VIEW_SRC.split("\n").length
-  assert.ok(lines <= 500, `views-sandbox.mjs 越 500 顾问线（硬限 800）：${lines}`)
+  assert.ok(lines <= 800, `views-sandbox.mjs 越硬线 800：${lines}`)
   assert.ok(Math.max(...VIEW_SRC.split("\n").map((line) => line.length)) <= 300, "行宽 ≤300")
   assert.deepEqual([/https?:\/\//.test(VIEW_SRC), VIEW_SRC.includes("@import")], [false, false], "零外链（KD-SV-9）")
   assert.equal(CJK.test(stripComments(VIEW_SRC)), false, "档面代码段零 CJK（文案全入两表）")
@@ -518,9 +518,9 @@ test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 10 ∥ app 接线 ∥ 行�
   }
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
   for (const token of ["badge", "off", "detail-row", "stack-box", "step-list"]) assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
-   // `:root` 58 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon；2026-10-12 走查实修④ `--vscode-*` 族桥 +8）
+   // `:root` 76 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon；2026-10-12 走查实修④ `--vscode-*` 族桥 +8；2026-10-14 随正：终端调色板 +18（`--term-*`））
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8 ⇒ 2026-10-14 终端调色板 +18）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
   // 注：批内件入链断言已撤（2026-10-12 用户裁：`prepublishOnly` 门禁链撤除——批内件不入链）
 })

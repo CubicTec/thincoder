@@ -115,6 +115,13 @@ export function appendMessage(db, chatId, { role, content = "", data = null, now
 
 // ── 会话历史记录面（§16.1——核件 `read_history` 的 `_recordStore` 注入面；库面单源）──────────────
 
+/** 回放/记录面 `function.arguments` 净化（2026-10-14 缺陷修——轻通道轮）：存量坏行（旧版截断残 JSON）⇒ `"{}"` 兜底；
+ *  合法 JSON 串 ⇒ 原样逐字（回放逐值面零变）；非串 ⇒ 既有 `JSON.stringify` 形。 */
+function replayArgsOf(value) {
+  if (typeof value !== "string") return JSON.stringify(value ?? {})
+  try { JSON.parse(value); return value } catch { return "{}" }
+}
+
 /** 行 ⇒ 核记录形（§16.1 逐形）：`user`/`notice` ⇒ `{ role, content, ts }` ∥ `assistant`（携 `toolCalls`）⇒
  *  `{ role, content, ts, tool_calls }` ∥ `tool` ⇒ `{ role, name, tool_call_id, content, ts }`；
  *  `ts` = `created_at` 解析毫秒（解析失败 ⇒ 该键缺席——核件作 `ts:null` 读，时间窗永不命中）。 */
@@ -129,7 +136,7 @@ function recordOfRow(row) {
       base.tool_calls = calls.map((call) => ({
         id: call.id,
         type: "function",
-        function: { name: call.name, arguments: typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? {}) },
+        function: { name: call.name, arguments: replayArgsOf(call.args) },
       }))
     }
     return base
@@ -191,7 +198,7 @@ function messageOfRow(row) {
         tool_calls: calls.map((call) => ({
           id: call.id,
           type: "function",
-          function: { name: call.name, arguments: typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? {}) },
+          function: { name: call.name, arguments: replayArgsOf(call.args) },
           ...(call.extraContent ? { extra_content: call.extraContent } : {}), // 假值按「不在场」归一（与核件真值判同式）
         })),
         ...(typeof data.reasoning === "string" ? { reasoning_content: data.reasoning } : {}),

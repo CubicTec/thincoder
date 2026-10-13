@@ -6,12 +6,12 @@
  *
  * 射程（腿 ↔ 验收轴对照在括号）：
  *   ① 页在册/接线（`renderMeSandbox` 导出 ∥ `PAGES` 行 + import ∥ `SHELL_PAGES` 零改——非壳页）（④ 页落定 ∥ 脚手架）
- *   ② 逐列渲染（六列表头 + 行逐值：名 ∥ 盒状态（运行中/已停 + 回收原因三值 + 枚举外原值兜底）∥ 未提交改动 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批）
+ *   ② 逐列渲染（五列表头 + 行逐值：名 ∥ 盒状态（运行中/已停 + 回收原因三值 + 枚举外原值兜底）∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批）
  *   ③ 空态 ∥ 恒本人过滤（仅打成员端点 ∥ 渲染 = 响应逐行——零越界取数）∥ 零写控件（写面随 #1216 ②）
  *   ④ 读败面（503 `sandbox_unavailable` ∥ 404 数据面缺位 ⇒ 页内提示 ∥ 余码 ⇒ `loadFailed` ∥ `fail` 收口）
  *   ⑤ 待批提示行（`pending` 在场 ⇒ 行在（逐 host 一条）∥ 裁定/超时后 ⇒ 行消——不残留；零 pending ⇒ 容器隐）
  *   ⑥ 10s 轮询（`PENDING_POLL_MS` = 10000 ∥ 在场 ⇒ 恰一枚排程 ∥ 放行一轮 ⇒ 重读一次 ∥ 清空 ⇒ 零新排 + 提示消失 ∥ 离页/重渲自停）
- *   ⑦ i18n 两表逐键同步（`me.sandbox.*` 19 键 + shell `nav.page.me.sandbox` 1 键 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK）
+ *   ⑦ i18n 两表逐键同步（`me.sandbox.*` 16 键 + shell `nav.page.me.sandbox` 1 键 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK）
  *   ⑧ IA 计数（我的 6——ledger 末位 ∥ 路由解析 ∥ `labelKey` 两表在盘）∥ 静态面（行数/行宽 ∥ 零外链 ∥ 代码段零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合）
  *
  * 桩说明：`dom.mjs` 顶层触 `document`（先桩后 import）；本档零外部网络 ∥ 零真库（stub ctx 路由表）；定时器 = 捕获式桩（零悬挂）。
@@ -36,12 +36,12 @@ const [{ ZH }, { EN }, PAGE, NAV] = await Promise.all([load("i18n-zh.mjs"), load
 const VIEW_SRC = readPublic("views-me-sandbox.mjs")
 const CSS = readPublic("style.css")
 
-/** 本批键（19 me + 1 shell——两表逐键同步；§2.2 ∥ `webui/SANDBOX.md` §3 键族登记本批条）。 */
+/** 本批键（16 me + 1 shell——两表逐键同步；§2.2 ∥ `webui/SANDBOX.md` §3 键族登记本批条；`dirty` 三键退场随 D 裁 2026-10-14）。 */
 const NEW_ME_KEYS = [
-  "me.sandbox.title", "me.sandbox.colName", "me.sandbox.colState", "me.sandbox.colDirty", "me.sandbox.colCheckpoints",
-  "me.sandbox.colRunner", "me.sandbox.colPending", "me.sandbox.stateRunning", "me.sandbox.stateStopped", "me.sandbox.stopIdle",
-  "me.sandbox.stopWallclock", "me.sandbox.stopManual", "me.sandbox.dirtyYes", "me.sandbox.dirtyNo", "me.sandbox.pending",
-  "me.sandbox.empty", "me.sandbox.unbound", "me.sandbox.unavailable", "me.sandbox.loadFailed",
+  "me.sandbox.title", "me.sandbox.colName", "me.sandbox.colState", "me.sandbox.colCheckpoints", "me.sandbox.colRunner",
+  "me.sandbox.colPending", "me.sandbox.stateRunning", "me.sandbox.stateStopped", "me.sandbox.stopIdle", "me.sandbox.stopWallclock",
+  "me.sandbox.stopManual", "me.sandbox.pending", "me.sandbox.empty", "me.sandbox.unbound", "me.sandbox.unavailable",
+  "me.sandbox.loadFailed",
 ]
 const NEW_SHELL_KEY = "nav.page.me.sandbox"
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」「≤」等中性形不在内）。 */
@@ -126,7 +126,7 @@ function fCtx(routes = {}) {
 }
 
 /** 工作区夹具（`gateway/API.md` §2.7 行形——行增 `runnerName`）。 */
-const fWs = (over = {}) => ({ id: 1, name: "box-a", runnerName: "node-1", boxState: "running", dirty: true, checkpointCount: 3, pending: null, ...over })
+const fWs = (over = {}) => ({ id: 1, name: "box-a", runnerName: "node-1", boxState: "running", checkpointCount: 3, pending: null, ...over })
 
 /** 10s 轮询定时器捕获（只记录不执行——零悬挂定时器 ∥ 零实等；`restore()` 还原）。 */
 function capturePollTimers() {
@@ -160,35 +160,35 @@ test("① 页在册：`renderMeSandbox` 导出 ∥ `PAGES` 行 + import ∥ `SHE
 
 // ── ② 逐列渲染（六列 + 态/原因映射 + 枚举外兜底）──────────────────────────────────
 
-test("② 逐列渲染：六列表头 ∥ 盒状态两态 + 回收原因三值 + 枚举外原值兜底 ∥ 未提交改动 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批", async () => {
+test("② 逐列渲染：五列表头 ∥ 盒状态两态 + 回收原因三值 + 枚举外原值兜底 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批", async () => {
   const poll = capturePollTimers()
   try {
     globalThis.document = stubDocument()
     const rows = [
-      fWs({ id: 1, name: "box-a", boxState: "running", dirty: true, checkpointCount: 3, runnerName: "node-1", pending: { host: "pypi.org", since: 1700000000000 } }),
-      fWs({ id: 2, name: "box-b", boxState: "stopped", stopReason: "idle_ttl", dirty: false, checkpointCount: 0, runnerName: null }),
-      fWs({ id: 3, name: "box-c", boxState: "stopped", stopReason: "wallclock_ttl", dirty: false, checkpointCount: 12, runnerName: "node-2" }),
-      fWs({ id: 4, name: "box-d", boxState: "stopped", stopReason: "manual", dirty: true, checkpointCount: 1, runnerName: "" }),
-      fWs({ id: 5, name: "box-e", boxState: "weird", dirty: false, checkpointCount: 0, runnerName: "node-3" }),
-      { id: 6, name: "box-f", boxState: "running", runnerName: "node-4" }, // 缺位字段（`dirty`/`checkpointCount` 不在）⇒ 中性占位（不假造）
+      fWs({ id: 1, name: "box-a", boxState: "running", checkpointCount: 3, runnerName: "node-1", pending: { host: "pypi.org", since: 1700000000000 } }),
+      fWs({ id: 2, name: "box-b", boxState: "stopped", stopReason: "idle_ttl", checkpointCount: 0, runnerName: null }),
+      fWs({ id: 3, name: "box-c", boxState: "stopped", stopReason: "wallclock_ttl", checkpointCount: 12, runnerName: "node-2" }),
+      fWs({ id: 4, name: "box-d", boxState: "stopped", stopReason: "manual", checkpointCount: 1, runnerName: "" }),
+      fWs({ id: 5, name: "box-e", boxState: "weird", checkpointCount: 0, runnerName: "node-3" }),
+      { id: 6, name: "box-f", boxState: "running", runnerName: "node-4" }, // 缺位字段（`checkpointCount` 不在）⇒ 中性占位（不假造）
     ]
     const { ctx, calls } = fCtx({ "GET /api/me/sandbox/workspaces": () => ({ workspaces: rows }) })
     const mount = makeNode("section")
     await PAGE.renderMeSandbox(ctx, mount)
     assert.deepEqual(fFindAll(mount, (node) => node.tag === "th").map((cell) => cell.textContent),
-      [ZH["me.sandbox.colName"], ZH["me.sandbox.colState"], ZH["me.sandbox.colDirty"], ZH["me.sandbox.colCheckpoints"], ZH["me.sandbox.colRunner"], ZH["me.sandbox.colPending"]], "六列表头（名 ∥ 盒状态 ∥ 未提交改动 ∥ 快照数 ∥ 所属 runner ∥ 待批）")
+      [ZH["me.sandbox.colName"], ZH["me.sandbox.colState"], ZH["me.sandbox.colCheckpoints"], ZH["me.sandbox.colRunner"], ZH["me.sandbox.colPending"]], "五列表头（名 ∥ 盒状态 ∥ 快照数 ∥ 所属 runner ∥ 待批）")
     const body = rowsOf(mount)
     assert.equal(body.length, 6, "响应逐行渲染")
     const [first, second, third, fourth, fifth, sixth] = body.map(cellsOf)
-    assert.deepEqual([first[0], first[2], first[3], first[4]], ["box-a", ZH["me.sandbox.dirtyYes"], "3", "node-1"], "行逐值（名 ∥ dirty 有改动 ∥ 快照数 ∥ 所属 runner）")
+    assert.deepEqual([first[0], first[2], first[3]], ["box-a", "3", "node-1"], "行逐值（名 ∥ 快照数 ∥ 所属 runner）")
     assert.ok(first[1].includes(ZH["me.sandbox.stateRunning"]) && second[1].includes(ZH["me.sandbox.stateStopped"]) && second[1].includes(ZH["me.sandbox.stopIdle"]), "盒状态两态 + 空闲回收")
     assert.ok(third[1].includes(ZH["me.sandbox.stopWallclock"]) && fourth[1].includes(ZH["me.sandbox.stopManual"]), "回收原因三值（墙钟/手动）")
-    assert.deepEqual([second[2], second[4]], [ZH["me.sandbox.dirtyNo"], ZH["me.sandbox.unbound"]], "无改动 ∥ 未绑定（`runnerName` null ⇒ 表句）")
-    assert.equal(fourth[4], ZH["me.sandbox.unbound"], "`runnerName` 空串 ⇒ 同表句")
+    assert.equal(second[3], ZH["me.sandbox.unbound"], "未绑定（`runnerName` null ⇒ 表句）")
+    assert.equal(fourth[3], ZH["me.sandbox.unbound"], "`runnerName` 空串 ⇒ 同表句")
     assert.equal(fifth[1], "weird", "盒状态枚举外 ⇒ 原值兜底（不假造）")
-    assert.deepEqual([sixth[2], sixth[3]], ["—", "—"], "缺位字段（`dirty`/`checkpointCount`）⇒ 中性占位（不代断言业务值）")
-    assert.equal(first[5], "pypi.org", "待批列 = pending.host")
-    assert.equal(second[5], "—", "零 pending ⇒ 占位「—」")
+    assert.deepEqual([sixth[2], sixth[4]], ["—", "—"], "缺位字段（`checkpointCount`/`pending`）⇒ 中性占位（不代断言业务值）")
+    assert.equal(first[4], "pypi.org", "待批列 = pending.host")
+    assert.equal(second[4], "—", "零 pending ⇒ 占位「—」")
     // 纯函数面（枚举外兜底 ∥ 类映射 ∥ pending 提取）
     assert.deepEqual([PAGE.boxStateLabel("running"), PAGE.boxStateLabel("stopped"), PAGE.boxStateLabel("weird"), PAGE.boxStateLabel(null)],
       [ZH["me.sandbox.stateRunning"], ZH["me.sandbox.stateStopped"], "weird", "—"], "态文案（枚举外/空 ⇒ 原值/占位）")
@@ -310,9 +310,9 @@ test("⑥ 10s 轮询：在场 ⇒ 恰一枚 10s 排程 ∥ 放行一轮 ⇒ 重�
   } finally { poll.restore(); delete globalThis.document }
 })
 
-// ── ⑦ i18n 两表逐键同步（me 19 键 + shell 1 键）──────────────────────────────────
+// ── ⑦ i18n 两表逐键同步（me 16 键 + shell 1 键）──────────────────────────────────
 
-test("⑦ i18n：`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键逐键在场 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK", async () => {
+test("⑦ i18n：`me.sandbox.*` 16 键 + `nav.page.me.sandbox` 1 键逐键在场 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK", async () => {
   const [zhMe, enMe, zhShell, enShell] = await Promise.all([load("i18n-zh-me.mjs"), load("i18n-en-me.mjs"), load("i18n-zh-shell.mjs"), load("i18n-en-shell.mjs")])
   const zhKeys = Object.keys(zhMe.ZH_ME), enKeys = Object.keys(enMe.EN_ME)
   // 键集相等（自称名族在 shell；`.one` 变体族 = en 独有——沿既有口径排除）
@@ -327,7 +327,7 @@ test("⑦ i18n：`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键逐键在场
     assert.equal(placeholders(zhMe.ZH_ME[key]), placeholders(enMe.EN_ME[key]), `占位符不对位：${key}`)
     assert.equal(CJK.test(enMe.EN_ME[key]), false, `en 值含 CJK：${key}`)
   }
-  assert.equal(NEW_ME_KEYS.length, 19, "本批 me 键数")
+  assert.equal(NEW_ME_KEYS.length, 16, "本批 me 键数（dirty 三键退场随 D 裁）")
   assert.equal(placeholders(zhMe.ZH_ME["me.sandbox.pending"]), "host", "提示行占位符 `{host}`（判定单源 = `sandbox/SANDBOX.md` §8——文案取值逐字）")
   assert.equal(zhMe.ZH_ME["me.sandbox.pending"], "等待管理员批准：{host}（首次访问新域名——通常 ≤60s）", "提示行文案逐字（单源处取值；本档不复制改判）")
   for (const [lang, table] of [["zh", zhShell.ZH_SHELL], ["en", enShell.EN_SHELL]]) {
@@ -369,6 +369,6 @@ test("⑧ IA：我的 6（`#/me/ledger` 末位）∥ 路由解析 ∥ `labelKey`
   assert.ok(used.has("pending-line"), "本批新类被页消费：pending-line")
   // AC-19 canon 不破（零新变量 ∥ 零新悬停规则——本批 CSS 增量零变量/零 hover）
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（零新变量）")
+  assert.equal([...cssClean.match(/:root\s*\{[^}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（本批零新变量——后续批增量后现值；2026-10-14 随正）")
   assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（零新悬停规则）")
 })

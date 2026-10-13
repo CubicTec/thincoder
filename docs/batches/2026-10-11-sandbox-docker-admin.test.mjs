@@ -392,9 +392,9 @@ test("N55 镜像列表 ∥ 拉取：列表逐值（RepoTags null ⇒ []）∥ �
     assert.deepEqual(pulls.map((item) => item.query), ["?fromImage=ubuntu&tag=latest", "?fromImage=registry%3A5000%2Ffoo%2Fbar&tag=v1"], "引擎入参逐值")
     const audits = app.audits("image_pull")
     assert.deepEqual(audits.map((row) => JSON.parse(row.detail)), [
-      { kind: "image_pull", runnerId: runner.id, image: "ubuntu:latest" },
-      { kind: "image_pull", runnerId: runner.id, image: "registry:5000/foo/bar:v1" },
-    ], "审计两行（detail 键集 = ACCOUNTS §2.1）")
+      { kind: "image_pull", runnerId: runner.id, image: "ubuntu:latest", auth: false },
+      { kind: "image_pull", runnerId: runner.id, image: "registry:5000/foo/bar:v1", auth: false },
+    ], "审计两行（detail 键集 = ACCOUNTS §2.1——含 auth，2026-10-14 随正）")
   } finally {
     await app.close()
     await engine.close()

@@ -259,6 +259,15 @@ export function argsTextOf(rawArguments) {
   return capText(maskSecrets(source, []), CHAT_CALL_ARGS_MAX)
 }
 
+/** 落库/回放 `args` = **掩蔽原文**（JSON 有效——不截断；`≤500` 摘要只落帧/审计面）。
+ *  2026-10-14 缺陷修（轻通道轮）：截断残 JSON 回放撞严校验上游（dashscope code 系）400——落库面须保 JSON 有效；
+ *  存量坏行由回放面兜底（`chat-store.mjs` `replayArgsOf`——非 JSON ⇒ `"{}"`）。 */
+export function argsFullOf(rawArguments) {
+  const parsed = parseToolArgs(rawArguments)
+  const source = parsed === null ? String(rawArguments ?? "") : JSON.stringify(maskArgs(parsed))
+  return maskSecrets(source, [])
+}
+
 /** 敏感值集（本轮工具入参中的敏感键值——下游文本一并掩蔽；沿任务面 `maskSecrets(text, secrets)` 口径）。 */
 export function secretValuesOf(value, out = []) {
   if (Array.isArray(value)) {
@@ -320,6 +329,7 @@ async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = nul
     config: deps.config ?? {},
     env: deps.env ?? process.env,
     fetchImpl: deps.fetchImpl ?? fetch,
+    ...(deps.requestImpl ? { requestImpl: deps.requestImpl } : {}), // `node:https` 假件缝（连接面 TLS 档——增补 #2；缺省 null）
     ...(deps.discoverFetchImpl ? { discoverFetchImpl: deps.discoverFetchImpl } : {}),
     guard: deps.guard ?? null,
     log,
@@ -583,7 +593,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         return { status: "succeeded", reason: null, calls, durationMs }
       }
       // 有工具调用：assistant 行 + 回灌形（§17.3 A1——核件构造；回声族携 `reasoning_content`；签名在场才带；落库 ⇔ 回放逐值）
-      const pending = toolCalls.map((call) => ({ ...call, args: argsTextOf(call.arguments) }))
+      const pending = toolCalls.map((call) => ({ ...call, args: argsFullOf(call.arguments) })) // 落库/回放 = 掩蔽原文（JSON 有效——2026-10-14 缺陷修；帧/审计摘要面另取 `argsTextOf`）
       const assistantTurn = await assistantTurnOf({
         text,
         toolCalls: pending.map((call) => ({ id: call.id, name: call.name, arguments: call.args, extraContent: call.extraContent })),
@@ -612,7 +622,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         }
         if (isChatAbortRequested(chat.id)) return closeFailed("aborted", null, "") // 检查点②（工具调用前）
         calls += 1
-        emitFrame({ type: "call", id: call.id, name: call.name, args: call.args })
+        emitFrame({ type: "call", id: call.id, name: call.name, args: argsTextOf(call.arguments) }) // 帧面 = 摘要 ≤500（§11.3——落库面已改全文）
         const args = parseToolArgs(call.arguments)
         const secrets = args === null ? [] : secretValuesOf(args)
         turnSecrets.push(...secrets)

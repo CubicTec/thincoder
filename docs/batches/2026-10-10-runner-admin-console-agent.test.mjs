@@ -246,7 +246,7 @@ test("N49+N53 裸机全链：S1→S8 逐条 ∥ 每 exec 审计行 ∥ 登记行
     for (const option of ["NumberOfPasswordPrompts=1", "PreferredAuthentications=password", "PubkeyAuthentication=no"]) {
       assert.equal(install.args.includes(option), true, `口令径含 ${option}（单提示、仅口令面——KD-SV-85）`)
     }
-    assert.equal(install.input, `${SUDO}\n`, "sudo 口令经 stdin（`sudo -S`）")
+    assert.deepEqual(install.input, Buffer.from(`${SUDO}\n`), "sudo 口令经 stdin（`sudo -S`——Buffer 形，2026-10-14 随正）")
   } finally {
     await app.close()
     await engine.close()
@@ -578,27 +578,27 @@ test("腿 F Docker 客户端缓存驱逐：首打失败（微态）⇒ 自愈后
 
 // ── 腿：v13 迁移六条（STORE.md §2 v13 段判据）─────────────────────────────────
 
-test("v13 建表：空库直落 16 ∥ v12 库升后 16 ∥ 幂等 ∥ 十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒", async () => {
+test("v13 建表：空库直落 22 ∥ v12 库升后 22 ∥ 幂等 ∥ 十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 状态 CHECK 四值放行/越值拒", async () => {
   const file = join(tempRoot, "v13.db")
   const fresh = DB.openDatabase(file)
-  assert.equal(DB.readVersion(fresh), 17, "空库直落 17")
+  assert.equal(DB.readVersion(fresh), 22, "空库直落 22（链尾——2026-10-14 随正）")
   const cols = fresh.prepare("PRAGMA table_info(sandbox_onboarding)").all().map((row) => row.name)
   assert.equal(cols.length, 18, `列面十八列在场（实 ${cols.length}）`)
   for (const name of ["host", "ssh_port", "ssh_user", "auth_kind", "secret_cipher", "sudo_cipher", "credential_mode", "credential_state", "name", "model", "status", "step", "steps_json", "runner_id", "created_by", "created_at", "finished_at"]) {
     assert.equal(cols.includes(name), true, `列在场：${name}`)
   }
   fresh.close()
-  // v12 库升后 = 14
+  // v12 库升后 = 22（链尾——2026-10-14 随正）
   const file12 = join(tempRoot, "v12.db")
   const v12 = DB.openDatabase(file12, { migrations: DB.MIGRATIONS.slice(0, 12) })
   assert.equal(DB.readVersion(v12), 12)
   v12.close()
   const upgraded = DB.openDatabase(file12)
-  assert.equal(DB.readVersion(upgraded), 16, "v12 库升后读数 16")
+  assert.equal(DB.readVersion(upgraded), 22, "v12 库升后读数 22")
   upgraded.close()
   // 幂等（再开零变）
   const reopened = DB.openDatabase(file12)
-  assert.equal(DB.readVersion(reopened), 16, "v13–v16 段幂等（再开零变）")
+  assert.equal(DB.readVersion(reopened), 22, "v13–v22 段幂等（再开零变）")
   assert.equal(reopened.prepare("PRAGMA table_info(sandbox_onboarding)").all().length, 18, "再开列面零变")
   // 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）
   const key = ONBOARDING.loadOrCreateCredentialKey(join(tempRoot, "v13-credentials.key"))

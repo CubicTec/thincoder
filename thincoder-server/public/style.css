@@ -37,6 +37,13 @@
   --bw: 1px; --bw-strong: 2px;
   /* 布局（S15——宽值单源：侧栏宽 + 内容缩进 ∥ 弹窗宽三处） */
   --nav-w: 200px; --modal-w: clamp(560px, 78vw, 1200px);
+  /* 终端（sandbox-container-terminal 批——第八组；登记例外——webui/STYLE.md §2.1 底座表「终端」行）：深底 ∥ 亮字 ∥ ANSI 16 色
+     （c0–c7 常色 ∥ c8–c15 亮色）——面内零颜色字面量（`terminal-render.mjs` 消费） */
+  --term-bg: #12161d; --term-fg: #d9dee5;
+  --term-c0: #3b4048; --term-c1: #e05252; --term-c2: #4bb36a; --term-c3: #d8a013;
+  --term-c4: #5b8def; --term-c5: #b07ce8; --term-c6: #3fb8c9; --term-c7: #c9ced6;
+  --term-c8: #6b7280; --term-c9: #ff7b72; --term-c10: #6ed08a; --term-c11: #f0c04a;
+  --term-c12: #7aa7ff; --term-c13: #d0a0ff; --term-c14: #6fd7e6; --term-c15: #ffffff;
   /* ── 核件壳族变量桥（chat-shell-align 批——§2.1① 桥例外）：核件变量名 ⇒ 控制台既有变量（逐键 `var(--既有)`——零新值 ∥
         零颜色字面量；同名键 `--bg`/`--border`/`--accent`/`--muted` 取既有定义，不另列）。必须 `:root` 级：核件浮层/toast 挂 `body` 层。 */
   --fg: var(--text);
@@ -355,3 +362,18 @@ body.data-shell main tfoot td { position: sticky; bottom: 0; z-index: 1; backgro
   .nav-bottom { margin: 0 0 0 auto; flex-direction: row; align-items: center; }
   body > .content { margin-left: 0; }
 }
+
+/* ── 终端窗（views-sandbox-terminal.mjs ∥ 核三件——`webui/SANDBOX.md` §2.1①；sandbox-container-terminal 批）：
+   终端面类族五枚（`.terminal-modal` ∥ `.terminal-surface` ∥ `.terminal-row` ∥ `.terminal-cursor` ∥ `.terminal-status`）∥
+   调色板取 `:root` 终端组（面内零颜色字面量）∥ 粗体例外（§2.1 ③——面内 cell 按 pty 语义）；零动画零过渡 ∥ 零新悬停规则
+   （面内无悬停态）∥ 行悬停声明清单不变；内距 ∈ 刻度（0 亦在表）── */
+dialog.modal.terminal-modal { width: min(1200px, calc(100vw - 32px)); height: min(720px, calc(100vh - 64px)); }
+dialog.modal.terminal-modal[open] { display: flex; flex-direction: column; } /* 仅开态改显示（`[open]` 限定——关态免显形） */
+.terminal-modal .modal-head, .terminal-modal .modal-foot { flex: none; }
+.terminal-modal .modal-body { flex: 1 1 auto; min-height: 0; max-height: none; overflow: hidden; }
+.terminal-modal .modal-body > div { flex: 1 1 auto; min-height: 0; gap: var(--sp-3); }
+.terminal-modal .terminal-surface { flex: 1 1 auto; min-height: 0; }
+.terminal-surface { position: relative; overflow-x: hidden; overflow-y: auto; padding: var(--sp-4); border-radius: var(--r-2); background: var(--term-bg); color: var(--term-fg); font-family: var(--mono); font-size: var(--fs); line-height: 1; }
+.terminal-row { white-space: pre; } /* 行 = 一行格（折行归网格折返——不靠 CSS 折行） */
+.terminal-cursor { position: absolute; background: var(--term-fg); opacity: .75; } /* 形状随模式（v1 取块形即止）；闪烁 = CSS 固定（零动画） */
+.terminal-status { margin: 0; color: var(--muted); font-size: var(--fs); }

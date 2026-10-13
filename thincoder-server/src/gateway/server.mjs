@@ -10,6 +10,7 @@
 import { createServer } from "node:http"
 
 import { HttpError, sendError } from "./errors.mjs"
+import { refuseUpgrade } from "./ws.mjs"
 
 /** 请求体上限（gateway/API.md §3——413 `payload_too_large`；超限不转发）。 */
 export const MAX_BODY_BYTES = 32 * 1024 * 1024
@@ -50,9 +51,9 @@ export function createRouteTable() {
 
 /** 建 http 服务（未 listen——监听归入口）。逐请求一行日志（method ∥ path ∥ status ∥ ms）。
  *  `staticSite` = `createStaticSite()` 产物（webui/static.mjs）——缺省 null（纯 API 面，测试友好）。 */
-export function createGatewayServer({ config = {}, routes, log = null, staticSite = null } = {}) {
+export function createGatewayServer({ config = {}, routes, log = null, staticSite = null, upgrade = null } = {}) {
   if (!routes) throw new Error("createGatewayServer：缺少路由表（routes = createRouteTable()）")
-  return createServer((req, res) => {
+  const server = createServer((req, res) => {
     const started = Date.now()
     const pathname = safePathname(req.url)
     // 逐请求一行（D3 接线补断连面）：正常 = `finish`；中途断连 = `close`（`aborted: true`——未发响应头时
@@ -90,6 +91,22 @@ export function createGatewayServer({ config = {}, routes, log = null, staticSit
       .then(() => route.handler(req, res, { config, log, routes, params: route.params }))
       .catch((err) => failRequest(res, err, log))
   })
+  // 升级路挂点（本批——sandbox-container-terminal；gateway/API.md §4）：`server.on("upgrade", …)` 全量交 `upgrade` 处理件
+  //（路径匹配/判权/404 归其内）；未接线 ⇒ 一律「未匹配」口径（404 后断开——错误形同上）。
+  server.on("upgrade", (req, socket, head) => {
+    socket.on("error", () => { /* 升级 socket 错误面：拒绝/断开后对端强断——零噪声（语义收口归各层） */ })
+    if (typeof upgrade !== "function") {
+      refuseUpgrade(socket, "not_found", `无此升级路由：${req?.method} ${safePathname(req?.url)}`)
+      return
+    }
+    try {
+      upgrade(req, socket, head)
+    } catch (e) {
+      log?.error("upgrade_handler_error", { message: e?.message ?? String(e) })
+      socket.destroy()
+    }
+  })
+  return server
 }
 
 /** 读请求体并按 JSON 解析：超限 ⇒ `payload_too_large`（413）；非法 JSON ⇒ `invalid_request_error`（400）。

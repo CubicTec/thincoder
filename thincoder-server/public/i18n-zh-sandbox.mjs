@@ -57,6 +57,10 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.removeContainerTitle": "删除容器",
   "admin.sandbox.removeContainerNote": "运行中的容器将被强制停止并删除（卷不随删）",
   "admin.sandbox.containerDeleted": "已删除容器：{name}",
+  // ── 管理·沙盒·容器动作成功句（§2.1①——sandbox-container-actions 批） ────────────
+  "admin.sandbox.containerStarted": "容器已启动：{name}",
+  "admin.sandbox.containerStopped": "容器已停止：{name}",
+  "admin.sandbox.containerRestarted": "容器已重启：{name}",
 
   // ── 管理·沙盒·托管接入与装机任务区（§2.8①——runner-admin-console 批增补） ────────
   "admin.sandbox.onboardingBtn": "托管接入",

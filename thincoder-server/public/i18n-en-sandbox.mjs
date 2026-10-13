@@ -57,6 +57,10 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.removeContainerTitle": "Delete container",
   "admin.sandbox.removeContainerNote": "A running container is force-stopped and removed (the volume is kept)",
   "admin.sandbox.containerDeleted": "Container deleted: {name}",
+  // ── 管理·沙盒·容器动作成功句（§2.1①——sandbox-container-actions 批） ────────────
+  "admin.sandbox.containerStarted": "Container started: {name}",
+  "admin.sandbox.containerStopped": "Container stopped: {name}",
+  "admin.sandbox.containerRestarted": "Container restarted: {name}",
 
   // ── 管理·沙盒·托管接入与装机任务区（§2.8①——runner-admin-console 批增补） ────────
   "admin.sandbox.onboardingBtn": "Hosted onboarding",

@@ -2,6 +2,7 @@
  * views-sandbox-containers.mjs — 沙盒页·容器区件（webui/SANDBOX.md §2.1①；sandbox-docker-admin 批——自 `views-sandbox.mjs` 外拆）：
  * 容器表（名/镜像/状态/操作：详情/启动/停止/重启/日志/删除）∥ 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块（懒取 + 刷新钮）
  * + 强杀危险钮（二次确认））∥ 日志窗（`pre` 码面 + tail 选择 + 刷新 + 截断标记）∥ 建/删窗（建窗卷字段 = 节点已有卷选单 + 「新建卷（手输）」保底——sandbox-volumes 批）。
+ * **动作钮状态门 + 忙态 + 反馈（sandbox-container-actions 批——2026-10-13；台账 #1358）**：启动/停止/重启随容器态门矩阵（`actionGate`——重启锚定运行中）∥ 点击 ⇒ 该行六钮即时禁用 + 行闩（在飞零第二请求）⇒ 完成回门矩阵态（成功面另走既有重取；失败面按当刻态列重算）∥ 成功 `flash` 成功句（含容器名——三枚）/失败红条。
  * 契约 = gateway/API.md §2.5；文案经 `t()`（`webui/I18N.md` §2.1）；渲染一律节点 + textContent（零拼串）。
  * 拆档缘由 = `views-sandbox.mjs` 增量将越 500 硬线前外拆；窗体助手四件已迁 `modal.mjs`（避循环 import）。
  * 单元测试档直测面 = `createContainerSection`（桩 ctx + 假 fetch 路由表）。
@@ -23,6 +24,17 @@ export function containerStateLabel(state) {
   const key = CONTAINER_STATE_KEYS[state]
   return key === undefined ? String(state ?? "—") : t(key)
 }
+
+/** 动作钮状态门（纯函数——单元测试档直测；值 = 该钮禁用——`actionGate("running")` = `{ start: true, stop: false, restart: false }`）：
+ * 运行中 ⇒ 启动禁、停止/重启可用；非运行（已创建/已退出/枚举外原值兜底）⇒ 停止/重启禁、启动可用。
+ * 重启锚定运行中 = 设计拍——重启语义 = 对运行中容器「停 ⇒ 启」；非运行态该钮与「启动」重复（`webui/SANDBOX.md` §2.1①）。 */
+export function actionGate(state) {
+  const running = state === "running"
+  return { start: running, stop: !running, restart: !running }
+}
+
+/** 三动作成功句键（`t()` 取件——句含容器名 `{name}`；`webui/SANDBOX.md` §2.1①）。 */
+const ACTION_FLASH_KEYS = { start: "admin.sandbox.containerStarted", stop: "admin.sandbox.containerStopped", restart: "admin.sandbox.containerRestarted" }
 
 /** 字节 → 人话（B/KiB/MiB/GiB；一位小数——零依赖；非数 ⇒ 「—」）。 */
 export function formatBytes(value) {
@@ -76,13 +88,7 @@ export function createContainerSection(ctx) {
       h("td", { text: container.name }),
       h("td", { text: container.image }),
       h("td", { text: containerStateLabel(container.state) }),
-      h("td", {},
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.detail"), onclick: () => openContainerDetailModal(ctx, { runner, container, invalidate }) }),
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.start"), onclick: () => containerAction(ctx, { runner, container, action: "start", invalidate }) }),
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.stop"), onclick: () => containerAction(ctx, { runner, container, action: "stop", invalidate }) }),
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.restart"), onclick: () => containerAction(ctx, { runner, container, action: "restart", invalidate }) }),
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logs"), onclick: () => openContainerLogsModal(ctx, { runner, container }) }),
-        h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveContainerModal(ctx, { runner, container, reload: invalidate }) }))))
+      actionCell(ctx, { runner, container, invalidate })))
     box.append(h("div", { class: "table-wrap" },
       h("table", {}, h("thead", {}, h("tr", {}, ...headers.map((label) => h("th", { text: label })))), h("tbody", {}, ...rows))))
     return box
@@ -96,14 +102,49 @@ export function createContainerSection(ctx) {
   return { area, reset }
 }
 
-/** 容器动作（启动 ∥ 停止 ∥ 重启——幂等成功面由服务端收编；成功 ⇒ 失缓存重取 = 界面上新）。 */
-async function containerAction(ctx, { runner, container, action, invalidate }) {
-  try {
-    await ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers/${container.id}/${action}`, { method: "POST", body: {} })
-    invalidate()
-  } catch (error) {
-    ctx.fail(error)
+/** 动作列（六钮——详情/启动/停止/重启/日志/删除）：三动作初值 = 门矩阵；点击 ⇒ 该行六钮即时禁用（发请求前）+ 行闩
+ *  （在飞再触零第二请求）⇒ 完成回门矩阵态（成功面另走既有 `invalidate()` 重取——态列随新数据重渲；失败面按当刻态列重算——非六钮无条件全启）。 */
+function actionCell(ctx, { runner, container, invalidate }) {
+  const { h } = ctx
+  const gate = actionGate(container.state)
+  const buttons = {
+    detail: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.detail"), onclick: () => openContainerDetailModal(ctx, { runner, container, invalidate }) }),
+    start: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.start"), disabled: gate.start, onclick: () => run("start") }),
+    stop: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.stop"), disabled: gate.stop, onclick: () => run("stop") }),
+    restart: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.restart"), disabled: gate.restart, onclick: () => run("restart") }),
+    logs: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.logs"), onclick: () => openContainerLogsModal(ctx, { runner, container }) }),
+    remove: h("button", { type: "button", class: "tiny", text: t("admin.sandbox.remove"), onclick: () => openRemoveContainerModal(ctx, { runner, container, reload: invalidate }) }),
   }
+  const six = Object.values(buttons)
+  let busy = false // 行闩（在飞期——该行六钮零第二请求）
+  /** 门矩阵重算（当刻态列——完成恢复的落点；详情/日志/删除 = 读面不随门，忙态外恒可用）。 */
+  const applyGate = () => {
+    const matrix = actionGate(container.state)
+    buttons.start.disabled = matrix.start
+    buttons.stop.disabled = matrix.stop
+    buttons.restart.disabled = matrix.restart
+    buttons.detail.disabled = false
+    buttons.logs.disabled = false
+    buttons.remove.disabled = false
+  }
+  /** 三动作一路（启动 ∥ 停止 ∥ 重启——幂等成功面由服务端收编）：即时禁六钮 ⇒ 请求 ⇒ 成功 = flash 成功句 + 失缓存重取
+   *  ∥ 失败 = 红条照旧；完成（两路）⇒ 闩清 + 回门矩阵态。 */
+  async function run(action) {
+    if (busy) return
+    busy = true
+    for (const button of six) button.disabled = true
+    try {
+      await ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers/${container.id}/${action}`, { method: "POST", body: {} })
+      ctx.flash(t(ACTION_FLASH_KEYS[action], { name: container.name }))
+      invalidate()
+    } catch (error) {
+      ctx.fail(error)
+    } finally {
+      busy = false
+      applyGate()
+    }
+  }
+  return h("td", {}, ...six)
 }
 
 /** 详情窗（信息段 + 挂载表 + 端口表 + 环境块 + 用量块 + 强杀钮）。 */

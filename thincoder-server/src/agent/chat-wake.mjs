@@ -124,7 +124,7 @@ export async function pumpChatWake({ chatId, db, deps = {}, now = Date.now, log 
     await fireChatWake({ chatId: key, db, deps, now, log, core, senderId })
     return true
   }
-  return (await armChatWake({ chatId: key, db, deps, now, log })) !== null
+  return (await armChatWake({ chatId: key, db, deps, now, log, senderId })) !== null // 无交付再武装——随发送者（#45 上抛 1：漏透传 ⇒ 闩上下文刷 null ⇒ 唤醒轮回落主人）
 }
 
 /** 结算钩子（§15.1 ②——池结算尾唤醒面 `_asyncWaiters`）：核 `wakeAsyncWaiters` splice **一次性消费** ⇒

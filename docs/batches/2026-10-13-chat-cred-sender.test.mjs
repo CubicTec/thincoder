@@ -84,4 +84,5 @@ test("④ 回落链与管道透传（源形断言）：senderId ?? owner ∥ 路
   assert.equal((routesSrc.match(/senderId: admin\.id/g) ?? []).length, 2, "路由两处（回合 + 链尾泵）")
   assert.ok(routesSrc.includes("const { member: admin } = requireAdmin(db, req) // 发送者 = 凭据主体"), "发送者取自登录成员")
   assert.ok(wakeSrc.includes("runChatWakeTurn({ db, chatId: key, source: sourceOf(timerPadOf(key), { now, core: timers }), deps, now, log, senderId })"), "唤醒面透传在册")
+  assert.ok(wakeSrc.includes("return (await armChatWake({ chatId: key, db, deps, now, log, senderId })) !== null"), "无交付再武装携发送者（#45 上抛 1 修复断言）")
 })

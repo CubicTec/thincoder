@@ -27,11 +27,16 @@
  *
  * 报告面随动（KD-M1-40）：本工具**不写** `agent.manifest`（第二值源否——工具目标可为非锚项目）——
  * 写盘 = 盘面变化，情境行经既有 ③b mtime 门控于下回合采纳（`agent/setup-reminders.mjs`）。
+ *
+ * 缓存失效（#1367 面⑦）：写档成功（init ∥ write——全部成功路径）⇒ `clearDeclarationCache()`——
+ * 「补档即回归」进程内即时（声明 ∥ 范围缓存同清）；失败路径不清（盘零变 ⇒ 缓存照旧）；
+ * 手工改档 ⇒ 重启生效（零文件侦听）。
  */
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { MANIFEST_REL, MANIFEST_SCHEMA, initManifest, projectRootView, projectView, readManifest, writeManifest } from "../manifest.mjs"
 import { DESC } from "../tools/shared.mjs"
+import { clearDeclarationCache } from "../conventions.mjs" // #1367 面⑦：写档成功 ⇒ 缓存失效（fix 轮接线）
 
 /** 拒面统一前缀（设计 §2.10：`manifest <action>: refused — …`）——盘零变类拒绝一律经此抛错。 */
 function refuse(action, reason) {
@@ -150,6 +155,7 @@ export const manifestTool = {
       } catch (e) {
         throw refuse("init", `could not write the default manifest at ${file} — ${e?.message ?? String(e)}`)
       }
+      clearDeclarationCache() // 写成功：补档 ⇒ 范围即回归（进程内——失败路径不清）
       return `manifest init: created default manifest (DEFAULT_MANIFEST)\npath=${file}`
     }
 
@@ -188,6 +194,7 @@ export const manifestTool = {
     } catch (e) {
       throw refuse("write", `the edited manifest fails the pre-write validation (disk unchanged) — ${e?.message ?? String(e)}`)
     }
+    clearDeclarationCache() // 写成功：声明 ∥ 范围逐字随动（进程内——失败路径不清）
     return `manifest write: set ${key} = ${JSON.stringify(value)}\npath=${file}`
   },
 }

@@ -8,14 +8,15 @@
  *     一行；真实行数——F-S14 ①）＋ `logEvent`；过 `INDEX_ORIGIN_ROW_CAP` 由调用方跳过列序后缀
  *     （**只停新增**——存量行不失效；跳过 = 不落行 ∕ 不记 mtime ⇒ 下趟重试）。
  *   · **stale 收尾循环**（`sweepStaleRows`）：同款时间片让出（§6.10 A2 口径——每 `SCAN_YIELD_CHECK_ROWS`
- *     行读钟，累计 ≥ `yieldMs` 即让出）＋ 面① **收尾保护位**（`isExcludedRelPath` 命中路径短路——
- *     被排除但存在的路径存量行不因声明删除，收敛仅经 `sweep --path`；缺省 `[]` ⇒ 恒不命中）。
+ *     行读钟，累计 ≥ `yieldMs` 即让出）＋ **收尾保护位**（两族并列：面①∪面⑥ `isExcludedRelPath` ∪
+ *     面⑦ `isInDeclaredScope` 命中路径短路——被排除 ∥ 范围外而文件仍在盘的路径，存量行不因声明
+ *     删除；收尾只删「不在盘 ∥ 不再列」的行，收敛仅经 `sweep --path`）。
  *
  * 零环：只引 `log.mjs` ∕ `conventions.mjs`（谓词）∕ `schema.mjs`（常量）∕ `scan.mjs`（预算常量）∕
  * `code-index.mjs`（`yieldTick`）——不引 `code-sync.mjs` ∕ `docs.mjs`。作业皆经传入句柄，档内零状态。
  */
 import { logEvent } from "../log.mjs"
-import { isExcludedRelPath } from "../conventions.mjs"
+import { isExcludedRelPath, isInDeclaredScope } from "../conventions.mjs"
 import { INDEX_ORIGIN_ROW_WARN, INDEX_ORIGIN_ROW_CAP } from "./schema.mjs"
 import { SCAN_YIELD_CHECK_ROWS, SCAN_YIELD_MS } from "./scan.mjs"
 import { yieldTick } from "./code-index.mjs"
@@ -65,16 +66,19 @@ export function createRowBudget(memory, origin, kind, dir, { baseOffset } = {}) 
  * §6.14 B6 ∕ M3：收尾 stale 删除循环（同款让出 + 收尾保护位）。返回删除行数（文件级）。
  * @param {object} memory 句柄
  * @param {{table: string, origin: string, indexed: Map<string, number>, seen: Set<string>, decl: object,
- *   base?: string|null, yieldFn?: Function, nowFn?: Function, yieldMs?: number}} opts
+ *   base?: string|null, scope?: readonly object[]|null, yieldFn?: Function, nowFn?: Function, yieldMs?: number}} opts
  *   `indexed` = 库内 path→mtime（开趟读）；`seen` = 本趟列文件；`decl` = `loadProjectDeclaration()` 回执；
- *   `base` = `indexed`/`seen` 里 `rel` 的相对基（调用面 dir——#700 等价换算；缺省 = 根相对）
+ *   `base` = `indexed`/`seen` 里 `rel` 的相对基（调用面 dir——#700 等价换算；缺省 = 根相对）；
+ *   `scope` = `declaredIndexScope(base)` 回执（面⑦ 保护位——缺省 `null` ⇒ **范围面不判**（仅面①∪面⑥ 保护，
+ *   既有调用方语义零改）；在场（含空数组 = 零条目）⇒ 范围外短路（存量行不删））
  */
-export async function sweepStaleRows(memory, { table, origin, indexed, seen, decl, base = null, yieldFn = yieldTick, nowFn = Date.now, yieldMs = SCAN_YIELD_MS }) {
+export async function sweepStaleRows(memory, { table, origin, indexed, seen, decl, base = null, scope = null, yieldFn = yieldTick, nowFn = Date.now, yieldMs = SCAN_YIELD_MS }) {
   let removed = 0
   let checked = 0
   let lastYieldAt = nowFn()
   for (const stale of indexed.keys()) {
-    if (!seen.has(stale) && !isExcludedRelPath(stale, decl, base)) {
+    // 面⑦ 保护位：`scope` 在场 ⇒「声明面内才删」（范围外短路）；缺省 ⇒ 范围面不判（既有调用方语义零改）
+    if (!seen.has(stale) && !isExcludedRelPath(stale, decl, base) && (scope === null || isInDeclaredScope(stale, scope, base))) {
       memory.db.prepare(`DELETE FROM ${table} WHERE origin = ? AND path = ?`).run(origin, stale)
       removed++
     }

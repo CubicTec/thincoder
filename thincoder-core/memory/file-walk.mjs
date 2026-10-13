@@ -80,14 +80,18 @@ export function createUnlistedTally(knownExts) {
  * silently dropped.
  * @param {string} dir — project root
  * @param {Set<string>} exts — extensions to keep (lower-case, leading dot)
- * @param {{maxFiles?: number, knownExts?: Set<string>|null, isExcluded?: ((rel: string) => boolean)|null}} [opts]
+ * @param {{maxFiles?: number, knownExts?: Set<string>|null, isExcluded?: ((rel: string) => boolean)|null,
+ *   isInScope?: ((rel: string) => boolean)|null}} [opts]
  *   knownExts → also tally files whose extension is in NO index list
- *   isExcluded → caller-injected exclusion predicate (§6.14 面① 剪枝形): a hit prunes the
+ *   isExcluded → caller-injected exclusion predicate (§6.14 面① ∪ 面⑥ 剪枝形): a hit prunes the
  *   subtree (never expanded — zero readdir, no MAX_WALK_FILES budget spent) or drops the file
+ *   isInScope → caller-injected declared-scope predicate (§6.14 面⑦): a hit drops the FILE only —
+ *   never prunes (the code face matches a segment sequence at any depth, so an upper directory
+ *   carries no pruning judgement); an out-of-scope file spends no MAX_WALK_FILES budget
  * @returns {Promise<{files: {abs: string, rel: string}[], truncated: boolean,
  *   unlisted: {count: number, exts: {ext: string, count: number}[]}}>}
  */
-export async function walkProjectFiles(dir, exts, { maxFiles = MAX_WALK_FILES, knownExts = null, isExcluded = null } = {}) {
+export async function walkProjectFiles(dir, exts, { maxFiles = MAX_WALK_FILES, knownExts = null, isExcluded = null, isInScope = null } = {}) {
   const files = []
   const tally = knownExts ? createUnlistedTally(knownExts) : null
   let truncated = false
@@ -106,7 +110,8 @@ export async function walkProjectFiles(dir, exts, { maxFiles = MAX_WALK_FILES, k
         if (!isSkippedRelPath(rel) && !isExcluded?.(rel)) stack.push({ abs: join(cur.abs, ent.name), rel })
         continue
       }
-      if (!ent.isFile() || isSkippedRelPath(rel) || isExcluded?.(rel)) continue
+      // 面⑦ 范围门：只丢文件、不剪枝（段序列可命中任意深度 ⇒ 上层目录无剪枝判据）
+      if (!ent.isFile() || isSkippedRelPath(rel) || isExcluded?.(rel) || (isInScope !== null && !isInScope(rel))) continue
       const ext = extensionOf(ent.name)
       if (!ext || !exts.has(ext)) {
         tally?.note(rel)

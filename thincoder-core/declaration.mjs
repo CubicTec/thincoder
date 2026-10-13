@@ -5,9 +5,10 @@
  * name / shape / defaults = schema 面 `docs/core/design/MANIFEST.md` §2.2）。迁出块逐字；
  * 原档 `conventions.mjs` 经 `export { … } from` 转口保名（消费面 / 单元测试档 import 面零改）。
  */
-import { existsSync, statSync } from "node:fs"
+import { existsSync, readdirSync, statSync } from "node:fs"
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path"
-import { DEFAULT_MANIFEST, manifestFilePath, owningProject, readManifest } from "./manifest.mjs"
+import { DEFAULT_MANIFEST, MANIFEST_REL, docRootPaths, manifestFilePath, owningProject, readManifest } from "./manifest.mjs"
+import { isSkippedRelPath } from "./memory/file-walk.mjs" // 面⑦ 子目录扫描的跳过段谓词单源（零环：file-walk 不引本档）
 import { logEvent } from "./log.mjs"
 
 /** Retired declaration carrier (project-root relative). Its EXISTENCE is checked, its
@@ -147,6 +148,114 @@ export function isExcludedRelPath(rel, decl, base = null) {
   return list.some((p) => p && (s === p || s.startsWith(`${p}/`)))
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// §6.14 面⑦ 索引范围声明化（结构门——2026-10-13 · 台账 #1367）：范围 = 锚的**管辖 manifest**
+// 声明目录 ∪ **一级子目录**（带档者）声明目录——「未声明 ⇒ 不进」；条目集空 ⇒ 零索引
+// （不回落全树）。键面 = `docRoot.*`（五子键合并）∪ `codePaths`——两键各按自身既有语义
+// （本规 = 新增消费点，键值语义零改）。写面（收录）∥ 读面（存量行准入）共用本谓词族。
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** 文档面前缀集合（条目根相对——`docRoot.*` 五子键合并展开；解析单源 = `docRootPaths`，F7）：
+ *  值 = 根相对字面前缀（恰等 ∨ 后随 `/`——路径及子树；文件值如 `docs/RELEASE.md` ⇒ 恰该文件）；
+ *  `"."` = 该条目根自身（整根面）；越根值（`../` 形）剔除——条目子树内的文件永不可命中它。
+ *  去重保序。 */
+function entryDocPaths(docRoot, root) {
+  const out = []
+  if (docRoot === null || typeof docRoot !== "object" || Array.isArray(docRoot)) return out
+  for (const key of Object.keys(DEFAULT_MANIFEST.docRoot)) {
+    for (const abs of docRootPaths(docRoot[key], root)) {
+      const rel = relative(root, abs).replace(/\\/g, "/")
+      if (rel === "" || rel === ".") { if (!out.includes(".")) out.push("."); continue }
+      if (rel === ".." || rel.startsWith("../") || isAbsolute(rel)) continue
+      if (!out.includes(rel)) out.push(rel)
+    }
+  }
+  return out
+}
+
+/** 段序列任意深度连续命中（面⑦ 代码面——大小写不敏感 = 既有键语义口径，同 `conventions.mjs`
+ *  `hasSequenceIn`）；`face` = 已小写化的根相对段表。 */
+function hasSegmentRun(face, seq) {
+  const want = String(seq).replace(/\\/g, "/").split("/").filter(Boolean).map((s) => s.toLowerCase())
+  if (want.length === 0) return false
+  for (let i = 0; i + want.length <= face.length; i++) {
+    if (want.every((w, j) => face[i + j] === w)) return true
+  }
+  return false
+}
+
+/** 面⑦ 一条目（`root` = 仓根绝对路径；档在场 = 调用面已判）：`docPaths` = 根相对字面前缀 ∥
+ *  `codePaths` = 段名数组（既有归一单源 = `loadProjectDeclaration`——`[]` = 无段面）。档**非法**
+ *  （坏 JSON ∥ 形态错）⇒ 两族按默认值参与 + 既有可见告警（声明链 KD-M1-32——`loadProjectDeclaration`
+ *  的降级告警单源，本档零第二实现）——不静默成零。 */
+function scopeEntryOf(root) {
+  const decl = loadProjectDeclaration(root)
+  const r = readManifest(root)
+  const docRoot = r.ok ? r.manifest.docRoot : DEFAULT_MANIFEST.docRoot // 档在场才补默认（无档 = 无条目，不走本函数）
+  return Object.freeze({
+    root,
+    docPaths: Object.freeze(entryDocPaths(docRoot, root)),
+    codePaths: Object.freeze([...decl.codePaths]),
+  })
+}
+
+/**
+ * §6.14 面⑦ 范围求并（结构门——单源）：① `dir` 的**管辖 manifest**（`manifestFilePath(dir)` 同一根
+ * 解析——最近祖先带档 ∥ 发现兜底；**可高于 `dir`** ⇒ 深 cwd 等义）在场 ⇒ 锚条目（`root` = 档所在
+ * 目录）；② `dir` 的**直接子目录**（非跳过段——点段 ∥ 内建名单，防 `.thincoder/tmp` 类伪档）根下带档
+ *  者 ⇒ 各一条目（`root` = 该子目录）。**一层、纯向下、绝不向上**（发现纪律在案）。
+ *  冻结条目数组（按根去重保序）；条目集空 ⇒ 范围空 ⇒ **零索引**（不回落全树）。
+ *  缓存按 `dir` 归一绝对路径（`clearDeclarationCache()` 同清——测试缝单点）。
+ * @param {string} [dir] 会话锚 ∕ 同步根（项目内子目录 ⇒ 管辖 manifest 生效）
+ * @returns {ReadonlyArray<{root: string, docPaths: readonly string[], codePaths: readonly string[]}>}
+ */
+export function declaredIndexScope(dir) {
+  const key = resolve(dir ?? ".")
+  const hit = _scopeCache.get(key)
+  if (hit) return hit
+  const roots = []
+  const anchorFile = manifestFilePath(key) // 数据档路径单源（KD-M1-18）
+  if (existsSync(anchorFile)) roots.push(dirname(anchorFile))
+  let names = []
+  try { names = readdirSync(key, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort() } catch { /* 不可读 ⇒ 零子条目（不抛——同发现梯内核） */ }
+  for (const name of names) {
+    if (isSkippedRelPath(name)) continue
+    const child = join(key, name)
+    if (!existsSync(join(child, MANIFEST_REL)) || roots.includes(child)) continue // 发现兜底命中的子目录 = 锚条目同根 ⇒ 去重
+    roots.push(child)
+  }
+  const scope = Object.freeze(roots.map(scopeEntryOf))
+  _scopeCache.set(key, scope)
+  return scope
+}
+
+/**
+ * §6.14 面⑦ 范围谓词（纯谓词——单一实现，写面 ∥ 读面共用）：`rel`（`base` 相对；缺省按进程 cwd
+ * 解析）经 `resolve` 绝对化 ⇒ 逐条目判归属（`abs` ∈ `root` 子树；无归属条目 = **未声明**）⇒ 两面试
+ * 任一命中即入范围（两层锚条目间 = 并集）：
+ *   · **文档面** = 条目根相对面**字面前缀**（恰等 ∨ 后随 `/`；`"."` = 整根）；
+ *   · **代码面** = 段序列**任意深度**命中（大小写不敏感）。
+ * 不在任何条目子树内（越根）⇒ 不命中。`scope` 空 ∥ 缺 ⇒ false（零索引面——未声明 ⇒ 不进）。
+ * @param {string} rel 路径（`base` 相对）
+ * @param {ReadonlyArray<object>} scope `declaredIndexScope()` 回执
+ * @param {string|null} [base] `rel` 的相对基（目录绝对路径；缺省 = 进程 cwd）
+ * @returns {boolean}
+ */
+export function isInDeclaredScope(rel, scope, base = null) {
+  if (!Array.isArray(scope) || scope.length === 0) return false
+  const abs = resolve(base ?? ".", String(rel ?? "").replace(/\\/g, "/"))
+  for (const entry of scope) {
+    const relFromRoot = relative(entry.root, abs).replace(/\\/g, "/")
+    if (relFromRoot === "" || relFromRoot === ".." || relFromRoot.startsWith("../") || isAbsolute(relFromRoot)) continue
+    if (entry.docPaths.some((p) => p === "." || relFromRoot === p || relFromRoot.startsWith(`${p}/`))) return true
+    if (entry.codePaths.length > 0) {
+      const face = relFromRoot.split("/").filter(Boolean).map((s) => s.toLowerCase())
+      if (entry.codePaths.some((seq) => hasSegmentRun(face, seq))) return true
+    }
+  }
+  return false
+}
+
 /**
  * 声明公共仓**绝对根集**（§6.15 解析层——检索同步 ∥ 读面 origin 集 ∥ 引用解析三消费面共用的单一定义，
  * 不得二写）：值形层逐项 `resolve(decl.root, p)` ⇒ 绝对根集（去重保序）；存在性判归消费面（本层不判）。
@@ -192,10 +301,14 @@ export function resolveDeclaredRef(base, part) {
 const isFile = (p) => { try { return statSync(p).isFile() } catch { return false } }
 
 const _cache = new Map()
+/** 面⑦ 范围缓存（按 `dir` 归一绝对路径——子目录档 ∥ 声明变更后经本缝同清）。 */
+const _scopeCache = new Map()
 
-/** Drop the per-data-file-path cache (test seam — declarations are read once per path). */
+/** Drop the per-data-file-path cache (test seam — declarations are read once per path).
+ *  #1367：面⑦ 范围缓存同清（「声明 ∥ 一级子目录档」变更后同一条测试缝）。 */
 export function clearDeclarationCache() {
   _cache.clear()
+  _scopeCache.clear()
 }
 
 /** Retired-carrier warning (existence check only — zero content parsing, zero fallback). */

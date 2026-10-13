@@ -12,7 +12,7 @@ import { _upsertDocFile, yieldTick } from "./code-index.mjs"
 import { markIndexedCommit, listProjectFiles, indexExtensions, declaredRootEntries } from "./code-sync.mjs"
 import { searchOrigins } from "./code-search.mjs"
 import { createRowBudget, rowCountOfPath, sweepStaleRows } from "./sync-tail.mjs"
-import { loadProjectDeclaration, isExcludedRelPath } from "../conventions.mjs" // 面① 谓词经 `decl` 传 `sweepStaleRows`；面⑥ 读面准入本档直调
+import { loadProjectDeclaration, isExcludedRelPath, declaredIndexScope, isInDeclaredScope } from "../conventions.mjs" // 面① 谓词经 `decl` 传 `sweepStaleRows`；面⑥∪面⑦ 读面准入本档直调
 import { logEvent } from "../log.mjs"
 import { safeSliceUTF16 } from "../text-budget.mjs"
 import { DESC } from "../tools/shared.mjs" // #15 描述外置：文本单点 = tool-docs/*.md（DESC 单解析面，缺档抛错语义不变）
@@ -88,8 +88,8 @@ export async function syncDocRoot(memory, dir, { onProgress, yieldFn = yieldTick
     }
   }
 
-  // §6.14 B6 ∕ M3：收尾 stale 循环（同款让出 + 面① 收尾保护位）——机制单源 = `sync-tail.mjs`
-  removed = await sweepStaleRows(memory, { table: "doc_chunks", origin, indexed, seen, decl, base: dir, yieldFn, nowFn, yieldMs })
+  // §6.14 B6 ∕ M3：收尾 stale 循环（同款让出 + 收尾保护位：面①∪面⑥ 排除 ∪ 面⑦ 范围）——机制单源 = `sync-tail.mjs`
+  removed = await sweepStaleRows(memory, { table: "doc_chunks", origin, indexed, seen, decl, base: dir, scope: declaredIndexScope(dir), yieldFn, nowFn, yieldMs })
 
   onProgress?.({ phase: "done", total: files.length, updated, removed, skipped, failed, overSizeSkipped, budgetSkipped: budgetSkipped.length })
   // §6.14 B7 维护口：模型键失配的失效**执行**（读面只判定降级——执行住同步尾）
@@ -117,10 +117,19 @@ export async function docSearch(memory, query, { limit = 5, origins: originsOver
   const origins = originsOverride ?? searchOrigins(memory)
   const ftsOriginFilter = origins.length === 1 ? `AND d.origin = ?` : origins.length > 1 ? `AND d.origin IN (${origins.map(() => "?").join(", ")})` : ""
   const originParams = origins
-  // §6.14 面⑥ 读面准入过滤（FTS 列表建成后 ∥ 向量 top-K push 前）：行判 = 同一谓词全判（面① ∪ 面⑥，
-  // 行 origin 为 `base`）⇒「批次档从未入索引」等价检索；存量行不删（收尾保护位）；窗口欠额（少不杂）接受。
+  // §6.14 读面准入过滤（FTS 列表建成后 ∥ 向量 top-K push 前；两判据并列互不吞）：排除谓词（面①∪面⑥，
+  // 行 origin 为 `base`）∪ 声明范围门（面⑦——`isInDeclaredScope(path, declaredIndexScope(origin), origin)`，
+  // 逐 origin 预载一次）⇒「批次档 ∥ 范围外路径从未入索引」等价检索；存量行不删（收尾保护位）；窗口欠额接受。
   const declCache = new Map()
-  const rowExcluded = (origin, path) => { const d = declCache.get(origin) ?? loadProjectDeclaration(origin); declCache.set(origin, d); return isExcludedRelPath(path, d, origin) }
+  const scopeCache = new Map()
+  const rowHidden = (origin, path) => {
+    const d = declCache.get(origin) ?? loadProjectDeclaration(origin)
+    declCache.set(origin, d)
+    if (isExcludedRelPath(path, d, origin)) return true
+    let scope = scopeCache.get(origin)
+    if (scope === undefined) { scope = declaredIndexScope(origin); scopeCache.set(origin, scope) }
+    return !isInDeclaredScope(path, scope, origin)
+  }
   const ftsNeedOrigin = origins.length !== 1 // 单 origin 形 SQL 零改；多 origin ∥ 无过滤形补 `origin` 列（行 origin 随行可得）
 
   const ftsList = ftsQuery ? memory.db.prepare(`
@@ -129,7 +138,7 @@ export async function docSearch(memory, query, { limit = 5, origins: originsOver
     WHERE doc_chunks_fts MATCH ? ${ftsOriginFilter}
     ORDER BY rank LIMIT ?
   `).all(ftsQuery, ...originParams, Math.max(limit * 4, 20))
-    .filter((r) => !rowExcluded(origins.length === 1 ? origins[0] : r.origin, r.path)) : []
+    .filter((r) => !rowHidden(origins.length === 1 ? origins[0] : r.origin, r.path)) : []
 
   if (!memory.embedder) return ftsList.slice(0, limit)
 
@@ -158,8 +167,8 @@ export async function docSearch(memory, query, { limit = 5, origins: originsOver
   for (const origin of origins.length ? origins : [null]) {
     await scanVectors(memory.db, vecSql, origin ? [origin] : [], {
       cursorKey,
-      onRow: (r) => { // §6.14 面⑥ 准入（top-K push 前；无过滤形行 origin = 游标键 `origin` 列）
-        if (!rowExcluded(origin ?? r.origin, r.path)) top.push({ id: r.rowid, rowid: r.rowid, score: cosine(qvec, fromBlob(r.embedding)) })
+      onRow: (r) => { // §6.14 面⑥∪面⑦ 准入（top-K push 前；无过滤形行 origin = 游标键 `origin` 列）
+        if (!rowHidden(origin ?? r.origin, r.path)) top.push({ id: r.rowid, rowid: r.rowid, score: cosine(qvec, fromBlob(r.embedding)) })
       },
     })
   }

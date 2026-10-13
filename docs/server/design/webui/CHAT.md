@@ -121,7 +121,7 @@
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
 | `thincoder-server/public/views-chat.mjs`（已落盘——admin-agent-chat 批；实读 **488**（2026-10-12 本设计轮复读——chat-shell-align 批重写后）） | ≈430 ⇒ 实读 **488** ⇒ ≈**498**（本批：档位写面接线 +≈10——就近 500 软线：预案 = 档位小段随拆档审查；硬限 800 未越）⇒ 实读 **500**（2026-10-12 console-reasoning-levels 批落地后——恰贴软线）⇒ ≈**431**（console-chat-live-step 批——净 ≈−69：活流分步 +≈25 ∥ 帧面纯函数/回读装配外拆 ≈−94；以实施当刻实读为准）⇒ ≈**441**（admin-chat-creds-merge 批：会话条「主机凭据」钮接线 +≈10——以实施当刻实读为准） | 管理面对话页（本档 §2.1）：页四段装配 ∥ 会话条（选择器/新会话/重读）∥ 消息装配（核 `thincoder-render-core/flow/block.mjs`——回读/活流）∥ NDJSON 帧分发（`delta`/`call`/`result`/`turn`/`usage`/`end`）∥ 队列（待发泡/队首发起）∥ 新会话弹窗 ∥ 取数。**chat-shell-align 批**：去自持消息/工具件渲染与输入区（迁 `views-chat-composer.mjs`）∥ 增会话条下拉 ∥ 队列 ∥ `turn`/`usage` 帧分发 ∥ 中止/换模型接线——净 **≈−90 ⇒ ≈330** |
-| `thincoder-server/public/views-chat-messages.mjs`（拟新增——console-chat-live-step 批） | —— ⇒ ≈**105**（以实施当刻实读为准） | 消息面（本档 §2.1②）：NDJSON 行/帧纯函数（`splitLines`/`parseFrame`/`argsText`）∥ notice 行文案映射（五值）∥ 工具结果文案（失败判据 = 核 `isToolFailure`）∥ 回读装配（库行 ⇒ 核 `buildUserMessage`/`buildAssistantRestore`/`renderToolHistory`——`messageNodes`）；`views-chat.mjs` 面 `export … from` 兼容重导出（**用例级**：既有纯函数/键消费两用例经重导出零改——文件级改动清单 = 本 § 末段 ∥ §6⑥）；拆档缘由 = `views-chat.mjs` 500 软线已贴满（增行前必须先外拆） |
+| `thincoder-server/public/views-chat-messages.mjs`（已落——console-chat-live-step 批） | —— ⇒ ≈**105**（以实施当刻实读为准） | 消息面（本档 §2.1②）：NDJSON 行/帧纯函数（`splitLines`/`parseFrame`/`argsText`）∥ notice 行文案映射（五值）∥ 工具结果文案（失败判据 = 核 `isToolFailure`）∥ 回读装配（库行 ⇒ 核 `buildUserMessage`/`buildAssistantRestore`/`renderToolHistory`——`messageNodes`）；`views-chat.mjs` 面 `export … from` 兼容重导出（**用例级**：既有纯函数/键消费两用例经重导出零改——文件级改动清单 = 本 § 末段 ∥ §6⑥）；拆档缘由 = `views-chat.mjs` 500 软线已贴满（增行前必须先外拆） |
 | `thincoder-server/public/views-chat-composer.mjs`（已落盘——chat-shell-align 批；实读 **308**（2026-10-12 本设计轮复读）） | ≈**300** ⇒ 实读 **308** ⇒ ≈**318**（本批：档位行造面接核 + `selectReasoning` 映射 + prefs 携档——输入区适配层：核 `thincoder-render-core/composer/panel.mjs` 装配 ∥ 两样式档 `<link>` 注入（幂等） ∥ `post` 动作映射表 ∥ `state`/`hooks` 注入（注入口桥）∥ 无源钮收窄（CSS 隐藏）∥ 状态行渲染（段表 = §2.1④）∥ 斜杠命令表） | 输入区与状态行（本档 §2.1③④——核件全件消费适配层；拆档缘由 = `views-chat.mjs` 并入后 ≈630——越 500 软线（拆档审查；800 硬限未越）） |
 | `thincoder-server/public/i18n-zh-core.mjs`（已落盘——console-chat-align 批） | **≈24**（设计估）⇒ 实读 **14** ⇒ ≈**62**（chat-shell-align 批：消费面翻入 `composer/{panel,controls,model-menu,attach,slash}.mjs` ∥ `flow/{block,queued-mark,tool-card,tool-card-restore,stream}.mjs`——核件 `t()` 字面量全集补登（+≈41 键） ∥ 段注释 +≈7；键族清册 = 本档 §3 键族登记） | 文案表·zh·核件词面（键 = 核件原名；值逐字同 VSC locales——slash 族源 = 桌面 `thincoder-desktop/renderer/i18n-views.mjs` 同键） |
 | `thincoder-server/public/i18n-en-core.mjs`（已落盘——console-chat-align 批） | 实读 **14** ⇒ ≈**62**（同步——同上；en 零 CJK；占位符一致） | 文案表·en·核件词面 |
@@ -131,13 +131,13 @@
   ⇒ ≈**1004**（admin-chat-creds-merge 批：`views-chat.mjs` +≈10——两批在途；**实施次序 = live-step 先 ∥ creds-merge 后**〔先降基数，免 `views-chat.mjs` 先越 500 软线机检〕；以实施当刻实读为准）；域合计 = 各面之和——不单列）。
 
 **随正件（面外行账——本批另计）**：`i18n-{zh,en}-admin.mjs`（`admin.chat.*` +9 键/表——文件行账 = `webui/ADMIN.md` §3）∥ `style.css`（本面新面登记——行账 = `webui/STYLE.md` §3）∥ `views-chat.mjs` 拆档另见上行。
-**随正件（console-reasoning-levels 批——2026-10-12）**：服务端五档（`thincoder-server/src/gateway/reasoning-levels.mjs`（拟新增） ∥ `thincoder-server/src/gateway/provider-admin.mjs` ∥ `thincoder-server/src/agent/chat-routes.mjs`；
+**随正件（console-reasoning-levels 批——2026-10-12）**：服务端五档（`thincoder-server/src/gateway/reasoning-levels.mjs`（已落） ∥ `thincoder-server/src/gateway/provider-admin.mjs` ∥ `thincoder-server/src/agent/chat-routes.mjs`；
   `thincoder-server/src/agent/chat.mjs` ∥ `thincoder-server/src/store/db.mjs`——行账 = `agent/ADMIN-AGENT.md` §6 ∥ `store/STORE.md` §4）∥ `style.css`（收窄五钮——行账 = `webui/STYLE.md` §3）∥ 测试链随正（结构版本断言 11 件 + 隐藏用例 1 件 + 列面用例 1 件——见本档 §6⑤）。
 **随正件（console-chat-live-step 批——2026-10-12；以实施当刻盘面实读为准）**：`docs/batches/2026-10-11-admin-agent-chat-ui.test.mjs`（现读 **395** ⇒ ±0——档目用例数字就地收正 `[48, 47] ⇒ [49, 48]`；纯函数/键消费两用例经重导出零改）
 ∥ `docs/batches/2026-10-11-chat-shell-align.test.mjs`（现读 **877**〔内容行口径——文末换行不计；split 计法 878〕——**越 800 硬限 ⇒ 本批拆档**：机制面留存 ≈335）
-＋ 拆档新档 `docs/batches/2026-10-11-chat-shell-align-ui.test.mjs`（拟新增——壳面 N68–N70/B67/B68/E53 ＋ 结构用例 ＋ 词面用例 ＋ 假 DOM 装置；≈550——越 500 软线 ≈50：预案 = 结构/词面两用例再外拆，触发 = 实读 >650）；结构用例核件接线扫面 += 新档源（落点 = 本拆档新档）——`/rc/lib.mjs` 导入随外拆迁移
+＋ 拆档新档 `docs/batches/2026-10-11-chat-shell-align-ui.test.mjs`（已落——壳面 N68–N70/B67/B68/E53 ＋ 结构用例 ＋ 词面用例 ＋ 假 DOM 装置；≈550——越 500 软线 ≈50：预案 = 结构/词面两用例再外拆，触发 = 实读 >650）；结构用例核件接线扫面 += 新档源（落点 = 本拆档新档）——`/rc/lib.mjs` 导入随外拆迁移
 ∥ `docs/batches/2026-10-11-console-chat-align.test.mjs`（现读 **389** ⇒ +≈3——取件面白名单用例 += `views-chat-messages.mjs`）
-∥ 本批单元测试档 = `docs/batches/2026-10-12-console-chat-live-step.test.mjs`（拟新增——≈**420** 行：按步用例 N73 ∥ 同形签名用例 N74 ∥ 同一步逆序用例（`call` 先于 `delta`）∥ 边界 B71 ∥ 错误 E56 ＋ 结构用例〔零 CJK 代码段 ∥ 行宽 ≤300 ∥ 零 `innerHTML` 写口〕）
+∥ 本批单元测试档 = `docs/batches/2026-10-12-console-chat-live-step.test.mjs`（已落——≈**420** 行：按步用例 N73 ∥ 同形签名用例 N74 ∥ 同一步逆序用例（`call` 先于 `delta`）∥ 边界 B71 ∥ 错误 E56 ＋ 结构用例〔零 CJK 代码段 ∥ 行宽 ≤300 ∥ 零 `innerHTML` 写口〕）
 ∥ `webui/WEBUI.md` §1/§5（JS 链/档目链/文件行 += 新档——数值以实施当刻实读为准）。
 
 **键族登记**（自 `webui/WEBUI.md` §2.2 归位——逐字）：
@@ -198,8 +198,8 @@
 ## 6. 上抛/余项
 
 - **① 需求档回笔（主 agent 笔）——已闭合**（2026-10-11：功能点 41 ∥ AC-41 入册——`docs/server/requirements/PROJECT.md` :225/:230；该档变更记录 :565「R60① 闭合」）。
-- **② 随正件（父侧/实施轮——以当刻盘面实读为准）**：`views-chat.mjs` 拆档（新档入档目链——单源 = `webui/WEBUI.md` §1）∥ `2026-10-11-admin-agent-chat-ui.test.mjs` 静态面用例上量随正（见 `webui/WEBUI.md` §1 链）+ 类名闭合用例随正（新类名族）——现读 **395** 行（净变 ≤±50）
-  ∥ `2026-10-11-console-chat-align.test.mjs` 两用例收正——取件面白名单用例（本批新取件增列 `thincoder-render-core/flow/block.mjs` ∥ `thincoder-render-core/composer/panel.mjs`）∥ 「零 composer/reasoning 引用」口径（现读 **389** 行；净变 ≤±20；**本体零触**——用例收正随实施轮）∥ `style.css` 五钮隐藏规则 + 别名块（AC-19 canon 用例随正——见 `webui/STYLE.md`）；
+- **② 随正件（父侧/实施轮——以当刻盘面实读为准）**：`views-chat.mjs` 拆档（新档入档目链——单源 = `webui/WEBUI.md` §1）∥ `2026-10-11-admin-agent-chat-ui.test.mjs` 静态面用例上量随正（见 `webui/WEBUI.md` §1 链）+ 类名闭合用例随正（新类名族）——现读 **397** 行（2026-10-13 父侧现读，内容行口径；净变预算 ≤±50）
+  ∥ `2026-10-11-console-chat-align.test.mjs` 两用例收正——取件面白名单用例（本批新取件增列 `thincoder-render-core/flow/block.mjs` ∥ `thincoder-render-core/composer/panel.mjs`）∥ 「零 composer/reasoning 引用」口径（现读 **395** 行——2026-10-13 父侧现读；净变预算 ≤±20；**本体零触**——用例收正随实施轮）∥ `style.css` 五钮隐藏规则 + 别名块（AC-19 canon 用例随正——见 `webui/STYLE.md`）；
   门禁件数断言（本批单元测试档入链——以实施当刻盘面实读为准）∥ `i18n-{zh,en}-admin` 行账（`webui/ADMIN.md` §3）。
 - **③ 披露（不阻塞）**：图片随消息行存 dataURL（≤15MB/图 ∥ 30MB/回合——核阀单源；详情响应仅 `imageCount` 零下发）——库体量口径在册；核件样式自带过渡/动画（单源零触——控制台自有档零动画不变）∥ 无源钮隐藏五枚（逐条实证 = 本档 §2.1③④）∥ `interrupt` 折法（中止+入队首——无注入通道）∥ 控制台零 CSP 头（沿现盘）。
 - **④ 部署收尾（父侧）**：镜像重建 + 浏览器实走（四轴走查清单——批档 §2）——ECS 断点。

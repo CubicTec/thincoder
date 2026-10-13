@@ -931,7 +931,7 @@ a missing field is a dispatch defect and the spawn is refused.
   同轮同族收正 = `AGENT-LOOP.md` §2.3 两处（见该档变更记录）。机制条文零改。
 
 - 2026-09-19（**批 2026-09-19-upstream-channel-availability · 定点消差轮 · eng-designer**——承用户 2026-09-19 23:35 裁定「**端差还是要消除的**」（批档 §1.5-4 改判，撤回原「接受端差」））：**端侧域文本改「核基座 + 端 overlay」单点组合**——
-  ① §6.27.12.5 新增 **L**：`thincoder-vscode/src/agent/turn-domains.mjs`（拟新增）= 拆分计划落地 + 端侧域文本组合单点（核基座转口 + `VSC_TURN_OVERLAY` + `composeTurnDomain`）；② J 转口表增两名（`AUTO_TURN_DIGEST_DOMAIN` + `UPSTREAM_TURN_DOMAIN`）· G ④ 改组合调用 · §6.27.12.4 ② 指针收正；
+  ① §6.27.12.5 新增 **L**：`thincoder-vscode/src/agent/turn-domains.mjs`（已落）= 拆分计划落地 + 端侧域文本组合单点（核基座转口 + `VSC_TURN_OVERLAY` + `composeTurnDomain`）；② J 转口表增两名（`AUTO_TURN_DIGEST_DOMAIN` + `UPSTREAM_TURN_DOMAIN`）· G ④ 改组合调用 · §6.27.12.4 ② 指针收正；
   ③ §6.27.12.12 ④ 改为**现态陈述 + 两轮对照表**（域文本构成差异项 = 0）+ Δ 登记（四族枚举短语退役 / 端 overlay 落位 / 端侧核文本副本退役）；④ 用例 **T-VS-U7** + T-VS-U5 / U12 结构机检扩令牌 · 文件表 20 → **21 行**（VSC 写域 12–21）· 拆分触发面清零（U13 同步）。
   **核 / CLI 零改**（组合全在端侧——核单源未破，端特有述句不进核）。
 
@@ -966,7 +966,7 @@ a missing field is a dispatch defect and the spawn is refused.
 - 2026-09-18（**批 PROMPT-FACE · 设计轮 · eng-designer**——承 `docs/batches/2026-09-18-prompt-face.md` §1.1 ① · 台账 #23）：新增 §6.26——机制性指令注入位置收正：
   分类裁定表 14 行（S1 批次档行 / S2 审计模板 = spawn 级固定 ⇒ 改走 system 固块；advisor 评审简报 = 同类已由 F13 pinned 重挂覆盖）；
   机制 = `child._spawnSystemBlock`（spawn 单点写入）+ `prepareRun` 拼接（槽位后、项目指令前）；缓存契约兼容证明 + 压缩面不变量句；
-  审计块构造器外提 `audit-block.mjs`（拟新增）；用例 U1–U7（含先红）· 判据 A23-1–A23-6。
+  审计块构造器外提 `audit-block.mjs`（已落）；用例 U1–U7（含先红）· 判据 A23-1–A23-6。
 
 - 2026-09-18（**批 TOOLFACE-FIXES · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-18-toolface-fixes.md` §3 轮次 1）：逐条落位——§6.7.2 补 depth 可用性行（发现 3）·
   ③ 改**父字段主 + 载体别名**（CLI `history` 非稳定载体实核——发现 4）+ U6b / V2 用例 · 判据补 A1b（拒形态同款 · 发现 11）/ A5b（绑定腿目标坐标 · 发现 12）/ A6b ·

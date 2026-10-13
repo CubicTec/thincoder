@@ -255,7 +255,7 @@
 | 1 | `thincoder-desktop/renderer/i18n-views.mjs` | **384 ⇒ ≈399**（+6 键 × 2 语 + ② 组注；**（≤500 ⇒ 免拆——500/800 口径更换批）**） | 词面 |
 | 2 | `thincoder-desktop/renderer/i18n.mjs` | **413 ⇒ ≈419**（键数链续链：`VIEWS_DICT` 实读 **138 ⇒ 144** ∥ `HOST_DICT` 实读 **308 ⇒ 314**） | 词面 |
 | 3 | 桌面端面（`thincoder-desktop/renderer/attach.mjs` ∥ `thincoder-desktop/renderer/composer-wire.mjs` ∥ `thincoder-desktop/renderer/composer-sync.mjs` ∥ `thincoder-desktop/renderer/mount-composer.mjs` ∥ `thincoder-desktop/renderer/chat-composer.css`） | **零触**（内联在核——文本档不经 `images` 列 ∥ 不经端写面） | 端面 |
-| 4 | 单元测试档 | `docs/batches/2026-10-05-attach-file-support.test.mjs`（拟新增——平 node + happy-dom；随批留存 · 不进集成测试树） | 全批 |
+| 4 | 单元测试档 | `docs/batches/2026-10-05-attach-file-support.test.mjs`（已落——平 node + happy-dom；随批留存 · 不进集成测试树） | 全批 |
 | 5 | 设计档 | 本档 §2（本注）· §3.2（本块）· `docs/render-core/design/RENDER-CORE.md` §2 KD-RC-13 + §5 + §6 + §9 + 变更记录 | 全批 |
 
 零触面：`thincoder-desktop/src/main/*`（宿主附件面零改——文本档不经落盘）∥ `thincoder-desktop/renderer/index.html` ∥ `docs/desktop/design/IPC.md`（**零新通道**）∥ CLI 全树 ∥ `thincoder-core`。

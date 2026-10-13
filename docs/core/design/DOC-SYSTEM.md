@@ -106,7 +106,10 @@ thincoder/                                  ← 合并仓根（git 仓）
 │   ├── desktop/                            ← 部分四 · desktop（桌面端壳面——Electron 宿主）
 │   │   ├── requirements/<板块>.md
 │   │   └── design/<板块>.md
-│   └── render-core/                        ← 部分五 · render-core（共享渲染核包——宿主无关）
+│   ├── render-core/                        ← 部分五 · render-core（共享渲染核包——宿主无关）
+│   │   ├── requirements/<板块>.md
+│   │   └── design/<板块>.md
+│   └── server/                             ← 部分六 · server（团队服务器面——实施批建；2026-10-13 补登）
 │       ├── requirements/<板块>.md
 │       └── design/<板块>.md
 │
@@ -125,6 +128,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 | `vsc` | `docs/vsc/` | `thincoder-vscode/src` · `thincoder-vscode/webview` | `thincoder-vscode/` |
 | `desktop` | `docs/desktop/` | `thincoder-desktop/src` · `thincoder-desktop/renderer` · `thincoder-desktop/test` | `thincoder-desktop/`（已建 · 实施批建） |
 | `render-core` | `docs/render-core/` | `thincoder-render-core/**`（已建 · R1 实施批建） | ——（共享核包，非产品） |
+| `server` | `docs/server/` | `thincoder-server/src` · `thincoder-server/public` · `thincoder-server/test` | `thincoder-server/`（已建 · 实施批建；2026-10-13 补登——部分总数五 ⇒ 六） |
 
 **模块镜像（判据句）**：有独立代码目录的模块 ⇒ 独立文档部分（2026-09-27 用户裁定；先例 = desktop 2026-09-25——`thincoder-<X>/` ↔ `docs/<X>/`）。
 

@@ -151,7 +151,7 @@ test("N1 空库直落 v17：版本读数 ∥ 三表列面/两索引 ∥ 审计 C
     for (const name of ["idx_project_members_user", "idx_projects_source", "idx_audit_ts", "idx_audit_type_ts"]) {
       assert.ok(indexes.includes(name), `索引在场：${name}`)
     }
-    assert.equal(AUDIT.AUDIT_TYPES.length, 14, "审计型面十四")
+    assert.equal(AUDIT.AUDIT_TYPES.length, 15, "审计型面十五（team-ledger 批扩 `ledger_event`——2026-10-13）")
     assert.equal(AUDIT.recordAudit(db, { type: "project_event", actor: "tester", detail: { kind: "project_add" } }) > 0, true, "`project_event` 可写（CHECK 放行）")
     assert.throws(() => AUDIT.recordAudit(db, { type: "no_such_type", actor: "tester" }), /审计类型非法/, "表外型 ⇒ 拒")
   } finally {

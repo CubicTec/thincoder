@@ -604,7 +604,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 > **来源**：B1 批（team-login-client-access——需求 §2:31 + AC-31）；机制全文（登录/退出流程 ∥ 配置形 ∥ 三端同构）= `docs/core/design/TEAM.md` §2（本档只收**条目面语义**）。
 
 - **条目形**：`{ name:"team", baseURL:"<server>/v1", apiKey:"<token>", derived:true }`——固定名 `team` ∥ 字段 `derived: true` = 「派生」标记（登录写入 / 退出保留）。
-- **写面**：唯一写者 = `thincoder-core/team.mjs`（拟新增——登录 upsert（有则更新 ∥ 无则**追加表尾**——不劫持既有回退序）∥ 退出摘 `apiKey`）；端侧零自写盘；迁移面零改（实核：`thincoder-core/config-migrate.mjs:48-51` 只删 `model`/`models`——未知字段不剥离）。
+- **写面**：唯一写者 = `thincoder-core/team.mjs`（已落——登录 upsert（有则更新 ∥ 无则**追加表尾**——不劫持既有回退序）∥ 退出摘 `apiKey`）；端侧零自写盘；迁移面零改（实核：`thincoder-core/config-migrate.mjs:48-51` 只删 `model`/`models`——未知字段不剥离）。
 - **运行时语义**：无 `apiKey` ⇒ 不参与解析（`hasKey` 既有判据——持 key 判据单源 = §6.22；零新代码 ∥ 不触发「渠道无效」明示——回退序跳过）。
 - **列表/候选面**：`derived === true` ∧ 无 key ⇒ 隐藏（四消费面各一处过滤——CLI 模型候选 ∥ CLI provider-admin ∥ VSC `providerStatus` ∥ 桌面 `providerList`；登录态下在场（key 掩码显示））。
 - **边界**：不改 `defaultModel` ∥ 不切换会话模型 ∥ 不动手工条目；同名手工条目 ⇒ 登录不覆盖（提示——`TEAM.md` §2.2）。
@@ -717,7 +717,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 - 2026-09-25（**规格·effort 轮 · eng-designer**——承 `docs/batches/2026-09-25-spec-effort.md` §2 · 台账 #241 / #326 / #329）：§6.9 新登 `noUsageStream` 语义（保守抑制 · 非能力断言 · 消费点惰性面）；§6.11 新登预置 `maxTokens` ⇄ 规格行对齐与空名单白名单；§6.12 新登 **off 形解析链保形条**（#329——advisor 径 `thinking:null` 保形 + 显式 off 清继承档；谓词本体零改）。
   数值与逐对表真源 = `doc:MODEL-SPECS.md:§15`，本档只承载机制面（D2）。
 - 2026-09-25（**规格·effort 轮 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-25-spec-effort.md` §3 轮次 1）：§6.12 补**生产者面**指针（off 形按族取形——effort 族须落 `thinking: null`；单源 = `doc:MODEL-SPECS.md:§15.4-2`）+ 用例号收正（`A-13..A-16` → `AD-1..AD-4`，避与判据号同号）。谓词本体零改（单源不变）。
-- 2026-09-25（**off 形族收尾批 · eng-designer**——承 `docs/batches/2026-09-25-off-family-closeout.md` §2 · 台账 #334 / #335 / #346）：§6.12 补 **「有效 off 路径」判据与回执可宣称性**指针（生产者全表 + 单源实现 `thincoder-core/think-off.mjs`（拟新增）——真源 = `doc:MODEL-SPECS.md:§16`）；谓词本体零改。
+- 2026-09-25（**off 形族收尾批 · eng-designer**——承 `docs/batches/2026-09-25-off-family-closeout.md` §2 · 台账 #334 / #335 / #346）：§6.12 补 **「有效 off 路径」判据与回执可宣称性**指针（生产者全表 + 单源实现 `thincoder-core/think-off.mjs`（已落）——真源 = `doc:MODEL-SPECS.md:§16`）；谓词本体零改。
 - 2026-09-25（**off 形族收尾批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-25-off-family-closeout.md` §3 轮次 1 + §2 修正块 · 台账 #334 / #335 / #346）：
   §6.9 规格字段清单补 `thinkAlwaysOn`（服务端强制思考标记——语义单源 = `doc:MODEL-SPECS.md:§16.3`，循 `cacheMode` 同笔同步先例）；§6.19 旧形字面收正（`"off"` 载荷**按族取形**——真源 = `doc:MODEL-SPECS.md:§16.2`）。谓词本体零改。
 - 2026-09-29（**provider-config-family 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` · 台账 #176 ∕ #177）：§6.11 预设计数 21 → **22**（D3 计数与清单同变）+ 新登 `huawei` 预置（华为云 MaaS——端点钉定 ∕ 默认模型 = 实施轮实拉取值 ∕ 未测载荷字段不带）+ 护栏句重锚（单元测试档形态）；§6.19 计数与名单同变；

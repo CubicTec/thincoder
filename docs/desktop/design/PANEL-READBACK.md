@@ -61,7 +61,7 @@
   - `region` = `"activity"`（驻右列）∥ `"flow"`（已入流——归档墓碑）——**入流位**；
   - `dom` = 渲染面元素在场：查 `[data-subname="<key>"]`（核件 `thincoder-render-core/subblocks/block.mjs:30` 单点盖章；活动区块与流内回显块**同属性** ⇒ 单查询覆盖两区）。
 - **推送点** = 渲染面**帧出口**（`thincoder-desktop/renderer/app.mjs:307-315` `applyFrame` 五面分派之后——DOM 已落），按**签名**（上列字段串 + 会话键）去重：同签名零报；状态迁转 ∥ 出生 ∥ 归档 ∥ DOM 增减 ∥ 会话切换 ⇒ 一报。流式 `rows` 变化不入签名（内容面不属判别面——不产生逐 token 上报）。
-- **主侧缓存** = 新档 `thincoder-desktop/src/main/panel-live.mjs`（拟新增）（`Map key → readout`；`report(key, blocks)` ∥ `get(key)`；后报覆前报）。代理装配处挂 `agent._panelReadout = () => panelLive.get(key)`。
+- **主侧缓存** = 新档 `thincoder-desktop/src/main/panel-live.mjs`（已落）（`Map key → readout`；`report(key, blocks)` ∥ `get(key)`；后报覆前报）。代理装配处挂 `agent._panelReadout = () => panelLive.get(key)`。
 - **工具读源链**（`executePanelAction` 视图面）：`ctx.readout()` 快照非空 ⇒ 返回 `{ source:"renderer", asOf, ageMs, panel[] }`——awaitingDigest 条目**读时交叉**核池/pending 标 `digested`（沿 CLI 面判据 `thincoder-core/agent-tools/subagent-panel.mjs:176-185`；consult 子块走同款消费判据）∥ 快照空（窗未载 ∥ 未报）⇒ 回落现链路（`ctx.state` → 降级池视图；两降级注保留）。
 - **陈旧呈现**：`ageMs` 恒携（防「读了旧镜不自知」）；**不设截断阈值**——卡留块状态恒定，旧镜亦真；截断反会隐藏判别面。
 
@@ -143,14 +143,14 @@
 | `thincoder-core/agent/suspension.mjs` | 300 | +12/−6 | 回收恒达窗（三支）+ `finishSuspension` 返回 `{ injected, left, error }` + 调用点 reclaim（§2.2） |
 | `thincoder-core/agent-tools/subagent-panel.mjs` | 189 | +55/−10 | 回读源链 + 桌面 freeze 门控映射 + digested 交叉复用 |
 | `thincoder-core/agent-tools/subagent.mjs` | 399 | +2/−1 | ctx 传 `readout`（`:191` 邻位）+ freeze 参数描述收正（`:135`） |
-| `thincoder-desktop/src/main/panel-live.mjs`（拟新增） | 0（新） | ~45 | 回读缓存（report/get + `receivedAt`） |
+| `thincoder-desktop/src/main/panel-live.mjs`（已落） | 0（新） | ~45 | 回读缓存（report/get + `receivedAt`） |
 | `thincoder-desktop/src/main/ipc.mjs` | 283 | +14 | `panel:state` 处理体（校验 + report + 回执） |
 | `thincoder-desktop/src/main/ipc-registry.mjs` | 92 | +1 | handler 注册（白名单闭合——表行 = 白名单逐项） |
 | `thincoder-desktop/src/preload/preload.cjs` | 83 | +1 | `CHANNELS` 47 ⇒ 48（`"panel:state"` 末位） |
 | `thincoder-desktop/src/main/agent-host.mjs` | 322 | +3 | 装配挂 `agent._panelReadout`（per-key） |
-| `thincoder-desktop/renderer/panel-readout.mjs`（拟新增） | 0（新） | ~60 | 快照构形 + 签名去重 + 上报（纯函数 + 注入面 `queryDom` ∥ `invoke`——平 node 直测） |
+| `thincoder-desktop/renderer/panel-readout.mjs`（已落） | 0（新） | ~60 | 快照构形 + 签名去重 + 上报（纯函数 + 注入面 `queryDom` ∥ `invoke`——平 node 直测） |
 | `thincoder-desktop/renderer/app.mjs` | 321 | +4 | 帧出口挂 readout settle（`applyFrame` 尾） |
-| `docs/batches/2026-10-04-subagent-panel-live-face.test.mjs`（拟新增） | 0（新） | ~260 | 单元测试档（用例清单 = §6；跑法沿先例 `docs/batches/2026-10-02-desktop-menu-system.test.mjs`） |
+| `docs/batches/2026-10-04-subagent-panel-live-face.test.mjs`（已落） | 0（新） | ~260 | 单元测试档（用例清单 = §6；跑法沿先例 `docs/batches/2026-10-02-desktop-menu-system.test.mjs`） |
 | `docs/desktop/design/PANEL-READBACK.md` | 0（新） | 本档 | 设计单源（本批） |
 | `docs/desktop/design/IPC.md` | 543 | +6/−4 | `panel:state` 行 + 白名单面 ∥ §3.1 47 ⇒ 48（设计目标态）+ 档头 ∥ §3.1 行数齐平 + 变更记录 |
 | `docs/README.md` | — | +2/−1 | 部分档行登记（desktop 设计 14 ⇒ 15 · 全档 52 ⇒ 53）+ 变更记录一行 |

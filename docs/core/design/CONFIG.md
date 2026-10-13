@@ -190,7 +190,7 @@
 
 - **键面**：顶层 `team` 段 = `{ server, member{username,name}, label, token }`（形与语义**全文** = `docs/core/design/TEAM.md` §2.1——本档不复制）；派生 provider 条目（`providers[].derived`）= `docs/core/design/PROVIDER.md` §6.25。
 - **通道归属**：① 配置键通道（本档 §6.2 名录第 ① 类）——`loadConfig` 归一（形不符 ⇒ null——软失败不阻启动；沿 `proxy` 段先例）；**不入 `DEFAULTS`**（沿 `providers` / `proxy` 先例——settings 工具面零涉 ∥ agent 不可写）。
-- **写面**：唯一写者 = `thincoder-core/team.mjs`（拟新增——登录/退出流程；`writeConfigAtomic` 一次 mutate；端侧零自写盘）。
+- **写面**：唯一写者 = `thincoder-core/team.mjs`（已落——登录/退出流程；`writeConfigAtomic` 一次 mutate；端侧零自写盘）。
 - **登录态判据**：`team.token`（trim 非空）——= 团队功能开关（口径④）；消费面 = 三端 + 后续团队面（各面设计轮）。
 - **边界**：不做 team 段的手工编辑入口（写面 = 登录/退出流程单源）∥ 不做多套登录态并存 ∥ 不写 `DEFAULTS`。
 

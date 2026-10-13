@@ -635,7 +635,7 @@ P5 原文（`thincoder-vscode/docs/design/_archive/SETTINGS-REORG.md:12`）=「*
   在场 ⇒ 卡内就地提示——同名冲突（登录当刻）：「已存在同名 provider「team」——未自动添加；请改名或删除后重登」∥ 吊销未达（退出当刻）：「服务端吊销未达」——两句逐字同句（`docs/core/design/TEAM.md` §2.5）· 文本归本端 i18n；
   两提示 = 一次性事件（登录/退出当刻就地显示）——**`teamStatus` 零提示字段**（形不变：`{ loggedIn, server, member, label }`）。
 - **密码面**：请求内存即弃（零落盘 ∥ 零回显广播）；重建/切卡清空密码格。
-- **失败出词**：网络不可达 ∥ 用户名或密码错误 ∥ 登录尝试过于频繁 ∥ 本机配置写入失败——四句逐字同（i18n 键 zh/en 双表 +14 键）。
+- **失败出词**：网络不可达——请检查地址与端口 ∥ 用户名或密码错误 ∥ 登录尝试过于频繁 ∥ 本机配置写入失败——四句逐字同（i18n 键 zh/en 双表 +14 键）。
 - **实施收口登记（2026-10-10 · 回填轮）**：`teamStatus` 推送点 = `thincoder-vscode/src/extension/settings.mjs`（`pushTeamStatus(panel)`——panel 级，镜像 `pushStatus`）；
   `thincoder-vscode/src/extension/panel-settings-push.mjs` 两条推送链调用（快照族拍：light 档中置 `agentSettings` 前 ∥ full 档中置 `shellCandidates` 后）；
   上行恰 `teamLogin` ∥ `teamLogout` 两条（读面纯推送——无第三上行）；模型候选面唯一来源 = `fullStatus` 的 `models` 载荷（登录成拍不随刷）；重绘两门 = 变更门（JSON 比对，镜像 `updateProviderStatus`）∥ 聚焦跳绘门（U-S10 同判）——面板未开 ⇒ 零动作。

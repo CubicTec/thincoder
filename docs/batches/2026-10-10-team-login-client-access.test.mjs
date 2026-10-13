@@ -271,7 +271,7 @@ test("审计面：四型 detail 携 surface:\"client\" ∥ 控制台面同型键
     }
     const consoleRow = rows.find((r) => r.type === "login_success" && !("surface" in r.detail))
     assert.ok(consoleRow, "控制台面 login_success 键缺席（surface 取值域 = 客户端面唯一）")
-    assert.equal(AUDIT.AUDIT_TYPES.length, 14, "审计十四型（沙盒批扩两型 ∥ chat 批扩 agent_event ∥ project 批扩 project_event——均在案；本批零增）")
+    assert.equal(AUDIT.AUDIT_TYPES.length, 15, "审计十五型（沙盒批扩两型 ∥ chat 批扩 agent_event ∥ project 批扩 project_event ∥ team-ledger 批扩 ledger_event——均在案；本批零增）")
   } finally {
     await server.close()
     db.close()
@@ -281,14 +281,14 @@ test("审计面：四型 detail 携 surface:\"client\" ∥ 控制台面同型键
 // ── 零迁移 ∥ sessions 零涉 ──────────────────────────────────────────────────
 
 test("零迁移：结构版本 v10 不动 ∥ 全流程后 sessions 表零涉", async () => {
-  assert.equal(DB.SCHEMA_VERSION, 17, "client 域零迁移（结构版本 = 链尾 v17）")
+  assert.equal(DB.SCHEMA_VERSION, 20, "client 域零迁移（结构版本 = 链尾 v20——2026-10-13 收正）")
   const db = DB.openDatabase(":memory:")
   await makeMember(db)
   const server = await startServer({ db })
   try {
     const res = await login(server.base, { username: "alice", password: PASSWORD, label: LABEL })
     await post(server.base, "/api/client/logout", { token: res.json.token })
-    assert.equal(DB.readVersion(db), 17)
+    assert.equal(DB.readVersion(db), 20, "全流程后仍在链尾 v20（2026-10-13 收正）")
     assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sessions").get().n, 0, "客户端 token 落 api_keys——sessions 表零涉")
   } finally {
     await server.close()

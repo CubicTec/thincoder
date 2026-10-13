@@ -91,7 +91,7 @@
 | 危险 | `button.danger`（含 `.tiny.danger`） | `--panel` 底 ∥ `--danger` 边/字 | `--danger-fill` 底 |
 | 链接 | `button.link` | 无边底 ∥ `--accent` 字 | 字 `--accent-hover` |
 | 图符 | `.modal-close` | `--muted` 字 ∥ `--r-2` | `--hover` 底 + `--text` 字 |
-| 页签 | `button.tab`（公共标签页组件 `tabs.mjs`（拟新增）——本批） | 透明底 ∥ `--text` 字 ∥ `--r-2` ∥ 内距 `--sp-2 --sp-4`（活动态 = `--selected` 底 + `--accent` 字——① 选中/活动同款） | `--hover` 底 |
+| 页签 | `button.tab`（公共标签页组件 `tabs.mjs`（已落）——本批） | 透明底 ∥ `--text` 字 ∥ `--r-2` ∥ 内距 `--sp-2 --sp-4`（活动态 = `--selected` 底 + `--accent` 字——① 选中/活动同款） | `--hover` 底 |
 
 - 禁用 = `--muted` 字 ∥ `--fill` 底 ∥ `cursor: default`；聚焦 = 统一环（②③⑦ 同）。
 - 语言钮收编：`.lang-switch button` 专用规则并入 `tiny`（padding 微差归刻度）；`.active` = `--selected` 底 + accent 边/字。

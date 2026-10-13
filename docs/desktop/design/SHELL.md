@@ -243,28 +243,28 @@ thincoder-desktop/                  ← 本端产品包
 
 - 2026-09-25：建档（桌面端设计批 1 · 分档轮）——由 `docs/desktop/design/PROJECT.md` 分出宿主适配层面：§1 = 该档 §3.1 逐字（目录树与分层铁律同搬）；§2 = 宿主面职责索引（树注归并 · 决策仍住该档 §2 / §4.1）；§3 = 该档 §3.3 逐字；§4 = 该档 §3.4 逐字。该档 §3.1–§3.4 位置改留一行指针；树内与表内 `§` 回指随动改为带路径指针。
 - 2026-09-25（**修正轮**——设计评审 §3 轮次 1 发现 3 / 11）：§1 树内 `package.json` 行收正为 script 三条（单源 = `docs/desktop/design/PROJECT.md` §5）；§2 窗口行补**菜单首版口径**注（只挂主进程动作）；§4 项 1 cwd 补项目面指针。
-- 2026-09-25（**修正轮 2**——设计评审 §3 轮次 2 发现 13）：§1 树补两行（`src/main/projects.mjs`（拟新增） · `renderer/i18n.mjs`（拟新增））· `test/` 行扩用例模块五档——三处均与 `docs/desktop/design/PROJECT.md` §4.1 同源；`main.mjs` 行补启动自检 · `window.mjs` 行补「窗口态」；树后补作用域注（逐文件预算单源 = §4.1）。
+- 2026-09-25（**修正轮 2**——设计评审 §3 轮次 2 发现 13）：§1 树补两行（`src/main/projects.mjs`（已落） · `renderer/i18n.mjs`（已落））· `test/` 行扩用例模块五档——三处均与 `docs/desktop/design/PROJECT.md` §4.1 同源；`main.mjs` 行补启动自检 · `window.mjs` 行补「窗口态」；树后补作用域注（逐文件预算单源 = §4.1）。
 - 2026-09-25（**实施后修正轮**——SLOT-END-PARAM 落地同步 · R-2 / U1 / U3 / D4）：§1 树增 `host-floor.mjs` 行 + `session-slots.mjs` 行改端壳口径（端名声明 + 四项绑定转口）；§2 窗口行补平台惯例 Edit 组（内建 `role:`，非通道）；§3 会话行改端名声明形态 · 「不改核」行改核侧已落地口径（端参数化 + 创建端字段）。
-- 2026-09-25（**实施后修正轮 2**——树行同步）：§1 树 `src/main/` 块补 `thincoder-desktop/src/main/sessions.mjs` 行（会话族读面）· `views/` 行补 `thincoder-desktop/renderer/views/chrome.mjs`（拟新增）——批 4 中区外壳面；两行均与 `docs/desktop/design/PROJECT.md` §4.1 同源。
+- 2026-09-25（**实施后修正轮 2**——树行同步）：§1 树 `src/main/` 块补 `thincoder-desktop/src/main/sessions.mjs` 行（会话族读面）· `views/` 行补 `thincoder-desktop/renderer/views/chrome.mjs`（已落）——批 4 中区外壳面；两行均与 `docs/desktop/design/PROJECT.md` §4.1 同源。
 - 2026-09-25（**实施后修正轮 2**——用例模块 + 标记）：`test/` 行用例模块五档 → **六档**（补 `thincoder-desktop/test/views.test.mjs`——同档 §4.1 用例模块行同值）· 树首行「（拟新增）」标记删（产品端已落；其余未落档行标记保留）。
 - 2026-09-25（**批 4 修后收正轮 #57**——档数收正）：§1 树 `test/` 行用例模块**六档 → 七档**（补 `桌面 views-tabbar 用例档`——与 `docs/desktop/design/PROJECT.md` §4.1 用例模块行同源同值）。
-- 2026-09-26（**批 5 会话族批**）：§1 树增 `thincoder-desktop/src/main/session-actions.mjs`（拟新增）行（会话族动作层）· `thincoder-desktop/src/main/session-slots.mjs` 行改**七项绑定转口** + `renameSlot` 纯 re-export · `test/` 行用例模块七 → **八档**（补 `views-chrome`）；§3 会话行同值随动。
+- 2026-09-26（**批 5 会话族批**）：§1 树增 `thincoder-desktop/src/main/session-actions.mjs`（已落）行（会话族动作层）· `thincoder-desktop/src/main/session-slots.mjs` 行改**七项绑定转口** + `renameSlot` 纯 re-export · `test/` 行用例模块七 → **八档**（补 `views-chrome`）；§3 会话行同值随动。
 - 2026-09-26（**批 5 修复轮 #60**——设计评审 §3 轮次 1 发现 11 · 转口措辞）：§1 树 `thincoder-desktop/src/main/session-slots.mjs` 行与 §3 会话行**转口措辞分层**——端参绑定 6〔marker 三项 + `resumeSlot` / `switchToSlot` / `deleteSlot`〕· 同形转口 1〔`newSession`·无端参〕· 纯 re-export 1〔`renameSlot`〕。
-- 2026-09-26（**批 5 修复轮 #60**——信封记法）：§1 树 `thincoder-desktop/src/main/session-actions.mjs`（拟新增）行信封记法统一（`reason: null|string`）。
+- 2026-09-26（**批 5 修复轮 #60**——信封记法）：§1 树 `thincoder-desktop/src/main/session-actions.mjs`（已落）行信封记法统一（`reason: null|string`）。
 - 2026-09-26（**批 5 实施后修正轮 #62**——逐号 3）：§1 树 `thincoder-desktop/src/main/session-actions.mjs` 行「（拟新增）」标记删（已交付 · 实读 67）；`test/` 行八档名复核 = `thincoder-desktop/test/files.mjs` 现值（同值 · 未改）；本档变更记录 #60 两行内「（拟新增）」按**记录面留档**不改。
-- 2026-09-26（**批 6 对话流 + 工具卡（视图面）**）：§1 树 `renderer/` 静态资源行加 `chat.css`（拟新增）· `test/` 行用例模块八 → **十档**（补 `views-chat` / `views-chat-scroll`——与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）。
+- 2026-09-26（**批 6 对话流 + 工具卡（视图面）**）：§1 树 `renderer/` 静态资源行加 `chat.css`（已落）· `test/` 行用例模块八 → **十档**（补 `views-chat` / `views-chat-scroll`——与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）。
 - 2026-09-26（**批 6 实施后修正轮 #69**）：§1 树 `views/` 行补 `chat-tool.mjs`（`chat-scroll.mjs` 之后——拆分落形档入树；与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）。
 - 2026-09-26（**批 7 审批与活动池视图面**）：§1 树 `renderer/` 静态资源行加 `pool.css（拟新增）` · `views/` 行加 `approval.mjs（拟新增）`（`chat-tool.mjs` 之后——卡面属对话流族）· `test/` 行用例模块十 → **十二档**（补 `views-approval` / `views-activity`——与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）；§4 项 5 补**响应通道在册 / 挂起表供给随装配批**注。
 - 2026-09-26（**批 7 实施后修正轮 #76**）：§1 树去「（拟新增）」两处（`pool.css` / `approval.mjs`——已落档）· `test/` 行用例模块十二 → **十四档**（补实施期拆档两档 `views-locks` / `views-chat-frame`——与 `docs/desktop/design/PROJECT.md` §4.1 同序同值）；该行 §4.1 尾指针去重（行数预算单源指针住本档 §1 作用域注）。
 - 2026-09-26（**批 7 实施后修正轮 #76 · 标记补遗**——一致性面）：§1 树四行补「（拟新增）」（`src/main/agent-host.mjs` · `src/main/settings.mjs` · `renderer/views/settings.mjs` · `renderer/views/onboarding.mjs`——盘上皆未落；与 `docs/desktop/design/PROJECT.md` §4.1 同项标记面一致）。
 - 2026-09-26（**批 8 装配桥批**）：§1 树 `thincoder-desktop/src/main/agent-host.mjs` 行职责扩（挂起表 / 回合驱动——「（拟新增）」标记按盘上实态保留）·
-  `renderer/` 块增 `events.mjs` 与 `mount-pool.mjs` 两行（拟新增 · 池面接线拆分落形）· `app.mjs` 行估括注改「拆出」（未落口径）·
+  `renderer/` 块增 `events.mjs` 与 `mount-pool.mjs` 两行（已落 · 池面接线拆分落形）· `app.mjs` 行估括注改「拆出」（未落口径）·
   `test/` 行用例模块十四 → **十七档**（补 `agent-host` / `events-reduce` / `history-page`——与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）；§4 项 4 / 项 5 收为已落口径（回合驱动主侧本体 · 挂起表供给 = `agent-host.mjs` 唯一持有点）+ 增**两项显式端差（登记）**注（MCP 随设置批 · `attachManifest` 不附着）。
 - 2026-09-26（**批 8 doc-check 清项轮**）：§1 树 `test/` 行与变更记录批 8 行**行宽收正**（312 → 两行 / 443 → 三行 ≤300）+ §4 项 5 挂起表供给行前向引用补「（拟新增）」标记（`agent-host.mjs`）——零语义变更。
 - 2026-09-26（**批 8 修正轮 #91**——逐号定点）：§1 树**去「（拟新增）」五处**（`agent-host.mjs` / `events.mjs` / `mount-pool.mjs`——盘上皆已落；`app.mjs` 行内 `mount-pool.mjs` 括注 · 下条新行内）· 增**四出档 / 拆出档行**（`agent-bridge.mjs` / `suspensions.mjs` / `session-io.mjs`——自 `agent-host.mjs` 拆出；
   `events-subscribe.mjs`——自 `events.mjs` 拆出）· `test/` 行用例模块十七 → **十九档**（名集 = `thincoder-desktop/test/files.mjs` 现值同序）+ 共享助手两档注（`fake-dom.mjs` / `slot-sandbox.mjs`——非清单档）；
   §4 前言补三出档 · 项 1 补**槽值优先 / `effort` 回退配置面**（`thincoder-desktop/src/main/session-slots.mjs:112`）与槽装载出档 · 项 4 补**回合尾落盘已落**（**先落盘再出终局事件**——`session-io.mjs`）· 项 5 挂起表改指 `suspensions.mjs` + 表项形状 / 四操作 / verdict 闭集两套；§3 活动事件行补 `onAgentTurn`；§4 项 4 / 项 5 与变更记录两行**行宽收正**（≤300——零语义）。
-- 2026-09-26（**批 9 设置面 + 首启向导批**）：§1 树增 `renderer/mount-settings.mjs`（拟新增）行 · 静态资源行加 `settings.css（拟新增）` · `src/main/settings.mjs` 行职责改口径（读 `loadConfig` / 写 `writeConfigAtomic`）· `store.mjs` 行补两切片 · `test/` 行用例模块十九 → **二十五档** + 六档名（与 `docs/desktop/design/PROJECT.md` §4.1 同源同序同值）；
+- 2026-09-26（**批 9 设置面 + 首启向导批**）：§1 树增 `renderer/mount-settings.mjs`（已落）行 · 静态资源行加 `settings.css`（已落） · `src/main/settings.mjs` 行职责改口径（读 `loadConfig` / 写 `writeConfigAtomic`）· `store.mjs` 行补两切片 · `test/` 行用例模块十九 → **二十五档** + 六档名（与 `docs/desktop/design/PROJECT.md` §4.1 同源同序同值）；
   §2 增**配置写面**行；§3 六面 → **七面** + 增**项目级信息**行 + 配置行改双面口径（写 = 核唯一执行体）；§4 端差行 MCP 项补通道处理体落点（`mcp-servers.mjs`）。
 - 2026-09-26（**批 9 修复轮 #94**——设计评审 §3 十条逐号 + doc-check 清项）：§1 树 `src/main/` 增三行（`providers.mjs` / `mcp-servers.mjs` / `project-info.mjs`——职责与 `docs/desktop/design/PROJECT.md` §4.1 同源）+ `settings.mjs` 行改**三面**口径 · `test/` 名单行**行宽收正**（366 → 两行 ≤300——零语义）·
   §4 端差行前向引用补「（拟新增）」（`mcp-servers.mjs`——盘上未落）。
@@ -274,7 +274,7 @@ thincoder-desktop/                  ← 本端产品包
 - 2026-09-26（**批 9 修正轮 #9 续**——表补项 21）：§1 树 `app.mjs` 行括注补第三拆出档 `mount-settings.mjs`（与 `mount-pool.mjs` 并列；同面 `mount-settings.mjs` 行已载「自 `app.mjs` 拆出」——行面补齐）；明细 = `docs/batches/2026-09-26-desktop-impl-9.md` §2.17。
 - 2026-09-26（**批 A 对话面板批**——一致性随动）：§1 树 `agent-bridge.mjs` 行补注入四键（`post` / `askSingle` / `askBatch` / `askQuestion`——批 A 第 4 键）· `suspensions.mjs` 行四操作 → **五操作**（+ `askQuestion`）+ `kind` 两值 · `app.mjs` 行补拆出档 `mount-composer.mjs` · `events.mjs` 行补两切片改写（`questions` / `tasks`）·
   `store.mjs` 行补两切片 + 队列三纯动作 + 满队常量；
-  `views/` 行补 `question.mjs` / `plan.mjs`（拟新增）· `test/` 行用例模块二十五 → **二十六档**（补 `views-question`）；§4 项 4 的「UI 输入区与中断键随视图批」收正为**批 A 已落**（挂载 = `thincoder-desktop/renderer/mount-composer.mjs`）+ 项 5 挂起表四操作 → **五操作** + 提问门一句（与 `docs/desktop/design/PROJECT.md` §4.1 同源）。
+  `views/` 行补 `question.mjs` / `plan.mjs`（已落）· `test/` 行用例模块二十五 → **二十六档**（补 `views-question`）；§4 项 4 的「UI 输入区与中断键随视图批」收正为**批 A 已落**（挂载 = `thincoder-desktop/renderer/mount-composer.mjs`）+ 项 5 挂起表四操作 → **五操作** + 提问门一句（与 `docs/desktop/design/PROJECT.md` §4.1 同源）。
 - 2026-09-26（**批 A · ⑤**——随动）：§1 树 `views/` 行补 `tabbar.mjs`（拟新增——标签条面自 `thincoder-desktop/renderer/views/sessions.mjs` 拆出）· `test/` 行用例模块二十六 → **二十七档** + 名单补 `views-tabbar-close`（确认面族自 `thincoder-desktop/test/views-tabbar.test.mjs` 拆出——与 `docs/desktop/design/PROJECT.md` §4.1 同源同值）。
 - 2026-09-26（**批 A 修正轮**——设计评审 §3 十五条逐号点修）：§1 树增卡族两行（`mount-composer.mjs` / `mount-cards.mjs`——皆拟新增 · 卡族出站承载档点名）+ `app.mjs` 行补卡族出站拆出档 · `suspensions.mjs` 行与 §4 项 5 表项形收正（`promptId → { kind, shape?, key, resolve }`——verdict 闭集选择判据 = `shape`）· `store.mjs` 行补换形态态 `railForm{ key, mode }` + 两纯动作。
 - 2026-09-27（**批 E2E · 实施后对账轮**）：§1 树同步本批新面——`package.json` 行 devDeps 补 `playwright-core`（E2E 驱动 · 测试面）+ 增 `.gitignore` 行（忽略 `thincoder-desktop/test/artifacts/`——单源 = `docs/desktop/design/E2E-TESTING.md` KD-10）

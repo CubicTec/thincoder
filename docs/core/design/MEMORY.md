@@ -649,7 +649,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
   ② **WARN 行（≥ 100k 夹具 · 计数注入）**——恰一行 `console.warn`：`[memory] index origin=<o> rows≈<n> (code + doc)` ∧ n = 真实行数（非阈值常量兜底 ∥ 非「+」截断形）∧ 无「WARN」∧ 无 `declare ∕ prune ∕ sweep` 形；
   ③ **CAP 行（≥ 300k 夹具）**——含「new files are not being indexed for now」（停收新档语义）∧ 选项式指路（`Options:` 枚举——`index.excludePaths` + `memory sweep`）∧ 无「WARN」∧ 跳过后列文件行为不变（`budgetSkipped` = 列序后缀 ∧ 逐 `rel` 零落行 ∧ 两跑跳过集逐字相等——L-③-2 同款）；
   ④ **显示面随动（F-S14 ③）**——「+」界 = WARN 线随动：头部计数 < WARN 给真实数（非「+」）∥ 越界回「+」形 = `100000+`（`setup.mjs` 读常量——功能零改；唯一触碰 = `thincoder-core/agent/setup.mjs:115` 注释值面一行收正）∥ B4 文件行上界同源（`repomap.mjs` `LIMIT WARN+1`）；
-  ⑤ **零行为变化（数值面外）**——`over()` ∕ `add` 刻度 ∥ 回执 ∥ `logEvent` 名 ∥ 跳过语义逐字不变；测试 = 单元测试档 `docs/batches/2026-10-08-memory-budget-surface.test.mjs`（拟新增——计数注入形 · 轻量）。
+  ⑤ **零行为变化（数值面外）**——`over()` ∕ `add` 刻度 ∥ 回执 ∥ `logEvent` 名 ∥ 跳过语义逐字不变；测试 = 单元测试档 `docs/batches/2026-10-08-memory-budget-surface.test.mjs`（已落——计数注入形 · 轻量）。
 - **L-④（home 根防护 ∥ SKIP_DIRS 补表——2026-10-04 · #867 本批新增）**：① **home 根检测**——启动索引 ∥ `/reindex` 触发面（`thincoder-cli/src/tui/startup.mjs` `backgroundIndex` ∥ `cmd-reindex.mjs`）于 `cwd === 用户主目录`（`resolve` 后平台归一比较——win32 大小写不敏感）⇒ **跳过索引**（`gitSync` / `codeSync` / `docSync` 零调用）；
   + 一行可见提示（含出路：项目目录启动——**去 `index.excludePaths` 半句**：跳过判据无条件、不查声明；同错三处收正 2026-10-04 ∥ #898）——**不阻断启动**（不砖死）；
   ② **`SKIP_DIRS` 补用户目录常用项**（`Library`=macOS ∥ `go`=Go 工作区——basename 匹配 · 任意深度剪枝，与既有平台项同款；**误剪接受面**：非用户目录下同名目录（如源码树内 `go/`）同被剪——承既有表同款口径，登记为已接受面）；③ 排除表零声明面（常量——同「行预算常量不可声明」款）。实现 = 本批实施轮。
@@ -667,7 +667,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 
 **病灶读数（as-of 2026-10-08 · 父侧实核 = §4.12 来源段）**：跨 origin 鬼行 8,419 行（死档 1,173——停更嵌套 origin 三个：`…/thincoder` 836 ∕ `…/thincoder-vscode` 228 ∕ `…/thincoder-cli` 109；sync stale 收尾只治正在同步的 origin ⇒ 无工具面，手写 SQL 清）∥ 压实 2054.1 ⇒ 1006.0 MiB（手跑 `VACUUM`）∥ 备份 9 枚（手清）。
 
-**引擎（核新档 `thincoder-core/memory/maintain.mjs`（拟新增））**——三动作 + 单入口 `maintainMemory`；与既有面单源关系（复用 ∥ 扩展）：
+**引擎（核新档 `thincoder-core/memory/maintain.mjs`（已落））**——三动作 + 单入口 `maintainMemory`；与既有面单源关系（复用 ∥ 扩展）：
 
 | 面 | 单源 | 关系 |
 |---|---|---|
@@ -874,7 +874,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
   §6.13 补 **`--origin` 档显式语义句**（靶向整档删除——不走信号 A/B）+ 边界句射程收窄（「树亡」判据只辖全扫档）+ 安全档细目（备份档位 / 路径命名 / 冲突行为 / `--origin` × dry-run 输出形态 + **按档分列写后回读判据**）；
   §8.3 命令面枚举补 `sweep`；§6.11 撤 `origin.mjs`「（拟新增）」标（现体在盘）。**零新机制**（发现逐号落位）。
 
-- 2026-09-25（**misc-four 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 · 台账 #175）：§6.13 新增**命令面与安全设计**块——`memory sweep [--origin] [--dry-run|--confirm]`（核新档 `memory/sweep.mjs`（拟新增）+ CLI 子命令）+
+- 2026-09-25（**misc-four 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 · 台账 #175）：§6.13 新增**命令面与安全设计**块——`memory sweep [--origin] [--dry-run|--confirm]`（核新档 `memory/sweep.mjs`（已落）+ CLI 子命令）+
   安全三件（备份前置 `VACUUM INTO` / 干跑默认 / 审计 + 写后回读判据）；折叠规则单源 = §6.11 步 2；真实库写 = 父侧 ops。**判据面零新语义**（二信号与面表已在位）。
 
 - 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #239）：§2.3 工具实现面单端档映射行 VSC 档坐标**补全仓根路径**（→ `thincoder-vscode/src/tools/code.mjs`；改前为裸名形态——消悬空）。**语义零改**。

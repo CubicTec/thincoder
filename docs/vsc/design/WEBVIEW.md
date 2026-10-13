@@ -823,7 +823,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
   `thincoder-vscode/src/tools/shell.mjs`（核 `bash.mjs` 形态在本端无产者；族三成员两端同字面）+ **退出码槽只接受数字**（非数字退出码槽不入判据）
   + 「摘要零影响」句收窄到无输出形；§6 D-W19 补产者两处与「不改判核/CLI 面收口」否决；§10 行 10 补产者坐标。
 - 2026-09-18（**面板 live 块出生可靠性面 · eng-designer**——承 `docs/batches/2026-09-18-init-block.md` §1 讨论与需求档 `requirements/WEBVIEW.md` F-A1–F-A5 / NFR-A1–A3）：
-  §5.3 增四节——**出生自愈心跳**（2 s 拍 · 幂等契约 · 源新鲜度）· **投递面全量留痕**（四处置）· **webview 痕迹与上行**（新档 `webview/activity-diag.js`（拟新增）
+  §5.3 增四节——**出生自愈心跳**（2 s 拍 · 幂等契约 · 源新鲜度）· **投递面全量留痕**（四处置）· **webview 痕迹与上行**（新档 `webview/activity-diag.js`（已落）
   + 协议行 `panelDiag`）· **终态必现**（tombstone 扩形 + consult / escalate 射程登记）+ 清屏可恢复句；§5.1「诊断痕迹」行改指新档；
   §6 增 D-W20–D-W24 · §10 行 5 回指补 A 族（行数不变——11 行）。协议侧登记 = `WEBVIEW-PROTOCOL.md` §3.2 行 8（只增不改）。
 - 2026-09-19（**VSC 子代理 live 块可见性批 · eng-designer**——承 `docs/batches/2026-09-18-vsc-subagent-live-visibility.md` §1（专项审计 id=128 七条 + 用户 2026-09-19 00:08「全修」）与 `docs/batches/2026-09-18-init-block.md` §1.7 移交件）：
@@ -833,7 +833,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
   §5.3 用例表扩 **T-A16–T-A32**（逐条含先红形态）；§5.1 生命周期表出生 / 幂等两行同步收正。
 - 2026-09-19（**同批设计评审修正轮 · eng-designer**——评审 id=130 发现 1–12 逐号落地；fix 轮，零新扇面）：§5.1 补桩行 / §5.3 终态补桩**状态表**（名与前置收正——`FAMILY_ROLES` 补桩前置退场、射程含 consult / escalate）；
   §5.3「工具结果行」与「第 4 参对位」两说合一（`onToolResult` = 分流补 + 第 4 参消费两件——2026-09-19 实核）；内容面正收据落事件名 `ev:subcontent`（载荷 `{ ch, face }`——不并入 `ev:subdeliver`，五处置计数零改）；
-  §5.5 计数钮**落档登记**（新档 `thincoder-vscode/webview/activity-new.js`（拟新增））+ 文案落 locale 键 `sub.newBlocks`；D-W24 补落点坐标（`panel-session.mjs:74`）；D-W13 行数读数收正（`ui.js` 474——2026-09-19 实读）；
+  §5.5 计数钮**落档登记**（新档 `thincoder-vscode/webview/activity-new.js`（已落））+ 文案落 locale 键 `sub.newBlocks`；D-W24 补落点坐标（`panel-session.mjs:74`）；D-W13 行数读数收正（`ui.js` 474——2026-09-19 实读）；
   §10 行 12 悬空指针改内嵌建议文本（新增条目号仍待父侧落）；T-A12 退场标记化 · T-A27 触发面收窄（`drop-unknown-role`）。
 - 2026-09-20（**库存清账批 · 台账 #129 G-2 · eng-designer**——承 `docs/batches/2026-09-20-residual-sweep-batch.md` §2）：§5.3 / §5.5 / D-W22 四处「（拟新增）」标记撤除（`webview/activity-diag.js` / `webview/activity-new.js` 已落地——与姊妹档 `WEBVIEW-PROTOCOL.md` 同形）。**零新语义**。
 - 2026-09-20（**渲染粒度对齐批 · eng-designer**——承 `docs/batches/2026-09-20-render-granularity-batch.md` §1 / §2）：新增 **§5.6 内容行合并粒度**（CLI `pushBlock` 对齐——tool 面按「工具名 + `sub` 同」并入末行、RAW 零分隔符 + `pre-wrap`；text / think 面两端同构零改；降级 = 无 `face` 恒新行）；
@@ -865,7 +865,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
   单源 = `thincoder-vscode/webview/panels.js:53-56` 落值 **1000** ∕ `docs/cli/design/TUI.md` §7.7）。另机制（宿主存活投影 2 s 心跳）零改。**零新语义**（拍值收正）。
 - 2026-09-29（**缺面族批补批 · 批 C 文档面随动轮 · eng-designer**——承 `docs/batches/2026-09-29-missing-face-family.md` §2.2 ⑪ · 台账 #632）：§4.4 收正——`:146` 剥离函数「同档」改核单源（`thincoder-core/file-refs.mjs`——本端档 = 薄壳）；`:151` 落点判据 ②「产者住端侧」句退场（前提失效——产者 = 核件）；
   `:152` N-W6 登记加并列注（桌面并入本端剥离侧 ⇒ 登记两端 = **VSC + 桌面 ∥ CLI**）；`:154` `injectAtRefs` 补核单源限定。明细 = 批档 §2。**零新语义**（句级收正 ∕ 指针限定）。
-- 2026-09-29（**desktop-rebuild-fidelity 批 · U2 设计档随动轮 · eng-designer**——承批档 `docs/batches/2026-09-29-desktop-rebuild-fidelity.md` §2.1 ∕ §2.5）：§5.5 增**滚动策略族工厂化条**（策略族四件抽核 `thincoder-render-core/scroll.mjs`（拟新增）；
+- 2026-09-29（**desktop-rebuild-fidelity 批 · U2 设计档随动轮 · eng-designer**——承批档 `docs/batches/2026-09-29-desktop-rebuild-fidelity.md` §2.1 ∕ §2.5）：§5.5 增**滚动策略族工厂化条**（策略族四件抽核 `thincoder-render-core/scroll.mjs`（已落）；
   本端 = 工厂消费——`thincoder-vscode/webview/ui.js` 四函数 ∕ 旗标宿主 `ctx` ∕ 事件集保持；`ui.js` 221 ⇒ 约 201；零行为变更）。明细 = 批档 §2 记录块。
 - 2026-09-29（**vsc-carryover 批 · V2 舱设计档随动轮 · eng-designer**——承批档 `docs/batches/2026-09-29-vsc-carryover.md` §2 #642 ∕ §5）：§2 行面板区句收正——补**重置点 = 会话边界**（回合起点不清 ⇒ 回合后 🎯 ∕ task 存续 ∥ 会话切换 ∕ 载入经 `clearPanels()` 清 goal ∕ task 双侧；开合态不重置）。**零新语义**（实现终态随动）。明细 = 批档 §2。
 

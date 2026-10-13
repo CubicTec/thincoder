@@ -480,20 +480,20 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(EN["err.upstream_error"], "Upstream service error: {detail}", "en 改值")
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
-  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [854, 859], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158——实读）")
+  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964**（2026-10-13 team-ledger 批 +67/表）；键集零语义，拆分为文件面）
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [959, 964], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
 
-test("⑧ 静态面：档目 43 ∥ 42 ∥ nav 管理 9 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
-  // 档目（43 ∥ 42——2026-10-11 走查轮后）
+test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 11 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
+  // 档目（54 ∥ 53——2026-10-13 随正）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（2026-10-12 team-projects-permissions 批后）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [54, 53], "档目 54 ∥ 53（2026-10-13 随正：在途批组 +2 ⇒ sandbox-outbound-member-face 批 +1（views-me-sandbox.mjs）⇒ team-ledger 批 +3（views-ledger.mjs ∥ i18n-{zh,en}-ledger.mjs））")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
-  // nav（管理 9 ∥ sandbox 项末位）
+  // nav（管理 11 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
-  assert.equal(admin.items.length, 9, "管理 9（2026-10-11：chat ∥ sandbox +2）")
+  assert.equal(admin.items.length, 11, "管理 11（2026-10-13 随正：B2 批 +2 管理页后实读）")
   assert.deepEqual(admin.items.at(-1), { key: "sandbox", labelKey: "nav.page.admin.sandbox", path: "/admin/sandbox" }, "sandbox 项末位（labelKey 单源）")
   // app.mjs 接线（import + PAGES 行）
   const appSrc = readPublic("app.mjs")
@@ -522,8 +522,5 @@ test("⑧ 静态面：档目 43 ∥ 42 ∥ nav 管理 9 ∥ app 接线 ∥ 行�
   const cssClean = stripComments(CSS)
   assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8）")
    assert.equal([...cssClean.matchAll(/:hover/g)].length, 8, "悬停八条（七 + 页签一）")
-  // 门禁链：本批 ui 件入链（姊妹两件 = 服务面批落——本件不代断言其档面在盘）
-  const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.ok(chain.includes("docs/batches/2026-10-10-runner-admin-console-ui.test.mjs"), `本批 ui 件入链（39 ⇒ 42）：${chain.length}`)
-  for (const rel of chain.filter((entry) => !entry.includes("runner-admin-console"))) assert.ok(existsSync(join(ROOT, rel)), `链目标在盘：${rel}`)
+  // 注：批内件入链断言已撤（2026-10-12 用户裁：`prepublishOnly` 门禁链撤除——批内件不入链）
 })

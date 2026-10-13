@@ -272,7 +272,7 @@ test("②–⑦ 页面行为腿：由承继件覆盖（页件重写后生效—�
 
 // ── ⑧ i18n 两表（§2.2——键族 ∥ 占位符 ∥ en 零 CJK ∥ 键集 ∥ 键数）────────────────
 
-test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 872 ∥ 877", () => {
+test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ 键数终值 892 ∥ 897", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -290,7 +290,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-   assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [872, 877], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读）——实读）")
+    assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [959, 964], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读 872 ∥ 877）+ sandbox-outbound-member-face 批 +20/表（`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键）+ team-ledger 批 +67/表——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -319,11 +319,11 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
 
 // ── ⑩ 静态面（档目 ∥ nav ∥ app 接线 ∥ 非壳页 ∥ 行数/行宽 ∥ 零外链 ∥ 键/类闭合 ∥ canon）─────
 
-test("⑩ 静态面：档目 50 ∥ 49 ∥ nav 管理 11（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
+test("⑩ 静态面：档目 54 ∥ 53 ∥ nav 管理 11（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [50, 49], "档目 50 ∥ 49（2026-10-13 父侧收正：+admin-chat-creds-merge host-credential.mjs ∥ +console-chat-live-step views-chat-messages.mjs）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [54, 53], "档目 54 ∥ 53（2026-10-13：+admin-chat-creds-merge host-credential.mjs ∥ +console-chat-live-step views-chat-messages.mjs ∥ +sandbox-outbound-member-face views-me-sandbox.mjs ⇒ +team-ledger 批 +3）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
-  // nav（管理 9 ∥ 「对话」第 2 位——总览后）
+  // nav（管理 11 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
   assert.equal(admin.items.length, 11, "管理 11（2026-10-13 父侧收正——B2 批 +2 管理页后实读；对话位次不变）")
   assert.deepEqual(admin.items[1], { key: "chat", labelKey: "nav.page.admin.chat", path: "/admin/chat" }, "对话 = 管理组第 2 位（labelKey 单源）")

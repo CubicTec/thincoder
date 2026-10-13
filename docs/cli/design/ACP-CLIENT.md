@@ -694,7 +694,7 @@ load / resume 的 id = **客户端传入原文形态**（同值读回保续；�
 
 ### 12.4 前置件：事件文法机读单源（核侧 · 本批定形）
 
-- 落点 = `thincoder-core/agent/subagent-event.mjs`（拟新增——零依赖叶；承 `relay-prefix` / `child-marks` 同族先例）。
+- 落点 = `thincoder-core/agent/subagent-event.mjs`（已落——零依赖叶；承 `relay-prefix` / `child-marks` 同族先例）。
 - 导出（定形）：`EVENT_SENTINEL` · `parseSubagentEvent(text)` → `{ name, progress?, detail? } | null`（形态判据 = **单源**——唯一表达式住本模块（`^⟦ev⟧[a-z]+\x1e`）；桥剥离式即本判据（`parseSubagentEvent` 非空 ⇒ 剥），防第二套平行文法（§7.2 纪律）；终止符约束 load-bearing——沿 D13 负向边界：正文含 `⟦ev⟧` 无终止符 ⇒ null ⇒ 仍转发）。
 - 哨兵单源：`spawn-child.mjs` 的 `EVENT_SENTINEL` 定义位迁入本模块（该档 import + 再导出——既有 import 面零改；先例 = 同档 `child-marks` 再导出手法）。
 - 消费方（本批）= `acp/bridge` 一处；显示面三消费点（TUI `routeSubToken` ∥ VSC / 桌面 `relayEventToSubPatch`）**不动**（收敛 = 登记，§12.6）。

@@ -462,7 +462,7 @@ advisor design review 标准维度补一条：
 - 2026-09-20（**thinking 回传缺口批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-20-reasoning-echo-gap.md` §1 · 台账 #109）：§12 新增「工具轮 assistant 消息构造（回声恒带）」契约行——本档持有
  `thincoder-core/advisor/loop.mjs`（实现载体表 `:12`，非 `AGENT-LOOP-SUBAGENT.md`）⇒ advisor 镜像推入面（`:207-217`）的规范条文落此；判据与机制单源 = `CONTEXT-COMPACTION.md` §6.10 #9 / §7 D-CC22。机制条文其余零改。
 
-- 2026-09-20（**thinking 回传缺口批 · 设计评审轮 1 收正 · eng-designer**——承批次档 `docs/batches/2026-09-20-reasoning-echo-gap.md` §3 轮次 1：🟡#1 派生一致性收正）：§12 契约行回归锚改双面结构形态 + 缝式行为档（拟新增）——判据形态单源 = 该批 §2.4 A-C6 / A-C12。机制条文其余零改。
+- 2026-09-20（**thinking 回传缺口批 · 设计评审轮 1 收正 · eng-designer**——承批次档 `docs/batches/2026-09-20-reasoning-echo-gap.md` §3 轮次 1：🟡#1 派生一致性收正）：§12 契约行回归锚改双面结构形态 + 缝式行为档（已落）——判据形态单源 = 该批 §2.4 A-C6 / A-C12。机制条文其余零改。
 
 - 2026-09-20（**库存清账批 · v1 测试门词面收正 · eng-designer**——承 `docs/batches/2026-09-20-residual-sweep-batch.md` §2 · 台账 #128）：§12 验证段测试基建描述收正（单入口 `npm test`——`slow` 纯别名；权威 = `docs/core/design/TESTING.md` §10）。**零新语义**。
 

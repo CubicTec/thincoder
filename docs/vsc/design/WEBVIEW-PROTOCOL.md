@@ -491,7 +491,7 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | ① 判别式 | ② webview 发射点 | ③ host 消费位 | ④ 处置 | ⑤ 备注 |
 |---|---|---|---|---|
 | `abort` | webview/input.js:26 | src/extension/panel-messages.mjs:260 | `活` | — |
-| `addProvider` | webview/onboarding.js:67（预设形直发位；首启交棒调用位 = `:63`——携 `key` 预填且**分支先于 key 校验**（空键亦交棒）· #1041）/webview/settings-provider-dialog.js:245（表单提交位——`custom` ∥ `preset` 两形发点；实施后实读 2026-10-07）（共 2 处——`settings-providers.js:146 ∥ :148` 两发点随表单迁入新档） | src/extension/panel-messages.mjs:279 | `活` | 载荷 + `proxy`（可选布尔——添加表单「走 proxy」勾选；`docs/vsc/design/SETTINGS.md` §2.16）；**页脚「+ Add provider…」发送点退场（添加入口弹窗统一批 · #1054）**——核 `thincoder-render-core/composer/model-menu.mjs:308` 的 `post("addProvider")` 由 VSC 桥 `webview/input.js` OUT 表接为**本地面动作**（开添加弹窗——零出站；`SETTINGS.md` §2.17 ③）；host 无载荷 else 支（QuickPick 增流程）同批净删 |
+| `addProvider` | webview/onboarding.js:67（预设形直发位；首启交棒调用位 = `:63`——携 `key` 预填且**分支先于 key 校验**（空键亦交棒）· #1041）/webview/settings-provider-dialog.js:253（表单提交位——`custom` ∥ `preset` 两形发点；2026-10-13 清账轮现读；原 :245 系实施后实读 2026-10-07）（共 2 处——`settings-providers.js:146 ∥ :148` 两发点随表单迁入新档） | src/extension/panel-messages.mjs:279 | `活` | 载荷 + `proxy`（可选布尔——添加表单「走 proxy」勾选；`docs/vsc/design/SETTINGS.md` §2.16）；**页脚「+ Add provider…」发送点退场（添加入口弹窗统一批 · #1054）**——核 `thincoder-render-core/composer/model-menu.mjs:308` 的 `post("addProvider")` 由 VSC 桥 `webview/input.js` OUT 表接为**本地面动作**（开添加弹窗——零出站；`SETTINGS.md` §2.17 ③）；host 无载荷 else 支（QuickPick 增流程）同批净删 |
 | `atComplete` | thincoder-render-core/composer/atmenu.mjs:50 | src/extension/panel-messages.mjs:268 | `活` | — |
 | `batchPermissionResponse` | webview/permission.js:18（发射位——字面量构造 `:12`） | src/extension/panel-messages.mjs:270 | `活` | 载荷增 `promptId`（三发点同携——§4.6）；形状 = 局部箭头函数 |
 | `buildIndex` | webview/settings-tools.js:83 | src/extension/panel-messages.mjs:291 | `活` | — |
@@ -538,7 +538,7 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | `setProviderProxy` | webview/settings-providers.js:45（2026-10-10 实读；原 `:62`） | src/extension/panel-messages.mjs:284 | `活` | — |
 | `switchSession` | webview/session-bar.js:62 | src/extension/panel-messages.mjs:247 | `活` | — |
 | `testMcp` | webview/settings-mcp.js:208 | src/extension/panel-messages.mjs:281 | `活` | — |
-| `testProvider` | webview/settings-provider-dialog.js:222（表单拉取位——实施后实读 2026-10-07） | src/extension/panel-messages.mjs:290 | `活` | 载荷 + `proxy`（可选布尔——勾选 ⇒ 探针按 `probeTargetOf` 逐渠判定；未勾 ∥ 缺省 ⇒ 直连；2026-10-08 去全局闸；§vsc `SETTINGS.md` 2.16 ③′）+ `id`（请求归属单源——与 `testProviderResult` 回显配对；#1051——§3.2 行 26） |
+| `testProvider` | webview/settings-provider-dialog.js:228（表单拉取位——2026-10-13 清账轮现读；原 :222 系实施后实读 2026-10-07） | src/extension/panel-messages.mjs:290 | `活` | 载荷 + `proxy`（可选布尔——勾选 ⇒ 探针按 `probeTargetOf` 逐渠判定；未勾 ∥ 缺省 ⇒ 直连；2026-10-08 去全局闸；§vsc `SETTINGS.md` 2.16 ③′）+ `id`（请求归属单源——与 `testProviderResult` 回显配对；#1051——§3.2 行 26） |
 | `testProxy` | webview/settings-env.js:99 | src/extension/panel-messages.mjs:355 | `活` | — |
 | `userMessage` | thincoder-render-core/composer/panel.mjs:341 | src/extension/panel-messages.mjs:204 | `活` | 双向同判别式（收面回显行 = §12） |
 | `webviewReady` | webview/chat.js:141 | src/extension/panel-messages.mjs:293 | `活` | — |

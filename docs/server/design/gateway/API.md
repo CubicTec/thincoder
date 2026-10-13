@@ -20,6 +20,8 @@
 | 项目面（成员） | `/api/projects*`（可见项目列表/详情/成员增删改/项目改——可见性三档） | 会话 + 能力矩阵（`project/PROJECTS.md` §3） | 本档 §2.9 |
 | 项目管理面（admin） | `/api/admin/git-sources*`（源 CRUD ∥ 立即同步 ∥ 体检 ∥ 拉列表 ∥ webhook 密钥生成） ∥ `/api/admin/projects*`（加仓——批量/手输 ∥ 项目删除） | admin 会话（服务端判定——`user` ⇒ 403） | 本档 §2.9 |
 | 项目接收面（公开） | `POST /api/hooks/git-sources/:id`（github webhook 接收——验签门；`project/PROJECTS.md` §13） | 无会话（每源密钥 HMAC-SHA256 验签） | 本档 §2.9 |
+| 团队台账面（控制台） | `GET/POST /api/ledger*`（列表/新建/编辑/收口撤回——四行） | 会话 + 项目能力矩阵（`ledger/LEDGER.md` §2——KD-SV-143） | 本档 §2.10 |
+| 团队台账面（端侧） | `GET/POST /api/client/ledger*`（同四行——端侧核工具消费） | 登录 token（Bearer——与 /v1 同校验单源） | 本档 §2.10 |
 | 前端静态面 | `GET /` ∥ `public/**`（`app.mjs` ∥ `nav.mjs` ∥ `views-*`（档单 = `webui/WEBUI.md` §1） ∥ `style.css`） | 公开（页面壳零数据） | `webui/WEBUI.md` §1 |
 | 其余 | —— | —— | 404（JSON 错误形 = §3） |
 
@@ -172,7 +174,7 @@
 
 | 方法 + 路径 | 语义 |
 |---|---|
-| `GET /api/me/sandbox/workspaces` | 本人工作区读数：`{ workspaces: [{ id, name, boxState, stopReason?, dirty, checkpointCount, pending }] }`（`boxState` = `running` ∥ `stopped`——`stopReason` 取值 `idle_ttl` ∥ `wallclock_ttl` ∥ `manual`；`pending` = 最近 open 待批 `{ host, since }` ∥ `null`）——恒本人过滤（`owner_member_id` = 会话成员）；`pending` 端侧渲染「等待管理员批准」提示（不得静默——`webui/SANDBOX.md` §2.2）；不可用 ⇒ 503 `sandbox_unavailable` |
+| `GET /api/me/sandbox/workspaces` | 本人工作区读数：`{ workspaces: [{ id, name, runnerName, boxState, stopReason?, dirty, checkpointCount, pending }] }`（`runnerName` = 所属 runner 名 ∥ `null`（未绑定——sandbox-outbound-member-face 批；端侧呈「未绑定」）；`boxState` = `running` ∥ `stopped`——`stopReason` 取值 `idle_ttl` ∥ `wallclock_ttl` ∥ `manual`；`pending` = 最近 open 待批 `{ host, since }` ∥ `null`）——恒本人过滤（`owner_member_id` = 会话成员）；`pending` 端侧渲染「等待管理员批准」提示（不得静默——`webui/SANDBOX.md` §2.2）；不可用 ⇒ 503 `sandbox_unavailable` |
 
 - 写面零端点（成员对工作区的动作随 #1216 ② 权限模型——`sandbox/SANDBOX.md` §8 成员面）。
 
@@ -231,6 +233,27 @@
 - 调度器（定时成员同步——装配期接线）：判据与算法 = `project/PROJECTS.md` §5（**两模式同跑**——`event` 源照跑 = 对账兜底）；审计 actor = `scheduler` ∥ 事件触发 = `webhook`（后两者无 actorId）。
 - 用例 = `project/PROJECTS.md` §10（N1–N23 ∥ B1–B3 ∥ E1–E4）；控制台消费 = `webui/PROJECTS.md` §2。
 
+### 2.10 团队台账面（控制台 · 端侧）——team-ledger 批；机制全文 = `ledger/LEDGER.md`
+
+（端点族 = `/api/ledger*`（控制台——会话 + 项目能力矩阵）+ `/api/client/ledger*`（端侧——登录 token Bearer）；共 **八行**（控制台四 ∥ 端侧四——同一域模块的薄适配两面）；
+错误形 = §3 全码沿用——**零新码**；写端点 JSON 型门同 §1 前言；未授权即不可见（列表零出现 ∥ 直取 404 不辨——沿 §2.9 口径）；仓 = 归一地址（`projects.address` 同形——未登记仓 ⇒ 写 400 人话）
+∥ 追认核销（自 `待讨论`/`待设计` ⇒ `已核销`）须 `detail` 非空（否则 400）。）
+
+| 方法 + 路径 | 鉴权 | 语义 |
+|---|---|---|
+| `GET /api/ledger?repo=&status=&owner=` | 会话（`can.view`） | 列表：`{ items: [行…], repos: [{ address, displayName, canWrite }], total }`——行 = `{ id, repo, status, title, detail, owner, createdBy, createdAt, updatedAt, closedAt, aged, canWrite }`（零 `repoName`——显示名 = 控制台 `repos[]` 回填；端侧展示 = 归地址）；三筛（仓/状态/负责人——`repo` 归一后精确匹配 ∥ `status` 枚举外 ⇒ 400 ∥ `owner` 用户名精确匹配）；可见性 = 能力矩阵过滤（非成员零出现）；`repos[]` = 可见项目 + 写权读数（筛选/新建选单/行写权的渲法源单源） |
+| `POST /api/ledger` | 会话（`can.write`） | 新建 `{ repo, title, detail?, owner? }`（`status` 恒 `待讨论`）⇒ 200 `{ item }`；**建面三态**（2026-10-13 裁定）= 仓不存 ⇒ 400 人话（加仓 = admin 专属）∥ 仓存而无 `can.view` ⇒ 404 不辨（措辞 = 「项目不存在或不可见」——同项目面口径）∥ 可见而无 `can.write` ⇒ 403；`owner` 缺省 = 会话主体；审计 `ledger_event`/`create`（`surface:"console"`） |
+| `PATCH /api/ledger/:id` | 会话（`can.write`） | 编辑 `{ title?, detail?, owner?, status? }`（`status` 值域 = 迁移表合法后继——非法 ⇒ 400 人话 ∥ 仓不可改——KD-SV-140）；不可见 ⇒ 404 不辨；审计 `edit` |
+| `POST /api/ledger/:id/close` | 会话（`can.write`） | 收口/撤回 `{ status }`（∈ `已核销` ∥ `已废弃`）；已归档 ⇒ 400；审计 `close`/`withdraw` |
+| `GET /api/client/ledger?repo=&status=&owner=` | 登录 token（`can.view`） | 同上同形（**无 `repos[]`**——端侧仓标记自动派生）；`repo` 收**原文**（服务端归一——KD-SV-144） |
+| `POST /api/client/ledger` | 登录 token（`can.write`） | 同上（`repo` = 端侧 origin 原文）；审计同型（`surface:"client"`） |
+| `PATCH /api/client/ledger/:id` | 登录 token（`can.write`） | 同上 |
+| `POST /api/client/ledger/:id/close` | 登录 token（`can.write`） | 同上 |
+
+- 视图默认当前仓 = **端侧默认**（工具 `scope` 缺省——`docs/core/design/TEAM-LEDGER.md` §2.1）；控制台 = 全队 + 按仓筛（`repo` 缺省不过滤）。
+- 判权 = `project/PROJECTS.md` §3 能力矩阵（读 `view` ∥ 写 `write`）；**未登记仓 ⇒ 写 400**（加仓 = admin 专属——AC-44①）。
+- 用例 = `ledger/LEDGER.md` §11（N1–N5 ∥ B1–B9 ∥ E1–E4）+ `docs/core/design/TEAM-LEDGER.md` §7；控制台消费 = `webui/LEDGER.md` §2。
+
 ## 3. 错误形（全码单源）
 
 - 统一形：`{ "error": { "message": "…", "type": "…", "code": "…" } }`。
@@ -241,6 +264,7 @@
 - 客户端面（`/api/client/*`——同形）：401 `invalid_api_key`（无/无效 token——三态不区分）· 401 `invalid_credentials` ∥ 429 `too_many_attempts`（登录——沿账号面同码）；**零新码**（全码单源不变——机制 = `client/CLIENT.md` §1/§2）。
 - 沙盒面（`/api/admin/sandbox/*` ∥ `/api/me/sandbox/*`——同形前置）：503 `sandbox_unavailable`（无可用节点——**一码新增**）；余码沿用族口径（`user` ⇒ 403）。
 - 项目面（`/api/projects*` ∥ `/api/admin/git-sources*` ∥ `/api/admin/projects*` ∥ `/api/hooks/*`——同形前置）：**零新码**（400/403/404/401 沿用；「不可见」直取 = 404 不辨——KD-SV-120）；同步/体检/拉列表三读动作 = **自含状态形**（不成统一信封——沿代理测试/镜像源先例）；接收面 = 验签败 401（零细节）+ `log.warn`（不入审计）∥ 忽略/受理 200 两形。
+- 团队台账面（`/api/ledger*` ∥ `/api/client/ledger*`——同形前置）：**零新码**（400/403/404 沿用；「不可见」直取 = 404 不辨 ∥ 未登记仓写 ⇒ 400 人话）；**写面三态 = 仓不存 ⇒ 400 人话 ∥ 仓存而无 `can.view` ⇒ 404 不辨（措辞 = 「项目不存在或不可见」）∥ 可见而无 `can.write` ⇒ 403**（详 = §2.10——2026-10-13 裁定）；两面同码同措辞（同一域模块）。
 - **上游已到达的错误**（4xx/5xx）：状态码与 body **原样透传**（不包不改）；仍记 error 行（token 未知记 NULL）。
 - **消息语言口径**：服务端消息 = 中文单语（机器面零改——CLI/curl 消费方口径不变）；控制台按 `code` 前端映射本地化（中文 ∥ English——机制 = `webui/I18N.md` §2.1）；上游透传错误照原样（控制台原文回显）。
 
@@ -255,7 +279,7 @@
 | `thincoder-server/src/gateway/sse-tap.mjs`（已落盘） | **90**（实读 2026-10-06——设计估 ≈80） | `data:` 行增量扫描 ∥ usage 提取 ∥ 有界缓冲 |
 | `thincoder-server/src/gateway/providers.mjs`（已落盘） | **146 ⇒ ≈165**（实读 2026-10-06——设计估 ≈70；#962 +91 = 行→条目 ∥ 注册表构建（`env:` 解析） ∥ 运行时箱 ∥ 装配引导；服务模型配置面批 +≈19 = `settings` 解码 ∥ 注册表携设置 ∥ `settingsFor`）**⇒ 实读 167 ⇒ ≈175**（模型元数据批：`rowToEntry` 解码 `model_meta_json`）**⇒ 实读 177（2026-10-07——清账批复读）⇒ 实读 184**（2026-10-09 代理批：`proxy` 解码 ∥ 注册表 `proxyUri` 注入 ∥ 种子列——实读）**⇒ 实读 183**（2026-10-09 embed 解耦批：`modelList` 引擎行删——实读）**⇒ ≈208**（2026-10-09 alias 批：条目归一助手 ∥ 别名索引（正/反查）∥ 注册表 ref/派发/清单 +≈25——实读待回填） | provider 注册 ∥ 模型派发 ∥ 派发失败形 ∥ 运行时（§2.2） |
 | `thincoder-server/src/gateway/provider-admin.mjs`（已落盘） | **197 ⇒ ≈225**（实读 2026-10-06——#962 设计估 ≈220；行 CRUD ∥ 掩码回显 ∥ 模型发现 ∥ 管理端点注册——§2.2；服务模型配置面批 +≈28 = GET 行 `settings` ∥ PATCH 键级合并 + 校验接线）**⇒ 实读 220 ⇒ ≈258 ⇒ 实读 284（2026-10-07）**（模型元数据批：`extractModelMeta` ∥ `filterModelMeta` ∥ discover 出图 ∥ GET 行 ∥ POST/PATCH 收 meta——§2.2）**⇒ 实读 305**（2026-10-09 代理批：discover `proxy` ∥ GET/POST/PATCH 面 ∥ 出口换——实读）**⇒ ≈322**（2026-10-09 alias 批：别名唯一性集（保存径） ∥ `filterModelMeta` 名字面 ∥ 保存线 +≈17——实读待回填）⇒ 实读 **349**（2026-10-12 本设计轮复读）⇒ ≈**362**（console-reasoning-levels 批：GET 行 `modelReasoning`（桥件注入 ∥ 缺核退化）+≈13） | provider 管理面（控制台——仅 admin） |
-| `thincoder-server/src/gateway/reasoning-levels.mjs`（拟新增——console-reasoning-levels 批） | ≈**45**（设计估——档位值域桥：懒载 `@thincoder/core/model-specs.mjs` + 缓存 ∥ `levelsOf(model)`（枚举 ∥ `[]`）∥ `modelReasoningMap(models)`（稀疏——空档零键）∥ 缺包 ⇒ 抛（调用侧退化 + 一条警告——模块级旗））⇒ 实读 **88**（2026-10-12 本批落地后） | 档位值域单源桥（核 `model-specs.mjs`——服务端零第二清单；消费 = `provider-admin` GET ∥ `chat-routes` PATCH 校验 ∥ `chat.mjs` 装配过滤） |
+| `thincoder-server/src/gateway/reasoning-levels.mjs`（已落——console-reasoning-levels 批） | ≈**45**（设计估——档位值域桥：懒载 `@thincoder/core/model-specs.mjs` + 缓存 ∥ `levelsOf(model)`（枚举 ∥ `[]`）∥ `modelReasoningMap(models)`（稀疏——空档零键）∥ 缺包 ⇒ 抛（调用侧退化 + 一条警告——模块级旗））⇒ 实读 **88**（2026-10-12 本批落地后） | 档位值域单源桥（核 `model-specs.mjs`——服务端零第二清单；消费 = `provider-admin` GET ∥ `chat-routes` PATCH 校验 ∥ `chat.mjs` 装配过滤） |
 | `thincoder-server/src/gateway/ratelimit.mjs`（已落盘） | **≈90**（设计估）**⇒ 实读 64（2026-10-07——清账批复读）**（进程内 60s 定窗计数（`check` ∥ `record`） ∥ `Retry-After` 计算 ∥ 纯函数可直测；§6 KD-SV-35） | 模型限流（per-model RPM/TPM） |
 | `thincoder-server/src/gateway/system.mjs`（已落盘） | **无 ⇒ 55 ⇒ ≈60**（实读 2026-10-06——设计估 ≈70；探活 handler ∥ `/api/system`（版本/更新状态；二轮 +≈5 = `embedding` 字段） ∥ 注册——§2.3）**⇒ 实读 57（2026-10-07——清账批复读）** | 系统面（healthz ∥ system） |
 | `thincoder-server/src/gateway/embedding-admin.mjs`（已落盘） | **≈110**（设计估）**⇒ 实读 96（2026-10-07——清账批复读）⇒ 实读 110（2026-10-09——配置控制台批落地后：草稿三项明传优先）**（引擎配置读（真值 ∥ 零密钥） ∥ 探活/试跑单端点（代发 ∥ kind 四归类 ∥ 超时） ∥ 注册——§2.4）**⇒ ≈118**（2026-10-09 embed 解耦批：GET 缺段 null 容形 ∥ 探活缺配 400 +≈8——实读待回填） | 向量服务面（控制台——仅 admin） |
@@ -288,6 +312,7 @@
 | 卷族（sandbox-volumes 批——台账 #1291；用户 2026-10-11 21:18 三件 + 21:22 裁；AC-40——已落需求档；表 = §2.5 卷族两行） | 列表逐值（`{ volumes: [{ name, driver, createdAt }] }`——`Volumes` 缺/null ⇒ `[]`；零审计）∥ 删名形校验（`../x` ∥ 含空格 ⇒ 400 **零外呼**）∥ 引擎 404 ⇒ 404 ∥ **409（在用卷）⇒ 400 人话 + 处置句**（零新码）∥ 204 ⇒ 200 + 审计 `volume_delete`（detail 键集 = `accounts/ACCOUNTS.md` §2.1）∥ 502 不可达 ∥ 判权三态（`user` ⇒ 403 ∥ 无会话 ⇒ 401）∥ 建容器卷字段 = 只改入口形（`Binds` 逐值零改——§2.5 创建容器行零动）；判据全文 = `sandbox/SANDBOX.md` §11 卷族行 ∥ §12（N62/N63 ∥ B63–B65 ∥ E48/E49）∥ §14 KD-SV-104/105 | 单元测试档 + 收口轮（真机） |
 | AC-44（功能点 44——团队项目与权限；已落需求档——`docs/server/requirements/PROJECT.md` 验收表；team-projects-permissions 批（B2）——表 = §2.9 **十七行**（成员面六 ∥ 管理面十 ∥ 接收面一）） | 端点面机检：仓表一对一（重复挂仓 400 零落库——**跨形归一单键** ∥ 只 admin 能加——`user` ⇒ 403）∥ 三档权限（能力读数 + 动作面 403/404）∥ 负责人边界（改仓地址 ⇒ 非 admin 403）∥ 单向同步（名册减人 ⇒ sync 行落掉 ∥ 零反向出站 = 出站全 GET——登记步手动）∥ 手动钮 + 定时（两模式同跑）+ 事件接收端（§13——验签/忽略面/撞锁合并）∥ 单源锁 ∥ 源表七字段 + 掩码 + 删源防护 + webhook 密钥面 ∥ 项目删除（§14）；判据全文 = `project/PROJECTS.md` §9/§10（N1–N23 ∥ B1–B3 ∥ E1–E4） | 单元测试档 + 收口轮（浏览器实走） |
 | AC-28（功能点 28——配置控制台写面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | GET = 文件面值（有效值回填 ∥ 密钥掩码零泄漏 ∥ `bootstrap.password` 面零列）∥ PATCH：白名单（未知键 ⇒ 400）∥ 合并保未知键 ∥ 校验门（非法值 ∥ `env:` 缺位 ⇒ 400 且文件字节零变）∥ 原子写（tmp 零残留 ∥ rename 覆盖）∥ 审计 `config_update`（detail = 键名 ∥ 值零入）∥ 并发（同步段单写者）∥ 写后 GET 回读逐值（round-trip）∥ 草稿探活（test 端点明传优先——缺省回落）∥ **缺段创建**（缺 `embedding` 段 ⇒ PATCH 建段 ⇒ 门通过 ∥ 缺段档 PATCH 他键过门；2026-10-09 embed 解耦批） | 单元测试档 |
+| AC-32（功能点 32——团队台账；已落需求档——`docs/server/requirements/PROJECT.md` 验收表；team-ledger 批——表 = §2.10 **八行**（控制台四 ∥ 端侧四）） | 端点面机检：两面同形（同域模块）∥ 判权三态（非成员 ⇒ 列表零出现/直取 404；`read` 档写 ⇒ 403；无会话/无 token ⇒ 401）∥ 仓归一（跨形同键：`git@host:org/repo.git` ∥ `https://host/org/repo` ⇒ 同键）∥ 未登记仓写 ⇒ 400 零落库 ∥ 全局编号（跨仓两建 ⇒ 不重）∥ 零去重（同题两条皆落）∥ 状态机（迁移表逐值 ∥ 追认须 detail ∥ 终态 400）∥ 老化（`now` 注入——30 天边界）∥ 审计 `ledger_event` 四 kind；判据全文 = `ledger/LEDGER.md` §10/§11（N1–N5 ∥ B1–B9 ∥ E1–E4）∥ 端侧面 = `docs/core/design/TEAM-LEDGER.md` §6/§7 ∥ 控制台面 = `webui/LEDGER.md` §4 | 单元测试档 + 收口轮（浏览器实走 + 三端实走） |
 
 ## 6. 关键决策（本域）
 
@@ -452,3 +477,7 @@
 - 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277）∥ 用户 2026-10-12 授权两件）：§1 路由族表：项目管理面行随正（+ webhook 密钥/项目删除）+ **增接收面行**（公开——验签门）；§2.9 preamble 随正（共 **十七行**）+ 三新行（`POST …/hook-secret` ∥ `POST /api/hooks/git-sources/:id` ∥ `DELETE /api/admin/projects/:id`）+ `hookSecret` 读面/`known` 标/`source_update` 键注随正 ∥ §3 项目面行随正（+ `/api/hooks/*`）∥ §5 AC-44 行随正（十七行 ∥ 跨形归一 ∥ 事件/删除面 ∥ N1–N23 ∥ B1–B3 ∥ E1–E4）。**产品码零触（设计轮）。**
 - 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮 2（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3 轮次 2（评审 #280 之 1））：§2.9 详情行 `my` 补 `admin` 布尔 + `can` 补 `delete`（六键逐值 = `project/PROJECTS.md` §3 判定函数）+ 增「详情 `my` 形」条目（渲法源口径）；同源随动 = `webui/PROJECTS.md` §2.1。**零新语义**（评审发现直接导出项）。
 - 2026-10-12（**admin-chat-creds-merge 批 · 冻结域随正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-12-admin-chat-creds-merge.md` §2（R72② 清单——父侧解冻后落） · 台账 #1326）：§1 沙盒控制台面行方法面补 `PUT` ∥ §2.5 **增两端点行**（`PUT`/`DELETE …/runners/:id/credential`——形校验 400 ∥ 零秘密响应 ∥ 审计两 kind）+ 主机表行形增 `ssh` 元数据（`overview` 元素 ∥ `POST /runners` 200 行形）+ 托管接入列表行 `credential.state` 四值（+ `moved`）。同源随动 = `sandbox/SANDBOX.md` §3（主机凭据块——单源） ∥ `accounts/ACCOUNTS.md` §2.1 ∥ `store/STORE.md` §2 v19 段。**零新语义**（R72② 清单逐项转录）。
+- 2026-10-13（**sandbox-outbound-member-face 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-outbound-member-face.md` §1 · 台账 #1234）：§2.7 成员面行形增 `runnerName`（所属 runner——未绑定 ⇒ `null`，端侧呈「未绑定」）。机制全文 = `sandbox/SANDBOX.md` §8 成员面 ∥ `webui/SANDBOX.md` §2.2。**产品码零触（设计轮）**。
+- 2026-10-13（**team-ledger 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §1 · 台账 #1206；需求功能点 32 ∥ AC-32）：§1 路由族表增两行（团队台账面（控制台）——会话 + 项目能力矩阵 ∥ 团队台账面（端侧）——登录 token）；**增 §2.10**（八行：控制台四（`/api/ledger*`） ∥ 端侧四（`/api/client/ledger*`）——同域模块两面族；三筛；`repos[]` 渲法源；仓归一；追认须 detail）；§3 增团队台账面错误形行（零新码 ∥ 404 不辨 ∥ 未登记仓写 400）；§5 增 AC-32 判据行。同源随动 = `ledger/LEDGER.md`（新档） ∥ `store/STORE.md` §2 v20 段 ∥ `webui/LEDGER.md`（新档） ∥ `docs/core/design/TEAM-LEDGER.md`（新档）。**产品码零触（设计轮）。**
+- 2026-10-13（**team-ledger 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §3 轮次 1 之 7/9）：§1 台账（控制台）行判权括注改指（`ledger/LEDGER.md` §6 ⇒ **§2——KD-SV-143**）∥ §2.10 列表行收正（行形零 `repoName`——显示名 = 控制台 `repos[]` 回填；端侧展示 = 归地址）。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。
+- 2026-10-13（**team-ledger 批 · 收口随正轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §2 · 台账 #1206）：§2.10 POST 行落**建面三态**（2026-10-13 裁定——仓不存 ⇒ 400 人话 ∥ 仓存而无 `can.view` ⇒ 404 不辨（措辞 = 「项目不存在或不可见」）∥ 可见而无 `can.write` ⇒ 403）∥ §3 团队台账面行补写面三态句 ∥ 用例/判据链随正（B1–B8 ⇒ **B1–B9**——`ledger/LEDGER.md` §11 增 B9 行；§2.10 尾 ∥ §5 AC-32 行）。**零新语义**（收口随正——父裁原文）；产品码零触。

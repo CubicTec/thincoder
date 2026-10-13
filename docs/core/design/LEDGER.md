@@ -365,7 +365,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 
 ### 7.4 挂载 / 7.5 对端挂载 / 7.6 收口行 / 7.7 关键决策 / 7.8 不变量
 
-- CLI 挂载（状态槽 / 首扫不抢首帧 / 周期 `unref()` / 回合处理期间跳过本轮 / 空标记零注入 / headless 零改动）· 对端挂载（状态栏 item 无 command / tooltip）· 收口行（`--summary` 命令面 + 核销同步清单「台账可见面（收口行）」槽位）——**机制与 v1 全同**（数据源迁移发生在展示面内部），逐字契约与决策记录（K1–K7 / U1–U6）沿用本档 v1 文本，不重述。
+- CLI 挂载（状态槽 / 首扫不抢首帧 / 周期 `unref()`（**兜底**）/ **库变更去抖即扫（写后即时——2026-10-13 用户裁定「写了以后就要立即更新」）** / 回合处理期间跳过**仅限定时轮**（变更轮不受挡）/ 空标记零注入 / headless 零改动）· 对端挂载（状态栏 item 无 command / tooltip）· 收口行（`--summary` 命令面 + 核销同步清单「台账可见面（收口行）」槽位）——数据源迁移发生在展示面内部，逐字契约与决策记录（K1–K7 / U1–U6）沿用本档 v1 文本，不重述。
 - **不变量**：① 无台账 → 零输出零标记 ② 台账档只读（唯一写面 = 主 agent 写命令）③ 数字单源 ④ 不新增工具/命令/快捷键面；headless 零新增输出。
 
 ## 8. 验收标准（v2——回指 M2 规格 AC）
@@ -454,7 +454,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 - T53 正常：`warn` 范围聚合——族内任一项 `aged>0` ⇒ 根锚 `warn = true`；族内项目 `deadExecutors>0`（判活桩注入——同 T19）⇒ 根锚 `warn = true`；无老化 ∥ 无死执行者的具体项目锚 ⇒ `warn = false`（负向锁）。
 - T54 端面：桌面 `ledgerMarkerOf` 透传两形（`{ text, warn }` ∕ `null`）；VSC item 源面锁（`scopeMarkerOf` 消费 ∥ 端侧 `formatMarker(current)` 自算零残余）。
 
-**用例表（续——台账工具统一入口，2026-10-05 批（#923）；单元测试档 = `docs/batches/2026-10-05-ledger-unification.test.mjs`（拟新增——本批实施轮落盘）；明细表 = §11.11）**：
+**用例表（续——台账工具统一入口，2026-10-05 批（#923）；单元测试档 = `docs/batches/2026-10-05-ledger-unification.test.mjs`（已落——本批实施轮落盘）；明细表 = §11.11）**：
 
 - T77–T91：统一入口五 action 等价 ∥ 弃用壳 ∥ 守卫逐 action 文案（P3 / P5 + P2 / P4 / P6 补）∥ 未知 action ∥ action 缺失 ∥ 装配名集（号段首用未占用连续段 T77 起——旧 T1–T12 撞号已消）。
 
@@ -610,7 +610,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 ### 11.5 tool-docs 处置（五档退场 + 新档 + 计数随动）
 
 - `tool-docs/ledger_add.md` · `ledger_close.md` · `ledger_count.md` · `ledger_query.md` · `ledger_update.md` 五档**退场**（迁移期引文——本批实施轮删档；要点并入新档；壳 description 静态化见 §11.4 ⇒ DESC 加载面不触）。
-- `thincoder-core/tool-docs/ledger.md`（拟新增——本批实施轮落盘）：五 action 统一描述（合并五档要点——两池词表等逐字保留）；`DESC("ledger")` 单解析面；**预算面**：单档 ≤ 五旧档合计（读数 as-of 2026-10-05 = 499 字符）——描述预算零恶化。
+- `thincoder-core/tool-docs/ledger.md`（已落——本批实施轮落盘）：五 action 统一描述（合并五档要点——两池词表等逐字保留）；`DESC("ledger")` 单解析面；**预算面**：单档 ≤ 五旧档合计（读数 as-of 2026-10-05 = 499 字符）——描述预算零恶化。
 - **计数随动（52 ⇒ 48——D3；as-of 2026-10-05 实读）**：
   - 机检 = `thincoder-vscode/scripts/check-vsix.mjs` `EXPECT["tool-docs"]`（档数注记同随）；
   - 文档计数簇 = `docs/core/design/CORE-UNIFICATION.md`（`:65` · `:80` · `:86` · `:96` · `:1011` · `:1016` · `:1018` · `:1039` · `:1061` · `:1556` · `:1557`）
@@ -656,7 +656,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 | `thincoder-vscode/src/agent/tool-table.mjs` | 191 | −3 | 移除端侧读二自持项 |
 | `thincoder-vscode/scripts/check-vsix.mjs` | 101 | ~1 | `EXPECT["tool-docs"]` 52 ⇒ 48（注记同随） |
 | `scripts/tool-schema-size.mjs` | 96 | ~2 | 面 3 枚举改 `inst:ledger` |
-| `thincoder-core/tool-docs/ledger.md` | 新（拟新增） | — | 五 action 统一描述（§11.5） |
+| `thincoder-core/tool-docs/ledger.md` | 新（已落） | — | 五 action 统一描述（§11.5） |
 | `thincoder-core/tool-docs/ledger_*.md` ×5 | 五档 | −5 档 | 退场（§11.5） |
 | `thincoder-core/prompts/common.md` | 170 | ~1 | L158 引用改写 |
 | `thincoder-core/prompts/persona-engineering.md` | 195 | ~1 | L167 引用改写 |
@@ -671,7 +671,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 | `docs/RELEASE.md` | 421 | ~2 | 计数簇 |
 | `docs/core/design/API-CONTRACT.md` | 2980 | 生成区随动 | 重跑生成器（§11.9——生成区唯一笔） |
 | `docs/core/design/LEDGER.md` | 前 592 ⇒ 落档 710（实施后同步实读——末行号法；+5 = 实施中裁定轮，本笔 +3） | 本档 | §11 + §3.2 / §8 名称面 + 变更记录 |
-| `docs/batches/2026-10-05-ledger-unification.test.mjs` | 新（拟新增） | 估 ≈260 | 单元测试档（§11.6——五用例） |
+| `docs/batches/2026-10-05-ledger-unification.test.mjs` | 新（已落） | 估 ≈260 | 单元测试档（§11.6——五用例） |
 
 **跨文件极限**：`thincoder-core/ledger-tools.mjs` 估 ≈265 行 ≤500 顾问线（零拆分义务）；若实施轮实装越线 ⇒ 拆分预案 = 统一入口出档（先例 = 2026-09-28 拆分）。余档均小。
 
@@ -770,7 +770,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 
 | 面 | 改前 | 改后 |
 |---|---|---|
-| `thincoder-core/ledger-variant-notice.mjs`（拟新增——本批实施轮落盘） | —（无档） | 导出 `ledgerVariantNotice({ cwd = process.cwd(), dir = ledgerDirPath(), locale = "en", exists = 默认探针 })` → `string ∥ null`；`_resetLedgerVariantNoticeForTest()`；`exists` = 测试注入缝（先例 = `ensureExecutorColumn` 的 `exists` 参数；默认探针 = `statSync(p).isFile()` 吞错形） |
+| `thincoder-core/ledger-variant-notice.mjs`（已落——本批实施轮落盘） | —（无档） | 导出 `ledgerVariantNotice({ cwd = process.cwd(), dir = ledgerDirPath(), locale = "en", exists = 默认探针 })` → `string ∥ null`；`_resetLedgerVariantNoticeForTest()`；`exists` = 测试注入缝（先例 = `ensureExecutorColumn` 的 `exists` 参数；默认探针 = `statSync(p).isFile()` 吞错形） |
 | `thincoder-core/i18n.mjs` | 无 `ledger.*` 键 | `CORE_MESSAGES` 增 `ledger.variantDbNotice`（zh ∥ en 逐字 = §12.2） |
 | `thincoder-cli/src/command-interactive.mjs` | `startTUI(agent, { …, crashNotice })` | 增 `ledgerVariantNotice`（计算段 = §12.2 ①） |
 | `thincoder-cli/src/tui/startup.mjs` | `showStartup` 渲染 `opts.crashNotice` | 增渲染 `opts.ledgerVariantNotice`（恰一行） |
@@ -779,7 +779,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 - W8 契约②：新档静态链入 `ledger-migrate.mjs`（node:sqlite）⇒ 消费侧**动态 import**（CLI 调用面按此落型；端壳静态闭包零新入边）。
 - 检测面零新建哈希式：键式直引 `ledgerKey`（`thincoder-core/ledger-db.mjs:41-43`）∥ 变体枚举直引 `legacyKeyVariants`（`thincoder-core/ledger-migrate.mjs:42-45`）——不二写。
 
-### 12.5 用例表（U-VN*——单元测试档 `docs/batches/2026-10-05-ledger-variant-db-notice.test.mjs`（拟新增——本批实施轮落盘））
+### 12.5 用例表（U-VN*——单元测试档 `docs/batches/2026-10-05-ledger-variant-db-notice.test.mjs`（已落——本批实施轮落盘））
 
 | # | 类型 | 输入 | 期望输出 | 回指 |
 |---|---|---|---|---|
@@ -818,7 +818,7 @@ key = sha1(normalizeCwd(resolveProjectRoot(cwd) ?? resolve(cwd ?? "."))).slice(0
 | KD | 决策 | 否决方案 |
 |---|---|---|
 | KD-VN1 | 「在盘」判据 = 文件存在（零开库） | 读行数（开库读——坏档 / 空库漏报 + 启动期触 SQLite） |
-| KD-VN2 | 检测 / 文案落新档 `thincoder-core/ledger-variant-notice.mjs`（拟新增——本批实施轮落盘） | 并入 `ledger-migrate.mjs`∥ 并入 `ledger-db.mjs`（与 migrate 成环） |
+| KD-VN2 | 检测 / 文案落新档 `thincoder-core/ledger-variant-notice.mjs`（已落——本批实施轮落盘） | 并入 `ledger-migrate.mjs`∥ 并入 `ledger-db.mjs`（与 migrate 成环） |
 | KD-VN3 | 一次为限 = 核内闩（+ 重置缝） | 调用面结构事实（随未来调用面漂移、无直测面） |
 | KD-VN4 | 承载 = opts 拷贝 + `showStartup` 渲染（`crashNotice` 同款） | `showStartup` 内计算（sync 面不可动态 import）∥ 独立启动器（超面） |
 | KD-VN5 | 文案单源 = i18n 键（zh ∥ en；locale = `agent.config?.locale`） | CLI 内联字面（第二副本）∥ 固定中文（违 i18n 单源） |

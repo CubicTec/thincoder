@@ -152,7 +152,7 @@
 `thinking` / `reasoningEffortEnum` / `partialMode` 全缺 ⇒ 思考下拉空、autoThink 直接 `return null`
 （`thincoder-core/auto-think.mjs:67-68`）、consult effort 不钳制（`thincoder-core/agent/spawn-child.mjs:188-195`）、
 截断续写从 Partial Mode 退到普通续写（`thincoder-core/provider/core.mjs:253`）、
-视觉门判据转假（七个消费点坐标见 §2.7 第 1 项）。
+视觉门判据转假（**八个**消费点坐标见 §2.7 第 1 项）。
 
 **判据达成方式**：AC-14 的「无任何一名静默退化」= 本表 15 行（18 具名 + 1 类未知名）穷举 + 上方四项后果共用行 +
 测试 T-4 断言「托底名退化形状已知」（不退化成「无人认账的意外」）。
@@ -176,7 +176,7 @@
 | `thincoder-cli/src/tui/slash-commands.mjs:150-157` | `reasoningEffortEnum`（`:154` 补全候选） | **出批零改**（listing-only）：`/think effort <Tab>` 候选随枚举显真相 |
 | `thincoder-cli/src/tui/cmd-config.mjs:172-184` | `reasoningEffortEnum`（`:180` `["none", ...enumList]` · `:205` 过滤 `!== "none"`） | **出批零改**：枚举含 `"none"` 的档 picker 出双 `none` 行 = **既有形态**（`glm-5` / `glm-5.2` 在册）⇒ 收账于台账（父侧面） |
 | `thincoder-core/provider/core.mjs:253` | `partialMode` | 四新行沿用 true ⇒ 与今日蹭 `qwen` 行同值，零变化 |
-| 七个消费点：核 `thincoder-core/tools/index.mjs:64` · `thincoder-core/tools/file.mjs:159` · `thincoder-core/agent/record-results.mjs:51` · `thincoder-core/agent/setup-reminders.mjs:251` · `thincoder-core/provider/normalize.mjs:22` · VSC `thincoder-vscode/src/agent/setup-tooltable.mjs:305` · `thincoder-vscode/src/extension/image-handler.mjs:110` | `multimodal`（共 7 处，逐处语义见 §2.7 第 1 项） | **七个消费点全部零改**；四新行置 true ⇒ 两 flash 档由「蹭来」变「声明」，布尔语义无失真（实测见 §2.7）。**后记（2026-10-10 · `#1127`）**：原第八项 `thincoder-vscode/src/extension/vision-channel.mjs` 随批删档退场（零引用——计数 八 ⇒ 七）（迁移期引文） |
+| **八个**消费点：核 `thincoder-core/tools/index.mjs:64` · `thincoder-core/tools/file.mjs:159` · `thincoder-core/agent/record-results.mjs:51` · `thincoder-core/agent/setup-reminders.mjs:251` · `thincoder-core/provider/normalize.mjs:22` · `thincoder-core/attachments.mjs:54` · VSC `thincoder-vscode/src/agent/tool-table.mjs:177` · `thincoder-vscode/src/extension/image-handler.mjs:43` | `multimodal`（共 **8** 处，逐处语义见 §2.7 第 1 项） | **八个消费点全部零改**；四新行置 true ⇒ 两 flash 档由「蹭来」变「声明」，布尔语义无失真（实测见 §2.7）。**后记（2026-10-10 · `#1127`）**：原第八项 `thincoder-vscode/src/extension/vision-channel.mjs` 随批删档退场（零引用——计数 八 ⇒ 七）（迁移期引文）；**2026-10-13 清账轮**：`thincoder-core/attachments.mjs:54` 入列（七 ⇒ **八**） |
 
 **关键事实（修正批次档 §1.1 的后果评估）**：核/CLI 路径上**没有任何一处读 `spec.thinking`**
 （全仓 `spec.thinking` 仅 1 处消费 = 上面 VSC 那行（`thincoder-vscode/src/extension/provider-probe-window.mjs:66`）（as-of 2026-09-22；2026-10-10 复读见 §18.4）+ 1 处测试断言）。
@@ -208,12 +208,13 @@
 
 **裁定：不扩 `modalities` 字段**；音频/视频以**行注承载**，不入结构化字段。
 
-1. **布尔语义无失真（实测）**：`multimodal` 全部 7 个消费点的判据都是**图像**（坐标一律自仓根完整路径，评审发现 #2；读数 as-of 2026-09-22 评审轮实读更正）：
+1. **布尔语义无失真（实测）**：`multimodal` 全部 **8** 个消费点的判据都是**图像**（坐标一律自仓根完整路径，评审发现 #2；读数 as-of 2026-09-22 评审轮实读更正；**2026-10-13 清账轮复读收正**——附件扩展批（#948）后新增一处、VSC 两处坐标随档移）：
    核 `thincoder-core/tools/index.mjs:64`（`read_image` 注册门）· `thincoder-core/tools/file.mjs:159`（读图门）·
    `thincoder-core/agent/record-results.mjs:51` 与 `thincoder-core/agent/setup-reminders.mjs:251`（多模态注入门）·
-   `thincoder-core/provider/normalize.mjs:22`（`type:"image_url"` part 剥除门）；
-   VSC `thincoder-vscode/src/agent/setup-tooltable.mjs:305` ·
-   `thincoder-vscode/src/extension/image-handler.mjs:110`（两处贴图门；`vision-channel` 项随 `#1127` 删档退场——2026-10-10）
+   `thincoder-core/provider/normalize.mjs:22`（`type:"image_url"` part 剥除门）·
+   `thincoder-core/attachments.mjs:54`（非多模态判据 `specForModel(model).multimodal !== true`——原普查未含）；
+   VSC `thincoder-vscode/src/agent/tool-table.mjs:177`（贴图门；原坐标 `setup-tooltable.mjs:305`）·
+   `thincoder-vscode/src/extension/image-handler.mjs:43`（贴图门；原坐标 `:110`；`vision-channel` 项随 `#1127` 删档退场——2026-10-10）
    ⇒ 「支持图像输入」这一语义对 omni 档**恰好为真**，不存在「装不下四模态」的实际破损。
 2. **扩字段必造死字段**：全仓**无任何音频发送路径**（实测：无 `input_audio`、
    无 `type:"audio"` 字面量；`RASTER_IMAGE_URL = /^data:image\/(png|jpe?g|gif|webp);base64,/`
@@ -397,7 +398,7 @@
 - 不给 `specMatch` 的 `matched` 位加第三态；不改 `lookupSpec` 返回形状与热路径。
 - 不新增思考关闭开关：`"none"` 已是枚举成员（四新档首项），`resolveEnableThinking`（`thincoder-core/config.mjs:137`）对显式 off 的既有覆盖即够（§2.6）——该函数现无「effort=none ⇒ `enable_thinking:false`」分支，本批不加；`"none"` 面的矛盾组合消除在**生产端**（§2.8-2 / A-18），不经该函数。
 - 不为 qwen 之外的族新增/删除任何托底或冗余行（`glm` / `mimo` 族泛前缀行为**既有已核验设计**，本批不碰）。
-- 不扩 `modalities` 结构化字段（§2.7 裁定）；不改 7 个 `multimodal` 消费点的任何判据（七处完整坐标 = §2.5 表末行 + §2.7 第 1 项）。
+- 不扩 `modalities` 结构化字段（§2.7 裁定）；不改 **8** 个 `multimodal` 消费点的任何判据（八处完整坐标 = §2.5 表末行 + §2.7 第 1 项）。
 - 不引入网络探测 / 自动校正；全部字段均**人工登记**。
 - **`cacheMode` 登记形态不统一（历史面 · 随 §14 收口）**：2026-09-22 设计轮实读 = 在册规格 **53 行** / 40 行登记 / **13 行缺**
   （其中 mimo 两行 = 本批处置面：`mimo-v2.5-pro` `:119` · `mimo-v2.5` `:120`，随 v2.5 对齐补键，§12；余 11 行两类：① 渠道批五行**有意不设**——
@@ -1067,7 +1068,7 @@ v2.5 两行（本批改值面；其余字段零改）：
 |---|---|---|
 | 压缩阈值 / 上下文占比 | `context` · `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.6；核侧 `thincoder-core/config.mjs:137-144`（`resolveCompactThreshold`）· `thincoder-core/token-window.mjs:152`（窗口与占比）· `:161`；面板 `thincoder-vscode/src/specs.mjs:73` · `:87`；CLI 帧 `thincoder-cli/src/tui/render-frame.mjs:393`；坐标 as-of 2026-09-22 评审轮实读） | 128K → 1M（长会话截断面解除） |
 | 温度钳位 | `tempRange`（`thincoder-core/provider/core.mjs:187-188`） | 不钳位 → 钳至 [0, 1.5]（越界值不再打到服务端吃 400） |
-| 视觉门（7 处） | `multimodal`（坐标 = §2.7 第 1 项，as-of 2026-09-22 评审轮实读更正） | 无视觉 → `read_image` 注册 + 贴图注入生效 |
+| 视觉门（**8** 处） | `multimodal`（坐标 = §2.7 第 1 项，as-of 2026-09-22 评审轮实读更正；2026-10-13 清账轮收正） | 无视觉 → `read_image` 注册 + 贴图注入生效 |
 | 工具轮回声构造 | `reasoningEcho`（`thincoder-core/model-specs.mjs:288-290`——实施后实读，as-of 2026-09-22） | 无字段 → 工具轮 assistant 消息恒带 `reasoning_content`（缺值 ⇒ `""`；三形态全 200 实测支撑） |
 | VSC 思考下拉档位 | `thinking`（`thincoder-vscode/src/extension/provider-probe-window.mjs:66`） | 档位空 → 单档 `"enabled"` |
 | 输出上限登记位 | `maxOutput`（非 OpenAI 载荷面 = `thincoder-core/provider/anthropic.mjs:56` · `thincoder-core/provider/responses.mjs:207`——mimo 不走此两格式） | 32K → 131_072（登记面 + 面板显示） |
@@ -1933,7 +1934,7 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 |---|---|---|---|
 | `thincoder-core/model-specs.mjs` | **357** | **+1**（档头注 7 行 ⇒ 8 行；+ 1 token 同位改） | §17.2 核侧目标形；零结构 / 零导出面 / 零表行。>300 处置 = 登记 + 拆分计划——现读落点 = 本档 §13.6「行数处置」段（拆点 / 落点 / 消解窗口住彼）；机检登记面 = `thincoder-core/test/core-hygiene.test.mjs` 的 `SOFT_LINE_REGISTRY`（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）；`docs/core/design/CORE-UNIFICATION.md` §2.8.1 子表空壳（已随 2026-10-08 批清账）；本次 ∉「实质改动」（§13.6 口径） |
 | `thincoder-vscode/src/specs.mjs` | **100** | ±0（注释改述 + 1 token） | §17.2 VSC 侧目标形（同判随正）；零结构 / 零导出面 |
-| `docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`（拟新增 · 单元测试档） | 0 | ~45–60 | §17.6 用例 U-1..U-9 + `[vsc]` V-1..V-3；复跑 = 仓根 `node --test docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`；形态循 `docs/batches/2026-10-09-provider-default-model-purge-vsc.test.mjs`（ROOT 相对 + `pathToFileURL`） |
+| `docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`（已落 · 单元测试档） | 0 | ~45–60 | §17.6 用例 U-1..U-9 + `[vsc]` V-1..V-3；复跑 = 仓根 `node --test docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`；形态循 `docs/batches/2026-10-09-provider-default-model-purge-vsc.test.mjs`（ROOT 相对 + `pathToFileURL`） |
 | `docs/core/design/PROVIDER.md` | **704** | **+1**（机制句 1 行改述 ±0 + 变更记录 1 行新增——704 ⇒ 705） | §6.9 `:171` 随正（本设计轮笔） |
 | `docs/core/design/MODEL-SPECS.md` | **2092** | +本节 ∥ +变更记录 1 行 | 本节 |
 | `docs/batches/2026-10-10-spec-namespace-last-segment.md` | —（纯 `.md` 免档位判定） | 随批轮次追加（非产品面） | §2 批次任务与设计（eng-designer 笔——非产品面） |
@@ -2048,7 +2049,7 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 |---|---|---|
 | `context` | `providerSpec` → 压缩阈值（`thincoder-core/config.mjs:139-146`；`COMPACT_RATIO = 0.6` `:113`）· 上下文占比显示（`thincoder-vscode/src/specs.mjs:82` / `:96`）· advisor 预算（`thincoder-core/advisor/compaction.mjs:35-36`） | 压缩阈值按 1M 窗口重算——预设渠（`maxTokens: 8192`，`thincoder-core/config-presets.mjs:30`）：≈ 71 884 ⇒ **624 230**；无显式 `maxTokens` 渠：**589 824**（= floor((1 048 576 − 65 536) × 0.6)）；长会话不再被 128K 档提前压缩 |
 | `maxOutput` | `outputReserve`（`thincoder-core/config.mjs:117-121`）——仅无显式 `provider.maxTokens` 时生效 | 预留 32 000 ⇒ 65 536（计入上式）；显式 `maxTokens` 渠零变化（预设主导）。**发送面**：spec 值不达 google 请求（`thincoder-core/provider/google.mjs:86` 发 `maxOutputTokens` 仅取 `provider.maxTokens`，实读） |
-| `multimodal` | 图像门族（清单与语义单源 = §2.7 第 1 项——**as-of 2026-09-22；2026-10-10 复读疑滞**：`thincoder-core/attachments.mjs:54` 未列 ∥ `thincoder-vscode/src/agent/setup-tooltable.mjs:305` 现读 = `thincoder-vscode/src/agent/tool-table.mjs:177` ∥ `thincoder-vscode/src/extension/image-handler.mjs:110` 现读 = `:43`；实施方以现读为准；本批零改） | 两档由「非多模态」（`true` 之外一切）转「多模态」：`read_image` 注册门（`thincoder-core/tools/index.mjs:66`——读点 `specForModel(model)?.multimodal`；注册表达式 `:69`；as-of 2026-10-10）、贴图 / 读图 / 注入门放行；google 侧 `inlineData` 通路既有（`thincoder-core/provider/google.mjs:54-59`） |
+| `multimodal` | 图像门族（清单与语义单源 = §2.7 第 1 项——**2026-10-13 清账轮复读收正**：`thincoder-core/attachments.mjs:54` 入列（第八处）∥ `thincoder-vscode/src/agent/setup-tooltable.mjs:305` ⇒ `thincoder-vscode/src/agent/tool-table.mjs:177` ∥ `thincoder-vscode/src/extension/image-handler.mjs:110` ⇒ `:43`） | 两档由「非多模态」（`true` 之外一切）转「多模态」：`read_image` 注册门（`thincoder-core/tools/index.mjs:66`——读点 `specForModel(model)?.multimodal`；注册表达式 `:69`；as-of 2026-10-10）、贴图 / 读图 / 注入门放行；google 侧 `inlineData` 通路既有（`thincoder-core/provider/google.mjs:54-59`） |
 | `thinking` | `effortEnumForModel`——本批实读（as-of 2026-10-10）：`spec.thinking` 直接读点 = `thincoder-vscode/src/specs.mjs:72`（读形 `s.reasoningEffortEnum || (s.thinking ? ["enabled"] : ["high","max"])`）此一处；消费面（调用点）= `thincoder-vscode/src/extension/provider-probe-window.mjs:66` | 该两档 VSC 档位面落 `["enabled"]` 单档（思考开关族既有形；选档归一落中性档、零 patch——§16.6-⑴）；其余面零变 |
 | `thinkAlwaysOn` | `thinkOffPath`（`thincoder-core/think-off.mjs:22-26`）→ 既有条件分支族 | ①CLI `/think`：无 Thinking 开关项 ∧ `/think off` 拒绝（§16.4 两菜单面落点）；②`/advisor`：Disabled 项不渲染；③生成标题零发禁用形（`thincoder-core/generate-title.mjs:46` / `:74`——「无有效 off 路径 ⇒ 不发禁用形」；判据单源 = §16.4）；④auto-think 无枚率先行 `return null`（`thincoder-core/auto-think.mjs:73-74`，先于恒思考守卫）；⑤桌面模型菜单 `thinkOff: false` ∧ `effortEnum: []`（`thincoder-desktop/src/main/settings.mjs:96-99`） |
 
@@ -2074,7 +2075,7 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 | 文件 | 现状 | 预期增删 | 说明 |
 |---|---|---|---|
 | `thincoder-core/model-specs.mjs` | **359** | **+~7**（行注 5 行 + 两表行） | §18.2 行文草案；零结构 / 零导出面 / 零存量行改。>300 处置 = 登记 + 拆分计划（落点 = 本档 §13.6「行数处置」段——拆点 / 落点 / 消解窗口住彼；机检登记面已随 2026-09-28 测试树退场）；本次 ∉「实质改动」——拆点未触发；改后 ~366（≤500 硬限） |
-| `docs/batches/2026-10-10-gemini-model-specs.test.mjs`（拟新增 · 单元测试档） | 0 | ~60–80 | §18.7 用例 G-1..G-7；复跑 = 仓根 `node --test docs/batches/2026-10-10-gemini-model-specs.test.mjs`；形态循 `docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`；`config.mjs` 导入先例 = `docs/batches/2026-10-09-provider-default-model-purge-core.test.mjs:34` |
+| `docs/batches/2026-10-10-gemini-model-specs.test.mjs`（已落 · 单元测试档） | 0 | ~60–80 | §18.7 用例 G-1..G-7；复跑 = 仓根 `node --test docs/batches/2026-10-10-gemini-model-specs.test.mjs`；形态循 `docs/batches/2026-10-10-spec-namespace-last-segment.test.mjs`；`config.mjs` 导入先例 = `docs/batches/2026-10-09-provider-default-model-purge-core.test.mjs:34` |
 | `docs/core/design/MODEL-SPECS.md` | **2202** | +本节 ∥ +变更记录 1 行 | 本节 |
 | `docs/batches/2026-10-10-gemini-model-specs.md` | —（纯 `.md` 免档位判定） | 随批轮次追加（非产品面） | §2 批次任务与设计（eng-designer 笔） |
 
@@ -2133,7 +2134,7 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
   §16.2 / §16.4 / §16.8 / §16.9 连通变）· `thinkOffPath` effort 支补 `thinkAlwaysOn !== true` 合取 · §16.3 行注句携逐行等级词 · W-3 断言改钉非 effort 无 off 路径族（判别力）；
   旧形字面 / 死回指 / 交叉引用收正（§8 · §15.2 · §15.4-4 · §15.8 · §16.4）；`PROVIDER.md` §6.9 字段清单补 `thinkAlwaysOn`（§6.19 同收正）。**零新语义**——除父侧裁决项外均为发现表的直接导出项。
 
-- 2026-09-25 · **off 形族收尾（批次 `2026-09-25-off-family-closeout` · 台账 #334 / #335 / #346）**——新增 **§16**：off 形族**单源叶档** `thincoder-core/think-off.mjs`（拟新增）
+- 2026-09-25 · **off 形族收尾（批次 `2026-09-25-off-family-closeout` · 台账 #334 / #335 / #346）**——新增 **§16**：off 形族**单源叶档** `thincoder-core/think-off.mjs`（已落）
   （`thinkOffShape` / `thinkOffPath`，四处生产者改写 = 端引核零副本）· **`thinkAlwaysOn` 机制位**（`glm-5.3` 族三行）· **回执条件化判据定形**（「有效 off 路径」四族判定 + `/think` / `/advisor` 两菜单面落点）
   · 面板读面口径（off 哨兵不降级为档位）· 三补口 + 冗余 import；§10.1「仅行注」句收正为「行注 + 机制位」；§15.4-2 补收尾批指针。
   上抛 2 条（自定义开值族行与实测相抵 / `glm-5.2` 族 `thinkAlwaysOn` 未取证）。**零新语义**——均为台账三条 + 批档 §1 边界（载荷形态以 CLI 现形为准）的直接导出项。

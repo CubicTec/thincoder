@@ -567,6 +567,6 @@ test("腿⑦ 结构续：核件 `read-history.mjs` 零改 ∥ 八件（六族）
   for (const name of tools.names) assert.ok(tokens.has(name), `能力段应列注册工具名：${name}`)
 
   const db = DB.openDatabase(":memory:")
-  assert.equal(DB.SCHEMA_VERSION, 19, "结构版本 v19")
+  assert.equal(DB.SCHEMA_VERSION, 20, "结构版本 v20（team-ledger 批 v20 后——2026-10-13）")
   assert.ok(db.prepare("PRAGMA table_info('api_keys')").all().some((column) => column.name === "key_plain"), "v19 列在册（尾插）")
 })

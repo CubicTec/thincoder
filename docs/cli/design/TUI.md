@@ -815,7 +815,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 - 2026-09-28（**文档回填与卫生轮**（台账 #516 · #377 面）· eng-designer）：档内「2026-09-25 本批」4 处改指名（**misc-four 批**——档头 ③ / §6.8.2 嵌套归属标 / §7.4 空窗差 ③ / §8.2 对位表）+ §6.8.2 一段按 ≤300 拆分（形式面）。**零新语义**。
 
 - 2026-09-27（**timer-wake 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-27-timer-wake.md` §2 · 台账 #444）：新增 §7.6（timer 可见面）——三态（已设 / 到期 / 触发）· 状态行 `⏰N` 派生标记（零在途零注入）· 触发落流一行 · `/timers` 只读列表。
-  `/timers` 命令束落点 = `thincoder-cli/src/tui/cmd-timers.mjs`（拟新增）；机制面零改（单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30）。
+  `/timers` 命令束落点 = `thincoder-cli/src/tui/cmd-timers.mjs`（已落）；机制面零改（单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30）。
 
 - 2026-09-27（**timer-wake 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承 `docs/batches/2026-09-27-timer-wake.md` §3 轮次 1 · 父侧逐条裁定）：§7.1 表 awaiting 行补**除外限定**（在途 timer ∧ 唤醒会武装 ⇒ 不计 awaiting）+ §7.2 置位谓词排除集同步（`userNeededAtTurnEnd`——机判 = T-TW13）；
   §7.6 收正——F13 豁免句改与本轮实际一致（§7.1 表 awaiting 行除外限定，timer 面自身零新增 signal 面）+ 补**到期态可达条件**句（有帧窗口；开关关的空闲面不承诺即时可见）。**机制语义零改**（除父侧定稿的 attention 除外）。

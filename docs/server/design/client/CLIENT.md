@@ -36,7 +36,7 @@
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/src/client/routes.mjs`（拟新增） | **≈75**（设计估——login ∥ logout ∥ me 三处理 + 注册行；复用 members/keys/guard/audit 单源） | 客户端面（§1 ∥ §2） |
+| `thincoder-server/src/client/routes.mjs`（已落） | **≈75**（设计估——login ∥ logout ∥ me 三处理 + 注册行；复用 members/keys/guard/audit 单源） | 客户端面（§1 ∥ §2） |
 | `thincoder-server/bin/thincoder-server.mjs`（已落盘） | **182 ⇒ ≈184**（实读 2026-10-10——+import 一行 +注册一行） | 装配面 |
 | **小计** | **≈257** | —— |
 

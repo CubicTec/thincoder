@@ -37,7 +37,7 @@
 
 ## 2. 接口契约（机制 / 数据流）
 
-**单源**：核内新档 `thincoder-core/shell-identity.mjs`（拟新增——本批实施轮落盘；≈70 行）——`resolveShellIdentity(configShell)` ⇒ `{ raw, name, kind, known }`：
+**单源**：核内新档 `thincoder-core/shell-identity.mjs`（已落——本批实施轮落盘；≈70 行）——`resolveShellIdentity(configShell)` ⇒ `{ raw, name, kind, known }`：
 
 - 入参 = spawn 侧同一取值（`ctx.agent?.config?.shell ?? null`，调用方传）；纯函数（不读环境外的状态；win32 分支内读 `%COMSPEC%`）；
 - 出参四键：`raw`（链终值：config.shell 原串 ∥ %COMSPEC% ∥ "cmd.exe" ∥ SHELL ∥ "/bin/sh"）· `name`（显示名）· `kind`（语法族：`cmd` ∥ `powershell` ∥ `posix` ∥ `unknown`）· `known`（是否命中知名字）；
@@ -70,7 +70,7 @@ VSC 自有 `tools/shell.mjs` 的 `SHELL_NOTES`（`:162-166`——**死常量**�
 
 ## 3. 机制设计（四处改面）
 
-### 3.1 探测单源——新档 `thincoder-core/shell-identity.mjs`（拟新增——实施轮落盘）
+### 3.1 探测单源——新档 `thincoder-core/shell-identity.mjs`（已落——实施轮落盘）
 
 §2 契约的实现体；纯函数 + 识别表；**禁平台推断**（判定永远从 `raw` 值出发，不从 `process.platform` 出发——
 win32 只用于决定「config.shell 空时读 %COMSPEC% 还是 SHELL」这一 spawn 侧既有行为的事实镜像）。
@@ -109,7 +109,7 @@ win32 只用于决定「config.shell 空时读 %COMSPEC% 还是 SHELL」这一 s
 
 | # | 档 | 现行数 | 增量 | 动作 |
 |---|---|---|---|---|
-| 1 | `thincoder-core/shell-identity.mjs`（拟新增——实施轮落盘） | 0 | +≈70 | 探测单源（§3.1） |
+| 1 | `thincoder-core/shell-identity.mjs`（已落——实施轮落盘） | 0 | +≈70 | 探测单源（§3.1） |
 | 2 | `thincoder-core/tool-docs/bash.md` | 38 | 0（行替换） | `:33` 死写句 → 零断言替形（§3.3） |
 | 3 | `thincoder-core/tools/bash.mjs` | 289 | +≈6 | hint 身份门（§3.3） |
 | 4 | `thincoder-cli/src/prompt-injections.mjs` | 20 | +≈4 | import 期求值（§3.2） |

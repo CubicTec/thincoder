@@ -36,7 +36,7 @@ thincoder-core/tool-docs/browser.md        模型面描述（六要素——TOOL
 ```
 
 依赖方向（单向 DAG）：`tools/browser.mjs`（工具面）→ `session.mjs`（会话单例／句柄）→ {`actions`（基线动作） / `input-actions`（新动作） / `clipboard`} → {`input`（输入引擎） / `snapshot.mjs` / `cdp.mjs`}；`session.mjs` → `queue.mjs`（调度策略：预算 / 控制器 / 步名）；
-异步桥 `agent-tools/browser-async.mjs`（拟新增；动态入径——`tools/browser.mjs` ∥ `tools/ops.mjs`）→ `session.mjs` 入队面。
+异步桥 `agent-tools/browser-async.mjs`（已落；动态入径——`tools/browser.mjs` ∥ `tools/ops.mjs`）→ `session.mjs` 入队面。
 动作模块经会话句柄取能力（`call` / `evalRaw` / `takeSnapshot` / `resolveRef` 等），**不 import** `session.mjs`——无环（§5 拆分决定）。
 
 ## 2. 接口契约
@@ -374,7 +374,7 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 
 **档位处置（本批有 Δ 者与新档——本批不拆；触发条件 = 下次实质改动时核 ∥ 越 800 即拆）**：`tools/ops.mjs`（346，余 454 行）∥ `helpers.mjs`（490，余 310 行）∥ `suspension.mjs`（351，余 449 行）∥ `async-settle.mjs`（327，余 473 行）∥
 `subagent-scheduler.mjs`（450，余 350 行）∥ `subagent-async.mjs`（477，余 323 行）∥ `session.mjs`（**494——余 306 行；最紧面**）∥ `queue.mjs`（171——新档）∥ `agent-tools/browser-async.mjs`（198——新档）∥ 单元测试档两档（A 334 ∥ B 386；本批不拆）。余量 = 距 800 硬限（实施后实读）。
-**域界（本批增行）**：异步桥 = `agent-tools/browser-async.mjs`（拟新增；族名对齐 bash-async / subagent-async / advisor-async——池 ∥ 起跑 ∥ 结算 ∥ 注入 ∥ 杀单点）；入径 = `tools/browser.mjs` ∥ `tools/ops.mjs` **动态 import**（W8 契约②——agent-tools 静态链达 node:sqlite；端壳静态闭包零命中）。
+**域界（本批增行）**：异步桥 = `agent-tools/browser-async.mjs`（已落；族名对齐 bash-async / subagent-async / advisor-async——池 ∥ 起跑 ∥ 结算 ∥ 注入 ∥ 杀单点）；入径 = `tools/browser.mjs` ∥ `tools/ops.mjs` **动态 import**（W8 契约②——agent-tools 静态链达 node:sqlite；端壳静态闭包零命中）。
 **依赖单向无环**：`tools/browser.mjs` → `session.mjs` → {`actions` / `input-actions` / `clipboard`} → {`input` / `snapshot` / `cdp`}；`session → queue`；`queue → actions`（wait 帽常量——`thincoder-core/browser/queue.mjs:11`）；`browser-async → session`（入队面）+ agent-tools 族单点——无环。
 **click / type 不拆不迁**（裁决项②——§6 KD-10）。
 
@@ -509,7 +509,7 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 | U60 | 边界 | 第 5 条异步起跑 | `Error: …cap reached (4/4 running…)`（显式拒） | 单元测试 T39（本批新档） |
 
 **单元测试档用例**：单元测试（T1–T15——假传输 + 打桩，零真实浏览器/文件系统）与冒烟（S1–S7——真 Edge/Chrome 无头 + 进程内 fixture 服务）＝ §7 表逐格引用面（**落点列** = U 条执行档；无编号者 = 单元测试组内，格内归属以 §7 判据列为准）；先红后绿。
-扩展轮件 = `docs/batches/2026-10-07-browser-input.test.mjs`（拟新增）∥ `docs/batches/2026-10-07-browser-input.smoke.mjs`（拟新增）——T16–T26 ∥ S8–S18（剪贴板端到端 = 本机 OS 面——Windows 以 PowerShell `Get-Clipboard` / `Set-Clipboard` 为对照）。
+扩展轮件 = `docs/batches/2026-10-07-browser-input.test.mjs`（已落）∥ `docs/batches/2026-10-07-browser-input.smoke.mjs`（已落）——T16–T26 ∥ S8–S18（剪贴板端到端 = 本机 OS 面——Windows 以 PowerShell `Get-Clipboard` / `Set-Clipboard` 为对照）。
 异步化单元测试档 = `docs/batches/2026-10-07-browser-async-fix.test.mjs`（单元测试 A 组）∥ `docs/batches/2026-10-07-browser-async-fix.b.test.mjs`（单元测试 B 组——拆档：单档越 500 硬限）∥ `docs/batches/2026-10-07-browser-async-fix.smoke.mjs`（冒烟）——单元测试 T27–T44（含 T27b）∥ 冒烟 S19–S22（走查 W1 = 真关窗——用户复核）。
 旧件复跑 = 零回归（T1 枚举断言随动 8⇒16 为唯一例外——§7 N-BT8 行）。
 - T27b 开启段中止（U52 开启段一格）——单元测试档 `docs/batches/2026-10-07-browser-async-fix.test.mjs:168`。
@@ -546,6 +546,6 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 - 2026-10-07（**浏览器输入最大化批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-browser-input.md` §2 · 台账 #1018 ∥ #1019（并 #1016））：输入域最大化 + 剪贴板保真读写——§1 十六动作口径 ∥ §2.1 schema +新参数 ∥ §2.2 +8 动作契约 ∥ §2.3 几何字段 ∥ **新增 §2.7 输入基建 ∥ §2.8 键面** ∥ §3.1 门面逐动作表（裁决项①）∥ **新增 §3.5 剪贴板面** ∥ §5 拆分决定（session 五档）∥ §6 +8 决策（KD-10–17——含裁决项②：click/type 不迁）∥ §7/§8 +F-BT9–F-BT15 ∥ N-BT7–N-BT9 用例面（T16–T26 ∥ S8–S18）∥ §9/§10 随动；旧用例面随动唯一 = T1 枚举 8⇒16。
 - 2026-10-07：设计评审轮 1 修轮（10 条发现——批档 `docs/batches/2026-10-07-browser-input.md` §3 轮次 1；fix 轮 · eng-designer）——#1 §2.2 校验枚举补齐（`mouse` / `insert` 句 + `touch` 手势条件式 + `wheel` 全零同拒）· #2 / #4 S18 补定义（有头抽样复跑——`press` + `clipboard`；仅本地跑、CI 面可跳，沿 S7 先例）——§7 N-BT8 格 + §8 **U51** 行 · #3 §5 两测试档拆分处置句 + 499±1 档「破 500 即拆」· #5 §3.5 `copy` / `paste` 加速键平台分支（darwin ⇒ Meta+C/V）· #7 §5 判据② / KD-12 数字口径统一（拆后五档合计 ≈1,110 / net ≈+674）· #8 §5 TOOLS 行收正 1,347（`wc -l` 口径——收笔实读；= 开工 1,345 + 本轮触面净 +2）· #10 §1 依赖分层统一（§5 口径）；#6 / #9 = `TOOLS.md` 侧（该档变更记录同笔）。
 - 2026-10-07：机制收正（承实施轮真 Edge 实测——判据 / 验收语义不变；fix 轮 · eng-designer）——§6 KD-14（tap / doubleTap / swipe ⇒ 显式 `dispatchTouchEvent` 序列、pinch 保持 `synthesizePinchGesture`）· §3.5（描述符名 ⇒ `clipboard-read` / `clipboard-write`、`grantPermissions` 回落保留 ∥ 无头 = 会话内剪贴板（有头 = 真系统剪贴板）登记）· §2.2 touch 行 ∥ §7 F-BT12 引用随正。
-- 2026-10-07（**浏览器异步化 + 硬超时批（browser-async-fix）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-browser-async-fix.md` §2 · 台账 #1045；含用户 19:46 挂因重定（外部关窗——不假定自启浏览器常驻）∥ 19:49 用法认知增补）：新增 §2.9（动作预算与硬超时——三层帽 ∥ 卡点步名）∥ §2.10（会话健康与外部关闭自愈——感知三源 ∥ `failSession` ∥ 自愈重开注记）∥ §2.11（异步通道——`async:true` ∥ `_browserTasks` ∥ 摘要 ∥ kill / wait_for）∥ §6 +KD-18–KD-24 ∥ §7 +F-BT16–F-BT19 / N-BT10 用例面（T1–T16 ∥ S1–S4 ∥ W1）∥ §8 +U52–U60 ∥ §2.1 / §2.2 / §2.4 / §2.5 / §3.1 / §5 / §9 / §10 随动；§1 模块结构 +`browser/queue.mjs` ∥ `agent-tools/browser-async.mjs`（拟新增）。零回归面 = 旧两测试档全绿（新增参数与错误句为增量）。
+- 2026-10-07（**浏览器异步化 + 硬超时批（browser-async-fix）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-browser-async-fix.md` §2 · 台账 #1045；含用户 19:46 挂因重定（外部关窗——不假定自启浏览器常驻）∥ 19:49 用法认知增补）：新增 §2.9（动作预算与硬超时——三层帽 ∥ 卡点步名）∥ §2.10（会话健康与外部关闭自愈——感知三源 ∥ `failSession` ∥ 自愈重开注记）∥ §2.11（异步通道——`async:true` ∥ `_browserTasks` ∥ 摘要 ∥ kill / wait_for）∥ §6 +KD-18–KD-24 ∥ §7 +F-BT16–F-BT19 / N-BT10 用例面（T1–T16 ∥ S1–S4 ∥ W1）∥ §8 +U52–U60 ∥ §2.1 / §2.2 / §2.4 / §2.5 / §3.1 / §5 / §9 / §10 随动；§1 模块结构 +`browser/queue.mjs` ∥ `agent-tools/browser-async.mjs`（已落）。零回归面 = 旧两测试档全绿（新增参数与错误句为增量）。
 - 2026-10-07：设计评审轮 1 修轮（11 条发现——批档 `docs/batches/2026-10-07-browser-async-fix.md` §3 轮次 1；fix 轮 · eng-designer）——#1 动作数「17 ⇒ 16」（§2.11 ∥ KD-24）· #2 用例编号跨批续编（T1–T16 ∥ S1–S4 ⇒ T27–T42 ∥ S19–S22——§7 五行 ∥ §8 落点列 ∥ 尾注归属行）· #3 §7 五行删「建议编号」（正式回指）· #4 档头计数收正 F-BT1–F-BT19 ∥ N-BT1–N-BT10 · #5 §5 补「>300 档位处置」段 · #6 KD-20 括注与 §2.10 同形（空闲 >5s 入口心跳）· #7 §2.9 补「开启段中止」处置 + U52 覆盖开启段一格 · #8 墙钟断言改确定性判据（下一事件循环内——非墙钟界）· #9 §2.9「队列等待计入预算（有意）」+ 步名 `queue wait` + U22 · #10 §2.11 后台预算与 bash 异（显式登记）· #11 Δ 读数取一（+1 ∥ ±1）。零新语义。
 - 2026-10-07：收口回填轮（fix 轮 · eng-designer——承批档 `docs/batches/2026-10-07-browser-async-fix.md` §5 读数终核 ∥ 实施后实读）：§5 读数回填（实施后实读）+ 档位处置 += `session.mjs`（494——余 6，下次触碰先拆）∥ `queue.mjs`（171）∥ `browser-async.mjs`（198）+ 依赖句 +`queue → actions`；§2.9 补两直陈（取消接线——`enqueue` ∥ `runAction` signal 两参，一条机制两个因由；开启段句面——enables 帽句形 ∥ WS 断连走健康路径，到期 = 动作面失败句面下次触碰统一收编）；§2.11 补 `backgroundCounts` 直陈（后台任务族不入——同 bg 先例）；§7/§8 用例面 += T27b ∥ T43 ∥ T44 + 批内件两档名与行数（334 ∥ 386 ∥ 冒烟 173）。零新语义。

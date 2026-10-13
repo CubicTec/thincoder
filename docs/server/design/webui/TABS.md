@@ -13,7 +13,7 @@
 
 ### 2.1 公共标签页组件（功能点 39——本批（console-tabs-component））
 
-- **定位**：控制台共享件——一页多面时以页签切换；**落点 = `thincoder-server/public/tabs.mjs`（拟新增——`public/` 共享件）**；与 `modal.mjs` 平行（互不 import）；与页面 IA/路由零耦合（复用面 = 任意页任意处）。
+- **定位**：控制台共享件——一页多面时以页签切换；**落点 = `thincoder-server/public/tabs.mjs`（已落——`public/` 共享件）**；与 `modal.mjs` 平行（互不 import）；与页面 IA/路由零耦合（复用面 = 任意页任意处）。
 - **复用 API**：`createTabs(ctx, { tabs, initial = null, onChange = null })` ⇒ 句柄 `{ root, active() }`。
   - `tabs` = `[{ id, labelKey, build }]`：`id` = 稳定标识（页内唯一——用作 DOM 标识与地址栏子段）；`labelKey` = 文案表键（组件经 `t()` 取——组件零自持文案键）；`build` = 面板构建函数（返回节点；**首激活调用一次**——结果缓存，重切不重建）。
   - `initial` = 初始激活 id（不在集内 ∥ 缺省 ⇒ 首项——非法外部值静默回落，零炸）。
@@ -51,7 +51,7 @@
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/public/tabs.mjs`（拟新增——本批） | ≈**120**（设计估——档头 ∥ `createTabs` 壳 ∥ ARIA/键盘 ∥ 懒建 ∥ `onChange`/`active`；零依赖——仅取 `i18n.mjs` 的 `t`） | 公共标签页组件（§2.1） |
+| `thincoder-server/public/tabs.mjs`（已落——本批） | ≈**120**（设计估——档头 ∥ `createTabs` 壳 ∥ ARIA/键盘 ∥ 懒建 ∥ `onChange`/`active`；零依赖——仅取 `i18n.mjs` 的 `t`） | 公共标签页组件（§2.1） |
 
 **面小计**：≈120（本面档行现读和——估值面，实施实读为准；域合计 = 各面之和——不单列）。
 

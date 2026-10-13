@@ -127,7 +127,7 @@
 ### 2.5 #870 · `session/prompt` 支持 `resource_link`（基线内容块）
 
 - **现盘坐标**：`thincoder-cli/src/acp/handlers-session.mjs:204-206`——仅取首个 text 块；`resource_link` 块丢弃（全仓零命中）；schema 基线句「All agents **MUST** support resource links in prompts」（§4.2）。
-- **落点**：新档 `thincoder-cli/src/acp/resource-link.mjs`（拟新增——块解析与内联纯函数面；`node:fs` ∥ `node:url` ∥ `node:path` 叶子级）。
+- **落点**：新档 `thincoder-cli/src/acp/resource-link.mjs`（已落——块解析与内联纯函数面；`node:fs` ∥ `node:url` ∥ `node:path` 叶子级）。
   - 导出：`resolveResourceLink(block, { cwd })`（异步——单块 → 内联段或降级标记）· `buildPromptText(blocks, { cwd })`（异步——聚合）· 常量 `MAX_INLINE_BYTES` / `MAX_INLINE_LINES` / `MAX_INLINE_CHARS`。
 - **目标形（`buildPromptText`）**：
   - 文本段 = **首个** `type:"text"` 且 `text` 为字符串的块（首块策略**不变**；「首块」判据微收正为「首个**合法** text 块」——畸形首块不再吞掉后续合法块）。
@@ -270,7 +270,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 | `thincoder-cli/src/acp/session.mjs` | 54 | +1 | 55 | `:22` 调用点传 `agent` |
 | `thincoder-cli/src/acp/handlers-session.mjs` | 292 | +~55（含 −~15） | ~345 | `:32-36` 常量 → `sessionConfigOptions` + `createSlotReleaser` 导出；`:167` new 重排 + 回滚；`:204-206` prompt 接线；`:266`/`:287` 通知收正；`:191`/`:268` 响应 |
 | `thincoder-cli/src/acp/handlers-slots.mjs` | 196 | +~20 | ~216 | `:47-53` list 条；`:79-80` / `:139-140` id；load/resume 替换逻辑；`:114`/`:164` 响应 |
-| `thincoder-cli/src/acp/resource-link.mjs` | 新 | ~130 | ≤300 | §2.5 判定树全量（拟新增） |
+| `thincoder-cli/src/acp/resource-link.mjs` | 新 | ~130 | ≤300 | §2.5 判定树全量（已落） |
 | `thincoder-cli/src/acp.mjs` | 151 | −2 | ~149 | `:100-108` 计数器与 ctx 键撤除；ctx 增 `releaseClosedSlot` |
 | `docs/cli/design/ACP-CLIENT.md` | 655 | +~15 | ~670 | §5 表十处 + 变更记录（随动——实施轮） |
 | `docs/cli/design/ACP-PROTOCOL-COMPLIANCE.md` | 本档 | — | — | 本批设计（已落） |
@@ -308,7 +308,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 
 ## 10. 用例表（单元测试档——先红后绿）
 
-宿主 = `docs/batches/2026-10-04-issue-fix-round2.test.mjs`（拟新增；自 `thincoder/` 仓根跑 `node --test`；不入集成测试树）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 单元测试档同法）。
+宿主 = `docs/batches/2026-10-04-issue-fix-round2.test.mjs`（已落；自 `thincoder/` 仓根跑 `node --test`；不入集成测试树）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 单元测试档同法）。
 
 | # | 类 | 输入 | 期望 |
 |---|---|---|---|

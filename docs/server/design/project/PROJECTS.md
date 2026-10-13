@@ -20,7 +20,7 @@
 | KD-SV-116 | **成员身份 = 统一用户名键**：成员行以用户名为键（本地成员 = `members.username`；平台侧 = 平台账号名）；**同名即对接**（大小写不敏感——`COLLATE NOCASE` 唯一）；平台行（origin=`sync`）遇同名手工行（origin=`manual`）⇒ **手工行优先，同步不触**；成员行**不要求本地账号存在** | 一个命名空间免第二张「身份绑定」表与绑定界面（体量最小）；同名对接 = 企业内账号惯例；手工优先 = 本地决定不被同步覆盖；不要求账号存在 = 平台名册可如实落库（「那边添加了用户这边也添加」字面可达） | 双表 + 绑定界面（平台身份 ↔ 本地账号——机制翻倍，需求未提）；仅本地成员（平台名册须先建账号才可见——违背「跟着平台走」）；大小写敏感（两写形分裂为人） |
 | KD-SV-117 | **同步作用域 = 源级成员表**（组织/企业/组——三平台端点据调研在册）：拉源的名册 ⇒ 应用到**该源下全部项目**（底线档按映射表；手工行升档）；**仓级协作者角色本批不拉**（映射表附注对照——证据边界见 §4） | 端点证据仅覆盖组织/企业/组级成员表（台账 #1216 调研实读）；逐仓拉取 = N×M 调用且 gitee 仓协作者端点未逐条实核；用户模型 = 「源（组织）加人 ⇒ 这边跟」；底线 + 手工升档 = 档位可控且不被同步回退（手工行优先——KD-SV-116） | 逐仓协作者（档位更准，但证据未齐 + 调用面大——如需要另批扩展）；纯手工成员（违「能同步的同步」） |
 | KD-SV-118 | **事件进路 = github 成员事件接收端**（承 R63 乙裁——用户 2026-10-12 授权）：源行持 `sync_mode`（`poll` ∥ `event`；缺省 `poll`）+ 平台能力矩阵注明可事件平台（github）；接收端 = §13（`POST /api/hooks/git-sources/:id`——公开面，门 = 每源独立密钥 `hook_secret_cipher` 的 HMAC-SHA256 验签；github 侧 webhook = **手动登记**——保零反向出站（AC-44⑥））；**`event` 语义 = 事件触发（近实时）+ 定时对账兜底 + 手动恒在**（消「置 event ⇒ 零自动同步」死区——调度判据不设模式门）；触发 = 跑该源一次成员同步（载荷不解析——名册全量对账幂等） | 事件近实时性（需求 44③⑦「能同步的同步」）+ 乙裁授权；手动登记 = 零反向写回纪律下的唯一登记形；定时对账把「投递不达/公网未达」兜在可用线以上（功能可用性不依赖事件）；全量对账 = 重复/乱序投递天然幂等 | 甲案（接收端不落、字段在册——原 v1 裁）：用户 2026-10-12 裁弃（近实时性为上）；webhook 由 server 代登记（破「零反向写回」——AC-44⑥ 逐字）；按载荷做增量应用（重复/乱序面复杂化——全量对账已幂等）；不设验签（公网可伪造触发） |
-| KD-SV-119 | **PAT 加密 = 共享凭据件** `src/store/credential-crypto.mjs`（拟新增）（`loadOrCreateCredentialKey` ∥ `encryptSecret` ∥ `decryptSecret` 三件自 `thincoder-server/src/sandbox/onboarding.mjs` 逐字抽出 ∥ **键路径派生 `credentialKeyPath(config)` 同件收口**——单一出处（= `join(<`db` 档所在目录 ∥ 缺省 `data`>, "credentials.key")`——与 onboarding 现 `dataDir(config)`+`join` 逐字同值；sandbox ∥ project 两域消费同址——防第二份路径规则）；键文件 `data/credentials.key`（0600 ∥ 首用生成 ∥ 不落库）；包形 = `iv|tag|ct` base64 三段）；`onboarding.mjs` 同名再导出（零改调用方）；界面/接口永不回显原文（掩码 = `…`+末 4） | 双消费方出现（sandbox 托管接入 + 本域 PAT）⇒ 凭据机制单源；沿用既有加密先例（KD-SV-84）——零新算法 | 复制一份进本域（包形/键管理两处漂移）；本域反向依赖 sandbox 域（方向错——sandbox 会引 agent 重件）；明存 PAT（违需求 44⑤「加密存」） |
+| KD-SV-119 | **PAT 加密 = 共享凭据件** `src/store/credential-crypto.mjs`（已落）（`loadOrCreateCredentialKey` ∥ `encryptSecret` ∥ `decryptSecret` 三件自 `thincoder-server/src/sandbox/onboarding.mjs` 逐字抽出 ∥ **键路径派生 `credentialKeyPath(config)` 同件收口**——单一出处（= `join(<`db` 档所在目录 ∥ 缺省 `data`>, "credentials.key")`——与 onboarding 现 `dataDir(config)`+`join` 逐字同值；sandbox ∥ project 两域消费同址——防第二份路径规则）；键文件 `data/credentials.key`（0600 ∥ 首用生成 ∥ 不落库）；包形 = `iv|tag|ct` base64 三段）；`onboarding.mjs` 同名再导出（零改调用方）；界面/接口永不回显原文（掩码 = `…`+末 4） | 双消费方出现（sandbox 托管接入 + 本域 PAT）⇒ 凭据机制单源；沿用既有加密先例（KD-SV-84）——零新算法 | 复制一份进本域（包形/键管理两处漂移）；本域反向依赖 sandbox 域（方向错——sandbox 会引 agent 重件）；明存 PAT（违需求 44⑤「加密存」） |
 | KD-SV-120 | **未授权即不可见 = 两径口径**：列表径 = 非成员零出现（SQL 层过滤）；按 id 直取径 = **404 `not_found`**（消息「项目不存在或不可见」——存在性与不可见不辨，防枚举口径沿登录面先例） | 需求 44②「未授权即不可见（默认关着）」+ AC-44④「接口明示拒绝 + 页面不显示」；404 不辨 = 不泄露存在性；列表零出现 = 页面不显示 | 403（明示「无权限」——泄露存在性；与「不可见」相抵）；200 空壳（非明示拒绝） |
 | KD-SV-121 | **能力矩阵与分权边界**（判据句 = §3）：负责人（`owner_username`）= 加/减成员 + 改显示名；档位「管理」= 加/减成员（含改档位）；**改仓地址仅 admin**（仓地址 = 记账键——改了账对不上）；负责人指派/更换 = admin；负责人**不可被非 admin 移除/降档**（保护） | 需求 44② 逐条（负责人边界 + 改仓地址仅 admin）；AC-44④「管理能加人」；负责人指派无既有角色可承（新增位）——归 admin（保守；加仓本就 admin 专属——同一层） | 负责人可自转让（需求未提——机制外扩）；管理档可改仓地址（违需求明条）；负责人即「管理档 + 名分」（名分与档位混一——同人多项目档位不一，分拆更清） |
 | KD-SV-122 | **同步结果与体检 = 自含状态形 + 独立 PAT 状态**：同步/体检/拉列表三读动作走自含形（成 ⇒ `{ok:true,…}`；败 ⇒ `{ok:false,error:{kind,message},ms}`——沿代理测试/镜像源先例）；源行持 `last_sync_at` + `last_sync_result_json` + `token_state`（`unknown`∥`ok`∥`invalid`——失效标红）+ `token_checked_at`；**单源并发锁**（进行中重触发 ⇒ 400 人话）；**删源防护**（还挂项目 ⇒ 400「尚有 N 个项目挂此源」——零新码）；成员拉取截断 ⇒ **跳过删除段**（只增改不删——防误删） | 「记录不缺、是显示缺」教训的反面正例（结果如实入库 + 界面人话）；体检与同步分列 = 失效可独立呈现；截断误删 = 数据正确性问题（宁不删）；锁 = 同一源并发写成员表单事务面的最小防 | 失败抛 5xx（诊断面差）；token_state 并入 sync 结果（体检独立动作无处落）；删源级联删项目（数据破坏）；截断照删（误删） |
@@ -78,7 +78,7 @@
 
 **附注对照（仓级角色——本批不拉，KD-SV-117；供后续批/人工参考）**：gitee 仓「观察者/报告者 ⇒ 只读 ∥ 开发者 ⇒ 读写 ∥ 管理员 ⇒ 管理」；github 仓「read/triage ⇒ 只读 ∥ write/maintain ⇒ 读写 ∥ admin ⇒ 管理」；gitlab 仓级同组级 access_level 表。
 
-**客户端口径**（`thincoder-server/src/project/platform-client.mjs`（拟新增）——原生 fetch，零第三方）：
+**客户端口径**（`thincoder-server/src/project/platform-client.mjs`（已落）——原生 fetch，零第三方）：
 
 - 基址与鉴权（三平台逐条；路径据台账 #1216 调研 + 官方 API 惯例——**实施轮逐条实核**）：
   - gitee：`https://gitee.com/api/v5`；`Authorization: token <PAT>`；仓列表 `GET /user/repos?per_page=100&page=N`（scope 在场 ⇒ 并 `GET /orgs/{scope}/repos` 去重）；成员表 `GET /orgs/{scope}/members?per_page=100&page=N`；体检 `GET /user`。
@@ -94,7 +94,7 @@
 
 - **单向**：git 平台为源（那边加/减人 ⇒ 这边跟）；本地任何动作不出站（零反向写回）。
 - **触发三径**：① 手动「立即同步」（源行常驻钮——三模式下恒在，AC-44⑦）；② 定时拉取（`enabled=1` ∧ 到期；间隔源行可设——缺省 60 分钟，范围 5–1440）；③ 事件进路（`sync_mode='event'`——**仅 github**（平台能力门）；事件触发（近实时）+ 定时对账（间隔同 ②——投递不达/重启窗口兜底）+ 手动照常；机制全文 = §13）。
-- **调度器**（`thincoder-server/src/project/sync.mjs`（拟新增）内 `createSyncScheduler`——入口接线）：检查周期 60s；到期判据 = `enabled=1 ∧ now - COALESCE(last_sync_at, created_at) ≥ interval_minutes`（**`sync_mode` 不参与调度判据**——`event` 源照跑 = 对账兜底）；逐源串行执行；`last_sync_at` = **尝试时刻**（成敗同记——「上次同步时间 + 结果」逐字）。
+- **调度器**（`thincoder-server/src/project/sync.mjs`（已落）内 `createSyncScheduler`——入口接线）：检查周期 60s；到期判据 = `enabled=1 ∧ now - COALESCE(last_sync_at, created_at) ≥ interval_minutes`（**`sync_mode` 不参与调度判据**——`event` 源照跑 = 对账兜底）；逐源串行执行；`last_sync_at` = **尝试时刻**（成敗同记——「上次同步时间 + 结果」逐字）。
 - **同步算法**（单源、单事务应用段）：
   1. 取该源全部项目（`source_id = ?`）；无项目也执行名册拉取（验凭据 + 记录结果）。
   2. 拉名册（§4 客户端；scope 缺 ⇒ `scope_missing` 失败）。
@@ -121,14 +121,14 @@
 
 | 档 | 行数（设计估——实施实读为准） | 职责 |
 |---|---|---|
-| `thincoder-server/src/project/git-sources.mjs`（拟新增） | ≈200 | 源存储与校验（形/重名/掩码视图/CRUD/状态列）+ webhook 密钥面（生成/轮换/掩码——§13） |
-| `thincoder-server/src/project/platform-client.mjs`（拟新增） | ≈300 | 三平台客户端（仓列表/名册/体检——原生 fetch ∥ 超时 ∥ 分页 ∥ 六分类） |
-| `thincoder-server/src/project/projects.mjs`（拟新增） | ≈190 | 项目存储 + 成员行 + 能力矩阵判定（§3）+ 删除事务（级联/审计——§14） |
-| `thincoder-server/src/project/sync.mjs`（拟新增） | ≈240 | 成员同步引擎（算法/单事务/锁/结果）+ 调度器 + 事件触发入口/待跑旗（§13） |
-| `thincoder-server/src/project/routes.mjs`（拟新增） | ≈200 | 成员面六端点（列表/详情/成员增删改/项目改） |
-| `thincoder-server/src/project/admin-routes.mjs`（拟新增） | ≈255 | 管理面十端点（源 CRUD/同步/体检/拉列表/加仓 + webhook 密钥 + 项目删除） |
-| `thincoder-server/src/project/webhooks.mjs`（拟新增） | ≈90 | 事件接收端（路由/验签/触发/忽略面——载荷不解析；§13） |
-| `thincoder-server/src/store/credential-crypto.mjs`（拟新增——KD-SV-119） | ≈65 | 凭据三件 + 键路径派生 `credentialKeyPath`（自 onboarding 逐字抽出——双消费方共享单源） |
+| `thincoder-server/src/project/git-sources.mjs`（已落） | ≈200 | 源存储与校验（形/重名/掩码视图/CRUD/状态列）+ webhook 密钥面（生成/轮换/掩码——§13） |
+| `thincoder-server/src/project/platform-client.mjs`（已落） | ≈300 | 三平台客户端（仓列表/名册/体检——原生 fetch ∥ 超时 ∥ 分页 ∥ 六分类） |
+| `thincoder-server/src/project/projects.mjs`（已落） | ≈190 | 项目存储 + 成员行 + 能力矩阵判定（§3）+ 删除事务（级联/审计——§14） |
+| `thincoder-server/src/project/sync.mjs`（已落） | ≈240 | 成员同步引擎（算法/单事务/锁/结果）+ 调度器 + 事件触发入口/待跑旗（§13） |
+| `thincoder-server/src/project/routes.mjs`（已落） | ≈200 | 成员面六端点（列表/详情/成员增删改/项目改） |
+| `thincoder-server/src/project/admin-routes.mjs`（已落） | ≈255 | 管理面十端点（源 CRUD/同步/体检/拉列表/加仓 + webhook 密钥 + 项目删除） |
+| `thincoder-server/src/project/webhooks.mjs`（已落） | ≈90 | 事件接收端（路由/验签/触发/忽略面——载荷不解析；§13） |
+| `thincoder-server/src/store/credential-crypto.mjs`（已落——KD-SV-119） | ≈65 | 凭据三件 + 键路径派生 `credentialKeyPath`（自 onboarding 逐字抽出——双消费方共享单源） |
 | `thincoder-server/src/store/db.mjs`（已落盘 · 实读 488） | ≈+70（v17 段——三表（含 `hook_secret_cipher` 列）+ 审计重建）；**>500 软线复核 = `store/STORE.md` §4——维持 + 上限 700（触发外拆）** | 迁移段 v17 |
 | `thincoder-server/src/sandbox/onboarding.mjs`（已落盘 · 实读 373） | −≈50（三件外迁）+ ≈2（再导出）；`keyPath` 取件改指 `credentialKeyPath(config)`（同行同值） | 零语义（KD-SV-119） |
 | `thincoder-server/src/accounts/audit.mjs`（已落盘 · 实读 116） | +1 型（`project_event` 入 `AUDIT_TYPES`——≈+2 行含注释） | 型面 十三 ⇒ 十四 |

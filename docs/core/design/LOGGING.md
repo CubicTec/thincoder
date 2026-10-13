@@ -79,7 +79,7 @@
   ② **queued 取消出队点直记**（`advisor-async.mjs` / `subagent-async.mjs` 的 queued 分支——出队即终态、不经 settle ⇒ 不走 ①）；
   ③ **sync 定向取消提交点直记**（`subagent-async.mjs` `cancelSyncChild`——sync 块 ⏹ 唯一入口；机制条 = `AGENT-LOOP-SUBAGENT.md` 的 §6.7.2「日志面」）。
   三写点字段同形：`id` = `<role>#<id>`（评审族 = `advisor#<id>`）；**同一次取消恰一条**（写点互斥：queued 走 ②、running 走 ①、sync 走 ③——三种 child 形态各恰一条）。
-- **`ev:unsettled`** —— 消化账务升级留痕（`thincoder-core/agent/digest-account.mjs`（拟新增）——消化轮见账三次未覆盖 ⇒ 升级单点；恰一条/批）；字段 n / ids（消化账务批 · 2026-10-05 · 台账 #930；机制 = `AGENT-LOOP-ASYNC-POOL.md` §6.31）。
+- **`ev:unsettled`** —— 消化账务升级留痕（`thincoder-core/agent/digest-account.mjs`（已落）——消化轮见账三次未覆盖 ⇒ 升级单点；恰一条/批）；字段 n / ids（消化账务批 · 2026-10-05 · 台账 #930；机制 = `AGENT-LOOP-ASYNC-POOL.md` §6.31）。
 - **`ev:finish-missing`** —— 结束信号缺席留痕（`thincoder-core/agent/run-stages.mjs`——`finishReason` 缺席（clean ∧ 非 partial）与同面提醒同点；F-DA5 / #929）；字段 turn / auto / child（机制 = 同档 §6.31.7）。
 - **`ev:subagent-block-revived`** —— 墓碑存活闸**复活分支**留痕（`thincoder-cli/src/tui/subagent-blocks.mjs` `ensureSubTaskKey`——墓碑命中但条目**池内存活（在池 ∧ 非 done / 非 cancelled）** ⇒ 摘墓碑 + 重建块；**每次复活记一条（无去重状态）**）。
 - **`ev:queued-paint-failed`** —— 排队块刷新 relay 异常留痕（`thincoder-core/agent-tools/subagent-scheduler.mjs` `refreshQueuedTokens` catch——池状态不被破坏）。

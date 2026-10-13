@@ -12,7 +12,7 @@
  *   ⑥ 行为形·添加仓对话框（源选单预选 ∥ 读取自含形 ∥ 已在册禁提交 ∥ 客户端过滤 ∥ 截断 ∥ 六分类 + 重试 ∥ 提交体 ∥ 手输区）
  *   ⑦ 行为形·Git 源（七列五钮 ∥ 立即同步进行中禁 + 终态刷新 ∥ 体检就地读数 + PAT 标红 ∥ 编辑窗平台门 + 事件块 + 一次性密钥 ∥ 删除确认）
  *
- * 实读锚：键数 854 ∥ 859（本批实读——后续批次增键 ⇒ 沿先例随正，与跨批守卫件同拍）。
+ * 实读锚：键数 892 ∥ 897（2026-10-13 随正——sandbox-outbound-member-face 批后实读；后续批次增键 ⇒ 沿先例随正，与跨批守卫件同拍）。
  *
  * 桩说明：`dom.mjs` 顶层触 `document`（`flashEl` 取件——WEBUI §1）——先桩后 import；本档零外部网络/零真库（stub ctx 路由表）。
  */
@@ -165,10 +165,10 @@ const fSource = (over = {}) => ({
 
 // ── ① AC-12 IA（nav 直测） ─────────────────────────────────────────────────────
 
-test("① AC-12 IA：我的 4（`#/me/projects` 末位）∥ 管理 11（「成员」后两页）∥ admin 组门 ∥ 别名/角色默认零改 ∥ 新径解析", () => {
+test("① AC-12 IA：我的 6（`#/me/ledger` 末位）∥ 管理 11（「成员」后两页）∥ admin 组门 ∥ 别名/角色默认零改 ∥ 新径解析", () => {
   const [me, admin] = NAV.NAV_GROUPS
   assert.deepEqual(NAV.NAV_GROUPS.map((group) => group.key), ["me", "admin"], "两组")
-  assert.deepEqual(me.items.map((item) => item.path), ["/me/keys", "/me/usage", "/me/account", "/me/projects"], "我的 4——项目末位追加")
+  assert.deepEqual(me.items.map((item) => item.path), ["/me/keys", "/me/usage", "/me/account", "/me/projects", "/me/sandbox", "/me/ledger"], "我的 6——ledger 末位追加（2026-10-13 team-ledger 批）")
   assert.deepEqual(admin.items.map((item) => item.path), ["/admin/overview", "/admin/chat", "/admin/members", "/admin/projects", "/admin/git-sources",
     "/admin/providers", "/admin/models", "/admin/usage", "/admin/audit", "/admin/system", "/admin/sandbox"], "管理 11——两页在「成员」后")
   assert.equal(admin.adminOnly, true, "admin 组仅 admin")
@@ -203,16 +203,16 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
   for (const key of zhKeys) assert.ok(typeof zhPart.ZH_PROJECT[key] === "string" && zhPart.ZH_PROJECT[key].trim() !== "", `zh 值非空：${key}`)
   // 既有部件随动：shell +3 键（导航三）∥ system +1 键（audit 型）
   for (const [table, lang] of [[zhShell.ZH_SHELL, "zh"], [enShell.EN_SHELL, "en"]]) {
-    assert.equal(Object.keys(table).length, 59, `${lang} shell 键数 59（56 + 3）`)
+    assert.equal(Object.keys(table).length, 61, `${lang} shell 键数 61（56 + 3 + 1 + 1——2026-10-13 sandbox 批 + team-ledger 批 nav.page.me.ledger）`)
     for (const key of ["nav.page.me.projects", "nav.page.admin.projects", "nav.page.admin.gitSources"]) assert.ok(key in table, `${lang} shell 在盘：${key}`)
   }
   for (const [table, lang] of [[zhSystem.ZH_SYSTEM, "zh"], [enSystem.EN_SYSTEM, "en"]]) {
-    assert.equal(Object.keys(table).length, 182, `${lang} system 键数 182（181 + 1）`)
+    assert.equal(Object.keys(table).length, 185, `${lang} system 键数 185（181 + 1 + 2 + 1——2026-10-13 在途批组 + team-ledger 批 audit.type.ledger_event）`)
     assert.ok("audit.type.project_event" in table, `${lang} system 在盘：audit.type.project_event`)
   }
   // 门面并集（部件 ⊂ 门面；键数实读）
-  assert.equal(Object.keys(ZH).length, 854, "zh 门面键数 854（实读）")
-  assert.equal(Object.keys(EN).length, 859, "en 门面键数 859（实读——含 `.one` 变体）")
+  assert.equal(Object.keys(ZH).length, 959, "zh 门面键数 959（实读——2026-10-13 sandbox 批 + team-ledger 批随正）")
+  assert.equal(Object.keys(EN).length, 964, "en 门面键数 964（实读——含 `.one` 变体）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（三视图 + 审计面 `t` 字面量 ⊆ 两表——含 nav.mjs labelKey 面）
   for (const name of ["views-projects.mjs", "views-admin-projects.mjs", "views-git-sources.mjs", "views-audit.mjs"]) {

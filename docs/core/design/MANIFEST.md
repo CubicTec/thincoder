@@ -212,7 +212,7 @@
 | 51 | `thincoder-core/agent-tools.mjs` | 29 | 修改 | 登记册 +1 导出行（`manifestTool`——邻 `engTool` `:15`；注册面单一（F1）∥ 探针可枚举照旧） | ≤ +2 |
 | 52 | `thincoder-core/agent/family-tools.mjs` | 187 | 修改 | depth-0 段挂载（动态 import 名面 `:29` + `depthOnly` 表 `ledgerTool` `:145` 后）——两模式同挂；子代理段零挂 | ≤ +4 |
 | 53 | `thincoder-core/agent/dispatch-gates.mjs` | 143 | 修改 | `isSubagentReadonlyAction` +`manifest` `read` 只读格（`init` / `write` 侧效门——`:75` 邻位） | ≤ +5 |
-| 54 | `thincoder-core/tool-docs/manifest.md`（拟新增） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:70`） | ≈ +1.2k 字符 |
+| 54 | `thincoder-core/tool-docs/manifest.md`（已落） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:70`） | ≈ +1.2k 字符 |
 | 55 | `thincoder-vscode/scripts/check-vsix.mjs` | 100 | 修改 | `EXPECT["tool-docs"]` 48 ⇒ **50**（VSC 打包口径——描述档 +1 ∧ 既有漂移收正 +1：仓内侧现盘实读 49 档；`:37`） | ±1 |
 | 56 | `docs/batches/2026-10-08-manifest-agent-tool.test.mjs` | 0 | 新增 | 单元测试档（T63–T73 对应用例——不进集成测试树） | 新增 |
 
@@ -242,8 +242,8 @@
 > · **Δ 上界（行 34 用例七档钉死）**：CLI `portability-classification` ≤ +50 · CLI `portability-index` ≤ +10 · CLI `portability-advisor-context` ≤ +40 · VSC `portability-vsc-classification` ≤ +35。
 > · **（续）**：VSC `portability-vsc-advisor-context` ≤ +4 · VSC `memory-index-face` ≤ +2 · 核 `manifest.test.mjs` ≤ +50 **且同批拆**（下条）。
 > · **行 34 核 `manifest.test.mjs`（479 ⇒ 越 500 硬限）⇒ 本批执行已登记拆分**：发现 / 归属面用例组（T41–T45 / T48 / T54 + 夹具 helper）拆入新档 `thincoder-core/test/manifest-discovery.test.mjs`（纯搬移零语义——登记 = 上行 19 注）；本批增量面（T56–T58 + 「五键」措辞收正）落拆后档；拆后 **355** / 新档 **210**（实施轮实读回填——父侧直接执行〔例外②③〕）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
-> · **硬限面（本批触碰——逐档方案 + 触发）**：`manifest.mjs`（451 ⇒ ≤486）：发现族拆 `manifest-discovery.mjs`（拟新增——登记 · 行 14 注）· `code-sync.mjs`（428 ⇒ ≤429）：搜索面拆 `memory/code-search.mjs`（拟新增）。
-> · **（续）**：`schema.mjs`（454 ⇒ ≤455）：扩展名表组拆 `memory/ext-tables.mjs`（拟新增）· 核 `dispatch.mjs`（499 ⇒ ≤500）：门禁段拆 `dispatch-gates.mjs`（拟新增）。
+> · **硬限面（本批触碰——逐档方案 + 触发）**：`manifest.mjs`（451 ⇒ ≤486）：发现族拆 `manifest-discovery.mjs`（已落——登记 · 行 14 注）· `code-sync.mjs`（428 ⇒ ≤429）：搜索面拆 `memory/code-search.mjs`（已落）。
+> · **（续）**：`schema.mjs`（454 ⇒ ≤455）：扩展名表组拆 `memory/ext-tables.mjs`（拟新增）· 核 `dispatch.mjs`（499 ⇒ ≤500）：门禁段拆 `dispatch-gates.mjs`（已落）。
 > · **同款（续）**：CLI `portability-classification`（298 ⇒ ≤348）· VSC `portability-vsc-classification`（293 ⇒ ≤328）· 核 `manifest.test.mjs`（拆后 ≈410）——方案 = 门禁组 / 用例组按组拆邻档；**触发（钉死 · 父侧裁）= 越 800 硬限即拆**；「下一次触碰该档的批」= **复核点**（触碰批复核：越限 ⇒ 拆；未越限 ⇒ 回填行数账，不强制拆）。
 > · **500 软线贴线面（本批触碰）**：`verify.mjs`（296 ⇒ ≤297）· VSC `memory-index-face.test.mjs`（298 ⇒ ≤300）——上界未越 500（钉死如上）；越线即按同款登记方案 + 触发（方案 = 该档对应组拆邻档；**触发 = 越 500 软线即拆**；「下一次触碰」= 复核点——同款）。
 > · **实施轮实读回填（2026-09-27 · 父侧直接执行〔例外②③〕 · 可 revert）**：`manifest.mjs` **482**（≤486 ✓）· `conventions.mjs` **244**（239–269 ✓）· 核 `dispatch.mjs` **498**（≤500 ✓）· 拆后 `manifest.test.mjs` **355** / 新档 `manifest-discovery.test.mjs` **210** ·
@@ -260,7 +260,7 @@
 > · **>300 软线判定**：行 48 ∥ 49 未触线（增量后峰值 ≤279——<300）；未涉 500 硬限。
 
 **本批（行 50–56）Δ 上界 + >300 软线判定**（manifest agent 工具面批 · 2026-10-08）：
-> · Δ 上界：`agent-tools/manifest.mjs` ≤ +260（新档——目标 ≈170）· `agent-tools.mjs` ≤ +2 · `family-tools.mjs` ≤ +4（187 ⇒ ≤191）· `dispatch-gates.mjs` ≤ +5（143 ⇒ ≤148）· `tool-docs/manifest.md`（拟新增——≤8,000 字符预算）· `check-vsix.mjs` ≤ ±1 · 单元测试档 = 本批自持（数值界外）。
+> · Δ 上界：`agent-tools/manifest.mjs` ≤ +260（新档——目标 ≈170）· `agent-tools.mjs` ≤ +2 · `family-tools.mjs` ≤ +4（187 ⇒ ≤191）· `dispatch-gates.mjs` ≤ +5（143 ⇒ ≤148）· `tool-docs/manifest.md`（已落——≤8,000 字符预算）· `check-vsix.mjs` ≤ ±1 · 单元测试档 = 本批自持（数值界外）。
 > · **>300 软线判定**：本批触碰档增量后峰值——既有档 ≤191 ∥ 新增工具档 ≤260（均 <300）；未涉 500 硬限。
 > · **相邻面登记（父侧裁）**：`docs/core/design/TOOLS.md` §6.2 元工具清单（+`manifest` + 漂移两行 `notify_parent` ∥ `ledger`——已落）· §6.7 逐工具要旨行 · `docs/core/design/ENGINEERING-MODE-V2.md` §2.2 M1 行（工具面半句——在册）；`PROMPT-SYSTEM.md:402`「不造新工具」半句（限定句 + 例外句——已落；口径裁 = §2.5 条）。
 
@@ -611,13 +611,13 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 
 **装配落法（file:line）**：
 
-- 工具文件 = `thincoder-core/agent-tools/manifest.mjs`（拟新增；描述经 `DESC("manifest")`——`thincoder-core/tools/shared.mjs:19` 单解析面）。
+- 工具文件 = `thincoder-core/agent-tools/manifest.mjs`（已落；描述经 `DESC("manifest")`——`thincoder-core/tools/shared.mjs:19` 单解析面）。
 - 登记册 = `thincoder-core/agent-tools.mjs` +1 行（邻 `engTool` 行 `:15`）——注册面单一（F1 约束）；
   探针可枚举 = `scripts/tool-schema-size.mjs:35-41`（经登记册枚举，自动入册）。
 - 挂载 = `thincoder-core/agent/family-tools.mjs` **depth-0 段**（`depthOnly` 表 `:141-149`——`ledgerTool` `:145` 后；动态 import 名面 `:29`）：**两模式同挂**（需求未设模式门——写门对任何会话生效，同 `spawn-gates.mjs:79-86` 口径）；
   子代理各段（eng-coder / eng-designer / coder / consult / 兜底）**零挂**（未装配 = 权限面第一道）。CLI / VSC / desktop 同表自动（核单源装配——调用点 `thincoder-core/agent/setup.mjs:183`；VSC 经核 `prepareRun` 同调）。
 - 分类面 = `thincoder-core/agent/dispatch-gates.mjs` `isSubagentReadonlyAction` 补一格：`manifest` `read` ⇒ 只读类（planMode 放行 / 免审批——先例 = settings `:73-78`）；`init` / `write` 保持侧效门（审批不绕过）。
-- 描述档 = `thincoder-core/tool-docs/manifest.md`（拟新增——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:70`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` 48 ⇒ **50**（描述档 +1 ∧ 既有漂移收正——仓内侧现盘实读 49 档）。
+- 描述档 = `thincoder-core/tool-docs/manifest.md`（已落——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:70`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` 48 ⇒ **50**（描述档 +1 ∧ 既有漂移收正——仓内侧现盘实读 49 档）。
 - 二道防线**零改**（`spawn-gates.mjs` `MANIFEST_BASENAME` 分支 `:104-106`——子代理 `files` 域拒照旧）。
 
 **报告面（KD-M1-40——判定 = 随动，零改）**：工具写盘 = 盘面变化 ⇒ 情境行经既有 ③b mtime 门控于下回合采纳（`thincoder-core/agent/setup-reminders.mjs:122-140` `refreshManifest`——KD-M1-17 零改）；**不新增**「工具写后同步内存值」通道——`agent.manifest` 写点保持两处（钩子附着 ∥ ③b 采纳；第二值源否）；且工具目标可为**非锚项目**——直写内存值会把非锚项目状态错当锚项目状态（违 §2.9 D「注入物 = 会话锚项目」）。
@@ -789,7 +789,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 | T69 | 边界：报告面随动（KD-M1-40） | 工程会话（cwd = 临时项目根）+ `manifest write` 改 `phase`（锚项目；mtime 推进——夹具 `utimesSync` 兜底）→ 下回合 `pushManifestStateReminder` | 行 = 新值（③b 采纳）；同回合**内存值不即时变**（反证格）；非锚目标写入 ⇒ 行不变（对照格） |
 | T70 | 边界：**工具形·参数面** | `manifestTool` schema（登记册 `thincoder-core/agent-tools.mjs`） | `action ∈ {read,init,write}` 必填 ∧ `target` / `key` / `value` 可选——字段名 / 必填位逐项断言（AC-43①） |
 | T71 | 边界：**分类谓词**（只读格） | `readonlyActionOf(tool,"manifest",{action:"read"})` ∥ `{action:"write"}` ∥ `{action:"init"}` | `read` ⇒ `true`；`write` / `init` ⇒ `false`（侧效门）（AC-43②） |
-| T72 | 边界：**描述单源逐字节** | `manifestTool.description` ↔ `thincoder-core/tool-docs/manifest.md`（拟新增） | 逐字节相等（DESC 单解析面）（AC-43③） |
+| T72 | 边界：**描述单源逐字节** | `manifestTool.description` ↔ `thincoder-core/tool-docs/manifest.md`（已落） | 逐字节相等（DESC 单解析面）（AC-43③） |
 | T73 | 边界：**value 三值解析** | `"null"` ∥ `'["../shared"]'` ∥ 裸串（如 `docs/design`） | `null`（`docRoot.*` 本面无——KD-M1-37）∥ 数组 `["../shared"]` ∥ 字面串（AC-43④） |
 
 **既有用例收正（本批）**：T26 / T27 / T28③（装配面「抛」断言 ⇒ 「不抛 + `_projectView`」）· T35 / T36（保守格**零改**）· A14–A20（仓梯带档行为零改全绿）·

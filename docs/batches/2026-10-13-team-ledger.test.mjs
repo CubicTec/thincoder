@@ -852,15 +852,15 @@ const AUDIT_VIEW = await loadPublic("views-audit.mjs")
 
 // ── §C ① AC-12 IA（nav 直测 + 挂载接线） ───────────────────────────────────────
 
-test("§C ① AC-12 IA：我的 6（`#/me/ledger` 末位）∥ 管理 11 零改 ∥ labelKey 单源 ∥ 别名/角色默认零改 ∥ `PAGES` 行 ∥ 壳页集零改", () => {
+test("§C ① AC-12 IA：我的 6（`#/me/ledger` 末位）∥ 管理 10（project-sources-merge 批单入口）∥ labelKey 单源 ∥ 别名/角色默认零改 ∥ `PAGES` 行 ∥ 壳页集零改", () => {
   const [me, admin] = NAV.NAV_GROUPS
   assert.deepEqual(NAV.NAV_GROUPS.map((group) => group.key), ["me", "admin"], "两组")
   assert.deepEqual(me.items.map((item) => item.path), ["/me/keys", "/me/usage", "/me/account", "/me/projects", "/me/sandbox", "/me/ledger"], "我的 6——ledger 末位追加")
-  assert.deepEqual(admin.items.map((item) => item.path), ["/admin/overview", "/admin/chat", "/admin/members", "/admin/projects", "/admin/git-sources",
-    "/admin/providers", "/admin/models", "/admin/usage", "/admin/audit", "/admin/system", "/admin/sandbox"], "管理 11 零改")
+  assert.deepEqual(admin.items.map((item) => item.path), ["/admin/overview", "/admin/chat", "/admin/members", "/admin/projects",
+    "/admin/providers", "/admin/models", "/admin/usage", "/admin/audit", "/admin/system", "/admin/sandbox"], "管理 10（project-sources-merge 批：单入口）")
   assert.equal(me.items.at(-1).labelKey, "nav.page.me.ledger", "末位项 labelKey 单源")
   for (const item of [...me.items, ...admin.items]) assert.ok(item.labelKey in ZH && item.labelKey in EN, `labelKey 两表在盘：${item.labelKey}`)
-  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system" }, "别名集零改")
+  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system", "/admin/git-sources": "/admin/projects/git-sources" }, "别名集——git-sources 旧链别名 +1（project-sources-merge 批）")
   assert.deepEqual([NAV.defaultPath("admin"), NAV.defaultPath("user")], ["/admin/overview", "/me/keys"], "角色默认页零改")
   assert.deepEqual(NAV.resolveRoute("/me/ledger", "user"), { path: "/me/ledger" }, "新径——user 可达（非 admin 面）")
   assert.deepEqual(NAV.resolveRoute("/me/ledger", "admin"), { path: "/me/ledger" }, "admin 同页")
@@ -908,8 +908,8 @@ test("§C ② AC-14 键集：ledger 两部件 65 键（键集相等 ∥ en 零 C
     assert.ok("audit.type.ledger_event" in table, `${lang} system 在盘：audit.type.ledger_event`)
   }
   // 门面并集与键数（实读；随批随正）
-  assert.equal(Object.keys(ZH).length, 959, "zh 门面 959（892 + 65 + 1 + 1——实读）")
-  assert.equal(Object.keys(EN).length, 964, "en 门面 964（897 + 65 + 1 + 1——实读）")
+  assert.equal(Object.keys(ZH).length, 962, "zh 门面 962（892 + 65 + 1 + 1 + 3——实读；+3 = sandbox-container-actions 批/表）")
+  assert.equal(Object.keys(EN).length, 967, "en 门面 967（897 + 65 + 1 + 1 + 3——实读；+3 = sandbox-container-actions 批/表）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（本批两视图 `t` 字面量 ⊆ 两表；nav labelKey 面见 ①）
   for (const name of ["views-ledger.mjs", "views-audit.mjs"]) {

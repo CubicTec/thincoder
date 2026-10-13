@@ -290,7 +290,7 @@ test("⑧ i18n：本批 22 键逐键在场 ∥ 十一退役键删净 ∥ 占位�
   assert.deepEqual([...enBase].filter((key) => !zhBase.has(key)), [], "仅 en 键（`.one` 变体族除外）")
   assert.equal(ZH["nav.page.admin.chat"], "对话", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.chat"], "Chat", "nav 键（en）")
-    assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [959, 964], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读 872 ∥ 877）+ sandbox-outbound-member-face 批 +20/表（`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键）+ team-ledger 批 +67/表——实读）")
+    assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [962, 967], "键数终值（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 命令字段 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158 + 在途批组键增（2026-10-13 父侧复读 872 ∥ 877）+ sandbox-outbound-member-face 批 +20/表（`me.sandbox.*` 19 键 + `nav.page.me.sandbox` 1 键）+ team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表——实读）")
 })
 
 // ── ⑨ 审计面（`agent_event` 型接 ∥ 详情 summary 支）──────────────────────────
@@ -319,17 +319,17 @@ test("⑨ 审计面：`agent_event` 型接（下拉 + 表）∥ 详情 `summary`
 
 // ── ⑩ 静态面（档目 ∥ nav ∥ app 接线 ∥ 非壳页 ∥ 行数/行宽 ∥ 零外链 ∥ 键/类闭合 ∥ canon）─────
 
-test("⑩ 静态面：档目 54 ∥ 53 ∥ nav 管理 11（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
+test("⑩ 静态面：档目 54 ∥ 53 ∥ nav 管理 10（对话位次 2）∥ app 接线 ∥ 非壳页 ∥ 行数/行宽/零外链 ∥ 键/类闭合 ∥ AC-19 canon", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [54, 53], "档目 54 ∥ 53（2026-10-13：+admin-chat-creds-merge host-credential.mjs ∥ +console-chat-live-step views-chat-messages.mjs ∥ +sandbox-outbound-member-face views-me-sandbox.mjs ⇒ +team-ledger 批 +3）")
   assert.ok(names.includes("views-chat.mjs"), "新档在册")
   // nav（管理 11 ∥ 「对话」第 2 位——总览后）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
-  assert.equal(admin.items.length, 11, "管理 11（2026-10-13 父侧收正——B2 批 +2 管理页后实读；对话位次不变）")
+  assert.equal(admin.items.length, 10, "管理 10（2026-10-13 project-sources-merge 批：单入口后收正；对话位次不变）")
   assert.deepEqual(admin.items[1], { key: "chat", labelKey: "nav.page.admin.chat", path: "/admin/chat" }, "对话 = 管理组第 2 位（labelKey 单源）")
   assert.deepEqual(NAV.resolveRoute("/admin/chat", "admin"), { path: "/admin/chat" }, "admin 面可达")
   assert.equal(NAV.resolveRoute("/admin/chat", "user").denied, true, "user ⇒ 页面级 denied（判权仍在服务端）")
-  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system" }, "旧链别名零动")
+  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system", "/admin/git-sources": "/admin/projects/git-sources" }, "旧链别名 +1（project-sources-merge 批）")
   // app.mjs 接线（import + PAGES 行）+ 非壳页
   const appSrc = readPublic("app.mjs")
   assert.ok(appSrc.includes('import { renderChat } from "./views-chat.mjs"'), "app 导入面")

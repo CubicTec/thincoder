@@ -165,19 +165,19 @@ const fSource = (over = {}) => ({
 
 // ── ① AC-12 IA（nav 直测） ─────────────────────────────────────────────────────
 
-test("① AC-12 IA：我的 6（`#/me/ledger` 末位）∥ 管理 11（「成员」后两页）∥ admin 组门 ∥ 别名/角色默认零改 ∥ 新径解析", () => {
+test("① AC-12 IA：我的 6（`#/me/ledger` 末位）∥ 管理 10（单入口——project-sources-merge 批）∥ admin 组门 ∥ 别名/角色默认零改 ∥ 新径解析", () => {
   const [me, admin] = NAV.NAV_GROUPS
   assert.deepEqual(NAV.NAV_GROUPS.map((group) => group.key), ["me", "admin"], "两组")
   assert.deepEqual(me.items.map((item) => item.path), ["/me/keys", "/me/usage", "/me/account", "/me/projects", "/me/sandbox", "/me/ledger"], "我的 6——ledger 末位追加（2026-10-13 team-ledger 批）")
-  assert.deepEqual(admin.items.map((item) => item.path), ["/admin/overview", "/admin/chat", "/admin/members", "/admin/projects", "/admin/git-sources",
-    "/admin/providers", "/admin/models", "/admin/usage", "/admin/audit", "/admin/system", "/admin/sandbox"], "管理 11——两页在「成员」后")
+  assert.deepEqual(admin.items.map((item) => item.path), ["/admin/overview", "/admin/chat", "/admin/members", "/admin/projects",
+    "/admin/providers", "/admin/models", "/admin/usage", "/admin/audit", "/admin/system", "/admin/sandbox"], "管理 10——单入口（project-sources-merge 批：Git 源併入项目页子段）")
   assert.equal(admin.adminOnly, true, "admin 组仅 admin")
   for (const item of [...me.items, ...admin.items]) assert.ok(item.labelKey in ZH && item.labelKey in EN, `labelKey 两表在盘：${item.labelKey}`)
-  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system" }, "别名集零改")
+  assert.deepEqual(NAV.ROUTE_ALIASES, { "/me": "/me/keys", "/admin": "/admin/overview", "/admin/proxy": "/admin/system", "/admin/git-sources": "/admin/projects/git-sources" }, "别名集——git-sources 旧链别名 +1（project-sources-merge 批）")
   assert.deepEqual([NAV.defaultPath("admin"), NAV.defaultPath("user")], ["/admin/overview", "/me/keys"], "角色默认页零改")
   assert.deepEqual(NAV.resolveRoute("/me/projects", "user"), { path: "/me/projects" }, "我的·项目——user 可达（非 admin 面）")
   assert.deepEqual(NAV.resolveRoute("/admin/projects", "admin"), { path: "/admin/projects" }, "管理·项目——admin 在册")
-  assert.deepEqual(NAV.resolveRoute("/admin/git-sources", "admin"), { path: "/admin/git-sources" }, "管理·Git 源——admin 在册")
+  assert.deepEqual(NAV.resolveRoute("/admin/git-sources", "admin"), { path: "/admin/projects", sub: "git-sources", redirect: true }, "管理·Git 源旧链 ⇒ 单入口子段（project-sources-merge 批）")
   assert.equal(NAV.resolveRoute("/admin/projects", "user").denied, true, "admin 面非 admin ⇒ denied")
   assert.equal(NAV.resolveRoute("/admin/git-sources", "user").denied, true, "同前（Git 源页）")
   assert.deepEqual(NAV.resolveRoute("/me/projects/extra", "user"), { path: "/me/projects", sub: "extra" }, "子段容许零改")
@@ -211,8 +211,8 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
     assert.ok("audit.type.project_event" in table, `${lang} system 在盘：audit.type.project_event`)
   }
   // 门面并集（部件 ⊂ 门面；键数实读）
-  assert.equal(Object.keys(ZH).length, 959, "zh 门面键数 959（实读——2026-10-13 sandbox 批 + team-ledger 批随正）")
-  assert.equal(Object.keys(EN).length, 964, "en 门面键数 964（实读——含 `.one` 变体）")
+  assert.equal(Object.keys(ZH).length, 962, "zh 门面键数 962（实读——2026-10-13 sandbox 批 + team-ledger 批 + sandbox-container-actions 批 +3/表随正）")
+  assert.equal(Object.keys(EN).length, 967, "en 门面键数 967（实读——含 `.one` 变体）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（三视图 + 审计面 `t` 字面量 ⊆ 两表——含 nav.mjs labelKey 面）
   for (const name of ["views-projects.mjs", "views-admin-projects.mjs", "views-git-sources.mjs", "views-audit.mjs"]) {
@@ -273,9 +273,9 @@ test("③ AC-19/20：`:root` 58 变量（零新）∥ `:hover` 8（零新）∥ 
 
 // ── ④ 三页在册/路由（`PAGES` 三行 ∥ 壳页集零改） ─────────────────────────────────
 
-test("④ 三页在册：三模块导出面 ∥ `PAGES` 三行 + 三 import ∥ 壳页集零改（三页非壳——钉表五页不扩）", async () => {
+test("④ 两页在册：两模块导出面 ∥ `PAGES` 两行 + 两 import ∥ 壳页集零改（非壳——钉表五页不扩）", async () => {
   const appSrc = readPublic("app.mjs")
-  const wiring = [["views-projects.mjs", "renderMeProjects", "/me/projects"], ["views-admin-projects.mjs", "renderAdminProjects", "/admin/projects"], ["views-git-sources.mjs", "renderGitSources", "/admin/git-sources"]]
+  const wiring = [["views-projects.mjs", "renderMeProjects", "/me/projects"], ["views-admin-projects.mjs", "renderAdminProjects", "/admin/projects"]]
   for (const [module, fn, path] of wiring) {
     assert.ok(appSrc.includes(`import { ${fn} } from "./${module}"`), `import 接线：${module}`)
     assert.ok(new RegExp(`"${path}": ${fn},`).test(appSrc), `PAGES 行：${path}`)

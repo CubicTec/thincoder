@@ -480,20 +480,20 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(EN["err.upstream_error"], "Upstream service error: {detail}", "en 改值")
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
-  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964**（2026-10-13 team-ledger 批 +67/表）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [959, 964], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表——实读）")
+  // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964 ⇒ 962 ∥ 967**（team-ledger 批 +67/表 ⇒ sandbox-container-actions 批 +3/表）；键集零语义，拆分为文件面）
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [962, 967], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表——实读）")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
 
-test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 11 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
+test("⑧ 静态面：档目 54 ∥ 53 ∥ nav 管理 10 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
   // 档目（54 ∥ 53——2026-10-13 随正）
   const names = readdirSync(PUBLIC_DIR).sort()
   assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [54, 53], "档目 54 ∥ 53（2026-10-13 随正：在途批组 +2 ⇒ sandbox-outbound-member-face 批 +1（views-me-sandbox.mjs）⇒ team-ledger 批 +3（views-ledger.mjs ∥ i18n-{zh,en}-ledger.mjs））")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 11 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
-  assert.equal(admin.items.length, 11, "管理 11（2026-10-13 随正：B2 批 +2 管理页后实读）")
+  assert.equal(admin.items.length, 10, "管理 10（2026-10-13 project-sources-merge 批：单入口后收正）")
   assert.deepEqual(admin.items.at(-1), { key: "sandbox", labelKey: "nav.page.admin.sandbox", path: "/admin/sandbox" }, "sandbox 项末位（labelKey 单源）")
   // app.mjs 接线（import + PAGES 行）
   const appSrc = readPublic("app.mjs")

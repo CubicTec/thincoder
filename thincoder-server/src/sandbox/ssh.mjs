@@ -210,7 +210,9 @@ export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeout
       throw new SshError("host_missing_binary", message)
     }
     if (result.timedOut) throw new SshError("timeout", `命令超时（${timeoutS}s——${host}）：${truncate(result.stderr)}`)
-    const failure = classifyFailure(result.stderr, host)
+    // 分类门限：只吃 ssh 自身失败（exit 255）的 stderr——远程命令级 stderr（如 EACCES「Permission denied」）不分类、原样上抛
+    // （2026-10-14 修：命令级 EACCES 曾被误报「认证被拒」——诊断失真，实证见台账 #1408）
+    const failure = result.code === 255 ? classifyFailure(result.stderr, host) : null
     if (failure) {
       if (failure.kind === "fingerprint_changed") forgetHost(baseDir, host, port) // 重交任务 = 重新信任（提议⑬）
       throw failure

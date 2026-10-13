@@ -469,7 +469,7 @@ async function main() {
       report.add("P00", "节点择定", "fail", `节点 ${picked.name} 缺协商版本读数（selfCheck.apiVer）`)
     } else {
       ctx.runner = picked
-      ctx.client = createDockerClient({ baseUrl: picked.address, apiVer })
+      ctx.client = createDockerClient({ baseUrl: picked.address, apiVer, readTimeoutMs: 30000 }) // 读超时 30s——填盘/P5 等高压腿下 3s 默认过紧（2026-10-14 真机实证 P7）
       const members = await api(ctx, "GET", "/api/members")
       const adminName = args.admin.slice(0, args.admin.indexOf(":"))
       ctx.ownerMemberId = (Array.isArray(members.json?.members) ? members.json.members : []).find((row) => row.username === adminName)?.id ?? null

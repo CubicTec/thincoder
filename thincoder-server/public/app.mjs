@@ -27,8 +27,10 @@ import { renderSandbox } from "./views-sandbox.mjs"
 import { renderChat } from "./views-chat.mjs"
 import { renderMeProjects } from "./views-projects.mjs"
 import { renderMeSandbox } from "./views-me-sandbox.mjs"
+import { renderMeChat } from "./views-me-chat.mjs"
 import { renderMeLedger } from "./views-ledger.mjs"
 import { renderAdminProjects } from "./views-admin-projects.mjs"
+import { renderMcp } from "./views-mcp.mjs"
 
 const appEl = document.getElementById("app")
 const navEl = document.getElementById("nav")
@@ -97,6 +99,7 @@ export function fail(error) {
 
 /** 页 hash ⇒ 渲染函数（一页一职责——admin 面可达性 = nav.resolveRoute 收口）。 */
 const PAGES = {
+  "/me/chat": renderMeChat,
   "/me/keys": renderMeKeys,
   "/me/usage": renderMeUsage,
   "/me/account": renderMeAccount,
@@ -109,6 +112,7 @@ const PAGES = {
   "/admin/projects": renderAdminProjects,
   "/admin/providers": renderProviders,
   "/admin/models": renderModels,
+  "/admin/mcp": renderMcp,
   "/admin/usage": renderAdminUsage,
   "/admin/audit": renderAudit,
   "/admin/system": renderSystem,

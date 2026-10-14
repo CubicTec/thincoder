@@ -21,6 +21,8 @@ export const ERROR_CODES = {
   too_many_attempts: { status: 429, type: "rate_limit_error" },      // 登录锁定期（`Retry-After` 秒；两维同文案——ACCOUNTS §2）
   upstream_error: { status: 502, type: "upstream_error" },           // 上游不可达
   sandbox_unavailable: { status: 503, type: "server_error" },        // 无 runner ∥ 无可用运行时（KD-SV-71——server-exec-sandbox 批：仅沙盒功能面不可用）
+  workspace_offline: { status: 409, type: "invalid_request_error" },     // 盒未运行/未连接（读/管理同——member-face-chat 批 · API.md §3 两新码之一）
+  workspace_limit_reached: { status: 400, type: "invalid_request_error" }, // 工作区数达上限（message 含上限数——同批）
   internal_error: { status: 500, type: "server_error" },             // 500 兜底（处理函数自身异常——API.md §3 表行）
 }
 

@@ -243,11 +243,23 @@ services:
 
 ### 5.10 沙盒 runner（执行面——接入与运维；server-exec-sandbox 批 · 台账 #1224）
 
-- **形态** = 远程 Docker API 节点：控制面直调 Docker API ∥ **主机侧两件**（出站闸 nft ∥ 卷的磁盘限额）= SSH 进主机执行 ∥ 集群化 = 用 Docker 自己的集群 ∥ 机器上不驻留我们的进程——用户 2026-10-10 19:52–19:56 定。
-- **节点前置（最小切片——runner-admin-console 批）**：节点机 Docker 引擎须**监听 TCP**（`dockerd -H fd:// -H tcp://0.0.0.0:2375` systemd override）∥ server 机 → 节点 `:2375` 网络可达（安全组/防火墙面）；**TLS 不做**（内网——`sandbox/SANDBOX.md` §3 提议①，明文 2375 = 无鉴权 root 等价口——限内网）；控制台容器面 = 建/启/停/删（机制 = `sandbox/SANDBOX.md` §3）。
-- **接入** = 控制台「添加节点」（填 Docker API 地址——连通自检；失败逐句人话 + 审计行）∥ 删除节点（有容器 ⇒ 二选一「保留 ∥ 连删」；有承载工作区 ⇒ 二次确认）；托管接入（管理员给主机地址 + 登录方式 ⇒ server 代部署）= **本批增补落地**（AC-36 ⑨/⑩——agent 代做：装运行时 ∥ 开 TCP 监听 ∥ 自检登记；机制全文 = `sandbox/SANDBOX.md` §3 ∥ `agent/ADMIN-AGENT.md`）。
-- **托管接入部署前提（npm/裸机路）**：server 宿主须装 `sshpass`（密码认证面）——缺 ⇒ S2 先检即停 + 明确报因（检查并报——`sandbox/SANDBOX.md` §3）；容器路 = 镜像已含（`openssh-client` + `sshpass`——§6 Dockerfile 行）。
-- **网络面**：盒流量在节点本机、出站经本机闸（不占 server 侧带宽——KD-SV-63 动机）；细形（端口/凭据）随重做批定形。
+- **形态** = 远程 Docker API 节点：控制面直调 Docker API ∥ **主机侧两件**（出站闸 nft ∥ 卷的磁盘限额）= SSH 进主机执行 ∥ 集群化 = 用 Docker 自己的集群 ∥ 机器上不驻留我们的进程——用户 2026-10-10 19:52–19:56 定；**机制全文 = `sandbox/EXECUTION.md`**（sandbox-exec-rebuild 批）。
+- **节点前置（最小切片——runner-admin-console 批）**：节点机 Docker 引擎须**监听 TCP**（`dockerd -H fd:// -H tcp://0.0.0.0:2375` systemd override）∥ server 机 → 节点 `:2375` 网络可达（安全组/防火墙面）；
+  **TLS 档可选**（`sandbox/SANDBOX.md` §3 连接方式块——本增补 #2：缺省明文不变 ∥ `https://` 地址 + 客户端证书三件 = 可选档；明文 2375 = 无鉴权 root 等价口——缺省限内网，不可信网内 ⇒ 开 TLS 档）；控制台容器面 = 建/启/停/删（机制 = `sandbox/SANDBOX.md` §3）。
+- **派生前置（底座可换增补——`sandbox/EXECUTION.md` §8）**：标准镜像（`settings.image`）须在节点镜像店在场（缺 ⇒ 派生停 + 人话）；底座镜像来源 = 既有拉取面（镜像源族/一键拉取；`.6` Hub 不可达现实 ⇒ 经源或 `save|load` 搬运——`docs/TEST-ENV-ECS.md` §7 坑 8）；节点侧构建零额外前置（Docker API `POST /build` 原生）；构建资源面 = CPU/磁盘瞬时占用（薄层——秒级；如实告知）。
+  **主机侧三件前提（sandbox-exec-rebuild 批）**：nft 可用（无 ⇒ iptables 备） ∥ 工作区根目录可写（`workspaceRoot`——缺省 `/var/lib/thincoder/workspaces`） ∥ 文件系统支持项目配额（xfs ∥ ext4——皆不可 ⇒ loopback 备 ∥ 再不可 ⇒ 建盒停 + 人话——`sandbox/EXECUTION.md` §4）。
+- **接入** = 控制台「添加节点」（填 Docker API 地址——连通自检；失败逐句人话 + 审计行）∥ 删除节点（有容器 ⇒ 二选一「保留 ∥ 连删」；有承载工作区 ⇒ 二次确认）；**装机/主机运维 = 管理面 chat 内动作**（`exec`/`docker`/`runners` + 主机表凭据——2026-10-14 任务式（托管接入）退场；机制全文 = `sandbox/SANDBOX.md` §3 接入面 ∥ `agent/ADMIN-AGENT.md` §12）。
+- **主机 SSH 前提**：server 宿主/容器须有 `sshpass` 与 `openssh-client`（密码认证面——主机 `exec`/chat 装机用）；缺 ⇒ 报因「宿主缺 `sshpass`——密码认证不可用」；容器路 = 镜像已含（§6 Dockerfile 行）。
+- **网络面**：盒流量在节点本机、出站经本机闸（不占 server 侧带宽——KD-SV-63 动机）。**细形（sandbox-exec-rebuild 批定形——`sandbox/EXECUTION.md` §5/§6）**：节点侧入向 = `:2375`（Docker API——仅 server 机可达）∥ `:22`（SSH——仅 server 机可达）。
+  server 侧入向新增 = **DNS 闸 UDP 53**（仅节点网络可达——盒 `resolv.conf` 指向 server；`tcws*` 网段外源码忽略）；盒出站强制 = 节点本机 nft 表 `thincoder_egress`（`iifname "tcws*"` 锚——默认全拒；全量重算幂等下发）；凭据面 = 主机表行（SSH——KD-SV-133）＋ Docker API 连接面（缺省明文/内网 ∥ **TLS 档可选**——本增补 #2；`sandbox/SANDBOX.md` §3 连接方式块）。
+- **连接面 TLS 档（本增补 #2——可选）**：节点 dockerd 侧启用 TLS（`--tlsverify` ∥ 服务端证书/密钥 ∥ CA——材料 = 用户自备；在机）；**客户端三件（CA/客户端证书/客户端私钥）经控制台「连接方式」录入**（私钥 AES-256-GCM 落库、零回显——`sandbox/SANDBOX.md` §3）；切档/编辑 = **自检为门**（当刻可达才落库——失败零变）；明文缺省路径零行为变化；真机步骤（节点侧配置 + 自签材料）随 `docs/TEST-ENV-ECS.md` 随正件（父侧/实施轮）。
+
+### 5.11 MCP 服务器（管理面——server-mcp 批 · 台账 #1379）
+
+- **运行面**：MCP 服务器由 **server 进程**建连——`stdio` 类 = server 同机子进程（容器路 = 镜像内环境：Node/npx 随镜像可得；python/uv 类服务器须宿主/镜像自备）∥ `http`/`ws` 类 = server 出向（**新出网目的地 = 用户配置**——零白名单，内网工具面口径）。
+- **凭据**：`token`/`headers`/`env` 值 AES-256-GCM 落库 + 密列零回显（机制 = `mcp/MCP.md` §3.1）。
+- **生命周期**：停机收尾关闭全部 MCP 会话（stdio 子进程杀树——`bin/thincoder-server.mjs`）；`kill -9` ⇒ 子进程残留（如实披露——`mcp/MCP.md` §12 R86③）。
+- **运维读数**：探活 = 控制台行内动作（`POST /api/admin/mcp/probe`——零副作用）；失败原因就地人话。
 
 ## 6. 本域文件与行数预算（本域族行）
 
@@ -267,7 +279,7 @@ services:
 | `thincoder-server/.dockerignore`（已落盘） | **8**（实读 2026-10-06——设计估 ≈10；本批 +1 = 注释随正——清单不变）**⇒ ≈9（配置控制台批：+1 = `config/` 排除——挂载形随正（构建上下文防泄）**⇒ 实读 12**（2026-10-09 配置控制台批落地后——+4）** | 构建上下文排除（config.json ∥ config/ ∥ data ∥ docs ∥ .git） |
 | `thincoder-server/docker-compose.yml`（已落盘） | **20**（实读 2026-10-06——设计估 ≈30；#961 +4 = env ∥ 注释；#963 +1 = healthy 继承注记——§5.9）**⇒ ≈24（配置控制台批：卷行改目录级 rw 挂载 ∥ 用法注释随正 +≈4）⇒ 实读 **22**（2026-10-09 配置控制台批落地后——+2）** | 容器样例（端口 ∥ 卷（配置目录 rw ∥ 数据） ∥ env_file ∥ restart: unless-stopped） |
 | `thincoder-server/deploy/backup.mjs`（已落盘） | **无 ⇒ 86**（实读 2026-10-06——设计估 ≈45；在线备份脚本：node:sqlite `backup()` ∥ `--config`/`--out` ∥ 时间戳命名——§5.5） | 备份（命令化——定时器样例在 README §9） |
-| `thincoder-server/deploy/sandbox/Dockerfile`（已落盘——2026-10-10） | ≈35（设计估——盒镜像：node 基座 + git/curl + 非 root） | 沙盒盒镜像 |
+| `thincoder-server/deploy/sandbox/Dockerfile`（已落盘——2026-10-10） | **实读 19**（2026-10-13 现读；在册 ≈35 偏大）——**sandbox-exec-rebuild 批定契约**（基座/核同件/env/CMD——`sandbox/EXECUTION.md` §8）；**+≈13（核装 + 壳 COPY）归 member-face 批账** | 沙盒盒镜像 |
 | `thincoder-server/README.md`（已落盘） | **241 ⇒ ≈255**（实读 2026-10-06——#961 +17 = 更新章 ∥ 部署章随动；#962 +4 = §2 种子句 ∥ §6 控制台 ∥ §10 热载句收正；#963 +94 = §9 重写 ∥ §10–12 新节 ∥ §2 两行 ∥ §3 微改 ∥ §4/§6/§13 随动；i18n +1 = §6 控制台多语言行；本批 +≈14 = §6 控制台节随正（九页 ∥ 状态灯 ∥ 审计） ∥ §10 成员接入（向量调用句））**⇒ 实读 247（2026-10-09）⇒ 实读 252**（本批 proxy：配置表行 ∥ 代理说明——实读）**⇒ 实读 256（2026-10-09——配置控制台批落地后：§6 控制台节随正 ∥ 配置写面句 ∥ 容器路配置目录前提；embed 解耦批 ±0——实读收正）⇒ ≈257（2026-10-09 alias 批：#967 注一行 +≈1——实读待回填）⇒ ≈258（2026-10-09 代理页批：§6 控制台节随正（代理页入场）+ 写面句改指——+≈1）⇒ 实读 258（2026-10-09 代理页批落地后：三处 hunk 全行内改——净 0）⇒ ≈318（server-exec-sandbox 批：§5.10 runner 部署节 +≈60——实读待回填）** | 运维面：安装（npm ∥ Docker） ∥ 部署（systemd ∥ compose） ∥ 启动（首启引导） ∥ CLI 用法 ∥ 控制台 |
 | **小计** | **≈762 ⇒ 1246 ⇒ 1270 ⇒ 1506 ⇒ 1507 ⇒ ≈1556**（#961 实读——+484 = 新三档 432 = update 228 ∥ converge 197 ∥ entrypoint 7；增档增量 52 = bin +9 ∥ config +6 ∥ example +1 ∥ service +2 ∥ Dockerfile +12 ∥ dockerignore +1 ∥ compose +4 ∥ README +17——presets ∥ log ∥ cli 零动；#962 实读 +24 = bin +4 ∥ config +16 ∥ README +4；#963 实读 +236 = backup 新 86 ∥ README +94 ∥ bin +27 ∥ update +11 ∥ config +9 ∥ Dockerfile +6 ∥ example +2 ∥ compose +1；i18n 实读 +1 = README **241**——其余零动；本批估 +≈49 = bin +19 ∥ cli +16 ∥ README +14）⇒ +≈19（配置控制台批：bin +≈2 ∥ README +≈12 ∥ `docker-compose.yml` +≈4 ∥ `.dockerignore` +≈1；余档 ±0——实读待回填）⇒ 实读增量 **+12**（2026-10-09 配置控制台批落地后——逐档见上表）**⇒ +10（2026-10-09 embed 解耦批：`config.mjs` +10 ∥ `README.md` ±0——实读收正）⇒ +≈6（2026-10-09 alias 批：`config.mjs` +≈5 ∥ `README.md` +≈1——实读待回填）⇒ +≈3（2026-10-09 代理页批：`bin` +≈2 ∥ `README.md` +≈1；`config.mjs` ±0——`validateProxyConfig` 复用零改）⇒ 实读增量 **+2**（2026-10-09 代理页批落地后：`bin` **+2** ∥ `README.md` 净 **0**——三处 hunk 全行内改；`config.mjs` ±0）⇒ +≈127（server-exec-sandbox 批：`deploy/sandbox/Dockerfile` 新 ≈35 ∥ `README.md` +≈60；`bin/thincoder-server.mjs` 增 ≈+6——控制面计（`sandbox/SANDBOX.md` §13）——实读待回填）** | —— |
 
@@ -291,7 +303,7 @@ first-release-completeness 面回填（2026-10-06——批 `docs/batches/2026-10
 | AC-6（功能点 6——嵌入配置可选与禁用形态；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 缺 `embedding` 段（∥ 显式 `null`）⇒ 载入通过 + 警告恰一条（嵌入未配置）∥ 服务照常起（`/healthz` 200）∥ 缺段档创建（PATCH `embedding` ⇒ 建段 ⇒ 重启启用）∥ 在场非对象 ∥ 缺子键 ⇒ 拒启 ∥ 400（文件零变）；判据全文 = §9 B33/B34 ∥ E22 | 单元测试档 |
 | AC-28（功能点 28——配置控制台写面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 写路径机检（`config-admin.mjs` 导出直测）：白名单（未知键 ⇒ 400）∥ 合并保未知键（写回后非托管键原样）∥ 校验门（非法值 ⇒ 400 且文件字节零变；`env:` 缺位 ⇒ 400）∥ 原子写（tmp 零残留 ∥ rename 覆盖 ∥ 落盘形 = 2 空格缩进 + 末尾换行同现档）∥ 单写者（同步段无交错）∥ 生效标注统一「重启生效」∥ 审计行（`config_update` ∥ detail = 键名清单 ∥ 值零入）∥ 写后 GET 回读逐值（round-trip） | 单元测试档 |
 | AC-29①③（功能点 29——配置形与唯一性：种子/配置面；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 条目两形（字符串 ∥ `{ name, alias }`）经三径校验同助手（载入 ∥ 启动构建/种子 ∥ 保存——`validateProviderEntry`/`validateProviderEntries`）∥ 别名非法（空 ∥ 含斜杠 ∥ 首尾空白 ∥ 跨 provider 重名）⇒ 拒启（配置面）∥ 400（保存径——库与运行时零变）∥ 种子条目别名原样入库（控制台可改——别名变更当即生效）；对外标识句 = §1（无斜杠裸名归别名形；`/v1/models` = 对外标识清单）；判据全文 = `gateway/API.md` §5 AC-29 行 | 单元测试档 + 收口轮 |
-| 沙盒（server-exec-sandbox 批——台账 #1224；需求 §5 沙盒块 + 用户 14:00 裁定） | 控制面判据 = `sandbox/SANDBOX.md` §11（执行面判据随重做批重建）∥ 盒参数集 = `sandbox/SANDBOX.md` §14 KD-SV-73 ∥ 迁移判据 = `store/STORE.md` §3 v11 段 | 单元测试档 + 收口轮 |
+| 沙盒（server-exec-sandbox 批——台账 #1224；需求 §5 沙盒块 + 用户 14:00 裁定） | 控制面判据 = `sandbox/SANDBOX.md` §11（含红队探针 P1–P14 判据表）∥ 执行面判据 = `sandbox/EXECUTION.md` §12（三腿/三证 ∥ 闸/配额/DNS 闸/实时门——sandbox-exec-rebuild 批）∥ 盒参数集 = `sandbox/EXECUTION.md` §3（KD-SV-73 逐项落地）∥ 迁移判据 = `store/STORE.md` §3 v11/v22 段 | 单元测试档 + 收口轮 |
 
 ## 8. 关键决策（本域）
 
@@ -352,6 +364,12 @@ first-release-completeness 面回填（2026-10-06——批 `docs/batches/2026-10
 
 ## 变更记录
 
+- 2026-10-14（**sandbox-onboarding-removal 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §1 · 台账 #1383；用户裁「撤」——任务式装机（托管接入）退场）：§5.10 接入句收正（托管接入 ⇒ 装机/主机运维 = 管理面 chat 内动作——`exec`/`docker`/`runners` + 主机表凭据）∥ 「托管接入部署前提」行改「主机 SSH 前提」（`sshpass`/`openssh-client`——主机 `exec` 用；S2 先检句随退场删）。同源随动 = `sandbox/SANDBOX.md` ∥ `agent/ADMIN-AGENT.md`。**产品码零触（设计轮）。**
+
+- 2026-10-13（**server-mcp 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-server-mcp.md` §1 · 台账 #1379）：§5.11（MCP 服务器面——stdio 同机/python 自备 ∥ 远端出网 ∥ 凭据密列 ∥ 停机收尾/`kill -9` 残留披露 ∥ 探活）。同源随动 = `mcp/MCP.md` §3/§12。**产品码零触（设计轮）。**
+
+- 2026-10-13（**sandbox-exec-rebuild 批 · 范围增补 #2（连接面 TLS 档——fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §1「2026-10-13 22:43 · 用户裁定」）：§5.10 节点前置条「TLS 不做」句收正（TLS 档可选——缺省明文不变）+ 网络面凭据句同拍 + **增连接面 TLS 档条**（节点侧配置在机 ∥ 客户端三件经控制台录入 ∥ 自检为门 ∥ 真机步骤随 `TEST-ENV-ECS.md` 随正件）。同源随动 = `sandbox/SANDBOX.md` §3 连接方式块 ∥ `sandbox/EXECUTION.md` §2.1。**产品码零触（设计轮）。**
+
 - 2026-10-06：建档（批 `docs/batches/2026-10-06-server-gateway.md` 设计轮；同日补轮按三层结构 + B 案织入）——ops 域：配置面（bootstrap 段） ∥ 首启引导 ∥ 运维 CLI（含密码面） ∥ 启动/停机/日志；KD-SV-15；用例 B7。
 - 2026-10-06：部署面薄面落（用户 08:21→08:24 令）——§5：分发两路 = npm 发布（包体就绪） ∥ Docker 镜像；守护两路 = systemd ∥ 容器 restart；升级/回滚 ∥ 备份（手工） ∥ 两版首部署清单；部署档组 = `deploy/` ∥ `Dockerfile` ∥ `.dockerignore` ∥ `docker-compose.yml`。
 - 2026-10-06：fix 轮（评审轮次 1 #2）——§7 补 AC-8（分发与部署）判据行（pack dry-run ∥ docker build + compose 起停 ∥ unit 安放可启；载体 = 收口轮）。
@@ -406,4 +424,6 @@ first-release-completeness 面回填（2026-10-06——批 `docs/batches/2026-10
 - 2026-10-11（**server-doc-split 批 · 设计复评轮 2 新增项修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2.13 ∥ §3 轮次 2 #9，本档面）：§6 小计行「控制面计」引用收正为带路径形（`sandbox/SANDBOX.md` §13——引用一律带路径；腿⑤ Δ 式口径直接导出项）；同档逐处复核零裸形。**零新语义**（评审发现直接导出项）。
 - 2026-10-11（**console-chat-align 批 · 部署随正 · 主 agent 直接执行 · 机械 · 可 revert**——承批档 `docs/batches/2026-10-11-console-chat-align.md` §5.2（R58②③ 在册））：§5.1 构建期预装行 上下文 ⇒ **仓根**（双包一次装——`-f thincoder-server/Dockerfile`）∥ §5.1 配套行 `.dockerignore` ⇒ **仓根白名单形**（server 侧件不复读取）∥ §5.7 Docker 路 ② 构建命令随正（仓根上下文 + `-f`）∥ §5.1 门禁链 42 ⇒ **52**（以当刻盘面实读为准——2026-10-11 实读 51 ⇒ +1）。同源随动 = `thincoder-server/Dockerfile`（双包/仓根）∥ 仓根 `.dockerignore`（新建）∥ `thincoder-server/README.md` :16/:93 ∥ `docs/TEST-ENV-ECS.md` §3。零新语义（部署面随正）。
 - 2026-10-12（**门禁链撤除 · 主 agent 直接执行 · 机械 · 可 revert**——用户裁「单元测试纪律：批内件不入发布门」）：§5.1 `prepublishOnly` 表述收正（门禁链 ⇒ **3×`node --check`**——`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`；旧链台账「30 ⇒ … ⇒ 61」自本日废、不再随批维护）——源头随正 = `thincoder-server/package.json`（61 档清单撤除）∥ `.github/workflows/test.yml:69`（注释随正——CI 只调脚本，自动随动）∥ `design/PROJECT.md` §6 板级行（批内件句 ⇒ 「随批留存、不入任何门」）。**零新语义**（裁令落笔）。
+- 2026-10-13（**sandbox-exec-rebuild 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §1 · 台账 #1373）：§5.10 机制全文指针 + 节点前置补主机侧三件前提（nft/工作区根/项目配额）∥ §5.10 网络面细形定形（端口两面 ∥ DNS 闸 UDP 53 ∥ 盒出站 nft ∥ 凭据面）∥ §6 盒镜像行实读 **19** + 契约指针 ∥ §7 沙盒行执行面判据改指（`sandbox/EXECUTION.md` §12）。**产品码零触（设计轮）**。
+- 2026-10-13（**sandbox-exec-rebuild 批 · 设计修订轮增补（底座可换）· eng-designer**——承批档 §1 「2026-10-13 21:32 · 用户裁定」）：§5.10 增**派生前置**条（标准镜像件位契约就绪 ∥ 底座来源 = 既有拉取面/搬运 ∥ 节点侧构建零额外前置 ∥ 构建资源面如实告知）。**产品码零触（设计轮）。**
 

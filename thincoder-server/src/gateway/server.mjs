@@ -79,8 +79,13 @@ export function createGatewayServer({ config = {}, routes, log = null, staticSit
       return
     }
     if (requiresJsonWrite(req.method, pathname) && !isJsonContentType(req.headers["content-type"])) {
-      sendError(res, "invalid_request_error", "写端点仅收 application/json（Content-Type 须为 application/json）")
-      return
+      if (isNdjsonStreamPath(pathname)) {
+        // 路由级例外（gateway/API.md §2.12 ∥ agent/MEMBER-AGENT.md §3.3）：盒上行回合流 = 流式 NDJSON 体
+        //（逐行边收边消费——`box-routes.mjs` 走 `readStreamBody`，不经通用整段 JSON 体门）。
+      } else {
+        sendError(res, "invalid_request_error", "写端点仅收 application/json（Content-Type 须为 application/json）")
+        return
+      }
     }
     const bodyLimit = MAX_BODY_BYTES
     if (exceedsBodyLimit(req, bodyLimit)) {
@@ -240,6 +245,11 @@ function requiresJsonWrite(method, pathname) {
 function isJsonContentType(value) {
   if (typeof value !== "string") return false
   return value.split(";")[0].trim().toLowerCase() === "application/json"
+}
+
+/** NDJSON 流式写面（路由级例外——盒上行回合流）：`POST /api/box/sessions/:id/turns`（gateway/API.md §2.12）。 */
+function isNdjsonStreamPath(pathname) {
+  return /^\/api\/box\/sessions\/[^/]+\/turns$/.test(pathname)
 }
 
 function normalizePath(pathname) {

@@ -40,6 +40,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   image: "thincoder-sandbox:1",         // 盒镜像（§3「镜像 = 控制台预填设置」缺省值）
   maxBoxesPerRunner: 8,                 // 单节点盒数上限（放置容量——KD-SV-171）
   workspaceRoot: "/var/lib/thincoder/workspaces", // 节点侧工作区根路径（卷 = `<workspaceRoot>/<ws-id>`——KD-SV-162）
+  memberWorkspaceLimit: 3,              // 每成员工作区数上限（正整数——KD-SV-156；成员建工作区越限 ⇒ 400 `workspace_limit_reached`）
 })
 
 export const SETTING_KEYS = Object.freeze(Object.keys(DEFAULT_SETTINGS))

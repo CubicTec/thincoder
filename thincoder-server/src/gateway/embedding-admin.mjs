@@ -18,14 +18,15 @@
 import { requireAdmin } from "../accounts/session.mjs"
 import { isMaskEcho } from "./config-admin.mjs"
 import { HttpError, sendJson } from "./errors.mjs"
-import { upstreamHeaders, upstreamUrl } from "./forward.mjs"
+import { RESPONSE_EXCERPT_READ_CAP, readBodyExcerpt, upstreamHeaders, upstreamUrl } from "./forward.mjs"
 import { readJsonBody } from "./server.mjs"
 
 /** 探活/试跑超时（§2.4——10s；注入口径 = 注册参数 `timeoutMs`）。 */
 export const EMBEDDING_TEST_TIMEOUT_MS = 10000
 
-/** 摘录读帽（字节——批 §2.4：上限 200 字符的自然字节面 ≤ 800B ⇒ 帽 10× 裕量；帽满即取消余量读，连接即还）。 */
-export const EMBEDDING_EXCERPT_READ_CAP = 8192
+/** 摘录读帽（字节——批 §2.4：上限 200 字符的自然字节面 ≤ 800B ⇒ 帽 10× 裕量）。**单源 = `forward.mjs`
+ *  `RESPONSE_EXCERPT_READ_CAP`**（model-test-tool 批起摘录读 = 两调用点共享件）；本名 = 向量面既有导出名（调用方零改）。 */
+export const EMBEDDING_EXCERPT_READ_CAP = RESPONSE_EXCERPT_READ_CAP
 
 /** 内置短探针文本（body `{ text? }` 缺省——§2.4）。 */
 export const EMBEDDING_PROBE_TEXT = "ping"
@@ -42,35 +43,6 @@ export function resolveProbeTarget(body, runtime) {
 /** 失败自含形（不走统一错误信封——UI 直接渲染失败分类；§2.4）。 */
 function failureBody(kind, message, ms) {
   return { ok: false, error: { kind, message }, ms }
-}
-
-/** 响应文本摘录（`http_error` 诊断消息——截断至 200 字符）：**有界流式读**（批 §2.4）——累积至读帽
- *  `EMBEDDING_EXCERPT_READ_CAP` 字节即 `reader.cancel()`（余量不读、连接即还；大响应/恶意体不整段缓冲）；
- *  `body` 缺失（判据替身）⇒ 回落 `response.text()`（有界性降级仅替身面——现行为不回归）；
- *  摘录语义与原文逐字一致：`trim` + 首 `limit` 字符（帽位截断 ∥ 读失败空摘录 = 两可接受边界——批 §2.4 裁）。 */
-async function textExcerpt(response, limit = 200) {
-  try {
-    const reader = response.body?.getReader?.()
-    if (!reader) return (await response.text()).trim().slice(0, limit) // 无 body（替身/异常形）：现行为回落
-    const decoder = new TextDecoder()
-    let text = ""
-    let read = 0
-    try {
-      for (;;) {
-        const { done, value } = await reader.read()
-        if (done) break
-        read += value.byteLength
-        text += decoder.decode(value, { stream: true })
-        if (read >= EMBEDDING_EXCERPT_READ_CAP) break // 帽满 ⇒ 余量不读（不整段缓冲）
-      }
-      text += decoder.decode() // 冲出解码器缓存（stream: true 的收尾）
-    } finally {
-      await reader.cancel().catch(() => {}) // 帽满/读毕/读错三径同取消（取消异常不掩原错误）
-    }
-    return text.trim().slice(0, limit)
-  } catch {
-    return ""
-  }
 }
 
 /**
@@ -112,7 +84,7 @@ export function registerEmbeddingAdminRoutes(routes, { db, config, log = null, f
       return
     }
     if (!upstream.ok) { // 非 2xx ⇒ `http_error`（诊断消息 = 状态 + 响应摘录）
-      const excerpt = await textExcerpt(upstream)
+      const excerpt = await readBodyExcerpt(upstream) // 摘录 = 共享件（`forward.mjs`——两调用点单源；本调用 limit 缺省 200）
       const message = `引擎返回 HTTP ${upstream.status}${excerpt ? `：${excerpt}` : ""}`
       log?.warn("embedding_test_failed", { kind: "http_error", baseURL: target.baseURL, status: upstream.status })
       sendJson(res, 200, failureBody("http_error", message, Date.now() - started))

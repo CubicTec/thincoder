@@ -40,6 +40,7 @@ export const EN_SHELL = Object.freeze({
   "nav.brand": "Thincoder Server",
   "nav.group.me": "My",
   "nav.group.admin": "Admin",
+  "nav.page.me.chat": "Chat",
   "nav.page.me.keys": "API keys & issuing",
   "nav.page.me.usage": "My usage",
   "nav.page.me.account": "Account settings",
@@ -57,6 +58,7 @@ export const EN_SHELL = Object.freeze({
   "nav.page.admin.system": "System",
   "nav.page.admin.sandbox": "Sandbox",
   "nav.page.admin.chat": "Chat",
+  "nav.page.admin.mcp": "MCP servers",
   "nav.logout": "Sign out",
 
   // ── 登录 ───────────────────────────────────────────────────────────────────

@@ -27,6 +27,11 @@
 | KD-SV-127 | **事件接收端 v1（github）= 公开端点 + 每源密钥验签 + 触发式全量对账**（承 R63 乙裁——用户 2026-10-12 授权；机制全文 = §13）：① 端点 `POST /api/hooks/git-sources/:id`（无会话；公网暴露面如实注——内网部署期事件不达，定时对账兜底）；② 门 = `X-Hub-Signature-256` HMAC-SHA256（raw body ∥ 该源密钥；`timingSafeEqual` 定长比较）；③ 密钥 = `POST /api/admin/git-sources/:id/hook-secret` 显式生成/轮换（明文一次性回显；读面恒掩码——沿 PAT 口径）；④ 触发 = `member` 事件 ⇒ 异步跑一次成员同步（快速 200；`trigger='event'` ∥ actor=`webhook`；撞锁 ⇒ 待跑旗合并）；⑤ 忽略面 = 非成员事件/源停用/`poll` 模式 ⇒ 200 忽略；验签败 ⇒ 401 + `log.warn`（不入审计——公网噪声） | 乙裁授权（事件近实时性为上）；验签 = github 生态标准形（零自造）；「触发即全量对账」= 幂等 + 零载荷解析——重复/乱序/重放皆收敛；快速 200 = github 投递预算（10s）与同步链长（多分页）不匹配（异步受理） | 同步等待式响应（投递超时 + 重投风暴——否）；投递防重放机制（签名无时间戳；重放至多触发一次幂等同步——如实注，不建面）；载荷解析增量应用（复杂化——否）；全局共享密钥（每源隔离开销——轮换/失效面粗） |
 | KD-SV-128 | **项目删除 = admin 专属 + 二次确认 + 同事务级联 + 审计行**（承 R64 乙裁——用户 2026-10-12 授权；机制全文 = §14）：`DELETE /api/admin/projects/:id`（载荷 `{ confirm: true }`——缺 ⇒ 400 人话；非 admin ⇒ 403；不存在 ⇒ 404）；`project_members` 同事务随删（库零外键——应用层）；审计 `project_event`/`project_delete`（detail = projectId/displayName/address/memberCount）；删除后同地址（规范形）可再挂（新行——不设墓碑）；不做回收站/恢复（审计行在册）；本批零挂载面（实核）——后续批新引用面出现 ⇒ 同批补「先拒 + 处置」防护（接口位记于 §11） | 误加仓无撤销 + 源在挂项目后恒不可删（须有删除/脱挂出路——R64 代价面）；「仅 admin」= 沿改仓地址同层（记账键级破坏动作）；二次确认 = 误删防护（沿删源先例）；同事务级联 = 零部分写（删项目不留孤儿成员行） | 甲案（维持不做——R64 原裁）：用户 2026-10-12 裁弃（出路缺失）；负责人可删（破坏性与分权面失衡——否）；软删/回收站（机制翻倍——需求外）；级联删源（方向反——源是上游） |
 | KD-SV-123 | **页面承载 = 三页**：`#/me/projects`（我的·项目——全体；可见项目列表 + 详情弹窗）∥ `#/admin/projects`（管理·项目——admin；全量 + 添加仓 + 地址/负责人变更）∥ `#/admin/git-sources`（管理·Git 源——admin；源表全操作）；管理组两项分列（否 tab 合页） | 「一页一职责」（KD-SV-20 精神）；源表 = 需求 44⑤ 点名的独立承载（凭据/同步面），与项目实体面不同管理对象；源面未来会长（事件/钩子接入）——分列免再拆 | tab 合页于 `#/admin/projects`（两管理对象共页；源面纵深后仍须拆）；源表并入系统页（凭据面与系统配置混装） |
+| KD-SV-151 | **gitee 范围三态显式（个人 ∥ 组织 ∥ 企业——用户 2026-10-13 18:54 裁「用户知道自己是个人/组织/企业，你选择器分一下」）+ 迁移与超时口径**：源行增 `scope_kind`（`personal` ∥ `org` ∥ `enterprise`——非 gitee 恒 NULL）；**gitee 建源必携类型 ∥ 改源键级**（gitee 行值/解析结果为空 ⇒ 400——迁移后不可达的防御句）（形门）；路由 = 个人 ⇒ 仅 `/user/repos` ∥ 组织 ⇒ + `/orgs/{scope}/repos` ∥ 企业 ⇒ + `/enterprises/{scope}/repos`（成员表两径同源；实测企业：仓 70 ∥ 成员 13）；声明与实况不符 ⇒ `http_error` + 人话（「改选范围类型」句），**不自动改走他径**（出站零另一径——机检）；gitee 读类超时 20s（余平台 10s——实测 `/user/repos` 4.8–5.4s，10s 预算不足）；**旧行迁移 = 零猜测**（gitee 存量：scope 在场 ⇒ `org`（沿现行路由——组织零回归）∥ scope 空 ⇒ `personal`；非 gitee 零动）——企业旧源（如 id=2）在编辑窗改选「企业」一次即工作 | 用户 18:54 裁定（三态由用户声明——明拒自动探测）；企业端点实测可用而现盘只走组织径（R69 根因）；超时 = 实测预算 | ㈠ 自动探测/回退（先试组织再试企业——用户明拒 + 双倍出站 + 误判面）；㈡ 旧行全判「企业」（id=2 零编辑可用，但组织旧源路由被改写 ⇒ 现可用变 404——违「组织零回归」∧ 迁移代用户声明）；㈢ 超时全局放宽 20s（拖慢余平台失败判定——无实测依据）；㈣ 第四态「自动」（违三态显式） |
+
+**最近先例（本批——KD-SV-151）**：实现坐标 = `thincoder-server/src/project/platform-client.mjs`（`listRepos` 组织径并集去重 `:170-210` ∥ `rosterRowOf` 管理三谓词 `:237` ∥ `READ_TIMEOUT_MS` 单点 `:17`——2026-10-13 本批实施后位移随正 ∥ 父侧直笔）∥ 对应设计节 = 本档 §4 客户端口径（gitee/scope/超时三条）；先例批 = team-projects-permissions（B2——gitee 组织径并集去重）；
+  另引 = 掩码三态（provider apiKey 口径）∥ 列级 ALTER 段（`store/STORE.md` §2——v6/v16）∥ 读类超时 10s（镜像源口径）；对齐 = 范围径「主径 + 范围径去重、300 行上限」 ∥ 掩码「未编辑不携 ∥ 明填 = 替换」 ∥ 超时「平台单点常量」形；
+  偏离 = ① 范围类型 = 用户显式声明（先例无类型概念——理由 = 用户 18:54 裁定：禁自动探测；不符 ⇒ 人话报错，不静默改走他径）∥ ② gitee 读类超时 20s（先例全平台 10s——理由 = 实测 `/user/repos` 4.8–5.4s）。
 
 ## 3. 权限模型（判据句——能力矩阵）
 
@@ -59,7 +64,7 @@
 
 | 平台 | 仓列表 | 成员表 | 成员事件 | 备注 |
 |---|---|---|---|---|
-| gitee | ✓（账号可见仓——个人 + 组织） | ✓（组织成员；企业成员接口在册） | ✗（企业 webhook 仅四族：issue ∥ push/标签 ∥ PR ∥ 评论） | 本批成员表走**组织**端点；企业成员端点 = 未接（本档 §12 R69——实施轮先实证企业场景；企业为常态 ⇒ R69 升提请裁定） |
+| gitee | ✓（账号可见仓——个人 + 组织 + 企业（范围类型 = 组织/企业 ⇒ 并该范围仓——2026-10-13 实测企业仓 70 行）） | ✓（组织成员 ∥ 企业成员（`/enterprises/{scope}/members`——2026-10-13 实测 13 人；行形 = 嵌套 `user.login`）） | ✗（企业 webhook 仅四族：issue ∥ push/标签 ∥ PR ∥ 评论） | 范围三态 + 企业两径已接线（2026-10-13 gitee-namespace-kinds 批——KD-SV-151；R69 已办） |
 | github | ✓ | ✓（组织成员） | ✓（组织成员事件 member_added/member_removed） | 事件接收端 = §13（KD-SV-118/127——`event` 可选项仅本平台） |
 | gitlab | ✓ | ✓（组员——含继承成员） | 付费档限定（Premium/Ultimate——免费版无） | 按无事件平台处置（定时拉取） |
 | 自建平台 | 有接口就拉（v1 = GitLab 兼容协议） | 同左 | ✗ | 无兼容接口 ⇒ 手输保底（加仓手输/成员手加） |
@@ -68,8 +73,8 @@
 
 | 平台 | 平台角色（本批消费——成员表级） | 三档 |
 |---|---|---|
-| gitee | 组织成员 | 只读（底线） |
-| gitee | 组织/企业管理员标记（响应在场时——实施轮逐字段实核；缺 ⇒ 只读底线） | 管理 |
+| gitee | 组织成员 ∥ 企业成员（`/enterprises/{scope}/members`——嵌套行 `user.login`） | 只读（底线） |
+| gitee | 管理员标记（`is_admin` ∥ `admin` ∥ `role === "admin"`——响应在场时；实测企业行 `role:"member"` ⇒ 底线；admin 档字样未实证 ⇒ 缺 ⇒ 只读底线） | 管理 |
 | github | 组织 owner/admin（`GET /orgs/{org}/members?role=admin`） | 管理 |
 | github | 组织 member | 只读（底线） |
 | gitlab ∥ 自建（GitLab 兼容） | Guest(10) ∥ Reporter(20) | 只读 |
@@ -81,12 +86,14 @@
 **客户端口径**（`thincoder-server/src/project/platform-client.mjs`（已落）——原生 fetch，零第三方）：
 
 - 基址与鉴权（三平台逐条；路径据台账 #1216 调研 + 官方 API 惯例——**实施轮逐条实核**）：
-  - gitee：`https://gitee.com/api/v5`；`Authorization: token <PAT>`；仓列表 `GET /user/repos?per_page=100&page=N`（scope 在场 ⇒ 并 `GET /orgs/{scope}/repos` 去重）；成员表 `GET /orgs/{scope}/members?per_page=100&page=N`；体检 `GET /user`。
+  - gitee：`https://gitee.com/api/v5`；`Authorization: token <PAT>`；**范围三态**（`scope_kind`——KD-SV-151）：**个人** ⇒ 仓列表 `GET /user/repos?per_page=100&page=N`（无范围径；成员表不可用）∥ **组织** ⇒ 主径 + `GET /orgs/{scope}/repos` 去重 ∥
+    **企业** ⇒ 主径 + `GET /enterprises/{scope}/repos` 去重（2026-10-13 实测 70 仓）；成员表 = `GET /orgs/{scope}/members` ∥ `GET /enterprises/{scope}/members`（实测 13 人）；体检 `GET /user`；**不符报错** = 范围径 404 ⇒ `http_error` + 人话（「{scope}」在 {组织|企业}端点不存在——核对范围类型/编辑源改选），**不自动改走他径**。
+  - **成员行解析（gitee）**：用户名 = 顶层 `login`/`username` ∥ 企业嵌套 `user.login`（实测行形 `{url,active,remark,role,outsourced,enterprise,user}`——取用户名与 `role`，余字段不消费）；角色判据 = 映射表三谓词（本档上表 gitee 两行）。
   - github：`https://api.github.com`；`Authorization: Bearer <PAT>` + `User-Agent: thincoder-server`；仓列表 `GET /user/repos?per_page=100&page=N&affiliation=owner,collaborator,organization_member`（scope 在场 ⇒ 并 `GET /orgs/{scope}/repos` 去重）；
     成员表 `GET /orgs/{scope}/members?per_page=100&page=N` + `?role=admin`（两级取管理员集）；体检 `GET /user`。
   - gitlab ∥ 自建（GitLab 兼容）：基址 = `https://gitlab.com` ∥ 源 `base_url`；`PRIVATE-TOKEN: <PAT>`；仓列表 `GET /api/v4/projects?membership=true&per_page=100&page=N`；成员表 `GET /api/v4/groups/{scope}/members/all?per_page=100&page=N`（行携 `access_level`）；体检 `GET /api/v4/user`。
-- **scope（组织/组标识）**：源行可选字段；成员同步须有 scope（缺 ⇒ 人行话「未配置组织/组——填后才能同步成员」）；拉列表不须 scope。
-- 超时 10s/调用（沿镜像源读类跨公网预算）；分页上限：仓列表 ≤300 行（`truncated` 旗如实）；成员表 ≤2000 行（截断 ⇒ 同步跳过删除段——KD-SV-122）。
+- **scope（范围名——组织/企业/组标识）**：源行字段；gitee 三态由 `scope_kind` 定（个人 ⇒ 不带范围名；组织/企业 ⇒ **必填**）；非 gitee 照旧可选（组织/组语义——零改）；成员同步须有 scope（缺 ⇒ 人行话「未配置组织/组——填后才能同步成员」∥ gitee 个人 ⇒ 「个人范围无成员表——成员同步仅组织/企业可用」）；拉列表不须 scope（gitee 个人 = 仅账号可见仓）。
+- 读类超时 = 平台口径（`readTimeoutOf`）：**gitee 20s**（2026-10-13 实测 `/user/repos` 4.8–5.4s——10s 预算不足）∥ **余平台 10s**（沿镜像源读类跨公网预算）；注入面 `deps.timeoutMs` 恒胜（单元测试档用）；分页上限：仓列表 ≤300 行（`truncated` 旗如实）；成员表 ≤2000 行（截断 ⇒ 同步跳过删除段——KD-SV-122）。
 - 错误分类（`error.kind` 六值）：`auth`（401/403——凭据失效）∥ `scope_missing` ∥ `unreachable` ∥ `timeout` ∥ `http_error`（非 2xx 其余）∥ `bad_response`（形不合）。
 - **零反向出站**：全客户端**只发 GET**（零 POST/PUT/PATCH/DELETE 出站——AC-44⑥ 机检 = 假 fetch 记录逐调用核，本档 §10 N17）。
 
@@ -97,7 +104,7 @@
 - **调度器**（`thincoder-server/src/project/sync.mjs`（已落）内 `createSyncScheduler`——入口接线）：检查周期 60s；到期判据 = `enabled=1 ∧ now - COALESCE(last_sync_at, created_at) ≥ interval_minutes`（**`sync_mode` 不参与调度判据**——`event` 源照跑 = 对账兜底）；逐源串行执行；`last_sync_at` = **尝试时刻**（成敗同记——「上次同步时间 + 结果」逐字）。
 - **同步算法**（单源、单事务应用段）：
   1. 取该源全部项目（`source_id = ?`）；无项目也执行名册拉取（验凭据 + 记录结果）。
-  2. 拉名册（§4 客户端；scope 缺 ⇒ `scope_missing` 失败）。
+  2. 拉名册（§4 客户端；scope 缺 ⇒ `scope_missing` 失败 ∥ gitee 个人范围 ⇒ 同分类（「个人范围无成员表」）；企业范围走 `/enterprises/{scope}/members`——嵌套行解析）。
   3. 逐项目应用（单事务——失败回滚零部分写）：名册逐人（按映射表取档）⇒ 同名行在场：`origin='sync'` ⇒ 更新 `level`/`synced_role`；`origin='manual'` ⇒ **不触**（KD-SV-116）；不在场 ⇒ 插入（origin=`sync`）。名册外且 `origin='sync'` 的行 ⇒ 删除（「平台侧减人 ⇒ 本地落掉」）。截断 ⇒ 跳过删除段（KD-SV-122）。
   4. 记录结果：`last_sync_at` + `last_sync_result_json`（`{ ok, at, ms, trigger, kind?, message?, counts: { projects, roster, added, updated, removed }, truncated? }`）；`auth` 失败 ⇒ `token_state='invalid'`；成功 ⇒ `token_state='ok'`；
     审计 `project_event`/`source_sync` 一行（actor = 操作 admin ∥ `scheduler` ∥ `webhook`（事件触发；三者 detail 同形）；detail = trigger（`manual` ∥ `schedule` ∥ `event`）+ counts + kind）。
@@ -121,21 +128,21 @@
 
 | 档 | 行数（设计估——实施实读为准） | 职责 |
 |---|---|---|
-| `thincoder-server/src/project/git-sources.mjs`（已落） | ≈200 | 源存储与校验（形/重名/掩码视图/CRUD/状态列）+ webhook 密钥面（生成/轮换/掩码——§13） |
-| `thincoder-server/src/project/platform-client.mjs`（已落） | ≈300 | 三平台客户端（仓列表/名册/体检——原生 fetch ∥ 超时 ∥ 分页 ∥ 六分类） |
+| `thincoder-server/src/project/git-sources.mjs`（已落） | 实读 265（2026-10-13）⇒ ≈+25（本批——`scope_kind` 三态形门 ∥ `sourceView` 增键） | 源存储与校验（形/重名/掩码视图/CRUD/状态列）+ webhook 密钥面（生成/轮换/掩码——§13）+ gitee 范围三态（本批） |
+| `thincoder-server/src/project/platform-client.mjs`（已落） | 实读 267（2026-10-13）⇒ ≈+40（本批——范围三态路由 ∥ 不符报错 ∥ 嵌套行解析 ∥ 超时口径） | 三平台客户端（仓列表/名册/体检——原生 fetch ∥ 超时 ∥ 分页 ∥ 六分类 ∥ gitee 三态路由） |
 | `thincoder-server/src/project/projects.mjs`（已落） | ≈190 | 项目存储 + 成员行 + 能力矩阵判定（§3）+ 删除事务（级联/审计——§14） |
-| `thincoder-server/src/project/sync.mjs`（已落） | ≈240 | 成员同步引擎（算法/单事务/锁/结果）+ 调度器 + 事件触发入口/待跑旗（§13） |
+| `thincoder-server/src/project/sync.mjs`（已落） | 实读 238（2026-10-13）⇒ ≈+3（本批——`scopeKind` 携传 ∥ 超时口径） | 成员同步引擎（算法/单事务/锁/结果）+ 调度器 + 事件触发入口/待跑旗（§13） |
 | `thincoder-server/src/project/routes.mjs`（已落） | ≈200 | 成员面六端点（列表/详情/成员增删改/项目改） |
-| `thincoder-server/src/project/admin-routes.mjs`（已落） | ≈255 | 管理面十端点（源 CRUD/同步/体检/拉列表/加仓 + webhook 密钥 + 项目删除） |
+| `thincoder-server/src/project/admin-routes.mjs`（已落） | 实读 222（2026-10-13）⇒ ≈+2（本批——拉列表携 `scopeKind` ∥ 超时口径） | 管理面十端点（源 CRUD/同步/体检/拉列表/加仓 + webhook 密钥 + 项目删除） |
 | `thincoder-server/src/project/webhooks.mjs`（已落） | ≈90 | 事件接收端（路由/验签/触发/忽略面——载荷不解析；§13） |
 | `thincoder-server/src/store/credential-crypto.mjs`（已落——KD-SV-119） | ≈65 | 凭据三件 + 键路径派生 `credentialKeyPath`（自 onboarding 逐字抽出——双消费方共享单源） |
-| `thincoder-server/src/store/db.mjs`（已落盘 · 实读 488） | ≈+70（v17 段——三表（含 `hook_secret_cipher` 列）+ 审计重建）；**>500 软线复核 = `store/STORE.md` §4——维持 + 上限 700（触发外拆）** | 迁移段 v17 |
+| `thincoder-server/src/store/db.mjs`（已落盘 · 实读 675——2026-10-13） | ≈+14（**本批 v21 段**——`scope_kind` 列 + 存量回填）；**>500 软线复核 = `store/STORE.md` §4——维持 + 上限 700（触发外拆）** ⇒ 实读 ≈690 未触线 | 迁移段（细段 = `store/STORE.md` §2 单源） |
 | `thincoder-server/src/sandbox/onboarding.mjs`（已落盘 · 实读 373） | −≈50（三件外迁）+ ≈2（再导出）；`keyPath` 取件改指 `credentialKeyPath(config)`（同行同值） | 零语义（KD-SV-119） |
 | `thincoder-server/src/accounts/audit.mjs`（已落盘 · 实读 116） | +1 型（`project_event` 入 `AUDIT_TYPES`——≈+2 行含注释） | 型面 十三 ⇒ 十四 |
 | `thincoder-server/bin/thincoder-server.mjs`（已落盘 · 实读 192） | +≈8（三注册行（含接收面）+ 调度器接线） | 装配 |
 | `thincoder-server/package.json`（已落盘 · 实读 30） | 机械（2026-10-12 已落：`prepublishOnly` = 3×`node --check`——链撤；单元测试档不入任何门，本批零剩余改动） | 发布钩 |
 
-（webui 面文件与 i18n 键族 = `webui/PROJECTS.md` §3 单源；域小计 = 服务端七档行和 **≈1475**（≈1310 ⇒ ≈1475——R63/R64 增量 ≈+165；原「≈1150」系粗估——本轮按行和收正）+ 共享件改动 ≈+95 净。）
+（webui 面文件与 i18n 键族 = `webui/PROJECTS.md` §3 单源；域小计 = 服务端七档行和 **≈1475 ⇒ ≈1545**（≈1310 ⇒ ≈1475——R63/R64 增量 ≈+165；原「≈1150」系粗估——本轮按行和收正；本批四档 ≈+70——`platform-client` ≈+40 ∥ `git-sources` ≈+25 ∥ `sync` ≈+3 ∥ `admin-routes` ≈+2）+ 共享件改动 **≈+109** 净（≈+95 ＋ 本批 `db.mjs` v21 ≈+14；实施实读为准）。）
 
 ## 9. 验收判据（AC-44 ①–⑨ 对位）
 
@@ -152,10 +159,11 @@
 | AC-44⑨ 源表（一行一源七字段 + 删源防护 + 立即拉取） | `git_sources` 列面（STORE §2 v17——含 `hook_secret_cipher`）+ 掩码（不回显）+ 删源防护 400 + 立即同步端点 + 事件子面（§13——密钥/登记说明）∥ 用例 N3/N10/N16 + UI 源表行 | 单元测试档 + 收口轮（浏览器实走） |
 | R63 事件接收端（用户 2026-10-12 授权——补章；承 AC-44⑦ 事件用例） | §13 全节（验签 ∥ 触发/忽略面 ∥ 撞锁合并 ∥ 公网前提如实注）∥ 用例 N20/N21/B3/E3 | 单元测试档 |
 | R64 项目删除（用户 2026-10-12 授权——批外补面） | §14 全节（admin 门 + `confirm` ∥ 级联随删 ∥ 审计 `project_delete`）∥ 用例 N22/E4 | 单元测试档 + 收口轮（浏览器实走） |
+| AC-44 ⑬ gitee 范围三态（2026-10-13 入册） | KD-SV-151 + §4 客户端口径（三态路由 ∥ 不符报错 ∥ 嵌套解析 ∥ 超时口径）∥ 用例 N24–N29/B4/E5 + UI 两腿 | 单元测试档 + 收口轮（.5 实走——用户源改选「企业」⇒ 拉列表 70 仓 ∥ 成员同步 13 人） |
 
 ## 10. 用例表（单元测试档——输入/预期）
 
-**A 件 = `docs/batches/2026-10-12-team-projects-permissions.test.mjs`（服务端核心）**；**B 件 = `…-sync.test.mjs`**（同步/平台假件）；**C 件 = `…-ui.test.mjs`**（控制台）。
+**A 件 = `docs/batches/2026-10-12-team-projects-permissions.test.mjs`（服务端核心）**；**B 件 = `…-sync.test.mjs`**（同步/平台假件）；**C 件 = `…-ui.test.mjs`**（控制台）**；D 件 = `docs/batches/2026-10-13-gitee-namespace-kinds.test.mjs`**（本批——服务端：N24–N29 ∥ B4 ∥ E5）**；E 件 = `…-gitee-namespace-kinds-ui.test.mjs`**（控制台：U1/U2）。
 
 | # | 场景 | 输入 | 预期输出 |
 |---|---|---|---|
@@ -182,13 +190,21 @@
 | N21 | 接收忽略面（§13） | 非 `member` 事件 ∥ 源停用 ∥ `poll` 模式源 | 200 `{ ok:true, ignored:true }`；零同步零落库 |
 | N22 | 项目删除成链（§14） | admin + `{ confirm: true }` | 200；`projects` 行删 + `project_members` 随删（零孤儿）；审计 `project_delete` 逐值；同地址可再挂 |
 | N23 | 凭据键路径单源 | `credentialKeyPath(config)`（缺省 db ∥ 自定义 db 两形） | 与 sandbox 现口径同址（同一 `credentials.key`）；两域共享同键 |
+| N24 | v21 迁移/回填（本批） | v20 库（存量行：gitee ∧ scope 在场 ∥ gitee ∧ scope 空 ∥ github） | 升后读数 21；列面含 `scope_kind`（尾插）；gitee 在场 ⇒ `org` ∥ 空 ⇒ `personal`；github ⇒ NULL 零动；余列逐值保形；再开零变 |
+| N25 | 建源/改源三态形门（本批） | gitee 三值各一（含 scope 组合）∥ gitee 缺类型 ∥ gitee 个人带范围名 ∥ gitee 组织/企业缺范围名 ∥ 非 gitee 携类型 ∥ 改源清空两形（组织/企业 ⇒ 个人：`scopeKind: "personal"` + `scope: ""`；平台切出 gitee：`scopeKind` 不携 ∥ 携 `null`） | 成 ⇒ 落库逐值（`sourceView.scopeKind` 回读）；五拒形 ⇒ 400 人话、库零变；清空两形 ⇒ 落 `scope = NULL` ∥ `scope_kind = NULL`（旧值随清） |
+| N26 | 列表路由两径（本批） | 假 gitee（`/user/repos` 两页 + 范围径一页）kind=org ∥ enterprise ∥ personal | 出站逐条（org ⇒ `/orgs/` ∥ enterprise ⇒ `/enterprises/` ∥ personal ⇒ 仅主径）；并集去重逐值；`truncated` 旗；**零另一径出站** |
+| N27 | 名册路由 + 嵌套解析（本批） | kind=org（现行行形逐值）∥ kind=enterprise（嵌套行：`user.login` ∥ `role:"member"` ∥ `role:"admin"` ∥ 缺名）∥ kind=personal（scope_missing） | org 径零回归；企业 ⇒ 只读底线（`role` 原文入 `synced_role`）/管理（三谓词）/`bad_response`；同步落行逐值（13 人） |
+| N28 | 不符报错（本批） | kind=org 且范围径 404 ∥ kind=enterprise 且 404 | `http_error` + 人话含「范围类型/改选」；出站记录**无另一径请求**（不静默改走他径） |
+| N29 | 超时口径（本批） | `readTimeoutOf` 两值 ∥ 挂起假件 + 模拟时钟快进（gitee/github 两形） | gitee ⇒ 20000 ∥ 余 ⇒ 10000；挂起 ⇒ 消息 `请求超时（20000ms）` ∥ `（10000ms）`（模拟器不适配 ⇒ 值断言 + 调用点接线实读为退路——实施档登记） |
 | B1 | 地址归一（跨形） | 尾斜杠/`.git`/空白 + 跨形三组（`https://h/a/b` ⇄ `git@h:a/b` ⇄ `ssh://git@h/a/b`） | 归一后同键 ⇒ 跨形重复拒；异 host/port/路径 ⇒ 不同键 |
 | B2 | 用户名归一 | `Alice` ⇄ `alice` | 同一人（成员行唯一）；同步不双插 |
 | B3 | 事件撞锁/重放合并（§13） | 在飞同步 + 同源重复投递 ×2 | 200 ×2 受理；在飞结束 ⇒ 合并续跑一次（零并发双跑）；名册零差（幂等） |
+| B4 | 企业仓行兼容（本批） | 企业仓行（`full_name`/`html_url`/`ssh_url`/`private`） | `repoRowOf("gitee", raw)` 逐值（零解析分支——与现行同形） |
 | E1 | 形错零变 | 源形/档位枚举/level 非法 | 400；库零变 |
 | E2 | 自含形失败 | 源不可达（体检/同步/拉列表） | 200 `{ok:false,error:{kind,message},ms}` |
 | E3 | 接收端门（§13） | 签名不符 ∥ 缺签名 ∥ 密钥未生成 ∥ 未知源 id | 401/401/401/404；零同步零落库；`log.warn` 一笔（不落审计） |
 | E4 | 删除门（§14） | 缺 `confirm` ∥ 非 admin ∥ 不存在 id | 400 人话/403/404；零删（库零变） |
+| E5 | 范围三态形错零变（本批） | gitee 缺类型 ∥ gitee 个人带范围名 ∥ gitee 组织/企业缺范围名 ∥ 非 gitee 携类型 ∥ 改源平台切出 gitee 携 `scopeKind` 非空（残留提交） | 400 人话（残留提交 ⇒「范围类型仅 gitee 适用」）；`git_sources` 行集逐值零变（沿 E1） |
 
 ## 11. 边界（本域不做面）
 
@@ -197,6 +213,7 @@
 - **不做非 github 平台接收端**（平台能力门——gitee/gitlab/自建走定时拉取；§13）∥ **不做 webhook 自动登记**（github 侧登记 = 手动步——零反向出站（AC-44⑥））∥ **不做投递防重放机制**（签名无时间戳——重放至多触发一次幂等同步，如实注（§13））∥ 不做事件载荷解析/增量应用（触发式全量对账）。
 - **不做仓级协作者同步**（KD-SV-117 附注对照在册；如需要另批）。
 - **不做项目回收站/恢复**（删除 = 最终——审计行在册；§14）∥ **不做项目挂载面删除防护**（本批零挂载（实核）；后续批新引用面出现 ⇒ 同批补「先拒 + 处置」——§14 接口位）∥ 删源防护照需求在。
+- **不做 gitee 自动探测/回退**（范围类型 = 用户显式声明——KD-SV-151；不符 ⇒ 人话报错，不试另一径）∥ **不做源表列面范围类型列**（载体 = 弹窗内——列面零动）∥ **不做企业 webhook**（能力门照旧）∥ **不做非 gitee 平台的范围类型**（`scope_kind` 恒 NULL）。
 - **不做三端（CLI/VSC/桌面）端侧面**（需求 44 沉默——提请裁定，本档 §12）。
 - **不做台账/记忆/在场/会话的权限消费**（后续批 B3–B6；本批只把模型与判定就位——`can.write` 即准入门）。
 - **不做权限模型改造**（admin/成员沿用）；**不做 OAuth**（PAT 已裁）；**个人单仓不挂同步**。
@@ -210,7 +227,7 @@
 | R66 | **成员同步作用域**（KD-SV-117）：本批 = 组织/企业/组级名册 → 源下全部项目（底线档 + 手工升档）；仓级协作者未拉。**代价**：读写档主要靠手工升档（gitlab Developer 档可自动得）。如要仓级精确档位 ⇒ 扩展面（gitee 端点待实核 + N×M 调用）。 | 提请确认 | 维持本裁；扩展另批 |
 | R67 | **「读写能写」机检口径**：本批无独立写对象 ⇒ 以能力读数（`can.write`）+ 动作面负例机检（§3 判据 2/3）。**代价**：AC-44④ 的「能写」暂为判定级；端到端写动作随 B3+ 或本批补最小写面。 | 提请确认 | 维持本裁 |
 | R68 | **admin-agent 工具面缺项**：项目/源管理工具未入管理面 agent 工具面（需求未写）。**代价**：管理面 agent 暂不能代管项目/源（如需另批）。 | 提请（缺项） | 维持不做 |
-| R69 | **gitee 企业成员端点未接**：本批成员表走组织端点；企业成员端点（`/v5/enterprises/{ent}/members`——调研在册）未接。**代价**：纯企业（无组织）结构下成员同步不可用（手加保底）。**自建平台协议 v1 = GitLab 兼容**（非兼容自建 ⇒ 拉取报确切人话 + 手输保底——同族口径）。 | 知会（登记在册） | 实施轮先实证 gitee 企业场景并回报；企业为常态 ⇒ 本行升提请裁定 |
+| R69 | **gitee 企业成员端点**（2026-10-12 登记——「企业为常态 ⇒ 升提请裁定」）——**已办（2026-10-13 gitee-namespace-kinds 批）**：范围三态显式（`scope_kind`）+ 企业两径接线（仓列表 70 ∥ 成员 13——.5 实测）；用户 2026-10-13 18:54 裁定「选择器显式分」（明拒自动探测）。机制 = KD-SV-151 ∥ §4。**自建平台协议 v1 = GitLab 兼容**（非兼容自建 ⇒ 拉取报确切人话 + 手输保底——同族口径，零改）。 | 已办 | —— |
 | R70 | **需求档计数回笔（主 agent 笔）**：本批落地后 `docs/server/requirements/PROJECT.md` 计数陈值须回笔——§2:13/:14「我的 3 ⇒ **4（本批——我的·项目）** ⇒ 5（沙盒余面批）」链；「管理 九页」⇒ **十一页**（本批 +项目 +Git 源）；「侧栏合计 **十二页（现盘面）** ⇒ **十五页**（本批）⇒ 十六（沙盒余面批）」；AC-12 链同拍（判据单源 = `webui/WEBUI.md` §6）。 | 需求档回笔 | **已办（2026-10-12）**——回笔在盘（`requirements/PROJECT.md`:64-65 现行「管理 十一页 ∥ 侧栏 十五 ⇒ 十六」 ∥ :314 AC-12 两链）；收口轮核销台账 #1216 |
 
 ## 13. 事件接收端（github 成员事件——R63 ∥ KD-SV-127）
@@ -240,3 +257,5 @@
 - 2026-10-12（**team-projects-permissions 批（B2）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §1 · 台账 #1216；用户 2026-10-12 13:33 裁定收束 + 13:39 起批令；需求功能点 44 ∥ AC-44）：建档——定位与词表 ∥ KD-SV-115–123（域划分 ∥ 用户名键 ∥ 同步作用域 ∥ 事件进路 ∥ 凭据共享 ∥ 可见性口径 ∥ 分权矩阵 ∥ 结果/体检/防护 ∥ 页面承载）∥ 权限模型判据句八条 ∥ 四平台能力矩阵 + 角色映射表（四张）+ 客户端口径 ∥ 同步机制（三径/调度/算法/锁/体检/源生命周期/加仓两径）∥ 端点摘要（单源 = `gateway/API.md` §2.9）∥ 文件与行数预算 ∥ AC-44 ①–⑨ 对位 ∥ 用例 N1–N18/B1–B2/E1–E2 ∥ 边界 ∥ 上抛 R63–R70。**产品码零触（设计轮）。**
 - 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277：8🟡+3🔵）∥ 用户 2026-10-12 授权两件（R63 乙案 ∥ R64 补面））：**增 §13（事件接收端——KD-SV-127）∥ §14（项目删除——KD-SV-128）** ∥ KD-SV-118 收正（接收端落 + `event` = 事件 + 定时对账——消死区）∥ KD-SV-119 收正（+ `credentialKeyPath` 单源）∥ §3 能力矩阵 + `delete` 列 + 判据句 9 ∥ §4 github/gitee 行 ∥ §5 三径/调度/锁/审计（trigger=`event` ∥ actor=`webhook`）/加仓载荷单源/跨形归一 ∥ §6 十四 ⇒ **十七端点** ∥ §8 行账随正（+ `webhooks.mjs`；`db.mjs` 维持判定指针；`audit.mjs` 实读 116）∥ §9 补 R63/R64 两行 + ②④⑦⑨ 行随正 ∥ §10 用例 N19–N23 ∥ B1/B3 ∥ E3/E4 ∥ §11 边界随正 ∥ §12 R63/R64 销项 + R70 链头收正。**产品码零触（设计轮）。**
 - 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮 2（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3 轮次 2（评审 #280 之 5））：§13 增「存储面与重启」句（锁/待跑旗 = 进程内态——单实例部署；重启清零——定时对账兜底）。**零新语义**（评审发现直接导出项）。
+- 2026-10-13（**gitee-namespace-kinds 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-gitee-namespace-kinds.md` §1 · 台账 #1365；用户 2026-10-13 18:47 报障 + 18:54 裁定「用户知道自己是个人/组织/企业，你选择器分一下」；需求功能点 44 ⑫ ∥ AC-44 ⑬）：增 KD-SV-151（范围三态 + 迁移口径 + 超时口径）；§4 平台矩阵/角色映射 gitee 行收正（企业两径已接线）+ 客户端口径 gitee 行改写（三态路由/成员行嵌套解析/不符报错）+ scope 条 + 超时条；§5 算法 2 随正；§8 五行行账（platform-client ∥ git-sources ∥ sync ∥ admin-routes ∥ db——v21）；§9 增 AC-44 ⑬ 行；§10 用例 N24–N29/B4/E5；§11 增不做面；§12 R69 升裁定收口（已办）。同源随动 = `store/STORE.md`（v21）∥ `gateway/API.md` §2.9 ∥ `webui/PROJECTS.md` §2.4/§3/§4 ∥ `design/PROJECT.md` §4/§6/§7。**产品码零触（设计轮）。**
+- 2026-10-13（**gitee-namespace-kinds 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-gitee-namespace-kinds.md` §3 轮次 1 之 1/2/3/6）：§2 增**最近先例行**（KD-SV-151 侧——实现坐标 ∥ 设计节 ∥ 先例批；对齐 ∥ 偏离两条）∥ §8 域小计随正（**≈1475 ⇒ ≈1545**——本批四档 ≈+70；共享件 ⇒ **≈+109** 净——含 `db.mjs` v21 ≈+14）∥ §10 头注补本批 D/E 两档 + N25（改源清空两形）/E5（残留提交）各增一腿。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。

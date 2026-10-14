@@ -206,3 +206,36 @@ export async function forwardChat(req, res, { db, log, member, keyId, provider, 
     onUsage,
   })
 }
+
+/** 响应摘录读帽（字节——错误诊断原文取件：帽满即 `reader.cancel()`（余量不读、连接即还；大响应/恶意体不整段缓冲）。
+ *  值沿向量探活既有读帽（200 字符的自然字节面 ≤ 800B ⇒ 10× 裕量）；**两调用点单源** = `embedding-admin.mjs`（探活 http_error 诊断）
+ *  ∥ `agent/model-test.mjs`（模型测试 `error` 读数——§12.1③ 帽 500 字）。 */
+export const RESPONSE_EXCERPT_READ_CAP = 8192
+
+/** 响应体摘录（**有界流式读**——错误诊断原文取件）：`cap` 字节帽满 ⇒ `reader.cancel()`；`body` 缺失（判据替身）⇒ 回落
+ *  `response.text()`（有界性降级仅替身面）；摘录语义 = `trim` + 首 `limit` 字符（帽位截断 ∥ 读失败空摘录 = 两可接受边界）；
+ *  帽满/读毕/读错三径同取消且异常不抛（空摘录）。 */
+export async function readBodyExcerpt(response, limit = 200, cap = RESPONSE_EXCERPT_READ_CAP) {
+  try {
+    const reader = response.body?.getReader?.()
+    if (!reader) return (await response.text()).trim().slice(0, limit) // 无 body（替身/异常形）：现行为回落
+    const decoder = new TextDecoder()
+    let text = ""
+    let read = 0
+    try {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        read += value.byteLength
+        text += decoder.decode(value, { stream: true })
+        if (read >= cap) break // 帽满 ⇒ 余量不读（不整段缓冲）
+      }
+      text += decoder.decode() // 冲出解码器缓存（stream: true 的收尾）
+    } finally {
+      await reader.cancel().catch(() => {}) // 帽满/读毕/读错三径同取消（取消异常不掩原错误）
+    }
+    return text.trim().slice(0, limit)
+  } catch {
+    return ""
+  }
+}

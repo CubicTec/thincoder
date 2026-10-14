@@ -1,6 +1,6 @@
 /**
  * chat-tools.mjs — 管理面工具面八件（`agent/ADMIN-AGENT.md` §12 ∥ KD-SV-90/136；admin-agent-chat 批——台账 #1254）：
- * `members`（六动词）∥ `providers`（五）∥ `models`（五）∥ `usage`（summary ∥ rows）∥ `audit`（query）∥ `runners`（list ∥ add ∥ remove ∥ revoke_credential）
+ * `members`（六动词）∥ `providers`（五）∥ `models`（六——`test` = 模型测试，model-test-tool 批；机制 = `agent/ADMIN-AGENT.md` §12.1）∥ `usage`（summary ∥ rows）∥ `audit`（query）∥ `runners`（list ∥ add ∥ remove ∥ revoke_credential）
  * ∥ `docker`（十动词——**绑定 = 注册节点**；未在册 ⇒ 工具级错误回灌）∥ `exec`（SSH——**绑定 = 主机表行**，本批——KD-SV-136；凭据 = 行密列，缺 ⇒ 工具级错误人话）。
  *
  * 口径（KD-SV-90）：**进程内直取域件**（零 HTTP 回环——KD-SV-82 延续）；**写链与控制台路由同函数**（provider 写面 = `gateway/provider-admin.mjs`
@@ -25,6 +25,7 @@ import { execOnHost, revokeHostCredential } from "../sandbox/hosts.mjs"
 import { deleteRunnerChain, insertRunner, listRunners, normalizeRunnerName, runnerByRef, runnerRowOr404, sshMetaOf } from "../sandbox/registry.mjs"
 import { SSH_COMMAND_TIMEOUT_S } from "../sandbox/ssh.mjs"
 import { DOCKER_OPS, assertDockerOp, runDockerOp } from "./docker-ops.mjs"
+import { MODEL_TEST_PROBE_TEXT, MODEL_TEST_PROMPT_MAX, MODEL_TEST_TIMEOUT_S, MODEL_TEST_TIMEOUT_S_MAX, modelTestSummaryOf, runModelTest } from "./model-test.mjs"
 
 /** 工具名全集（八件——§12 表；断言）。 */
 export const CHAT_TOOL_NAMES = Object.freeze(["members", "providers", "models", "usage", "audit", "runners", "docker", "exec"])
@@ -33,7 +34,7 @@ export const CHAT_TOOL_NAMES = Object.freeze(["members", "providers", "models", 
 export const CHAT_TOOL_OPS = Object.freeze({
   members: Object.freeze(["list", "create", "reset_password", "revoke_key", "set_quota", "set_disables"]),
   providers: Object.freeze(["list", "add", "update", "remove", "discover"]),
-  models: Object.freeze(["list", "enable", "disable", "settings", "alias"]),
+  models: Object.freeze(["list", "enable", "disable", "settings", "alias", "test"]),
   usage: Object.freeze(["summary", "rows"]),
   audit: Object.freeze(["query"]),
   runners: Object.freeze(["list", "add", "remove", "revoke_credential"]),
@@ -64,6 +65,23 @@ function optionalText(value, field, max = 2000) {
  *  依据 = 86 400 000 ms ≪ Node 计时器量程 2 147 483 647 ms（逾量程被归 1 ms——即刻假超时）＋单命令 24 h 以上超出本工具用途。 */
 const TIMEOUT_S_MAX = 86400
 
+/** 探针输入（`models.test`——§12.1①：缺省 = 内置探针句；逾 2000 字 ⇒ 工具级错误人话——**零外呼**）。 */
+function probePromptOf(raw) {
+  if (raw === undefined || raw === null || raw === "") return MODEL_TEST_PROBE_TEXT
+  if (typeof raw !== "string") throw new Error(`prompt 须为字符串：${JSON.stringify(raw)}`)
+  if (raw.length > MODEL_TEST_PROMPT_MAX) throw new Error(`prompt 超长（≤ ${MODEL_TEST_PROMPT_MAX} 字——探针输入；逾限拒发，零外呼）`)
+  return raw
+}
+
+/** 探针预算秒数（`models.test`——§12.1①：缺省 60 ∥ 上界 600；非正/非数/越界 ⇒ 工具级错误人话——**零外呼**）。
+ *  值域形沿 `exec` 同面先例（不 `Number` 收编——布尔/数字串/数组皆拒）；界值依据 = 设计轮定（单请求 10 分钟窗）。 */
+function testTimeoutOf(raw) {
+  if (raw === undefined || raw === null || raw === "") return MODEL_TEST_TIMEOUT_S
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) throw new Error(`timeoutS 非法：${String(raw)}（正数秒数；缺省 ${MODEL_TEST_TIMEOUT_S}）`)
+  if (raw > MODEL_TEST_TIMEOUT_S_MAX) throw new Error(`超时上限 ${MODEL_TEST_TIMEOUT_S_MAX} 秒：timeoutS = ${String(raw)} 越界（缺省 ${MODEL_TEST_TIMEOUT_S}）`)
+  return raw
+}
+
 /** `exec` 超时秒数（E61：非数/非正 ⇒ 工具级错误——不 `Number` 收编（布尔/数字串/数组皆拒）；越界 ⇒ 工具级错误人话「超时上限 24 小时」；缺省 = `ssh.mjs` 单源常量）。 */
 function timeoutOf(raw) {
   if (raw === undefined || raw === null || raw === "") return SSH_COMMAND_TIMEOUT_S
@@ -79,8 +97,11 @@ function timeoutOf(raw) {
  * ∥ `discoverFetchImpl` = 上游探针出口（缺省 = `proxyFetch`——与控制台 discover 同出口，代理旗判定不丢；测试替身走此参）。
  * `invoke(name, args)` 出 = **结果对象**（各动词自带字段，至少 `{ ok }`；失败 ⇒ `{ ok:false, message }`——不抛，交模型自纠）。
  * `summary` 面：docker 等结果自带则沿用，余由驱动层派生（`chat.summaryOfResult`——掩蔽 + 截断）。
+ * 模型测试面（§12.1②）：`loopbackFor` = 出口描述子取件（装配面注入——`chatProviderOf`；出 `{ provider, upstream }`）∥
+ * `modelTestFetch` = 探针传输假件缝（缺省 `fetch`）∥ `now` = 注入钟（`totalMs`/`ttfbMs`/`tps` 分母窗读时——单测逐值断言）；
+ * 三缺位皆工具级错误人话（未接线/未登录/自环基址缺位——零外呼）。
  */
-export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, requestImpl = null, discoverFetchImpl = proxyFetch, guard = null, log = null, actor = "admin", actorId = null, execImpl = null } = {}) {
+export function createChatTools({ db, runtime = null, config = {}, env = process.env, fetchImpl = fetch, requestImpl = null, discoverFetchImpl = proxyFetch, guard = null, log = null, actor = "admin", actorId = null, execImpl = null, loopbackFor = null, modelTestFetch = null, now = Date.now } = {}) {
   if (!db) throw new Error("createChatTools：缺少 db（openDatabase 产物）")
   const providerCtx = { db, runtime, config, env, fetchImpl: discoverFetchImpl, log }
 
@@ -115,6 +136,11 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
       if (name === target || alias === target) return name
     }
     throw new Error(`模型不在该 provider 的开放清单：${providerName}/${target}（先 models.list 查在册）`)
+  }
+
+  /** 对外标识（别名 ∥ `provider/model`——§12.1③ 读数 `model` ∥ 审计 `subject` 同值；与 `models.list` 行同式）。 */
+  function externalModelOf(providerName, name, item) {
+    return item?.alias ?? `${providerName}/${name}`
   }
 
   /** 成员过滤取值（使用量/审计两工具——同控制台口径：全数字 ⇒ id；否则按用户名/展示名；未命中 ⇒ -1 空集哨兵）。 */
@@ -240,15 +266,15 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
     }
   }
 
-  // ── ③ models（五动词——读改写走 provider 写链，单源校验）──────────────────────
-  function modelsOp(op, args) {
+  // ── ③ models（六动词——读改写走 provider 写链，单源校验；`test` = 模型测试执行器 `model-test.mjs`）──
+  async function modelsOp(op, args, ctx = {}) {
     switch (op) {
       case "list": {
         const rows = []
         for (const entry of listProviderEntries(db)) {
           if (args.provider !== undefined && args.provider !== null && args.provider !== "" && entry.name !== String(args.provider) && entry.id !== Number(args.provider)) continue
-          for (const { name, alias } of modelEntriesOf(entry.models)) {
-            rows.push({ provider: entry.name, model: name, alias, external: alias ?? `${entry.name}/${name}`, settings: entry.settings?.[name] ?? null })
+          for (const item of modelEntriesOf(entry.models)) {
+            rows.push({ provider: entry.name, model: item.name, alias: item.alias, external: externalModelOf(entry.name, item.name, item), settings: entry.settings?.[item.name] ?? null })
           }
         }
         return { ok: true, summary: `开放模型 ${rows.length} 个`, models: rows }
@@ -300,6 +326,33 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
         // 别名全服唯一（含本次）走写链单源校验——撞 ⇒ 400（此处转工具级错误）
         const out = updateProviderEntry(providerCtx, entry.id, { models: next })
         return { ok: true, summary: alias === null ? `已清除 ${entry.name}/${name} 的别名` : `已设别名 ${alias} ⇒ ${entry.name}/${name}`, id: out.id, models: out.entry.models }
+      }
+      case "test": {
+        const entry = resolveProvider(args.provider)
+        let name
+        try {
+          name = locateModel(entry, entry.name, args.model)
+        } catch (e) {
+          // 未配/草稿值 ⇒ 工具级错误（§12.1①/E62①——**零外呼**）；划界句：草稿试连 = Provider 页「测试连接」面（AC-18）
+          throw new Error(`${e?.message ?? String(e)}；草稿值不走本工具——未保存的渠道请到 Provider 页「测试连接」`)
+        }
+        const external = externalModelOf(entry.name, name, modelEntriesOf(entry.models).find((item) => item.name === name))
+        const prompt = probePromptOf(args.prompt) // 入参校验腿（E62⑥——零外呼 ∥ 库零变）
+        const timeoutS = testTimeoutOf(args.timeoutS)
+        if (typeof loopbackFor !== "function") throw new Error("模型测试未接线（缺出口装配缝）——请检查工具面装配（该分支不应出现）")
+        const { provider } = await loopbackFor(external) // 出口描述子同源（§16.2——sk 缺位/自环基址缺位 ⇒ 抛 ⇒ 工具级错误人话）
+        const readings = await runModelTest({
+          baseURL: provider.baseURL,
+          apiKey: provider.apiKey,
+          model: provider.model, // 外标（网关链派发口径——读数 `model` 同值）
+          prompt,
+          timeoutS,
+          fetchImpl: modelTestFetch ?? fetch,
+          now,
+          signal: ctx?.signal ?? null, // 回合中止信号透传（§12.1②——中止即断开探针）
+          log,
+        })
+        return { ok: true, summary: modelTestSummaryOf(readings), subject: external, ...readings } // 读数产出恒 ok:true（服务坏 ≠ 工具失败）
       }
       default:
         return { ok: false, message: `未知 models 动词：${String(op)}（${CHAT_TOOL_OPS.models.join(" ∥ ")}）` }
@@ -387,7 +440,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
   }
 
   /** 工具调用入口（不抛——未知工具/动词/参数不合 ⇒ `{ ok:false, message }`；命令面错误同收）。 */
-  async function invoke(name, args = {}) {
+  async function invoke(name, args = {}, ctx = {}) {
     try {
       const params = isPlainObject(args) ? args : {}
       if (!CHAT_TOOL_NAMES.includes(name)) return { ok: false, message: `未知工具：${String(name)}（${CHAT_TOOL_NAMES.join(" ∥ ")}）` }
@@ -405,7 +458,7 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
       if (op === null) return { ok: false, message: `缺 op（${name} 的动词：${(CHAT_TOOL_OPS[name] ?? []).join(" ∥ ")}）` }
       if (name === "members") return await membersOp(op, params)
       if (name === "providers") return await providersOp(op, params)
-      if (name === "models") return modelsOp(op, params)
+      if (name === "models") return await modelsOp(op, params, ctx)
       if (name === "usage") return usageOp(op, params)
       if (name === "audit") return auditOp(op, params)
       if (name === "runners") return await runnersOp(op, params)
@@ -450,13 +503,18 @@ export function createChatTools({ db, runtime = null, config = {}, env = process
     fn("models", desc(
       "服务模型面（控制台服务模型页同函数——保存即热生效）。动词：", CHAT_TOOL_OPS.models.join(" ∥ "),
       "。enable ⟮provider,model⟯ 加开放；disable ⟮provider,model⟯ 减项；settings ⟮provider,model,settings⟯ 子字段级合并（",
-      "{ rpm ∥ tpm ∥ costIn ∥ costOut ∥ note ∥ quotaTokens }，值 null = 清该项）；alias ⟮provider,model,alias⟯ 设/清别名（alias 空 = 清除；全服唯一）。",
+      "{ rpm ∥ tpm ∥ costIn ∥ costOut ∥ note ∥ quotaTokens }，值 null = 清该项）；alias ⟮provider,model,alias⟯ 设/清别名（alias 空 = 清除；全服唯一）；",
+      "test ⟮provider,model,prompt?,timeoutS?⟯ 对**已配渠道点名**发一次真实调用（经网关链——照常记账并计配额），归一五读数：",
+      "状态（正常/超时/HTTP 错误/响应不可用/流中断）∥ 错误原文 ∥ 总耗时 ∥ 首字节延迟 ∥ 吞吐（tokens/s；usage 缺 ⇒ null）。",
+      "未保存的草稿值不走本工具（用 Provider 页「测试连接」）。",
     ), {
       op: { type: "string", enum: CHAT_TOOL_OPS.models, description: "动词" },
       provider: { type: "string", description: "provider 名 ∥ id" },
       model: { type: "string", description: "模型（enable = 上游模型名；余动词 = 上游名 ∥ 别名）" },
       settings: { type: "object", description: "settings：{ rpm ∥ tpm ∥ costIn ∥ costOut ∥ note ∥ quotaTokens }" },
       alias: { type: "string", description: "alias：别名（空 ∥ null = 清除）" },
+      prompt: { type: "string", description: `test：探针输入（缺省「${MODEL_TEST_PROBE_TEXT}」；≤ ${MODEL_TEST_PROMPT_MAX} 字）` },
+      timeoutS: { type: "number", description: `test：探针预算秒数（缺省 ${MODEL_TEST_TIMEOUT_S}——正数，上界 ${MODEL_TEST_TIMEOUT_S_MAX}）` },
     }),
     fn("usage", `用量报表（控制台用量页同源）。动词：${CHAT_TOOL_OPS.usage.join(" ∥ ")}。summary 出 totals/byModel/byMember；rows 出逐行明细（limit ≤ ${TOOL_USAGE_LIMIT_MAX}）。过滤：member（id ∥ 用户名 ∥ 展示名）∥ model（对外标识）∥ endpoint（chat ∥ embeddings）∥ from/to（unix ms）。`, {
       op: { type: "string", enum: CHAT_TOOL_OPS.usage, description: "动词" },

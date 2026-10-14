@@ -137,7 +137,7 @@ export const ZH_SYSTEM = Object.freeze({
   "usageReport.export": "导出 CSV",
   "usageReport.exported": "已导出 CSV",
 
-  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十五型在册；型面十七型——`member_event` ∥ `mcp_event` 待落） ────
+  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十六型在册；型面十七型——`member_event` 待落） ────
   "audit.title": "审计",
   "audit.typeLabel": "类型",
   "audit.typeAll": "全部类型",
@@ -175,6 +175,7 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.type.sandbox_rule": "沙盒规则裁定",
   "audit.type.project_event": "项目事件",
   "audit.type.ledger_event": "团队台账",
+  "audit.type.mcp_event": "MCP 服务器",
   "audit.sandboxKind.container_create": "容器创建",
   "audit.sandboxKind.container_start": "容器启动",
   "audit.sandboxKind.container_stop": "容器停止",

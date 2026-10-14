@@ -18,8 +18,9 @@ import { modelEntriesOf } from "../gateway/providers.mjs"
 export const DEFAULT_MAX_CALLS = 60
 export const DEFAULT_MAX_DURATION_MS = 20 * 60 * 1000
 
-/** 无人值守裁剪面（§5——保留核 agent 环/工具协议/provider/审计挂钩；下列族不挂载——`team_ledger`（团队台账核工具）：服务端 admin agent 零团队登录 ⇒ 工具不可达）。 */
-export const TRIMMED_FACES = Object.freeze(["approval", "tty", "memory", "ledger", "subagent", "browser", "mcp", "team_ledger"])
+/** 无人值守裁剪面（§5——保留核 agent 环/工具协议/provider/审计挂钩；下列族不挂载——`team_ledger`（团队台账核工具）：服务端 admin agent 零团队登录 ⇒ 工具不可达）；
+ *  `mcp` 已解裁（server-mcp 批——管理会话挂 MCP 面，§2.2；任务面维持不挂载），`ledger` 为核台账族（团队台账以 `team_ledger` 单列、与本族同裁）。 */
+export const TRIMMED_FACES = Object.freeze(["approval", "tty", "memory", "ledger", "subagent", "browser", "team_ledger"])
 
 /** 核装载（KD-SV-78）：动载 `@thincoder/core` provider 客户端（`chat(provider, { messages, tools })`）。
  *  部署前提 = `@thincoder/core` 依赖声明（`package.json`——钉版本）；本仓开发面经注入口替身零依赖。 */

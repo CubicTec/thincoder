@@ -377,3 +377,9 @@ dialog.modal.terminal-modal[open] { display: flex; flex-direction: column; } /* 
 .terminal-row { white-space: pre; } /* 行 = 一行格（折行归网格折返——不靠 CSS 折行） */
 .terminal-cursor { position: absolute; background: var(--term-fg); opacity: .75; } /* 形状随模式（v1 取块形即止）；闪烁 = CSS 固定（零动画） */
 .terminal-status { margin: 0; color: var(--muted); font-size: var(--fs); }
+
+/* ── 我的·对话（views-me-chat.mjs ∥ views-me-chat-composer.mjs——`webui/CHAT.md` §2.2；member-face-chat 批）：
+   四轴类族沿管理面复用（`.chat-bar`/`.chat-select`/`.chat-thread`/`#toolbar`/`#status-line`/消息族/徽标族/待批行）；
+   本面新增两枚（工作区读数段 ∥ 四相引导块）——零新变量 ∥ 零新悬停规则 ── */
+.chat-ws { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); color: var(--muted); } /* 会话条·工作区读数（名 ∥ 盒态 ∥ 在线态） */
+.chat-guide { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-4); padding: var(--sp-6); background: var(--panel); border: var(--bw) solid var(--border); border-radius: var(--r-3); } /* 首次进入四相引导块（本页零 `.card` 面） */

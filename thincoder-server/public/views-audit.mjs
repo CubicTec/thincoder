@@ -2,7 +2,7 @@
  * views-audit.mjs — 管理·审计（webui/READINGS.md §2.1④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
- * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十五型——全型收编；team-ledger 批 + `ledger_event`）；
+ * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十七型——全型收编；本表十六型在册——`member_event` 待落（他批登记）；server-mcp 批 + `mcp_event`）；
  * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——`agent/ADMIN-AGENT.md` §11）
  * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11）
  * ∥ project 行（`project_event`——kind 族 + 源/项目/成员三面逐值；team-projects-permissions 批（B2））
@@ -29,6 +29,7 @@ const AUDIT_TYPES = [
   ["sandbox_rule", "audit.type.sandbox_rule"],
   ["project_event", "audit.type.project_event"],
   ["ledger_event", "audit.type.ledger_event"],
+  ["mcp_event", "audit.type.mcp_event"],
 ]
 
 export async function renderAudit(ctx, mount) {

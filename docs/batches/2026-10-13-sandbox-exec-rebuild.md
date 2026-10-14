@@ -3,7 +3,7 @@
 > 编制：主 agent · 2026-10-13 · 来源 = 用户 2026-10-13 20:5x「那应该先把重做批跑了」+ 21:08「开，自动跑」；承 2026-10-10 19:52–20:01 执行面形态裁定（server 直调 Docker API ∥ 主机侧两件走 SSH ∥ 节点零驻留）；归批项汇编 = #1248/#1249 ∥ #1351 ∥ P14 ∥ v11 列面 ∥ KD-SV-72 ∥ 写门实时化。
 > 台账 = #1373（sandbox · 归批）。前情 = docs/batches/2026-10-10-server-exec-sandbox.md ∥ docs/batches/2026-10-10-runner-admin-console.md（同链前两批——执行面初建 ∥ 随正轮）。
 ## §1 讨论（主 agent）
-**状态行**：🔄 进行中（…）
+**状态行**：已收口 2026-10-14
 <§1 模板占位：本批条目 / 关键判据 / 授权口径>
 
 **2026-10-13 · 沙盒执行面重做（Docker API 直调 ∥ 主机侧两件走 SSH ∥ 盒内运行时通道）**
@@ -731,3 +731,33 @@
 **补挂（执行面舱 #104 交付 · 2026-10-14 00:1x——未落项与上抛逐项处置）**：**A** `tickBoxes` 临时集装配未接线 ⇒ `bin:212` 补传 `hostExec`（实例 `:181`）——已 steer 装配舱 #108。**B** 补放置失败零审计（设计句 vs kind 闭集相抵）——裁向 lean = **补 kind**（审计失败记录有价值——设计句原意；计数链随正），收口设计轮落定。**C** `registry_credentials.updated_at` 可空/列序 vs `store/STORE.md:592` `NOT NULL`——裁：**STORE 为单源** ⇒ 迁移 DDL 收正（写面按列名 INSERT ⇒ 列序变更零阻）；随收口修复轮。**D** 销毁门 `dirty` 恒 false（无源伪读数——心跳面已随本批退场）——裁：**删键**（伪读数不留）+ 设计句收正 + 消费面核缺省容受；随收口修复轮。**E** `config_update` 新写点补入 `accounts/ACCOUNTS.md` §2.1（设计笔）——收口轮。**F** 非 IPv4 host ⇒ `Dns`/内置允许双缺——裁向 lean = **fail-closed**（建盒拒 + 人话；理由 = 静默退化网络 = 陷阱）；设计句随收口设计轮（牵连过大 ⇒ 二择呈父侧）。**G** 档位超线登记：`migrations.mjs` 711（越 STORE §4「>700 起外拆轮」线）∥ `box.mjs` 668 ∥ 批内件 796——台账挂行（#1385）。**I** 旧批四件红逐件读数（随正归收口轮）：`outbound-member-face:349` ∥ `sandbox-docker-admin:376` ∥ `runner-admin-console:477` ∥ `image-sources:598`。
 
 **补挂（TLS-终端腿修轮 #110 交付 · 2026-10-14 00:2x）**：① **设计档预算随正**——`terminal-routes.mjs` 342 ⇒ **362**（+20 vs 设计 §14 记 +≈3；函数+接线 ≈14、余为头注/导入/注释）⇒ 设计回填轮一笔。② **hub 级 TLS 端到端腿**未做（需 `httpsRequestImpl` 缝 + WS/升级测试基建——评审 🟡 接受登记）⇒ 台账挂行（#1387）。③ 真机 TLS 全链（自签三件 ⇒ 切档 ⇒ 终端可用）= 收口轮 ECS 真机谱（R74④ 含终端——在册）。附：`-tls` 件基线实读 13（任务书载 12 为陈旧计数——修轮如实列报，坐实 14/14 全绿）。
+
+**收口（父侧 · 2026-10-14 01:3x）**
+
+## 一、复验读数（父侧亲跑）
+
+- **批内件**（#120 自跑八件全绿，父侧复跑核心两件）：`-exec-rebuild` **26/26** ∥ `-tls` **14/14** ∥ `-base` 11/11 ∥ `-base-ui` 7/7 ∥ `-egress` 11/11 ∥ `-tls-ui` 7/7 ∥ `-face` 10/10 ∥ `-face-ui` 8/8（零 fail）。
+- **跨批守卫两件**（父侧随正 + 复跑）：`2026-10-08-server-public-structure` 6/6 ∥ `2026-10-10-runner-admin-console-ui` 14/14——键数实读 **[1041, 1046]**（B 审计 kind +1/表 ∥ D `me.sandbox.*` 退三键——净 −2/表）；指纹重锚 zh `3c49a89b…` ∥ en `2d7fd0a6…`。
+- **收口修复轮（#120）四条**：B 补 `placement_failed` 审计（`box.mjs:675-682` + 映射 + 双语）∥ C DDL 收正（`migrations.mjs:642-650`——`updated_at NOT NULL` 在 `created_by` 前）∥ D `dirty` 全链删净（`routes.mjs:391` 起，全仓同词零残留）∥ F 链前置 `assertServerAddress`（`box.mjs:323-329`——非 IPv4 ⇒ 三链链首停）。
+
+## 二、部署（.5 真机 · 实跑）
+
+- 提交 `2aad32d9`（45 档 +9802/−1444）→ .5 `git pull` ⇒ `docker build -f thincoder-server/Dockerfile`（新像 **`f7dc78014a1f`**）⇒ `docker compose up -d --force-recreate` ⇒ **Up ∥ `/healthz` 200**。
+- **容器内核九读数**（docker exec 实读）：`PRAGMA user_version = 22`（v22 迁移已跑）∥ `replayArgsOf` 3 处 ∥ `argsFullOf` 2 处（管理面 chat 修复已上箱）∥ `placement_failed` 3 处 ∥ `assertServerAddress` 4 处 ∥ **`routes.mjs` `dirty` 0 处** ∥ `registry_credentials` DDL 在 ∥ `views-audit` 审计键在。
+- **HTTP 面**：`/healthz` 200 ∥ `/views-me-sandbox.mjs` 200 ∥ `/views-sandbox-terminal.mjs` 200（终端档已上箱）∥ `/api/me/sandbox/workspaces` 401 ∥ `/api/admin/agent/chats` 401（鉴权门在位）。
+- **事故披露（如实）**：本轮部署首次误用盒镜像档（`deploy/sandbox/Dockerfile`——其 CMD = `sleep infinity`）覆盖 `thincoder-server:0.1.0` 标签 ⇒ 容器 Up 假活（健康探针失败）**约 6 分钟**；随即按正确档（`thincoder-server/Dockerfile`——三处文档一致）重建恢复。**文档面零缺陷**（错在父侧命令执行——OPS §5.1/§5.7 ∥ TEST-ENV-ECS §3 ∥ README 三处命令均正确）；数据面零损（`/app/data` 卷独立）；回滚锚 `thincoder-server:pre-*` 历代在册。
+
+## 三、遗留（在册 · 不静默）
+
+- **#1397**（归批）：建盒链 ①⑤⑥⑦ 步失败零审计 vs 设计句 `EXECUTION.md:56`「任一步失败 ⇒ … + 审计」泛写——句面收窄 ∥ 扩 `_failed` 族 kind 二择（执行面余项批）。
+- **#1398**（归批）：F 链前置边角——`0.0.0.0` ∥ `127.0.0.1` 过 `isIPv4`（裁字面面之外；同类静默断网残留）。
+- **#1248/#1249**（在途——条件未达）：P2/P3 ∥ P1/P8 真机复证 = `deploy/sandbox-probe.mjs` 全跑（**需管理会话凭据**——留用户带 admin 登录跑一条命令；前置 = 一在线节点 + 闸下发）。
+- 跨批写门拒（#120 上抛·知会）：`-face` ∥ `-face-ui` 两跨批件 = 父侧随正代落（10/10 ∥ 8/8 已绿——机制边界非授权问题）。
+- #1377（Docker runner TLS）：归批本批——B 档（TLS 客户端证书，可选）已落（`docker-tls.mjs` + 连接行二择）；#1377 → 已核销。
+
+## 四、结算
+
+- **#1373** 沙盒执行面重做（本批）→ 已核销——依据 = 本 §6 ∥ 提交 `2aad32d9` ∥ 部署读数（healthz 200 ∥ v22 ∥ 九读数）∥ 批内件八件绿。
+- **#1377**（Docker runner TLS 二择——归批本批）→ 已核销——TLS 档已落（`-tls` 14/14 绿 ∥ 设计 §16 收正）。
+- **#1248/#1249** = 真机复证后另结（条件行在册）。
+- 收口轮次 = 修复轮 1（#120——四条全落 ∥ 内审零偏差 ∥ 代码评审 pass）+ 父侧复验轮（两守卫重锚 + 部署探针）——**终态 clean**。

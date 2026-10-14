@@ -38,6 +38,7 @@ export const ZH_SHELL = Object.freeze({
   "nav.brand": "Thincoder Server",
   "nav.group.me": "我的",
   "nav.group.admin": "管理",
+  "nav.page.me.chat": "对话",
   "nav.page.me.keys": "API Key 与签发",
   "nav.page.me.usage": "我的用量",
   "nav.page.me.account": "账户设置",
@@ -55,6 +56,7 @@ export const ZH_SHELL = Object.freeze({
   "nav.page.admin.system": "系统",
   "nav.page.admin.sandbox": "沙盒",
   "nav.page.admin.chat": "对话",
+  "nav.page.admin.mcp": "MCP 服务器",
   "nav.logout": "退出登录",
 
   // ── 语言切换器（自称名——固定取本档渲染，不自译） ───────────────────────────

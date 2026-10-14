@@ -32,6 +32,9 @@ import { createHostExec, TICK_INTERVAL_MS, tickBoxes } from "../src/sandbox/box.
 import { registerRegistryCredRoutes } from "../src/sandbox/registry-cred-routes.mjs"
 import { registerImageSourceRoutes } from "../src/sandbox/image-source-routes.mjs"
 import { registerChatRoutes } from "../src/agent/chat-routes.mjs"
+import { closeMcpConnections } from "../src/mcp/face.mjs"
+import { registerMcpRoutes } from "../src/mcp/routes.mjs"
+import { registerMemberFaceRoutes } from "../src/agent/member-routes.mjs"
 import { registerProjectRoutes } from "../src/project/routes.mjs"
 import { registerProjectAdminRoutes } from "../src/project/admin-routes.mjs"
 import { registerProjectWebhookRoutes } from "../src/project/webhooks.mjs"
@@ -113,6 +116,7 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     projectSync?.stop()
     terminalHub?.closeAll("server_stop") // 终端在飞会话全收口（升级 socket 不走 HTTP 层自动断——§3 停机行）
     dnsGate?.stop() // UDP 53 解绑（`sandbox/EXECUTION.md` §6——持答随停丢弃，客户端重问即重判）
+    closeMcpConnections({ log }) // MCP 面收口（§2.2——stdio 子进程（POSIX detached）不随父进程自然退出，须显式杀树；核件缺 ⇒ 零会话可关）
     log.info("shutdown", { signal })
     closeApp({ ...app, log }).then(() => {
       log.info("stopped")
@@ -186,7 +190,9 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     // 管理面 chat 出口自环取数（§16.2——管理会话出口 = 本进程网关链 loopback）：惰性读监听地址（listen 后才有值；
     // 列名 = `selfBaseUrl`——取数器返回 `server.address()` 原形，通配/环回换算归 `chat.mjs` `selfBaseOf`）
     let serverRef = null
+    registerMcpRoutes(routes, { db, config, log }) // MCP 管理面（gateway/API.md §2.13——server-mcp 批）：清单四端点 + 探活（自含状态）；工具面挂载 = 管理会话（§2.2）
     registerChatRoutes(routes, { db, log, deps: { runtime: providerRuntime, config, guard: loginGuard, selfBaseUrl: () => serverRef?.address() ?? null } }) // 管理面 agent 会话面（gateway/API.md §2.8——六端点 + 重启恢复钩）
+    registerMemberFaceRoutes(routes, { db, config, log }) // 成员面 chat（gateway/API.md §2.11/§2.12——member-face-chat 批）：成员会话中转（relay 内存态）+ 工作区写面 + git 凭据 + 盒接入面
     // 项目面（gateway/API.md §2.9——team-projects-permissions 批）：成员面六 ∥ 管理面十 ∥ 接收面一（公开——验签门）；
     // 调度器单例（三径共锁——手动 ∥ 定时 ∥ 事件；周期 60s）
     projectSync = createSyncScheduler({ db, config, log })

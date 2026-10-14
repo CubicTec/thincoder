@@ -18,6 +18,7 @@
  * 环境感知（KD-SV-112——admin-agent-awareness 批）：每回合三活体行（时空 ∥ 所在/身份 ∥ 所管现况——`chat-env.mjs` 造；块级降级）+ timer 到期行
  * **尾插**于历史与本轮之后（瞬态不落库——值随实况）；第四块「能力与边界」= 简报静态段 `CHAT_LIMITS_BLOCK` + 活体面 `tools.schemas`。
  * 环境工具面（KD-SV-113——`chat-env-tools.mjs`）：核件六族八件原文复用（含 `read_history`——§16.1；ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅三件）；
+ * MCP 面（server-mcp 批——`mcp/face.mjs`）：解裁（`TRIMMED_FACES` 去 `mcp`）＋ 逐回合读清单 ⇒ 核建连 ⇒ 工具并入（文本面同族——结果 = 核件文本原文；失败冷却 ∥ 重名防御 ∥ 缺核不挂载）；
  * 工具动作审计（KD-SV-114）：`chat_call` detail 扩 `subject`（命令原文/路径——≤2000 字，与 `call` 同链掩蔽）∥ `truncated`（结果可见形截断位）。
  * 唤醒与投递（§15.1 ∥ KD-SV-125/126——server-wake-face 批）：**投递汇**（`deliverPending`——到期 timer ∥ 后台任务结算 ⇒ 落库
  * `user` 行 + `data.kind="reminder"`）在每回合起跑投递（唤醒轮 = `runChatWakeTurn`——与用户回合同环同面、无路由无帧面）；
@@ -40,6 +41,7 @@ import { agentKeyOf } from "../accounts/keys.mjs"
 import { findMemberById } from "../accounts/members.mjs"
 import { HttpError } from "../gateway/errors.mjs"
 import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
+import { createMcpToolFace, noteMcpDegraded } from "../mcp/face.mjs"
 import { assistantTurnOf, COMPACTION_KIND, compactTurnHistory, repairTurnHistory, specOfRef } from "./chat-compact.mjs"
 import { buildEnvLines, CHAT_LIMITS_BLOCK } from "./chat-env.mjs"
 import { createEnvTools, deliverPending, discardAbortedChatTasks, loadCoreTurnDomains, noteEnvToolsDegraded, timerPadOf } from "./chat-env-tools.mjs"
@@ -310,20 +312,36 @@ export function envToolText(result) {
   return ""
 }
 
-/** 工具面合并（§14.2——管理面八件 ∪ 环境六族八件）：名/schema 并集；`invoke(name, args, ctx)` 按名路由（环境族携 ctx）。 */
-function mergeToolFaces(base, extra) {
-  if (extra === null) return base
-  const envNames = new Set(extra.names)
+/** 工具面合并（§14.2——管理面八件 ∪ 文本面族（环境六族八件 ∥ MCP 面——server-mcp 批））：名/schema 并集；
+ *  `invoke(name, args, ctx)` 按名路由（**两族同携 ctx**——管理族 `models.test` 消费 `ctx.signal`，§12.1②；MCP 面 `ctx.signal` 透传核件）。
+ *  重名防御在面内完成（MCP 面合并前扫描静态两面 ∪ 既往件名集——`mcp/face.mjs` 命名面），此处零去重。 */
+function mergeToolFaces(base, extras) {
+  const faces = extras.filter((face) => face !== null && face !== undefined && face.names.length > 0)
+  if (faces.length === 0) return base
+  const route = new Map()
+  const names = [...base.names]
+  const schemas = [...base.schemas]
+  for (const face of faces) {
+    for (const name of face.names) route.set(name, face)
+    names.push(...face.names)
+    schemas.push(...face.schemas)
+  }
   return {
-    names: [...base.names, ...extra.names],
-    schemas: [...base.schemas, ...extra.schemas],
-    invoke: (name, args, ctx) => (envNames.has(name) ? extra.invoke(name, args, ctx) : base.invoke(name, args)),
+    names,
+    schemas,
+    invoke: (name, args, ctx) => {
+      const face = route.get(name)
+      return face ? face.invoke(name, args, ctx) : base.invoke(name, args, ctx) // 管理族同携 `ctx`（§12.1②——`models.test` 消费 `ctx.signal`；承 model-test-tool 批 §5 语义）
+    },
   }
 }
 
-/** 聊天面工具面装配（§14.2）：管理面八件 + 环境六族八件（动载核件——沿 `loadCoreChat` 先例）。
- *  缺核 ⇒ 环境族不注册 + 一条警告（回合不阻断——模型出口同源缺核时回合走 `model_error` 收尾）。 */
-async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = null }) {
+/** 聊天面工具面装配（§14.2）：管理面八件 + 环境六族八件（动载核件——沿 `loadCoreChat` 先例）+ **MCP 面**（server-mcp 批——逐回合读清单 ⇒ 核建连 ⇒ 并入，§2.2）。
+ *  缺核 ⇒ 环境族不注册 + 一条警告（回合不阻断——模型出口同源缺核时回合走 `model_error` 收尾）；MCP 面同判（缺核/装配失败 ⇒ 不挂载 + 一条警告）。
+ *  模型测试缝（§12.1②）：`loopbackFor` = 出口描述子取件（同源 = `chatProviderOf`——sk = 本回合发送者；谁用谁）∥
+ *  `deps.modelTestFetch`（缺省 = 真 `fetch`）＝探针传输假件缝 ∥ `now` = 回合时钟（`models.test` 读数逐值断言面）∥
+ *  MCP 面缝： `deps.mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（`mcp/face.mjs`——缺省 null = 生产零变）。 */
+async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = null, senderId = null, now = Date.now }) {
   const chatTools = createChatTools({
     db,
     runtime: deps.runtime ?? null,
@@ -337,15 +355,25 @@ async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = nul
     actor,
     actorId,
     ...(deps.execImpl ? { execImpl: deps.execImpl } : {}), // SSH 替身注入口（单元测试档——生产缺省 = 真 spawn）
+    loopbackFor: (ref) => chatProviderOf({ db, ref, env: deps.env ?? process.env, log, senderId, selfBaseUrl: deps.selfBaseUrl ?? null }),
+    ...(deps.modelTestFetch ? { modelTestFetch: deps.modelTestFetch } : {}),
+    now,
   })
   let envTools = null
   try {
     envTools = await createEnvTools({ coreTools: deps.coreTools ?? null })
   } catch (e) {
     noteEnvToolsDegraded(log, e) // 环境族不注册（回合不阻断）
-    return { tools: chatTools, envTools: null }
   }
-  return { tools: mergeToolFaces(chatTools, envTools), envTools }
+  // MCP 面（server-mcp 批——解裁 ＋ 挂载，§2.2）：缺核/装配失败 ⇒ 不挂载 + 一条警告（回合不阻断）；
+  // 重名防御基线 = 静态两面名集（管理 ∥ 环境）——相撞件由 `mcp/face.mjs` 拒下并记日志。
+  let mcpFace = null
+  try {
+    mcpFace = await createMcpToolFace({ db, deps, log, now, reservedNames: [...chatTools.names, ...(envTools?.names ?? [])] })
+  } catch (e) {
+    noteMcpDegraded(log, e)
+  }
+  return { tools: mergeToolFaces(chatTools, [envTools, mcpFace]), envTools, mcpFace }
 }
 
 /** 自环基址（§16.2——管理会话出口 = 本进程网关链 loopback）：入参 = `server.address()` 原形（对象）∥ 基址串（注入口）；
@@ -425,7 +453,8 @@ export function usageFrameOf(usage) {
  * 跑一个回合（§11——调用前须 `claimChatTurn` 置在途）：`content` = 本轮用户消息 ∥ `images` = 图片 dataURL 串列（空 = 纯文本轮；
  * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`
  * ∥ `cwd`（环境工具面相对路径基准）∥ `coreTools`（核件注入口——环境族真件/替身）∥ `chatImpl`（核 `chat` 注入口）∥ `selfBaseUrl`（自环基址取数——§16.2）
- * ∥ `coreSpecs`/`coreHelpers`/`coreCompact`（§17.3 A1/A2/A3 核件注入口）∥ `compactProvider`（压缩垫片 provider 注入口））
+ * ∥ `coreSpecs`/`coreHelpers`/`coreCompact`（§17.3 A1/A2/A3 核件注入口）∥ `compactProvider`（压缩垫片 provider 注入口）
+ * ∥ `mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（MCP 面替身缝——`mcp/face.mjs`；缺省 null = 生产零变））
  * ∥ `wake` = 唤醒轮面（非空 ⇒ **无本轮用户消息** ＋ 域文本瞬态尾插——§15.1；用户轮传 `null`）。
  * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
@@ -479,9 +508,10 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
       .map((line) => ({ role: "user", content: line }))
     // 工具面（§14.2）：注入面（deps.tools ∥ 模块级）优先；否则 = 管理面八件 + 环境六族八件合并。
     const injectedFace = deps.tools ?? injectedTools ?? null
-    const face = injectedFace === null ? await buildChatToolFace({ db, deps, log, actor, actorId: chat.created_by ?? null }) : { tools: injectedFace, envTools: null }
+    const face = injectedFace === null ? await buildChatToolFace({ db, deps, log, actor, actorId: chat.created_by ?? null, senderId: senderId ?? chat.created_by ?? null, now }) : { tools: injectedFace, envTools: null, mcpFace: null }
     const tools = face.tools
-    const envNames = new Set(face.envTools?.names ?? [])
+    // 文本面名集（环境族 ∪ MCP 面——模型可见形 = 核件文本原文，非 JSON 壳；KD-SV-113 ∥ §2.2）
+    const textNames = new Set([...(face.envTools?.names ?? []), ...(face.mcpFace?.names ?? [])])
 
     const started = now()
     let calls = 0
@@ -630,8 +660,8 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         const result = args === null ? { ok: false, message: "工具入参非 JSON 对象" } : await tools.invoke(call.name, args, envCtx)
         const summary = summaryOfResult(result, secrets)
         emitFrame({ type: "result", id: call.id, ok: result?.ok === true, summary })
-        // 模型可见形：环境族 = 核件文本原文（`output`——非 JSON 壳，KD-SV-113 被否栏）；管理族 = 结构化结果（既有形零变）
-        const rawText = envNames.has(call.name) ? envToolText(result) : JSON.stringify(result ?? null)
+        // 模型可见形：文本面族（环境 ∥ MCP）= 核件文本原文（`output`——非 JSON 壳，KD-SV-113 被否栏）；管理族 = 结构化结果（既有形零变）
+        const rawText = textNames.has(call.name) ? envToolText(result) : JSON.stringify(result ?? null)
         const resultText = maskSecrets(rawText, secrets)
         const truncated = resultText.length > CHAT_TOOL_CONTENT_MAX // 结果可见形截断位（KD-SV-114——审计 `truncated`）
         const trimmed = capToolContent(resultText) // 模型可见形（≤4000 字含注记——回放逐字一致）
@@ -641,7 +671,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         auditChatCall({
           tool: call.name,
           call: capText(maskSecrets(call.args, secrets), CHAT_CALL_ARGS_MAX),
-          subject: rawSubject !== "" ? capSubject(rawSubject, secrets) : envNames.has(call.name) ? "" : null,
+          subject: rawSubject !== "" ? capSubject(rawSubject, secrets) : textNames.has(call.name) ? "" : null,
           resultCode: Number.isInteger(result?.exitCode) ? result.exitCode : result?.ok === true ? 0 : -1, // exec 携退出码（N80：resultCode = exitCode）
           truncated,
           summary,

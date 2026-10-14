@@ -111,7 +111,7 @@ Provider 层把模型能力差异收敛到一张**规格表**（`MODEL_SPECS`）
 - **去重（单一实现）**：`parseRetryAfter` 唯一实现住 errors.mjs（retry.mjs 导入）；`sleepInterruptible` 唯一实现住 core.mjs；429 配额判定统一为 errors.mjs 双判版（删 retry.mjs 纯正则版——规则漂移消）。依赖单向（errors / retry 均独立、均 import rate；core 依赖 errors）。
 - **401 / 403 诊断**：Kimi 双平台提示（`sk-kimi-` 前缀 key 或 `api.kimi.com` 端点 → 说明 Moonshot 与 Kimi For Coding 两平台 key 不互通）+ 通用诊断回显 `[auth diag: baseURL=… key=… status=…]`（key 前 6 位掩码）。
 - **413 可操作化（D-PR32）**：请求体超限（HTTP 413——长会话图片累积的高频形态）⇒ 错误文本携带处置提示（`/compact` 压缩历史 ∥ 移除历史图片；图片累计预算机制见 §6.7）——从裸 HTTP 码变为可执行指引。
-- **400 图像语义 = 剥除自愈（非「立抛」）**：错误文本命中图像语义词表 ∧ 历史含 image part ⇒ 不就此收束——剥除历史图像 + 机读注记 + **重发一次**（触发 / 处置全文 = §6.26——本行不重述）；既有 `isNonRetryableError` 判据零改（自愈发生在错误已抛至 agent 层之后，由 agent 层承接）。
+- **400 图像语义 = 剥除自愈（非「立抛」）**：HTTP 400 ∧ 错误文本命中图像语义词表 ∧ 历史含 image part ⇒ 不就此收束——剥除历史图像 + 机读注记 + **重发一次**（触发 / 处置全文 = §6.26——本行不重述）；既有 `isNonRetryableError` 判据零改（自愈发生在错误已抛至 agent 层之后，由 agent 层承接）。
 - **超时语义（废弃绝对墙钟）**：**响应头阶段**用 `fetchTimeoutMs`（默认 600s，`agent.fetchTimeoutMs` 可配，`effectiveFetchTimeoutMs(provider)` 计算；四 transport 经 opts `_headerTimeoutMs` 携带）——**消费面 = 代理分支**（`proxyFetch` 两分支：https 目标 `tunnelHttps` ∥ http 目标 `tcpConnectProxy`+`streamHttpResponse`）；
   **直连面（无 `proxyUri`）无本仓头阶段超时**（纳入 = 设计轮面——在册）；**body 阶段**用读侧**空闲**超时 `READ_IDLE_MS = 120s`（有数据流动就永不超时，连续无新 chunk 才判死）；`AbortError` 透传（用户 Ctrl+I 取消，不吞）。
 - **abort / 超时来源标注**：超时 / 中止产生点的错误对象自带结构化 `abortInfo`（trigger / layer / detail）——词汇表与判定归 AGENT-LOOP 板（本档只指针）。
@@ -611,6 +611,103 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 - **列表/候选面**：`derived === true` ∧ 无 key ⇒ 隐藏（四消费面各一处过滤——CLI 模型候选 ∥ CLI provider-admin ∥ VSC `providerStatus` ∥ 桌面 `providerList`；登录态下在场（key 掩码显示））。
 - **边界**：不改 `defaultModel` ∥ 不切换会话模型 ∥ 不动手工条目；同名手工条目 ⇒ 登录不覆盖（提示——`TEAM.md` §2.2）。
 
+### 6.26 图片拒绝自愈（data URL 入史 · 400 零自愈修复 · 2026-10-15 · 批 image-history-400 · 台账 #1450）
+
+> **来源**：用户 2026-10-14 报障「发图后会话烧死——此后每回合 400、零自愈」+ 2026-10-15 00:08「都自动跑到交付吧」（全链自动授权）；批档 = `docs/batches/2026-10-15-image-history-400.md`；需求锚 = `docs/core/requirements/PROVIDER.md` §4.7（`:164`）/ **R23**（`:172`——图像语义 400 ⇒ 全剥 + 机读注记 + 单次重发 + 落账）；支撑锚 = R11（`:81`——`read_image` 门放行，放行语义须含「不被图片反噬」）。
+
+**问题陈述与现状坐标（as-of 2026-10-15 实读——四环）**：
+
+| 环 | 现状坐标（实读） | 缺什么 |
+|---|---|---|
+| ① 注入 | `thincoder-core/agent/record-results.mjs:54-62` 图以 data URL 全量进 user 消息（`pushReal`）；`:185` 注入面同预算驱逐（32MB 累计） | 注入本身无缺（图必须进上下文才能被看见）；缺的是被拒后的处置 |
+| ② 发送前净化 | `thincoder-core/provider/normalize.mjs:79` 多模态放行 raster data URL；`:49` 驱逐早退判据 = 累计 ≤ 32MB（**单图 4MB 恒早退、不触**）；净化只改副本（历史不动——D-PR3） | 单图级 / 非剂量类拒绝无判据；副本面天然不能自愈 |
+| ③ 400 处置 | `thincoder-core/provider/errors.mjs:36` 400 级非 429 ⇒ 非重试；`thincoder-core/provider/core.mjs:437/:453` 立抛；零图像语义、零历史处置 | 图像语义识别缺位；抛了之后毒图留史——**每回合重发、每回合 400** |
+| ④ 兜底 | 压缩面（`thincoder-core/context.mjs` 摘要 / 确定性降级）只跟 token 阈值走；降级面（`thincoder-core/context-degrade.mjs:19/:60`）只触 `role:"tool"` 消息 ∥ 只触 string 内容 ⇒ **两兜底都不碰图** | 自愈路径为零——会话烧死 |
+
+**四环终形（逐环处置句）**：① 注入 = **维持**（图进上下文 = 本功能本体；15MB 单图闸 ∥ 32MB 累计闸既有，零改）；② 发送面 = **维持 + 增设拒绝剥除原语**（不新增单图级预判——无错因先剥 = 正常图白丢；错因判定下移到 ③）；③ 400 = **图像语义 400 ⇒ 全剥 + 单次重发 + 注记 + 落账**（T1/T2 见下）；④ 兜底 = **不纳入**（压缩 / 降级两件零改——判由 = D-PR40）。
+
+**机制（终形）——拒绝自愈（rejection heal）**：
+
+1. **触发（两判据，一处判定）**——判定点 = agent 层单回合模型调用 `thincoder-core/agent/chat-call.mjs` `callModelTurn` 的 catch 支（全 depth 同径）：
+   - **T1 图像语义**：`error.message` 提取状态码 = **HTTP 400**（技法同 T2——`/LLM API error 4\d\d:/` 族取码、届定 400；构造位 = `thincoder-core/provider/core.mjs:416`）∧ 命中图像语义词表（`looksLikeImageRejection`——机制单源 = `thincoder-core/provider/errors.mjs`）∧ `agent.history` 含 image part；
+   - **T2 结构兜底**（防网关文案不在词表内）：本回合错误匹配 `/LLM API error 4\d\d:/`（429 除外——限速归 provider 重试族；构造位 = `thincoder-core/provider/core.mjs:416`）∧ 上一回合同类失败（streak ≥ 1——语义见下）∧ `agent.history` 含 image part。
+   - **streak 语义（收口——`agent._imageFailStreak` 记账单源 = `image-heal.mjs`）**：自增 = 本回合失败 ∧ `error.message` 匹配 `/LLM API error 4\d\d:/`（429 除外）∧ 非 Abort；清零 = 任一次成功调用（调用点 = `chat-call.mjs` 成功路径 `clearImageFailStreak`）；Abort 类失败豁免（既不自增也不清零）；判定先后 = T2 读本回合自增前值（首撞 0 ⇒ 不触；连败 ≥ 1 ⇒ 触）。
+   - **413 等非 400 图像词错误**：首撞 ⇒ 不触 T1（照抛——D-PR32 指引径原样保留）；复撞（streak ≥ 1）⇒ 走 T2 自愈。
+2. **剥除（历史本体，一次全剥）**：`stripRejectedImages(agent.history)`（`thincoder-core/provider/normalize.mjs`）——全部 image part 原位换 `IMAGE_REJECTED_PLACEHOLDER`（逐字见下）；copy-on-write（两线共享消息对象——人读线 `_fullHistory` 内图**不动**，仅机读线剥除）。**全剥而非只剥最新**：单图归因信息不存在（错误文本不点图）；「模型声明多模态但实际拒图」一类只有全剥才愈（只剥最新 ⇒ 二连败）。
+3. **注记（人话落账）**：机读线追加 `[System reminder: …]`（逐字见下）——模型知晓图已移除 + 复合指令（需图时降尺寸重读；向用户言明哪张被移除）；落账事件 `logEvent("llm:image-heal", { dropped, streak, model })`。
+4. **重发（一次，非重试）**：重建 messages（`[system, ...agent.history]`）后 `chat()` 再发一次——成功 ⇒ 回合继续（会话已自愈：历史无图，后续回合不再重发毒图）；再败 ⇒ **新错照抛**（不循环、不二次剥除）。
+5. **循环保护**：剥除后历史无图 ⇒ 两判据自熄（不需额外闩）；每失败回合至多一次剥除 + 一次重发。
+
+**逐字文本（两件——实现照抄）**：
+
+- `IMAGE_REJECTED_PLACEHOLDER`（占位，逐图替换）：
+  `[image omitted — the provider rejected the image payload; dropped from history so the session can continue. Re-read a smaller copy if the image is still needed.]`
+- 机读注记（history 追加，`{ role:"user", content: … }`；N = 剥除数）：
+  `[System reminder: the provider rejected the image payload (HTTP 4xx) — N image(s) were dropped from the context so the session can continue; the request was re-sent. Re-read a downscaled copy with read_image if still needed, and tell the user which image(s) were dropped.]`
+
+**先例对照（closest-precedent）**：
+
+- **先例 A** = 同档 §6.24（Gemini 思考签名 · 台账 #1205）——同族病症：「发送面 / 历史形态不合规 ⇒ 400 立抛 ⇒ 毒物留在历史里重发」。**对齐** = 处置落「历史本体的持久修正」；**偏离** = 签名批改构造点（单点加字段），本批改剥除 + agent 层单次重发（零新构造点）。
+- **先例 B** = 同档 §6.7 D-PR32 历史图片字节预算（`capHistoryImages`——注入面 ∥ 发送面同函数）：**对齐** = 复用同一替换核、同函数族落点（`normalize.mjs`）；**偏离** = 触发面不同（字节剂量 vs 服务端拒绝）、处置面不同（最老先驱逐至阈值 vs 一次全剥）。
+- **先例 C** = 同档 §6.3 D-PR8 续写 400 可见（`_warnings` 注入）：**对齐** = 失败可见、不静默吞；**偏离** = 该先例重试**同请求**，本批须**先修载荷再重发**（同请求重发对图像拒绝恒无效）。
+
+**接口契约（核内符号——落点四档）**：
+
+| 符号 | 落点 | 语义 |
+|---|---|---|
+| `IMAGE_REJECTION_RE` ∥ `looksLikeImageRejection(text)` | `thincoder-core/provider/errors.mjs`（分类族单源——与 `isNonRetryableError` / `classifyResponsesErrorCode` 同族） | 纯函数：文本命中 `/image|图片|图像|视觉|vision|multimodal/i` ⇒ true（词表可扩 = 常量，一处改） |
+| `IMAGE_REJECTED_PLACEHOLDER` ∥ `stripRejectedImages(messages)` | `thincoder-core/provider/normalize.mjs`（与 `capHistoryImages` 同族） | 全图剥除；copy-on-write（无图 ⇒ 原引用返回）；与 `capHistoryImages` 共用同一替换核（后者增 `placeholder` 参——缺省 = 原占位逐字零变） |
+| `healImageRejection(agent, error)` | `thincoder-core/agent/image-heal.mjs`（拟新增——新档：判定 ∥ 剥除 ∥ 注记 ∥ streak 记账单源 ∥ 清零接口 `clearImageFailStreak`） | 返回 `{ healed, dropped }`；零抛（失败面不阻断回合驱动） |
+| catch 接线（判定 → 剥除 → 单次重发） | `thincoder-core/agent/chat-call.mjs` `callModelTurn` | AbortError 分支零改（先于本支）；成功路径调 `clearImageFailStreak`（清零调用点——记账单源 = heal 档） |
+
+**受影响文件清单（R24a——行数口径 = `wc -l`；现量 = as-of 2026-10-15 实读）**：
+
+| # | 文件 | 现量 | Δ | 动作 |
+|---|---|---|---|---|
+| 1 | `thincoder-core/agent/image-heal.mjs`（**已落**） | 0 | **+65**（落地收正 2026-10-15；设计估 ≈90） | 新档（判定 ∥ 剥除 ∥ 注记 ∥ 记账） |
+| 2 | `thincoder-core/agent/chat-call.mjs` | 68 | **+13**（落地收正 2026-10-15；设计估 ≈30） | catch 自愈接线 + 单次重发 + streak 清账 |
+| 3 | `thincoder-core/provider/normalize.mjs` | 138 | **+30**（落地收正 2026-10-15；设计估 ≈14） | 占位常量 + `stripRejectedImages` + `capHistoryImages` 占位参 |
+| 4 | `thincoder-core/provider/errors.mjs` | 126 | **+8**（落地收正 2026-10-15；设计估 ≈10） | `IMAGE_REJECTION_RE` + `looksLikeImageRejection` |
+| 5 | `docs/batches/2026-10-15-image-history-400.test.mjs`（**已落**） | 0 | **+288**（落地收正 2026-10-15；设计估 ≈170） | 批内单元档（用例见下） |
+
+**零改面（显式）**：`record-results.mjs`（注入面——图必须进上下文；15MB 单图闸 ∥ 32MB 累计闸既有）· `context.mjs` / `context-degrade.mjs`（两兜底面——本批零改，见 D-PR40）· `thincoder-core/provider/core.mjs`（重试族零改）· 规格表 / 预设 / 三端 UI（零触）。
+
+**用例表（批内档——正常 / 边界 / 错误）**：
+
+| # | 类 | 输入 | 期望 |
+|---|---|---|---|
+| T-1 | 正常 | `looksLikeImageRejection` 喂样本：`image exceeds 5 MB maximum` ∥ `unsupported image format` ∥ `Invalid 'messages[1].content[0].image_url'` ∥ `图片格式不支持` ∥ `图像过大` | 全 true；反样本（`context_length_exceeded` ∥ `invalid tool schema` ∥ `余额不足`）全 false |
+| T-2 | 正常 | history 含 2 图 + T1 错 ⇒ `healImageRejection` | healed=true；image part 归零（全数换占位）；**原文本 part 逐字保留**；条数：剥除前后不变、注记另计 +1；注记在场；`dropped=2` |
+| T-3 | 边界 | 文本无图像语义 ∧ 图在场 ∧ streak=0 | healed=false；history **逐条 deepEqual 不变**；原错照抛 |
+| T-4 | 边界 | 图像语义文本 ∧ history 零图 | healed=false；零动作 |
+| T-5 | 边界 | 重复兜底：streak=1 + `LLM API error 400: invalid request`（无图像词）∧ 图在场 | healed=true（T2 生效） |
+| T-6 | 边界 | 剥除后同错二发（history 已无图） | healed=false（自熄——无重试风暴） |
+| T-7 | 错误 | 剥除 + 重发再败 | 新错照抛；history 保持已剥除态；**不二次剥除** |
+| T-8 | 错误 | 人读线零损：剥除后 `_fullHistory` 内 message 对象仍携 image（copy-on-write） | 真值断言 |
+| W-1 | 接线 | 本地假服务端（`node:http`：首请求 400 + 图像语义；次请求 SSE 200）直驱 `callModelTurn` | 请求计数 = 2；第二次请求体无 image part；回合返回成功 |
+| T-9 | 边界 | `capHistoryImages(messages)` 全缺省参（合成 > 32MB 图 part 触发驱逐） | 输出占位逐字 = 批前 `IMAGE_BUDGET_PLACEHOLDER` 字面（`[image omitted — dropped to keep the request under the history image budget]`）——新增参缺省零扰 |
+| T-10 | 边界 | 413 图像词（`LLM API error 413: …remove historical images`）∧ 图在场——首撞（streak=0）∥ 复撞（streak=1） | 首撞：healed=false ∧ `_imageFailStreak` 自增 1（照抛——D-PR32 指引径原样）；复撞：healed=true（T2 生效） |
+
+**验收标准（逐条回指——可机检；cwd = `D:\teamcode\thincoder`）**：
+
+| # | 验收 | 回指 | 机检 |
+|---|---|---|---|
+| AC-1 | 图像语义 400 ⇒ 全图剥除 + 单次重发（会话自愈） | 本单环③ ∥ R23 ①（`:172`） | `node --test docs/batches/2026-10-15-image-history-400.test.mjs` T-2 ∥ W-1 绿 |
+| AC-2 | 剥除只动机读线；人读线（`_fullHistory`）图零损 | 本单环① ∥ R23 本体（`:172`——copy-on-write） | T-8 绿 |
+| AC-3 | 非图像错误零误伤（history 不变、原错照抛） | 本单环③ ∥ R23 ②（`:172`） | T-3 绿 + T-1 反样本绿 |
+| AC-4 | 无重试风暴（每失败回合至多一次剥除 + 一次重发；剥除后自熄） | 本单环③ ∥ R23 ③（`:172`） | T-6 绿 ∥ W-1 请求计数 = 2 |
+| AC-5 | R11 零回归：多模态放行 ∥ 32MB 累计驱逐 ∥ 15MB 单图闸判据逐字不变 | R23 ④（`:172`）∥ R11（`:81`——支撑锚） | T-9 绿（`capHistoryImages` 缺省参输出逐字断言）+ `git diff -U0 thincoder-core/provider/normalize.mjs` 检读：判据行零触及（`:14` 值 ∥ `:49` 驱逐 ∥ `:79` 多模态放行）∧ `git diff --stat` 无 `thincoder-core/tools/file.mjs`（15MB 闸 `:148`/`:173`） |
+| AC-6 | 兜底面零改（compaction ∥ degrade 不触） | 本单环④ ∥ R23 ⑤（`:172`） | `git diff --stat` 无 `context.mjs` ∥ `context-degrade.mjs` |
+
+**关键决策**：D-PR39 ∥ D-PR40（§7）。
+
+**边界（本批不做）**：
+
+- **用户侧主动知会**（端侧 live 提示 / 回调面）= 不立——知会形 = 机读注记（模型转述）+ `llm:image-heal` 落账；端侧若需主动提示，另立小节（新回调 = 三端面，超本批射程）。
+- **压缩摘要调用携带中段图的场景**（阈值触达 ∧ 中段含图 ⇒ 摘要请求可能同拒）= 既有 3 连败降级兜底（丢中段）承接——零改。
+- **图持久化体积**（session 落盘随图膨胀）∥ **请求体总量**（网络层）——不同问题域，不在本批。
+- **引擎级图降尺寸**（自动 resize）= 未立（零第三方依赖约束下无图像处理管线；指引形 = 注记内「re-read a smaller copy」）。
+
 ## 7. 关键决策记录（含否决备选）
 
 | # | 决策 | 理由 / 否决备选 |
@@ -653,6 +750,8 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 | D-PR36 | `max_output_tokens` = **显式才发**（`spec.maxOutput` 退出发送面，内部用途保留） | 参考面双例均显式才发（opencode / codex）；本仓同病实锤（opencode-go-anthropic 超渠道口径）；规格值非渠道合同值（`DEFAULT_SPEC` 类保守猜测）。回退形态预置 + 真机验证项在册（批档 §2 上抛 1）。 |
 | D-PR37 | 思考签名承载 = **白名单字段 `extra_content.google.thought_signature`** ∥ **单构造点穿过**（`assistantToolCallMessage`）∥ 发送面零新构造点 | 白名单（非原样透带整个 `extra_content`）：只认官方实样路径——回显未知子字段会改变他家上游线形；单点穿过 = 既有唯一构造点（先例 = `2026-09-20-reasoning-echo-gap` 批同点加字段）。被否：原样透带（他家上游线形被动改变）· 各调用点旁路挂字段（破单构造点）· 发送面按 host / format 剥离（用户链过网关 → Google，判别不可靠且会剥掉要保字段）。 |
 | D-PR38 | **原生路回带**（functionCall parts 复建）= 本批边界外（捕获在位 · 回带缓） | 原生路现不复建 functionCall parts（工具轮历史压平为文本）⇒ 不触本 400；补建 = 新机制（functionResponse 配对 + 修复前历史无签名 ⇒ 直接补发反引新 400）。被否：同批补建（范围外 + 自伤风险）。 |
+| D-PR39 | 图片拒绝自愈 = **agent 层全剥 + 单次重发**（T1 图像语义 ∥ T2 同态重复；copy-on-write 只动机读线） | 四环缺一即烧死（图进史 ⇒ 400 立抛 ⇒ 毒图留场 ⇒ 每回合重发、零自愈）；自愈须持久改史 ⇒ 不能住净化面（D-PR3 契约：净化只改副本、可逆；副本面改不了历史）。被否：只剥最新（单图归因信息不存在；「声明多模态实拒图」二连败）· 循环重发（400 成本纪律——再败即抛）· 请求前预剥（无错因先剥 = 正常图白丢）· 改 history 不动副本（图被拒后仍留史 ⇒ 未治）。 |
+| D-PR40 | 兜底面（压缩 ∥ 降级）**零改**；用户知会 = 机读注记（模型转述）+ `llm:image-heal` 落账；端侧主动提示不立 | 压缩只跟 token 阈值走（与「剂量无关的拒绝」不同域——阈值不触 ⇒ 不愈）；降级面只触 `role:"tool"` / string 内容（图消息不在判据内）。被否：把剥除并进压缩（阈值不触 = 不愈）· 新增端侧回调（三端面 = 超射程；机制面先立、面后补）。 |
 
 ## 8. 不并项与历史沿革
 
@@ -768,3 +867,6 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
   · 补**残余（修复前历史）**段（重发仍可能同一 400 + 缓解径 = `/compact` ∥ 新会话）· §6.24 机制 3 引路补全（`thincoder-core/provider/core.mjs`——本批面悬空收正）；批档 §2 修复轮块 = AC-4 行为用例 ∥ AC-8 两枪形 ∥ AC-9 零第二构造点 ∥ AC-10 桩面断言 + 锚 / 读数收正。**零新语义**（评审发现直接导出项）；**产品码零触（fix 轮）**。明细 = 批档 §2 修复轮块。
 - 2026-10-10（**gemini-thought-signature 批 · 收口机械笔 · 父侧直执行 · 可 revert**）：§6.24 机制 1 末条措辞收正——「新建槽时搬字段」⇒「**合并时缺则搬**」（与 `thincoder-core/provider/core.mjs:364` 实现及批档 AC-4 终形对齐——实施轮上抛 #1）；`thincoder-core/model-specs.mjs` `assistantToolCallMessage` 文档串调用点清单随正（主循环 `thincoder-core/agent/turn-loop.mjs` ∥ 镜像 `thincoder-core/advisor/loop.mjs` ∥ `bench/lib/client.mjs`；VSC 转口 `thincoder-vscode/src/specs.mjs:13/:17` 零调用点——实施轮上抛 #2）。**零语义**（措辞 / 坐标与实况对齐）。
 - 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：新增 **§6.25 派生渠道条目**（`derived` 标记——条目形 ∥ 写面单源 ∥ 运行时语义（无 key ⇒ 不参与解析）∥ 列表/候选面隐藏判据 ∥ 边界）；机制全文 = `docs/core/design/TEAM.md` §2。**产品码零触（设计轮）**。
+- 2026-10-15（**image-history-400 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-15-image-history-400.md` §1 · 台账 #1450；用户 2026-10-14 报障 ∥ 2026-10-15 00:08 全链授权）：新增 **§6.26 图片拒绝自愈**（四环现状坐标 ∥ 触发两判据 T1/T2 ∥ 全剥 + 单次重发 ∥ 逐字文本两件 ∥ 接口契约四符号 ∥ 受影响文件 ∥ 用例表 ∥ AC 六条 ∥ 边界四项）+ §6.3 ∥ §6.7 各一条指路 + §7 补 **D-PR39 / D-PR40**。**产品码零触（设计轮）**。
+- 2026-10-15（**image-history-400 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-15-image-history-400.md` §3 轮次 1 发现 1 ∥ 2 ∥ 3 ∥ 4 ∥ 6 · 台账 #1450）：§6.26 T1 补 **HTTP 400 合取**（取码技法同 T2——对齐需求 R23 字面）+ 触发块新登 **streak 语义收口**（自增 ∥ 清零 ∥ Abort 豁免 ∥ 判定先后——记账单源；429 归类钉定）与 **413 首撞/复撞明书**；
+  机读注记 `(HTTP 400)` ⇒ `(HTTP 4xx)` ∥ 需求锚改指 §4.7/R23（R11 转支撑锚）∥ AC 回指列同拍 ∥ AC-5 机检补 **T-9** 用例锚 + 判据行 diff 检读 ∥ 用例表补 **T-9 / T-10** ∥ T-2 期望列基线收正 ∥ 契约表 `:658`/`:659` 措辞对齐；§6.3 摘要行同拍补 HTTP 400 合取；悬空锚 `:633`/`:658`/`:665`/`:671` 自修（路径前缀 ∥ `（拟新增` 标记——一致性面）。**零新语义**（评审发现直接导出项）。**产品码零触（fix 轮）**。

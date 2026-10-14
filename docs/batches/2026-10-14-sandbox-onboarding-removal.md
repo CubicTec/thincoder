@@ -3,7 +3,7 @@
 > 编制：主 agent · 2026-10-14 · 来源 = 用户 2026-10-14 00:06 原话「撤」（承父侧呈报：托管接入〔任务式装机〕撤除——五件清面；方向在册 = 2026-10-12 16:10「托管接入那部分将来都要合并进chat」∥ KD-SV-135 合并路线步 3）；台账 #1383。。
 > 台账 = #1383（server · 归批）。前情 = docs/batches/2026-10-10-runner-admin-console.md（托管接入设计/实施来源批——本批 = 其退场）。
 ## §1 讨论（主 agent）
-**状态行**：进行中（设计轮 + 评审 #141（pass）+ fix 轮全落；删码实施轮已派（2026-10-14 09:2x——§4 批准在案））
+**状态行**：已收口 2026-10-14
 <§1 模板占位：本批条目 / 关键判据 / 授权口径>
 
 **2026-10-14 · 托管接入（任务式装机）撤除——用户 00:06 裁「撤」**
@@ -252,3 +252,18 @@ VERDICT: pass
 **终态**：**clean**（评审 pass + 响应表全处置；修正轮次 = 3（自审 1 + 承审计 1 + 承评审 2 项——同轮内 2 处）——全收敛，无未决项）。
 
 ## §6 验证与收口（父代理）
+
+**验收（父侧实读 · 2026-10-14）**
+
+- 本批单测复跑：`node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-14-sandbox-onboarding-removal.test.mjs` ⇒ **8/8 pass**（父侧独立复跑 ✓）。
+- 交付读数复核（node `split("\n")` 口径，父侧实测）：`routes.mjs` 407 ∥ `tools.mjs` 18 ∥ `run.mjs` 33 ∥ `views-sandbox.mjs` 295 ∥ `git diff --numstat` = `views-sandbox` +8/−232 ⇒ **净 −224**（与 §5 收正一致 ✓）；端点数 36（routes 15 + 容器 10 + 镜像 3 + 卷 2 + 工作区 6——逐 `routes.add` 计数 ✓）；`tools.mjs` 导出 = `maskSecrets` 独件 ✓；`run.mjs` 五件导出逐值在场 ✓。
+- **跨批随正（父侧笔 · 逐档复跑全绿）**：`2026-10-10-runner-admin-console-agent` **整档删**（import 死档 ⇒ 无对象）∥ `2026-10-10-runner-admin-console-ui` **6/6**（⑤⑥ 任务面腿删 ∥ ① 首读单件 ∥ ⑦ 键表 82⇒57 幸存 ∥ ⑧ 档目 68∥67 + nav 11 + `step-list` 摘）∥ `2026-10-11-console-tabs-component` **9/9**（③⑤ 单钮/任务区删 ∥ 快照 68 名重写 ∥ 键数 1102∥1107 ∥ `:root` 76 ∥ 门禁链负断言 ∥ 标签② 四卡题）∥ `2026-10-12-admin-chat-creds-merge` **8/8**（N81 腿整删 ∥ kind 族 36 ∥ stdin Buffer 形随正 ×2）∥ `2026-10-12-team-projects-permissions` **18/18**（onboarding 导入/用处删 ∥ 审计型面 17 ∥ N23 单源化）∥ `2026-10-08-server-public-structure` **6/6**（ANCHOR 指纹两枚复读 ∥ 键数 1102∥1107 ∥ `i18n-{zh,en}-mcp` 部件入 PARTS/DOMAINS）∥ `2026-10-13-server-core-unification` **9/9**（腿① 改留守面断言 ∥ 腿② 任务面块删）∥ `2026-10-13-sandbox-container-terminal-ui` **10/10** ∥ `…-exec-rebuild-base-ui` **7/7** ∥ `…-exec-rebuild-tls-ui` **7/7**。**父侧直接执行 · 可 revert**（同拍入仓）。
+- 上抛两项裁决（父侧直接执行 · 可 revert）：① `ssh.mjs` `hasSshpass`（任务面退场后零消费）⇒ **删**（全域 grep 仅存旁批测试 `deps` 键一处——无害；`node --check` ✓ ∥ 本批单测 + creds 档复跑在绿）② `Dockerfile:9-10` 词面残留 ⇒ 随正（「托管接入宿主前提」⇒「主机运维宿主前提」∥「S2 停」句 ⇒ 密码认证现行为句）。
+- **存量红（非本批因果 · 未扫绿）**：`server-gateway`（迁移 `user_version` 24≠22）等——沿 §5 判定与 §5 表列（他批落后项）。
+- **入仓**：`c2a02a41`（29 档——产品面 17 + 测试/批档 12；`+395/−2061`）。**记账**：台账 #1383 核销（证据 = 本段 + 入仓号）。
+
+**收口核查（父侧 · 2026-10-14）**
+
+- 结算互核：本批条目 = 台账 **#1383**（在途 → 待核销 → 已核销）；连带 **#1326**（「任务式 run 去留·并入 chat」——其执行面 = 本批 run 退场 + 前任批凭据/exec 进 chat，两腿齐 ⇒ 同轮核销）；**在途余面** = #1215（成员面伞，在途保持）∥ #1249（探针 SKIP 前置——P10/P11/P14 前置未齐，条件式在途保持）∥ #761（用户冻结）∥ #1379（成员侧 MCP，随后）。
+- 暂缓批复核：**1 在册**（`docs/batches/2026-10-10-server-reliability.md`——复核条件「thincoder-server 快完成时」未满足 ⇒ 维持暂缓）；前批遗留互核：零（拆除批相关前档 `2026-10-10-runner-admin-console` 已收口在案）。
+- 冻结：本档自此只读（后事入新档）。

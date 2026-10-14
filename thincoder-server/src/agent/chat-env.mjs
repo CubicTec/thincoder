@@ -24,7 +24,7 @@ export const ENV_LINE_PREFIX = "[System reminder: "
  *  timer 空闲唤醒在册）。 */
 export const CHAT_LIMITS_BLOCK = [
   "# 能力与边界",
-  "工具族：环境族 = get_current_time（时间）∥ process（进程 list ∥ kill）∥ timer（提醒）∥ ls ∥ read ∥ grep（文件读取族）∥ bash（命令）∥ read_history（本会话历史查询——只读）；管理族 = members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec（在已注册主机上跑一条命令——凭据在「主机凭据」弹窗录入）。",
+  "工具族：环境族 = get_current_time（时间）∥ process（进程 list ∥ kill）∥ timer（提醒）∥ ls ∥ read ∥ grep（文件读取族）∥ bash（命令）∥ read_history（本会话历史查询——只读）；管理族 = members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec（在已注册主机上跑一条命令——凭据在「主机凭据」弹窗录入）∥ mcp（MCP 服务器清单：list ∥ add ∥ update ∥ remove ∥ probe；已配服务器的工具随回合并入——可直接调用）。",
   "限额：bash 超时缺省 120000 ms（可加大——无上限）；bash async（后台任务）可用（帽 4——回执即工具结果，结算摘要随下一轮送达）；单次工具结果对模型可见 ≤4000 字（超长自行收窄：read 用 offset/limit ∥ grep 带 glob ∥ bash 用 filter）。",
   "边界：无路径围栏（工作目录 = server 进程 cwd）；无文件编辑族工具（写入仍可经 bash 抵达）；命令非零退出不是工具失败（退出码在输出文本内）；timer 到期且会话空闲 ⇒ 自唤醒一轮投递；read_history 作用域 = 本会话（path 不可用）。",
 ].join("\n")

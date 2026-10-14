@@ -19,6 +19,7 @@
  * **尾插**于历史与本轮之后（瞬态不落库——值随实况）；第四块「能力与边界」= 简报静态段 `CHAT_LIMITS_BLOCK` + 活体面 `tools.schemas`。
  * 环境工具面（KD-SV-113——`chat-env-tools.mjs`）：核件六族八件原文复用（含 `read_history`——§16.1；ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅三件）；
  * MCP 面（server-mcp 批——`mcp/face.mjs`）：解裁（`TRIMMED_FACES` 去 `mcp`）＋ 逐回合读清单 ⇒ 核建连 ⇒ 工具并入（文本面同族——结果 = 核件文本原文；失败冷却 ∥ 重名防御 ∥ 缺核不挂载）；
+ * MCP 管面（server-mcp-admin-tools 批——`mcp/admin-tools.mjs`）：**第九件工具 `mcp`**（五动词 list/add/update/remove/probe——复用 `store.mjs`/`face.mjs` 零第二实现；写动作 `mcp_event` ＋ `chat_call` 两行；§12.2）；
  * 工具动作审计（KD-SV-114）：`chat_call` detail 扩 `subject`（命令原文/路径——≤2000 字，与 `call` 同链掩蔽）∥ `truncated`（结果可见形截断位）。
  * 唤醒与投递（§15.1 ∥ KD-SV-125/126——server-wake-face 批）：**投递汇**（`deliverPending`——到期 timer ∥ 后台任务结算 ⇒ 落库
  * `user` 行 + `data.kind="reminder"`）在每回合起跑投递（唤醒轮 = `runChatWakeTurn`——与用户回合同环同面、无路由无帧面）；
@@ -41,6 +42,7 @@ import { agentKeyOf } from "../accounts/keys.mjs"
 import { findMemberById } from "../accounts/members.mjs"
 import { HttpError } from "../gateway/errors.mjs"
 import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
+import { createMcpAdminTools } from "../mcp/admin-tools.mjs"
 import { createMcpToolFace, noteMcpDegraded } from "../mcp/face.mjs"
 import { assistantTurnOf, COMPACTION_KIND, compactTurnHistory, repairTurnHistory, specOfRef } from "./chat-compact.mjs"
 import { buildEnvLines, CHAT_LIMITS_BLOCK } from "./chat-env.mjs"
@@ -84,7 +86,7 @@ export const CHAT_SUBJECT_MAX = 2000
 /** 系统简报基础段（§11——管理面用途句 + 行动纪律句；提示词级，非机制门）。 */
 const CHAT_SYSTEM_BASE = [
   "你是 ThinCoder server 的管理面 agent（聊天式驱动）。用途 = 运维/管理：机队（节点/容器）∥ 成员与 provider 管理 ∥ 审查排障——非开发用途。",
-  "你可以调用管理面工具（members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec）直接读写 server 管理面；工具结果 = `{ ok, … }`（`ok:false` 时看 message 自行纠正或改路线）。",
+  "你可以调用管理面工具（members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec ∥ mcp）直接读写 server 管理面；工具结果 = `{ ok, … }`（`ok:false` 时看 message 自行纠正或改路线）。",
   "",
   "# 行动纪律",
   "- 先查后动：先取读数（list ∥ summary ∥ 详情），再动作；不确定 ⇒ 问用户。",
@@ -312,7 +314,7 @@ export function envToolText(result) {
   return ""
 }
 
-/** 工具面合并（§14.2——管理面八件 ∪ 文本面族（环境六族八件 ∥ MCP 面——server-mcp 批））：名/schema 并集；
+/** 工具面合并（§14.2——管理面八件 ∪ 文本面族（环境六族八件 ∥ MCP 面 ∥ 管面 `mcp`——server-mcp ∥ server-mcp-admin-tools 批））：名/schema 并集；
  *  `invoke(name, args, ctx)` 按名路由（**两族同携 ctx**——管理族 `models.test` 消费 `ctx.signal`，§12.1②；MCP 面 `ctx.signal` 透传核件）。
  *  重名防御在面内完成（MCP 面合并前扫描静态两面 ∪ 既往件名集——`mcp/face.mjs` 命名面），此处零去重。 */
 function mergeToolFaces(base, extras) {
@@ -336,11 +338,11 @@ function mergeToolFaces(base, extras) {
   }
 }
 
-/** 聊天面工具面装配（§14.2）：管理面八件 + 环境六族八件（动载核件——沿 `loadCoreChat` 先例）+ **MCP 面**（server-mcp 批——逐回合读清单 ⇒ 核建连 ⇒ 并入，§2.2）。
+/** 聊天面工具面装配（§14.2）：管理面九件（八件 ＋ 管面 `mcp`——§12.2）+ 环境六族八件（动载核件——沿 `loadCoreChat` 先例）+ **MCP 面**（server-mcp 批——逐回合读清单 ⇒ 核建连 ⇒ 并入，§2.2）。
  *  缺核 ⇒ 环境族不注册 + 一条警告（回合不阻断——模型出口同源缺核时回合走 `model_error` 收尾）；MCP 面同判（缺核/装配失败 ⇒ 不挂载 + 一条警告）。
  *  模型测试缝（§12.1②）：`loopbackFor` = 出口描述子取件（同源 = `chatProviderOf`——sk = 本回合发送者；谁用谁）∥
  *  `deps.modelTestFetch`（缺省 = 真 `fetch`）＝探针传输假件缝 ∥ `now` = 回合时钟（`models.test` 读数逐值断言面）∥
- *  MCP 面缝： `deps.mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（`mcp/face.mjs`——缺省 null = 生产零变）。 */
+ *  MCP 面缝： `deps.mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（`mcp/face.mjs`——缺省 null = 生产零变）∥ 管面缝：`deps.mcpProbeImpl`/`mcpRemoveImpl`（`mcp/admin-tools.mjs`——同键）。 */
 async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = null, senderId = null, now = Date.now }) {
   const chatTools = createChatTools({
     db,
@@ -365,15 +367,17 @@ async function buildChatToolFace({ db, deps, log, actor = "admin", actorId = nul
   } catch (e) {
     noteEnvToolsDegraded(log, e) // 环境族不注册（回合不阻断）
   }
+  // MCP 管面工具（server-mcp-admin-tools 批——第九件 `mcp`：执行器 `mcp/admin-tools.mjs`，复用 `store.mjs`/`face.mjs`；§12.2）
+  const mcpAdmin = createMcpAdminTools({ db, deps, log, actor, actorId, now })
   // MCP 面（server-mcp 批——解裁 ＋ 挂载，§2.2）：缺核/装配失败 ⇒ 不挂载 + 一条警告（回合不阻断）；
-  // 重名防御基线 = 静态两面名集（管理 ∥ 环境）——相撞件由 `mcp/face.mjs` 拒下并记日志。
+  // 重名防御基线 = 静态两面名集（管理 ∥ 环境）+ 管面名（`mcp`——§12.2①）——相撞件由 `mcp/face.mjs` 拒下并记日志。
   let mcpFace = null
   try {
-    mcpFace = await createMcpToolFace({ db, deps, log, now, reservedNames: [...chatTools.names, ...(envTools?.names ?? [])] })
+    mcpFace = await createMcpToolFace({ db, deps, log, now, reservedNames: [...chatTools.names, ...(envTools?.names ?? []), ...mcpAdmin.names] })
   } catch (e) {
     noteMcpDegraded(log, e)
   }
-  return { tools: mergeToolFaces(chatTools, [envTools, mcpFace]), envTools, mcpFace }
+  return { tools: mergeToolFaces(chatTools, [envTools, mcpFace, mcpAdmin]), envTools, mcpFace, mcpAdmin }
 }
 
 /** 自环基址（§16.2——管理会话出口 = 本进程网关链 loopback）：入参 = `server.address()` 原形（对象）∥ 基址串（注入口）；
@@ -454,7 +458,7 @@ export function usageFrameOf(usage) {
  * 两门归路由面）∥ `emit` = 帧出口（`{ type, … }` 对象；断连写失败不反噬回合）∥ `deps` = 注入面（`chat` ∥ `tools` ∥ `runtime` ∥ `config` ∥ `env` ∥ `fetchImpl` ∥ `guard` ∥ `budget`
  * ∥ `cwd`（环境工具面相对路径基准）∥ `coreTools`（核件注入口——环境族真件/替身）∥ `chatImpl`（核 `chat` 注入口）∥ `selfBaseUrl`（自环基址取数——§16.2）
  * ∥ `coreSpecs`/`coreHelpers`/`coreCompact`（§17.3 A1/A2/A3 核件注入口）∥ `compactProvider`（压缩垫片 provider 注入口）
- * ∥ `mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（MCP 面替身缝——`mcp/face.mjs`；缺省 null = 生产零变））
+ * ∥ `mcpConnectImpl`/`mcpProbeImpl`/`mcpCloseImpl`（MCP 面替身缝——`mcp/face.mjs`）∥ `mcpRemoveImpl`（管面关会话缝——`mcp/admin-tools.mjs`；缺省 null = 生产零变））
  * ∥ `wake` = 唤醒轮面（非空 ⇒ **无本轮用户消息** ＋ 域文本瞬态尾插——§15.1；用户轮传 `null`）。
  * 出 = `{ status, reason, calls, durationMs }`。落库/审计全在本函数内（执行不依赖连接——单源）；中止登记表随 `finally` 清。
  */
@@ -506,7 +510,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     const wakeLine = wake === null ? null : { role: "user", content: wake.domain }
     const envLines = buildEnvLines({ db, model: chat.model, reasoning: chat.reasoning ?? null, cwd: deps.cwd ?? process.cwd(), now, env: deps.env ?? process.env })
       .map((line) => ({ role: "user", content: line }))
-    // 工具面（§14.2）：注入面（deps.tools ∥ 模块级）优先；否则 = 管理面八件 + 环境六族八件合并。
+    // 工具面（§14.2）：注入面（deps.tools ∥ 模块级）优先；否则 = 管理面九件 + 环境六族八件 + MCP 面合并。
     const injectedFace = deps.tools ?? injectedTools ?? null
     const face = injectedFace === null ? await buildChatToolFace({ db, deps, log, actor, actorId: chat.created_by ?? null, senderId: senderId ?? chat.created_by ?? null, now }) : { tools: injectedFace, envTools: null, mcpFace: null }
     const tools = face.tools

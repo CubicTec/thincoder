@@ -200,6 +200,9 @@ export const VIEWS_DICT = Object.freeze({
     "settings.inherit": "Inherit",
     "settings.effortLabel": "Effort",
     "settings.agent.autoThink": "Auto-think (classify task difficulty per turn)",
+    // #1420 注入开关（PROMPT-SYSTEM.md §6.24——值逐字同 VSC `locales/en.json` 同名键）
+    "settings.injectDocs": "Document injection (project instructions + relevant docs)",
+    "settings.injectMemories": "Memory injection (recall from previous sessions)",
     // ── ⑫ B10 W3 设置余面族（MCP 编辑 ∕ 重连 · 子代理模型槽 · guard 开关 —— S8–S11 ∕ S14）──
     // MCP 表单结构化九键 + 两钮 = VSC `settings.mcp.*` 同名键逐字；重连两词 ∕ slotAuthority 拒写词 = 本端拟定。
     "settings.mcp.edit": "Edit",
@@ -383,6 +386,9 @@ export const VIEWS_DICT = Object.freeze({
     "settings.inherit": "继承",
     "settings.effortLabel": "推理强度",
     "settings.agent.autoThink": "自动思考（按回合分类任务难度）",
+    // #1420 注入开关（同上——值逐字同 VSC `locales/zh.json` 同名键）
+    "settings.injectDocs": "文档注入（项目指令文件 + 相关文档）",
+    "settings.injectMemories": "记忆注入（往期相关记忆召回）",
     // ── ⑫ B10 W3 设置余面族（同上）──
     "settings.mcp.edit": "编辑",
     "settings.mcp.reconnect": "重连",

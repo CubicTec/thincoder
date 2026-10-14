@@ -154,7 +154,7 @@
 
 **混合形（argv 解析 + 进程内缝）**：CLI 面参数（② / ④ 面）经入口解析后落 **③ 缝**——缝面成对规则同 ③；**单半 / 命名例外逐行标于名录**（现存：`--test-cleanup-out` → 单半；结果目录 `setResultsDir` → 命名例外〔参数应用与测试缝共用〕）。
 
-**派生消费面（登记 · 2026-09-27）**：`diagnostics.heapSnapshot` / `diagnostics.heapWatch` / `agent.timerWake`（timer-wake 批）经**全量 DEFAULTS 派生**进入 `settings` 工具类型面（`thincoder-core/agent-tools/settings.mjs:62`——装载期派生）⇒ 双端可见可写键面随配置键扩张，**实现面零改码**。
+**派生消费面（登记 · 2026-09-27）**：`diagnostics.heapSnapshot` / `diagnostics.heapWatch` / `agent.timerWake`（timer-wake 批）/ `agent.injectDocs` / `agent.injectMemories`（注入开关批——2026-10-14）经**全量 DEFAULTS 派生**进入 `settings` 工具类型面（`thincoder-core/agent-tools/settings.mjs:62`——装载期派生）⇒ 双端可见可写键面随配置键扩张，**实现面零改码**。
 
 **包装门作用域（实施实证 · 2026-09-27）**：包装门（`--tui-wrapped`）改 argv 后**仅直系子进程生效**（旧 env 门随宿主 env 透传、及于全后代）——TUI 会话内嵌套起多一层包装 + 一份 `tui-stderr-*.log`（无功能破坏）。
 
@@ -243,3 +243,4 @@
 - 2026-09-30（**doc-sweep 批 · 行宽收正 · eng-designer**——承 `docs/batches/2026-09-30-doc-sweep.md` §2 · 台账 #664）：provider-config-family 设计轮条（原单行 332 字符）**折行**（仅换行 ∕ 语义零改——doc-check 行宽闸收正）。**零新语义**。
 - 2026-09-30（**采集收网批 · eng-designer**——承 `docs/batches/2026-09-30-heap-snapshot-switch.md` §2）：§6.2 名录 `THINCODER_HEAP_SNAPSHOT` 行**默认值收正**（`true` ⇒ `false`——采集隐私默认关〔D-TR6 同族〕；桌面端运行期热读＝本批新机制）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
 - 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：新增 **§6.4 团队登录配置面（`team` 段）**——键面指针（全文 = `docs/core/design/TEAM.md` §2.1）∥ 通道归属（① 配置键 ∥ 不入 `DEFAULTS`）∥ 写面单源 ∥ 登录态判据（口径④）；机制单源 = `TEAM.md`（本档不复制——D2）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
+- 2026-10-14（**injection-switches 批 · 设计轮修正轮 · 父侧直接执行 · 可 revert**——承 `docs/batches/2026-10-14-injection-switches.md` §2 修正轮上抛·待裁裁定）：§6.2 派生消费面登记行键列补 `agent.injectDocs` ∥ `agent.injectMemories`（`thincoder-core/config.mjs` DEFAULTS `agent` 段——同经 `settings` 工具类型面装载期派生）。**零新语义**（登记面补列）。

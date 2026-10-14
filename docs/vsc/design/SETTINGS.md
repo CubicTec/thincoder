@@ -43,6 +43,10 @@
 - **autoThink 档位开关**（#17——Auto 组对齐桌面 ∕ CLI `/think` 同键）：键 = `agent.autoThink`（默认 false）。**读链**：`loadAgentSettings()`（`thincoder-vscode/src/extension/settings.mjs:42`）→ 快照 `agentSettings()` 携键（`:137`）→
   agent 卡两态渲染；**写链**：`saveAgentSettingsFromPanel`（`thincoder-vscode/src/extension/settings-panel-write.mjs:80`）显式布尔写（false 亦写——同 verifyGuard 式）；
   **控件**：`#ag-autothink` switch（`thincoder-vscode/webview/settings-agent.js:26-27`——verifyGuard 后位）+ 载荷 `autoThink: chk("ag-autothink")`（`:123`）。词面 = `settings.agent.autoThink`（两语 = 桌面同值）。
+- **注入开关两键**（#1420——PROMPT-SYSTEM.md §6.24）：键 = `agent.injectDocs` ∥ `agent.injectMemories`（默认 true——判据 `!== false`；全局粒度）。**读链**：`loadAgentSettings()`（`thincoder-vscode/src/extension/settings.mjs:45-46`）→ 快照 `agentSettings()` 携键（`:165-166`）→
+  agent 卡两态渲染（`!== false` 判勾）；**写链**：`saveAgentSettingsFromPanel`（`thincoder-vscode/src/extension/settings-panel-write.mjs:84-85`）显式布尔写（false 亦写——同 autoThink 式）；
+  **控件**：`#ag-injectdocs` ∥ `#ag-injectmemories` switch（`thincoder-vscode/webview/settings-agent.js:29-30`——autoThink 后位）+ 载荷两键（`:128-129`）+ `EDIT_FIELDS` 登记（`:153`）。词面 = `settings.injectDocs` ∥ `settings.injectMemories` + 悬浮说明 `…Help`（两语 = 桌面同值）。
+  **agent 装配三处穿透**（timer-wake 先例——缺一 ⇒ config.json 对该键关不掉）：`thincoder-vscode/src/agent/setup.mjs` 默认种 `:131-132` ∥ raw 读 `:160-161` ∥ `agentFields` `:180`。生效时点 = **下一条消息**（`hydrateRun` 每轮重读——UI 腿非会话内即热，同 `docs/core/design/PROMPT-SYSTEM.md` §6.24 偏离句）。
 - Shell 为 config.json **顶层字段**（不在 `agent` 下），走独立消息通道；平台感知候选（System default / pwsh / Git Bash / WSL）。写面契约（控件接线 / 空值语义）= §2.9。
 
 ### 2.4 MCP 存储
@@ -753,6 +757,7 @@ P5 原文（`thincoder-vscode/docs/design/_archive/SETTINGS-REORG.md:12`）=「*
 | U-S20 | **团队卡（本批）**：登录表单 = 服务器地址 ∥ 用户名 ∥ 密码三字段；未登录提示句 = 「未登录——登录后可用」（三端逐字同句）；退出 = 登/退面钮（**登录入口补全批收正**：卡内登/退退场 ⇒ 首启板团队卡 ∥ 状态栏 item 流——`docs/vsc/design/WEBVIEW.md` §4.11 ∥ §4.12；卡 = 管理面 label ∥ 详情）；同名手工 `team` 条目 ⇒ 登录成 + 就地提示（不覆盖不弹窗） | 已定（§2.20——B1 批；收正 = 登录入口补全批 §2.20 条 6） |
 
 ## 变更记录
+- 2026-10-14（**注入开关键批（#1420）· 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-14-injection-switches.md` §2 受影响表）：§2.3 增**注入开关两键**条（读链 ∥ 写链 ∥ 控件 ∥ agent 装配三处穿透——机制单源 = `docs/core/design/PROMPT-SYSTEM.md` §6.24，本节不复制判据）。**零新语义**（登记 ∥ 实读坐标）。明细 = 批档 §5。
 - 2026-10-10（**login-entry-completion 批 · 设计档回填轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §5（#151 VSC 交卷）· 台账 #1242）：§1 团队行收正为管理面（登录表单与两钮退场——与 §2.20 条 6 同拍；登/退 = 首启板团队卡 ∥ 状态栏 item + 命令 `thincoder.team`）∥ §3 `settings.css` 登记行补本批读数（**412 ⇒ 485**——距 500 建议线 15 行；本批不拆）。**零新语义**（实读收正 ∥ 登记）。
 - 2026-10-10（**login-entry-completion 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §1 · 台账 #1231；用户 14:42 ∥ 14:46 裁）：§2.20 +**条 6 收正**（卡 = 管理面——登录表单与退出钮退场；登/退 = 首启板 ∥ 状态栏 item + 命令 `thincoder.team`；轮换 = 另裁；读面 ∥ 消息面形零改）∥ §5 **U-S20** 行收正（退出面随正 + 状态列注）。对位面 = `docs/vsc/design/WEBVIEW.md` §4.11 ∥ §4.12。**产品码零触（设计轮）**。明细 = 批档 §2。
 

@@ -1,12 +1,13 @@
 /**
  * settings-agent.mjs — 设置面 agent 段体（「桌面处理流 · VSC 对齐」批 R8 · 自 `renderer/views/settings-sections.mjs`
- * 拆出 —— 300 行层拆分，零语义变化）：可编辑类型闭集 ∕ 具名控件**十八键**表（`NAMED_FIELDS`）∕
+ * 拆出 —— 300 行层拆分，零语义变化）：可编辑类型闭集 ∕ 具名控件**二十键**表（`NAMED_FIELDS`）∕
  * 具名控件行与出值 ∕ `agentBody`。
- * 面形要点（随迁）：agent 参数（**具名控件十八键** + 即改即存 —— 「对齐第三批」P15 十键 + **R7 增
+ * 面形要点（随迁）：agent 参数（**具名控件二十键** + 即改即存 —— 「对齐第三批」P15 十键 + **R7 增
  * `agent.autoThink`**〔auto-think 档〕+ **B10 W3 增七键**：S10 子代理模型槽六件（`agent.subagentModel` +
  * `agent.subagentModels.{explore,plan,coder,eng-coder,eng-designer}` —— 模型**选择器**，候选 = `model:list`
  * 投影 · 写 `settings:agent` patch 同键 · 清空 = 删键）+ S14b guard 开关（`agent.advisor.guard` —— 值面 =
- * `sessionFlags` 槽投影，写经 `session:flags`）；S11 将 `agent.advisor.reasoningEffort` 改选项型；
+ * `sessionFlags` 槽投影，写经 `session:flags`）+ **注入开关两键**（#1420：`agent.injectDocs` ∥
+ * `agent.injectMemories` —— 判据 `!== false` · 默认开）；S11 将 `agent.advisor.reasoningEffort` 改选项型；
  * 字段形态不齐（敏感 / 非标量 / slot 权威键）⇒ 该键不落行（零行 —— 防把遮罩 ∕ 类型腐坏写回）；
  * **控件型三值** = P14 **∘ B10 W3 三新（`model` ∕ `effort` 选择器 · `guard` 槽开关）**）。
  * 导出面零改：`settings-sections.mjs` 原档 re-export 本档两件（`NAMED_FIELDS` ∕ `agentBody`）——消费面
@@ -23,7 +24,7 @@ const EDITABLE_KINDS = Object.freeze(["string", "number", "boolean"])
  *  照出空控件，禁假造值）：S10 模型槽 ∕ S11 推理档 ∕ S14b guard 开关。 */
 const SELF_FACED_KINDS = Object.freeze(["model", "effort", "guard"])
 
-/** agent 具名控件**十八键**（「对齐第三批」P15 十键 + R7 增 `agent.autoThink`〔auto-think 档〕+ B10 W3 七键
+/** agent 具名控件**二十键**（「对齐第三批」P15 十键 + R7 增 `agent.autoThink`〔auto-think 档〕+ B10 W3 七键 + 注入开关两键（#1420）
  *  —— 本表 = 键集 / 词键 / 表定控型三面单源）：
  *  `path` = 全点分路径（字段读面同域；缺字段面 ⇒ 表定控型照出空控件）；`kind` = 字段缺位时的控型回退；
  *  `text` = 字面标签（缺 ⇒ 词键 `word`，经 `t()`）；`scale` = 显示比例（`consultTimeoutMs` 显示单位 = 分钟 ——
@@ -58,6 +59,9 @@ export const NAMED_FIELDS = Object.freeze([
   // S14b guard 开关（VSC `settings-agent.js:58` advisor 段位：effort 之后）
   { path: "agent.advisor.guard", word: "settings.advisorGuard", kind: "guard" },
   { path: "agent.autoThink", word: "settings.agent.autoThink", kind: "boolean" },
+  // #1420 注入开关两键（PROMPT-SYSTEM.md §6.24——全局；默认 true；读面 = `loadConfig` 合并 ⇒ 默认装态 = 勾选）
+  { path: "agent.injectDocs", word: "settings.injectDocs", kind: "boolean" },
+  { path: "agent.injectMemories", word: "settings.injectMemories", kind: "boolean" },
 ])
 
 /** 列表切片：缺 / 非数组 ⇒ 空表（零节点 —— 禁假数据）。 */
@@ -173,7 +177,7 @@ function namedFieldNode(entry, field, section, handlers) {
   }
 }
 
-/** agent 段体：**具名控件区**（十八键 · P15 —— 字段缺位亦在场〔空值控件，禁假造值〕；自持值面三型
+/** agent 段体：**具名控件区**（二十键 · P15 —— 字段缺位亦在场〔空值控件，禁假造值〕；自持值面三型
  *  〔model ∕ effort ∕ guard〕不受读面类型门约束；字段在场而敏感 / 非标量 / slot 权威键（`slotAuthority`）⇒ 不落具名控件（零行））。 */
 export function agentBody(section, handlers) {
   const fields = listOf(section?.fields)

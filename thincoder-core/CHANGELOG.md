@@ -8,6 +8,7 @@ Format: Keep a Changelog · 中文 · 号在发布时定（CalVer——见 `docs
 ### Added
 
 - **MCP 探活具名读数（#1431——2026-10-14 走查轮）**：`probeMcpServer` 返回值增 `tools`（工具名数组——原 `mcpTools` 到手即弃，控制台探活只见计数）；服务端页面随正（具名读数形，缺名回落计数形——零回归）。
+- **注入开关（#1420——injection-switches 批 2026-10-14）**：`agent.injectDocs` ∥ `agent.injectMemories` 两枚全局开关（DEFAULTS `true`；判据 `!== false`）；关 = 阻断三块自动注入（项目指令文件块 ∥ 文档检索块 ∥ 记忆检索块——检索调用不执行），不删数据；`settings` 工具 + CLI `/config` 热应用（写后下一次组装生效）；VSC/桌面设置界面各落两开关。
 - **`design-slots` 回收读口（#1384——design-token-recovery 批 2026-10-14）**：`designId` 过滤单槽（trim 精确匹配；未知 ⇒ 拒 + 列在场 id）∥ `reveal:true` 揭值（必携 `designId`；只揭活槽——过期/畸形槽掩蔽注因；`null` 视同缺省——零揭值不 fail-open）；`log.mjs` `SECRET_FORM` 增 token 值形（`uuid:epoch`）。
 
 ## [0.10.7] — 2026-10-14

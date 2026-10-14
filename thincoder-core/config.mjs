@@ -64,6 +64,10 @@ export const DEFAULTS = {
     // §6.30.3 门三件③（D-TW5）：timer 空闲自唤醒开关——默认开（工具描述面已承诺到点提醒）；
     // false ⇒ 端侧不武装闩（回既有回合边界投递——零调度器面）。键面随 DEFAULTS 派生进 settings 类型表。
     timerWake: true,
+    // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：文档类 ∥ 记忆类自动注入——默认开；
+    // 判据 `!== false`（缺省 = 现行为零变）。消费点 = 核 `agent/setup.mjs` 三判点（逐 run 现读）。
+    injectDocs: true,
+    injectMemories: true,
   },
   memory: {
     dbPath: join(configDir, "memory.db"),

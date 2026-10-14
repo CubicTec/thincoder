@@ -356,6 +356,8 @@ export async function handleConfigCommand(ctx, args = []) {
       { type: "item", text: `traces.enabled = ${tc.enabled === false ? "off" : "on"}（轨迹存档——发布默认关——隐私）`, action: "traces.enabled" },
       { type: "item", text: `traces.retentionHours = ${tc.retentionHours ?? 24} h（超期文件启动时清理）`, action: "traces.retentionHours" },
       { type: "item", text: `diagnostics.heapSnapshot = ${dc.heapSnapshot === true ? "on" : "off"}（堆快照采集——默认关——桌面会话即时生效）`, action: "diagnostics.heapSnapshot" },
+      { type: "item", text: `agent.injectDocs = ${ac.injectDocs !== false ? "on" : "off"}（文档注入——项目指令文件 + 相关文档——默认开）`, action: "agent.injectDocs" },
+      { type: "item", text: `agent.injectMemories = ${ac.injectMemories !== false ? "on" : "off"}（记忆注入——往期相关记忆召回——默认开）`, action: "agent.injectMemories" },
       { type: "item", text: `agent.consultModels = ${consultCount} model(s)${consultCount ? ` (${(ac.consultModels ?? []).map((m) => m.provider + ":" + m.model).join(", ")})` : ""}`, action: "consult" },
       { type: "item", text: `agent.consultTurns = ${ac.consultTurns ?? 40}`, action: "agent.consultTurns" },
       { type: "item", text: `agent.consultTimeoutMs = ${Math.round((ac.consultTimeoutMs ?? 600000) / 60000)} min`, action: "agent.consultTimeoutMs" },
@@ -380,6 +382,8 @@ export async function handleConfigCommand(ctx, args = []) {
       pushLine(`traces.enabled: ${tc.enabled === false ? "off" : "on"}（默认 off——发布隐私——本地分析可开）`, C.dim)
       pushLine(`traces.retentionHours: ${tc.retentionHours ?? 24}（超期文件启动清理——D-TR10）`, C.dim)
       pushLine(`diagnostics.heapSnapshot: ${dc.heapSnapshot === true ? "on" : "off"}（堆快照采集——默认关——桌面会话即时生效）`, C.dim)
+      pushLine(`agent.injectDocs: ${ac.injectDocs !== false ? "on" : "off"}（文档注入——项目指令文件 + 相关文档——默认开）`, C.dim)
+      pushLine(`agent.injectMemories: ${ac.injectMemories !== false ? "on" : "off"}（记忆注入——往期相关记忆召回——默认开）`, C.dim)
       pushLine(`agent.consultModels: ${(ac.consultModels ?? []).map((m) => `${m.provider}:${m.model}${m.effort ? ` (${m.effort})` : ""}`).join(", ") || "(none)"}`, C.dim)
       pushLine(`agent.poolLimits: { engCoder: ${cur("engCoder")}, other: ${cur("other")}, advisor: ${cur("advisor")} }（async 分域上限——默认 4/4/4——agent.poolLimits 可配）`, C.dim)
       pushLine(`agent.consultTurns: ${ac.consultTurns ?? 40}`, C.dim)
@@ -448,6 +452,22 @@ export async function handleConfigCommand(ctx, args = []) {
         })
         pushLabel("❯ Config", ansi.bold + C.tool)
         pushLine(`diagnostics.heapSnapshot = ${newVal ? "on" : "off"}（桌面会话即时生效 ∕ 本进程下次启动）`, C.tool)
+      } catch (error) { pushLine(`Save failed: ${error.message}`, C.error) }
+      continue // 回主菜单（Esc 退出）
+    }
+
+    if (choice.action === "agent.injectDocs" || choice.action === "agent.injectMemories") {
+      // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：判据 `!== false`（缺省 = 开）——两键共用一支；
+      // 保存经 saveProxy（写盘 + reloadConfig 即热——下一次提示词组装生效，无「重启」注）。
+      const key = choice.action.slice("agent.".length)
+      const newVal = ac[key] === false // 现为关 ⇒ 写 true；现为开（含缺省）⇒ 写 false
+      try {
+        await saveProxy((raw) => {
+          raw.agent ??= {}
+          raw.agent[key] = newVal
+        })
+        pushLabel("❯ Config", ansi.bold + C.tool)
+        pushLine(`${choice.action} = ${newVal ? "on" : "off"}（即热——下一次提示词组装生效）`, C.tool)
       } catch (error) { pushLine(`Save failed: ${error.message}`, C.error) }
       continue // 回主菜单（Esc 退出）
     }

@@ -42,6 +42,8 @@ export function loadAgentSettings() {
     compactThreshold: a?.compactThreshold ?? null, // null = auto（本端面板显示口径）
     verifyGuard: a?.verifyGuard ?? d.verifyGuard,
     autoThink: a?.autoThink ?? d.autoThink,
+    injectDocs: a?.injectDocs ?? d.injectDocs, // #1420：注入开关（默认 true——判据 `!== false`）
+    injectMemories: a?.injectMemories ?? d.injectMemories,
     engineering: a?.engineering ?? d.engineering,
     consultTurns: a?.consultTurns ?? d.consultTurns,
     consultTimeoutMs: a?.consultTimeoutMs ?? d.consultTimeoutMs,
@@ -160,6 +162,8 @@ export function agentSettings(session) {
     compactThreshold: s.compactThreshold, // null = auto
     verifyGuard: s.verifyGuard,
     autoThink: s.autoThink, // #17：读链补环（loadAgentSettings 已载；此前 push 快照未携）
+    injectDocs: s.injectDocs, // #1420：读链补环（loadAgentSettings 已载）
+    injectMemories: s.injectMemories,
     engineering: slotData?.engineering ?? s.engineering,
     consultTurns: s.consultTurns,
     consultTimeoutMs: s.consultTimeoutMs,

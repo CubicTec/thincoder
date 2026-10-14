@@ -80,6 +80,9 @@ export function saveAgentSettingsFromPanel(payload) {
   if (payload.compactThreshold !== undefined) patch.compactThreshold = payload.compactThreshold === "" ? undefined : (Number(payload.compactThreshold) || undefined)
   if (payload.verifyGuard !== undefined) patch.verifyGuard = !!payload.verifyGuard
   if (payload.autoThink !== undefined) patch.autoThink = !!payload.autoThink // 显式布尔写（false 亦写——同 verifyGuard 式）
+  // #1420（PROMPT-SYSTEM.md §6.24）：注入开关两键——显式布尔写（false 亦写；默认 true）
+  if (payload.injectDocs !== undefined) patch.injectDocs = !!payload.injectDocs
+  if (payload.injectMemories !== undefined) patch.injectMemories = !!payload.injectMemories
   if (payload.consultTurns != null) patch.consultTurns = Number(payload.consultTurns) || undefined
   if (payload.consultTimeoutMs != null) patch.consultTimeoutMs = Number(payload.consultTimeoutMs) || undefined
   // Consultation models (CONSULTATION.md): array of {provider, model}, ≤5, validated.

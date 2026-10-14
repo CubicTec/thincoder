@@ -32,7 +32,7 @@ const DOCKER = await load("thincoder-server/src/sandbox/docker.mjs")
 
 const NOW = 1_770_000_000_000 // 固定时钟（可注入面）
 const TEMP = mkdtempSync(join(tmpdir(), "tc-exec-rebuild-"))
-const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db") }
+const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db"), sandbox: { egressEnforce: true } } // 严格模式开——本档测机制面；缺省关见档尾用例（用户 2026-10-14 裁）
 
 // ── 库种子（成员/节点/工作区——列面 = v22）────────────────────────────────────
 
@@ -844,4 +844,13 @@ test("工作区面：创建（放置 + key 签发 + 建盒链）∥ 销毁确认
   assert.equal(failure.code, "invalid_request_error")
   assert.match(failure.message, /confirm/)
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_workspaces WHERE id = ?").get(out.payload.workspace.id).n, 1, "确认门未拦住销毁")
+})
+
+test("开关缺省关：建盒载荷零闸 DNS 注入（用户 2026-10-14 裁——现阶段不设默认全禁）", async () => {
+  const { db, workspace } = seedDb()
+  const off = BOX.buildBoxPayload(db, workspace, { config: { host: "10.0.0.5" } })
+  assert.equal(off.HostConfig.Dns, undefined, "缺省不应注入闸 DNS")
+  const on = BOX.buildBoxPayload(db, workspace, { config: { host: "10.0.0.5", sandbox: { egressEnforce: true } } })
+  assert.deepEqual(on.HostConfig.Dns, ["10.0.0.5"], "严格模式开仍注入")
+  db.close()
 })

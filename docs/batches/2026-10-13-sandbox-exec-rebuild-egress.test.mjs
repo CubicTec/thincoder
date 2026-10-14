@@ -30,7 +30,7 @@ const HOSTS = await load("thincoder-server/src/sandbox/hosts.mjs")
 
 const NOW = 1_770_000_000_000
 const TEMP = mkdtempSync(join(tmpdir(), "tc-egress-"))
-const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db") }
+const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db"), sandbox: { egressEnforce: true } } // 严格模式开——本档测机制面；缺省关见档尾用例（用户 2026-10-14 裁）
 const WORKSPACE_ID = 1
 
 /** 种子：成员/节点/工作区（绑定）+ 显式规则两条（deny CIDR ∥ allow 域）。 */
@@ -423,5 +423,20 @@ test("临时集回收：TTL 到点消解 ⇒ 文本重算不含该 IP；`resetEg
   assert.equal(after.text.includes("93.184.216.60"), false, "TTL 到点后文本仍含临时 IP（未重算）")
   EGRESS.resetEgressRuntime()
   assert.equal(EGRESS.tempSetOf().length, 0, "重置未清临时集")
+  db.close()
+})
+
+test("开关缺省关：ensureEgressApplied 零下发（用户 2026-10-14 裁——现阶段不设默认全禁）", async () => {
+  const db = seedDb()
+  EGRESS.resetEgressRuntime()
+  const calls = []
+  const exec = fakeExec({ calls })
+  const runner = db.prepare("SELECT * FROM sandbox_runners WHERE id = 1").get()
+  const state = await EGRESS.ensureEgressApplied({ db, runner, exec, config: { host: "10.0.0.5" }, now: () => NOW, resolveImpl: resolver({}) })
+  assert.equal(state.skipped, true, "缺省未早退（零下发）")
+  assert.equal(state.mechanism, "off")
+  assert.equal(calls.length, 0, "缺省仍有 SSH 外呼")
+  assert.equal(EGRESS.egressEnforced({}), false)
+  assert.equal(EGRESS.egressEnforced({ sandbox: { egressEnforce: true } }), true)
   db.close()
 })

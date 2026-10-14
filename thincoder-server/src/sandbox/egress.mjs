@@ -23,6 +23,12 @@ export const NFT_TABLE = "thincoder_egress"
 export const NFT_CHAIN = "tcws_egress"
 export const EGRESS_ANCHOR = "tcws*"
 export const IPT_CHAIN = "TC-EGRESS"
+
+/** 出站管控总开关（2026-10-14 用户裁：现阶段不设默认全禁——「安全性问题押后，别套着枷锁跳舞」；严格模式 = 后续轮）。
+ *  判定 = `config.sandbox.egressEnforce === true`；缺省 false = 不下发全禁规则集（节点既有表人工拆在案——零下发即零重建）∥ 盒侧不注入闸 DNS（见 box.mjs）。 */
+export function egressEnforced(config = {}) {
+  return config?.sandbox?.egressEnforce === true
+}
 export const IPT_ANCHOR = "tcws+"
 
 /** 域规则解析预算（§5——3s）。 */
@@ -285,6 +291,7 @@ export function resetEgressRuntime() {
  * 否则全量重算 + 下发；失败 ⇒ 抛（fail-closed——调用侧停）。
  */
 export async function ensureEgressApplied({ db, runner, exec, config = {}, now = Date.now, log = null, reason = "就位复核", needIps = [], resolveImpl = null }) {
+  if (!egressEnforced(config)) return { rulesRev: getRulesRev(), ok: true, at: now(), mechanism: "off", allowIps: [], tempKey: tempFingerprintOf(now()), skipped: true } // 严格模式关 → 零下发（2026-10-14 用户裁）
   const previous = appliedState.get(Number(runner.id)) ?? null
   const rev = getRulesRev()
   const covered = needIps.every((ip) => allowCovers(previous?.allowIps, ip))

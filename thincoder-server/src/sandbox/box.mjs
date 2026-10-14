@@ -20,7 +20,7 @@ import { recordAudit } from "../accounts/audit.mjs"
 import { dataDir } from "../store/credential-crypto.mjs"
 import { customBaseOf, ensureDerivedImage } from "./derive.mjs"
 import { clientForRunner } from "./docker.mjs"
-import { dispatchEgressAll, ensureEgressApplied, markEgressFailed, tempSetsNeedRepush } from "./egress.mjs"
+import { dispatchEgressAll, egressEnforced, ensureEgressApplied, markEgressFailed, tempSetsNeedRepush } from "./egress.mjs"
 import { execOnHost } from "./hosts.mjs"
 import { applyDiskQuota } from "./quota.mjs"
 import { authForImageRef } from "./registry-creds.mjs"
@@ -143,7 +143,7 @@ export function buildBoxPayload(db, workspace, { settings = null, config = {}, i
   const resolved = settings ?? boxSettings(db)
   const limits = resolveLimits(db, workspace, resolved)
   const volumePath = path ?? workspacePathOf(resolved, workspace.id)
-  const dns = dnsServerOf(config)
+  const dns = egressEnforced(config) ? dnsServerOf(config) : null // 严格模式关 ⇒ 不注入闸 DNS（2026-10-14 用户裁——盒走 docker 缺省解析）
   const hostConfig = {
     Binds: [`${volumePath}:${WORKSPACE_MOUNT}`],
     ReadonlyRootfs: true, // 唯卷可写（§3）

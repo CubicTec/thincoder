@@ -108,7 +108,7 @@ VSC 端测试坐标 = `thincoder-vscode/test/settings-tool.test.mjs`（9 例—�
 | D-ST12 | **双端同批**（用户拍板） | VSC config 存储差异以偏差注处理；键空间归一（§2.8） |
 | D-ST13 | **敏感谓词扩面 = 词表扩面 + 开口键族整族遮罩**（两句取或——§2.4） | 实证 `mcp.servers.0.headers.Authorization` 明文回显（台账 #53）。否决「只加 `Authorization` 单键」（同族下一条漏项留给下次）/「只扩词表不遮族」（头名不可枚举——`X-Custom-Auth` 类永远漏）。段内复合段名（refreshToken 类）残余登记 = D-ST17 |
 | D-ST14 | **`env` 并入开口键族**（与 `headers` 同句） | 同族同因：`mcp.servers.*.env.*` 子键名由用户 / 对端任意取（实证：`env` 段任意变量名的值明文回显）；代价 = 少数无害 env 值被遮——方向安全且**键名仍可见**（只丢值） |
-| D-ST15 | **遮蔽面用例落新档**（`settings-mask.test.mjs`——**已落单元测试档（#677）**：`docs/batches/2026-09-30-crossline-clearance.test.mjs` 遮蔽面格；**单元测试树重建时回迁该档形**） | 既有 `thincoder-cli/test/settings.test.mjs`（**已退役**——测试树全清 2026-09-28）**480 行** + 遮蔽面用例 **≈ 95 行** ⇒ **≈ 575** 超 500 行硬限（估算值单源 = 批次档 §2.2⑤；登记面 = 批次档 §2.2⑥）；分档 = 工具面 / 遮蔽面，runner 通配 `test/*.test.mjs` 自动收 （迁移期引文） |
+| D-ST15 | **遮蔽面用例落新档**（`settings-mask.test.mjs`——**已落单元测试档（#677）**；**单元测试树重建时回迁该档形**） | 既有 `thincoder-cli/test/settings.test.mjs`（**已退役**——测试树全清 2026-09-28）**480 行** + 遮蔽面用例 **≈ 95 行** ⇒ **≈ 575** 超 500 行硬限；分档 = 工具面 / 遮蔽面，runner 通配 `test/*.test.mjs` 自动收 |
 | D-ST16 | **`${env:VAR}` 引用形态 = 已受理做**（2026-09-29 provider-config-family 批 · 台账 #57） | 属新增能力（配置内放引用 + 消费侧展开）；机制（解析点 ∕ 生效面 ∕ 语义 ∕ 与遮蔽关系）单源 = `doc:CONFIG.md:§6.3`——本档遮蔽谓词零改（引用串同住敏感值位 ⇒ 族遮罩内）；解析产物永不回显 |
 | D-ST17 | **段内复合段名入遮 = 采纳**（camelCase / 前缀复合敏感名——C2 裁定 · #677） | 谓词扩段内边界（形如 `refreshToken` / `clientSecret` / `privateKey`）；假阳取舍 = 方向安全（只丢值、键名仍可见）；**先红夹具格** + 候选 C2 结清（§2.4 / §4 同拍——实施清单 I13） |
 
@@ -136,42 +136,3 @@ VSC 端测试坐标 = `thincoder-vscode/test/settings-tool.test.mjs`（9 例—�
 | CLI 装配 | 核 `thincoder-core/agent/assemble.mjs` 装配 + `thincoder-cli/src/cli/make-agent.mjs` 留面（MCP ∕ 剔除经 `toolsFinalize` 缝）；dispatch 动作级只读分类（list/get 放行） |
 | 读取器判据点 | `thincoder-core/config.mjs:257`（defaultModel 非串→null）· 核 `thincoder-core/agent/assemble.mjs:31`（`!team?.repo`）· `thincoder-core/agent-tools/subagent-spawn.mjs:82`（subagentModels 回落）· `thincoder-core/tools/bash.mjs:120`（`shell ?? true`） |
 | 单元测试档 | `thincoder-cli/test/settings.test.mjs`（480 行 · T-S2 族 25 例 · T-S3 族 3 例）· 遮蔽面档（`settings-mask.test.mjs`——**已落单元测试档（#677）**；夹具键集逐键 6 例，D-ST15）· VSC 端 `thincoder-vscode/test/settings-tool.test.mjs`（9 例——W16 已改指核工具；双缝并用）——**树内两档随测试树全清退役（2026-09-28）＋遮蔽面档 = 单元测试档（树内零落）；单元测试树重建时回迁** （机检豁免——用例退场登记） |
-
-## 6. 不并项与历史沿革
-
-### 6.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/SETTINGS-TOOL.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档头部状态行（第 8 批 / 第 13 批在途与评审轮次） | 时点状态行 + 批序 | 批次语境——现行态已入 §2–§4 |
-| 旧档 §5 T-S1 用例表 + **更正注**（「`settings 用例档` 从未落地——声称不实」） | 历史声称表 + 勘察实证更正 | 一次性材料——**更正结论保留于此**：T-S1 表为历史声称，实际覆盖 = T-S2 回归网（§5 坐标行）；诚实记录不抹 |
-| 旧档 §5.1 T-S2 用例表（T-S2.1–T-S2.35 + 覆盖映射） | 用例编号集 | 批次材料——行为面由现行测试族覆盖；测试缝双缝纪律（写侧假体 + 读侧 `_setConfigPathForTest` **必须同指临时文件**，防读写真实用户配置）入 §2.6 （机检豁免——用例退场登记） |
-| 旧档 §6 AC-S1 / AC-S2、§9.6 AC-S3 | 单批验收清单 | 批次材料——机制级判据已提炼入 §2.9 / §4 |
-| 旧档 §8.3 逐字锁断言 / §8.6 工具描述逐字新句 | 实现照抄稿 / 模型可见文案逐字稿 | 逐字文案 = 产品代码面（驻 `tool-docs/settings.md`）——本档只留语义判据（§2.6 / §4 边界行） |
-| 旧档 §8.5 旧决策编号 `D-S2.3` / `D-S2.4` / `D-S2.5` | 旧编号（`null` 合法 / 敏感键错误文案遮罩 / 不校验存在性） | 语义已入本档 §3 **D-ST7 / D-ST8 / D-ST9**（编号映射——旧档原地保留）；实施档注释仍引旧号者按此对位（`settings.mjs` `:83` / `:116` / `:133`——产品代码面，本批零改） |
-| 旧档 §8.4 影响面枚举（含 VSC 批次前现状与键空间缺陷面） | 单批勘察枚举 | 一次性材料——结论（4 键 + 同族 1 键 + 键空间归一）已入 §2.6 / §2.8 |
-| 旧档 §9.1–§9.5（parseValue 两端分裂实测 / 候选对比 / 分支契约 / 用例） | 单批裁定材料 | 裁定结论 = D-ST11 + §2.5 现行口径；②/③ 未选分支留旧档参照 |
-| 旧档 §9.4 CHANGELOG 记账更正说明 | 父侧写域落笔说明 | 一次性材料——归批次档 |
-| 旧档两处「受影响文件」表（实现时点 + 第 8 批行数注记） | 单批文件清单与行数快照 | 一次性材料——现行坐标入 §5 |
-| 旧档变更记录（2026-09-05 起逐批流水） | 历史叙述 | 本档自有变更记录 |
-
-## 变更记录
-
-- 2026-09-15（**CLI 尾部真批 · 纯新建 · eng-designer**）：建档——`thincoder-cli/docs/design/SETTINGS-TOOL.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；坐标改写为现状路径并逐条实核（`thincoder-core/agent-tools/settings.mjs` · `thincoder-core/config.mjs` ·
-  `thincoder-cli/src/cli/make-agent.mjs` 等）；null 形状表 / 完备性锁 / parseValue 去引号裁定按现行实装落笔；批次材料 / 用例与 AC 编号集 /
-  逐字文案稿 / 受影响文件快照不并（§6）；VSC 逐文件坐标归 VSC 轮（P2）。
-- 2026-09-18（**settings 脱敏漏项收正轮 · eng-designer**）：§2.4 敏感判定改**两句取或**——词表句扩 `authorization` / `auth` / `cookie` / `credential` + **开口键族句**（`headers` / `env` 整族遮罩；台账 #53 `mcp.servers.*.headers.Authorization` 明文回显收正）；
-  §2.8 一处已删端侧旧路径改**迁移期引文**形态（机检零新增）；§3 加 D-ST13–D-ST16；§4 加「只改读面谓词（写面零改）」·「`${env:VAR}` 引用形态不做（需求候选）」·「TUI / 面板不复用本谓词」三行；§5 坐标行 as-of 2026-09-18 实核；判据面 = 夹具键集逐键（用例表在批次档 §2）。
-- 2026-09-18（**settings 脱敏漏项收正轮 · 设计修正轮**（评审轮 1 发现 1–9）**· eng-designer**）：§2.4 族句逐字式样 + 段界口径 + 残余类条目 + DEFAULTS 实核句 + `D-S2.4`→`D-ST8`；§2.6 补测试缝双缝纪律句；§2.9 `D-S2.5`→`D-ST9`；§3 加 D-ST17；§4 加残余类边界行 + description 锚 → `:212`；§5 加坐标基准注；D-ST15 估算统一（480 + ≈95）；VSC 用例数 8 → 9；§6.1 加旧档编号映射行。
-- 2026-09-29（**residuals-round2 批 · 文档面实施轮 · eng-designer**——承批档 `docs/batches/2026-09-29-residuals-round2.md` §2.3 #589）：§5 装配行与读取器判据点行收正——装配 = 核 `thincoder-core/agent/assemble.mjs` + `thincoder-cli/src/cli/make-agent.mjs` 留面（`toolsFinalize` 缝）；
-  读取器三坐标届盘重锚（`thincoder-core/config.mjs:257` ∕ `thincoder-core/agent-tools/subagent-spawn.mjs:82` ∕ `thincoder-core/tools/bash.mjs:120`；`thincoder-core/agent/assemble.mjs:31` 维持）。**零新语义**。
-- 2026-09-29（**provider-config-family 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` · 台账 #57）：D-ST16 翻案（「不做」→「已受理做」）+ §4 对应边界行改写——`${env:VAR}` 引用形态机制单源改指 `doc:CONFIG.md:§6.3`；本档遮蔽谓词 ∕ 读面零改。**零新语义**。
-- 2026-09-29（**tools-carryover 批 · #15 收口轮（设计档面——四舱归齐）· eng-designer**——承批档 `docs/batches/2026-09-29-tools-carryover.md` §5.8）：
-  description 位置指针收正三处（§4 边界行 `:126` ∥ §5 坐标表行 `:136` ∥ §6.1 表行 `:154`）——旧行号坐标（原 `:212`）⇒ 描述文本 = `tool-docs/settings.md`（`DESC()`——接线 `thincoder-core/agent-tools/settings.mjs:231`）；§5 坐标基准注清单同收（`:212` 移出）+ 同格「〔拟新增〕」标记退场（09-18 批已落——同 #681 类）。**零新语义**（坐标 / 指针收正）。
-- 2026-09-30（**crossline-clearance 批（#677）· 设计修正轮（评审轮 2 发现 2 ∕ 3）· eng-designer**——承 `docs/batches/2026-09-30-crossline-clearance.md` §2.12）：
-  §2.4 残余类条目改已裁形（段内复合段名入遮 = 采纳——D-ST17）；§4 边界行末句去待办态（需求侧 F-ST5 已落 = `docs/core/requirements/SETTINGS-TOOL.md:26`）。**零新语义**（按已裁形回填）。
-- 2026-09-30（**vsc-cleanup 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-30-vsc-cleanup.md` §2 · 台账 #698）：退役测试档指称三处收正（§2.8 VSC 测试坐标 ∕ §3 D-ST15 ∕ §5 测试档行）——测试树全清（2026-09-28）事实 + **单测树重建时回迁**口径；D-ST15「拟新增」标记收正为「已落批内件（#677）」。**零新语义**。
-- 2026-10-01（**vsc-cleanup 批 · 设计修复轮 1（评审轮 1 发现 4）· eng-designer**——承 `docs/batches/2026-09-30-vsc-cleanup.md` §3）：D-ST15 ∕ §5 测试档行「拟新增」残标实删 + 载体区分（树内两档退役 ∥ 遮蔽面档 = 批内件）；§2.4 同族残标（`:43`）随修。**零新语义**（评审发现的直接导出）。

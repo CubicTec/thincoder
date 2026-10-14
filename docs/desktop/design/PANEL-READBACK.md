@@ -1,8 +1,8 @@
 # 子代理面板 · 实况回读与归还补口（PANEL-READBACK）
 
-> 设计档（desktop 部分 · 2026-10-04 建）。单源：批档 `docs/batches/2026-10-04-subagent-panel-live-face.md` §1（用户 00:12 ∥ 00:15 裁定 + #49 只读诊断 + 会话槽法证）· 台账 #891 ∥ #892。
+> 设计档（desktop 部分 · 2026-10-04 建）。单源：子代理面板实况回读批 §1（用户 00:12 ∥ 00:15 裁定 + #49 只读诊断 + 会话槽法证）· 台账 #891 ∥ #892。
 > 覆盖四面：**㈠ 桌面 `panel view` 实况回读**（主交付——用户明确要求，不得降级）· **归还补口**（「消费 ⇒ 必发 done」不变量）· **③ 桌面回收阀**（CLI `panel freeze` 桌面对位）· **④ 对账自愈**（已落——2026-10-06 宿主侧自愈扫 + done 帧痕；§2.4）。
-> 边界：#51 在飞写域零触（`thincoder-core/ledger-*.mjs` ∥ `thincoder-cli/src/**` ∥ `docs/cli/design/{CLI-ENTRY,ACP-CLIENT}.md` ∥ `docs/batches/2026-10-03-read-data-interface*`）· #50（design-token 系档）零触 · 已收口批档零触 · advisor 面零触。
+> 边界：#51 在飞写域零触（`thincoder-core/ledger-*.mjs` ∥ `thincoder-cli/src/**` ∥ `docs/cli/design/{CLI-ENTRY,ACP-CLIENT}.md` ∥ `docs/desktop/design/PANEL-READBACK*.md` ∥ `docs/batches/` 历史档）· #50（design-token 系档）零触 · 已收口批档零触 · advisor 面零触。
 
 ## 1. 问题陈述（现状与证据 —— 本设计轮实读）
 
@@ -90,7 +90,7 @@
 
 ### 2.4 ④ 对账自愈：已落（2026-10-06——宿主自愈扫 + done 帧双痕 · 台账 #978）
 
-**落盘**（批 `docs/batches/2026-10-06-digested-stuck-fix.md`——light channel · defect fix · 可 revert）：`thincoder-desktop/src/main/suspension-drive.mjs`（自愈扫 + `reemitDone` 逐帧痕）∥ `thincoder-desktop/renderer/subagent-reduce.mjs`（`subBlocksReduce` trace 钩接线）。
+**落盘**（digested-stuck 自愈批——light channel · defect fix · 可 revert）：`thincoder-desktop/src/main/suspension-drive.mjs`（自愈扫 + `reemitDone` 逐帧痕）∥ `thincoder-desktop/renderer/subagent-reduce.mjs`（`subBlocksReduce` trace 钩接线）。
 
 **digested-stuck 定义**：渲染面块呈 `frozen ∧ awaitingDigest` 半态（终态已折叠 · 等待消化），而核侧两池 + pending 皆无该条目 = 报告已入模型上下文、块滞留等待归档——done 帧曾丢（帧面零持久痕 = #76 事故读面缺口）。
 
@@ -150,7 +150,7 @@
 | `thincoder-desktop/src/main/agent-host.mjs` | 322 | +3 | 装配挂 `agent._panelReadout`（per-key） |
 | `thincoder-desktop/renderer/panel-readout.mjs`（已落） | 0（新） | ~60 | 快照构形 + 签名去重 + 上报（纯函数 + 注入面 `queryDom` ∥ `invoke`——平 node 直测） |
 | `thincoder-desktop/renderer/app.mjs` | 321 | +4 | 帧出口挂 readout settle（`applyFrame` 尾） |
-| `docs/batches/2026-10-04-subagent-panel-live-face.test.mjs`（已落） | 0（新） | ~260 | 单元测试档（用例清单 = §6；跑法沿先例 `docs/batches/2026-10-02-desktop-menu-system.test.mjs`） |
+| 子代理面板实况回读批单元测试档（已落） | 0（新） | ~260 | 单元测试档（用例清单 = §6；跑法沿菜单体系批先例） |
 | `docs/desktop/design/PANEL-READBACK.md` | 0（新） | 本档 | 设计单源（本批） |
 | `docs/desktop/design/IPC.md` | 543 | +6/−4 | `panel:state` 行 + 白名单面 ∥ §3.1 47 ⇒ 48（设计目标态）+ 档头 ∥ §3.1 行数齐平 + 变更记录 |
 | `docs/README.md` | — | +2/−1 | 部分档行登记（desktop 设计 14 ⇒ 15 · 全档 52 ⇒ 53）+ 变更记录一行 |
@@ -165,7 +165,7 @@
 | ㈠ 实况回读 | `preload.cjs` ∥ `ipc.mjs` ∥ `panel-live.mjs` ∥ `agent-host.mjs` ∥ `app.mjs` ∥ `panel-readout.mjs` ∥ `subagent-panel.mjs`（视图面）∥ `subagent.mjs`（ctx） | AC-1 ∥ AC-4 ∥ AC-5 |
 | 归还补口 | `suspension.mjs`（核——三支恒达窗 + finish 返回面） | AC-2 |
 | ③ 回收阀 | `subagent-panel.mjs`（门控源链 + 发射）∥ `subagent.mjs`（描述） | AC-3 ∥ AC-4 |
-| ④ 对账自愈 | `thincoder-desktop/src/main/suspension-drive.mjs`（宿主自愈扫 + done 帧痕——2026-10-06） | §2.4 ∥ 批 `docs/batches/2026-10-06-digested-stuck-fix.md`（台账 #978） |
+| ④ 对账自愈 | `thincoder-desktop/src/main/suspension-drive.mjs`（宿主自愈扫 + done 帧痕——2026-10-06） | §2.4 ∥ digested-stuck 自愈批（台账 #978） |
 
 ## 6. 用例清单（单元测试档 ← 设计轮拟定；normal ∥ boundary ∥ error 逐条）
 
@@ -211,8 +211,3 @@
 - 不动 CLI/VSC 端档（`thincoder-cli/src/**` 禁域零触；VSC 受益于核收口但零触——受益面注明）。
 - 零新增运行时依赖；上报帧不含 `rows`（内容面零上行——带宽纪律）。
 
-## 9. 变更记录
-
-- 2026-10-04：建档（本批设计轮——㈠ ∥ 归还补口 ∥ 回收阀三面落设计 + ④ 裁定不做；受影响文件表 + 用例清单 + 验收对照）。
-- 2026-10-04：修复轮（设计评审 #54 轮次 1 · 七条全采纳）——AC-2 ∥ 用例口径收正（≥1 发射 + 归档恰一次；补 T-A9..A11）∥ 行数闸四档超线登记（行数口径按内容行数核正）∥ 残差注入 try/catch 收口（§2.2 ②）∥ 字段标签统一「判别六键 + role/id 随行」∥ 键规范化两端同宽明书 ∥ IPC.md 计数收正随拍。
-- 2026-10-06：**④ 对账自愈收口（已落）**——#76 digested-stuck 事故 ⇒ 宿主侧自愈扫（三拍）+ done 帧双痕（批 `docs/batches/2026-10-06-digested-stuck-fix.md` · 台账 #978；原「本批不做」判随事故重估——形态 = beat 级现算，零新增循环）；§2.4 重写、档头枚举 ∥ §5 ∥ §7 AC-6 ∥ §8 涉句同拍。**设计形式化轮——产品码零触**。

@@ -207,7 +207,7 @@
 
 **① 套用面（钉表）与排除面**：
 
-- 壳面 = 数据表五页：成员 `#/admin/members` ∥ Provider `#/admin/providers` ∥ 服务模型 `#/admin/models` ∥ 审计 `#/admin/audit` ∥ 用量明细 `#/me/usage`（我的·用量页——父侧 07:4x 裁定；批 `docs/batches/2026-10-07-console-layout.md` §1 补记）。
+- 壳面 = 数据表五页：成员 `#/admin/members` ∥ Provider `#/admin/providers` ∥ 服务模型 `#/admin/models` ∥ 审计 `#/admin/audit` ∥ 用量明细 `#/me/usage`（我的·用量页——父侧 07:4x 裁定）。
 - 排除面：`#/admin/usage` 看板页（报表卡无界——与有界壳不相容；如需并入另轮）∥ 布局/信息表（系统页四表 ∥ 账户页表 ∥ 我的用量页报表卡（分模型表——随卡自滚；非壳表链））∥ key 表（页级——`#/me/keys`；非壳数据表——钉表五页不扩（2026-10-07 me-keys 批在案）；入壳 = 另议）∥ 项目面两页（`#/admin/projects` 两标签 ∥ 其 Git 源面板——2026-10-13 project-sources-merge 批定论：非壳页；表格随页整页滚——沿 key 表非壳先例）。
 
 **② 机制——两段壳与高度链（表尾计数 = 表内 tfoot）**：
@@ -305,19 +305,3 @@
 
 - 本面无独立上抛/余项。
 
-## 变更记录
-
-- 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：本档自 `webui/WEBUI.md` §2.5 ∥ §2.6 及三表归位行逐字迁入（零语义）；文内 § 引用改指（§2.5→本档 §2.1 ∥ §2.6①⑤②→本档 §2.2①⑤② ∥ §2.4④→`webui/ADMIN.md` §2.1④ ∥ §2.1→`webui/SYSTEM.md` §2.1 等）；AC 行内档目链去重 ⇒ 单源句（`webui/WEBUI.md` §1）；原址保位 stub 在 `webui/WEBUI.md`。**产品码零触。**
-- 2026-10-11（**console-tabs-component 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §1 · 台账 #1286；岔口㈣ = 零新变量——当轮呈用户）：§2.1 ② 按钮族增「页签」型（`button.tab`——常态/悬停/活动态逐值；五型 ⇒ **六型**）+ ① 选中/活动行增页签活动态落点 + ② 套用面增公共标签页组件 + **新面登记段**（`.tabs`/`.tab-list`/`.tab`/`.tab-panel`——按族套用 ∥ 零新 `:root` 变量 ∥ 零新悬停规则）；§3 `style.css` 行增本批增量（296 ⇒ ≈314）；§5 增本批不做面行。**产品码零触（设计轮）。**
-- 2026-10-11（**console-tabs-component 批 · 设计定稿轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §2 ∥ 用户 2026-10-11 21:24 裁定（㈣ 零新变量——四项全取）：本面随裁定定稿（§2.1 ② 按钮族「页签」型 / ① 选中活动句 / 新面登记段 / §3 `style.css` 增量 ≈314——文本零改）；变更记录历史行形式收正（零语义）。**零新语义；产品码零触。**
-- 2026-10-11（**chat-shell-align 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-11-chat-shell-align.md` §1 · 台账 #1292；用户 21:55 裁「全套 ∥ 补后端一件不藏 ∥ VSC 式」）：§2.1 ① 增**别名桥例外句**（核件壳族变量名入 `:root` 别名块——逐键 `var(--既有)`，零新值）∥ **新面登记段**（核件发射类族 + 状态行族 + 会话条 + 无源钮隐藏六 id——零新悬停规则）∥ §3 `style.css` 行 + 面小计随正（296 ⇒ ≈420）∥ §5 增本批不做面行。同源随动 = `webui/CHAT.md` §2.1/§3/§4 ∥ `webui/WEBUI.md` §1/§5。**产品码零触（设计轮）。**
-- 2026-10-11（**console-tabs-component 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-console-tabs-component.md` §3 轮次 1 之 7（父侧受理）：#7 悬停判据收为机检形（§2.1 标签页批新面登记段 ∥ §3 `style.css` 行注 ∥ §5 本批不做面——「零新悬停规则」⇒「行悬停声明清单不变 ∥ 钮族悬停 = ② 型表在册（页签取 `--hover` 底）」——消「行悬停 vs 钮族逐型悬停」两种读法）。**零新语义（评审发现直接导出项）；产品码零触。**
-- 2026-10-11（**chat-shell-align 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-11-chat-shell-align.md` §3 轮次 1 之 6；父侧受理全单）：§3 `style.css` 行本批分项复算收正（状态行族 ≈+12 ⇒ ≈+16——分项和 = 步进 +106）。**零新语义**（评审发现直接导出项）。
-- 2026-10-13（**project-sources-merge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §2 · 功能点 48② ∥ AC-48 ④⑤；用户 2026-10-13 16:07「在添加源页面，选择了类型还让我填基址，你是认真的吗？」）：§1 增 KD-SV-150（隐藏切换语义——全局 `[hidden]` 兜底 + 删按例补丁）∥ **增 §2.3**（根因实锤 ∥ 规则 ∥ 全控制台核对表 ∥ 机检形）∥ §3 `style.css` 行补本批净 −1∥ §4 增 AC-48 ⑤ 行（样式侧）。同源随动 = `webui/PROJECTS.md` §1/§2.4/§3/§4/§5。**产品码零触（设计轮）。**
-- 2026-10-13（**project-sources-merge 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §3 轮次 1 之 1/5/10）：§2.2① 排除面补项目面两页（非壳定论——沿 key 表先例）∥ §2.3 机检补第 ⑤ 条（核对表穷尽性集合断言——`public/**` 含 `hidden` 档集 ⊆ 在册档集）∥ §3 style 行基线收正（实读 **358**）+ 面小计同拍。**零新语义**（评审发现直接导出项）；产品码零触。
-
-- 2026-10-13（**console-walkthrough-light 批（管理面走查·轻通道轮）· 设计归档（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-13-console-walkthrough-light.md` §1 笔 1 · 台账 #1359）：§3 `style.css` 行账随正（本笔净 **+2** = `:264` 行内补 `flex: 1 1 auto`（行数 ±0） ∥ `:266-267` 新增两行——对话页最少一屏（页纵列最少一屏 ∥ 消息区吃余高 ⇒ 短会话输入区亦落视口底）；实读 **358**（文末换行不计；split 计法 359）；机制 = `webui/CHAT.md` §2.1①）。**产品码零触（设计归档）。**
-- 2026-10-13（**sandbox-container-terminal 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-container-terminal.md` §1 · 台账 #1374）：§2.1 ③ 增**终端面粗体例外**（登记——仿真面；余面不破）∥ 变量底座增「终端」组（18 枚——调色板；面内零颜色字面量）∥ §3 `style.css` 行 +≈40（调色板 18 变量 + 终端面类族五枚；零动画 ∥ 零新悬停规则）∥ §4 增判据行（样式侧）。**产品码零触（设计轮）。**
-- 2026-10-13（**project-sources-merge 批 · 实施后随正 · 主 agent 直接执行 · 机械 · 可 revert**——承 #44 交付报告列报）：§2.3 核对表行 3 指针随正（`thincoder-server/public/app.mjs:155/169` ⇒ `:154/168`——app.mjs 净 −1 行后同一切换点移位）。**零新语义**（指针随正）。
-
-- 2026-10-13（**sandbox-container-terminal 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-container-terminal.md` §3 轮次 1（评审 #92 之 8 ∥ 3 连带）：§4 AC-19 续行补**终端面例外限定**（`font-weight ≤400` 判据——终端面除外；沿 §2.1 ③ 登记——评审 8）∥ §4 容器终端行「功能点 51——拟入册」⇒ **已入册（2026-10-13）**（同族扫面补漏——评审 3）。**零新语义（评审发现直接导出项）；产品码零触（设计轮）。**

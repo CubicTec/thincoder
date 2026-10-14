@@ -72,12 +72,3 @@
 |---|---|---|
 | 旧档关联指针 `docs/design/README.md`（文档地图） | 旧树地图档 | 旧树地图随树降格退休——基准层地图面不归本档 |
 | CLI 侧同名需求档（`thincoder-cli/docs/requirements/ENG-TOKEN-BINDING.md`） | CLI 产品需求正文 | **已并入（2026-09-15 CLI 尾部真批）**——编号承旧档零改号；(d) 类入 §5.1 |
-
-## 变更记录
-
-- 2026-10-05（**批 `2026-10-05-review-gate-gaps` · 台账 #940 · 主 agent**）：FR6 验收语义补**裁定闸**一句——签发还须回执含裁定行 `VERDICT: pass` 且无 `VERDICT: changes-required`（缺行 ∥ 并现 ⇒ 拒签；fail-closed、剥净回显、不占槽、修后重评）。依据 = 批档 §2 设计（评审 #21 ∥ #25 通过）+ §2.7 上抛父侧裁（采纳补句）。
-- 2026-09-15（**CLI 尾部真批 · 并入既有 · eng-designer**）：`thincoder-cli/docs/requirements/ENG-TOKEN-BINDING.md` 逐节对账并入——
-  头部设计语义裁定块 / §1 / FR1–FR5·FR7 / N1–N4 零缺口（本档编号承旧档）；**旧档 FR6 口径陈旧**（「pass 分支后签发」⇄ 现行 echo 机制）
-  按现状收正并登记 §5.1；§5.2 行销项。旧档原地一字不改。
-- 2026-09-15（**B 式迁移轮 · VSC 批 5**）：建档——`thincoder-vscode/docs/requirements/ENG-TOKEN-BINDING.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；状态行 / 归位注记 / 修订流水剔除（入 §5.1）；设计语义裁定块保留（N1 / N4 的需求来源）。

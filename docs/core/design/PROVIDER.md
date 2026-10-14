@@ -5,7 +5,7 @@
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
 > 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 / §2.5.1 / §2.12.2 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§8 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策 · 不并项与历史沿革（自 CLI 产品档并入）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策 + 沿革）。
+> **机制面**（§6–§7 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策）。
 
 ## 1. 归属与范围（自本档行内容的路径归纳）
 
@@ -57,23 +57,10 @@
 
 指针（不复制）→ `CORE-UNIFICATION.md` §2.8 下列行：**产品运行期（S2 改）** · **产品测试（S1 / S2 改）**。
 
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（crash-guards（崩溃族守卫） · 2026-10-03）落点表** = `docs/batches/2026-10-03-crash-guards.md` §2（唯一承载面——一次性批次材料）。
-**本批（轻通道轮八 · 2026-10-03）落点表** = `docs/batches/2026-10-03-light-round-8.md` §2（唯一承载面——一次性批次材料）。
-**本批（无效渠道态逻辑归一 · 2026-10-03）落点表** = `docs/batches/2026-10-03-provider-invalid-unify.md` §2（唯一承载面——一次性批次材料）。
-**本批（issue 修复批·一 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round1.md` §2（唯一承载面——一次性批次材料）。
-**本批（OpenCode Go 预设接入 · 2026-10-04）落点表** = `docs/batches/2026-10-04-opencode-go-preset.md` §2（唯一承载面——一次性批次材料）。
-**本批（CLI ∥ VSC 会话选定写回 · 2026-10-04）落点表** = `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §2（唯一承载面——一次性批次材料）。
-**本批（responses 适配面健壮性三项 · 2026-10-04）落点表** = `docs/batches/2026-10-04-responses-robustness.md` §2（唯一承载面——一次性批次材料）。
-**本批（provider 配置面三端对齐 · 2026-10-07）落点表** = `docs/batches/2026-10-07-provider-config-parity.md` §2（唯一承载面——一次性批次材料）。
-**本批（proxy 逐渠独立（去全局闸） · 2026-10-08）落点表** = `docs/batches/2026-10-08-proxy-per-channel.md` §2（唯一承载面——一次性批次材料）。
-**本批（provider 密钥链守卫 · 2026-10-08）落点表** = `docs/batches/2026-10-08-provider-key-guards.md` §2（唯一承载面——一次性批次材料）。
-
 ## 6. 机制面（自 CLI 产品档并入 · 2026-09-14 · B 轮）
 
 > **来源** = `thincoder-cli/docs/design/PROVIDER.md`（1369 行 · CLI 产品档）——根层裁定后该档 = **迁移期参照历史**（只读 · 不维护 · 不参与内容同步）。
 > **本节 = 该档中「根层所缺」内容的并入面**：(a) 机制 / 契约的实质描述 · (b) 实现细节与坐标 · (c) 关键决策依据（§7）。
-> **不并**者见 §8：一次性批次材料（受影响文件表 / 用例表 / AC 表 / 对账表 / 变更流水账）· 逐批状态行与交付核销标记。
 > **坐标口径** = as-of 2026-09-14：**旧档路径形态为迁移前**（CLI 侧 provider 实现住 `src/provider/**`）——本节一律按**现状路径**落笔（`thincoder-core/provider/**`；`thincoder-cli/src/tui/**` = CLI 壳体面）。符号名与档路径为契约面，**行号未逐条复核**、仅供定位。
 
 ### 6.1 模块地图与总览
@@ -193,7 +180,7 @@ name 空槽丢弃并计数、缺 id 合成 `call_N`。告警（`droppedToolCalls
   （baseURL `https://tokenhub.tencentmaas.com/v1`，**不带** thinking / reasoningEffort / maxTokens 字段 =
   该载荷面未实测，不设即不发）；`volcengine` = 火山方舟（实测在册——逐字段证据 = 批次档 `2026-09-20-channel-onboarding.md`）。
   既有 `hunyuan` 预设 = 另一主机，本轮未实测 ⇒ **不动**。
-  行集与逐字段取值 = `doc:MODEL-SPECS.md:§9`；护栏用例 = 预置表**不携 `model` 键**（逐条断言——2026-10-09 清除批改指）——**现形 = `docs/batches/2026-10-04-opencode-go-preset.test.mjs`（G-3——本批随断言改指）**；前身 = `docs/batches/2026-09-29-provider-config-family.test.mjs`（2026-09-28 测试树全清后重立者——其「预设总数 = 22」冻结随 2026-10-04 批过时，as-of 注已随该件头）。
+  行集与逐字段取值 = `doc:MODEL-SPECS.md:§9`；护栏用例 = 预置表**不携 `model` 键**（逐条断言——2026-10-09 清除批改指）——**现形 = 单元测试档（G-3——本批随断言改指）**；前身 = 单元测试档（2026-09-28 测试树全清后重立者——其「预设总数 = 22」冻结随 2026-10-04 批过时，as-of 注已随该件头）。
 - **华为云 MaaS 入表（2026-09-29 provider-config-family 批 · 台账 #176）**：`huawei` = 华为云 ModelArts Studio（MaaS）——baseURL
   `https://api.modelarts-maas.com/openai/v1`（OpenAI 兼容；区域端点变体走自定义渠道自助路径——§6.21）；`thinking` / `reasoningEffort` / `maxTokens`
   **不带**（载荷面未测——「不设 = 不发」）。
@@ -203,7 +190,7 @@ name 空槽丢弃并计数、缺 id 合成 `call_N`。告警（`droppedToolCalls
   （Anthropic `/messages` 侧，`format: "anthropic"`；同 key）。字段集 = 最小面：`thinking` ∕ `reasoningEffort`
   **不设 = 不发**（D-13 同口径）；`maxTokens` 仅 anthropic 侧设 `65536`（该 transport 必发 `max_tokens`——不设即落规格行值 `131072`，
   超渠道口径）；**待验（无 key——未实拉 `/models` ∕ 载荷未实测；接入后复核）**；`x-opencode-session` 头 = 可选遥测——**不发**（§6.17 域外与端面）。
-  逐模型协议分侧表（官方档快照）与被否案（per-model format 机制 ∕ 仅 OpenAI 侧） = 批档 `docs/batches/2026-10-04-opencode-go-preset.md` §2。
+  逐模型协议分侧表（官方档快照）与被否案（per-model format 机制 ∕ 仅 OpenAI 侧） = 批档 §2。
 - **Gemini OpenAI 兼容侧入表（2026-10-09 server 预设批 · 台账 #1128）**：`gemini-openai` = Google 官方 OpenAI 兼容端点
   （`baseURL` `https://generativelanguage.googleapis.com/v1beta/openai`；与 `gemini`（原生 `format:"google"`）**同 key、两形态并存**——本键 = OpenAI `/chat/completions` 侧）；
   `thinking` / `reasoningEffort` / `maxTokens` **不带**（载荷面未测——「不设 = 不发」）；**待验（无 key——未实拉 `/models`；接入后按实拉复核）**。收录依据 = §6.21 三判据
@@ -219,7 +206,7 @@ qwen-plan 渠道同名模型以 `deepseek-v4.1-flash` 提供（`token-plan.cn-be
 qwen 系列（百炼**混合思考**模式，默认开启）需能**真正关闭**思考（缺陷：reasoning off 时原请求体不含任何思考控制字段 → 服务端按默认开启 → off 静默失效）。纯函数 `resolveEnableThinking(provider, spec)`（`config.mjs`，两端同构造）：白名单双条件 = 模型名 `qwen` 开头（排除 `qwen3-coder` 前缀）**且** provider 指向百炼 host（`isBailianHost`）；
 `provider.thinking === null` 是两端统一的**显式 off 唯一标记**。**不受 router 门控**（白名单键控模型前缀 + host，非模型 ID 斜杠）。**选档位 / 开 auto = 隐含 thinking on**：清 `thinking: null` off 标记；
 on 分支默认 effort 契约 = 取 `spec.reasoningEffortEnum` 的**首个非 `"none"` 档**——枚举首项为 `none` 的族（qwen 全族）不得拿首项当 on 默认，否则 = 「开了个关着的思考」；
-`none` 不在枚举时两者等价 ⇒ 对其余族零回归。**现状（待落）**：`thincoder-cli/src/tui/cmd-think.mjs:118` 仍取枚举首项，修法 = `docs/batches/2026-09-20-qwen-flash-specs.md` 本批交付项（设计 `doc:MODEL-SPECS.md:§2.8`，A-16 / T-14）。
+ `none` 不在枚举时两者等价 ⇒ 对其余族零回归。**现状（待落）**：`thincoder-cli/src/tui/cmd-think.mjs:118` 仍取枚举首项，修法 = 2026-09-20 qwen-flash-specs 批本批交付项（设计 `doc:MODEL-SPECS.md:§2.8`，A-16 / T-14）。
 
 **两机制并存（2026-09-20 登记，不混同）**：关思考有两条独立路径——本节的名字 + 主机白名单（管**请求体字段**）
 与 spec 的 `reasoningEffortEnum` 含 `"none"`（管**端侧下拉能选哪些档 + 发送前校验**）。
@@ -425,7 +412,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
   ④ 未知相位（`{ phase: "zzz" }`）/ 秒缺失（`{ phase: "retry" }`）⇒ 不显示（旧文案不得残留）；
   ⑤ 单源不变量：逐相 `waitStatusText(ev)` 与 `t("status." + kind, …)` deepEqual。
 
-> 本批受影响文件（当前行数 / 增量）= 批次档 `docs/batches/2026-09-15-core-defect-fixes.md` §四；验收 = 同档 §五 V5 / V6。
+> 本批受影响文件（当前行数 / 增量）见批档 §四；验收 = 同档 §五 V5 / V6。
 
 ### 6.21 预设收录判据与长尾渠道自助路径（2026-09-29 provider-config-family 批 · 台账 #177）
 
@@ -449,7 +436,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 ### 6.22 运行时渠道/模型统一解析（三端同源 · U3「宽松 + 明示」· 2026-10-03 · 台账 #841）
 
-> **来源**：用户 2026-10-03 13:07 原则裁定「三端界面可以不一样，但是逻辑应该是一样的」+ 13:10 取 **U3 档**（宽松 + 明示）；批档 = `docs/batches/2026-10-03-provider-invalid-unify.md` §2。本节 = 该机制**长期单源**；三端消费面只留各自落点细节（D2）。
+> **来源**：用户 2026-10-03 13:07 原则裁定「三端界面可以不一样，但是逻辑应该是一样的」+ 13:10 取 **U3 档**（宽松 + 明示）；批档 = 2026-10-03 provider-invalid-unify 批 §2。本节 = 该机制**长期单源**；三端消费面只留各自落点细节（D2）。
 
 **问题（实读）**：「缺 ∥ 无效 `defaultModel`」这一态的**判定与处置**三端不等——核 ∥ CLI ∥ 桌面 = 严格（解析未过即无效态：`thincoder-core/config.mjs:328-335`）；VSC = 接入面**自建回退链**绕过核判据（`panel-turn-stages.mjs:57-74` + `thincoder-vscode/src/extension/presets.mjs:107-117`）——既是偏离、也是事实标准。⇒ 同一配置态，一端能发、两端不能发。
 
@@ -503,7 +490,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 **可机检断言形**：① 解析一致（**运行面 + config 级两侧**）——夹具矩阵每行（临时配置路径缝 `_setConfigPathForTest`）：**运行面** = 三端同喂**同一假槽**（VSC `resolveTurnStage` 核读 ∥ 桌面核装配读 ∥ 核 `resolveProviderPlan` 直读）按 `{state, source, channel, model, provider.name, provider.model}` **逐字段相等**；
 **config 级**（`loadConfig()` 无槽入参——KD-841-3 状态 = config 级）= **只比 `state`**；含槽行（S9）单列口径 = config 级 `state` 断言（`ok`）∥ 运行渠道断言归假槽用例（三端同喂）；② 单源——VSC 树零自建扫描链（源码判据）+ CLI ∥ 桌面取值点唯一 = `loadConfig().provider`；
 ③ 明示必达——`state === "fallback"` ⇒ 各端明示节点在场（`model` 在场 ⇒ 现行句；`model === null` ⇒ **未设置变体（禁「本次使用」句）**——各端同键两字面，按载荷 `model` 判）；
-`state === "ok"` ∧ `providerInvalidReason` 空 ⇒ 零节点（负向锁）；invalid 类（合成式）⇒ 端面导引节点（CLI picker ∥ VSC 现词 ∥ 桌面发送失败面）。机检件 = 批档 `docs/batches/2026-10-03-provider-invalid-unify.test.mjs`（随批留存）。
+`state === "ok"` ∧ `providerInvalidReason` 空 ⇒ 零节点（负向锁）；invalid 类（合成式）⇒ 端面导引节点（CLI picker ∥ VSC 现词 ∥ 桌面发送失败面）。机检件 = 批档单元测试档（随批留存）。
 
 **关键决策（含被否）**：
 
@@ -516,7 +503,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 ### 6.23 provider 密钥链守卫（保存单写原子 ∥ 缺钥前置守卫 · 2026-10-08 · 台账 #1062 ∥ #1063）
 
-> **来源**：用户 2026-10-08 11:13「都修了吧」= 快车道全链点火（承同日 gemini 诊断——live 实例：用户 `gemini` 条目无 `apiKey`）；批档 = `docs/batches/2026-10-08-provider-key-guards.md` §2。本节 = 该机制**长期单源**。
+> **来源**：用户 2026-10-08 11:13「都修了吧」= 快车道全链点火（承同日 gemini 诊断——live 实例：用户 `gemini` 条目无 `apiKey`）；批档 = 2026-10-08 provider-key-guards 批 §2。本节 = 该机制**长期单源**。
 
 **问题（实读）**：
 
@@ -544,7 +531,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 2. **缺钥 = 前置守卫（#1063）**：核 `thincoder-core/provider/core.mjs` `chatImpl` 在 `resolveProviderSecrets`（`:122`）之后、格式分派之前**单点前置校验**——`apiKey`（trim 后）空 ⇒ 抛可读错误（前缀锁定 `API key missing for provider "<name>"`；尾句 = 配置指引）；
 **零请求**（先于 rateGate ∥ 全部 fetch）。单点覆盖四 transport（openai ∥ anthropic ∥ google ∥ responses）+ 续写 ∕ advisor ∕ 子代理 ∕ consult 全链（`chat()` = 单一入口——`:78-84` 文档记载）。四档凭据位不各自加守卫（避四份判据）——由本守卫关闭该径。
 
-**可机检断言形**（单元测试档 = `docs/batches/2026-10-08-provider-key-guards-core.test.mjs`）：
+**可机检断言形**（单元测试档）：
 
 - ① #1062 原子共落——临时配置路径缝（`_setConfigPathForTest`）；订阅 `onConfigSelfWrite` 逐拍快照 ⇒ 快照数**恰 1** ∧ 该拍盘面**同时**含条目与 `apiKey`（旧实现：write1 快照无钥 ∥ 两拍——红）。
 - ② #1062 键语义回归——`" sk "` ⇒ 落 trim 值；空 ∥ 全空白 ⇒ 无 `apiKey` 键。
@@ -563,9 +550,9 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 ### 6.24 Gemini 思考签名透传（thought signature · 2026-10-10 · 台账 #1205）
 
-> **来源**：用户 2026-10-10 09:53 转述另端排查 + 09:57「开批吧，也自动跑。」；批档 = `docs/batches/2026-10-10-gemini-thought-signature.md` §2。本节 = 该机制**长期单源**。
+> **来源**：用户 2026-10-10 09:53 转述另端排查 + 09:57「开批吧，也自动跑。」；批档 = 2026-10-10 gemini-thought-signature 批 §2。本节 = 该机制**长期单源**。
 
-**先例（closest-precedent）**：`docs/batches/2026-09-20-reasoning-echo-gap.md`（thinking 回传缺口批——同点加字段）：承载面同为单构造点 `assistantToolCallMessage`（实现坐标 = `thincoder-core/model-specs.mjs:352`）；其设计档节 = `docs/core/design/CONTEXT-COMPACTION.md` §6.10 #9 ∥ §7 D-CC22。
+**先例（closest-precedent）**：2026-09-20 reasoning-echo-gap 批（thinking 回传缺口批——同点加字段）：承载面同为单构造点 `assistantToolCallMessage`（实现坐标 = `thincoder-core/model-specs.mjs:352`）；其设计档节 = `docs/core/design/CONTEXT-COMPACTION.md` §6.10 #9 ∥ §7 D-CC22。
 **对齐** = 单构造点穿过、调用点零改；**偏离** ① 白名单构造（理由 = §7 D-PR37）· ② 原生路回带缓（理由 = §7 D-PR38）。
 
 **问题（实证）**：Gemini 3 工具调用随带**思考签名**（thought signature——加密推理态；官方要求多轮工具链回带，缺 ⇒ 4xx）；本仓修前整链零捕获零回带 ⇒ 「调工具 → 回传 → 再请求」第 2 次请求必 400（`Function call is missing a thought_signature in functionCall parts`）。
@@ -599,7 +586,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 **边界（本批不做）**：**原生路回带**不在本批——原生路 `convertMessages` 现不复建 functionCall parts（工具轮历史压平为文本）⇒ 触不到本 400；补建 = 另一机制（functionCall / functionResponse 史形 + 修复前历史无签名 ⇒ 直接补发反引新 400），另议。规格表 / 预设表 / 三端 UI / 服务器快照零涉。
 
-**可机检断言**（单元测试档 = `docs/batches/2026-10-10-gemini-thought-signature.test.mjs`）：① 捕获——合成帧喂 `readSSE` ⇒ 槽含签名字段（原生路经 `google.mjs` `chat()` + fetch 桩同判）；② 承载——`assistantToolCallMessage` 直调：有 ⇒ 键在场逐字同值 ∥ 无 ⇒ 键不存在；③ 零回归——无签名字段帧 ⇒ 槽 / 消息键集与批前逐字同形。
+**可机检断言**（单元测试档）：① 捕获——合成帧喂 `readSSE` ⇒ 槽含签名字段（原生路经 `google.mjs` `chat()` + fetch 桩同判）；② 承载——`assistantToolCallMessage` 直调：有 ⇒ 键在场逐字同值 ∥ 无 ⇒ 键不存在；③ 零回归——无签名字段帧 ⇒ 槽 / 消息键集与批前逐字同形。
 
 ### 6.25 派生渠道条目（团队登录——`derived` 标记 · 2026-10-10 · 台账 #1212）
 
@@ -613,7 +600,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 ### 6.26 图片拒绝自愈（data URL 入史 · 400 零自愈修复 · 2026-10-15 · 批 image-history-400 · 台账 #1450）
 
-> **来源**：用户 2026-10-14 报障「发图后会话烧死——此后每回合 400、零自愈」+ 2026-10-15 00:08「都自动跑到交付吧」（全链自动授权）；批档 = `docs/batches/2026-10-15-image-history-400.md`；需求锚 = `docs/core/requirements/PROVIDER.md` §4.7（`:164`）/ **R23**（`:172`——图像语义 400 ⇒ 全剥 + 机读注记 + 单次重发 + 落账）；支撑锚 = R11（`:81`——`read_image` 门放行，放行语义须含「不被图片反噬」）。
+> **来源**：用户 2026-10-14 报障「发图后会话烧死——此后每回合 400、零自愈」+ 2026-10-15 00:08「都自动跑到交付吧」（全链自动授权）；批档 = 2026-10-15 image-history-400 批；需求锚 = `docs/core/requirements/PROVIDER.md` §4.7（`:164`）/ **R23**（`:172`——图像语义 400 ⇒ 全剥 + 机读注记 + 单次重发 + 落账）；支撑锚 = R11（`:81`——`read_image` 门放行，放行语义须含「不被图片反噬」）。
 
 **问题陈述与现状坐标（as-of 2026-10-15 实读——四环）**：
 
@@ -668,7 +655,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 | 2 | `thincoder-core/agent/chat-call.mjs` | 68 | **+13**（落地收正 2026-10-15；设计估 ≈30） | catch 自愈接线 + 单次重发 + streak 清账 |
 | 3 | `thincoder-core/provider/normalize.mjs` | 138 | **+30**（落地收正 2026-10-15；设计估 ≈14） | 占位常量 + `stripRejectedImages` + `capHistoryImages` 占位参 |
 | 4 | `thincoder-core/provider/errors.mjs` | 126 | **+8**（落地收正 2026-10-15；设计估 ≈10） | `IMAGE_REJECTION_RE` + `looksLikeImageRejection` |
-| 5 | `docs/batches/2026-10-15-image-history-400.test.mjs`（**已落**） | 0 | **+288**（落地收正 2026-10-15；设计估 ≈170） | 批内单元档（用例见下） |
+| 5 | 批内单元测试档（**已落**） | 0 | **+288**（落地收正 2026-10-15；设计估 ≈170） | 批内单元档（用例见下） |
 
 **零改面（显式）**：`record-results.mjs`（注入面——图必须进上下文；15MB 单图闸 ∥ 32MB 累计闸既有）· `context.mjs` / `context-degrade.mjs`（两兜底面——本批零改，见 D-PR40）· `thincoder-core/provider/core.mjs`（重试族零改）· 规格表 / 预设 / 三端 UI（零触）。
 
@@ -692,7 +679,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 | # | 验收 | 回指 | 机检 |
 |---|---|---|---|
-| AC-1 | 图像语义 400 ⇒ 全图剥除 + 单次重发（会话自愈） | 本单环③ ∥ R23 ①（`:172`） | `node --test docs/batches/2026-10-15-image-history-400.test.mjs` T-2 ∥ W-1 绿 |
+| AC-1 | 图像语义 400 ⇒ 全图剥除 + 单次重发（会话自愈） | 本单环③ ∥ R23 ①（`:172`） | 批内单元档 T-2 ∥ W-1 绿 |
 | AC-2 | 剥除只动机读线；人读线（`_fullHistory`）图零损 | 本单环① ∥ R23 本体（`:172`——copy-on-write） | T-8 绿 |
 | AC-3 | 非图像错误零误伤（history 不变、原错照抛） | 本单环③ ∥ R23 ②（`:172`） | T-3 绿 + T-1 反样本绿 |
 | AC-4 | 无重试风暴（每失败回合至多一次剥除 + 一次重发；剥除后自熄） | 本单环③ ∥ R23 ③（`:172`） | T-6 绿 ∥ W-1 请求计数 = 2 |
@@ -752,121 +739,3 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 | D-PR38 | **原生路回带**（functionCall parts 复建）= 本批边界外（捕获在位 · 回带缓） | 原生路现不复建 functionCall parts（工具轮历史压平为文本）⇒ 不触本 400；补建 = 新机制（functionResponse 配对 + 修复前历史无签名 ⇒ 直接补发反引新 400）。被否：同批补建（范围外 + 自伤风险）。 |
 | D-PR39 | 图片拒绝自愈 = **agent 层全剥 + 单次重发**（T1 图像语义 ∥ T2 同态重复；copy-on-write 只动机读线） | 四环缺一即烧死（图进史 ⇒ 400 立抛 ⇒ 毒图留场 ⇒ 每回合重发、零自愈）；自愈须持久改史 ⇒ 不能住净化面（D-PR3 契约：净化只改副本、可逆；副本面改不了历史）。被否：只剥最新（单图归因信息不存在；「声明多模态实拒图」二连败）· 循环重发（400 成本纪律——再败即抛）· 请求前预剥（无错因先剥 = 正常图白丢）· 改 history 不动副本（图被拒后仍留史 ⇒ 未治）。 |
 | D-PR40 | 兜底面（压缩 ∥ 降级）**零改**；用户知会 = 机读注记（模型转述）+ `llm:image-heal` 落账；端侧主动提示不立 | 压缩只跟 token 阈值走（与「剂量无关的拒绝」不同域——阈值不触 ⇒ 不愈）；降级面只触 `role:"tool"` / string 内容（图消息不在判据内）。被否：把剥除并进压缩（阈值不触 = 不愈）· 新增端侧回调（三端面 = 超射程；机制面先立、面后补）。 |
-
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/PROVIDER.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。其下列内容**不并入本档**，理由如下：
-
-| 旧档节 | 内容 | 何故不并 |
-|---|---|---|
-| 档首头注 + 文末「变更记录」+ 各批「评审修正轮」逐条采纳项 | 逐批变更与修正流水账 | 历史叙述——本档自有变更记录；旧档即该历史的载体 |
-| 各批「状态」行（「均已实施并核销」「R10 / M10 增量待批准」等） | 交付 / 批准状态标记 | 时点状态——live 跟踪面归批次档 / 台账（D2） |
-| §16.1 / §19.1 的问题与背景叙述（v1 候选硬约束的实锤、DeepSeek 双模型现状） | 旧前提的陈述 | 现行形态已入 §6.11 / §6.16；旧前提的更正过程不随迁 |
-| §13.1 支持矩阵（按厂商逐行的官方文档核实读数） | 时点核实读数 | 结论（白名单 host）已入 §6.13；逐行读数随厂商演进失真 |
-| §19.2（a）逐字段「字段依据」展开 | 官方文档一手核实逐项 | 结论（行字段集）已入 §6.11；一手读数属批次取证材料 |
-| §19.3 / §23.3 逐候选评估全文 | 选型对比逐行评估 | 结论已提炼入 §7（D-PR19–D-PR22） |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档节 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| §0 / §18 / §22（需求层同档承载） | R1–R20 / N1–N9 需求条目 | **现住本层需求档** `docs/core/requirements/PROVIDER.md`（B 轮已并入——单板块一档：设计住本档、需求住需求档） |
-| §16.5 / §19.4 / §23.4 受影响文件全清单（双端逐档行数） | 逐档行数与增量 | **一次性批次材料**（文档分层纪律）——批次档承载 |
-| §17 / §20 / §24 用例表 + AC 表 | 测试用例与验收清单 | **一次性批次材料**——测试资产归测试层，验收勾销归批次档 |
-| §16.9 / §19.6 / §23.6 对账表 + 勘察补充发现 | 逐批对账与勘察清单 | **一次性批次材料** |
-| §16.7 / §19.7 / §23.7 UI 决策表 | 逐批 UI / 交互决策与 open 项 | 结论已提炼入 §6.16 / §6.17（逐批表为批次语境；open 项均为「无」） |
-| §10 / §16.3 / §6.16 的 VSC 对位实现细节（webview / settings 面板逐档） | VSC 侧独立实现 | 属 VSC 产品树（`thincoder-vscode/src/**`）；单仓单档纪律 = 各产品级实现留各产品树 |
-| §21.2 通路表的 as-of 行号坐标 | 逐通路调用点行号 | 契约（装配顺序 / 通路集合）已入 §6.17；行号为时点坐标 |
-| `IMAGE-DOWNGRADE-VISION.md` + `PROVIDER.md`（VSC 档）的受影响文件表 / 用例表 / AC 表 / 状态行 / 变更记录 | 一次性批次材料 | 机制与契约已入 §6.18 / §6.19；测试资产归测试层（`thincoder-vscode/test/image-downgrade.test.mjs` 现体）；验收勾销归批次档；旧档 = 参照历史 （迁移期引文） |
-| `IMAGE-DOWNGRADE-VISION.md` 的群 A 批（A12）契约 / 用例施工形态字面编号块 | 批次施工骨架 | 契约语义已提炼入 §6.18（降级窗 Stop 契约）；字面编号块属一次性施工形态 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/design/CORE-UNIFICATION.md` 拆出（§2.5 #114 / #115 / #138–#143 · §2.5.1 A19 / A20 · §2.12.2 第 8 行）；**语义零改**，行号沿用原编号。
-- 2026-09-14（markdown 面小收正轮）：§1 归属表与 §2.4 #138 行的 `index.mjs` 补路径前缀（`thincoder-core/provider/index.mjs`——与 `thincoder-vscode/src/tools/index.mjs` / `thincoder-cli/src/tui/index.mjs` 同名不同物；**消除歧义不改判据**）。
-- 2026-09-14（**B 轮并入 · 第 2 批**）：新增 §6 **机制面**（模块地图 / chat 主流程 / 重试超时错误分类 / SSE / 续写 / 闸门 / 净化 / 原生 transport / 规格表 / 畸形 tool_calls / 预设 / enable_thinking / Responses / 续写 400 根治 / providerSpec / 模型清单 provider 化 / 请求头装配）· §7 **关键决策记录（D-PR1–24）** · §8 **不并项与历史沿革** ·
-来源 = `thincoder-cli/docs/design/PROVIDER.md`（**旧档一字未改**——原地作参照历史）；产品需求条目 R1–R20 / N1–N9 归本层需求档 `docs/core/requirements/PROVIDER.md`；首部加机制面指针一行。
-- 2026-09-15（**qwen-plan 渠道名接入批** · eng-designer）：§6.11 行集补 `deepseek-v4.1-flash`（qwen-plan 渠道名 · 字段逐字对齐 `deepseek-flash`）· §7 补 **D-PR25**；本批源码 / 测试面见批次档 `batches/2026-09-15-DEEPSEEK-QWENPLAN.md`。
-- 2026-09-15（**评审修正轮** · eng-designer）：§7 D-PR25 论证口径改「前缀不相交（第 12 位 `.` 与 `-` 互不为前缀）」——长度排序既不充分也无必要（字典序下退役行反在前），排序交由既有 SORTED_SPECS 长度降序（与本批无关）。
-- 2026-09-15（**§8B #4 / #7 终收批** · eng-designer）：新增 §6.18 **图片输入与贴图降级链**（#4 IMAGE-DOWNGRADE-VISION + #7 PROVIDER §8 合成）+ §6.19 **VS Code 端接线**（配置存储端差 / 预设镜像 / 面板接线 / transport 端差 / 能力适配坐标 / 标题生成——#7 其余面）；§7 补 D-PR26 / D-PR27；§8.2 登记两行；
-来源 = `thincoder-vscode/docs/design/{PROVIDER,IMAGE-DOWNGRADE-VISION}.md`（一字未改——参照历史）。
-- 2026-09-15（**S2 W10 · VSC provider 接线批** · eng-coder）：§1 归属表 VSC 列改述（「经 `@thincoder/core/...` 引用」——自持镜像已删）；§6.19 transport 端差 / M9 探针 / 能力适配坐标收正（迁核退役登记；机制条文零改）。
-  VSC 侧删除集、改指面与测试面（含 `provider-timeout-semantics` 改判）见批次档 `batches/2026-09-15-vsc-core-wiring.md` §5。
-- 2026-09-16（**批 1 CORE-DEFECT-FIXES · eng-designer**）：§6.6 补**五相值域**行 · §6.20 新增 **onWait 状态文案映射单源**块（映射表 / API / 复现判据 ①–⑤）+ **D-PR28**；体量读数 363 → 402。
-- 2026-09-18（**init-block 批 · eng-designer**——承 `docs/batches/2026-09-18-init-block.md` §1）：§6.16 补 **M8/M9 补**行（探针落账分类 + `hostBusy` 闸 + 窗口内 ≤2 次有界重试 · 文案零改）· §6.19 补探针落账指针 · §7 补 **D-PR29 / D-PR30**。
-- 2026-09-18（**init-block 批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-18-init-block.md` §3 发现 9）：
-  §6.16 M8/M9 补行按「核语义 / 端驱动」切分——留**载荷 + 分类（`hostBusy` = 非渠道故障）+ 运行期零探测零改 + 文案零改**；采样器判据形态 / 重试窗口与计数 / 在飞去重 / 获焦重探被拒**移出**（端侧详面指针 → `docs/vsc/design/SETTINGS.md` §2.12）；
-  §6.19 探针行收**纯指针**（双向指，不重述）。**零新语义**（切分 = 评审发现的直接导出项）。
-- 2026-09-18（**init-block 批 · 设计评审轮 2 修正** · eng-designer——fix 轮 2；承 `docs/batches/2026-09-18-init-block.md` §3 轮次 2 发现 2）：
-  §8 **D-PR29** 零改面限定为 `channelUnavailableMessage` 本体（「UI 契约零变」不再作全局结论）+ 补端侧展示面指针（状态词级分档 → `docs/vsc/design/SETTINGS.md` §2.12）；§6.16 M8/M9 补行零改。**零新语义**（= 评审发现的直接导出项）。
-- 2026-09-20（**qwen flash 规格批 · eng-designer**，承 `docs/batches/2026-09-20-qwen-flash-specs.md`）：§6.9 两改——「退役 / 路由名」判据收口为**按服务端状态判**
-  （原「保留为独立行」与本批 §1.6 删行裁定的张力显式化）+ 新登「qwen 族无泛前缀托底行」与音/视频未接入事实；§6.12 两处——`/think on` 默认档**契约**收口为首个非 `"none"` 档
-  （原枚举首项对 qwen 族等于 off；**实现待落**，本批交付项）+ 登记「`enable_thinking` 与 spec 枚举两机制并存、不新增 `thinkToggleApi`」。规格数值不入本档（真源 = MODEL-SPECS.md）。
-- 2026-09-20（**渠道接入批 · eng-designer**，承 `docs/batches/2026-09-20-channel-onboarding.md`）：§6.11 预设计数 20 → **21**
-  （D3 计数与清单同变）+ 新登 `tokenhub` 预置（腾讯 TokenHub 聚合网关 · 默认模型 `hy3` · 思考/`maxTokens` 字段**不设 = 不发**）
-  与 `volcengine` 默认模型改值（方舟豆包 Seed 编程专档，实测在册）。既有 `hunyuan`（另一主机）未实测 ⇒ 不动。
-- 2026-09-20（**渠道接入批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-20-channel-onboarding.md` §3 轮次 1）：
-  §6.19 预设段来源命题**收正**（实读盘上无 `thincoder-vscode/src/config-presets.mjs`）——改指核单源 `thincoder-core/config-presets.mjs`
-  + VSC 取一侧（`thincoder-vscode/src/extension/presets.mjs:9`/`:21`），计数 20 → **21**（+ `tokenhub`）；§6.12 新登 **effort 族 off 补发**
-  （D-14 / AC-9）谓词单源 + 零变面五 guard；§6.2 载荷组装枚举补该支指针。规格数值不入本档（真源 = MODEL-SPECS.md）。
-  **零新语义**（D-14 系批档 §1.7-① 已批项；余 = 评审发现的直接导出项）。
-  行集与逐字段取值真源 = `doc:MODEL-SPECS.md:§9`，本档只承载渠道/预设面（D2 不重述数值）。
-- 2026-09-20（**卫生族批 · 台账 #138 · eng-designer**）：首部机制面节区改 `§6–§8` + 历史节号指称清理（行数规则废除批残留）；设计源 = `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2。
-- 2026-09-25（**model-specs 清理批 · DOC 面残留收正轮 · eng-designer**——承 `docs/batches/2026-09-25-model-specs-cleanup.md` §2/§4 · 台账 #14）：§6.9 字段清单删 `cacheMode`（该档唯一命中；字段本体随 `doc:MODEL-SPECS.md:§14` 批整体删除——§14.2 #11）。本档其余零改。
-- 2026-09-25（**规格·effort 轮 · eng-designer**——承 `docs/batches/2026-09-25-spec-effort.md` §2 · 台账 #241 / #326 / #329）：§6.9 新登 `noUsageStream` 语义（保守抑制 · 非能力断言 · 消费点惰性面）；§6.11 新登预置 `maxTokens` ⇄ 规格行对齐与空名单白名单；§6.12 新登 **off 形解析链保形条**（#329——advisor 径 `thinking:null` 保形 + 显式 off 清继承档；谓词本体零改）。
-  数值与逐对表真源 = `doc:MODEL-SPECS.md:§15`，本档只承载机制面（D2）。
-- 2026-09-25（**规格·effort 轮 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-25-spec-effort.md` §3 轮次 1）：§6.12 补**生产者面**指针（off 形按族取形——effort 族须落 `thinking: null`；单源 = `doc:MODEL-SPECS.md:§15.4-2`）+ 用例号收正（`A-13..A-16` → `AD-1..AD-4`，避与判据号同号）。谓词本体零改（单源不变）。
-- 2026-09-25（**off 形族收尾批 · eng-designer**——承 `docs/batches/2026-09-25-off-family-closeout.md` §2 · 台账 #334 / #335 / #346）：§6.12 补 **「有效 off 路径」判据与回执可宣称性**指针（生产者全表 + 单源实现 `thincoder-core/think-off.mjs`（已落）——真源 = `doc:MODEL-SPECS.md:§16`）；谓词本体零改。
-- 2026-09-25（**off 形族收尾批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-25-off-family-closeout.md` §3 轮次 1 + §2 修正块 · 台账 #334 / #335 / #346）：
-  §6.9 规格字段清单补 `thinkAlwaysOn`（服务端强制思考标记——语义单源 = `doc:MODEL-SPECS.md:§16.3`，循 `cacheMode` 同笔同步先例）；§6.19 旧形字面收正（`"off"` 载荷**按族取形**——真源 = `doc:MODEL-SPECS.md:§16.2`）。谓词本体零改。
-- 2026-09-29（**provider-config-family 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` · 台账 #176 ∕ #177）：§6.11 预设计数 21 → **22**（D3 计数与清单同变）+ 新登 `huawei` 预置（华为云 MaaS——端点钉定 ∕ 默认模型 = 实施轮实拉取值 ∕ 未测载荷字段不带）+ 护栏句重锚（单元测试档形态）；§6.19 计数与名单同变；
-  §6.17 新登值引用指针（`${env:VAR}` 解析单源 → `doc:CONFIG.md:§6.3`）；新增 **§6.21 预设收录判据与长尾渠道自助路径**（三判据 + 运营商三家结论 + 自助路径）。**零新语义**（= 台账 #176 ∕ #177 既定内容的成文；另含结构面自修一项：§7 标题行补立——D-PR 决策表原为无标题表块）。
-- 2026-09-29（**provider-config-family 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` §3 轮次 1 发现 6）：§6.19 `presetToEntry` 坐标收正——`thincoder-core/config-presets.mjs:41` ⇒ **`:44`**（函数体行；原注落 JSDoc 前位）。**零新语义**。
-- 2026-09-30（**doc-sweep 批 · 行宽收正 · eng-designer**——承 `docs/batches/2026-09-30-doc-sweep.md` §2 · 台账 #664）：provider-config-family 设计轮条（原单行 439 字符）**折行**（仅换行 ∕ 语义零改——doc-check 行宽闸收正）。**零新语义**。
-- 2026-09-30（**VSC 贴图件清理批**——承 `docs/batches/2026-09-30-vsc-paste-cleanup.md` §2 · 台账 #735）：§6.18 「文件随 offload 写时自清理」句收正——临时件清理 = 端侧时序面（桌面 = 回合尾 `cleanupTurn`；
-  VSC = 贴图落盘写时 mtime 扫除〔3 天窗——核 `thincoder-core/agent/helpers.mjs` `cleanupOldToolResults` 单源〕；CLI = 未接（留存））；VSC 侧接线落地（`thincoder-vscode/src/extension/image-handler.mjs` 写时扫除）。
-- 2026-09-30（**批 core-tools-pairfix · 实施后收正** · eng-coder——承 `docs/batches/2026-09-30-core-tools-pairfix.md` §2 · 台账 #733）：§6.18 CLI 子句按落地真值收终形——`CLI ∥ VSC = 贴图落盘写时 mtime 扫除（3 天窗）`（CLI 侧接线落地 = `thincoder-cli/src/tui/clipboard.mjs` 写时扫除；「CLI = 未接（留存）」随撤）。核件 ∥ 桌面 ∥ VSC 零触。
-
-- 2026-10-03（**无效渠道态逻辑归一（provider-invalid-unify）批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-03-provider-invalid-unify.md` §2 · 台账 #841）：新增 **§6.22 运行时渠道/模型统一解析（三端同源 · U3 宽松+明示）**——核导出 `resolveProviderPlan`（回退序三步 + 模型面四步 + 两态分界 + reason 逐档 + 三端明示面对照表 + KD-841-1–4 + 边界）。**产品码零触（设计轮）**。
-
-- 2026-10-03（**无效渠道态逻辑归一（provider-invalid-unify）批 · 修正轮 #8（用户 13:43 更正——13:09 口径系拼音误打）· eng-designer**——承批档 `docs/batches/2026-10-03-provider-invalid-unify.md` §2 更正块 · 台账 #841）：§6.22 三端明示面对照表**桌面行收正为词面-only 终形**——`fallback` 格去「+ 钮 `composer.send.chooseModel`」（该句柄实不可达——与 #840 同病）∥ 动作格「钮 → 模型菜单（同钮同门）」⇒ **—（零动作面）**；表头「（按钮倾向）」⇒「动作」（误读源词去）。CLI ∥ VSC 动作格零改（不在本更正射程——误读波及面只及桌面明示行）。**产品码零触（修正轮）**。
-
-- 2026-10-03（**无效渠道态逻辑归一（provider-invalid-unify）批 · 修正轮 #9（评审轮 1 · 发现 1–5 ∥ 9 ∥ 12）· eng-designer**——承批档 §3 轮次 1 · 台账 #841）：§6.22 补**端面「invalid 类」合成式**（`state === "invalid"` ∨ `providerInvalidReason` 非空——U-4 裁：两字段并存，不合并）；
-  模型面 ④ 补 `model=null` 词形（仅渠道名）· 三端表 CLI 格补 `[:<模型>]` 缺省形与 headless/invalid 格（D-S4）；可机检断言①按**运行面（三端同喂假槽）∥ config 级（只比 `state`）**两腿钉定 + 断言③补 `model=null` 档与 invalid 类导引；§6.19 ⑤ 括注「VSC 独立实现」⇒「核转口（#841）」。**产品码零触（修正轮）**。
-
-- 2026-10-03（**无效渠道态逻辑归一（provider-invalid-unify）批 · 修正轮 #10（实施轮 A 单漂移回裁）· eng-designer**——承批档 §5 上抛 1 ∥ 2 · 台账 #841）：§6.22 `providerInvalidReason` 面收正为 **name 面**（`thincoder-core/config.mjs:337`——「持 key 但结构不全」**不在 invalid 类合成式内**，归发送 ∕ 装配失败面；`:422` 括注 ∥ KD-841-4 同述连改）；
-  新增 **第四消费面（ACP）注**——门判据随核切换（拒 ⇒ 放行）= U3 自然导出（行为变更在案，非缺陷）；协议面提示通道未决 ⇒ 如需另立设计。**产品码零触（修正轮）**。
-- 2026-10-03（**crash-guards 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-03-crash-guards.md` §2 · 台账 #866（GitHub #16））：§6.3 补 **body 终止守卫** 句（读侧空闲断流经单点 `destroyBody`——机制单源 = `doc:PROXY.md:§2`）。**产品码零触（设计轮）**。
-- 2026-10-03（**轻通道轮八连带 · PROVIDER.md 收正 · 父侧直接执行 · 可 revert**——承 `docs/batches/2026-10-03-light-round-8.md` §2 上抛 U-1 · 台账 #879）：§6.22 三端明示表桌面行 `fallback` 格字面收正——词 ⇒ **`composer.send.noDefaultModelFallback`**（澄清半句「— 正在使用可用渠道」；失败词 ∥ 态词分家）；原「逐字复用 #840 键」失效句按 D8 删除。**零语义改**（= 轮八裁定在设计面的对齐）。
-- 2026-10-04（**issue 修复批·一 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round1.md` §2 · 台账 #856 ∥ #853 ∥ #878）：§6.4 补 **帧形状守卫**（message 快照帧前缀补差 / tool_calls 覆盖）∥ §6.3 body 终止守卫句**扩展 abort 通道**（直连 fetch web 流——`terminateBody` / `IDLE_ABORT`）∥ §6.3 补 **413 可操作化** ∥ §6.7 补 **历史图片字节预算**（累计驱逐最老 + 注入面同函数）· §7 补 **D-PR31 / D-PR32 / D-PR33**。**产品码零触（设计轮）**。
-- 2026-10-04（**issue 修复批·一 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round1.md` §3 轮次 1 发现 1 ∥ 8）：§6.3 body 终止守卫句收正——abort 通道**建设点下移 `proxyFetch` 直连分支单点**（`core.mjs` 请求调用点收口恒走 `proxyFetch`——覆盖两条流式直连链 `readSSE` ∥ `parseGeminiStream`；proxy 两分支零触）；
-  §6.12 `think-off.mjs` 读数收正（**26 ⇒ 49**，`wc -l` 实读 2026-10-04；句子实住 `:220`）；D-PR33 同拍补建设点句。**零新语义**（= 评审发现的直接导出项）。
-- 2026-10-04（**issue 修复批·一 · 复评 #78 发现 1 收正 · 父侧直接执行 · 可 revert**——承批档 `docs/batches/2026-10-04-issue-fix-round1.md` §3 轮次 2）：上条（fix 轮）think-off 记录节号收正——「§6.3」⇒「**§6.12**」（句子实住 `:220`）。**零语义改**（节号收正）。
-- 2026-10-04（**issue 修复批·一 · 登记/回填轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round1.md` §2.10 登记/回填块 · 父侧裁定）：§6.3 超时语义句**射程收窄**——响应头阶段 `fetchTimeoutMs` 消费面 = 代理分支（`proxyFetch` 两分支）；直连面无本仓头阶段超时（纳入 = 设计轮面——在册）。**零新语义**（= 父侧裁定的直接导出项）。
-- 2026-10-04（**CLI ∥ VSC 会话选定写回批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §2 · 台账 #883）：§6.22 三端明示面对照表 CLI 行 `fallback` 格字面收正——「/model 仅改本会话」⇒「/model 选定即成为默认模型」（会话选定写回落地后同拍——判据单源 = `doc:SESSION.md:§6.21` 判据句 6）。**产品码零触（设计轮）**。
-- 2026-10-04（**opencode-go-preset 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-opencode-go-preset.md` §2 · 台账 #906）：§6.11 预设计数 22 ⇒ **24**（D3 计数与清单同变）+ 新登 OpenCode Go 双预设（协议混装拆分 ∕ 最小字段集 ∕ 「待验」注 ∕ 会话头不发）；§6.19 预设名单同变 + `presetToEntry` 坐标收正（`:44` ⇒ `:49`——表体增长后函数行漂移，一致性面自修）。**产品码零触（设计轮）**。
-- 2026-10-04（**opencode-go-preset 批收口笔 ∥ ACP 协议面补全批收口笔 · 父侧直接执行 · 可 revert**）：§6.11 `presetToEntry` 坐标 as-built 重校（`:49` ⇒ **`:57`**——实施 +8 行后漂移；§6.19 护栏指针改指现形 G-3 = `docs/batches/2026-10-04-opencode-go-preset.test.mjs`）；§6.22 提示通道句收正为定形「**不立**」（「未决——如需，另立设计」⇒ 定形句；判由 = `doc:ACP-CLIENT.md:§13`）。**零语义改**（收口重校 ∥ #843 结案在设计面的对齐）。
-- 2026-10-04（**responses 健壮性三项批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-responses-robustness.md` §2 · 台账 #907）：§6.13 新增**错误出口**块（流内 error 帧显式处置【#907-D9——错误上抛 ∥ partial 抢救双支】· 错误码级映射最小集【#907-D8——errors.mjs 单源 · 未列码透传】· `max_output_tokens` 显式才发【#907-D5——真机验证项在册】）· 请求体行收正（显式才发注）· 已知边界补 `response.failed` 不对称观察；§7 补 **D-PR34 / D-PR35 / D-PR36**。字母编号撞车防混：本节块标题均带「台账 #907-Dx」前缀。**产品码零触（设计轮）**。
-- 2026-10-07（**三端对齐批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-07-provider-config-parity.md` §3 轮次 1 · 台账 #1031）：§6.16 M8/M9 ∥ UI 决策与 §7 D-PR16 补**适用面限定**——准入判据（`/models` 可用）= **模型候选面**（探通 ⇒ 候选可选；探不通 ⇒ 不可选 + 文案现形不改）；**自定形添加表单 model = 手输兜底**（可保存 ∥ 探不通标 `不可用`）＝端面既成形（桌面基线；VSC 对齐 = 本批）。**取代关系登记**：「无手输绕过 ∥ 不加 UI 手输行」的适用面收窄为**模型候选面**（命令面 `provider:model` 放行不变；添加表单 model 字段不属该判据域）——依据 = 用户 2026-10-07 授权（#1031 承桌面基线对齐）。**产品码零触（fix 轮）**。
-- 2026-10-08（**provider 密钥链守卫批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-08-provider-key-guards.md` §2 · 台账 #1062 ∥ #1063）：新增 **§6.23 provider 密钥链守卫（保存单写原子 ∥ 缺钥前置守卫）**——`addProviderEntry` 两写合一（F5b 冲突语义保留 ∥ 消费面零改）+ `chatImpl` 缺钥单点前置守卫（可读错误 ∥ 零请求）+ 同族巡检表（四 transport 裸插值 ∥ list-models `?? ""` ∥ `createProvider` 既有守卫）+ KD-PK-1–3 + 机检面。**产品码零触（设计轮）**。明细 = 批档 §2。
-- 2026-10-08（**proxy 逐渠独立批（去全局闸）· 设计轮 ∥ 评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-proxy-per-channel.md` §2 ∥ §3 轮次 1 · 台账 #1042（并入 #1037 ∥ #1040 ∥ #1048 ∥ #1049））：
-  §6.19 ② 代理句收正为**逐渠独立、无全局闸**（VSC 第二注入点 `presets.mjs` `providerFromConfig` 点名）∥ 探针判定单源指针 ∥ **`headers` 字段面随行（#1048①）**；口径单源句改述（单源 = `PROXY.md` §4 ∥ 端侧落点分列——去并列形，评审发现 4）；落点指针块 + 本批行（记录面补录——评审发现 4）。**产品码零触（设计轮）**。明细 = 批档 §2。
-- 2026-10-08（**provider 密钥链守卫批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-provider-key-guards.md` §3 轮次 1 发现 1–5 · 台账 #1062 ∥ #1063）：
-  §5 落点指针块 +本批行 + 同族两缺项补录（responses-robustness ∥ provider-config-parity——记录面补录，发现 1）∥ §6.23 判据 1 明写 **persistRaw 失败契约**（非 ok reason 唯一 `mtime-conflict` ∥ 余走异常通道——「错误透传」= 冲突 + 异常两通道，发现 3）；
-  断言集 +**④ 冲突支**（核级真径注入——假 `node:fs` 视图二阶 stat 抬升 ⇒ 真 t0≠t1 分支；注入技法 2026-10-08 探证在案，发现 2）∥ 边界 +**无钥渠道认账句**（发现 5）。**产品码零触（fix 轮）**。明细 = 批档 §2.10。
-- 2026-10-09（**provider-default-model-purge 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §3 轮次 1 · 台账 #1122）：§6.19 两处残留收正——添加流字段面「Custom 手输 name / baseURL + format」（去 `model`）∥ 渠道行补显示回退半句（回指 §6.16）；全档批内注记名统一「2026-10-09 清除批」。**零新语义**（评审发现 #2 直接导出项）。明细 = 批档 §2 修复轮块。
-- 2026-10-09（**provider-default-model-purge 批 · 实施期收正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §2 收正块 · 台账 #1122）：§6.16 M3 裸渠名拒文案逐字对齐实装（「渠道无默认模型，请用 `provider:model`」——实装 = `thincoder-core/agent-tools/subagent-async.mjs:177`）∥ M10 CLI 对位链删 `keep.model` 回落（`sessionModel ?? dm.model`——绝不静默回落同口径）∥ §6.18 视觉链判定源收正（恒 `null` ⇒ F-IDG-2 可读报错径；判定源重定在途 = 台账 #1125）∥ §6.19 Add/Remove/Key 流指针收正（VSC `addProviderFlow` 随 #1054 净删 ⇒ 核单源 `thincoder-core/provider-flows.mjs:137`）。**零新语义**（实装对齐 ∥ 裁定落地）。
-- 2026-10-09（**server-gemini-openai-preset 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-09-server-gemini-openai-preset.md` §2 · 台账 #1128；用户 2026-10-09 13:45 令）：§6.11 预设计数 24 ⇒ **25**（D3 计数与清单同变）+ 新登 `gemini-openai` 预置（Google 官方 OpenAI 兼容端点——与 `gemini` 同 key 两形态并存 ∕ 最小字段集「不设 = 不发」 ∕ 「待验」注）；§6.19 预设名单与计数同变（24 ⇒ 25 preset）。**产品码零触（设计轮）**。明细 = 批档 §2。
-- 2026-10-10（**spec-namespace-last-segment 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-spec-namespace-last-segment.md` §2 · 台账 #1167；用户 2026-10-10 03:05 裁「只取最后一段」）：§6.9 厂商前缀剥离句随正——兜底改取**最后一个** `/` 之后的段（测试服务器双段外标 `qwen/ZHIPU/GLM-5.3` 查表误报的修法）；VSC 端差表同判随正（主 agent 03:1x 裁）。改法逐字 / 用例 / 边界 = `doc:MODEL-SPECS.md:§17`。**产品码零触（设计轮）**。
-- 2026-10-10（**core-small-fixes 批 · 实施轮设计面回填（fix 轮）· eng-coder**——承批档 `docs/batches/2026-10-10-core-small-fixes.md` §2.6 ∥ §5；台账 #1068）：§6.16 M1 补**错误面句**（载荷读取失败 ⇒ 原错误直抛；真非 JSON ⇒ 原文案；非 2xx 径照旧——落点 `thincoder-core/provider/list-models.mjs`）。**零新语义**（= as-built 收正）。明细 = 批档 §2.6 ∥ §5。
-- 2026-10-10（**purge-residue-sweep 批 · 设计档随动轮 · eng-coder**——承批档 `docs/batches/2026-10-10-purge-residue-sweep.md` §2 设计档落点表 · 台账 #1121 ∥ #1125）：§6.16 增**模型菜单行语义**行（行 = 分组/展开控件、零选中语义 ∥ 行点击 = 展开⇄收起 · 组体开合与菜单层开合解耦 ∥ 行径恒零 `post` 零槽写 ∥ 选中 ⇒ 生效仅在模型条目 + `onPick` 携 `row` 直传 ∥ 写失败可见）；§6.16 面板接线句收正（行形去「当前模型」选中语义；条目拾取 = 槽写 + 写回）；§6.18 视觉链判定源随 `#1125` 落 **B**——「明书不恢复」（恒 `null` + 可读报错 = 常规态；「判定源重定在途」句清零）。**产品码零触（设计档）**。明细 = 批档 §2 ∥ §5。
-- 2026-10-10（**gemini-thought-signature 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-gemini-thought-signature.md` §2 · 台账 #1205；用户 09:57「开批吧，也自动跑。」）：新增 **§6.24 Gemini 思考签名透传**（两形态捕获面 ∥ 单构造点承载 ∥ 回传零新构造点 ∥ 网关零改判 ∥ 认账与边界）+ §6.10 槽附加字段指针 + §7 补 **D-PR37 / D-PR38**。**产品码零触（设计轮）**。明细 = 批档 §2。
-- 2026-10-10（**gemini-thought-signature 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-10-gemini-thought-signature.md` §3 轮次 1 · 台账 #1205）：§6.24 补**先例对照**（先例批 = `docs/batches/2026-09-20-reasoning-echo-gap.md`——同点加字段；对齐 ∥ 偏离句各带指针：D-PR37 ∥ D-PR38）
-  · 补**残余（修复前历史）**段（重发仍可能同一 400 + 缓解径 = `/compact` ∥ 新会话）· §6.24 机制 3 引路补全（`thincoder-core/provider/core.mjs`——本批面悬空收正）；批档 §2 修复轮块 = AC-4 行为用例 ∥ AC-8 两枪形 ∥ AC-9 零第二构造点 ∥ AC-10 桩面断言 + 锚 / 读数收正。**零新语义**（评审发现直接导出项）；**产品码零触（fix 轮）**。明细 = 批档 §2 修复轮块。
-- 2026-10-10（**gemini-thought-signature 批 · 收口机械笔 · 父侧直执行 · 可 revert**）：§6.24 机制 1 末条措辞收正——「新建槽时搬字段」⇒「**合并时缺则搬**」（与 `thincoder-core/provider/core.mjs:364` 实现及批档 AC-4 终形对齐——实施轮上抛 #1）；`thincoder-core/model-specs.mjs` `assistantToolCallMessage` 文档串调用点清单随正（主循环 `thincoder-core/agent/turn-loop.mjs` ∥ 镜像 `thincoder-core/advisor/loop.mjs` ∥ `bench/lib/client.mjs`；VSC 转口 `thincoder-vscode/src/specs.mjs:13/:17` 零调用点——实施轮上抛 #2）。**零语义**（措辞 / 坐标与实况对齐）。
-- 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：新增 **§6.25 派生渠道条目**（`derived` 标记——条目形 ∥ 写面单源 ∥ 运行时语义（无 key ⇒ 不参与解析）∥ 列表/候选面隐藏判据 ∥ 边界）；机制全文 = `docs/core/design/TEAM.md` §2。**产品码零触（设计轮）**。
-- 2026-10-15（**image-history-400 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-15-image-history-400.md` §1 · 台账 #1450；用户 2026-10-14 报障 ∥ 2026-10-15 00:08 全链授权）：新增 **§6.26 图片拒绝自愈**（四环现状坐标 ∥ 触发两判据 T1/T2 ∥ 全剥 + 单次重发 ∥ 逐字文本两件 ∥ 接口契约四符号 ∥ 受影响文件 ∥ 用例表 ∥ AC 六条 ∥ 边界四项）+ §6.3 ∥ §6.7 各一条指路 + §7 补 **D-PR39 / D-PR40**。**产品码零触（设计轮）**。
-- 2026-10-15（**image-history-400 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-15-image-history-400.md` §3 轮次 1 发现 1 ∥ 2 ∥ 3 ∥ 4 ∥ 6 · 台账 #1450）：§6.26 T1 补 **HTTP 400 合取**（取码技法同 T2——对齐需求 R23 字面）+ 触发块新登 **streak 语义收口**（自增 ∥ 清零 ∥ Abort 豁免 ∥ 判定先后——记账单源；429 归类钉定）与 **413 首撞/复撞明书**；
-  机读注记 `(HTTP 400)` ⇒ `(HTTP 4xx)` ∥ 需求锚改指 §4.7/R23（R11 转支撑锚）∥ AC 回指列同拍 ∥ AC-5 机检补 **T-9** 用例锚 + 判据行 diff 检读 ∥ 用例表补 **T-9 / T-10** ∥ T-2 期望列基线收正 ∥ 契约表 `:658`/`:659` 措辞对齐；§6.3 摘要行同拍补 HTTP 400 合取；悬空锚 `:633`/`:658`/`:665`/`:671` 自修（路径前缀 ∥ `（拟新增` 标记——一致性面）。**零新语义**（评审发现直接导出项）。**产品码零触（fix 轮）**。

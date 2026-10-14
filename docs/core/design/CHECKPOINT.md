@@ -5,7 +5,7 @@
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
 > 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§8 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策 · 不并项与历史沿革（自 CLI 产品档并入）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策 + 沿革）。
+> **机制面**（§6 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策（§7）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策）。
 
 ## 1. 归属与范围（自本档行内容的路径归纳）
 
@@ -68,7 +68,7 @@
 
 > **来源** = `thincoder-cli/docs/design/CHECKPOINT.md`（222 行 · CLI 产品档——两端机制）——根层裁定后该档 = **迁移期参照历史**（只读 · 不维护 · 不参与内容同步）。
 > **本节 = 该档中「根层所缺」内容的并入面**：(a) 机制 / 契约的实质描述 · (b) 实现细节与坐标 · (c) 关键决策依据（§7）。
-> **不并**者见 §8：一次性批次材料（测试覆盖/要点清单）· 头注状态行 / 变更流水账 / 需求迁出注 · 平台层交付物（F4 建议文本——§8.2）。
+> **不并**者：一次性批次材料（测试覆盖/要点清单）· 头注状态行 / 变更流水账 / 需求迁出注 · 平台层交付物（F4 建议文本）。
 > **坐标口径** = as-of 2026-09-14：**旧档路径形态为迁移前**——本节一律按**现状路径**落笔（CLI 侧实现已住 `thincoder-core/**`；`thincoder-cli/src/tui/**` = CLI 壳体面；VSC 侧 = `thincoder-vscode/src/**`）。符号名与档路径为契约面，行号未逐条复核。
 
 ### 6.1 快照是什么（v2 全量副本）
@@ -122,7 +122,7 @@
 - **建议恢复流程**：破坏性操作后发现未提交改动被丢弃：**先 `checkpointAction=list` 查快照 → `checkpointAction=cat` 确认内容 → `checkpointAction=rewind checkpointId=<id> path=<文件>` 恢复——不要先手动重建**（rewind 前会自动保存当前状态，可逆）。全量回滚已禁用（v2），rewind 逐文件恢复。
 - **`/restore` 两级 picker（D-CP8——用户侧唯一恢复入口）**：TUI `thincoder-cli/src/tui/cmd-restore.mjs`；v2 全量回滚禁用后（`rewind(cwd,id)` 无 path 必抛、summary 字段已删、untracked 数组显示错乱）改造为**两级 picker**：① 选快照（untracked 显示改为数组长度 `+N untracked files`）→ ② 选文件（tracked / untracked 合并文件列表）→ `rewind(cwd, id, { path })`。
   要点：摘要行用 v2 返回字段 `{ path, type, restored }`；picker 顶部标注「全量恢复已禁用，逐文件恢复」；空快照提示「该快照无文件，无法逐文件恢复」；「恢复前自动快照可逆」提示保留；`handleRestoreCommand` 在 `listCheckpoints` 前调用 `lazyClearIfCommitted(agent.cwd)`（与 git 工具懒兜底对齐）。
-- **系统提示词建议文本（F4）**：交付用户、不落项目（见 §8.2）。
+- **系统提示词建议文本（F4）**：交付用户、不落项目。
 
 ### 6.8 两端统一后形态（F5 镜像）
 
@@ -178,40 +178,3 @@ you can restore again to go back.)`；oversized / 未含文件 → 具体 Error�
 | D-CP9 | 破坏性动作「先快照再执行 + 确认，从不拦截」 | 审批层才是真实防线——快照是保险不是门禁 |
 | D-CP10 | VSC 恢复动作输出契约（list 转义 / rewind 单文件 path / versions sha 对照行）定稿 | 输出面 = 模型可见契约——untrusted 文件名单须转义；单文件 path 防静默全量回滚 |
 
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/CHECKPOINT.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。其下列内容**不并入本档**，理由如下：
-
-| 旧档节 | 内容 | 何故不并 |
-|---|---|---|
-| 头注（状态行「当前态设计…」+ 权威源行） | 交付状态 / 时点指针 | 时点状态——归批次档 / 台账；权威指针已按现状坐标重写（§6 各节） |
-| 文末「变更记录」 | 逐批变更流水账 | 历史叙述——本档自有变更记录 |
-| 「需求层已迁出」注（旧档内两处） | 拆分时点注 | 时点材料——需求已归位本层同名需求档 |
-| §2.2 第 3 条「平台层…未证实」段以外的时点叙述 | 过程叙述 | 时点材料 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档节 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| §8 测试覆盖（含已清空引用与测试意图清单 T1–T10） | 用例 / 测试定位 | **一次性批次材料**（测试清零批后为意图清单）——测试资产归测试层 |
-| §5.5 + 附录 A（系统提示词建议文本） | 平台层交付物（用户侧） | 原文自声明「不写入任何项目代码 / 文档」——**不进本档**（F4 要点已在四层闭环，见本层需求档） |
-| 源档 §1–§5 纯 VSC 同构细节（快照机制 / 触发点 / 恢复入口 / 只读分类 / 清理原语——与 CLI 逐字同源部分） | VSC 侧同构实现 | 已并入 §6.9（接线面 + 输出契约）；同构正文不逐行复制（D2） |
-
-### 8.3 需求侧（已并入本层需求档）
-
-旧档需求面（旧同名需求档 §1 四层闭环 / 缺口实证 / 范围 / NF1–NF7）=== 本板块需求层，已并入本层需求档 `docs/core/requirements/CHECKPOINT.md`（**与本档同名成对**）——本档不重复。
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/design/CORE-UNIFICATION.md` 拆出（§2.5 #48 / #49 / #167 + 四要素明细 + 映射行）；**语义零改**，行号沿用原编号。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：新增 §6 **机制面**（快照形态 / 触发三路 / 存储与 id / 语义边界 / commit 清理 / git 能力与纪律 / 恢复入口 / 两端统一后形态）· §7 **关键决策（D-CP1–9）** · §8 **不并项与历史沿革**；来源 = `thincoder-cli/docs/design/CHECKPOINT.md`（**旧档一字未改**——原地作参照历史）；
-  需求侧已并入本层 `docs/core/requirements/CHECKPOINT.md`；首部加机制面指针一行。
-- 2026-09-15（**VSC 轮并入 · 批 7**）：§6.9 新增 **VS Code 端接线面**（触发点 / 恢复输出契约 / 只读分类）· §7 补 **D-CP10** · §8.2 补 1 行不并项登记；来源 = `thincoder-vscode/docs/design/CHECKPOINT.md`（**旧档一字未改**）；坐标按现状实核（`thincoder-vscode/src/tools/git-ext.mjs:55` · `thincoder-vscode/src/tools/shell.mjs:139,148` ·
-`thincoder-vscode/src/tools/git-checkpoint.mjs:31,46`）。
-- 2026-09-15（**S2 W5 接线 · VSC 端** · eng-coder 实施轮）：§1 表两格（CLI / VSC）收正为「经 `@thincoder/core/...` 引用」——VSC 自持镜像（`src/tools/checkpoint.mjs` · `git-checkpoint.mjs` · `git-ext.mjs`）随 W5 删档（迁移期引文 · 已删）；
-  §6.9 补接线状态行 + 实现坐标收正为核（`@thincoder/core/tools/git-ext.mjs:54` · `tools/git-checkpoint.mjs:24/:39`）；机制条文（§6.1–§6.8 · §7 · §8）零改。
-- 2026-09-15（**S2 W14 收口 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：§6.9 补 W14 收口行（VSC 自持 `src/tools/git.mjs` 已删——checkpoint 路由 / commit 清理现体 = 核 `thincoder-core/tools/git.mjs` + `thincoder-core/git/checkpoint.mjs`；
-  只读分类保留为端装配面装饰 `isReadonlyAction`——`thincoder-vscode/src/tools/index.mjs`；`src/tools/shell.mjs` bash guard 保留）；机制条文（§6.1–§6.8 · §7 · §8）零改。
-- 2026-09-20（**卫生族批 · 台账 #138 · eng-designer**）：首部机制面节区改 `§6–§8` + 历史节号指称清理（行数规则废除批残留）；设计源 = `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2。

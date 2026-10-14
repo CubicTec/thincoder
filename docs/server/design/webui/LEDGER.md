@@ -3,7 +3,7 @@
 > 板块 = server ∥ 本档 = webui 域·面档（团队台账——页形/控件/键族；2026-10-13 team-ledger 批新立）；板总览 = `PROJECT.md`（文档地图 = §3）。
 > 机制单源 = `ledger/LEDGER.md`（数据形/判权/端点——本档不复述，只落界面承载）；页集单源 = `webui/WEBUI.md` §2（本档回指）；键族单源 = `webui/I18N.md` §2.1。
 > 最近先例 = `webui/PROJECTS.md` §2.1（`#/me/projects`——「我的」组承载 + 权限感知渲染）；对齐 = 承载位与渲法（`canWrite` 显隐 + 列表/弹窗形）；偏离 = 本页为成员全量维护面（数据面权限过滤覆盖 admin 全量视角——无第二页）。
-> 建档：2026-10-13（批 `docs/batches/2026-10-13-team-ledger.md` 设计轮——team-ledger 批；台账 #1206）。
+> 建档：2026-10-13（设计轮——team-ledger 批；台账 #1206）。
 
 ## 1. 关键决策（本面）
 
@@ -40,7 +40,7 @@
 | `thincoder-server/public/i18n-zh-shell.mjs` / `i18n-en-shell.mjs`（已落盘——实读 **80 ∥ 78**） | 各 **+1 键**（`nav.page.me.ledger`；键实读 **61 ∥ 61**） | 导航文案 |
 | `thincoder-server/public/i18n-zh-system.mjs` / `i18n-en-system.mjs`（已落盘——实读 **208 ∥ 208**） | 各 **+1 键**（`audit.type.ledger_event`；键实读 **185 ∥ 185**） | 审计型名 |
 | `thincoder-server/public/views-audit.mjs`（已落盘——实读 **238**） | 206 ⇒ **238**（型表 +1 行 ∥ 详情支 + `ledger_event`） | 审计面随正 |
-| 跨批单元测试档 `docs/batches/2026-10-08-server-public-structure.test.mjs`（已落盘——实读 **168**（2026-10-13 实核）） | **已办**（父侧——PARTS/DOMAINS + `ledger` 域 + `me.ledger` ∥ 指纹 zh `7ba6415a…f477a` ∥ en `3d1a4cc7…01c991` ∥ 键数 959∥964；复跑 6/6 绿） | 结构守卫随正 |
+| 跨批单元测试档（已落盘——实读 **168**（2026-10-13 实核）） | **已办**（父侧——PARTS/DOMAINS + `ledger` 域 + `me.ledger` ∥ 指纹 zh `7ba6415a…f477a` ∥ en `3d1a4cc7…01c991` ∥ 键数 959∥964；复跑 6/6 绿） | 结构守卫随正 |
 
 - **键族登记**：新部件 `me.ledger.*`（**65 键/表**——实读；页题/筛选标签/六态词/列头/空错态/弹窗字段/动作/后果句/老化标）；随动键 = shell 两部件各 +1（`nav.page.me.ledger`）∥ system 两部件各 +1（`audit.type.ledger_event`）。
 - **键数总账**：本批门面 ⇒ **实读 959 ∥ 964**（= 基线 892 ∥ 897 + 67/表：ledger **65** + shell 1 + system 1；守卫件指纹/键数已随正）。
@@ -69,10 +69,3 @@
 
 - 本面无独立上抛；随动项**均已办**（2026-10-13 收口核）= 需求档计数回笔（AC-12/AC-14 链尾 ∥ AC-28 审计型数（十四 ⇒ 十五型）——主 agent 笔；回笔在档 `docs/server/requirements/PROJECT.md:661`；`ledger/LEDGER.md` §13 R74）∥ 跨批守卫件随正（本档 §3 行——父侧；复跑绿）∥ `webui/I18N.md` §2.1 域界登记（`ledger` 新部件对）+ §3 行随正（UI 席）。
 
-## 变更记录
-
-- 2026-10-13（**team-ledger 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §1 · 台账 #1206；需求功能点 32⑥ ∥ AC-32）：建档——KD-SV-148（`#/me/ledger` 承载 + 全量维护面）∥ 页面机制（筛选三筛 ∥ 七列 ∥ 详情/编辑弹窗 ∥ 新建弹窗 ∥ 收口/撤回）∥ 文件账 + 键族登记 ∥ 验收六行 ∥ 边界 ∥ 上抛。**产品码零触（设计轮）。**
-- 2026-10-13（**team-ledger 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §3 轮次 1 之 2/3/9/10）：§3 五档现状实读补实（i18n 门面 **15 ∥ 15** ∥ shell **78 ∥ 76** ∥ system **207 ∥ 207** ∥ 守卫件 **167**——内容行数口径）∥ nav/app 口径收一（二档与批档 §2.4 同值：101 ⇒ ≈103 ∥ 202 ⇒ ≈204）∥ 键数算术收平（≈993 ∥ 998 ⇒ **≈994 ∥ ≈999**）∥ 仓列补回填缺省（缺 ⇒ 显归地址——KD-SV-147）∥ 头注补最近先例行。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。
-- 2026-10-13（**team-ledger 批 · 收口随正轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §2 · 台账 #1206）：§3 全行实读回填（`views-ledger` **300** ∥ i18n-ledger 对 **84 ∥ 84**（**65 键/表**） ∥ 门面 **16 ∥ 16** ∥ shell **80 ∥ 78**（键 61 ∥ 61） ∥ system **208 ∥ 208**（键 185 ∥ 185） ∥ `nav` **104** ∥ `app` **206** ∥ `views-audit` **238** ∥ 守卫件随正**已办**）∥ 键族/总账收正（**65 键/表**；**959 ∥ 964** = 892 ∥ 897 + 67/表）∥ 页数链收正（我的 **6**；档目 **54 ∥ 53**）∥ §4 AC-12 行同拍 ∥ §6 随动项标「已办」。**零新语义**（实读）；产品码零触。
-- 2026-10-13（**project-sources-merge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-project-sources-merge.md` §2 · 功能点 48①）：§2 页数链 + §4 AC-12 行随正（管理 11 ⇒ **10**——`#/admin/git-sources` 并入项目页两标签）。**零新语义**（计数随正）；产品码零触（设计轮）。
-- 2026-10-13（**project-sources-merge 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 §3 轮次 1 之 3）：§3 守卫件行读数实读收正（167 ⇒ **168**——2026-10-13 实核；与 `webui/PROJECTS.md` §3 同拍）。**零新语义**（读数）；产品码零触。

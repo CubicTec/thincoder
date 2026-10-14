@@ -1,7 +1,7 @@
 # 编辑共享 helper 权威语义（EDIT-HELPERS）· 编辑工具板块
 
 > 板块 = **编辑工具（共享底层）**；本档 = 编辑工具族共享 helper 语义的**唯一权威**（`docs/core/design/EDIT.md` / `HASHLINE-EDIT.md` / `APPLY-PATCH.md` / `WRITE.md` 指向此处，不得在别处复制）。
-> 地图与契约要点 = `docs/core/design/TOOLS.md` §6.6（末段「共享 helper 权威 = 编辑辅助面」/ §8.2——旧指针未给档名，本档即其落点）。
+> 地图与契约要点 = `docs/core/design/TOOLS.md` §6.6（末段「共享 helper 权威 = 编辑辅助面」）。
 > 双端：CLI `thincoder-core/tools/shared.mjs` · VSC `thincoder-vscode/src/tools/shared.mjs`（helper 语义同，各自实现；VSC 另有编辑器路径专属面——§6）。
 > 需求侧 = `docs/core/requirements/TOOLS.md`（工具系统板块；CLI 树无逐工具需求档）。
 > 建档：2026-09-15（**B 式迁移轮 · 第 1 批**——`thincoder-cli/docs/design/EDIT-HELPERS.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
@@ -81,24 +81,3 @@ getOpenDoc win32 盘符大小写归一（消除 split-brain）· insert_after �
 | D-H2 | `detectFileEol` 用**首个换行符**判据（非计数） | 混合行尾文件按计数判会翻车；首行风格即文件惯例 |
 | D-H3 | 失败候选**截断 500 字符 + 5000 行预算** | minified 单行文件的 LCS 会爆预算；否决无预算（失败路径拖慢交互） |
 | D-H4 | U+FFFD **警告不阻断** | 编码损坏时仍给模型一次尝试机会；阻断会让损坏文件整体不可编辑 |
-
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/EDIT-HELPERS.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档「现行为 → 改后」对照矩阵（含「CRLF 文件 edit 写回全 LF」等左列） | 修复前的旧行为对照 | 左列 = **已废现状**（旧结构）；现行行为已入 §4 |
-| 旧档状态行 | 时点状态行 | 批次语境——现行态已入 §1–§6 |
-| 旧档「变更记录」节（2026-08-25~09-08 三条） | 需求澄清 / 落地流水 | 历史叙述——本档自有变更记录 |
-| 旧档括注的 `thincoder-cli/docs/design/_archive/EDIT-TOOL-EOL-DESIGN.md` / `-REQUIREMENTS.md` | 已归档设计 / 需求档 | 归档档归 CLI 树 `_archive/`（参照历史） |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| VSC 编辑器路径专属面（`lfOffsetToRaw` 细节） | 端专属机制 | **已并入（2026-09-15 批 8）**——§6 VSC 端差异块（六条编辑器路径差异逐条登记）；VSC 源档留参照历史 |
-| VSC 档 §5 之外的批次材料 / 变更记录 | 一次性材料 + 历史流水 | 批次档承载（D2） |
-| 工具描述文本 | 模型可见文本 | **提示词面 = 产品代码**——落点 `thincoder-core/tool-docs/*.md` |

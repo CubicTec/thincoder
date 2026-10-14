@@ -1,7 +1,7 @@
 # BASH-EXECUTOR-FACE（bash 执行器语义面 · 工具系统设计档）
 
 > 板块归属 = 工具系统（本层 `TOOLS.md`）——bash 工具的**执行器身份语义面**（运行时探测与声明单源）。
-> 建档：2026-10-04（bash-executor-face 批 · 批档 `docs/batches/2026-10-04-bash-executor-face.md` §2 · 台账 #922——承 #921 同族第二面「静态描述与运行时真相脱钩」）。
+> 建档：2026-10-04（bash-executor-face 批 · 台账 #922——承 #921 同族第二面「静态描述与运行时真相脱钩」）。
 > **授权 = 用户 2026-10-04 22:48 三条设计约束（最高优先级）**：
 > ① 探测必须 = **纯运行时**（每次会话启动/首次调用时读实际执行器；**禁止任何静态默认值/写死分支**——包括「Windows ⇒ PowerShell」这类平台推断，同一平台不同环境可不同）；
 > ② `bash.md` 死写句替形必须**零断言**（只说「以注入面声明为准」，不写任何具体 shell 名做默认）；
@@ -116,7 +116,7 @@ win32 只用于决定「config.shell 空时读 %COMSPEC% 还是 SHELL」这一 s
 | 5 | `thincoder-desktop/src/main/prompt-injections.mjs` | 22 | +≈4 | 同上 |
 | 6 | `thincoder-vscode/src/prompt-injections.mjs` | 21 | +≈4 | 同上 + terminal 行拼接（§2） |
 | 7 | `thincoder-vscode/src/tools/shell.mjs` | 331 | −≈8 | 死常量 SHELL_NOTES 删除（§3.3） |
-| 8 | 批档归档单元测试档 `docs/batches/2026-10-04-bash-executor-face.test.mjs`（随批归档——不入 `thincoder-core/test/` 集成测试树） | 0 | +≈80 | 单元测试（§6 用例表转测——§6.10 教义：开发期工具不占集成测试树） |
+| 8 | 批次本地单元测试档（随批归档——不入 `thincoder-core/test/` 集成测试树） | 0 | +≈80 | 单元测试（§6 用例表转测——§6.10 教义：开发期工具不占集成测试树） |
 | 9 | `docs/core/design/TOOLS.md` | 1230 | +1 | §6.2 指针行（§3.4） |
 | 10 | `docs/core/design/PROMPT-SYSTEM.md` | 650 | 0（行内收正） | §6.3 处置语（§3.4） |
 | 11 | `docs/core/design/CORE-UNIFICATION.md` | 2054 | 0（行内收正） | §2.13.2 处置语（§3.4） |
@@ -171,8 +171,3 @@ win32 只用于决定「config.shell 空时读 %COMSPEC% 还是 SHELL」这一 s
 - 不动 `question-ui-face` 锚（仍待工具面 review——本批只处置 bash 锚）。
 - 设计轮**产品码零写**（本批为设计轮——§4 清单全部由实施轮 eng-coder 落）。
 
-## 变更记录
-
-- 2026-10-04 建档（bash-executor-face 批 · 设计轮 · eng-designer——承批档 `docs/batches/2026-10-04-bash-executor-face.md` §2 · 台账 #922）：修法裁定（A/B 采纳 · C 否决）· 探测机制钉死（spawn 同链 · 运行时 · memo · fail-open）· 三端注入契约与文案字面定稿 · hint 身份门 · VSC 死常量清除 · 权威档两处指针/收正 · 受影响文件 11 档 · AC1–AC8 · 用例 U1–U7 · 边界。授权 = 用户 22:48 三条设计约束（档头）。
-- 2026-10-04 fix 轮（评审轮 1 · 发现 1–11 逐条落位——终值 = 批档 §2 fix 轮修正块）：AC7 夹具改未知名 + 补「空 COMSPEC ⇒ cmd 行」断言（§1.1 链终值补注）· 注入求值钉死「值函数 / 重装配期 + memo 按配置值键控」（§2 数据流 ∥ §3.2 ∥ K3）· powershell 值面按 /pwsh/i 分流两形（值面表 ∥ U1）· C 否决理由改写实据（悬空句删）· §8 边界口径注 · §4 行 8 测试落点批档归档 · §3.4 计数三档 · AC8 补桌面装配断言 · §3.4 补 PROMPT-SYSTEM 取值表桌面枚举 · U5 ∥ 评审局限登记（无改动）。
-- 2026-10-05 fix 轮（评审轮 2 · 发现 13 兜底路径落地）：求值机制语收正——原「值函数 / `applyPromptInjections`·重装配期求值」**⇒ 实装改** = 端装配层 import 期求值（缝纯字符串替换、不支持函数值键——偏差登记 = 批档 §5.4-1）；描述面值随进程启动固定（进程内改 `shell` 不刷新、重启生效——§8 残余口径）；§1:18 ∥ §2 数据流 ∥ §3.2 ∥ K2/K3 同步收正 + §4:115 动作列 + §8 残余登记。

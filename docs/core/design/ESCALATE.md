@@ -8,7 +8,7 @@
 > 需求侧 = `docs/core/requirements/ESCALATE.md`（F-E1–F-E5 / N-E1–N-E4）。
 > 建档：2026-09-15（**B 式迁移轮 · VSC 批 3**——`thincoder-vscode/docs/design/ESCALATE.md` 内容重建入基准层；
 > 旧档原地一字不改、留作参照历史）。CLI 侧同名档（`thincoder-cli/docs/design/ESCALATE.md`）**已并入（2026-09-15 · CLI 尾部真批）**——
-> 逐节对账后 CLI 独有面（TUI 接线 / relay 前缀 CLI 形 / 撞墙继续 CLI 通道）已入 §5 / §6，(d) 类入 §8.1。
+> 逐节对账后 CLI 独有面（TUI 接线 / relay 前缀 CLI 形 / 撞墙继续 CLI 通道）已入 §5 / §6。
 > 本档坐标 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 
 ## 1. 术语表
@@ -126,47 +126,3 @@ subagent(action:"escalate")
 | D-E11 | **深度护栏**（`(ctx.depth ?? 0) > 0` 拒绝——`thincoder-core/agent-tools/subagent-actions.mjs:341`） | 飞刀不能再飞刀——错误文案明示「an escalate's work cannot be delegated again」 |
 | D-E12 | **无墙钟看门狗的挂死防护** = turn 上限（`subagentTurns` ?? 100）+ 单次 LLM 调用超时 + 用户 Stop 直传 | 与 subagent 写路径对齐——固定墙钟会误杀正常但慢的手术（D-E7 的 CLI 侧出处） |
 
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-vscode/docs/design/ESCALATE.md`（VSC 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实施 + 已异步化（R17——2026-09-06）…已完成专题的当前态记录」） | 时点状态行 + 批序 | 批次语境——现行态已入 §2–§6 |
-| 旧档 §2.1 配置示例（`jsonc` 片段） | 单批施工示例 | 现态配置语义已入 §3 |
-| 旧档 §2.4 表「测试」行（用例清单权威 = 跨仓引例） | 跨仓用例编号引例 | 跨仓指针（P3 自持纪律）——不并 |
-| 旧档 §3 测试（跨仓引例用例编号——对端仓在册） | 跨仓用例清单 | 同上（根域不在册：本档不引字面编号） |
-| 旧档「已退役独立 escalateTool（删除记录 = 变更记录 2026-09-03 行）」 | 退役工具删除流水 | 一次性材料——结论已入 §4 / D-E2 |
-| 旧档变更记录（2026-08-16 起逐批流水） | 历史叙述 | 本档自有变更记录 |
-
-> **CLI 侧来源档** `thincoder-cli/docs/design/ESCALATE.md`（2026-09-15 CLI 尾部真批对账并入）——原地保留作参照历史。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实施 + 已异步化（R17——2026-09-06，默认 async）」） | 时点状态行 | 批次语境——现行态已入 §2–§6 |
-| 旧档 §2.1 配置示例（`jsonc` 片段） | 单批施工示例 | 现态配置语义已入 §3（与 VSC 侧同型判例一致） |
-| 旧档 §2.6 受影响文件表 | 单批文件清单 | 一次性材料——现行坐标已入 §6 |
-| 旧档 §3 测试（用例清单权威 = CLI 树 `AGENT-LOOP §14` · R17 系用例编号） | 跨仓用例编号引例 | 跨仓指针（P3 自持纪律）——不并 |
-| 旧档变更记录（2026-08-16 起逐批流水） | 历史叙述 | 结论面已入 §7；本档自有变更记录 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 旧档「消化轮动作域（消费驱动 / 档位制）权威 = VSC `AGENT-LOOP.md` §17 D-S6/D-S7 + §25」 | 跨板块机制指针 | 归 `docs/core/design/AGENT-LOOP.md`（本档只留分工句） |
-| 旧档「settle 三分类机制」细则 | 与会诊共用的池 / 结算机制 | 归 `docs/core/design/CONSULTATION.md` 与核侧结算 helper（本档只留飞刀差异面） |
-| 旧档「Settings 面板配置入口」行 | 面板配置面 | 归 VSC 专有面（`SETTINGS`）——见 VSC 迁移台账 |
-| CLI 侧同名档未迁面（`CONSULTATION.md` §8.2 越段登记——触发 = 父侧另派） | CLI 产品档正文 | **已并入（2026-09-15 CLI 尾部真批）**——CLI 独有面入 §5 / §6，(d) 类入 §8.1；`CONSULTATION.md` §8.2 越段登记销项 = 父侧 |
-
-## 变更记录
-
-- 2026-09-15（**CLI 尾部真批 · 并入既有 · eng-designer**）：`thincoder-cli/docs/design/ESCALATE.md` 逐节对账并入——
-  CLI 独有面入档：relay 前缀 CLI 形（`escalate#<id>/` · 与 VSC `sub:escalate <label> #N` 双端异形，§4 / §6）· 撞墙继续 CLI 通道
-  （`onPermissionRequest("continue")` y/n 面板 · 次数不限，§5）· Stop 传播句（§5）· 子代理构建 / provider 解析 / 改动合并 / 配置入口坐标（§6）；
-  决策补 D-E11 / D-E12；(d) 类（状态行 / jsonc 示例 / 受影响文件表 / 跨仓用例编号 / 逐批流水）入 §8.1。旧档原地一字不改。
-- 2026-09-15（**B 式迁移轮 · VSC 批 3**）：建档——`thincoder-vscode/docs/design/ESCALATE.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；坐标改写为现状路径并实核（`thincoder-core/agent-tools/{subagent,subagent-actions,escalate-async,subagent-async}.mjs`；
-  `thincoder-vscode/src/agent-tools/{subagent-escalate,subagent-escalate-async}.mjs`）；与会诊共用的池 / 结算机制指向
-  `CONSULTATION.md` 与核侧 helper（D2 单一权威源）；批次材料 / 状态行 / 跨仓引例不并（§8）。

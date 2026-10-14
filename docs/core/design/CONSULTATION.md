@@ -5,7 +5,7 @@
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
 > 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 / §2.5.1 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§8 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策 · 不并项与历史沿革（自 CLI 产品档并入）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策 + 沿革）。
+> **机制面**（§6 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策（§7）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策）。
 
 ## 1. 归属与范围（自本档行内容的路径归纳）
 
@@ -94,7 +94,7 @@
 
 > **来源** = `thincoder-cli/docs/design/CONSULTATION.md`（160 行 · CLI 产品档——会诊面；该档自述「与 VS Code 插件同源设计」，记录 CLI 端的实现与接线）。根层裁定后该档 = **迁移期参照历史**（只读 · 不维护 · 不参与内容同步）。
 > **本节 = 该档中「根层所缺」内容的并入面**：(a) 机制 / 契约的实质描述 · (b) 实现细节与坐标 · (c) 关键决策依据（§7）。
-> **不并**者见 §8：一次性批次材料（受影响文件表 / 测试与验收）· 头注状态行 / 变更流水账 / 需求迁出注 · 跨板面（飞刀 / advisor——见 §8.2 越段登记）。
+> **不并**者：一次性批次材料（受影响文件表 / 测试与验收）· 头注状态行 / 变更流水账 / 需求迁出注 · 跨板面（飞刀 / advisor）。
 > **坐标口径** = as-of 2026-09-14：**旧档路径形态为迁移前**——本节一律按**现状路径**落笔（CLI 侧实现已住 `thincoder-core/**`；`thincoder-cli/src/tui/**` = CLI 壳体面；VSC 侧 = `thincoder-vscode/src/**`）。符号名与档路径为契约面，行号未逐条复核。
 > **泛化机制不复制**：digest / settle / pending 单容器的机制本体 → 本层 `AGENT-LOOP-SUBAGENT.md` §6.7.3 / `AGENT-LOOP-ASYNC-POOL.md` §6.8（不复制）；async 结果容器契约 → `thincoder-cli/docs/_archive/design/ASYNC-RESULT-CONTAINER.md`（CLI 档 · 未迁）。
 
@@ -213,52 +213,3 @@ consult_stop
 | D-CO6 | CLI 复用 subagent 的 provider 解析 | `resolveChildProvider` 零新机制——跨 provider 候选天然支持 |
 | D-CO7 | VSC 会诊 digest 消费 = **同一 digest 通道 + 单注入点**（手动档 auto-turn 禁写禁 spawn 零例外） | 与会诊 CLI 同语义；「consult 可写」不设例外——动作域档位制跨族一致 |
 
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/CONSULTATION.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。其下列内容**不并入本档**，理由如下：
-
-| 旧档节 | 内容 | 何故不并 |
-|---|---|---|
-| 头注（状态行「已实施 + 已异步化（R17）」+ 同源设计注 + 权威规格指针） | 交付状态 / 时点权威指针 | 时点状态——归批次档 / 台账；「与 VS Code 同源」已入 §6 首段；权威指针按现状坐标重写（§6.2） |
-| 文末「变更记录」（立项 / 会话级收尾 / R17 完全异步化 / 可读化重写） | 逐批变更流水账 | 历史叙述——本档自有变更记录 |
-| 「需求层已迁出」注 | 拆分时点注 | 时点材料——需求已归位本层同名需求档 |
-| §2.2 内「原 `_pendingConsultResults` 独立族流退役」 | 退役族流历史叙述 | (d) 类——现行形态（+role 并入单容器）已入 §6.2 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档节 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| §2.5 受影响文件表 | 逐档清单 | **一次性批次材料**——批次档承载 |
-| §3 测试与验收（T-R17a..r 编号已退役） | 用例与验收指针 | 测试资产归测试层；编号已退役，不再引用 |
-| 飞刀（escalate）面机制文本（住旧 `thincoder-cli/docs/design/ESCALATE.md`） | 升级机制 / settle 三分类 / 工程模式拒保持 | 本批参照面 = 同板块同名档；该档不在内 ⇒ **越段登记**——触发 = 父侧另派 |
-| advisor 主面机制文本（住旧 `thincoder-cli/docs/design/ADVISOR-CONVERGENCE.md`） | 评审运行 / 收敛 / 轮次语义 | 同上（参照面不含）⇒ **越段登记**——触发 = 父侧另派 |
-| 旧 `thincoder-cli/docs/design/AGENT-LOOP.md` §14（会诊 / 飞刀异步化） | consult settle / 注入时机 / escalate 三分类 | 试点批登记「属本板」；本批参照面不含该档 ⇒ **越段登记**——consult 面与旧 `CONSULTATION.md` §2.2 同源（结论已入 §6.2）；escalate 面见上行 |
-| 源档 §2 纯 VSC 同构细节（R17 语义 / 工具契约 / 会话状态 —— 与 CLI 逐字同源部分） | VSC 侧同构实现 | 已并入 §6.5（端级接线表 + 端差坐标）；同构正文不逐行复制（D2） |
-
-### 8.3 需求侧（已并入本层需求档）
-
-旧档需求面（旧同名需求档 §1：需求总述 / 行为 / 范围边界）=== 本板块需求层，已并入本层需求档 `docs/core/requirements/CONSULTATION.md`（**与本档同名成对**）——本档不重复。
-
-## 变更记录
-
-- 2026-10-02（**文档清账轮 · 执行轮 2（core/design 后段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：宽面 1 行折行（132——语义零改）。**零新语义**。
-
-- 2026-09-13：建档——自 `docs/core/design/CORE-UNIFICATION.md` 拆出（§2.5 #1 / #40 / #41 / #93 / #95 / #104–#110 / #159–#161 + 四要素明细 · §2.5.1 A24）；**语义零改**，行号沿用原编号。
-- 2026-09-14（S1 收口轮）：§5 补**核内落点行数**指针（`agent-tools/panel-blocks.mjs`——#159 · #180 收正）。
-- 2026-09-14（markdown 面小收正轮）：§1 / §2.4 裸名点名补路径前缀（`advisor/provider.mjs` · `advisor/tools.mjs` · `thincoder-core/agent-tools/subagent-panel.mjs`——与 `src/provider.mjs` / `src/tools.mjs` / `thincoder-cli/src/tui/subagent-panel.mjs` 同名不同物；**消除歧义不改判据**）〔W10/W12 后该轮点名端点已退役——本条为历史记录〕 （迁移期引文）
-- 2026-09-14（**设计面收正轮 3 · eng-designer**）：§2.3 表后补 **#106 S2 接线前口径确认项**（归一取 CLI 的核内实核坐标 + 对端严格形态 + 潜伏差异的行为差登记——只记，S2 动作）。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：新增 §6 **机制面**（架构与数据流 / R17 digest 消费模型 / 工具契约 / 实现接线）· §7 **关键决策（D-CO1–6）** · §8 **不并项与历史沿革**（含飞刀 / advisor / 旧 AGENT-LOOP §14 越段登记）；
-  来源 = `thincoder-cli/docs/design/CONSULTATION.md`（**旧档一字未改**——原地作参照历史）；需求侧已并入本层 `docs/core/requirements/CONSULTATION.md`；首部加机制面指针一行。
-- 2026-09-15（**VSC 轮并入 · 批 7**）：§6.5 新增 **VS Code 端级实现接线表**（子 agent 构建 / runner / 只读
-  工具集与 main_history / 系统 prompt / 注册 / 容器 / digest / 驱动中止 / 动作域 / 面板可见性）· §7 补 **D-CO7** ·
-  §8.2 补 1 行不并项登记；来源 = `thincoder-vscode/docs/design/CONSULTATION.md`（**旧档一字未改**）；坐标按现状
-  实核（`thincoder-vscode/src/agent-tools/consult.mjs:29,223`）。
-- 2026-09-15（**W12 收正 · VSC 壳接线批**）：§6.5 加 W12 状态行；坐标收正：`runConsultChild` = 核 `thincoder-core/agent-tools/consult.mjs:215`、`makeMainHistoryTool` = 同档 `:82`（端档删旧退役）。机制条文零改。
-- 2026-09-20（**卫生族批 · 台账 #138 · eng-designer**）：首部机制面节区改 `§6–§8` + 历史节号指称清理（行数规则废除批残留）；设计源 = `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2。
-- 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #239）：§2.3 行 109 前提校验列 VSC 侧坐标 `src/advisor/tools.mjs:29-37`（盘上无）**改指**核现体 `thincoder-core/advisor/loop.mjs:31`（检索面恒在句——承接实核 = `grep code_search thincoder-core/advisor/*.mjs`）。**语义零改**。
-- 2026-09-30（**consult 同族收齐批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-30-consult-family.md` §1 · 台账 #748）：§6.2 ∥ §6.3 两处「child settle 即冻结」收正 = **随会话消费归档**（settle ⇒ `⟦ev⟧settled` 驻留 → 消费窗补发 `⟦ev⟧done`；会话 stopped ⇒ `⟦ev⟧stopped` 即折）；
-  机制单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8（本档不重述）。明细 = 批档 §2。
-- 2026-10-01（**consult 同族收齐批 · 修复轮（评审轮 1 · 发现 3 ∕ 8 · 父侧裁 = 全采纳）· eng-designer**——承 `docs/batches/2026-09-30-consult-family.md` §3）：§6.5 接线表 settle→digest 行落点容器收正 = **单容器 `_pendingAsyncResults`（+role）**（消同档两处异述——发现 3）；§6.2 条目形状字面补 `childIds`（子块映射表——机制单源 = 池档 §6.8）。**零机制改**。
-- 2026-10-01（**consult 同族收齐批 · 修复轮（评审轮 2 · 发现 1 · 父侧裁 = 全采纳）· eng-designer**——承 `docs/batches/2026-09-30-consult-family.md` §3 轮次 2）：§6.2 消费面半句重锚 = **起跑窗（主面）∥ `reclaim` ∥ 退出 freeze（兜底幂等）· 三端同形**（桌面 ∥ VSC = 起跑刻 `childIds` 逐子块补发；CLI = 起跑刻直接冻结）；原「CLI = reclaim 消费判据」句退场。**零新语义**（机制单源 = 池档 §6.8）。

@@ -5,7 +5,7 @@
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
 > 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 / §2.5.1 / §2.12.1 / §2.12.2 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§8 · 2026-09-14「B 轮并入」）：本板块**同名旧档缺 ⇒ 无新内容并入**（不虚构）——详见 §6 / §8。
+> **机制面**（§6 · 2026-09-14「B 轮并入」）：本板块**同名旧档缺 ⇒ 无新内容并入**（不虚构）——详见 §6。
 > **并入面补记**（2026-09-15 批 5）：配置面机制文本散布旧档——按父侧点名并入 `POOL-CONFIG-UNIFIED`（§6.1）。
 
 ## 1. 归属与范围（自本档行内容的路径归纳）
@@ -205,42 +205,3 @@
 | D-CF3 | **同 scope 并发守卫**（同 type+scope 有 running 评审 → 拒） | 只查 settled 会放大「并行多实例」歧义；拒文案给指引；否决「**同 scope** 排队」（同 scope 续审 stale）——**异 scope 排队** 2026-09-16 批 8 已采纳（`AGENT-LOOP-ASYNC-POOL.md` §6.10） |
 | D-CF4 | 模型可见文案**去数字化**（活引用生效上限） | 死数字与配置实值脱节；改插值 / 描述构建时读 |
 
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-**不适用**——本板块无同名旧档（无 (d) 类叙述可登记）。
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| `thincoder-cli/docs/design/SETTINGS-TOOL.md`（+ 同名需求档） | `settings` 工具面机制（#87） | 非同板块同名档——本批参照面不含 ⇒ **越段登记**——触发 = 父侧另派（按「配置面」点名） |
-| `thincoder-cli/docs/design/PROXY.md` | 代理面机制（#74） | **已落** `docs/core/design/PROXY.md`（第 3 批——本批指态收正） |
-| `thincoder-cli/docs/_archive/design/POOL-CONFIG-UNIFIED.md` | 池配置面 | **已并入**本档 §6.1（2026-09-15 批 5——旧档一字未改，留参照历史） |
-| `thincoder-cli/docs/design/MEMORY.md` §9（家目录展开） | 展开器契约（#77） | **已并入**本层 `docs/core/design/MEMORY.md` §6.7（试点批）——指回；不重复（D2） |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/design/CORE-UNIFICATION.md` 拆出（§2.5 #74 / #77 / #79 / #80 / #87 / #128–#132 / #177 · §2.5.1 A4 / A5 · §2.12.1「配置格式」类 · §2.12.2 第 1–4 行）；**语义零改**，行号沿用原编号。
-- 2026-09-14（S1 收口轮）：§5 补**核内落点行数**指针（`config.mjs` · `config-io.mjs` · `config-presets.mjs`——§2.8 新增小节）。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：§6 **机制面 = 同名旧档缺**（`thincoder-cli/docs/{design,requirements}/CONFIG.md` 均不存在——两产品树实核）⇒ 无并入内容（不虚构）；§7 无新增决策；§8 登记配置面机制文本散布于旧档（越段发现 + MEMORY §6.7 指回）；首部加机制面指针一行。
-- 2026-09-15（**迁移批 · 第 5 批 · 并入 · eng-designer**）：新增 §6.1 **并发池配置面**（自 `thincoder-cli/docs/_archive/design/POOL-CONFIG-UNIFIED.md` 并入——配置键表 / 双读取器 / 默认四源 / 界面入口 / 兼容面；机制本体指 `AGENT-LOOP-ASYNC-POOL.md` §6.10）；§7 补 D-CF1–D-CF4；§8.2 两行指态收正（PROXY 已落 / POOL 已并入）。
-- 2026-09-15（**W16 实施轮 · eng-coder**）：§1 归属表改「现体」双列（加载器 / 迁移 / 预设 / settings 工具 / 供应持久化面 = 核单源；VSC 端侧镜像 6 档已删——端壳保留写盘通道 / 监视 / 迁移 glue / provider 访问层）+ W16 现况注；§2.2 #130 行注 W16 端侧 consult 读面现体；§6.1 界面入口行号重核（`settings-panel-write.mjs:94` · `thincoder-vscode/src/extension/settings.mjs:176`）。
-- 2026-09-16（**ENGINE-DEBT 批 8 · ED-4 决策面收正 · eng-designer**——承 `docs/batches/2026-09-16-engine-debt.md` §1 裁定 ④）：§7 **D-CF2 理由句 / D-CF3 否决句**按「评审池满 → 异 scope 入队」收正（决策本体不变——独立读取器 / 同 scope 守卫；机制落 `AGENT-LOOP-ASYNC-POOL.md` §6.10/§6.11）。
-- 2026-09-16（**批 8 ENGINE-DEBT · 补充收正 · eng-designer**）：§6.1 范围边界句「『评审不排队』语义不变」→「**表述已废**」（承 ED-4——与 §7 D-CF3 · `AGENT-LOOP-ASYNC-POOL.md` §6.10 对齐；残留旧语义清理）。
-- 2026-09-20（**卫生族批 · 台账 #138 · eng-designer**）：首部机制面节区改 `§6–§8` + 历史节号指称清理（行数规则废除批残留）；设计源 = `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2。
-- 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #229）：§6.1 范围边界句「『评审不排队』表述已废」**转裁定语**（现文 = 「排队口径 = 异 scope 入队 / 同 scope 仍拒（2026-09-16 批 8 ED-4 裁定）」——D8 修订式标记清理）。**语义零改**。
-- 2026-09-27（**env-config-purge 批 · eng-designer**——承 `docs/batches/2026-09-27-env-config-purge.md` §1.5）：新增 **§6.2 配置通道纪律与自有环境变量面**（四类通道表 + 保留集 + 自有面名录 + D-CF5 / D-CF6）；机制句 = 本档单源；§6.2 补**实施实证两注**（argv 门作用域 / `loadConfig()` 全命令路径——承本批 §5，收口轮）。
-- 2026-09-27（**env-config-purge 批 · 设计评审轮 1 修正轮 · eng-designer**——承 `docs/batches/2026-09-27-env-config-purge.md` §3 轮次 1 发现 2 / 7）：③ 形态列补**命名 / 成对例外 = 逐行标于名录**；名录逐行标例外（`--test-cleanup-out` 单半 · `setResultsDir` 命名例外）+ 
-  `BENCH_JUDGE` / `BENCH_PRICES` 补 `_reset` 对（去「若既有等价参数存在则复用」条件句）；名录后补**混合形口径**段 + **`settings` 派生消费面登记**（`thincoder-core/agent-tools/settings.mjs:62`）。**零语义**：四类通道 / D-CF5 / D-CF6 零改。
-- 2026-09-27（**timer-wake 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承 `docs/batches/2026-09-27-timer-wake.md` §3 轮次 1 发现 4 · 父侧裁定）：§6.2 派生消费面登记行**扩面**——键列补 `agent.timerWake`（`thincoder-core/config.mjs` DEFAULTS `agent` 段；与 `diagnostics` 两键同经 `settings` 工具类型面装载期派生）。**零新语义**（登记面补列）。
-- 2026-09-29（**doc-sync-residuals 批 · 设计面残留收正轮 · eng-designer**——承 `docs/batches/2026-09-28-tech-debt-closeout.md` §2.9 ∕ 收正行 · `config-watch` 上提）：§2.2 #132 行收正——路径补仓根全形（端壳两档——`doc-check` 悬空 −1）+ **端特有段判词收窄**（配置监视纯逻辑已上提核 `thincoder-core/config-watch.mjs`；端特有 = 宿主接线 + 迁移面）。**零新语义**。
-- 2026-09-29（**doc-sync-carryover 批 · 文档随动族收正轮 · eng-designer**——承 `docs/batches/2026-09-29-doc-sync-carryover.md` §1 · 台账 #647）：§6.2 自有面名录 `DOC_CHECK_NESTED` 行收正——随档退场（`--nested` 门随 2026-09-28 测试树全清令无消费者；常驻重建挂台账 #590 面）。**零新语义**。
-- 2026-09-29（**provider-config-family 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` · 台账 #57）：新增 **§6.3 配置值 `${env:VAR}` 引用（消费侧解析）**——机制 ∕ 生效面五族 ∕ 语义（缺失即抛错）∕ 与遮蔽面关系 ∕ 与 §6.2 通道纪律的关系 ∕ 边界；
-  机制单源 = 本节（`doc:SETTINGS-TOOL.md` D-ST16 与 `doc:MCP.md` §6.5 改指）。**零新语义**（= 台账 #57 既定设计与 settings 脱敏批候选 C1 的成文）。
-- 2026-09-29（**provider-config-family 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-09-29-provider-config-family.md` §3 轮次 1 发现 1 ∕ 2）：§6.3 解析点集**五处 → 六处**（补「会话标题生成径」+ 标题径非致命兜底句）；§6.2 补**值位显式引用 ≠ 配置通道**边界句 + D-CF5 补注（与 §6.3 双向指）。**零新语义**（= 评审发现的直接导出项）。
-- 2026-09-30（**doc-sweep 批 · 行宽收正 · eng-designer**——承 `docs/batches/2026-09-30-doc-sweep.md` §2 · 台账 #664）：provider-config-family 设计轮条（原单行 332 字符）**折行**（仅换行 ∕ 语义零改——doc-check 行宽闸收正）。**零新语义**。
-- 2026-09-30（**采集收网批 · eng-designer**——承 `docs/batches/2026-09-30-heap-snapshot-switch.md` §2）：§6.2 名录 `THINCODER_HEAP_SNAPSHOT` 行**默认值收正**（`true` ⇒ `false`——采集隐私默认关〔D-TR6 同族〕；桌面端运行期热读＝本批新机制）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
-- 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：新增 **§6.4 团队登录配置面（`team` 段）**——键面指针（全文 = `docs/core/design/TEAM.md` §2.1）∥ 通道归属（① 配置键 ∥ 不入 `DEFAULTS`）∥ 写面单源 ∥ 登录态判据（口径④）；机制单源 = `TEAM.md`（本档不复制——D2）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
-- 2026-10-14（**injection-switches 批 · 设计轮修正轮 · 父侧直接执行 · 可 revert**——承 `docs/batches/2026-10-14-injection-switches.md` §2 修正轮上抛·待裁裁定）：§6.2 派生消费面登记行键列补 `agent.injectDocs` ∥ `agent.injectMemories`（`thincoder-core/config.mjs` DEFAULTS `agent` 段——同经 `settings` 工具类型面装载期派生）。**零新语义**（登记面补列）。

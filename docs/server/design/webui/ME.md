@@ -91,7 +91,7 @@
   **改值 4 键**——`me.keys.listTitle`（「key 清单（提示形）」 ⇒ 「API Key 清单」——黑话下架） ∥ `me.keys.empty`（重写——「签发新 API Key」指引） ∥ `me.keys.lastUsed` ∥ `me.keys.windowTokens`（去前缀——列内形 `{time}` ∥ `{tokens} tokens`）；
   **退役 2 键**——`me.keys.rotate` ∥ `me.keys.rotateConfirm`（轮换按钮下架——零消费者删净）；表体量：zh 352 ⇒ ≈374 ∥ en 355 ⇒ ≈377（估——实施实读为准）。
   **复用 1 键（零新增）**——`me.keys.neverUsed`（「从未使用」——本档 §2.1 表「最后使用」空值文案；成员弹窗 key 表同键——`webui/STYLE.md` §2.2⑤；两表在盘，本批零改）。
-  **词汇口径（统一现状——2026-10-10 本批）：四面 + 本页统一 = 「API Key」**：本页实体名 = 「API Key」（需求 §2:25③ 字面——列头/按钮/弹窗；zh 保留英文原形 ∥ en = "API key"；用户 2026-10-07 16:41/16:43 定音（B——批档 §1.3 术语门））；
+  **词汇口径（统一现状——2026-10-10 本批）：四面 + 本页统一 = 「API Key」**：本页实体名 = 「API Key」（需求 §2:25③ 字面——列头/按钮/弹窗；zh 保留英文原形 ∥ en = "API key"；用户 2026-10-07 16:41/16:43 定音（B，术语门））；
   `nav.page.me.keys`（「API Key 与签发」） ∥ 管理面（`admin.members.tableTitle`/`colKeys`/`colKeyCount`/`colKey`） ∥ 审计型（`audit.type.key_issue`/`key_revoke`/`key_rotate`） ∥ 接入卡（`system.accessHint`）；
   页题 `me.keys.title` ∥ `me.keys.secretLabel` 亦随统一（2026-10-10 本批——台账 #1025 已办；指别 = 成员 API Key；provider 凭证三键 ∥ `vector.clearApiKey` = 上游/引擎凭证实体——非本口径面，零触）。
 - **键族登记（me 用量图表化批——两表逐键同步；本批）**：新增 **8 键**——`me.usage.range`（时间维度） ∥ `me.usage.range7`（近 7 天） ∥ `me.usage.range30`（近 30 天） ∥ `me.usage.rangeMonth`（本月） ∥
@@ -118,12 +118,3 @@
 ## 6. 上抛/余项
 
 - 本面无独立上抛/余项。
-
-## 变更记录
-
-- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：§3 两 i18n 行补待批两键退役注（−2 键/表 ⇒ 87 ∥ 88 估值，实读待实施轮回填）。同源随动 = `webui/SANDBOX.md`。**产品码零触（设计轮）。**
-
-- 2026-10-14（**sandbox-exec-rebuild 批 · 收口修复轮（设计面）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §6 D 裁）：§3 两 i18n 行补实读（**89 ∥ 90**）+ 三键退役注（`me.sandbox.colDirty`/`dirtyYes`/`dirtyNo`——成员表 dirty 列删，−3 键/表）。**产品码零触（设计轮）。**
-
-- 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：本档自 `webui/WEBUI.md` §2.3⑥⑦ 及三表归位行逐字迁入（零语义；⑥⑦ 行内粗体文入节标题——结构动作）；文内 § 引用改指（§2.6①⑤②→`webui/STYLE.md` §2.2①⑤② ∥ §2.5①→`webui/STYLE.md` §2.1① ∥ §2.3①→`webui/READINGS.md` §2.1① ∥ §2.3⑥⑦→本档 §2.1/§2.2 等）；AC-15 行三拆之 ⑥ 片段入本档；档目链去重 ⇒ 单源句（`webui/WEBUI.md` §1）；原址保位 stub 在 `webui/WEBUI.md`。**产品码零触。**
-- 2026-10-13（**member-face-chat 批 · 裁定修订轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-member-face-chat.md` §1（用户裁定：题三补——成员本人凭据））：**增 §2.3 账户页 Git 凭据卡**（定位/卡形/数据面/边界）∥ §3 `views-me.mjs` 行 +≈60（⇒ ≈355）+ 两 i18n me 表行 +≈48/表（⇒ ≈137 ∥ ≈138）∥ §5 增本批不做面行。同源随动 = `gateway/API.md` §2.11 ∥ `agent/MEMBER-AGENT.md` §3.6 ∥ `webui/SANDBOX.md` §2.1①（同形跨面） ∥ `webui/WEBUI.md` §5。**产品码零触（设计轮）。**

@@ -6,7 +6,7 @@
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
 > 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 / §2.5.1 / §2.12.2 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§8 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策 · 不并项与历史沿革（自 CLI 产品档并入）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策 + 沿革）。
+> **机制面**（§6–§7 · 2026-09-14「B 轮并入」）：机制 / 契约的实质描述 · 关键决策（自 CLI 产品档并入）——**本档 = 该板块的完整设计面**（裁决行 + 机制 + 决策）。
 > **2026-09-29 P2 三拆坐标注（core-hygiene 批 · §2.8 行 5）**：核 `agent.mjs` 主循环面已分档（`agent/run-start.mjs` ∕ `agent/turn-loop.mjs` ∕ `agent/chat-call.mjs`；`agent.mjs` = 105 行编排面）——域文本注入点等语义句已按新档收正；余 `agent.mjs` 系旧行号 = 三拆前 as-of。
 
 ## 1. 归属与范围（自本档行内容的路径归纳）
@@ -153,7 +153,6 @@
 
 > **来源** = `thincoder-cli/docs/design/TOOLS.md`（247 行 · CLI 产品档）——根层裁定后该档 = **迁移期参照历史**（只读 · 不维护 · 不参与内容同步）。
 > **本节 = 该档中「根层所缺」内容的并入面**：(a) 机制 / 契约的实质描述 · (b) 实现细节与坐标 · (c) 关键决策依据（§7）。
-> **不并**者见 §8：一次性批次材料（选型对比表 / 受影响文件表 / 用例表 / AC 表 / 变更流水账）· 编辑工具逐工具正文（已拆到各工具权威档，本档只留地图与契约要点）。
 > **坐标口径** = as-of 2026-09-14：**旧档路径形态为迁移前**（CLI 侧工具实现住 `src/tools/**`）——本节一律按**现状路径**落笔（`thincoder-core/tools/**` · `thincoder-core/agent-tools/**`）。符号名与档路径为契约面，**行号未逐条复核**、仅供定位。
 
 ### 6.1 总览与统一契约
@@ -425,7 +424,7 @@ A13 调用方普查 · 集成测试级：三包全量 `npm test` 失败集合 �
 
 **开销（实测）**：`D:/teamcode`（45 目录 / 13 子仓）单次发现 = **1.35 ms**（20 次均值）；仓锚路径（含 `.git`）= 0.09 ms ⇒ **不做缓存**（被拒备选：mtime / cwd 键缓存——`git init` / `clone` 会改盘面，缓存的失真面恰是发现本身；开销已在噪声级）。
 
-**落位（机制级——行数 / 增量 as-of 表归批档 §2）**：
+**落位（机制级）**：
 
 | # | 文件 | 落点 |
 |---|---|---|
@@ -470,7 +469,7 @@ A17 workdir 优先 + 无注记；A18 两类 cwd 零行为变（既有用例全�
 ### 6.14 git 工具非交互加固（2026-09-21 · 批 GIT-NONINTERACTIVE · 台账 #207）
 
 **问题（用户实报 · 已发布 `0.12.64`）**：`git` 工具 `{action:"rebase", rebaseAction:"continue"}` **反复冻死整个会话**（工具卡 done · 回合不再推进 · 重启重试再冻）。
-定因链（父侧实读）= **同步 spawn + 零非交互加固**：`rebase --continue` 需造提交 ⇒ 起编辑器 ⇒ 无 TTY 下编辑器不退出 ⇒ `execFileSync` 无期限等待 = 全进程锁死；全过程证据住批档 `docs/batches/2026-09-21-git-noninteractive.md` §1（本档不重述）。
+ 定因链（父侧实读）= **同步 spawn + 零非交互加固**：`rebase --continue` 需造提交 ⇒ 起编辑器 ⇒ 无 TTY 下编辑器不退出 ⇒ `execFileSync` 无期限等待 = 全进程锁死。
 
 **故障族定义（四族 = 本节加固靶面）**
 
@@ -659,12 +658,12 @@ timed out after <n>s (killed) — no interactive input is possible here (editor 
 **边界（本节不做）**：不改 `bash` 工具（其加固照旧，`thincoder-core/tools/bash.mjs` 零改）· 不新增 action / 参数 / 用户选项（超时与加固均为常量，不进 schema）· 成功路径输出形态零变（加固走 env，不加命令行参数）· checkpoint / 快照语义零改 · 不接 Stop / abort（`runGit` 族无 `ctx.signal` 通路——本批不做）
  · 「表外复核」五位中 `gitDiffOne` / `patch.mjs` 两处本批落（#208 · as-of 2026-09-25 设计轮：转 `spawnGit`）；余三位（`thincoder-core/git/checkpoint.mjs` / `advisor/repos.mjs` / `bash.mjs`）维持零改（见上表）· 不做 ssh 面 `GIT_SSH_COMMAND` 覆盖（会夺用户自配）+ 不设 `SSH_ASKPASS`（登记为超时兜底面）· 不改 README / 需求档 / 发布面。
 
-**发布关联**：缺陷在已发布 `0.12.64`（「已知变坏不得出厂」族）⇒ 修复随**下一代 CLI** 发布；**发布动作 = 用户门**（批档 §1）。
+**发布关联**：缺陷在已发布 `0.12.64`（「已知变坏不得出厂」族）⇒ 修复随**下一代 CLI** 发布；**发布动作 = 用户门**。
 
 
 ### 6.15 task 工程模式停用 + batch 词面协议结构化（2026-09-21 · 批 TOOL-DISCIPLINE · 台账 #214/#215）
 
-**问题陈述**（用户 2026-09-21 22:47 双提问 · 实证五例批档 `docs/batches/2026-09-21-tool-discipline.md` §1，本节不重述）：
+**问题陈述**（用户 2026-09-21 22:47 双提问 · 实证五例）：
 
 - **F10**：task 在工程模式结构性多余且有害——追踪权威面 = 批次档 + 台账，task 列表是并行结构里的陈旧影子（misleading），且每回合 re-inject 描述 = token 税；模型仍被工具表与提示词引着误用（本会话实证）。
 - **F11**：词面错误（状态行误冻结 / 双关键词拒 / 双前缀 / 死占位残留）**同一日五例**——散文承载机器语义 + 子串匹配必然偶发事故；对照面 = 台账六态 enum 零事故 ⇒ enum 化 / 结构化有效性有实证。散文化消除没有收益（状态行括注是真实需求），方向 = 值的载体结构化。
@@ -807,7 +806,7 @@ the tracking authority is the batch record + the ledger.)」
 
 改因（一句）：F10 机械门上线后工程模式 `task` 调用被拒——三处仍指挥 / 引指 task 的句子 = 自相矛盾态（撞点修复）；双副本链路承 D-C14（先改 `docs/core/design/prompts/` 正本 → 回写 `thincoder-core/prompts/` 运行期落地档）。落档 = 主 agent 笔面（提示词 = 主 agent 内容权）。
 
-#### 6.15.3 F10 第三面——auto-turn digest 域的模式变体（2026-09-22 · 承本批批档 `docs/batches/2026-09-21-tool-discipline.md` §5 线外发现 · 父侧裁定并入本批）
+#### 6.15.3 F10 第三面——auto-turn digest 域的模式变体（2026-09-22）
 
 **问题（F10 提醒面家族第三实例——同族死胡同）**：manual 档 auto-turn 域文本（`AUTO_TURN_DIGEST_DOMAIN`，核 `thincoder-core/agent/helpers.mjs:436`）第 2 条指挥「update the task list with the task tool (allowed)」——
 F10 后工程模式下 task 既**不在工具表**（装配摘除）又**机械拒**（execute 门）⇒ 该句 = 死胡同 ∧「(allowed)」= 错误陈述。
@@ -902,7 +901,7 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 
 **边界（本节不做）**：不动工具本体（不删 `question`、不改 `thincoder-core/tools/question.mjs` 的机械门与上限校验）· 不动静态注册表与主会话 / headless 面的**机制**（含 CLI 侧 ACP 排除面 `thincoder-cli/src/acp.mjs:67`；注入措辞面不在本句射程——取值 = 本节措辞面表）· 人格档文案零改（路由指引已在位）· 其他工具零动 · 不加配置开关、不加用户选项 · 只读过滤语义零变（`explore` / `plan` / `consult` 的只读面逐字零变）。
 
-> 判定（用例 A30–A33）/ 受影响文件与行数预算 / 验收回指 = 批档 `docs/batches/2026-09-25-question-tool-filter.md` §2（一次性批次材料——本档不重述）。
+> 判定（用例 A30–A33）/ 受影响文件与行数预算 / 验收回指 = 本节内（本档不重述）。
 
 ### 6.17 工具钩子消费单源：`touchedPaths` 守卫对齐 + 判据归一（2026-09-25 · 批 GUARD-SCHEDULER · 台账 #327）
 
@@ -945,7 +944,7 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 
 5. **`file_ops` 动作感知入谓词 + 端特例分支清零**（2026-09-25 · 批 single-source-closeout · 台账 #333——**用户裁 15:16「先修正核、再单源化」**）：核 `peer-domains.mjs` 的 `file_ops` 双算特例分支与端 `tool-gates.mjs` 的 `l3TouchedPaths` 本地分支**双删**（两侧整面走谓词；
    端 `l3TouchedPaths` 的 `toolName` 参数随删——两个调用点（`thincoder-vscode/src/agent/tool-gates.mjs` · `thincoder-vscode/src/agent/execute-tools.mjs`）同步改签名，仓内零测试消费者）。 （迁移期引文——档已迁核）
-   **十消费点语义复核**（核 6 / 端 4——逐点清单 = 批档 §2）：行为变仅两处——
+   **十消费点语义复核**（核 6 / 端 4）：行为变仅两处——
    ① 核 #6 `thincoder-core/peer-domains.mjs`（L3 写前查 / 足迹登记）：`copy` 源不再计入写域（本裁定目标面）；
    ② 端 #10 `thincoder-vscode/src/agent/rules-face.mjs`（作用域规则 JIT）：`file_ops` 覆盖范围**由死转活**——谓词此前对 `file_ops` 返 `[args.path]`（`file_ops` 无 `path` 参）⇒ 该工具在 `PATH_TOOLS` 内实零候选；本裁定如实登记为行为面变化。 （迁移期引文——档已删）
    **补一格用例位**（本批修正轮 · 承评审发现 3）：`file_ops` `copy` / `move` ⇒ 作用域规则候选命中——落点 = `thincoder-vscode/test/scoped-rules.test.mjs`（T-B3 族续编——`file_ops` 径；用例 = T-B3b）。 （机检豁免——用例退场登记）
@@ -972,11 +971,11 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 
 **边界（本节不做）**：不改钩子本体语义（`thincoder-core/tools/file.mjs` 零改）· 不改门禁对空路径集的判据（T-22 语义保持）· 不动 `touchedPaths` 契约形状（仍是「工具自报 · 可选钩子」）· 不新增工具面标记 / 配置开关。 （机检豁免——用例退场登记）
 
-> 用例表 / 受影响文件与行数预算 / 验收回指 = 批档 `docs/batches/2026-09-25-guard-scheduler.md` §2（一次性批次材料——本档不重述）。
+> 用例表 / 受影响文件与行数预算 / 验收回指 = 本节内（本档不重述）。
 
 ### 6.18 node 语义子进程启动面（Electron 宿主 · 2026-09-29 · 批 desktop-execute-electron-node · 台账 #602）
 
-**缺口**：核内 spawn `process.execPath` 的隐含前提 = 「execPath 为 node」。桌面宿主主进程 = `electron.exe`（`process.execPath` = Electron 二进制）⇒ 子进程按 Electron 应用启动、不执行代码 ⇒ `execute` 悬挂至超时（实勘 = 批档 `docs/batches/2026-09-29-desktop-execute-electron-node.md` §1）。
+**缺口**：核内 spawn `process.execPath` 的隐含前提 = 「execPath 为 node」。桌面宿主主进程 = `electron.exe`（`process.execPath` = Electron 二进制）⇒ 子进程按 Electron 应用启动、不执行代码 ⇒ `execute` 悬挂至超时。
 
 **判据与单点（核件新增）**：`thincoder-core/tools/node-child.mjs`（**已落** · 2026-09-29）—— `nodeChildEnv(base = process.env, isElectron = !!process.versions.electron)`：
 
@@ -984,7 +983,7 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 - 假 ⇒ **原样返回 `base`**（同引用——spawn 缺省继承语义，逐字零变）。
 
 判据语义 = 「本进程运行时是 Electron ⇒ `process.execPath` 属 Electron 族二进制」——**运行时能力探测，非端名分支**（三端同判据、同式执行；契约 5「端差以注入表达」（`docs/core/design/CORE-UNIFICATION.md` §2.2）的注入缝承载的是端差值，本项无端差值可注入——被否候选见 §7 D-TO14）。
-已处 node 模式的 Electron 宿主（如 VS Code 扩展宿主——env 携旗标，实证 = `docs/batches/2026-09-25-desktop-impl-3.md:333`）为**同值幂等**。第二参 = 判据注入（机检用缺省参——先例 `_setGitTimeoutForTest` 族）。
+ 已处 node 模式的 Electron 宿主（如 VS Code 扩展宿主——env 携旗标）为**同值幂等**。第二参 = 判据注入（机检用缺省参——先例 `_setGitTimeoutForTest` 族）。
 
 **消费点（全量）**：
 
@@ -1000,11 +999,11 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 
 **边界**：旗标随 env 继承至后代（node 语义传递——同扩展宿主现状）· 不涉审批 ∕ 安全 ∕ schema ∕ 超时树杀语义 · 不覆盖 PATH 外部命令面 · **打包面**：依赖 Electron `RunAsNode` fuse 在线（现仓零 fuses 配置——实读 as-of 2026-09-29：`thincoder-desktop/package.json` 无 `build` 键、无 `electron-builder.*` 配置档）——打包批需登记该前提。
 
-> 用例表 ∕ 受影响文件与行数预算 ∕ 验收回指 = 批档 `docs/batches/2026-09-29-desktop-execute-electron-node.md` §2（一次性批次材料——本档不重述）。
+> 用例表 ∕ 受影响文件与行数预算 ∕ 验收回指 = 本节内（本档不重述）。
 
 ### 6.19 后台任务族：`bash` 异步 ∥ 后台执行（2026-09-29 · 批 tools-carryover · 台账 #9）＋ `browser` 后台动作（2026-10-07 · 批 browser-async-fix · 台账 #1045——设计权威 = `BROWSER-TOOL.md` §2.11）
 
-**机制**（设计面 = 批档 `docs/batches/2026-09-29-tools-carryover.md` §2.1；池面实现 = `thincoder-core/agent-tools/bash-async.mjs`（**已落** · 2026-09-29））：
+**机制**（池面实现 = `thincoder-core/agent-tools/bash-async.mjs`（**已落** · 2026-09-29））：
 
 - **起跑**：`bash` 参数面 +`async: boolean`（可选；缺省 false = 现行同步径逐字零变）；形 = `bash { command, async: true }`。前置两件同保留（`gitGuardSnapshot` ∥ `posixSyntaxHint`）；审批 = 起跑即走既有权限门（同同步径）。
 - **ack**：起跑即返 `bash#<id> started (running) — log: <logPath>`（取号沿两池共用 `nextSubagentId` 命名空间——`docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.10；`bash#N` 前缀区分域）。
@@ -1032,12 +1031,12 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 | 挂起面 | `thincoder-core/agent/suspension.mjs` | `poolLive` 并集扩第三域 |
 | 收尾面 | `thincoder-core/agent-tools/async-discard.mjs` | 中断豁免 ∥ 会话中止两档（逐条杀树 + 墓碑） |
 
-**关键决策（承批档 §2.5 D9-1–D9-7）**：择 B 任务池（否决 A 真后台 ∥ C 会话挂起——口径统一硬要求）· 独立池 `_bgTasks` · async 默认无超时 · 跨会话不存活 · kill 收编 `process` · 注入恒尾截 + 全量在 log · 收尾两档。
+**关键决策**：择 B 任务池（否决 A 真后台 ∥ C 会话挂起——口径统一硬要求）· 独立池 `_bgTasks` · async 默认无超时 · 跨会话不存活 · kill 收编 `process` · 注入恒尾截 + 全量在 log · 收尾两档。
 
 **`browser` 后台动作（同族并入 · 2026-10-07 · 批 browser-async-fix）**：`browser` 参数面 +`async: boolean`（depth-0 专项——删参单点 ∥ execute 面第二道，同 bash 双线）；池 = `_browserTasks`（帽 `BROWSER_TASK_MAX = 4`）；ack = `browser#<id> started (running) — <action> <subject>`；
 后台动作仍走同一串行队列（单页不引入并发）；结算 = 恒停靠 + 摘要注入（`injectBrowserResult`——完成 ∥ 失败 ∥ 被杀三态；取消无摘要）+ 取号扫描 ∥ 挂起活度 ∥ 收尾档同族并入；等待面 ∥ 终止面 = `wait_for` 条件 `browser id:N done` ∥ `process` kill id 路由（先 bg 后 browser——两族皆未命中 ⇒ 合并错误句，`thincoder-core/tools/ops.mjs:109`）。
 
-> 用例表 ∕ 受影响文件与行数预算 ∕ 验收回指 = 批档 `docs/batches/2026-09-29-tools-carryover.md` §2（一次性批次材料——本档不重述）。
+> 用例表 ∕ 受影响文件与行数预算 ∕ 验收回指 = 本节内（本档不重述）。
 
 ### 6.20 工具面首用可发现性：batch 档头可填性 + 死占位判据可辨性（2026-10-05 · 批 toolface-first-use-fixes · 台账 #938）
 
@@ -1084,7 +1083,7 @@ VSC `thincoder-vscode/src/agent.mjs` 494（>300 软线、≤500 硬限；本批 
 - 否决备选（②）：**参数面零扩展**（F11-B 时序耦合顾虑——可选参化解：给则填 / 不给走手工法；2026-10-05 需求 §8.2 已裁）· **台账行移出判定域**（见 §6.15.2 裁定点④）。
 - 否决备选（③）：**全文子串**（引用误杀——本批实害）· **泛形正则**（2026-09-21 已否：误杀合法尖括号 ∥ 模板暂存）· **引用需转义形**（反引号 / 引号谓词——把机检变成写作规约，误伤依旧）· **保留段域同形判定**（段内无槽位 = 死检查，整行引用仍误杀）。
 
-**边界（本节不做）**：门禁判据集零改（六字段标记 ∥ `TEMPLATE_PLACEHOLDERS` 枚举字面 ∥ `assertStatusNote` 面）· 不新增工具 / action · 其他 description 零清扫 · 端面零改（核单源消费）；用例表 ∕ 受影响文件 ∕ 验收回指 = 批档 `docs/batches/2026-10-05-toolface-first-use-fixes.md` §2（一次性批次材料——本档不重述）。
+**边界（本节不做）**：门禁判据集零改（六字段标记 ∥ `TEMPLATE_PLACEHOLDERS` 枚举字面 ∥ `assertStatusNote` 面）· 不新增工具 / action · 其他 description 零清扫 · 端面零改（核单源消费）；用例表 ∕ 受影响文件 ∕ 验收回指 = 本节内（本档不重述）。
 
 ### 6.21 `delete` 空目录分支（2026-10-05 · 批 engine-tools-gaps · 台账 #943）
 
@@ -1128,12 +1127,12 @@ Notes:
 **快照面注（undo）**：空目录移除**不产生 undo 条目**——零内容语义：`snapshotForUndo`（`thincoder-core/undo-stack.mjs:31`）对目录目标读文本失败（`EISDIR`）即捕后跳过——**不推条**（与「文件创建态」的 `backup = null` 条目分判）；`/undo` 列表无该条目。
 **范围注（不经跟踪检查——放宽面）**：前提「空目录不可能被 git 跟踪」按**常规面**声明（git 索引不记空目录）；例外面候选 = **索引条目（gitlink——如未初始化 ∕ 未检出子模块路径）对应的空目录路径**（**unverified**——未实核）：该类路径索引留条目而工作树形可为空目录 ⇒ 本分支对该面同不经跟踪检查（放宽面据此声明）；如日后实核出反例 ⇒ 另议（父侧裁）。
 **口径注（逐字文本面归属）**：本节内联 = 本批 `thincoder-core/tool-docs/delete.md` **改前→改后逐字留痕**（承 §6.20 先例——工具面批描述文本变更以本档 §6.x 持逐字文本面）；**实读 `PROMPT-SYSTEM.md` 现持面** = 描述面**机制与预算**（§6.11——外置单源 ∥ 预算表唯一权威处 ∥ 写作契约 → §6.9），该描述档文本**不在该档**（零命中）；描述文本**运行期单源** = `thincoder-core/tool-docs/delete.md`（核内唯一副本）——非二次归属（变更留痕）。
-用例表 ∕ 受影响文件 ∕ 验收回指 = 批档 `docs/batches/2026-10-05-engine-tools-gaps.md` §2（一次性批次材料——本档不重述）。
+用例表 ∕ 受影响文件 ∕ 验收回指 = 本节内（本档不重述）。
 
 ### 6.22 SSH 会话工具（SSH-SESSION）（2026-10-14 · 批 ssh-session · 台账 #1436）
 
-**来源**：用户 2026-10-14 16:03–16:08「用 thincoder 做网络管理」讨论定形（原话链见批档 §1）；需求 = `docs/core/requirements/TOOLS.md` §4.8（S1–S5 ∥ NS1–NS5 ∥ 边界四条 ∥ 相容性核对 5 条 ∥ 裁决三条——用户 2026-10-14 16:49–16:52 三裁在表）。
-本节 = 设计面权威（机制 / 落点 / 判据）；批档 `docs/batches/2026-10-14-ssh-session.md` §2 = 一次性材料（本批条目 / 文件基准行账 / 判据回指）。
+**来源**：用户 2026-10-14 16:03–16:08「用 thincoder 做网络管理」讨论定形；需求 = `docs/core/requirements/TOOLS.md` §4.8（S1–S5 ∥ NS1–NS5 ∥ 边界四条 ∥ 相容性核对 5 条 ∥ 裁决三条——用户 2026-10-14 16:49–16:52 三裁在表）。
+本节 = 设计面权威（机制 / 落点 / 判据）。
 
 **落点判定（邻位新节 · 非独立档——写明理由）**：§4.7 TTY-DRIVE 的**设计面从未落地**（旧档 `docs/core/design/E2E-HARNESS.md` 已删除、「设计面待重做」随后随台账 #8 废弃）⇒ **无「独立档」先例可随**；本条性质 = 工具面机制（与 §6.12–§6.21 同类同冠形：`### 6.x <主题>（<批次> · 台账 #N）`）⇒ 落本档邻位新节，档数零增（`docs/README.md` 地图零动）。
 
@@ -1231,7 +1230,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 
 状态行冠形（每返回首行，便于判读）：`[ssh (<id>) <host> — <state> · idle <n>s]`。
 
-#### 落点文件清单（预计 · file 级；现况列 = 2026-10-14 实读；端侧逐档 Δ = 实施轮首读钉基线——落点 = 批档 §5 首读读数 ∥ 判据 = Δ 后各档 ≤ 500 结构线）
+#### 落点文件清单（预计 · file 级；现况列 = 2026-10-14 实读；端侧逐档 Δ = 实施轮首读钉基线——判据 = Δ 后各档 ≤ 500 结构线）
 
 | # | 档 | 现况 | 预计 | 动作 |
 |---|---|---|---|---|
@@ -1249,11 +1248,11 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | 12 | CLI 端（**实落 16 档** = 12 档 + 新档 `thincoder-cli/src/tui/secret-prompt.mjs` 201 + 3 档随动） | 实读 2026-10-14：`tui/render-frame.mjs` **495**（余 5——另批拆）∥ `tui/tool-events.mjs` 460 ∥ 余档 ≤ 262（逐档 = 批档 §5 落点表） | ≈+60–110（含新档）（预计）⇒ 实读 ≈+271（含新档） | 回调 + 掩码模态面（含掩码守卫——机制 ⑧）+ 随动 |
 | 13 | VSC 端（**实落 13 档** = 3 档 + 通道 / 分发 / 字典 / 样式等 10 档随动 + 新档 `webview/secret-input.js` 112） | `src/extension/panel-callbacks.mjs` 326 ⇒ **360**（实读 2026-10-14）∥ `src/extension/panel-chat.mjs` 261 ⇒ 264 ∥ `webview/question.js` 26（卡面端壳先例——新档同族） | ≈+50–90（含 webview 面）（预计）⇒ 实读逐档 Δ = 批档 §5 落点表 | 卡片面（`panel-callbacks.mjs` **:293** 注入点——`askInPanel` 同族）+ 消化面回落 + webview 卡面 |
 | 14 | 桌面端（**实落 13 档** = 2 档 + 门表 / 通道面 / 渲染面等 11 档随动 + 新档 `thincoder-desktop/renderer/secret-prompt.mjs` 323） | `src/main/agent-bridge.mjs` 325 ⇒ **331**（实读 2026-10-14）∥ `renderer/questions.mjs` 48（零改——面体落新档） | ≈+40–80（含渲染面）（预计）⇒ 实读逐档 Δ = 批档 §5 落点表 | 转口（注入 `askSecret` + 回调 `onSecretInput`）+ 渲染面弹窗（`secretPrompt` 切片） |
-| 15 | 单测 | — | 新 1 档（预计）⇒ **实落四档**（核 537 ∥ CLI 331 ∥ VSC 409 ∥ 桌面 633——四腿批内件；逐档 = 批档 §5 四腿落点表） | `docs/batches/2026-10-14-ssh-session{,-cli,-vsc,-desktop}.test.mjs`（夹具替身 ssh——照服务端 `execImpl` 注入先例；随批档存放，不进 `test/` 树） |
+| 15 | 单测 | — | 新 1 档（预计）⇒ **实落四档**（核 537 ∥ CLI 331 ∥ VSC 409 ∥ 桌面 633——四腿批内件） | 夹具替身 ssh——照服务端 `execImpl` 注入先例；随批档存放，不进 `test/` 树 |
 | 16 | `thincoder-core/agent-tools/ssh-transport.mjs`（**新**——拆档产物：行 2 授权句落形） | — | 新（实读 **311**——内容行） | 运行面：askpass 链 / 子进程 / 沉降 / 遮蔽 / 输出帽 / 失败分类 |
 | 17 | `thincoder-core/agent-tools/subagent-scheduler.mjs`（清单外随动——取号扫描域） | 448 行 | +3（实读 **451**） | 取号扫描域 += `_sshSessions`（不扩 ⇒ 取号与存活 ssh 会话 id 撞号） |
 > **近线注**：`render-frame.mjs` **495**（余 5——**另批拆**：候选 = 状态栏族 ⇒ 拆出 `status-line.mjs`（拟新增）；台账 #1437）∥ `tool-events.mjs` **460**（余 40）。
-> **读数口径**：预计列未逐格回填者——以批档 §5 四腿落点表为准（本表 = 预计面；实读面 = §5）。
+> **读数口径**：预计列未逐格回填者——以实读面为准（本表 = 预计面）。
 
 #### 验收判据（S1–S5 / NS1–NS5 逐条 → 判据句 · 机检形）
 
@@ -1304,7 +1303,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 |---|---|
 | **§4.7 TTY-DRIVE（同族）** | **机制同族、内核不共用**：彼需**本地**真 PTY（被驱动对象任意 ⇒ `ssh -tt` 帮不上，其 U1 判据 = 被驱动进程自判真终端）；本条只需**远端** PTY（本机 ssh 客户端代配）⇒ 零原生件可行性不同。**依赖政策**：形式同题，**本设计不建议合并裁定**（可行选项集不同：本条 ⓪ 零原生已实测成立；§4.7 的零原生路不覆盖其 U1 判据）——是否一并裁 = 用户的裁量。**设计面**：§4.7 无在册设计（见本节「落点判定」）——本设计**不引用**其任何设计坐标（零悬空指针） |
 | 服务端面 `thincoder-server/src/sandbox/ssh.mjs`（同仓先例 · 异面） | spawn 系统 openssh 同路；**沿用**：连接超时 10 s / 失败分类族（auth ∥ unreachable ∥ fingerprint_changed）/ 输出帽语义 / 密钥径无人值守口径（`BatchMode=yes`）。**分述**：该面 = 服务器代管主机（Linux 容器、`sshpass` 口令径、逐条命令非交互）；本条 = 本机直连（三端、askpass 口令径、多往返会话）——面分述、纪律同源（D2） |
-| **同族池机制（后台服务族）** | 实现 = `thincoder-core/agent-tools/`：`bash-async.mjs` ∥ `browser-async.mjs`；设计节 = `AGENT-LOOP-ASYNC-POOL.md` §6.10 ∥ 本档 §6.19 ∥ `BROWSER-TOOL.md` §2.11（均 `docs/core/design/`）；先例批 = `2026-09-29-tools-carryover.md` §2.1 · `2026-10-07-browser-async-fix.md`（均 `docs/batches/`） |
+| **同族池机制（后台服务族）** | 实现 = `thincoder-core/agent-tools/`：`bash-async.mjs` ∥ `browser-async.mjs`；设计节 = `AGENT-LOOP-ASYNC-POOL.md` §6.10 ∥ 本档 §6.19 ∥ `BROWSER-TOOL.md` §2.11（均 `docs/core/design/`） |
 | 凭据零回显纪律 | 异面先例 = 服务端 webui 凭据卡（密文零回显）+ CLI 端掩码步（`ask-steps.mjs`「掩码步零留存」）/ `input.askHidden`——本条 = 第三例，纪律同源、实现各端自持 |
 | 弹窗注入缝 | `onQuestion` 三端形（`dispatch-run.mjs:107` ∥ CLI `tool-events.mjs:377` ∥ VSC `panel-callbacks.mjs:259` ∥ 桌面 `agent-bridge.mjs:278`）——`onSecretInput` 逐点照形 |
 | §4.2 F5（工具不与用户对话） | 相容：**凭据输入窗 = F5 所指「专门机制」的实例**（输入的是凭据，不是对 agent 的作答）；被驱动端提示（设备 `Password:` / `--More--`）≠ 与用户对话 |
@@ -1358,7 +1357,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | 6 | 连通性 | `10.0.0.5:22` / `10.0.0.6:22` 均 OPEN（9 ms / 5 ms）——真机腿可跑 |
 | 7 | 未核项（如实） | 本地无终端时 ssh 请求的远端 PTY **行列尺寸**；密码/交互在**真实网络设备**上的端到端（实施轮真机腿） |
 
-> 用例表副本 ∕ 受影响文件基准行账 ∕ 条目回指 = 批档 `docs/batches/2026-10-14-ssh-session.md` §2（一次性材料）。
+> 用例表副本 ∕ 受影响文件基准行账 ∕ 条目回指 = 本节内。
 
 ## 7. 并入的关键决策记录（含否决备选）
 
@@ -1383,37 +1382,6 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | D-TO17 | **SSH 会话机制 = 零原生件路**（`ssh -tt` 强制远端 PTY + `SSH_ASKPASS`（`SSH_ASKPASS_REQUIRE=force`）口令链 + 流式管道；本地侧无需 PTY）+ 池 ∥ 闲置 600 s ∥ 帽 ∥ 审批门既有族 | 详见 §6.22（台账 #1436）：机制可行性成立（口令链两腿实测 + `-tt` 语义面 + 源码两读；端到端 = 实施轮真机腿）；不破零依赖；三端同构。否决：node-pty（只需远端 PTY）· `sshpass` · `script` ∕ `winpty` · argv ∕ stdin 传密 |
 | D-TO18 | **凭据通路面 = `ctx.onSecretInput` 注入缝 + 子进程环境变量**（值只在回调返回路 + ssh 进程环境流动；零入参 ∥ 零入结果 ∥ 零落盘 ∥ 端面零状态留存 + 回显遮蔽） | 详见 §6.22「⑦/⑧」（NS4 机检形 = 全量扫描 0 命中）。否决备选：值作工具入参（入上下文与记录——直违 NS4）· 文件传递（落盘残留面）· fd 传递（Windows 含 `cmd` 中介、继承面未核——不选未验路）· 每次提示重弹 | |
 
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/TOOLS.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。其下列内容**不并入本档**，理由如下：
-
-| 旧档节 | 内容 | 何故不并 |
-|---|---|---|
-| 文末「变更记录」（逐批修正轮） | 逐批变更流水账 | 历史叙述——本档自有变更记录 |
-| §6 开头的「文档重组」叙述（编辑工具自本节拆出历史） | 旧结构（拆前单节）的叙述 | 现行形态（一工具一权威档）已入 §6.6 |
-| §11 内「历史沙箱只出不进 / exec-prelude 退役」括注 | 已退役机制的历史 | 现行边界已入 §6.4（execute 与 bash 同边界） |
-| §2 「read_pdf 已移除 / sleep 已删」等括注 | 旧工具名 | 时点变更标记——现行工具集已入 §6.2 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档节 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| §6 编辑工具逐工具正文（edit / insert_after / hashline_edit / apply_patch / write） | 每工具详细约束 | 已拆到**各工具权威档**（旧档自述「不再复制正文」）——本档只留地图与契约要点（§6.6） |
-| §7 逐工具的完整动作枚举 / 参数细节 | 逐工具契约全文 | 工具描述（`tool-docs/*.md`）为**提示词面**（产品代码，内容权归主 agent）；机制要点已入 §6.7 |
-| §11.2 方案选型对比表 | 三候选逐项评估 | 结论已提炼入 §6.10 / §7（D-TO8） |
-| §11.4 受影响文件清单 | 逐档行数 | **一次性批次材料**——批次档承载 |
-| §11.6 验收标准 AC-1–AC-7 · §11.7 用例表 T1–T8 + 「扫描枚举」注 | 验收与用例（含扫描器形态枚举） | **一次性批次材料**——测试资产归测试层 |
-| §11.8 边界（本批不做） | 单批边界声明 | 批次语境——现行边界已入 §6.10 |
-| §3 hooks / undo 快照的执行细节 | 实现面细节 | 机制要点已入 §6.3；检查点 / hooks 权威归各自板块 |
-| VSC 档（`thincoder-vscode/docs/design/TOOLS.md`）各批次节（§11 / §12 选型 · 契约 · 用例表 · AC 表） | git `--only` 镜像 / 描述外部装载的批次材料与验收表 | **一次性批次材料**——结论已入 §6.7（git 路径面）/ §6.11（描述装载面）；批次档承载 |
-| VSC 档「状态行 / 变更记录」 | 时点状态 + 逐批流水 | 时点材料 / 历史叙述——归台账 / 本档变更记录 |
-
-### 8.3 需求侧（已并入本层需求档）
-
-§1 总体需求 / §2 F1–F7 / §3 N1–N9 / §4 范围边界（旧档自身即需求层）已并入本层需求档 `docs/core/requirements/TOOLS.md`（**与本档同名成对**）——本档不重复。
-
 ## 9. checklist 废除（v2——M7 增量）
 
 **定位**：checklist 工具（`tools/checklist.mjs` + `tool-docs/checklist.md` + CLI `tools/checklist-sync.mjs`）**废除**——三处结构性理由：与 task 工具职责重叠（持久跨会话清单 vs 会话级清单——分工不清）、md 持久面与台账（LEDGER）职责重叠（待办总账已有 SQLite 单一权威源）、「归册三选一」退役流程与 M10「测试是开发期工具不是库存」冲突。 （迁移期引文）
@@ -1430,177 +1398,3 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 **验收（回指 AC-M7）**：AC-M7-1 checklist 工具删除（文件不存在 + 注册面零命中）· AC-M7-2 提示词无 checklist 指令（经 M9 生成同步）· AC-M7-3 语义承接无缺口（task 保留 + 台账承接持久面）。
 
 **边界（本增量不做）**：不做 task 工具本体改动（保留）；不做台账（M2 承接）；不做「归册三选一」替代流程（M10 一并砍）。
-
-## 变更记录
-
-- 2026-10-14（**ssh-session 批 · 收口面文档修正轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 四腿漂移申报 ∥ 父侧裁定 A）：§6.22 与现盘实施齐平——② 补**预探升格**（探连 = 全会话形 + `NumberOfPasswordPrompts=0`；成功即升格（密钥机恰 1 次连接）；认证类失败 ⇒ 凭据窗 ⇒ 单次带密会话；指纹 / 不可达 / 超时 ⇒ 弹窗前硬停）∥ ⑧ 补**掩码守卫（反交错 · 裁 A）**（Ctrl+F 入场排除集；凭据窗在场 ⇒ 明文不落搜索面）；
-  落点表随正（会话 439（拆出运行面 311 = 行 16）∥ i18n 8 键 ∥ 端侧逐档实读（CLI 16 档 / VSC 13 档 / 桌面 13 档）∥ 单测四档）+ 行 16 / 行 17 补行（`ssh-transport.mjs` ∥ `subagent-scheduler.mjs` 取号扫描域）+ 近线注收正（`render-frame` 495/500——另批拆 · 台账 #1437）∥ NS5 两 ⇒ **四档** ∥ E4「零连接尝试」收细（取消 ⇒ 零后续尝试）。**零产品码**。
-
-- 2026-10-14（**ssh-session 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §3 轮次 1 发现 ②–⑧ · 父侧裁定全收）：§6.22 三裁决 + 网查版本面合入（NS1 收 ⓪ 单支 + 版本面注；选项节转裁决记录形；非密预填档 = 机制 ⑨（落点 ∥ 键形 ∥ 复用范围）；跨平台验证口径写实；携密径审批文案 = 掩码占位；同族池机制三坐标；端侧逐档基线实读；前向引用补「拟新增」标记）；§7 D-TO17 择据同拍收正。**零产品码**。
-
-- 2026-10-14（**ssh-session 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §1 ∥ 需求档 §4.8 · 台账 #1436）：新增 **§6.22 SSH 会话工具（SSH-SESSION）**（零原生件路（`-tt` + askpass + 管道）‖ 口令链 ‖ 提示符判定 ‖ 生命周期 ‖ 超时与帽 ‖ 三端弹窗载荷（`onSecretInput`）‖ 落点清单 ‖ S1–S5 / NS1–NS5 判据 ‖ 用例表 ‖ 先例调查 ‖ 裁决记录 ‖ 边界）；
-  §7 加 **D-TO17 / D-TO18**。**零产品码**（设计轮）。
-
-- 2026-10-07（**浏览器工具批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-browser-tool.md` §2 · 台账 #1007）：§6.7 逐工具契约加 **browser** 条（自启浏览器 + CDP 直控 + 引用步进 + click/evaluate 审批门；设计权威 = `BROWSER-TOOL.md`）。
-
-- 2026-10-02（**文档清账轮 · 执行轮 2（core/design 后段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 4 处处置（R3 裸名化 2 处——融合表行 `batch-segment.mjs` 旧树形随迁核退场；R4 形退场 2 处——端档已删 `tool-gates.mjs` ∥ `execute-tools.mjs` 去目录段 ∕ 坐标）。**零新语义**。
-
-- 2026-09-29（**tools-carryover 批 · #15 收口轮（设计档面——四舱归齐）· eng-designer**——承批档 `docs/batches/2026-09-29-tools-carryover.md` §2 / §5 ∥ 台账 #681）：
-  §6.19 三处「（拟新增）」字样退场（`:992` ∥ `:996` ∥ `:1012`——池面已落 `thincoder-core/agent-tools/bash-async.mjs` 281 行）+ §6.9 邻位补**描述面预算指针行**（表正文与唯一权威处 = `PROMPT-SYSTEM.md` §6.11——D2）+ `:277` 计数收正（24 → **52 档**——现盘 `tool-docs/` 实测）。**零新语义**（时态 / 指针 / 计数收正）。
-
-- 2026-09-29（**tools-carryover 批 · 收口 fix 轮（#129 裁定落地）· eng-designer**——承批档 `docs/batches/2026-09-29-tools-carryover.md` §2）：§6.19 两处收正——
-  接口契约表参数面行「schema 仅增该键」→「async 键 + `timeout` ∥ `filter` 两描述消歧」；终止面句 tool-docs 归属统一为「`process.md:10` ∥ `wait_for.md:4-9` 两处随 #15 轮（父侧笔）落」。**零新语义**（= #129 三条裁定的设计面落位）。
-
-- 2026-09-29（**tools-carryover 批 · 设计档舱 D · eng-designer**——承批档 `docs/batches/2026-09-29-tools-carryover.md` §2.1.4 · 台账 #9）：新增 **§6.19 `bash` 异步 ∥ 后台执行**（机制 + 接口契约（实现面）+ 决策）；§6.4 命令行限定句收正——「bash 超时 120s」→「bash 同步缺省 120s ∥ 异步缺省无超时（→ §6.19）」（消同档两处对同机制互斥）。**零新语义**（= §2.1 设计的落位）。
-
-- 2026-09-29（**desktop-execute-electron-node 批 · 实施收口笔 · 父侧直接执行 · 可 revert**——核件已落）：§6.18 ∕ D-TO14「（拟新增）」字样退场 ＋ §6.18 消费点表 1–3 号坐标按落盘重锚（`execute.mjs:85` ∕ `linter.mjs:51` ∕ `exec-run.mjs:40-45`）。**零新语义**。
-
-- 2026-09-29（**desktop-execute-electron-node 批 · 设计评审 #210 修正轮（§3 轮次 1 · 发现 7）· eng-designer**——承 `docs/batches/2026-09-29-desktop-execute-electron-node.md` §3 轮次 1 · 发现 7 / §2.8）：§6.18 判据段「契约 5」补出处（端差以注入表达 = `docs/core/design/CORE-UNIFICATION.md` §2.2）——消悬空编号。**零新语义**。
-
-- 2026-09-29（**desktop-execute-electron-node 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-desktop-execute-electron-node.md` §1 · 台账 #602）：
-  新增 **§6.18**（node 语义子进程启动面——`nodeChildEnv` 单点 + `execute` ∕ `lint` 两消费点 + `exec-run` `opts.env` 透传）；§6.4 execute 边界句随动半句；
-  §6.4 lsp 行失实收正（`process.execPath` 直跑 ⇒ `config.lsp.servers` 的 `command` 直跑——实读 `thincoder-core/tools/lsp.mjs:148`）。决策 **D-TO14**。
-
-- 2026-09-28（**批 timer-wake-phase2 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-28-timer-wake-phase2.md` §1 · 台账 #446 + #445）：§6.7 `timer` 契约行**支持面句收正**——「空闲 / 挂起窗」的端限定由「CLI 前台 + 挂起窗」改为
-  **CLI / VSC / 桌面三端前台（headless 结构性不支持）**，逐格定义回指 `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.5；机制 → 同档 §6.30 / §6.30.11（端面接线）。**参数 schema 零变**。
-
-- 2026-09-27（**timer-wake 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-27-timer-wake.md` §2 · 台账 #443）：§6.7 `timer` 契约行补**到期语义**（在途跨 run 存活 + 到点自唤醒）与在途条数帽（8 · 超限显式拒）；机制单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30。**参数 schema 零变**。
-
-- 2026-09-27（**timer-wake 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承 `docs/batches/2026-09-27-timer-wake.md` §3 轮次 1 发现 5 · 父侧裁定）：§6.7 `timer` 契约行**补支持面指针**（支持面 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.5）——核单源描述双端共享，防未兑现端（桌面 / VSC / headless）被全端承诺；描述面收正的端限定合同形 = 同档 §6.30.3。**参数 schema 零变**。
-
-- 2026-09-25（**single-source-closeout 批 · 实施后重锚（fix）· eng-designer**——承 `docs/batches/2026-09-25-single-source-closeout.md` §5 漂移清单 · 父侧派单）：
-  §6.17 消费点表行号按实施后现盘逐行复读——实改两行（行 6 `thincoder-core/peer-domains.mjs` `:82→:80`；行 9 `tool-gates.mjs` `:96→:90`），余八行 + 脚注调用方 `:190` 零漂；
-  表头行号 as-of 补「实施后重锚」；用例位句「现盘 T-B3 只走 `read` 径」随实施落为「`file_ops` 径 · 用例 = T-B3b」。**零新语义**（实施后坐标 / 实态同步）。 （机检豁免——用例退场登记）
-
-- 2026-09-25（**single-source-closeout 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承 `docs/batches/2026-09-25-single-source-closeout.md` §3 轮次 1 发现 3 / 5 / 6 · 父侧裁定）：
-  §6.17 消费点表行号全表重锚现盘（行 1–10 = `:126` / `:198` / `:229` / `:150` / `:401` / `:82` / `:23` / `:351` / `:96` / `:103`；脚注调用方 `:190`）+ 表头标形态 / 守卫列 as-of；行 7 形态列补裁定 5 落地后形；裁定 5 ② 补 `file_ops` 作用域用例位（`VSC scoped-rules 用例档`）；补**登记面判定（#333 / #344）**句。**零新语义**（评审发现逐号落位）。
-
-- 2026-09-25（**single-source-closeout 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-single-source-closeout.md` §1 · 台账 #333）：
-  §6.17 契约补 **`file_ops` 动作感知**（`copy` ⇒ 只 `dest`；`move` / `rename` / 未知 ⇒ `source` + `dest`）+ 新**裁定 5**（端 `l3TouchedPaths` 特例分支清零 + 十消费点语义复核结论：行为变仅核 #6 与端 #10）、接口契约表端消费行同步；决策 **D-TO13**。**零新机制**（谓词契约的射程补全）。
-
-- 2026-09-25（**misc-four 批 · 设计评审修正轮（冻结窗延后项 · 发现 #3 / #13）· eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 修正块）：§6.14 收正汇一条——表外复核表标题（`:607`）与两行（`:611` / `:612`）、边界行（`:645`）完成态措辞改「本批落（#208 · as-of 2026-09-25 设计轮）」；A28 行（`:626`）三列收正（输入列改五档 / 期望列完成态措辞 / 先红列两数字各标 as-of）。**零新语义**。
-
-- 2026-09-25（**misc-four 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 · 台账 #208）：§6.14 **表外复核两处收口**——`gitDiffOne` / `patch.mjs:278` 两处同步 spawn 转 `spawnGit`（加固 + 超时 + 树杀 + 非阻塞），A28 判据更新（五档零命中 + `gitDiffOne` 经 `spawnGit`）；边界行同步。树杀三份单源 = 已在位（零改）。**零新机制**（收口 = 既有单点纪律的射程补全）。
-
-- 2026-09-25（**guard-scheduler 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-guard-scheduler.md` §1 · 台账 #327）：
-  新增 **§6.17**——工具钩子消费单源（`toolTouchPaths` 谓词 + 两树十处消费点对齐 + `args = null` 兜底 + ACP 桥路由判据归一 + 「该调用必败」前提机检）。
-  `touchedPaths` 钩子本体与门禁空路径集判据**零改**（#325 E1 / T-22 语义保持）；决策 **D-TO12**。 （机检豁免——用例退场登记）
-
-- 2026-09-25（**question-tool-filter 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-25-question-tool-filter.md` §3 轮次 1 · 父侧裁定 6/6 全收）：
-  §6.16 逐条收正——① 措辞面 **CLI 行改收正取值**（`subagent children` 原枚举随子代面过滤收正；headless 主会话机械门语义保持——逐字见本表）；
-  ② VSC 行消费面符号钉死（**排除集 `.has()`**；谓词 `excludeSubagentTools(` = 核四点调用形态——与批档 §2.3 逐字一致）；③ 边界行补「机制面」限定（与需求档 F12 边界句同形）。**零新语义**（评审发现逐号落位）。
-
-- 2026-09-25（**question-tool-filter 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-question-tool-filter.md` §1 · 台账 #289）：
-  新增 **§6.16**——子代面（depth>0）工具表排除 `question`（交互式主会话工具）：单源排除集 + 谓词住 `thincoder-core/agent/helpers.mjs`（只读谓词同址），
-  四个子代装配点（spawn / escalate 同步·异步 / consult）同过、排除随绑定值传子；静态注册表 / 工具本体 / 机械门 / 主会话面零改；
-  VSC 端自持 depth>0 装配面的同款字面改消费核单源（行为零变）。措辞面 `question-ui-face`：VSC 取值收正（锚定装配规则——子代面无此工具）+ CLI 取值零改（headless 主会话语义保持）。决策 **D-TO11**。
-
-- 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #239）：§2.3 映射表 VSC code 行**补全仓根路径**（→ `thincoder-vscode/src/tools/code.mjs`；改前为裸名形态）；同表后「归属提示」行两处路径形态**去形改述**（以「checkpoint / code 两行（VSC 侧单端档对位行）」指称——消悬空 / 防下轮同类）。**语义零改**。
-
-- 2026-09-22（**hygiene-sweep 批 · 文档卫生轮（上抛处置）· eng-designer**——承 `docs/batches/2026-09-22-hygiene-sweep.md` §2）：§6.15 面 VSC verify guard 缺差状态重述——「另册（台账 #217）——本批零触碰」改现态（已并入本批 C 面，随本批落）。**语义零改**。
-
-- 2026-09-22（**hygiene-sweep 批 · 文档卫生轮 · eng-designer**——承 `docs/batches/2026-09-22-hygiene-sweep.md` §2）：§6.15 面**六处裸名坐标消歧**（逐处补 `thincoder-core/` ∥ `thincoder-vscode/` 全路径前缀；消悬空）+ 两处坐标重出（登记面 `files.mjs` `:82` → **`:83`** · 核 `completion.mjs` `:73` → **`:75`**）+ 三处行宽折行。**零语义改动**。
-
-
-- 2026-09-22（**tool-discipline 批 · 第三面闭口轮 · eng-designer**——承本批批档 `docs/batches/2026-09-21-tool-discipline.md` §5 线外发现（F10 提醒面家族第三实例：auto-turn digest 域第 2 条指挥已停用的 task 工具）· 父侧裁定并入本批 · 实施待派修轮）：
-  ① **新增 §6.15.3**（第三面——auto-turn digest 域的模式变体）：平行导出 `AUTO_TURN_DIGEST_DOMAIN_ENG` + 两侧按模式选串（核 `thincoder-core/agent.mjs:169-170` · VSC `thincoder-vscode/src/agent/turn-domains.mjs`（组合点））+ 变体正文逐字（父侧所出——本地规范落点）+ 接口契约五行 + 受影响文件 7 行 + 行数与拆分评估 + 用例 DOM-C1/C2 · DOM-V1/V2/V3 + 边界； （机检豁免——用例退场登记）
-  ② §6.15 事实基线 `:660` 工程分支现体收正（`[timerTool, …depthOnly]`——`family-tools.mjs:184-186` 实读）；③ 受影响文件表补 F11-C 拆档新档 `核内 batch-placeholder-gate 用例档`（89 · ≤300 免登记）。
-
-- 2026-09-21（**tool-discipline 批 · 实施轮上抛闭口 · eng-designer**——承 `docs/batches/2026-09-21-tool-discipline.md` §2 修正块〔实施轮上抛 ①：VSC 守卫副本 pending 分支缺工程模式条件〕· 父侧裁定 = 本批闭口〔端差默认 = 消〕）：
-  §6.15 收正——①§6.15.1 催更门连带两处扩 **VSC 副本面**（`thincoder-vscode/src/agent/run-stages.mjs:86-101` `maybeGuardPushbacks`，`:92` 补 `!engineering`——对照同档 `:155`）；
-  ②受影响文件表 +2 行（`run-stages.mjs` = 420 · `advisor-guard-rounds 用例档` = 34）；③「两端运行面」行收正 = **除该副本 pending 分支一处外零端改**（双源结构事实）；
-  ④用例表 +VSC-3（端侧直驱——`_tasks` 含 pending ∧ `engineering=true` ⇒ 零推回）；⑤边界行登记 VSC 副本 verify 分支同类缺差 = 另册（台账 #217）。
-  证据 = `thincoder-vscode/src/agent/run-stages.mjs:91-92` ↔ 同档 `:155` · `_tasks` 活体链（`thincoder-vscode/src/agent/agent-state.mjs:121` · `thincoder-vscode/src/agent.mjs:418`/`:433`）。**零新语义**（上抛逐项落位）。
-
-- 2026-09-21（**tool-discipline 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-21-tool-discipline.md` §3 轮次 1 发现 #3/#4/#5/#6）：
-  §6.15.2 逐条收正——③ 档头 `#<编号>`/`<板块>` 填充路径与次序句（建档后·首写前·普通文档写；次序句 + 否决备选）+ 兼容行实断言（真 create→append 型两夹具 C1/AC-11 补档头填充步 Δ）；
-  ④ 受影响文件表全行按 `wc -l` 实测钉死 + 行数与拆分评估（lifecycle ≈322 ⇒ 登记不拆 + 拆分位命名 · batch.mjs 维持登记不拆 · batch.test.mjs 对 500 余量 = 15 行 + 触发条件）；
-  ⑤ 裁定点②两读合一（运行时校验地位不变 + value 谓词收紧「余核 = 关键词」；事故①防复发机制句 + F11-A1 先红 / C4 三格先绿判读）；⑥ 提示词面条目建议文本三撞点逐字固化（核内 `:6`/`:35`/`:68` · 正本 `:6`/`:35`/`:67`）。**零新语义**（评审发现逐号落位）。
-
-- 2026-09-21（**git-noninteractive 批 · 设计微修轮 · eng-designer**——承 `docs/batches/2026-09-21-git-noninteractive.md` §5 偏离 #1：win32 动作序分岔上抛 ⇒ 父侧裁 = 收正设计档）：
-  §6.14 **超时动作序行平台分支化**（机制不变、仅分支化）——win32：直接树杀（树可寻址时）/ POSIX：`SIGTERM` → 宽限 1.5s → 树杀 → kick；「① 给 git 一次自行收尾机会」限定 POSIX 侧（与平台注（win32）口径一致）；上界 `timeout + 3s` 与 A26① 零改。
-
-- 2026-09-21（**plan-approval-texts 批 · 设计 + 实施（终态 clean）** · eng-designer / eng-coder——承 `docs/batches/2026-09-21-plan-approval-texts.md` · 台账 #154 修法①）：
-plan 工具退出文本收正为**批准语义**（**五处**：`thincoder-core/agent-tools/plan.mjs:4` · `:21-23` · `:44` · `:92` · `:109`；退出不再自我放行 ✗ 呈计划 ⇒ 待批准 ⇒ 实施）；逐字文本 / 用例 / 判据 = 批档 §2（D2——本档不重述）。
-
-- 2026-09-21（**tool-discipline 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-21-tool-discipline.md` §1 · 台账 #214/#215）：
-  新增 **§6.15**——task 工程模式机械停用（双层门：装配工程分支摘除〔KD8 plan 先例〕+ execute 机械拒〔escalate 先例〕；completion 催更门同门排除）+ batch 词面协议结构化（status 增 `note` 括注字段 · create 补 `source` 必填 + prev 幂等剥前缀 + `<BATCH-ID>` 占位删除 · append/status 死占位机检〔骨架枚举单源判据〕）。裁定点六项 + 用例表 + 边界见 §6.15；决策 D-TO10。
-
-- 2026-09-21（**git-noninteractive 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-21-git-noninteractive.md` §3 轮次 1：🔴 2 · 🟡 4 · 🔵 5 · 发现 11 = 复核回执零动作）：
-  §6.14 逐条收正——①受影响面补 **VSC** `thincoder-vscode/src/tools/ide.mjs`（`changesSection` 转 async + 1 处 `await`）+ 新用例档 `tools-ide-changes 用例档`（已落）+ `thincoder-vscode/test/files.mjs` 登记，
-  A27 回归面扩**两包全量**；②**A28① 改白名单谓词**（四档 `execFileSync` 命中 = `gitDiffOne` 恰一处）；③A24 补**测试态缝**（`_setGitTimeoutForTest`）与层位（适配器层）；
-  ④新增**「被杀后仓态与恢复锚」按写动作类表** + 超时文案收正（树杀尽力而为 + git 自持态恢复锚）；⑤300s 依据改指需求档 **§4.7 TTY-DRIVE N3**（候选参照值）；⑥§6.12 / §6.13 边界行补 §6.14 指针；⑦await 计数收正（34 → **30** · 核三档合计 **46**）；
-  ⑧未实测段标 unverified（`VISUAL` / `EDITOR` 两段 · #8 归因）；⑨A25 钉 `LC_ALL=C` + 墙钟经验界注；⑩win32 `SIGTERM` = 硬终止（实测 184ms）。**零新语义**（评审发现逐号落位）。
-
-- 2026-09-21（**git-noninteractive 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-21-git-noninteractive.md` §1 · 台账 #207）：
-  新增 **§6.14**——git 工具非交互加固（编辑器 / 凭据 / GUI / pager 四族压制 + 两档超时兜底；`GIT_ENV` + `spawnGit` 单点住 `tools/git-run.mjs`（已落），三个形适配器转**异步薄壳**（签名 / home / 消费面零改）；32 项 action 清算表 + A23–A29 判据）。
-  裁定族：env 形（非 `-c` 形）· 超时 = 全量适用（120s 本地 / 300s 网络）· 同步 → 异步（逼退「有界冻结 + 孤儿进程」）· 树杀先行抽 `tools/process-tree.mjs`（已落）避循环。
-  设计轮实测 13 格：`rebase --continue` 起编辑器 = 唯一实害位 · `-c core.editor=true` 单独不足 · credential helper 路不受 env 约束 ⇒ 超时 = 必需项 · pager 族零风险 · 加固不伤已存凭据。
-
-- 2026-09-21（**manifest 解析模型收正批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-21-manifest-resolution.md` §1 · 用户 2026-09-21 11:00–11:29 裁定）：
-  ① **§6.13 发现规则表收正**——子仓判据改**两级带优先级**（带档优先 / 零档看裸仓）+ `matched` 档位；二级裸仓级为**新增行为**（容器 + 恰一裸仓：旧 `none` ⇒ §6.12 fail-closed；新 = 重定向 + 注记）。
-  ② **新增 A21 / A22**（裸仓级命中 / 裸仓级歧义——**先红**）；A14–A20 判据与夹具零改；A20 单源 import 断言符号面不变（`discoverRepos` = 仓梯）。
-  ③ **解析序 / 退化口径两句收正**（`unique` 含裸仓级；「无 manifest 概念」的工作区零档降级看裸仓）；§6.12 边界行同收正。
-  ④ **口径注**：本表 = **仓梯视图**；**项目梯（git 非前提）** 是另一套五级梯——单一权威源 = `docs/core/design/MANIFEST.md` §2.2 / §2.9（D2——本档不重述）。
-
-- 2026-09-19（**批 REPO-DISCOVERY · 复核与补投轮 · eng-designer**——承 `docs/batches/2026-09-18-repo-discovery.md` §2.9）：
-  ① **§6.13 新增 A20**（单源机判——读 `thincoder-core/tools/git.mjs` 源码：`discoverRepos` import 命中 ∧ `node:fs` 零命中 ∧ 扫描谓词零命中；补派单设计要点①「可机判的复用语判据」）；
-  ② **接线表行 3 计数口径收正**——原「13 处读 / 写调用点」系误借 §6.12 调用方普查（`runGit(` / `runGitRaw(`）之数，改可复核形（`ctx.cwd` 消费点：`git.mjs` 31 · `git-ext.mjs` 17 · `git-checkpoint.mjs` 7，as-of 2026-09-19 实施前）——**零改结论不变**；
-  ③ **A14 夹具加干扰子目录**（含 `.git` 无 manifest ⇒ 判别合取）；
-  ④ 接线点坐标 `git.mjs:90-98` → **`:94-97`**；⑤ **A15 前置已满足**（#55 已落地——`git.mjs:16-25` + `tool-seams 用例档:110-118`）。
-  **零新语义**：无机制面改动——① 是既立决策 KD-M1-22 的可判化，②–⑤ 为计数 / 口径 / 坐标收正。
-
-- 2026-09-18（**批 REPO-DISCOVERY · 设计轮 · eng-designer**——承 `docs/batches/2026-09-18-repo-discovery.md` §1 · 用户 2026-09-18 05:16 / 05:34 两次定向）：
-  新增 §6.13——git 工具仓发现（复用 `thincoder-core/manifest.mjs` 的仓发现逻辑，单源导出 `discoverRepos`；解析序 = workdir 优先 → `self` / `unique`（重定向 + `(repo: …)` 注记）→ `none` 落 §6.12 fail-closed → `ambiguous` throw 列候选 + 指 workdir；`init` / `clone` 例外不做发现；normal 模式同判、零态 = 现状）。
-  §6.12 边界行「不做跨仓自动发现」改为已落定（零发现态兜底保留）；判据 A14–A19。对应台账 #62。
-
-- 2026-09-18（**批 TOOLFACE-FIXES · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-18-toolface-fixes.md` §3 轮次 1）：§6.12 逐条落位——调用方普查表 13 处三分（发现 1）· 修法表补 stdio 捕获 + spawn 失败回退形态（发现 5）· unborn 枚举表 + 非仓认定谓词（发现 6）· H3 夹具 = 实施轮必跑项（发现 7）· 验收补 A11–A13；测试面逐处改法明确（非仓 ⇒ 抛错 / 仓内洁净 ⇒ 对照）。
-
-- 2026-09-18（**批 TOOLFACE-FIXES · 设计轮 · eng-designer**——承 `docs/batches/2026-09-18-toolface-fixes.md` §1）：新增 §6.12——git 工具读面 fail-closed（`runGit` / `runGitRaw` 失败 ⇒ throw，十处读动作调用点零改）；复现判定 = 同步态可复现（cwd∉仓 + 吞错双因），并发假设非必需；判据 A7–A10；过渡口径入档。对应台账 #55。
-
-- 2026-09-17（**v2 就地更新 · 退役批** · 主 agent）：M7 模块设计语义融合——新增 §9 checklist 废除（工具本体删除 + 提示词面改指 task + 语义台账承接；AC-M7 验收）；原旁路档 `_archive/modules/ENGINEERING-MODE-V2-MODULE-CHECKLIST-REMOVAL.md` 归档 `_archive/modules/`。
-
-- 2026-09-13：建档——自 `docs/core/design/CORE-UNIFICATION.md` 拆出（§2.5 #10–#29 / #52–#70 / #83–#86 / #88 / #90–#92 / #96 / #97 / #178 / #179 / 映射表 · §2.5.1 A6 · A8–A13 · B1 / B2 · §2.12.2 第 5–7 行）；**语义零改**，行号沿用原编号。
-- 2026-09-14（注入点清单化轮 · eng-designer）：§2.2 表后加**指针**一行——④ 段注入位的核内落点对照与「写路径缝」形态建议住 `CORE-UNIFICATION.md` §2.13.4 / §2.13.5（本节不复制行文；端差处置原文仍以本表为准）。
-- 2026-09-14（**B 轮并入 · 第 2 批**）：新增 §6 **机制面**（总览与统一契约 / 注册与 schema / 上下文与生命周期 / 安全边界 / 调度与权限 / 编辑工具地图 / 逐工具契约 / MCP / 描述六要素 / websearch 死键处置）· §7 **关键决策记录（D-TO1–8）** · §8 **不并项与历史沿革** · 来源 = `thincoder-cli/docs/design/TOOLS.md`（**旧档一字未改**——原地作参照历史）；
-需求侧已并入本层 `docs/core/requirements/TOOLS.md`；首部加机制面指针一行。
-- 2026-09-15（**S2 W2 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W2）：VSC 描述装载面收正——§1 表「工具描述」行（两产品副本已删〔CLI U2 / VSC W2 实核〕，运行期面 = 核包 `tool-docs/*.md`）· §6.2 schema 生成行 + §6.11「描述装载面」行（VSC 原 `.mjs` 内嵌面退场，两端同指核 `loadToolDoc`；锚替换调用期应用）。
-- 2026-09-15（**S2 W14 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：VSC 自持工具实现面迁核收正——§2.2 单端档映射表三行（edit 族 / `read_image` / `wait_for`）+ §2.5 裁决行 #62 / #68 + §6.11 五条端差行按 W14 接线补正（写路径缝 / lsp 缝 / 执行面三缝 / git 只读分类端装饰 / 描述装载面不变）；机制条文（§6.1–§6.10）零改。
-- 2026-09-20（**P2 机制层端差批 · 车道 3 设计档落笔轮 · eng-designer**——承 `docs/batches/2026-09-20-mechanism-parity-batch.md` §2.17 / §2.19「设计档落点」）：§6.11 增「工具面接线」条——派发面 hooks 三调用点
-  （`execute-tools.mjs`）+ 台账查询两工具入基础集（`thincoder-vscode/src/agent/setup.mjs:142-144` / `:165-168`）。机制条文（§6.1–§6.10）零改。
-- 2026-09-20（**卫生族批 · 台账 #138 · eng-designer**）：首部机制面节区改 `§6–§8` + 历史节号指称清理（行数规则废除批残留）；设计源 = `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2。
-- 2026-09-20（**卫生族二批 · 台账 #142 · eng-designer**）：§6.12 两处修订式残句清理（边界行去划改形保断言 + 对账口径行退役句删）；**零新语义**。
-- 2026-09-21（**context-tool 批 · 设计轮（含设计评审轮 1 收正）· eng-designer**——承 `docs/batches/2026-09-21-context-tool.md` §1 / §3 轮次 1 · 台账 #18）：
-  §1 归属表「单端独有实现」行 + §2.3 映射表 `context` ⇒ **`ide`** 改名（自 `context.mjs`——让出 `context` 名与核新工具 · 旧路径删除态）· §6.2 元工具清单补 `context`（主动整理上下文 · 单工具三操作）+ 子代理过滤行补形态指针（`:172` / `:173`）· §6.12 调用方普查表坐标随改名（`:326`）。**零新语义**。
-- 2026-09-28（**文档回填与卫生轮**（台账 #516）· eng-designer）：§2.2 闸内悬空四行补「（迁移期引文）」标记（rows #52 / #64 / #85 / B2——已迁核侧引用）+ `git/checkpoint.mjs` 裸形复核——裸形仅存 `:105`（**史实引文面**：「（迁移期引文）」标记在册 · 现体全形 `thincoder-core/git/checkpoint.mjs` 同句在位 · 判不改）；全档现体全形在位（§1 ∕ §2.2 ∕ §6 三节）。**零新语义**。
-- 2026-09-29（**core-hygiene 批 · P3 文档收正 · eng-designer**——承批档 `docs/batches/2026-09-29-core-hygiene.md` §2.8 行 5）：§6.15 域文本注入点 ∕ 选串单点（两处） ∕ 工具轮记账核消费行按 **P2 三拆**收正（注入点 = `agent/run-start.mjs:97-101`；记账 = `agent/turn-loop.mjs`）；档头补三拆坐标注；其余 `agent.mjs` 系旧坐标 = 三拆前 as-of。机制条文零改。
-
-- 2026-09-29（**doc-backfill 批 · 波 1 · eng-designer**——承 `docs/batches/2026-09-29-doc-backfill.md` §2 · 台账 #378）：§2.2 #91 行与 §3.1 A6 行按镜像撤写口径收正——镜像写标**已退役**（2026-09-25 config 镜像写收口批）+ 现体坐标（`thincoder-vscode/src/agent/setup-tooltable.mjs:85-94`）；跨端副作用句收正为已消除。**零新语义**。
-
-- 2026-09-30（**doc-sweep 批 · 时态收正 · eng-designer**——承 `docs/batches/2026-09-30-doc-sweep.md` §2 · 台账 #665）：登记句（「行数与拆分评估」）补**登记面现态**注（`SOFT_LINE_REGISTRY` 运行面随 2026-09-28 测试树全清退场；登记面现态 = `CORE-UNIFICATION.md` §2.8.1 子表；机检门义务随测试体系重建恢复）。**零新语义**。
-
-- 2026-10-05（**台账工具统一批（ledger-tool-unification）· eng-coder**——承 `docs/batches/2026-10-05-ledger-unification.md` §2 · 台账 #923）：§6.11 描述装载面计数收正（52 ⇒ **48**——现盘 `tool-docs/` 实测）+「工具面接线」② 行改统一入口终值（`ledger` 随核家族段；
-  VSC 端侧自持读二追加入口退场——`thincoder-vscode/src/agent/tool-table.mjs`）+ §9 语义承接行名称面收正（`ledger_*` 命令族 ⇒ 统一入口 `ledger`）。**零新语义**。
-
-- 2026-10-05（**工具面首用可发现性批（toolface-first-use-fixes）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-05-toolface-first-use-fixes.md` §1 · 台账 #938）：新增 **§6.20**（batch 档头可填性 ∥ 死占位判据可辨性）+ §6.15.2 裁定点④ 三处收正（判定域 ∥ 填充路径 ∥ 否决备选）+ §7 补 **D-TO15**；
-  ①（spawn 六字段入描述面）= `AGENT-LOOP-SUBAGENT.md` §6.30（D2）。**零新语义**（= 批档 §2 设计的落位——门禁判据集零改）。
-- 2026-10-05（**工具面首用可发现性批（toolface-first-use-fixes）· 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-05-toolface-first-use-fixes.md` §3 轮次 1 发现 4 / 5）：§6.20 ② **契约单源钉死**——归一 ∥ 单行 ∥ 空串 ≡ 未给 ⇒ 契约行住 `BATCH-RECORD.md` §4.11（本节改持指针——逐字文本面不重述）；③ 补**区域判据**（档头 = 首个 `## §` 标题之前）+ **骨架↔三结构行不变量**注。**零新语义**（= 评审发现的直接导出项）。
-
-- 2026-10-05（**引擎工具面缺口批（engine-tools-gaps）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-05-engine-tools-gaps.md` §1 · 台账 #943）：新增 **§6.21**（`delete` 空目录臂——判据 ∕ 接口改前→改后逐字 ∥ 拒句逐字 ∥ 描述档全文逐字 ∥ 写路径 `rmdir` op）+ §7 补 **D-TO16**。**行为面收口——实现 = 本批实施轮**。
-
-- 2026-10-05（**引擎工具面缺口批（engine-tools-gaps）· 设计评审修正轮（评审 #22 发现 4）· eng-designer**——承批档 `docs/batches/2026-10-05-engine-tools-gaps.md` §3）：**§6.21 补快照面注（undo）**——空目录移除**不产生 undo 条目**（零内容语义；`snapshotForUndo` 对目录目标读文本失败即跳）。**注记面——机制零改**。
-
-- 2026-10-05（**引擎工具面缺口批（engine-tools-gaps）· 设计评审修正轮（评审 #28 轮 2 发现 3 / 4）· eng-designer**——承批档 `docs/batches/2026-10-05-engine-tools-gaps.md` §3 轮次 2）：§6.21 补**范围注**（「不经跟踪检查」放宽面——索引条目（gitlink）对应空目录路径一类 unverified）∥ 补**口径注**（逐字文本面归属——本节内联 = 本批改前→改后留痕；实读 `PROMPT-SYSTEM.md` 现持面 = §6.11 机制与预算）。**注记面——机制零改**。
-
-- 2026-10-07（**浏览器输入最大化批（browser-input）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-07-browser-input.md` §2 · 台账 #1018 ∥ #1019）：§6.7 browser 条随新动作面收正（八 ⇒ 十六动作；过门项扩展 press/mouse/drag/touch 点按/clipboard 全量；snapshot 几何标记随动）。**零新语义**（= 批档 §2 设计的落位——机制面细则归 `BROWSER-TOOL.md`）。
-
-- 2026-10-07（**浏览器输入最大化批（browser-input）· 设计评审轮 1 修正（fix 轮）· eng-designer**——承 `docs/batches/2026-10-07-browser-input.md` §3 轮次 1 · 发现 6 ∥ 9）：§6.2 内置工具枚举补 **browser**（入「其余」组——`thincoder-core/tools/index.mjs:28` 注册已在册，枚举面滞后）· §6.11 描述装载面计数收正（48 ⇒ **49 档**——现盘 `tool-docs/` 实测，+`browser.md`）。**零新语义**（文档状态滞后收正）。
-
-- 2026-10-07（**浏览器异步化 + 硬超时批（browser-async-fix）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-07-browser-async-fix.md` §2 · 台账 #1045）：§6.7 browser 条 +硬预算 ∥ 会话自愈 ∥ 异步通道（细则归 `BROWSER-TOOL.md` §2.9–§2.11）；§6.19 扩为后台任务族（+`browser` 后台动作——池 `_browserTasks` ∥ ack ∥ 摘要）；§6.7 wait_for 条件枚举补 `bash id:N done` ∥ `browser id:N done`（`bash` 条为**既有枚举滞后收正**——`tools/ops.mjs:172` 实读已有）。**零新语义**（本批批档 §2 设计的落位）。
-- 2026-10-07（**浏览器异步化 + 硬超时批（browser-async-fix）· 收口回填轮 · eng-designer**——承 `docs/batches/2026-10-07-browser-async-fix.md` §5 读数终核）：§6.19 browser 段 +合并错误句（id 路由先 bg 后 browser——两族皆未命中单句，`thincoder-core/tools/ops.mjs:109`）；§6.7 `wait_for` 条校核零改（`browser id:N done` 已载、与实现一致）。**零新语义**（= 批档 §5 上抛的收口回填）。
-
-- 2026-10-08（**批 manifest-agent-tool · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-manifest-agent-tool.md` §3 轮次 1 发现 11）：§6.2 元工具枚举补 `notify_parent` / `ledger` / `manifest`（拟新增；`ledger` 另注 `thincoder-core/ledger.mjs` 宿位）· §6.7 补 `manifest` / `notify_parent` / `ledger` 三条要旨行（含既有漂移两行）。**零新语义**（枚举 / 要旨随实况收正——`manifest` = 本批新增）。
-
-- 2026-10-08（**批 manifest-agent-tool · 收口笔 · 父侧直接执行 · 可 revert**——承实施轮上抛）：§6.2 `:175` ∥ §6.7 `:251`「（拟新增）」退场（已实施落盘）· §6.11 `:287`「49 档随包发布」⇒「**50 档**」（现盘实读——`thincoder-core/tool-docs/*.md` 50 档）；`:530` 档引裸名形 ⇒ 全路径形 `thincoder-core/manifest.mjs:48`（裸名碰撞消解 + 缝位现盘收正——`_setProjectRootForTest` / `_resetProjectRootForTest` 再出口）。**零新语义**（时态 / 计数 / 引用形收正）。
-
-- 2026-10-12（**timer-completeness 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §1 · 台账 #1321）：§6.7 `timer` 行扩述四式（`at`/`every`/`daily` ＋ 一次性）∥ `cancel`/`list` ∥ 互斥 ∥ `every` 下限 60s ∥ 帽占坑语义。机制单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.18。**零新语义**（本批批档 §2 设计的落位）。明细 = 批档 §2。

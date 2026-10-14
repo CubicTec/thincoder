@@ -4,7 +4,7 @@
 > 服务端机制单源 = `docs/server/design/ledger/LEDGER.md`（数据形/判权/端点——本档不复述）；登录态与 token 单源 = `docs/core/design/TEAM.md` §2.1/§2.6（本档不复述）。
 > 最近先例 = 本机台账工具面（`thincoder-core/agent/family-tools.mjs`——`ledgerTool`/`ledgerReadTool`：五 action ∥ 深度变体）∥ 三端登录态（`docs/core/design/TEAM.md` §2.1——`teamStatus()`）；对齐 = 工具面与登录判据逐字沿先例；偏离 = 零跨账代码路径 + 仓标记自动派生（需求 ①⑤）。
 > 需求单源 = `docs/server/requirements/PROJECT.md`（功能点 32 ∥ AC-32 ∥ §3 端侧同批纪律）。
-> 建档：2026-10-13（批 `docs/batches/2026-10-13-team-ledger.md` 设计轮 · eng-designer · 台账 #1206）。
+> 建档：2026-10-13（设计轮 · eng-designer · 台账 #1206）。
 
 ## 1. 定位与边界
 
@@ -90,7 +90,7 @@
 | `thincoder-core/team.mjs`（已落盘——实读 224） | **±0**（传输/登录态现形复用——零改） | 登录态/token 单源 |
 
 - 三端（CLI ∥ VSC ∥ 桌面）**零改动**（D-TL1）；服务端侧裁剪随动 = `docs/server/design/ledger/LEDGER.md` §9。
-- 单元测试档 = `docs/batches/2026-10-13-team-ledger.test.mjs`（与 server 面同档——§7 用例指入）。
+- 单元测试档 = 本册件（与 server 面同档——§7 用例指入）。
 
 ## 6. 验收判据（AC-32 端侧面对位）
 
@@ -119,9 +119,3 @@
 - 不做逐端独立面板/状态行/命令行族（D-TL6）；不做端侧缓存/离线队列/自动重发；不做自动上送/映射/同步（需求 ⑤ 明禁）。
 - 不承载控制台面（server 侧）∥ 不触本机台账模块 ∥ 不改 `team.mjs` 登录/凭据面。
 - 不做服务端 admin agent 的团队账工具（服务端零团队登录——其裁剪面随动 = `docs/server/design/ledger/LEDGER.md` §9）。
-
-## 变更记录
-
-- 2026-10-13（**team-ledger 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §1 · 台账 #1206；需求功能点 32 ∥ AC-32 ∥ §3 端侧同批纪律）：建档——工具面（五 action/参数/出参）∥ 仓标记派生 ∥ 登录态门 ∥ 传输 ∥ 深度变体 ∥ D-TL1–D-TL6 ∥ 三端承载分工表 ∥ 文件与行数预算 ∥ 验收判据 ∥ 用例。**产品码零触（设计轮）。**
-- 2026-10-13（**team-ledger 批 · 设计评审轮 1 修复（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §3 轮次 1 之 8/9）：头注补最近先例行；§2.1 出参补 `repoName` 定音（**零 `repoName`**——端侧仓面展示 = 归地址；显示名 = 控制台 `repos[]` 回填）。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。
-- 2026-10-13（**team-ledger 批 · 收口随正轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-team-ledger.md` §2 · 台账 #1206）：§5 `team-ledger.mjs` 行实读回填（≈180 ⇒ **实读 282**——父侧手单值）。**零新语义**（实读）；产品码零触。

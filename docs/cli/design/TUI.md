@@ -486,7 +486,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 | 2 | CLI·源 | `thincoder-cli/src/tui/subagent-freeze.mjs` | 176 | `:142-154` `freezeAllSubTasks` 加存活跳过 + 新增导出 `livePoolHas(state, key)` / `removeFrozenSubTaskLine(state, key)`（与墓碑写点同址） | ~205 |
 | 3 | 核·源 | `thincoder-core/agent-tools/subagent-scheduler.mjs` | 429 | `:340-342` catch 补 `logEvent`（+ 顶注 import 面 `:12-22` 补 `logEvent`——现未 import） | ~437 |
 | 4 | CLI·测（**拟新增**） | `thincoder-cli/test/subagent-zero-block.test.mjs` | 新 | T-ZB1–T-ZB6（§6.8.3.6）；直驱 `routeSubToken` / `freezeAllSubTasks` / `refreshQueuedTokens`——零网络、零定时器 | ~120（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） |
-| 5 | 设计档 | `docs/cli/design/TUI.md` | 555 | 本节（§6.8.3）+ §6.8.1 指针行 + 变更记录一行 | 本档已落（→ 576 行——本 fix 轮后） |
+| 5 | 设计档 | `docs/cli/design/TUI.md` | 555 | 本节（§6.8.3）+ §6.8.1 指针行 | 本档已落（→ 576 行——本 fix 轮后） |
 
 **跨文件限**：三份源档预计后均 < 800 硬限（460 / 205 / 437）——**无拆分需要**。
 
@@ -765,34 +765,3 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 **可机判**：`renderStatus` 纯函数直驱——已登录桩 ⇒ strip-ANSI 状态行含成员名与主机；未登录 ⇒ **零该段 + 整行逐字节等价**（负控）；`verify = "invalid"` ⇒ 含「已失效——重新登录」+ 警示色序列。
 
 **边界**：不做团队面板（状态 = 本段；入口 = `/team` 命令族——`docs/cli/design/TUI-COMMANDS.md` §5.5）；不搬服务器 URL 全串（主机形）；零新定时器（校验触发点制——`docs/core/design/TEAM.md` §2.6）；CLI 语言面现缺省 en（台账 #7 未决——沿 §7.7 观察①同注）。
-
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/TUI.md`（1529 行）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档 §10 关键设计决策表（as-of 表） | 设计决策与理由的时点快照 | 语义已被正文 supersede——现行结论在各机制节；表本体 = 时点材料 |
-| 旧档 §11 专题完成史表 | 逐专题「日期 / 专题 / 现状」 | 历史叙述——机制已入正文 |
-| 旧档 §12.2 三面现状表 · §12.3 方案选型对比 · §12.6 决策 D-SS1–D-SS7 | 选择面收口批（第 20 批）的选型与决策材料 | 结论已入 `docs/cli/design/TUI-COMMANDS.md` §3 / §4；被否决候选理由不入活档 |
-| 旧档 §12.7 / §13.5 受影响文件表 · §12.8 / §13.6 用例表 · §12.9 / §13.7 验收标准 | 批次执行与验收材料 | 一次性——实装后已漂移 / 已验收 |
-| 旧档 §13.1 问题陈述（含 `file:line` 现场核实） · §13.2 守卫三候选择型 | 输入面小修批的勘察材料 | 结论已入 `docs/cli/design/TUI-COMMANDS.md` §5（契约句） |
-| 旧档 §14.1 现状复核 / §14.2 三表选型 / §14.4 受影响文件 / §14.5 决策 D-AT1–D-AT8 / §14.6 纪律核对 / §14.7 用例 / §14.8 AC / §14.9 边界与登记 | attention 批（第 33 批）的批次材料 | 结论已归并为 §7（触发表 + 契约）；登记项保留于 §7.2 末 |
-| 旧档 §15.1 问题陈述（十条绕过路径实测） / §15.2 选型表 / §15.4 决策 D-TB1–D-TB6 / §15.5 受影响文件 / §15.6 用例 / §15.7 AC | 内存有界批（TUI-OOM-ROOTCAUSE）的批次材料 | 结论已入 `docs/cli/design/TUI-SESSION-VIEW.md` §5 |
-| 旧档 §1 模块地图**行数列** + 表头「行数实测回写」注 + 「同批如实注（未入表三档 / pickers 行文字未随拆重写）」 | as-of 行数快照与补登注 | 行数随实现漂移（本档地图不携行数）；未入表三档已按现文件结构补入地图 |
-| 旧档变更记录（2026-08-30 起逐批流水） | 逐批流水 | 历史叙述——流水归 git 历史 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 需求层条目 | F1–F15 / N1–N12 | 需求面——`docs/cli/requirements/TUI.md`（本档只留设计层） |
-| 输入框键契约 | 状态模型不变量 / 按键表 / ↑↓ 三规则 / Inject 框 / question 自由文本态 | `docs/cli/design/TUI-INPUT-BOX.md`（本档只挂指针） |
-| 普通工具行间区块 | 区块格式 / chunk 契约 / 参数可见性 / 收尾守卫 | `docs/cli/design/TUI-TOOL-OUTPUT.md`（本档只挂指针） |
-| 命令层与选择面 | slash 命令族 / picker / wizard / 交互桥 | `docs/cli/design/TUI-COMMANDS.md` |
-| 会话恢复 / 懒加载 / 回合驱动 / 显示层额度 | 恢复管道 / 三层缓存 / runAgentTurn / 字符额度 | `docs/cli/design/TUI-SESSION-VIEW.md` |
-| 挂起会话状态机 / 子代理编排语义 | settle 时序 / 池管理 / 调度排队 | `docs/core/design/AGENT-LOOP.md`（本档只留显示层契约） |
-| 压缩面板 / MCP 表单 / 会话存档 | 跨板块机制 | `docs/core/design/CONTEXT-COMPACTION.md` §8 · `docs/core/design/MCP.md` §5/§8 · `docs/core/design/SESSION.md` |
-| VSC webview 对位 | webview 渲染 / 消息协议 | `docs/vsc/design/WEBVIEW*.md`——**非同机制**（端差异如实登记——登记 ≠ 默认保留；**登记面 = 记录已裁的保留项**，✗ 非未决差项兜底；端差默认 = 消，保留须结构性不对称 + 证据 + 显式裁定（A9）；各端独立实现只述实现形态，✗ 不构成差异保留依据；**已裁保留 · A9 三件齐**：① 结构性不对称 = 渲染宿主不同（VSC webview DOM + 宿主↔面板消息协议 ∥ CLI 裸 ANSI 终端行内渲染；消息协议仅单侧存在）；② 证据 = 两实现树（`thincoder-vscode/webview/**` + `WEBVIEW-PROTOCOL.md` ∥ `thincoder-cli/src/tui/**`）；③ 显式裁定 = 2026-09-14「逻辑 / 渲染分家」（同判据 · `CORE-UNIFICATION.md` §2.5 端特有桶）+ 2026-09-25 misc-four 批确认（台账 #185）） |

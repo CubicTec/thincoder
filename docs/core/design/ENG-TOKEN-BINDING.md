@@ -4,7 +4,7 @@
 > **v2 就地更新**（2026-09-17 退役批）：M4 模块设计语义融入（写权门禁——见 §9；原旁路档 `_archive/modules/ENGINEERING-MODE-V2-MODULE-WRITE-GATE.md` 已归档 `_archive/modules/`——§12 映射核正：WRITE.md 为 write 工具语义档，写权门禁归本档）。
 > 相邻权威 = `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md`（结算的持久化 / 回读 / 消费面——结算**判定**语义〔echo 即裁决 / 回显链判定〕= 本档 §5 辖域；两辖域互不重述，D2——2026-10-04 实核该档无回显规则重述）· `docs/core/design/CONSULTATION.md`（评审引擎）· `thincoder-cli/docs/_archive/design/ENGINEERING-MODE.md`（工程模式流程，CLI 树**未迁**）。
 > 需求侧 = `docs/core/requirements/ENG-TOKEN-BINDING.md`（批 5 建档——源 = VSC 树需求档）；CLI 树需求档 `thincoder-cli/docs/requirements/ENG-TOKEN-BINDING.md` **未迁**（后续批）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 3 批**——`thincoder-cli/docs/design/ENG-TOKEN-BINDING.md` 内容重建入基准层；旧档原地一字不改、留作参照历史；**旧档 §4/§5 口径陈旧 ⇒ 按现状收正**——见 §8.1）。
+> 建档：2026-09-15（**B 式迁移轮 · 第 3 批**——`thincoder-cli/docs/design/ENG-TOKEN-BINDING.md` 内容重建入基准层；旧档原地一字不改、留作参照历史；**旧档 §4/§5 口径陈旧 ⇒ 按现状收正**）。
 > 本档坐标 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 
 ## 1. designToken 是什么
@@ -209,61 +209,3 @@ R16 语义（跨模式存活 + 三清时机 + 单一权威）**已全部落地**
 | D-E7 | 结算三函数**拆出独立模块**（design-token.mjs）+ re-export 保 import 面 | 否决「挤在原文件」 |
 | D-E8 | **截断回显 = 容忍**（uuid 形 ⇒ 认 pass + 截断标记；槽存全串） | 截断 = 机械噪音（回显仅通过时发生；uuid = token 专属随机值、零附带；凭证 = 流程门非安全边界）；否决：不容忍重审（批准意图明确仍费整轮）；否决：更宽前缀容错（短 uuid 段假阳面） |
 | D-E9 | 非回显结算**恒定标记**（逐字——含正文为空形） | N7 零静默（需求 `docs/core/requirements/ADVISOR-CONVERGENCE.md:86`）；否决：仅空文本 fallback（静默洞本体——批前形） |
-| D-E10 | 签发前**裁定闸**（回执须含 `VERDICT: pass` 且无 `VERDICT: changes-required`——回显之外的必要合取） | #940 对侧实撞（🔴 回执带 echo 直铸 token）；「仅无 🔴 才回显」只住提示词层 = 纸闸。**否决备选**：◎只加固提示词（已加固仍实撞——提示词非机械面）◎解析发现表 🔴 计数（表形浮动不可机判）◎仅拦 changes-required（缺裁定行仍放行——漏网） |
-
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/ENG-TOKEN-BINDING.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实现 v2 + R16」+ 现码核对注） | 时点状态行 / 一次性核对注 | 批次语境——现行态已入 §3–§6 |
-| **旧档 §4 结算语义括注「入槽（designId 键 + 单值镜像 + eng-coder 门禁标志）」** | 含**已退役**的单值镜像 | **已废结构**——单值镜像随结算批 D3 退役（现状见 `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md` §4）；照抄即把已废结构写进权威层 |
-| **旧档 §5 实现落点表**（签发/校验/结算挂 `advisor-async.mjs`；`token-ttl.mjs` 标「（新）`」） | 迁移前宿主模块划分 | 现状 = 三函数住 `agent-tools/design-token.mjs`（`token-ttl.mjs` 仅留 TTL 纯函数 + 槽 I/O）——见 §6.1 |
-| 旧档 §4 表下的「双源 bug 修复设计（旧 F-DS / D-DS / T-DS / AC-DS 块）」与「已确认非 bug」注 | 一次性双源排查流水 | 审计材料——结论已入铁律 3（结算面细节归相邻档） |
-| 旧档 §6 验收行 AC1–AC11 | 一次性验收清单 | 批次材料——现行约束已入 §3–§5 |
-| 旧档变更记录（三条逐批流水） | v2 / R16 / 重写流水（含旧 `src/**` 坐标） | 历史叙述——本档自有变更记录；坐标按现状收正 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 工程模式流程本体 | `ENGINEERING-MODE.md` 的流程 / 判据 | CLI 树档**未迁**（后续批）——本档只留凭证链机制 |
-| `TOKEN_SECRET` / `eng(enter)` 同意门 TODO | 未做项的待办指针 | 项目技术待办面（台账 = 父侧）——本档只在 §2 登记「明确不做」 |
-| 需求侧正文 | CLI 树需求档 | 需求档未迁——后续批并入既有档 |
-| VSC 旧档 §1–§3（语义 lockstep 重述） · §4 生命周期表 · §6 AC1–AC11 · 变更记录 | 重复面 / 批次材料 / 流水 | **不并**——语义已由本档 §3–§5 承载（lockstep 表述只在 §6.3 头注保留共存锚）；AC 与变更流水 = 一次性材料（(d) 类） |
-
-## 9. 写权门禁（v2——M4 增量）
-
-**定位**：把写权矩阵从「靠提示词自觉」落成**机械门禁**——没有 token 写不了产品代码（token 门）、评审在途改不了被审文档（D5 冻结窗口）。v2 增量 = 评审对象 / 被审文件路径来源改读 manifest `docRoot`（去硬编码 `docs/`，可迁移 N2）。
-
-**F1 token 门（继承 v1）**：eng-coder 写产品代码需活 designToken（§4 spawn 门禁同源——无活槽 → 拒，fail-closed）。
-
-**F2 D5 冻结窗口（继承 v1 判据 + 来源改读）**：设计评审在途，被审文件集（设计档 + 批次档）零写入——写入即拒 / 本轮结算为陈旧（不发 token）。「在途」窗口下界 = 报告送达或取消·中止（**不是**子进程退出）；不读 M6 槽文件（槽签发于批准后，无法表达「在途」）。
-
-**F3 评审目标来源（v2 核心增量）**：`resolveReviewTargetPaths(agent)`——读 manifest `docRoot`（缺 `docRoot` 键 → 默认值 fallback，与架构 §2.3 E2 同源），产出评审对象 / 被审文件绝对路径集合。
-**按用点解析增量**（2026-10-02 · #828）：同单点新导出 `resolveReviewRootsFor(dir)`（判定本体 = `thincoder-core/agent-tools/review-facts.mjs`；`thincoder-core/agent/write-gate.mjs` 同名再出口）——按目标目录（其所属项目根——最近带档祖先）解析同一根集；M6 `thincoder-core/agent-tools/advisor.mjs` 逐文档按所属项目消费（消费点 = `resolveReviewDocPaths`）；无主档回退会话根集判定（原行为零变）。
-**路径归一增量**（2026-10-04 · #921 设计轮）：documents 解析单源新导出 `resolveReviewDocPaths(documents, cwd)`（宿主 = `thincoder-core/agent-tools/review-facts.mjs`；零新模块边），逐文档四项试探：
-① 会话根集 ② 所属项目根集——两项既有行为零变封装；③ 候选项目根试探（`projectRootView(cwd)` 候选）④ 歧义可读唯一化——裸仓相对形（cwd 基面落空）按候选项目归一受理；多候选可读命中 ≥2 ⇒ fail-closed 拒（`scope-doc-ambiguous`）；冻结窗 `docAbs` 产出面（advisor-async）同源。实施 = eng-coder 轮。
-**锚祖先链增量**（2026-10-05 · #945）：第③项候选底座并入 **cwd 祖先链全量目录**（现行集在前 ∥ 祖先链随尾、去重保序）——容器相对形在子仓锚下受理；受理判据（目标解析位最近 manifest 声明面）∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义零改。实施 = eng-coder 轮。
-**落点 = 新文件 `thincoder-core/agent/write-gate.mjs`**（不是 `dispatch.mjs`——落 dispatch 会让 M6 `advisor.mjs` 反向 import 门禁簇成回边；write-gate 无上游依赖，三向消费不成环）：`dispatch.mjs` / VSC `tool-gates.mjs` / M6 `advisor.mjs` 三向 import 消费（单一权威源，不重复实现）。
-token 门与冻结窗口判据复用 v1 现有导出（`anyLiveDesignSlot` / `inflightDesignReviewConflict` / `validateDesignToken`——不改签名），「改读 docRoot」只落在评审目标来源一处。
-
-**F4 写命令装配承接**：台账写命令落 M2（ledger 命令装配）、manifest 写命令落 M1（manifest 读写装配）——装配点非主 agent → 拒；本档只记录承接关系。
-
-**AC-M4-5（修 ≠ 绕）**：继承 v1 单一权威分类（`loadProjectDeclaration`/`isCodePath` + 拒绝文案 hint/convNote）——分类与分流不一致时 token 门照拒（fail-closed），模型侧「停下上报」由该文案触发；**不新增独立谓词、零新增编辑点**（继承零改原则）。
-
-**验收（回指 M4 规格 AC）**：
-
-| # | 判据 |
-|---|---|
-| AC-M4-1 | 无活 token 写产品代码 → 拒 |
-| AC-M4-2 | 冻结窗口内写被审文档 → 拒 / 结算为陈旧 |
-| AC-M4-3 | 评审对象 / 被审文件路径读 `docRoot`（grep 硬编码 `docs/` → 零命中——范围 = 评审目标解析函数及其消费点） |
-| AC-M4-4 | 台账 / manifest 写命令非主 agent → 拒（落点 M1/M2） |
-| AC-M4-5 | 修 ≠ 绕：分流（变更面）与门禁不一致 → 停下上报（继承 v1 分类 + 拒绝文案触发） |
-
-**边界（本增量不做）**：不做 token 签发（M6）；不做评审判据（advisor）；不重写 v1 门禁本体（继承 + 声明面微调）；不做语义写权判断（「谁写需求谁写设计」不可机判——落提示词层 + 互锁兜底）。
-

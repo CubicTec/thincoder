@@ -18,7 +18,7 @@
 
 | # | 功能点 | 规格依据 |
 |---|---|---|
-| F1 | schema 八键：`version` · `phase` · `docRoot` · `promptsLanding` · `checkConfig` · `codePaths` · `index` · `advisor`（末三键 = 项目声明三族——2026-09-27 自 `.thincoder/conventions.json` 并入） | ②.1 + 批档 `docs/batches/2026-09-27-conventions-retire.md` §2（规格侧同步 = 父侧） |
+| F1 | schema 八键：`version` · `phase` · `docRoot` · `promptsLanding` · `checkConfig` · `codePaths` · `index` · `advisor`（末三键 = 项目声明三族——2026-09-27 自 `.thincoder/conventions.json` 并入） | ②.1（规格侧同步 = 父侧） |
 | F2 | 读 / 写 / 校验器：`thincoder-core/manifest.mjs`，操作对象 = **每个项目（= 带 manifest 的目录）一份** `PROJECT-MANIFEST.json`（发现梯五级：① 锚自身带档 ⇒ 锚 ② 锚含 `.git` ⇒ 锚 ③ 直接子目录带档优先 ④ 零带档才看裸仓 ⑤ 均无 ⇒ 无项目；**git 非前提**——2026-09-21 用户裁定） | ②.2 · §⑥ |
 | F3 | 缺档处置（**按用点**）：需要项目参数的动作发现目标项目缺档 ⇒ 该动作报明并走协助建档（**项目落地 = 建 manifest——轻动作**）；`git init` = **可选增强**（经确认提供，非入场券）；**任何情况不砖死**（会话照常起） | ②.3 · §⑥ |
 | F4 | 缺键 fallback：manifest 存在但缺某键 → 用默认值（不拒绝）；`docRoot` / `checkConfig` 子键缺与整键缺同语义 | ②.4 |
@@ -91,8 +91,8 @@
 - `projectRootView(cwd)` → `{ state, root, candidates }`（**本批新增**——`thincoder-core/manifest-discovery.mjs` 新导出，经本档 `manifest.mjs` 转口）：**项目根解析的歧义直读形**——`state` ∈ `'ok'`（唯一解析：归属命中 ∥ `discoverProjects` `self` / `unique`）/ `'ambiguous'`（≥2 候选）/ `'none'`（无项目）；非抛错 / 零写。
   `ok` ⇒ `root` = 解析值、`candidates` = `[]`；`ambiguous` ⇒ `root` = `null`、`candidates` = 全候选**按名排序**（同 `discoverProjects` 契约）；`none` ⇒ `root` = `null`、`candidates` = `[]`。
   **覆盖位**（`_setProjectRootForTest` 在场）⇒ 头部短路 ⇒ `{ state:'ok', root: resolve(_projectRootOverride), candidates: [] }`（同 `discoverProjects` 短路形）；
-  **薄委托等价句**：`resolveProjectRoot(cwd)` ≡ `projectRootView(cwd).root`——既有导出**行为逐字零变**（含覆盖位短路；回归守卫 = 单元测试档 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs`——基座三态 ∥ 覆盖位 ∥ 薄委托等价逐格）。
-  消费面接线 / 歧义拒语义 = §2.5「多档解析消费面收口」条（互指）；依据 = 批档 `docs/batches/2026-10-02-manifest-resolution-fix.md` §2.2。
+  **薄委托等价句**：`resolveProjectRoot(cwd)` ≡ `projectRootView(cwd).root`——既有导出**行为逐字零变**（含覆盖位短路；回归守卫 = 单元测试档——基座三态 ∥ 覆盖位 ∥ 薄委托等价逐格）。
+  消费面接线 / 歧义拒语义 = §2.5「多档解析消费面收口」条（互指）。
 - `owningProject(target)` → `string|null`（**本批新增**，KD-M1-30——**归属形单点**，纯 fs：只判 `MANIFEST_REL` 存在性——不解析档内容 / 不问模式）：自 `target`（目录含自身）沿**祖先链**逐级上溯至盘根，取**最近**带档目录；无 ⇒ `null`。**覆盖位**（`_setProjectRootForTest` 在场）⇒ **头部短路**：直接返回 `resolve(_projectRootOverride)`（不查档存在性——保「覆盖即覆盖值」语义，见下方「覆盖位定形」）。
 - `projectView(target)` → `{ state, root, path, manifest?, candidates?, errors?, message?, matched }`（**本批新增**，KD-M1-24 / M1-30——**按用点解析**的读侧单点，**非抛错 / 零写**，无缓存）——**两段合成**：
   · **归属（第一段——§⑥ 归属形）**：`owningProject(target)` 沿**祖先链**取**最近的带档目录**（自 target 起——target 为目录则含自身——逐级上溯至盘根；**不跨兄弟** / **无全局优先级**；嵌套合法：子内归子、根其余归根）。命中 ⇒ 读该档 ⇒ `ok` / `invalid`。
@@ -100,7 +100,7 @@
   写侧（建档）**不在**此函数（归入口决策树——KD-M1-25 / M1-29），故注入器 / 只读消费面不会变写点。
   · **`matched` 契约（本批 fix 轮 · 发现 10）**：命中（或歧义）出自哪一级——归属段命中 ⇒ `'manifest'`；发现段 ⇒ `discoverProjects.matched` 逐字（`manifest` / `git`）；`no-project` / 覆盖位短路 ⇒ `null`——报明行歧义变体按它分野（§2.6 条 1b）。
   · **覆盖位定形（本批 fix 轮 · 发现 5）**：`owningProject` 与 `discoverProjects` **两处头部短路**（`discoverRepos` 既有短路零改）⇒ 覆盖在场时 `resolveProjectRoot`（归属先行）与 `projectView`（归属段先行）均**不落真判据**。
-    批前「覆盖即覆盖值」语义保持（回归守卫 = 单元测试档 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs` 覆盖位用例：`_setProjectRootForTest(base)` ⇒ `resolveProjectRoot("ignored") === resolve(base)`）。
+    批前「覆盖即覆盖值」语义保持（回归守卫 = 单元测试档覆盖位用例：`_setProjectRootForTest(base)` ⇒ `resolveProjectRoot("ignored") === resolve(base)`）。
 - `MANIFEST_SCHEMA`（对象：`phase` 枚举、`docRoot` 五键存在、`checkConfig` 六键存在、`index` / `advisor` 子键存在、`promptsLanding` 存在、`version` 数值、**三族声明键形态**——KD-M1-32）。
 - `DEFAULT_MANIFEST`（对象：默认八键——`version:1`、`phase:"initial-dev"`、`docRoot` 默认五路径、`promptsLanding` 默认落地路径、`checkConfig` 默认判据、`codePaths:["src"]`、`index:{codeExtensions:[],docExtensions:[],excludePaths:[],publicRepos:[]}`、`advisor:{docMap:"",standardsDoc:""}`）。
 - `readManifest(cwd)` → `{ ok, manifest, missingKeys, unknownKeys, errors, reason }`：读 + `validateManifest(obj)`；缺键 → 产 `missingKeys`（非拒）→ 补默认值 → 再校验通过；整档缺失 → `{ok:false, reason:'missing'}`。**未知键（#802）**：产 `unknownKeys` + 读面一行可见告警（含键名；同档同键集去重）——非拒定性零变、搬运语义零改（KD-M1-11 / M1-36）。
@@ -155,7 +155,7 @@
 - **运行期值刷新（本批新增——#34）**：附着决策**仍只在会话起点**（KD-M1-12 / KD-M1-13 零改）；已附着会话的 `agent.manifest` **值**改由注入器每回合 mtime 门控重读（§2.6 ③b）——落地「CLI 会话内改档 ⇒ 下回合情境行更新」。**两分不混**：钩子管附着，注入器管取值。
 - 行号 = as-of 2026-09-18 00:0x 参考（D4——落点以函数名为准）。**上批不做 / 本批落定**：会话起点（ACP 装载）与进程内翻转（CLI `/eng` ON · `/session` 切槽 · 核心 `eng` 工具）的重估——两族**两分记**已由 §2.8 落笔（#41）。
 
-### 2.3 受影响文件全清单（as-of 实测（`\n` 计数）；**十批并列**——行 1–9 = 装配门禁小修批（#30 模式门 / #33 二道防线）· 行 10–12 = #34 值变重推批 · 行 13 = #62 仓发现复用批 · 行 14–29 = #188 按用点解析批 · **行 30–36 = 声明三族键并入批（批档 `docs/batches/2026-09-27-conventions-retire.md`）** · 行 37–38 = 拆档批 ∥ structure-split-2 批 · **行 39–47 = 会话锚解析修复批（#828）** · **行 48–49 = 核面小修批（#802 面——批档 `docs/batches/2026-10-04-core-patch-batch.md`）** · **行 50–56 = manifest agent 工具面批（2026-10-08——批档 `docs/batches/2026-10-08-manifest-agent-tool.md`）**）
+### 2.3 受影响文件全清单（as-of 实测（`\n` 计数）；**十批并列**——行 1–9 = 装配门禁小修批（#30 模式门 / #33 二道防线）· 行 10–12 = #34 值变重推批 · 行 13 = #62 仓发现复用批 · 行 14–29 = #188 按用点解析批 · **行 30–36 = 声明三族键并入批** · 行 37–38 = 拆档批 ∥ structure-split-2 批 · **行 39–47 = 会话锚解析修复批（#828）** · **行 48–49 = 核面小修批（#802 面）** · **行 50–56 = manifest agent 工具面批（2026-10-08）**）
 
 | # | 文件 | 当前行数 | 变更 | 编辑点（函数级） | 本轮增量 |
 |---|---|---|---|---|---|
@@ -200,8 +200,8 @@
 | 39 | `thincoder-core/manifest-discovery.mjs` | **119**（实读 2026-10-02） | 修改 | 新导出 `projectRootView(cwd)`（判定单点——§2.2 契约行）+ `resolveProjectRoot` 薄委托化（行为零变） | ≤ +14 |
 | 40 | `thincoder-core/ledger-db.mjs` | **126**（实读 2026-10-02） | 修改 | `openLedger` 歧义拒（判定 = `projectRootView`；零写——列候选 + 显式项目根指引） | ≤ +10 |
 | 41 | `thincoder-core/agent-tools/batch-paths.mjs` | **142**（实读 2026-10-02） | 修改 | 歧义锚检查（`BATCH-RECORD.md` §4.15 条 5）：create 按目标所属项目落基底 ∥ 无所属显式拒；读面候选 + 在飞 ∥ 写门基底集 = 候选并集 | ≤ +55 |
-| 42 | `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs` | 0 | 新增 | 单元测试档（AC-1–AC-5——歧义实景三族；不进集成测试树） | 新增 |
-| 43 | `docs/batches/2026-09-29-structure-split-2.test.mjs` | **219**（实读 2026-10-02） | 修改 | 导出枚举 +`projectRootView`（`:110` ∥ `:112` ∥ `:122`） | ≤ ±2 |
+| 42 | 单元测试档（manifest-resolution-fix） | 0 | 新增 | 单元测试档（AC-1–AC-5——歧义实景三族；不进集成测试树） | 新增 |
+| 43 | 单元测试档（structure-split-2） | **219**（实读 2026-10-02） | 修改 | 导出枚举 +`projectRootView`（`:110` ∥ `:112` ∥ `:122`） | ≤ ±2 |
 | 44 | `thincoder-core/manifest.mjs` | **249**（实读 2026-10-02） | 修改 | 转口 `projectRootView`（经本档 re-export——§2.2 契约行）+ `resolveProjectRoot` 薄委托随动（行为零变） | ≤ ±2 |
 | 45 | `thincoder-core/agent-tools/batch.mjs` | **313**（实读 2026-10-02） | 修改 | 基底取解析单点（两调用点——`:184` ∥ `:283`） | ≤ ±4 |
 | 46 | `thincoder-core/agent-tools/subagent-spawn.mjs` | **438**（实读 2026-10-02） | 修改 | `logBatchDocRefs` 基底解析随动（`:53`） | ≤ ±2 |
@@ -214,9 +214,9 @@
 | 53 | `thincoder-core/agent/dispatch-gates.mjs` | 143 | 修改 | `isSubagentReadonlyAction` +`manifest` `read` 只读格（`init` / `write` 侧效门——`:75` 邻位） | ≤ +5 |
 | 54 | `thincoder-core/tool-docs/manifest.md`（已落） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:70`） | ≈ +1.2k 字符 |
 | 55 | `thincoder-vscode/scripts/check-vsix.mjs` | 100 | 修改 | `EXPECT["tool-docs"]` 48 ⇒ **50**（VSC 打包口径——描述档 +1 ∧ 既有漂移收正 +1：仓内侧现盘实读 49 档；`:37`） | ±1 |
-| 56 | `docs/batches/2026-10-08-manifest-agent-tool.test.mjs` | 0 | 新增 | 单元测试档（T63–T73 对应用例——不进集成测试树） | 新增 |
+| 56 | 单元测试档（manifest-agent-tool） | 0 | 新增 | 单元测试档（T63–T73 对应用例——不进集成测试树） | 新增 |
 
-> 说明：**行数 = as-of 实测（`\n` 计数）**——同一档多行 = 各批快照，现值以最新行 / 读盘为准；行 1–9 = 装配门禁小修批（#30 模式门 / #33 二道防线）增量（as-of 01:5x）· 行 10–12 = #34 值变重推批增量（as-of 01:5x）· 行 13 = #62 仓发现复用批（as-of 2026-09-19）；上批（activeBatch 裁撤）的 M1 面清单见其批档 `docs/batches/2026-09-17-activebatch-repeal.md` §2.2。
+> 说明：**行数 = as-of 实测（`\n` 计数）**——同一档多行 = 各批快照，现值以最新行 / 读盘为准；行 1–9 = 装配门禁小修批（#30 模式门 / #33 二道防线）增量（as-of 01:5x）· 行 10–12 = #34 值变重推批增量（as-of 01:5x）· 行 13 = #62 仓发现复用批（as-of 2026-09-19）；上批（activeBatch 裁撤）的 M1 面清单见其批次档 §2.2。
 > **口径注（2026-10-05 fix 轮）**：行数一律按 `\n` 计数复核（读盘显示含末尾空段 = `\n`+1——对账勿混两口径）。
 > 行 10 的改动面 = **一行导出 + 两处同式改用**（机制本体零改——KD-M1-18）；行 13 的改动面 = **一个导出 + 一处包装化**（机制本体零改——KD-M1-22）。
 > 落点以**函数名**为准、行号为 as-of 参考（D4）；与本批并行在飞的他批若同碰这些档，开工前先 `git status` 复读行数、**串行实施**（同文件并发写 = 丢改风险）。
@@ -226,7 +226,7 @@
 > · **行 16（`thincoder-vscode/src/agent/setup.mjs` 500 ⇒ 增量后越 500 硬限）⇒ 本批拆**——装配段（家族段装配 / MCP 连接 / 基础集 · 全表 · 索引 / schema 构建）迁入邻档 `setup-tooltable.mjs`（纯结构搬移零语义；缝 = 导出函数 `buildToolTable`；先例 = 批 7 同档拆出本档）。拆后：`setup.mjs` ≈432 · `setup-tooltable.mjs` ≈325（实施轮回填实读）。
 > · 行 14 `thincoder-core/manifest.mjs`：**已落（structure-split-2 · 2026-09-29）——双拆**：发现族（两梯 + 私有内核 + `owningProject`）⇒ `thincoder-core/manifest-discovery.mjs`（**119**）+ 校验 ∕ 默认族 ⇒ `thincoder-core/manifest-schema.mjs`（**155**）；
 >   `manifest.mjs` re-export 保消费者 import 面零改（实读 **21** 消费档名面）——主档 **249**（实读 2026-09-29）；**T54 读点改指** `manifest-discovery.mjs`（doc 面已落——§2.2 机判句 ∥ §3.2 T54 行；用例执行体随测试体系重建）；
->   **`SOFT_LINE_REGISTRY` 义务执行态** = 本档移出（**249** < 300——运行面随测试体系重建落册）。单源 = `docs/batches/2026-09-29-structure-split-2.md` §2.2-C ∥ §5。
+>   **`SOFT_LINE_REGISTRY` 义务执行态** = 本档移出（**249** < 300——运行面随测试体系重建落册）。单源 = 该批设计段 §2.2-C ∥ §5。
 > · 行 18 `thincoder-core/tools/git.mjs`（≈423）：方案 = `execute()` 头部解析序（workdir / 发现 / 歧义 throw / 注记）抽邻档 `thincoder-core/tools/git-resolve.mjs`（拟新增）；触发条件 = 同上。
 > · 行 19 `thincoder-core/test/manifest.test.mjs`（≈380）：方案 = 发现面用例组拆出 `manifest-discovery.test.mjs`；触发条件 = 同上（单元测试档按用例组拆）——**触发成立（本批行 34：479 + 增量越 500 硬限）⇒ 本批执行（见下注）**。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 > · 行 21 `thincoder-core/test/setup-reminders.test.mjs`（≈303）：方案 = 值变检测组 / 报明行组拆出邻档；触发条件 = 同上。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
@@ -276,7 +276,7 @@
 | KD-M1-7 | 非法形态（空串 / 空数组 / 数组含非串或空串元素 / 非串非数组）→ **校验拒**（不是静默跳过） | 静默跳过 = 评审根静默失踪（本批问题本体）；fail-closed 与 `phase` 枚举 / `version` 数值同族（N4）。**被拒替代**：只展开不校验（观察窗口后再收紧）——静默缺陷不可观测，而拒面成本仅一条 `errors`；拒后壳面文案明确（`make-agent.mjs:51-52` 同款） |
 | KD-M1-8 | 判据单源：`isValidDocRootValue` / `docRootPaths` 落 M1（`manifest.mjs`），消费面一律经该谓词取值 | D2 单一权威源：校验与消费各写一遍必漂移（留「校验通过但消费不认」的缝）；**基数（项目根）同落此处** ⇒ 新消费点不可能重复 2026-09-17 的基数缺陷 |
 | KD-M1-9 | 默认档五键**保持单串**（不改成数组） | 默认值 = 通用约定，数组 = 声明面扩展；改默认会改变所有未覆盖仓的行为（兼容面）——本批要求「既有仓零改即绿」 |
-| KD-M1-10 | `activeBatch` **整链撤销**（字段 / 校验 / 咬合 helper / 冻结机检取值 / 情境行字段 / 数据档键），非降级、不保留「参考位」 | 2026-09-17 **用户裁定**方案 A：「这个必须完全撤销，不能存在。」三宗罪 = ① 单槽建模装不下并发（实况可多批同时在飞）② 咬合判据把并发判违规（「在途孤儿」= 常态）③ 冻结机检单点失效（字段一空即静默关灯）——批档 `docs/batches/2026-09-17-activebatch-repeal.md` §1.2 |
+| KD-M1-10 | `activeBatch` **整链撤销**（字段 / 校验 / 咬合 helper / 冻结机检取值 / 情境行字段 / 数据档键），非降级、不保留「参考位」 | 2026-09-17 **用户裁定**方案 A：「这个必须完全撤销，不能存在。」三宗罪 = ① 单槽建模装不下并发（实况可多批同时在飞）② 咬合判据把并发判违规（「在途孤儿」= 常态）③ 冻结机检单点失效（字段一空即静默关灯） |
 | KD-M1-11 | 旧档残留 `activeBatch` 键**不迁移、不报错**——`fillDefaults` 只搬已知键（读时收敛、回写自然清） | 与 `access` 裁撤同机制（AC-6 / T14）；写迁移脚本 = 给一次性动作造第二条写路径，违「写门唯一条」（KD-M1-3） |
 | KD-M1-12 | 装配钩子加**工程模式门**（台账 #30）——判据 = **会话权威值**「恢复槽带 `engineering` 字段 ? 槽值 : `config.agent.engineering`」（槽优先 + config 回退；取值点三处见 §2.2）；普通会话 = **装配钩子零 manifest I/O**（不读 / 不拒 / 不建档）+ `agent.manifest = null` | manifest 是工程模式机制的状态账（下游 M2–M9），普通会话无消费方——无门实况 = 普通会话在非仓 cwd 启动被拒（用户可见「工程模式启动拒绝」）+ 仓内被自动建档（写用户没要的档）。被拒备选：① 保留读面、只去掉「拒 / 建档」分支（普通会话仍被非法档 fail-closed 拦，「不读」不成立）② 非仓拒降级为警告（E2 前置门槛被削）|
 | KD-M1-13 | 钩子执行点 = **会话起点**（幂等重估，无状态位），非「进程启动一次」：CLI 两处（装配 + 启动恢复后）· VSC 每轮 reconcile；**装配期判据取槽值** = `bin` TUI 分支 `resumeSlot` 前移至装配之前 + 恢复记录经 `slotData` 形参进 `assembleAgent` | CLI 的工程模式权威值 = 会话槽（`thincoder-core/session-lifecycle.mjs:86`），装配期 `bin:306` 早于 `applySession:320` ⇒ 判据不取槽值则恢复的会话在装配期被误判（非仓仍抛 / 仓内仍建档；抛点早于 `applySession` ⇒ 重估点永不达——评审轮 1 🔴）。被拒备选：① **只在装配期判 `config.agent.engineering`**（该值此时 = config 初值 ≠ 会话权威值——`/eng` 只写槽不镜像 config：`cmd-eng.mjs:93-104`）② 在核 `applySession` 内挂钩（会话模块耦合 M1 装配面）③ 仿 VSC 改逐回合判（CLI「启动期拒绝」UX 退化为首回合报错） |
@@ -327,16 +327,16 @@
   口径核对（指令优先级裁，用户新令 > 旧句）：`docs/core/design/PROMPT-SYSTEM.md:402`「清单维护者 = agent…**不造新工具 ∥ 不加机械门**」（2026-10-02 declared-sources 维护面定调）——**该半句被本批 ②.7 覆盖**（2026-10-08 新令 = 全键读写出口）；§6.15 余句（维护者 = agent ∥ 随手补清单 ∥ 不加机械门）不受影响；旧半句收正——**已落**（限定句 + 例外句）。
 - **advisor 评审门文档合法根集（按用点收口 · 2026-10-02）**：设计评审文档合法性判定 = **会话根集**（`resolveReviewTargetPaths(agent)`——原函数行为零变）∪ **逐文档所属项目根集**（文档路径 `owningProject` ⇒ `resolveReviewRootsFor(owner)`——`thincoder-core/agent/write-gate.mjs` 同单点新导出，非第二实现）；**无主档文档**（祖先链无档）回退会话根集判定（原行为零变）。
   **路径归一增量（2026-10-04 · #921 设计轮——本族第三笔）**：documents 相对形 cwd 基面落空时按候选项目根试探归一（单源 = `resolveReviewDocPaths`，宿主 `review-facts.mjs`——零新模块边；四项试探序 ∥ 多候选可读命中 ≥2 ⇒ fail-closed 拒 `scope-doc-ambiguous`——详述单源 = 批档 §2.2）；冻结窗 `docAbs` 产出面同源。实施 = eng-coder 轮。
-  **锚祖先链增量（2026-10-05 · #945——本族第四笔）**：第③项候选底座 = 现行 `projectRootView(cwd)` 集 ＋ **cwd 祖先链全量目录**（自父目录起至盘根、最近→远、去重、现行集在前）——容器相对形在子仓锚下受理；受理判据（目标解析位最近 manifest 声明面）∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义（`scope-doc-ambiguous`）零改——详述单源 = 批档 `docs/batches/2026-10-05-review-face-gaps.md` §2.3。实施 = eng-coder 轮。
+  **锚祖先链增量（2026-10-05 · #945——本族第四笔）**：第③项候选底座 = 现行 `projectRootView(cwd)` 集 ＋ **cwd 祖先链全量目录**（自父目录起至盘根、最近→远、去重、现行集在前）——容器相对形在子仓锚下受理；受理判据（目标解析位最近 manifest 声明面）∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义（`scope-doc-ambiguous`）零改。实施 = eng-coder 轮。
   **依据 / 落地** = §2.9 A 解析轴——2026-09-21 裁「参数按用点解析，会话不绑定项目」之评审门消费面收口（台账 #828——本族首笔；落地 = `thincoder-core/agent/write-gate.mjs` ∥ `thincoder-core/agent-tools/advisor.mjs` 两档单链 · 可 revert）。
-  **验收** = 功能级红绿（旧码 10/10 拒 ⇒ 新码 7/7 可；另 3 档 = `thincoder-core/prompts` 运行时提示词档——非文档层，不入评审文档清单）+ 行为级（会话重启后 `#827` 设计评审受理启动）+ 回归锚 `docs/batches/2026-10-02-light-round-7.test.mjs`（4 例）。
+  **验收** = 功能级红绿（旧码 10/10 拒 ⇒ 新码 7/7 可；另 3 档 = `thincoder-core/prompts` 运行时提示词档——非文档层，不入评审文档清单）+ 行为级（会话重启后 `#827` 设计评审受理启动）+ 回归锚（单元测试档 4 例）。
   **边界 = 校验强度不变**（`criterion=scope-not-doc` 判据本体 ∥ 拒文案 ∥ `REVIEW_ROOT_KEYS` 键集零改——无主档回退会话根集判定 ∥ 声明外照拒，fail-closed 不减）；M4 单点 / M6 消费语义指针 = `docs/core/design/ENGINEERING-MODE-V2.md` §2.3 E6 ∥ §2.4 M6→M4 行 ∥ `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md` F3（D2——本档不复述）。
 - **多档解析消费面收口（#828 批 · 2026-10-02）**：`manifest-discovery.mjs` 新导出 `projectRootView(cwd)`（`{ state: ok|ambiguous|none, root, candidates }`——`ok` = 唯一解析（`discoverProjects` `self` ∥ `unique`）；契约 = §2.2 `projectRootView` 行）——「项目根解析」判定面的**歧义直读形**；`resolveProjectRoot` 改薄委托（行为零变）。
   **歧义不再静默塌缩**到 `resolve(cwd)` 兜底——三族收口 =：
   ① **台账**（`ledger-db.mjs` `openLedger`——歧义 ⇒ 显式拒（列候选 + 显式项目根指引），消「静默空读 / 错写落锚」双面症）；
   ② **批档基底**（`batch-paths.mjs`——create 按目标所属项目落基底 / 无所属显式拒；读面 ∥ 在飞 ∥ 写门基底集 = 候选并集）；
   ③ **文件工具**（`thincoder-core/tools/shared.mjs` `resolveInCwd`——会话 cwd 基准 = 标准行为，**零改 + 结语**；结语落点 = §2.9 A 消费面行——同列）。
-  依据 = §2.9 A 解析轴之消费面收口（承评审门首族——其形式化 = 批档 `docs/batches/2026-10-02-light-round-7.md` §2）；细节单源 = `LEDGER.md` §2.1 ∥ `BATCH-RECORD.md` §4.15 ∥ 批档 `docs/batches/2026-10-02-manifest-resolution-fix.md` §2（判定表）。
+  依据 = §2.9 A 解析轴之消费面收口（承评审门首族）；细节单源 = `LEDGER.md` §2.1 ∥ `BATCH-RECORD.md` §4.15。
   验收 = 多档实景（缺省台账不静默错位 ∥ 批档 create 落正确基底或显式拒 ∥ 文件工具结语 ∥ 不砖会话）+ 回归（既有单元测试档复跑——见批档 §2.7）。边界 = 安全面零砍（拒 = 显式可恢复）；发现 / 通知面语义零改（登记见批档 §2.9）。
   **同批并注（轮七回执面）**：本 §2.5「普通会话的读面边界」条坐标随动（write-gate ∥ advisor 实点 + 逐文档所属项目第二读点登记）；M4/M6 明细档 F3 文面加 `resolveReviewRootsFor`（`ENG-TOKEN-BINDING.md` §9 ∥ `DESIGN-TOKEN-SETTLEMENT.md` §9——判据语义零改）。
 - **需求侧口径（已收正——单源指针）**：① `SPEC-MANIFEST.md` AC-M1-2（`:41`）= 会话权威值口径下「**不拒会话**（按用点报明 / 协助建档）」；② `PORTABILITY.md:63` FR11 = 2026-09-21 收正文本（**git 非前提** / 无项目 ⇒ 不拒翻、走建档流 / 可拒面 = 歧义 · 档非法两格）。本档只挂指针，不复述口径（D2）。
@@ -359,7 +359,7 @@
 - **运行期失败退化 vs 会话起点动作（#34 · 本批口径收正——fix 轮 · 发现 2）**：AC-M1-2 / KD-M1-2 的整档缺失处置（含档非法） = **会话起点**动作（工程模式会话口径，见上条模式门）——判「起会话时做什么」：**报明 + 走建档流，不拒会话**（梯②④⑤ 就地建档；KD-M1-25 / M1-29）；
   ③b 的失败退化（档删 / 读回非法 ⇒ 不更新、不清零、不抛）是**运行期注入面**降级——判「这一回合出什么行」。运行期已附着会话不因档删 / 档非法被改变（「拒」在本机制无落点）：沿用上次已知好值 + 下回合自愈（缓存不推进 ⇒ 重试）；`readManifest` 的返回语义（`reason:'missing'` 仍 missing）零改。
 - **会话起点（ACP 装载）**：**现行 = §2.8 F4**（`session/load` / `session/resume` 补重估行；判据单源化）。
-- **进程内翻转**：`/eng` ON（`cmd-eng.mjs`）· `/session` 切槽（`cmd-session.mjs`）· 核心 `eng` 工具（`agent-tools/eng.mjs`）——**现行 = §2.8**（F2 判据表 / F3 明示面 / F5 边界 / F6 FR11 冲突登记）；拒翻裁定 = 批档 `docs/batches/2026-09-18-mode-propagation.md` §1.1。
+- **进程内翻转**：`/eng` ON（`cmd-eng.mjs`）· `/session` 切槽（`cmd-session.mjs`）· 核心 `eng` 工具（`agent-tools/eng.mjs`）——**现行 = §2.8**（F2 判据表 / F3 明示面 / F5 边界 / F6 FR11 冲突登记）。
 - **schema 计数（八键——2026-09-27 收正）**：**设计侧一致**——架构 §2.2 M1 行 / §2.3 E1 JSON / 本档 §1.2 F1 / §2.2 接口四处均八键（`version` / `phase` / `docRoot` / `promptsLanding` / `checkConfig` / `codePaths` / `index` / `advisor`）；**规格侧已同步（2026-09-27）**——`SPEC-MANIFEST.md` ②.1（`:13`）八键 + `:59`「现八键」句 + ④ AC-M1-9（`:47`）；
   扩列同批收正 = `docs/core/design/ENGINEERING-MODE-V2.md` §2.3 E1（键面 JSON + 键注释 + 校验句——设计侧，设计评审轮 1 发现 1）+ `requirements/ENGINEERING-MODE-V2.md` 七处活体句（`:154`–`:156` / `:184`–`:185` / `:187` / `:399`）+ `SPEC-LEDGER.md`（三账 → 两账）+ `SPEC-MACHINE-CHECK.md` ②.5 墓志——三方链闭合。
 - **键集**：`docRoot` 五子键集合 = `REVIEW_ROOT_KEYS`（`write-gate.mjs:41`）。
@@ -586,7 +586,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 ### 2.10 agent 工具面（`manifest` 工具——2026-10-08 用户裁定 · 台账 #1098）
 
 **问题**：机制齐备（`readManifest` `:154` ∥ `writeManifest` `:252` ∥ `initManifest` `:270` ∥ `projectView` `:66` ∥ `projectRootView`（`manifest-discovery.mjs:115`）），但 agent 侧零出口——装配侧内部调用之外，唯一写点 = 工程模式翻转对缺档锚建默认档（`agent-tools/eng.mjs:81`）。
-用户 2026-10-08 三条指令（逐字 = `docs/batches/2026-10-08-manifest-agent-tool.md` §1）⇒ 口径 = **全键读写**；本面 = 主 agent 对 manifest 的读写出口。
+用户 2026-10-08 三条指令 ⇒ 口径 = **全键读写**；本面 = 主 agent 对 manifest 的读写出口。
 
 **工具形（KD-M1-38——点改，非整档写）**：`manifest` 工具（新档 `thincoder-core/agent-tools/manifest.mjs`），三动作：
 
@@ -686,7 +686,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 | AC-21 | **双发现函数四态结构化（#62 立 · #188 收正）**：`discoverRepos`（仓梯）/ `discoverProjects`（项目梯）四态各归其位（`self` / `unique` / `none` / `ambiguous`）；`candidates` **全列且按名排序**（`self` / `none` ⇒ `[]`）；`resolveProjectRoot` = 项目梯 `.root`——**变更面与回归见 AC-24** | 台账 #62 · #188 · AC-M1-2（发现口径） | ✅ 真判据夹具：逐态断 `kind` / `root` / `candidates` / `matched`（T41–T45） |
 | AC-22 | **启动零拒绝（不砖死 · 两端）**：工程模式 × 六格 cwd（梯① 锚带档（无 `.git`）· 梯② 锚 = 裸仓 · 梯③ 带档子仓恰一 · 梯④ 裸仓恰一 · 梯⑤ 无项目 · 歧义 ≥2）⇒ `attachManifest` **不抛**；`agent.manifest` = 附着或 null；`agent._projectView.state` 归位；CLI 直调与 VSC 钩子块同夹具同结果 | 规格 ②.3 / §⑥（不砖死） | ✅ 每格一断言（不抛 + `_projectView` 状态 + 档存在性）；CLI 子进程「工程模式 + 非仓 cwd」退出码 0（T51 / T52） |
 | AC-23 | **发现梯两表**：`discoverProjects` 五级 + `discoverRepos` 四级逐格归位；候选**按名排序**；`matched` ∈ `manifest` / `git` / `null` 与梯级一致；歧义 = 该级全列且**不越级**（带档非空 ⇒ 裸仓不入候选）；**递归零**（孙目录候选不可见）· **单源结构**：两梯共调私有内核 `scanChildren`（源码面——`readdirSync` 恰 1 处 ∧ 两函数各含内核调用） | 规格 ②.2 / §⑥（发现规则）· KD-M1-22 | ✅ tmp 夹具逐格断 `kind` / `root` / `candidates` / `matched`（T43 / T44）+ 源码面结构断言（T54） |
-| AC-24 | **`resolveProjectRoot` 变更面 + 覆盖位**：带档路径逐字同批前（自仓 / 带档子仓恰一）；**非 git 锚带档 ⇒ 锚**；**裸仓恰一 ⇒ 该仓根**；**项目树内路径 ⇒ 项目根**；`none` / `ambiguous` ⇒ `null`；**覆盖位（`_setProjectRootForTest`）在场 ⇒ 覆盖值**（归属段与发现段双短路——§2.2 覆盖位定形） | 规格 ②.2 / §⑥（git 非前提） | ✅ 同夹具对（T45）；覆盖位断言 + 覆盖位短路回归守卫 = 单元测试档 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs` 基座用例 |
+| AC-24 | **`resolveProjectRoot` 变更面 + 覆盖位**：带档路径逐字同批前（自仓 / 带档子仓恰一）；**非 git 锚带档 ⇒ 锚**；**裸仓恰一 ⇒ 该仓根**；**项目树内路径 ⇒ 项目根**；`none` / `ambiguous` ⇒ `null`；**覆盖位（`_setProjectRootForTest`）在场 ⇒ 覆盖值**（归属段与发现段双短路——§2.2 覆盖位定形） | 规格 ②.2 / §⑥（git 非前提） | ✅ 同夹具对（T45）；覆盖位断言 + 覆盖位短路回归守卫 = 单元测试档基座用例 |
 | AC-25 | **情境行状态选行**：`ok` ⇒ 相位行**逐字零改**（AC-N1 既有断言零改）；`no-project` / `ambiguous` ⇒ 报明行逐字（**歧义按 `matched` 两变体**——带档级 / 裸仓级）；`missing` / `invalid`：有既往好值 ⇒ 行不变（T35 / T36 零改）、无既往好值 ⇒ 报明行；四态共用单活体 / 幂等 / 自愈 / `transient` 机制 | 规格 ②.3 / §⑥（不砖死） | ✅ 纯函数逐字断言（含两变体）+ 推注入（T46 / T47） |
 | AC-26 | **会话不绑定项目（多项目按用点）**：同 cwd 下两项目（各声明不同 `docRoot`）——对 B 的路径读档取 B 的声明；相位行 = 锚项目状态；机制**零「当前项目」单值状态位** | 规格 §⑥（解析模型） | ✅ `readManifest(B 路径)` / `docRootPaths(v, B 路径)` 取 B 声明；锚项目行不受 B 影响（T48） |
 | AC-27 | **建档规则（轻动作 + 零自动 git）**：梯②④⑤ 缺档 ⇒ 建档（内容 = `DEFAULT_MANIFEST`；落点 = 命中项目根 / 梯⑤ 会话锚；多项目各建各的）；歧义 / 档非法 ⇒ **零建档**；机制**零 `git init`**（源码面：三档无 `git init` 调用面 + 夹具断 `.git` 未被机制创建） | 规格 ②.3 / §⑥（建档规则） | ✅ 逐格断档内容 + 落点 + 未建格；源码面结构断言（T49 / T50） |
@@ -698,9 +698,9 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 | AC-34 | **旧档在场 = 一行告警 + 内容零生效**：`.thincoder/conventions.json` 在场（含哨兵声明 / 坏 JSON 两态）⇒ 声明读数与无档逐条等值 + warn + 日志事件；内容零解析 | **AC-M1-9** · KD-M1-34 · 批档 §2 | ✅ 两态夹具断言（读数等值 + warn 在场 + 哨兵未生效）+ **告警基准断言**（旧档落项目根 = `manifestFilePath` 基准目录——cwd 深于项目根亦命中） |
 | AC-37 | **`index.publicRepos` 落 schema**：`DEFAULT_MANIFEST.index` 含 `publicRepos:[]`；缺键档读入 ⇒ `ok:true` + 补默认 + `missingKeys` 含 `index.publicRepos`；形态 = 数组层 fail-closed（非数组 ⇒ `errors`）/ 元素层宽容（`["./x/","",7]` ⇒ 归一 `["x"]`——**值形层**（归一后相对串）；解析层 = 绝对根集——细则单源 = `MEMORY.md` §6.15）；缺省 `[]` ⇒ 声明读数与基线等值（零行为） | **AC-M1-9** · 批档 §2 · KD-M1-35 | ✅ `readManifest` 夹具逐键断言 + 归一读数 |
 | AC-30 | **归属形（最近祖先 / 嵌套）**：`owningProject` 沿祖先链取最近带档目录（target 为目录 ⇒ 含自身）；**子优于根**；**不跨兄弟**（无档分叉不取旁支）；祖先链无档 ⇒ `null`（⇒ 发现兜底）；`projectView` 两段合成逐格归位 | 规格 §⑥（归属形） | ✅ tmp 多层夹具（盘 / 容器 / 根项目 / 子项目 / 兄弟）逐格断言（T48） |
-| AC-35 | **`projectRootView` 基座（本批）**：三态结构化——`ok`（唯一解析）⇒ `root` 非空 ∥ `candidates` = `[]`；`ambiguous`（≥2 候选）⇒ `root` = `null` ∥ 候选全列**按名排序**；`none` ⇒ 双空；覆盖位在场 ⇒ 头部短路（`ok` + 覆盖值）；**薄委托等价**：`resolveProjectRoot(cwd)` ≡ `projectRootView(cwd).root` 逐格全等（含覆盖位） | 批次档 §2.2（判定单点） | ✅ 夹具三态逐态断 `{state, root, candidates}` + 覆盖位断言 + 等价逐格对（回归守卫 = 单元测试档 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs` 基座用例） |
+| AC-35 | **`projectRootView` 基座（本批）**：三态结构化——`ok`（唯一解析）⇒ `root` 非空 ∥ `candidates` = `[]`；`ambiguous`（≥2 候选）⇒ `root` = `null` ∥ 候选全列**按名排序**；`none` ⇒ 双空；覆盖位在场 ⇒ 头部短路（`ok` + 覆盖值）；**薄委托等价**：`resolveProjectRoot(cwd)` ≡ `projectRootView(cwd).root` 逐格全等（含覆盖位） | §2.2（判定单点） | ✅ 夹具三态逐态断 `{state, root, candidates}` + 覆盖位断言 + 等价逐格对（回归守卫 = 单元测试档基座用例） |
 | AC-36 | **歧义锚三族收口（零写 + 列候选）**：① 台账缺省（歧义锚）⇒ `openLedger` 拒——零写 + 列候选（`LEDGER.md` §8 AC-M2-17）；② 批档 create 无所属 ⇒ 显式拒（零写 + 列候选）∥ 目标所属 ⇒ 落其基底（`BATCH-RECORD.md` §4.8 BR-39–BR-42）；③ 文件工具 = **零改**（结语——无新行为面）；`ok` / `none` 两态逐一回归零变 | 批次档 §2.2 ∥ §2.6（AC-1–AC-5）· `LEDGER.md` §8 · `BATCH-RECORD.md` §4.15 | ✅ 批档 §2.6 同夹具（歧义锚双带档 tmp + 实景 `d:\teamcode` 双跑）；拒面断言 = 零写 + 列候选；文件工具零改 ⇒ 无断言（结语口径） |
-| AC-38 | **未知键可见化（#802）**：`validateManifest` 产 `unknownKeys`（顶层 + 四嵌套层；非拒——`ok:true` 定性零变）；`readManifest` 返回面携 `unknownKeys` + 一行告警（含键名；同档同键集去重）；零未知键 ⇒ 零告警（负向锁） | 台账 #802 · 批档 §2 · KD-M1-36 | ✅ 单元测试档 `docs/batches/2026-10-04-core-patch-batch.test.mjs`（四项：枚举 ∥ 告警逐字含键名 ∥ 去重恰一次 ∥ 负向锁） |
+| AC-38 | **未知键可见化（#802）**：`validateManifest` 产 `unknownKeys`（顶层 + 四嵌套层；非拒——`ok:true` 定性零变）；`readManifest` 返回面携 `unknownKeys` + 一行告警（含键名；同档同键集去重）；零未知键 ⇒ 零告警（负向锁） | 台账 #802 · KD-M1-36 | ✅ 单元测试档（四项：枚举 ∥ 告警逐字含键名 ∥ 去重恰一次 ∥ 负向锁） |
 | AC-39 | **「本面无」合法表达（#944）**：`docRoot.<键> = null` ⇒ `validateManifest` `ok:true` + `readManifest` `ok:true`（值**保持 `null`**——不被默认补回）+ `docRootPaths(null) = []`；**删键仍补默认**（对照格——KD-M1-6 零改）；`""` / `[]` / 数组含空串等仍拒 | 台账 #944 · KD-M1-37 | ✅ `isValidDocRootValue(null) === true`；夹具：某键 `null` + 其余合法 ⇒ `ok:true` + 该键读回 `null`；对照格删键 ⇒ 补默认；负向格 `""` / `[]` ⇒ `errors` 含键名 |
 | AC-40 | **agent 工具面·读写往返（全键）**：对样例项目 `read`（`ok` + manifest + `missingKeys` / `unknownKeys` / `errors` 细节面）→ 全键族逐键 `write`（`version` / `phase` / `docRoot.<键>` / `promptsLanding` / `checkConfig.<键>` / `codePaths` / `index.<键>`（含 `publicRepos`）/ `advisor.<键>`——各 ≥1 例）→ `read` 回读**已知键**值逐键相等 + 非目标**已知**键逐字零变（未知键丢 / 缺键补默认 = 回写收敛语义——KD-M1-11；T66 登记）；缺档 ⇒ `init` → 回读 `ok` + 档内容 = `DEFAULT_MANIFEST` | AC-M1-10 | ✅ 单元测试档：工具调用往返——回读值对照 `readManifest` 直读；逐键 diff + `init` 档逐键断言 |
 | AC-41 | **agent 工具面·fail-closed 与报明**：① 非法值写（`phase:"bogus"` / `docRoot.specs:""` / `advisor.docMap:5`）⇒ 拒（`refused` 锚）+ 档**逐字节未变**（sha256）② 白名单外 key（`phas` / `docRoot.xxx` / 四族整键写——`docRoot` / `checkConfig` / `index` / `advisor` 传整个对象）⇒ 拒 + 零变 ③ `write` 缺档 ⇒ 拒 + 引导 `init`（零建档）④ `init` 已带档 ⇒ 拒 + 零覆盖（sha256）⑤ 缺档 `read` ⇒ `state=missing` 报明（不抛）；`ambiguous` ⇒ 拒 + 候选全列（零写） | AC-M1-11 | ✅ 逐格夹具断言（sha256 前后对比 + 拒文案锚 + read 五态返回面） |
@@ -795,222 +795,3 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 **既有用例收正（本批）**：T26 / T27 / T28③（装配面「抛」断言 ⇒ 「不抛 + `_projectView`」）· T35 / T36（保守格**零改**）· A14–A20（仓梯带档行为零改全绿）·
 `cmd-eng` / `manifest-flip-refusal`（**拒翻格夹具改**——`mkPlainDir`（梯⑤）⇒ 歧义 / 档非法夹具；拒翻文案锚 `/项目不可解析/`；梯⑤ 建档放行格 T53）·
 AC-16 接线锁（`bin` 源码序）零改 · **AC-N5 / T13 收正**（门控第三项「`agent.manifest` 缺失」⇒「无锚」（KD-M1-27）——无既往好值格归 T46 / T47）· AC-N1–AC-N4 / AC-N6 / T8–T12 / T14 零改。
-
-## 4. 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（轻通道轮七（多档解析 · advisor 门） · 2026-10-02）落点表** = `docs/batches/2026-10-02-light-round-7.md` §2（唯一承载面——一次性批次材料）。
-**本批（会话锚解析修复（多档并存支持） · 2026-10-02）落点表** = `docs/batches/2026-10-02-manifest-resolution-fix.md` §2（唯一承载面——一次性批次材料）。
-**本批（公共仓读取批 · 2026-10-02）落点表** = `docs/batches/2026-10-02-public-repo-read.md` §2（唯一承载面——一次性批次材料）。
-**本批（核面小修批 · 2026-10-04）落点表** = `docs/batches/2026-10-04-core-patch-batch.md` §2（唯一承载面——一次性批次材料）。
-**本批（issue 修复批·四 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round4.md` §2（唯一承载面——一次性批次材料）。
-**本批（issue 修复批·五 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round5.md` §2（唯一承载面——一次性批次材料）。
-**本批（引擎面缺口 · 2026-10-05）落点表** = `docs/batches/2026-10-05-engine-face-gaps.md` §2（唯一承载面——一次性批次材料；#941 ∥ #944 面）。
-**本批（manifest agent 工具面 · 2026-10-08）落点表** = `docs/batches/2026-10-08-manifest-agent-tool.md` §2（唯一承载面——一次性批次材料）。
-
-- 2026-10-10（**agent-loop-allotment 批 · 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-10-agent-loop-allotment.md` §2 · 台账 #1106）：§2.10 新增**变更记账面（KD-M1-41——豁免）**段（四面点名 ∥ 判据 ∥ 解除条件三式——含 `manifest write` 改 `index.publicRepos` / `codePaths` 具名实例）；§2.4 补 **KD-M1-41**。**零码面**（豁免裁定落地——产品码零触）。
-
-- 2026-10-08（**批 manifest-agent-tool · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-08-manifest-agent-tool.md` §1 · 用户 2026-10-08 三条指令 · 台账 #1098）：新增 **§2.10**（agent 工具面——`manifest` 工具三动作：点改写形 ∥ 全键族白名单 ∥ 目标面复用 `projectView` / `projectRootView` ∥ 写路径复用 ∥ 装配落法 file:line ∥ 报告面随动）；§1.2 补 **F8** · §1.4 边界句 · §2.3 行 50–56 + Δ 块（十批并列）· §2.4 **KD-M1-38–M1-40** · §2.5 新条（既有面零碰 + `PROMPT-SYSTEM.md:402` 口径核对 + `:306` 登记承接句）· §3.1 **AC-40–AC-43** · §3.2 **T63–T69**。实施 = 本批实施轮。
-
-- 2026-10-08（**批 manifest-agent-tool · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-manifest-agent-tool.md` §3 轮次 1 发现 1–11）：§2.3 行 48 ∥ 49 行数按 `\n` 计数复核回填（**178 ∥ 272**）· 行 55 `check-vsix` 目标 48 ⇒ **50**（含既有漂移收正）· §2.4 KD-M1-29 建档站点补工具 `init` 第三格 · §2.5 读面边界枚举补 `manifest` 工具行 · §2.10 白名单谓词钉死（四族整键写 ⇒ 拒）· §3.1 AC-40 已知键限定 ∥ AC-41② ∥ AC-43① 四族整键写拒例 ∥ AC-43 回指 F15 补档名 · §3.2 T66 回写收敛登记 + **T70–T73** 四行（AC-43 四组断言）；相邻面随落（`docs/core/design/TOOLS.md` §6.2/§6.7、`PROMPT-SYSTEM.md:402`——已落）。**零新语义**。
-
-- 2026-10-08（**批 manifest-agent-tool · 收口笔 · 父侧直接执行 · 可 revert**——承实施轮上抛）：§2.3 行 56「T63–T69」⇒「T63–T73」（与 §3.2 / AC-43 / 交付件口径对齐）；§2.10 `:603` 档引裸名形 ⇒ 全路径形 `thincoder-core/manifest.mjs:252`（新档 `thincoder-core/agent-tools/manifest.mjs` 出生 ⇒ 裸名碰撞消解——doc-check 在闸悬空清零）。**零新语义**（计数收正 ∥ 引用形归一）。
-
-- 2026-10-07（**文档清账批 · fix 轮 · eng-designer**——承批档 `docs/batches/2026-10-07-doc-cleanup.md` §2 · 台账 #953）：§2.5「advisor 评审门文档合法根集」路径归一增量行删「+ write-gate 同名再出口」子句（现盘核：`thincoder-core/agent/write-gate.mjs` 对 `resolveReviewDocPaths` 零再出口——单源 = `review-facts.mjs`）；`:725` 同句随正。**零语义**。
-
-- 2026-10-05（**批 review-face-gaps · 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-05-review-face-gaps.md` §2 · 台账 #928 ∥ #945）：§2.5「advisor 评审门文档合法根集」条加**锚祖先链增量（本族第四笔）**——腿③候选底座并入 cwd 祖先链全量目录（现行集在前 ∥ 祖先链随尾、去重保序）；容器相对形在子仓锚下受理（受理判据 ∥ 围栏 ∥ 可读唯一化 ∥ fail-closed 歧义零改——详述单源 = 批档 §2.3）。
-
-- 2026-10-05（**批 engine-face-gaps · 设计评审轮 1 修正 · eng-designer——fix 轮；承批档 `docs/batches/2026-10-05-engine-face-gaps.md` §3 发现 2 / 4**）：§2.7 消费面读数补「两情形分清」句（键 `null` ⇒ 回退默认基底 ∥ 显式基底全不可读 ⇒ `throw`——AC-12 / T21 零改）+ M3 第二基底行同源随动；§3.2 补 **T62b**（基底回退读数）；§3.1 AC-12 互指句；§2.3 行 48∥49 行数按 `\n` 计数复核（176 ∥ 270）+ 口径注。零新语义。
-- 2026-10-05（**批 engine-face-gaps · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-05-engine-face-gaps.md` §1 · 台账 #941 ∥ #944；经父裁 L7 两度拆分后本批 = {#941, #944}——#942 ∥ #943 转 `docs/batches/2026-10-05-engine-tools-gaps.md`；#940 转 `docs/batches/2026-10-05-review-gate-gaps.md`）：#941 ⇒ §2.5 增「项目状态档（state）豁免工程写闸」条（分类器五值——判据单源 = `PORTABILITY.md` §3.2/§3.8）；#944 ⇒ §2.7 值域增「本面无 = 显式 `null`」（值表 ∥ 语义 5 ∥ 消费面读数段）+ §2.4 补 **KD-M1-37** + §3.1 补 **AC-39** + §3.2 补 **T61–T62** / T20 去 `null` / AC-11 随动；§2.2 两契约行随动。实施 = 本批实施轮。
-
-- 2026-10-04（**核面小修批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-core-patch-batch.md` §2 · 台账 #802）：§2.2 `readManifest` / `validateManifest` 契约行补 **`unknownKeys`**（非拒）+ 读面一行告警；§2.3 补行 48–49 + Δ 块（九批并列）；§2.4 补 **KD-M1-36**（未知键可见化）；§3.1 补 **AC-38**。实现 = 本批实施轮。
-- 2026-10-04（**工具路径基面根治批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-tool-path-baseline.md` §2 · 台账 #921）：§2.5「advisor 评审门文档合法根集」条加**路径归一增量**行（documents 相对形按候选项目根试探归一——单源 `resolveReviewDocPaths` 宿主 `review-facts.mjs`；`scope-doc-ambiguous` fail-closed 歧义判据——本族第三笔；详述单源 = 批档 §2.2）。实现 = 本批实施轮。
-
-- 2026-10-04（**核面小修批 · fix 轮 · eng-designer**——承批档 `docs/batches/2026-10-04-core-patch-batch.md` §2 修正块 · 评审发现 4）：**KD-M1-36** 补去重 memo 语义（memo = 档路径 → 上次观测键集；读到零未知键即清该条——评审发现 4 二义消解）。
-
-- 2026-10-04（**issue 修复批·四 · 设计面实施轮（#833 指针清扫）· eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round4.md` §2 · 台账 #833）：**AC-24** 覆盖位回归守卫**改指实守卫**（批内件 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs` 基座腿——退役档死引消解）；**AC-35** **去** 导出枚举探针半句（被引件自declared断代失效——不能任回归守卫）。**零新语义**（死引消解 ∥ 改指实守卫）。
-
-- 2026-10-04（**issue 修复批·五 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round5.md` §1 · 台账 #835）：**KD-M1-35** 行补 **`declared` 连带句**（本键非空 ⇒ `declared=true`——值比较；判据正本 = `PORTABILITY.md` §3.1）。**零新语义**（登记补句）。
-
-- 2026-10-03（**公共仓读取批 · 修正轮 1（评审 #20 发现 3 ∥ 6 · 父侧全采纳）· eng-designer**——承批档 `docs/batches/2026-10-02-public-repo-read.md` §3 轮次 1 ∥ §2 修正轮 1 · 台账 #832）：【#6】§2.2 读向行 ∥ §2.4 KD-M1-33 指路随正为 **`declaration.mjs`**（2026-10-01 core 拆分批自 `conventions.mjs` 迁出——转口可达）。【#3】KD-M1-35「值形 ∥ 解析」句补**两层输出**（值形 = 归一后相对串 ∥ 解析 = 绝对根集——细则单源 = `MEMORY.md` §6.15）+ AC-37 标**值形层**。**零新语义**（评审发现逐号落位）。
-
-- 2026-10-02（**公共仓读取批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-02-public-repo-read.md` §2 · 台账 #832）：§2.2 三族块 `index` 行补 **`publicRepos`**（值形 ∥ 解析单一定义 = `declaredPublicRoots`）+ 元素层宽容句同拍；§2.2 `DEFAULT_MANIFEST` 行补 `publicRepos:[]`；§2.4 补 **KD-M1-35**；§3.1 补 **AC-37**。**实现 = 本批实施轮**。
-
-- 2026-10-02（**会话锚解析修复批 · 设计微修正轮 2（#13 上抛两项处置：① 悬空指针 ∥ ② 坐标漂移）· eng-designer**——承父侧派单；批档 = `docs/batches/2026-10-02-manifest-resolution-fix.md`）：① 悬空守卫指针收正——§2.2 `projectRootView` 契约行（`:91-92`——行宽门拆两行）∥ 覆盖位定形注（`:101`）∥ §3.1 AC-35（`:602`）：核内 manifest 用例档（守卫坐标 :297）⇒ 实守卫批内件 `docs/batches/2026-10-02-manifest-resolution-fix.test.mjs`（基座三态 ∥ 覆盖位 ∥ 薄委托等价逐格）+ `docs/batches/2026-09-29-structure-split-2.test.mjs` 导出枚举探针（AC-35 处）；② §2.3 行 47（`:204`）`memoizedBatchBases` 坐标随正——`:110-116` ⇒ **`:116-122`**（现盘实读）。**零新语义**（指针 ∥ 坐标收正——判据不动）。
-
-- 2026-10-02（**会话锚解析修复批 · 设计微修正轮（#10 交付观察②③处置）· eng-designer**——承父侧派单；批档 = `docs/batches/2026-10-02-manifest-resolution-fix.md`）：§2.3 + 行 44–47（`manifest.mjs` ∥ `batch.mjs` ∥ `subagent-spawn.mjs` ∥ `write-gate.mjs`——四档全量行补全：实读 ∥ Δ 上界 ∥ >300 判定）+ 行组枚举随拍（行 39–47）；行 39–43 块题 ∥ Δ ∥ 判定句随拍。**零新语义**（登记面补全——数不动）。
-
-- 2026-10-02（**会话锚解析修复批（多档并存支持）· 设计轮 + fix 轮（评审轮次 1 发现 1–8 · 父侧 8/8 采纳）· eng-designer**——承批档 `docs/batches/2026-10-02-manifest-resolution-fix.md` §1 · 台账 #828）：§2.5 新增「多档解析消费面收口」条（`projectRootView` 判定面 + 三族收口：台账 ∥ 批档基底 ∥ 文件工具结语）；§2.5 读面边界行坐标随动 + 逐文档所属项目第二读点登记；§2.9 A 消费面行改「收口现状」形（轮七 + 本批）；M4/M6 明细档两处 F3 文面随正（他档）。
-  §2.2 补 `projectRootView(cwd)` 契约行（state 枚举 ∥ `root`/`candidates` 空值与排序 ∥ 覆盖位 ∥ 薄委托等价句——与 §2.5 条互指）；§2.3 补本批行（行 39–43——实读 ∥ Δ 上界 ∥ >300 判定）；§3.1 +AC-35 / AC-36 · §3.2 +T59 / T60。
-  **既有机制条文零改**（本批新增 = 判定面 ∕ 契约 ∥ 验收的登记收口——行为实现 = 本批实施轮）。
-
-- 2026-10-02（**轻通道轮七 · 收尾设计形式化（advisor 评审门多档解析修复）· eng-designer**——承批档 `docs/batches/2026-10-02-light-round-7.md` §1；台账 #829 ∥ #828——本族首笔）：§2.5 新增「advisor 评审门文档合法根集（按用点收口）」条——判定形态（会话根集 ∪ 逐文档所属项目根集；无主档回退）+ 依据链（2026-09-21 裁 ⇒ 本笔收口）/ 验收（红绿 + 回归锚）/ 边界（校验强度不变）/ M4·M6 指针。**本档机制条文零改**（记录面——行为已随轻通道修复在盘）。
-
-- 2026-10-02（**文档清账轮 · 执行轮 1（core/design 前段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 4 处 R2 改指（`batch-paths.mjs` 现坐标——承名按届盘实核；§2 读面边界 ∥ 消费点表 ∥ F2 读面句）。**零新语义**。
-
-- 2026-10-02（**文档清账批 · 直落轮 · eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2 · 台账 #803）：§2.1 条 4「写默认五键档」⇒「**写默认八键档**」（顶层面现档 = 八键——同 §3.2 T2 已落形；同句族存量余项（前条登记）收正）。**本档机制条文零改**。
-
-- 2026-10-01（**行宽清账批 · 评审轮 3 后收正轮 · eng-designer**——承 `docs/batches/2026-10-01-docwidth-settlement.md` §2.14 · 评审轮 3 发现 #3）：§3.2 用例表 T1 ∥ T2 陈旧计数句收正——「五键齐全」⇒「八键齐全」∥「写默认五键档」⇒「写默认八键档」（顶层面现档 = 八键——同 §1.2 F1 ∥ §2.2 `DEFAULT_MANIFEST`）；同句族 `:56` 存量余项 = 台账 #803（另轮）。**本档机制条文零改**。
-
-- 2026-10-01（**行宽清账批 · 设计补缺轮 · eng-designer**——承 `docs/batches/2026-10-01-docwidth-settlement.md` §2.13 · 台账 #779）：schema 计数句随 `checkConfig.widthExemptZones` 键落地收正——§2.1 条 1 与 §2.2 `MANIFEST_SCHEMA` 行「`checkConfig` 五键 ⇒ **六键**」（键入 `DEFAULT_MANIFEST` = 实施轮——规格 = 该批 §2.13）。**本档机制条文零改**。
-
-- 2026-09-29（**doc-check-face 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-29-doc-check-face.md` §2 同族追加 · 台账 #546）：schema 计数句随 `checkConfig.lineCounts` 键落地收正——§2.1 条 1 与 §2.2 `MANIFEST_SCHEMA` 行「`checkConfig` 四键 ⇒ **五键**」；
-`validateManifest` 形状校验句补「**`checkConfig.lineCounts` 元素层形态**（#546）」。**本档机制条文零改**。
-
-- 2026-09-29（**技术债清偿批 · 台账 #195 残余收正** · eng-designer——承 `docs/batches/2026-09-28-tech-debt-closeout.md` §2 轮 2）：
-  KD-M1-27 判据字面按实况收正（判实现为准——实现 = `thincoder-core/agent/setup-reminders.mjs:156-160`）——「无锚 ∧ 有值（`agent.manifest` 在）⇒ 相位行 + 沿用内存值；无锚 ∧ 无值 ⇒ 零注入」；
-  AC-N5 ∕ T13 已载「无锚（`agent.cwd` 缺失）」表列（前批收正 · 本批转核销——零触碰）。零新语义。
-
-- 2026-09-27（**conventions.json 退役批 · 实施轮实读回填** · 父侧直接执行〔例外②③〕 · 可 revert）：§2.3 回填 = `manifest.mjs` **482**（≤486 ✓）· `conventions.mjs` **244**（239–269 ✓）· 核 `dispatch.mjs` **498**（≤500 ✓）· 拆后 `manifest.test.mjs` **355** / 新档 `manifest-discovery.test.mjs` **210**；
-  用例面 CLI `portability-classification` **372** · VSC `portability-vsc-classification` **352**（各越钉死上界 24 行——均未越 500 硬限，父侧裁 = 回填实读 + 维持拆分预案）；
-  **触发语义钉死**（消「两读可歧」）：越限即拆 / 「下一次触碰」= 复核点。零新语义。
-
-- 2026-09-27（**conventions.json 退役批 · 设计评审轮 2 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-27-conventions-retire.md` §3 轮次 2 发现 3 / 4）：坐标收正——`SPEC-MANIFEST.md` `:58`「现八键」句 ⇒ **`:59`**；FR11 锚 `docs/core/requirements/PORTABILITY.md:62` ⇒ **`:63`**（§2.5 两处 + §2.8 F6 同判）。零语义。
-
-- 2026-09-27（**conventions.json 退役批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批档 `docs/batches/2026-09-27-conventions-retire.md` §3 发现 1–8，父侧 9/9 全数接受）：
-  ① **#1**——§2.5 schema 计数句随正（`ENGINEERING-MODE-V2.md` §2.3 E1 键面补正 + 扩列清单补 E1）；② **#2**——§2.3 表 +行 35 / 行 36 · 行 34 核 `manifest.test.mjs` 同批拆（发现 / 归属面用例组 ⇒ `manifest-discovery.test.mjs`）· 行 32 / 34 逐档 Δ 上界钉死 · 表下新增「Δ 钉死 + 拆分评审注」块（>300 / 硬限面逐档方案 + 触发条件）；
-  ③ **#3**——三族形态判据两层分列（元素层 / 数组层 + 空数组语义逐键）；④ **#4**——AC-31–AC-34 回指补 **AC-M1-9** + AC-34 补告警基准断言；⑤ **#5 + #6**——声明对象形状行 + 退役告警钉死（落点 / 基准 / 频次）= `PORTABILITY.md` 落笔；⑥ **#7**——规格侧计数改「已同步」；⑦ **#8**——`conventions.mjs` 224 ⇒ 254 + 用例面两档行数同判。
-  零新语义——仅落评审席发现与父侧裁定的直接导出项；#9 需求档面（笔权 = 父侧）已落 `PORTABILITY.md` 档头计数 F1–F9。
-
-- 2026-09-27（**conventions.json 退役批 · 设计轮** · eng-designer——承批次档 `docs/batches/2026-09-27-conventions-retire.md` §1 · 用户 2026-09-27 19:39 裁定）：
-  ① **三族声明键并入 schema**（`codePaths` / `index.{codeExtensions,docExtensions}` / `advisor.{docMap,standardsDoc}`——顶层平级 + 缺省值入 `DEFAULT_MANIFEST`；键名 / 形态逐字承前）——§1.2 F1 · §1.4 边界 · §2.1#1 · §2.2 接口新增段 · KD-M1-31；
-  ② **形态判据**（fail-closed——与 `docRoot` 子键同款）+ 消费面降级口径（三族逐条回默认 + 可见）——KD-M1-32 · §3.1 AC-32；
-  ③ **读向单向**（`conventions.mjs` 经 `readManifest` / `manifestFilePath` 投影；本模块保持叶子零项目依赖）——KD-M1-33 · §3.1 AC-33；
-  ④ **旧档在场** = 一行告警 + 内容零解析（`.thincoder/conventions.json` 退役——双机制零并存）——KD-M1-34 · §3.1 AC-34；
-  ⑤ **连带**：§2.3 +行 30–34（as-of 实测）· §2.5 schema 计数收正（五键 → 八键）+ 键面条 · §3.1 AC-29 限定句 + AC-31–AC-34 · §3.2 +T56–T58；
-  ⑥ **同步面（本批落笔）**：`docs/core/design/PORTABILITY.md`（§2 / §3.1–§3.4 / §3.6 / §4 D2 + D13–D16 / §5 / §6）· `docs/core/design/ENGINEERING-MODE-V2.md`（§2.2 M1 行 + §3.1 AC3 键数）；
-  ⑦ **需求侧已同步（2026-09-27）**：`SPEC-MANIFEST.md` ②.1（`:13`）八键 · `:58`「现八键」句 · ④ AC-M1-9（`:47`）——本档只挂指针（D2）。
-
-- 2026-09-21（**manifest 解析模型收正批 · 设计轮** · eng-designer——承 `docs/batches/2026-09-21-manifest-resolution.md` §1 · 用户 2026-09-21 11:00–11:25 裁定）：
-  ① **装配形**：`agent.manifest` 单值附着 ⇒ **按用点解析**（新增 `projectView(target)` 读侧单点；钩子**启动零拒绝** + 记 `agent._projectView`）——§1.2 F2/F3 · §2.2 架构图 / 接口 · 新增 §2.9 · KD-M1-24 / M1-25 / M1-27。
-  ② **发现梯（git 非前提）**：新增 `discoverProjects`（五级梯）· `discoverRepos` 收正为**仓梯** · `resolveProjectRoot` 改指项目梯——KD-M1-23 · §2.5 交叉面 / 键面 / git 工具面条。
-  ③ **建档流**：轻动作覆盖梯②④⑤（**项目落地 = 建 manifest**）；`git init` = 可选增强（机制零自动）；歧义 / 档非法不建不猜——KD-M1-29 · §2.9 C。
-  ④ **情境行**：四态状态选行（`ok` 相位行零改 / `no-project` · `ambiguous` 报明行 / `missing` · `invalid` 首观报明、有既往值保守）——§2.6 条 1b + 判据 ③' · KD-M1-26。
-  ⑤ **连带**：§2.3 受影响文件表 +行 14–29（as-of 实测）· §3.1 AC-21 收正 + AC-22–AC-30 · §3.2 T42 收正 + T43–T54 · 决策树码拆分与文案族（KD-M1-28）。
-  ⑥ **同步面**（本批落笔）：`docs/core/design/TOOLS.md` §6.13（仓梯级序 / A21–A22）· `docs/core/design/ENGINEERING-MODE-V2.md`（E2 前置门槛句取现）· 提示词模板 `docs/core/design/prompts/persona-engineering.md`（§2.9 E）；英文落地副本随实施轮。
-  ⑦ **需求侧口径（已收正——单源指针）**：`SPEC-MANIFEST.md` AC-M1-2（`:41`）已带「不拒会话 ✗ 按用点报明 ✗ 协助建档」收正文本 · `PORTABILITY.md:62` FR11 已带 2026-09-21 收正文本（git 非前提 ✗ 无项目 ⇒ 不拒翻 · 建档流 ✗ 可拒面 = 歧义 / 档非法两格）——本档只挂指针（D2）。
-
-- 2026-09-21（**manifest 解析模型收正批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批次档 `docs/batches/2026-09-21-manifest-resolution.md` §3 发现 1–13（**父侧逐条裁定接受**；发现 9 = 父侧处置，不在本轮设计面））：
-  ① **发现 1（翻转面拒翻判据）**——§2.8 F1 接口树（缺档分支收敛为梯②④⑤ / 歧义两出口）/ 两端钩子调用面（改为非 fatal）/ F2 表（拒面 = 歧义 · 档非法两格；入口列 = 会话起点处置）/ AC-19 · AC-20③ / T38–T40 + 新增 T53（梯⑤ 建档放行）/ §2.3 行 23 · 24（夹具改 + 文案锚）逐处收正。
-  ② **发现 2（入口门槛 / 项目根旧句）**——§1.1 / N4 / §2.1#2 / `requireManifest` / KD-M1-1 · M1-2 · M1-17 / AC-2 / §2.5 四条 / §2.6 条 3 末句 / §2.7 #3 · 边界句 / §2.8 F6 → 全档同口径（项目根 = 带档目录；缺档 ⇒ 报明 + 建档流；「启动门槛」表述退场）。
-  ③ **发现 3（拆分面）**——行 16 越 500 硬限 ⇒ **本批拆**（装配段迁入 `setup-tooltable.mjs`——新增行 29；同步 `docs/core/design/ENGINEERING-MODE-V2.md` 拆分方案段）；行 14 / 18 / 19 / 21 / 26 补 >300 拆分评审注（方案 + 触发条件）；§2.3 旧计数注按现表重算（旧 258/160/136 断言面删除）。
-  ④ **发现 4（需求侧登记收口）**——§2.5 末条 + §4 ⑦ 改「已收正」口径（AC-M1-2 坐标 `:31` → `:41`；`:15` / `:32` / `:38` 三坐标同步收正为 `:22` / `:41` / `:46`）。
-  ⑤ **发现 5（覆盖位定形）**——§2.2（`owningProject` / `discoverProjects` 双头部短路 + 专条）+ AC-24 补覆盖位判据（回归守卫 = `核内 manifest 用例档:297`）。
-  ⑥ **发现 6（③' I/O 口径）**——取「两轴」读法：状态判定轴每回合实读 + 值采纳轴 mtime 门控（§2.6 条 3 / ③' / §2.5 成本句 / KD-M1-17 / 行 17 成本注）；连带 AC-N5 · T13 门控第三腿改「无锚」+ §3.2 收正枚举同步。
-  ⑦ **发现 7（`_projectView` 形状）**——§2.2 钩子段写死形状（= `projectView` 返回面 + `created` 建档标记；T26 断言面）。
-  ⑧ **发现 8（报明行文案）**——no-project 行去「动作侧同报」过度承诺（改现状可兑现表述）；「非锚项目缺档 ⇒ 动作侧报明 / 建档」列入后续批登记（§2.5）。
-  ⑨ **发现 10（歧义报明行档分野）**——`projectView` / `manifestReportLine` 加 `matched`；歧义行两变体（带档级 / 裸仓级——对齐 `docs/core/design/TOOLS.md` §6.13 A22）；AC-25 / T46 同步。
-  ⑩ **发现 11（台账键面）**——§2.5 键面登记补第三格（在树内路径 ⇒ 项目根——键变化 + 不迁移口径）。
-  ⑪ **发现 12（单源核证）**——§2.2 写死私有内核 `scanChildren` + 模块内结构断言（T54）；§2.3 行 19 同步。
-  ⑫ **发现 13（计数 / 接口）**——§2.3 行 27 行数回填（162 → 165）；「可显式指定其他目录」= 需求措辞 / 后续面（本次无对应接口——同载需求侧 `SPEC-MANIFEST.md`（`:21`），归主 agent 域）。
-  零新语义 / 零新范围：仅落评审席发现与父侧逐条裁定的直接导出项。
-
-- 2026-09-21（**manifest 解析模型收正批 · 实施轮收口对账** · eng-designer——承批次档 `docs/batches/2026-09-21-manifest-resolution.md` §5 实施终稿；父侧 2026-09-21 裁定「不逐微轮加行 ⇒ 收口补整批一行」）：
-  ① **本批设计面全量落地**（§2.3 行 14–29）：按用点解析（不绑会话）· 归属形（最近祖先）· 发现梯五级（git 非前提）· 覆盖位双头部短路 · 行 16 拆分 · T55 等（实况 = 该批档 §5）。
-  ② **收口回填项**：估算漂移（行 14 / 19 / 21 / 26 / 16 拆后）· 表外授权 3 档 · 实现钉点 D-1 / D-2 / D-4——落批次档 §2「收口对账轮」。
-
-- 2026-09-19（**仓发现复用批 · 复核与补投轮 · eng-designer**——承 `docs/batches/2026-09-18-repo-discovery.md` §2.9）：
-  ① **KD-M1-22 补机判指针**——「禁第二份发现实现」的机判落点 = `docs/core/design/TOOLS.md` §6.13 **A20**（源码面：同一导出 import 命中 ∧ `node:fs` 零命中）；② **§2.3 行 13 行数刷新** 318 → **319**（as-of 2026-09-19 实测；增量估不变）。**零新语义**。
-
-- 2026-09-18（**仓发现复用批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-18-repo-discovery.md` §1 · 用户 2026-09-18 05:16 / 05:34 两次定向）：
-  ① **§2.2 + 新导出 `discoverRepos(cwd)`**（四态结构化 `self` / `unique` / `none` / `ambiguous` + `candidates` 按名排序）；`resolveProjectRoot` 退为其**薄包装**（零语义）——仓发现**单源**（KD-M1-22；消费者 4 族，含 `git` 工具解析面）。
-  ② **§2.3 + 行 13**（`thincoder-core/manifest.mjs`）· **§2.4 + KD-M1-22**（含被拒备选）· **§2.5 + 「仓发现的第二消费者」条**（两模式同判 / 既有消费面零行为变）。
-  ③ **§3.1 + AC-21** · **§3.2 + T41 / T42**（四态 + 零语义回归）；git 侧判据 A14–A19 住 `docs/core/design/TOOLS.md` §6.13。
-  ④ **需求侧待补（主 agent 域）**：`docs/core/requirements/TOOLS.md` 缺 `git` 工具 cwd / workdir / 仓发现的判据行——本批以台账 #62 承载，建议补条目并回指 A14–A19。
-
-- 2026-09-18（**模式联动批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批档 `docs/batches/2026-09-18-mode-propagation.md` §3 发现 1–10，**父侧逐条裁定接受**）：
-  ① **发现 1（FR11 状态）**——§2.8 F6 + §4 本条改指**已落收正**（`PORTABILITY.md:62` 收正文 + 批档 §1.5 裁定 1）；口径单源 = 需求档该行（本档只挂指针——D2）。
-  ② **发现 2（OFF 方向清陈旧两读）**——F2 表 OFF 行改「**不改 `agent.manifest`**」+ 表下新增「F2 三条收正」首条（取「删括注」读法：与四条路径「零改」一致 + OFF 态无消费者——附注入器判据序与两处读盘证据）。
-  ③ **发现 3（预判据触发条件）**——F3 表 `/session` · ACP 两行改**合值**（§2.2 会话权威值）；表下补「F3 触发条件口径」条（遗留槽格 + 父侧裁定 3 要消灭的半态面）。
-  ④ **发现 4（放行分支两处缺）**——F2 表放行两行补**附着动作**（`agent.manifest` ← 结果）+ **`writer:'main'`**；表下「F2 三条收正」第二 / 三条展开（含误用缺省 ⇒ `init-failed` 的反证语义）；AC-20② 补 writer 判据；T38 补**反证格**。
-  ⑤ **发现 10（坐标同锚）**——§2.2 VSC 钩子块坐标 `:375-391` → `:371-396`（模式门 `:378-396`；as-of 2026-09-18 02:2x 实读）。
-  零新语义 / 零新范围：仅落评审席发现与父侧逐条裁定的直接导出项（拒翻裁定 · 先判后翻核序 · KD-M1-20 / M1-21 · AC-19 零改 · AC-20 结论零改——② 补 writer 实现要件）。
-
-- 2026-09-18（**重估点批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批档 `docs/batches/2026-09-18-manifest-refresh.md` §3 发现 #2 / #3 / #5 / #6，**父侧逐条裁定接受**）：
-  ① **#2（行 11 编辑点）**——写明取值消费改点（行构造改取 `agent.manifest.phase`；`:83` 局部捕获删除 = Δ「−1」落点）+ 两条新 import 列出（`node:fs` `statSync` · `../manifest.mjs` `manifestFilePath, readManifest`）。
-  ② **#3（运行期失败退化 vs 启动门槛）**——§2.5 新增专条 + §2.6 条 3 失败退化 bullet 补口径 + KD-M1-17 补被拒备选 ④（清零被拒）；AC-N7c 补口径指针。
-  ③ **#5（成本句）**——`statSync` 前补一次路径解析（≥1 次 `existsSync`；无 `.git` 时 `readdirSync` + 逐子目录 `existsSync`）；§2.6 条 3 + §2.5 两处同载收正。
-  ④ **#6（Δ 与表下句）**——行 10 Δ 收正「+~6 / −2（净 ~+4）」+ 表下句改按档列增量后行数（≈262 · ~189 · ~201）。零新语义 / 零新范围（③b 语义 · KD 结论 · AC / 用例结论零改）。
-
-- 2026-09-18（**模式联动批 · #41 翻转重估** · eng-designer——承批档 `docs/batches/2026-09-18-mode-propagation.md` §1.1 · **父侧 2026-09-18 01:43 裁定「同批，现在做」+ 语义已裁 = 拒翻（fail-closed，与入口门槛同语义）+ 明示原因**）：
-  新增 **§2.8**（F1 判据单源 · F2 拒翻判据表 · F3 明示面四处 · F4 ACP 装配期判据 · F5 不受阻内态 · F6 FR11 冲突登记）；§2.2 接口表加 M1 新导出 `resolveEngineeringManifest`（非抛错形态）+ ① 「本批不做」句改为已落定；
-  §2.5 两条登记（会话起点 / 进程内翻转）由「待裁」转为已落定并指回 §2.8；§2.4 新增 KD-M1-20（判据单源）/ KD-M1-21（先判后翻）；§3.1 新增 AC-19 / AC-20；§3.2 新增 T37–T40。
-  **需求侧（已落）**：FR11 口径**已收正**（`docs/core/requirements/PORTABILITY.md:62` 收正文 + 批档 §1.5 裁定 1；§2.8 F6 已改指该行——**无待收正项**）；`SPEC-MANIFEST.md` 需补 #41 的 AC 锚（主 agent 域，父侧债务）。
-
-- 2026-09-18（**重估点批 · #34 情境行值变重推** · eng-designer——承批档 `docs/batches/2026-09-18-manifest-refresh.md` §1 · **用户 2026-09-18 01:38「要修」裁定**）：
-  ① **§2.6 新增条 3「取值 = mtime 门控重读（值变检测）」**——判据序 ①–⑥ 逐条零改；新增取值前置步 **③b**（stat 门控 → 重读采纳 / 未变零重读 / 失败保守不更新不清零）；缓存载体 `agent._manifestMtime`（per-agent；语义 = 当前 `agent.manifest` 对应的档 mtime）。
-  ② **§2.2 + `manifestFilePath(cwd)`**（档路径**单源**——项目根解析与读点同源）；读 / 写两处改用之（零语义）；钩子段补「附着决策 = 会话起点（KD-M1-13 零改）· 值刷新 = 每回合门控」两分。
-  ③ **§2.4 +KD-M1-17 / M1-18 / M1-19**（值变检测 / 路径单源 / 缓存载体——各带被拒备选）；§2.5 +「与 KDs 的关系」条。
-  ④ **§2.3 受影响文件表 +行 10–12**（`thincoder-core/manifest.mjs` / `thincoder-core/agent/setup-reminders.mjs` / `核内 setup-reminders 用例档`）；**§3.1 +AC-N7–AC-N7d** · **§3.2 +T32–T36**（含「先红」判据）。
-  ⑤ **需求侧待同步（主 agent 域）**：`SPEC-MANIFEST.md` ④ AC-M1-6 的判据枚举需补 AC-N7–AC-N7d。
-
-- 2026-09-17（模块设计轮 · 基础族 · eng-designer）：建档——M1 项目状态档 manifest 模块设计；七键 schema + 读/写/校验器（`thincoder-core/manifest.mjs`）；整档缺失拒 / 缺键 fallback 两分；写门 = `writeManifest` 的 `writer` 闸；两端装配钩子（CLI `make-agent.mjs` / VSC `setup.mjs`）；验收逐条回指 AC-M1-1..5。
-- 2026-09-17（修正轮 · 清理与机检族 · eng-designer）：§2.1 去「方案选型对比」纪律残留——豁免声明改为直接陈述方案与理由（纪律已废：需求档 §6.2「不强制列候选对比」）；方案内容不变。
-- 2026-09-17（修正轮 · 评审发现落地 · eng-designer）：#1 指针校验落 `validateManifest` 可选 `cwd` 参数（判据单源，AC-M1-4 判定对象不变——KD-M1-5）· #3 补 `requireManifest` 接口契约；
-  #11 `docRoot`/`checkConfig` 子键缺与整键缺同语义（F4 / AC-3 / T3b）· #12 `initManifest` 经写门（AC-M1-5 同一闸）· #13 VSC `hydrateRun` 初始化分支仅 `depth === 0` · #17 `writeManifest` = 先校验后写 + D2 引用改可解析档章号。（行宽形式收正 2026-09-17——原单行 324 字符，拆为上述两条。）
-- 2026-09-17（**manifest 面收口批** · eng-designer——承 `docs/batches/2026-09-17-manifest-closeout.md` §2 · **用户 2026-09-17 20:11 / 20:13 裁定**）：
-  ① **#28 落地设计**——新增 §2.6「情境行注入」（行构造纯函数 + 自愈单活体推送 + 两接线点 + 压缩生存）；§3.1 新增注入面 AC-N1–AC-N6 · §3.2 新增 T8–T14 · §2.3 受影响文件表重测（as-of 实测 + 本轮增量）；
-  ② **#29 裁撤**——`access` 键全链删除（F1 / §2.1 · §2.2 接口 · §2.5），schema 七键 → **六键**；新增 AC-6（去键兼容——旧档残留键不炸、回写自然收敛）+ T14。
-- 2026-09-17（**manifest 面收口批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-17-manifest-closeout.md` §3 发现 1 / 2 / 3（发现 5 文本落批档 §2.10））：
-  ① **发现 1（测试落点迁移）**——§2.3 表两行：`manifest.test.mjs` 增量 −~12 / +~45 → **−~12 / +~5**（296 → ~289，≤300）、编辑点去「AC-N1–AC-N6（用例 T8–T14）」；新增 `核内 setup-reminders 用例档` 行（61 → ~101——注入面用例落被测模块自身测试档）。
-  ② **发现 2（根判定口径）**——KD-M1-1 括注「向上最近 .git；2026-09-17 收正」→「判据 = .git 纯向下：锚自身仓 → 自身；否则向下唯一带 manifest 子仓；2026-09-17 用户裁定」（对齐 §1.2 F2；需求侧同口径）。
-  ③ **发现 3（计数文案）**——§3.2 T1「七键齐全」→「六键齐全」· T2「写默认七键档」→「写默认六键档」（零语义；历史变更记录两条 2026-09-17 保留）。
-- 2026-09-17（**docRoot 多根批** · eng-designer——承 `docs/batches/2026-09-17-docroot-multiroot.md` §1.2 · **用户 2026-09-17 22:28 裁定**）：
-  ① **F7 值形态扩展**——`docRoot` 值扩为「单串 | 多根数组」（数组 = 完整声明，不与默认合并；非法形态校验拒）；**新增 §2.7**（值域 / 语义四条 / 解析管线 / 全消费面 7 处 / 边界 / 需求侧待补）。
-  ② **连带修订**——§1.2 +F7 · §1.4 边界 · §2.1#5 · §2.2 接口（两新导出 `isValidDocRootValue` / `docRootPaths` + 校验面扩值形态）· §2.3 受影响文件表重测 · §2.4 +KD-M1-6–M1-9 · §2.5 +三条冲突核对 · §3.1 +AC-7–AC-13 · §3.2 +T15–T22。
-  ③ **零语义面**——`REVIEW_ROOT_KEYS` 键集、其他 manifest 字段、评审机制其他面（token 门 / 批档门 / 门序 / 冻结窗口）均零碰。
-- 2026-09-17（**docRoot 多根批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-17-docroot-multiroot.md` §3 发现 1–4）：
-  ① **需求侧锚回指**（发现 1）——§2.5 末条 + §2.7 末条去「缺环 / 待落锚」措辞，改指已落锚 `SPEC-MANIFEST.md` ②.7（`:19`）+ AC-M1-7（`:37`）。
-  ② **数组元素非空口径**（发现 3）——§2.2 谓词句 + §2.7 值表复述「`trim` 后非空（口径与单串同款）」；AC-11 + T20 补「空白串（`trim` 后为空）元素 → 拒」一例。
-  ③ **§2.3 第 7 行括注收正**（发现 4）——`access` 残留 fixture 改指 `manifest 用例档:36-45`（即 AC-6 / T14 用例），去「随 closeout 批收正」字样。
-- 2026-09-17（**manifest 面收口批 · 设计面同步** · eng-designer——fix 轮；承 `docs/batches/2026-09-17-manifest-closeout.md` §5.4 评审发现 1）：
-  ① §2.6 判据序 ⑤ 补「会话重建认领」半句（`_manifestLine` 缺失时先按行族前缀 `MANIFEST_LINE_PREFIX` 从 `history` 认领现存活体再摘）；
-  ② §3.1 注入面表补 AC-N3b 行（回指用例 `核内 setup-reminders 用例档:102-108`）。零新语义——文档追上已交付并核验的行为。
-- 2026-09-17（**activeBatch 裁撤批** · eng-designer——承 `docs/batches/2026-09-17-activebatch-repeal.md` §1.1 · **用户 2026-09-17 23:20 裁定**方案 A）：
-  ① **schema 六键 → 五键**（F1 / §1.1 / §1.4 / §2.1#1 / §2.2 接口·DEFAULT_MANIFEST）；**F6 指针校验腿裁撤** → `validateManifest(obj)` 回归纯函数（KD-M1-5 裁撤 + KD-M1-10 / KD-M1-11 新增）；
-  ② **情境行改 `phase` 单字段**（§2.6 行形逐字 + AC-N1 / AC-N3 / AC-N3b + T8 / T10）；
-  ③ **去键兼容扩两键**（AC-6 / T14——`access` + `activeBatch`）；④ AC-4 / T4 / T6 墓志；§2.3 受影响文件表按本批重测（as-of 23:2x）。
-  需求侧待同步（主 agent 域）：`SPEC-MANIFEST.md` ②.1 / ②.6 / AC-M1-4 / AC-M1-6 / ⑥ 与下游枚举。
-
-- 2026-09-17（**activeBatch 裁撤批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批档 §3 发现 #3 / #4 / #9 / #12）：
-  ① **#3**——§1.3 N2 判据列表删「指针可解析」（判据随校验腿裁撤消亡）；② **#4**——§2.2 接口 `writeManifest` 契约改 `validateManifest(manifest)`（去已裁撤的第二参）；
-  ③ **#9**——§2.5 schema 计数句规格侧状态改「已同步」（四处 + 同批扩列：需求 v2 七处 / `SPEC-LEDGER.md` / `SPEC-MACHINE-CHECK.md` ②.5）；④ **#12**——§2.3 行 1 编辑点补静态注释三处（`:101` / `:122` / `:264`）。
-- 2026-09-18（**装配门禁小修批** · eng-designer——承 `docs/batches/2026-09-17-assembly-gate-fixes.md` §1.1 批件 · **用户 2026-09-17 23:33「评估一下，分一下批，然后开始处理」授权**）：
-  ① **#30 装配钩子加工程模式门**——判据 = `agent.config?.agent?.engineering === true`（与情境行判据②同源；**判据同日修正轮改「会话权威值」——见下条**）；普通会话零 manifest I/O（不读 / 不拒 / 不建档）+ `agent.manifest = null`；钩子执行点 = 会话起点（CLI 两处：装配 + 启动恢复后；VSC 每轮 reconcile）——KD-M1-12 / KD-M1-13；
-  ② **#33 二道防线补实现**——`spawn-gates.mjs` `MANIFEST_BASENAME` 专用分支 + 拒文案（不复用 `PROCESS_BASENAMES`；不 import `MANIFEST_REL`——保叶子零 import）——KD-M1-14；
-  ③ **文档补载**——§2.2 架构图 + 两端钩子行补「模式门 + 拒自动建档」分支（`85a4a6b3` 行为）；§2.3 受影响文件表按本批重测（as-of 2026-09-18 00:0x）；架构档 §2.3 E2 声明面句加工程模式口径（一字不差的口径限定 + 指针）；
-  ④ 验收 §3.1 +AC-14–AC-18、§3.2 +T23–T31；②的边界（进程内中途翻转不重估）记 §2.5 末条——**属语义面待父侧裁定**（`/eng` 翻转遇根不可解析：拒翻 vs 放行 + 告警，涉 FR11 冲突）；
-  ⑤ 需求侧已同步（父侧 2026-09-18 落笔——本行落档时为「待同步 / 缺位」，修正轮收正）：`SPEC-MANIFEST.md` ②.3 / AC-M1-2 已加「工程模式会话」模式限定；二道防线已立专条 AC-M1-8。
-- 2026-09-18（**装配门禁小修批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承批档 §3 发现 1–9，**父侧裁定 9/9 全数接受**）：
-  ① **#1 🔴 装配期判据取会话权威值**（父侧定案 = 方案 A）——§2.2 模式门改「恢复槽带 `engineering` 字段 ? 槽值 : `config.agent.engineering`」（槽优先 + config 回退；取值点三处同一合并结果）。
-     读点 = **参数注入**（`bin` TUI 分支 `resumeSlot` 前移 + `slotData` 形参；**不在钩子内调 `resumeSlot`**——该函数非纯读，会为 `chat` / ACP 装配凭空写会话态）——KD-M1-12 / M1-13 改判据 + **KD-M1-15（新）**。
-     AC-16 补反向格（槽假 config 真 → 非仓不抛 + 仓内无档不建档）+ §3.2 +T28 / T28b / T28c / T28d。
-  ② **#2 🟡 需求侧改指已落状态**——§2.5 该条 + §4 ⑤：`SPEC-MANIFEST.md` ②.3 / AC-M1-2 / AC-M1-8 已同步（原「待同步 / 缺位」注撤销）。
-  ③ **#3 🟡 回指补链**——AC-18 回指补 **AC-M1-8**（AC-M1-5 保留作写门主门回指）。
-  ④ **#4 🟡 措辞限定到钩子面**——§2.2 / KD-M1-12 / §2.5 三处改「装配钩子零 manifest I/O」；§2.5 新增「普通会话的读面边界」条（下游照读消费面单列，本批零改）；AC-14「不读」退为可观测断言——**KD-M1-16（新）**。
-  ⑤ **#5 🟡 验收矩阵四格可点**——§3.2 +T24b / T24c（含「仓内 + 无档」直测格）；AC-14 矩阵改四格逐格可点。
-  ⑥ **#6 🔵 钩子后移后果半句**——§2.2 CLI 钩子行补「钩子后移的可观察后果」（拒 / 建档晚于 memory sync 与 MCP 连接；功能等价仍保持）。
-  ⑦ **#7 🔵 家族两分记**——§2.5 拆「会话起点（ACP 装载——含整场无附着 / 无 E2 门槛 / 无下次重估后果）」与「进程内翻转（`/eng` · `/session` · 核心 `eng` 工具——照旧待裁）」两条。
-  ⑧ **#8 🔵 拒文案钉稳定片段**——`/Manifest file/`（句首锚，沿用 `spawn-gates 用例档:92-98` 锚法）；AC-18 / T30 / KD-M1-14 同载。
-  ⑨ **#9 🔵 行数说明**——§2.3 表下补 >300 行三行（#2 · #3 · #9）「不拆」理由（增量微、无跨档）。
-  零新语义 / 零新范围：仅落评审席发现与父侧逐条裁定的直接导出项；#33 定案 / VSC 对位形态 / 拒翻裁定均零改。
-- 2026-09-18（**失效表达清理批 · 本批直接执行 · 可 revert**——承用户 2026-09-18 裁定「修订式表达很害人，失效的表达一定要删掉」）：删除现役规范面内的失效表达（不留划改残留）——§1.2 功能点 F6 整行 · §2.4 KD-M1-5 整行 · §3.1 AC-4 行 · §3.2 T4 / T6 两行 · §1.1 / §1.2 F1 / §2.1#1 / §2.2 接口 / §2.5 现状核对条内退役括注。历史沿革 = 本档既有历史段 + 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-18（**失效表达清理批 · 第 4 轮 · 本批直接执行 · 可 revert**——同批 §1 裁定 · 承父侧 S5 复扫）：§1.4 去批次叙述 + 修订式（「**本批（activeBatch 裁撤）**：删 schema 一键（六键 → 五键）+ 校验器指针腿与 `{ cwd }` 参 + 情境行字段；」）——留现值边界句「五键（…）的判据取值 / `REVIEW_ROOT_KEYS` 键集 / 评审机制其他面零碰」。
-  同轮判**保**（记录面——逐处给理由）：§2.3 表下 as-of 说明 + 上批批档指针（出处注）· §2.5 schema 计数句（带日期出处注）。历史沿革 = 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-18（**失效表达清理批 · 第 5 轮（终轮）· 本批直接执行 · 可 revert**——同批 §1 裁定 · 承第 4 轮上抛坐标）：§1.4 去批标签「**F7 腿（已完成）**」（留现值边界句）· §2.5 两条「原登记——现已落定」修订式收正（去原后果叙述——现值承接 = §2.8 / F4）· §2.5 键集条去「（本批变）」+「六 → 五」修订式（留键集现值句）。历史沿革 = 本档既有历史段 + 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-25（**工程模式归属口径统一批（eng-ownership）· 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-eng-ownership.md` §1 · 台账 #358）：
-  phase 标签 `discipline` → **`rigor`**（§2.6 逐字行形 / 标签映射 · §3.1 AC-N1 · §3.2 T8 / T32 五处原地改；与「会话模式 / 模式面档名」脱同词）。
-  语义零改（值域 `light` / `strict`、未知值无标签、判据单源 = 需求 v2 §9.1 逐条不动）。
-
-- 2026-09-29（**structure-split-2 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-C · 台账 #620）：§2.3 表补**行 38**（`manifest.mjs` **493**——本批双拆：
-  发现族 ⇒ `manifest-discovery.mjs` ≈112 ∕ 校验族 ⇒ `manifest-schema.mjs` ≈146；主档 ≈252）+ 表下注「行 14」收正为**本批执行 ∥ 双拆修订**（由 = 单拆余量 ≈395 仍 >300）。明细 = 批档 §2。**零新语义**（拆分方案落位 ∕ 登记）。
-
-- 2026-09-29（**structure-split-2 批 · 收口轮（文档面回填）· eng-designer**——承批档 `docs/batches/2026-09-29-structure-split-2.md` §5 ∥ 四舱实读 · 台账 #620）：
-  §2.3 **行 38** 实读回填（`manifest.mjs` **493 ⇒ 249**；产物 `manifest-discovery.mjs` **119** ∥ `manifest-schema.mjs` **155**——re-export 保消费者 import 面零改，实读 **21** 消费档名面）+ 表下注「行 14」转已落（**249**）；
-  **T54 读点改指** `thincoder-core/manifest-discovery.mjs`（doc 面落——§2.2 机判句 ∥ §3.2 T54 行；落码随测试体系重建）；**`SOFT_LINE_REGISTRY` 义务执行态** = 本档移出（249 < 300——运行面随测试体系重建落册）。**零新语义**（读数 ∕ 登记面）。
-
-- 2026-09-30（**memory.db 家族批 · 实施轮 · eng-coder**——承批档 `docs/batches/2026-09-30-memory-db-family.md` §2.4「`index` 子键行收正——实施轮落」）：§2.2 三族声明键段 **`index` 子键行补 `excludePaths`**（机制落地 = 声明面 schema ∕ 缺省 ∕ 校验；语义 ∕ 判据单源 = `MEMORY.md` §6.14 面①——本档不复述）。
-  **零新语义**（既有键面收正——as-built 与设计同轮落）。

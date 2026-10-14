@@ -171,7 +171,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 > 口径：`thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**
 > （**不含** `design/prompts/` 15 档 · `design/_archive/` 50 档 · `docs/batches/` 41 档）。
 > **计数收正**：需求池既有条目写「`thincoder-cli/docs/{design,requirements}/**`（86 档）」（`docs/TODO.md` 需求池第 24 条）——
-> 实核 = **84**（含 `design/prompts/` 则 99 = 机检域读数；含 `_archive/` 则 149）。差额已登记（§16 变更记录 · 报告未决）。
+> 实核 = **84**（含 `design/prompts/` 则 99 = 机检域读数；含 `_archive/` 则 149）。差额登记于报告未决面。
 
 **逐档二分（活 / 历史）与落点** → 迁移台账 `docs/core/design/DOC-MIGRATION.md`（**2026-09-15 建档**——该表自本节搬出）。
 该台账 = 本节的**唯一执行表**：逐档一行（判 · 依据（`file:line` 实核）· 动作 / 落点）+ 对账 / 待核 / 小计闭合 / 后续批分组——本节不复制（D2 单一权威源）。
@@ -325,7 +325,6 @@ thincoder/                                  ← 合并仓根（git 仓）
 | 2 | `docs/core/design/DOC-SYSTEM.md`（本档） | 0（新建） | **+423** | **新建**——设计档 |
 | 3 | `docs/core/design/CORE-UNIFICATION.md` | 1921 | **+1**（2 行改写 + 变更记录补 1 行） | **实修**——`:1440` 与 `:1446` 悬空锚收正（§12 决策 6–7）+ 变更记录补一行 |
 | 4 | `docs/README.md` | 72 | +6 | 加「三部分规划」指针 + 变更记录一行（§9 修法 2 的指针部分） |
-| 5 | `docs/batches/2026-09-13-CORE-UNIFICATION.md` | 6130 | **+67** | §2 批次任务（本批）——**append，不改 §1** |
 
 **待落（本批边界外——已给文本 / 落点，逐条上报）**：
 
@@ -398,48 +397,3 @@ thincoder/                                  ← 合并仓根（git 仓）
 5. **不发起评审、不 commit**（发起权 = 用户）。
 6. **本档不含 UI / 交互决策**（本板块无用户界面）——**显式声明豁免**，非遗漏。
 
-## 16. 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（文档体系重组批（DOC-MIGRATION） · 2026-10-02）落点表** = `docs/batches/2026-10-02-doc-structure-reorg.md` §2（唯一承载面——一次性批次材料）。
-
-- 2026-10-07（**文档清账批 · fix 轮 · eng-designer**——承批档 `docs/batches/2026-10-07-doc-cleanup.md` §2 · 台账 #1000-②）：§10.3 落点表两行重锚至现家（攒批工作流 = `docs/core/design/prompts/persona-engineering.md` §「台账（需求池 / 技术待办）——攒批与生命周期」∥ 运行期落地档 = `thincoder-core/prompts/persona-engineering.md` 同节——旧行号锚弃）；§10「为何落这里」句随正（唯一详述处 = 现家节）。**零语义**。
-
-- 2026-10-02（**文档体系重组批（DOC-MIGRATION）· 波 3 · 终扫轮 · eng-designer**——承批档 `docs/batches/2026-10-02-doc-structure-reorg.md` §2 · 台账 #813）：§4 第四部分段收正——需求侧**十档**（总览 + 九域卷，2026-10-02 波 3）；设计侧「无需求侧镜像」句按分卷后实况收正（九档有需求侧同名卷）。**零新语义**（实况枚举）。
-
-- 2026-10-01（**行宽清账批 · 设计补缺轮 · eng-designer**——承 `docs/batches/2026-10-01-docwidth-settlement.md` §2.13 · 台账 #779）：§8.2 声明面行随 `checkConfig.widthExemptZones` 键落地收正——判据项 **6 ⇒ 7**（+ `widthExemptZones`）。**零新语义**。
-
-- 2026-09-29（**doc-check-face 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-29-doc-check-face.md` §2 同族追加 · 台账 #546）：§8.2 声明面行随 `checkConfig.lineCounts` 键落地收正——判据项 **5 ⇒ 6**（+ `lineCounts`）· 同句指针 `PROJECT-MANIFEST.json:21 ⇒ :24`；§8.2 机制单源句「四档接口段 ⇒ **五档接口段**」。**零新语义**。
-
-- 2026-10-02（**文档体系重组批（DOC-MIGRATION）· 波 2c（降格收尾）· eng-designer**——承批档 `docs/batches/2026-10-02-doc-structure-reorg.md` §2 · 台账 #813）：§4 第四部分段设计侧枚举 **五档 ⇒ 十四档**（实点 2026-10-02——`E2E-TESTING` ∥ `WEB-QUICKCHECK` ∥ `MENU` ∥ `PACKAGING` ∥ `CHAT` ∥ `COMPOSER` ∥ `ACTIVITY` ∥ `SESSIONS` ∥ `SETTINGS` 入枚举；N-b 一对多口径零变）。**零新语义**（实况枚举收正）。
-- 2026-09-27（**对齐重定位批 · 文档布局收正轮 · eng-designer**——用户 2026-09-27 裁定「目录要分开」· 先例 = desktop 2026-09-25）：**四部分 → 五部分**收正——档头 · §3.1 判据 ③（代码面对应枚举补 `render-core`）· §3.1 判据表行 2 ④ · §3.2 问题定式 · §4 目录树 · §4 部分 id 表（增 `render-core` 行）+ **模块镜像**判据句 · §4 去向表行；
-  §5.1 P3 / P5（冲突序补「模块镜像优先于 P1」）· §9 ① · §12 决策 9 · §13 A1；§4 增「第五部分（`render-core`）无迁移底本」段；首档 = `docs/render-core/design/RENDER-CORE.md`（自 `docs/core/design/` 迁入）。
-
-- 2026-09-25（**文档拆档判据登记批 · eng-designer**——承 `docs/batches/2026-09-25-doc-split-discipline.md` §2 · 台账 #368）：§6 增**单向指针**一条（拆档触发 = `DOC-DISCIPLINE.md §3.14`）——**命名规则**（本档）∥ **拆档判据**（该档）两分；**本档正文零改**。
-
-- 2026-09-25（**桌面端设计批 1 · 修正轮 · eng-designer**——设计评审 §3 轮次 1 发现 5 / 6）：§3.1 判据表 ④ 与 §3.2 问题定式句 三→**四部分**收正（2 处）· §4 表末段改「需求单档 + 设计**五档**」并补 **N-b 一对多口径**（`SHELL` / `IPC` / `UI` / `RENDERER` 四档无需求侧镜像——不判违例）。
-- 2026-09-25（**桌面端设计批 1 · eng-designer**——承 `docs/desktop/requirements/PROJECT.md`（第四部分首档））：**三部分 → 四部分**收正 9 处——档头 · §3.1 判据 ③（代码面对应枚举补 desktop）· §4 目录树 · §4 部分 id 表（增 `desktop` 行）· §4 去向表（第四部分无迁移底本）· §5.1 P3 · §9 ① · §12 决策 9 · §13 A1。
-  机检射程（批级判据 ①）：第四部分落在 `scanDirs` = `docs` 域内 ⇒ 新档（`docs/desktop/design/PROJECT.md`）自动入射程，**引擎零改动**。命名规则沿用 §6（档名 = 板块名 · 同部分同层唯一）；`desktop` 部分首两档 = 板块镜像对 `PROJECT`（需求 + 设计——N-b）。
-
-- 2026-09-18（**失效表达清理批 · 第 4 轮 · 本批直接执行 · 可 revert**——同批 §1 裁定 · 承父侧 S5 复扫）：§8.4 去「（原「落地落点」为 2026-09-14 未落登记，随 2026-09-15 落地销除——见 §16 变更记录。）」修订注 **整行删**（史实已在本节 2026-09-15 两条记录内）；§8.2「v1 方案（存史 · 不推进）」块**保留**（记录面——沿革载体）。历史沿革 = 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-18（**失效表达清理批 · 第 3 轮 · 本批直接执行 · 可 revert**——同批 §1 裁定）：§13 **A6 行**去「**v1 时期交付**（对象已随 v2 单引擎收敛消失；」标注（留「现行承接 = `docs/core/design/DOC-DISCIPLINE.md` §7」）。历史沿革 = 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-18（**失效表达清理批 · 第 2 轮 · 本批直接执行 · 可 revert**——同批 §1 裁定）：§11 待落表**行 10 删**（`.thincoder/docs-face.json`——从未落地、非待落项）· §12 决策 4 收正为现行形态（声明面 = 数据声明 → manifest `checkConfig`，去「已作废」括注）；§8.2「v1 方案（存史 · 不推进）」块**保留**（记录面——本档沿革载体、本档变更记录指向之）。历史沿革 = 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-
-- 2026-09-18（**判据面收正批（#60 ②）· eng-designer**——承 `docs/batches/2026-09-18-arbiter-face.md` §1）：
-  §8.1 表标 **v1 时期切片**（整表无现态对象——对象随 v2 单引擎收敛删除；现行机制单源 = `docs/core/design/DOC-DISCIPLINE.md` §7）+ 结论段改述；
-  §8.2 改述为 **v2 承接**（声明面 = manifest `checkConfig`；原 `.thincoder/docs-face.json` schema 与三判据句入存史 · 不推进）· §8.3 行 2 处置句改「随 v2 收敛消解」· §11 行 10 / §12 决策 4 / §13 A6 三处随句标注作废或 v1 时期口径。
-
-- 2026-09-14：建档（eng-designer——用户 2026-09-14 指名任务）——八件逐件落档：目录树 §4 · 命名规则 §6（选型 §3.2）· 归属判据与初分类 §5 · 交叉引用 §7 · 四条自洽 §9 · 引擎/路由切分与射程 §8 · 悬空锚实修（§12 决策 6–7）· 两池判据落点与文本 §10。
-- 2026-09-14：**计数收正**——需求池既有条目记「`thincoder-cli/docs/{design,requirements}/**`（86 档）」；实核 = **84**（design 47 + requirements 37；含 `design/prompts/` 则 99、含 `_archive/` 则 149）⇒ §5.2 按实核落笔，差额登记。
-- 2026-09-14：**评审 #25 修正轮**（0🔴 / 5🟡 / 4🔵，全部受理并落地）：§5.2 计数收正（CLI 面 design 9→6 + 合计行 + 档名穷举口径句）· §5.1 P1/P2 机检落点 =「人判 + 对位表 artifact」· §9 修法 1 改**串级扫替**口径 + as-of 抽验清单 ·
-  §6 / §7 各补零报样例（正向 / 反向夹具）+ 现状读数 · 首注与 T6 收正（引 V5 谓词坐标）· §8.1 行数口径收正（`wc -l`——九档 2000 / 门禁 1520）· §11 第 3 行 Δ 改 +1（`CORE-UNIFICATION.md` 变更记录补一行）· §5.2 尾补 VSC 侧显式口径 · §7 R2 补解析根。
-- 2026-09-14（**迁移批 · 板块档位移**）：根层 17 设计 + 17 需求板块档 `git mv docs/{design,requirements}/*.md` → **`docs/core/{design,requirements}/`**（落点判据 = 本档 §4 去向表 · §5.1 P1 统一面）；承第 1 批「提示词正本位移」（15 档 → `docs/core/design/prompts/`）。
-  本档内现行档路径指针（含 §11 受影响文件表）随批改指新址；去向表现址列与判据句按迁移记录形态保留旧路径。
-  连带登记：域一扫描域（`docs/design` + `docs/requirements`）自此无档——34 档出锚面射程（宽度面 308 → 274 档）；射程扩展与 §14 用例表（T1 / T2）读数收正归引擎批次（§8.2 声明面）。
-- 2026-09-15（**迁移批 · 二分 + 当场迁第一批**）：§5.2 分类表**搬出**至迁移台账 `docs/core/design/DOC-MIGRATION.md`（本档自此只留判据句与指针）；
-  §13 A3 收正为「逐档二分表 + 小计闭合」；§11 拆分面标记为已落地。
-  第一批已迁 6 档（编辑工具族：WRITE / HASHLINE-EDIT / INSERT-AFTER / APPLY-PATCH / EDIT / EDIT-HELPERS）——均落 `docs/core/design/`（P1 统一面）；
-  根层 `TOOLS.md` §8.2 登记的「工具权威档」指针自此解悬。
-- 2026-09-15（**E-1–E-4 外部参照面判据落地**）：§8.4 判据句 + 零报样例全文移出至 `docs/core/design/DOC-CODE-RECONCILE.md` §3.9（判据即该板块主题——D2 单一权威）；本档 §8.4 改指针 + §11 行 6 销项。

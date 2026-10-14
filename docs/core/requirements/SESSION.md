@@ -47,7 +47,7 @@ VSC 侧对应面住 `thincoder-vscode/src/extension/session-io.mjs` · `session-
 ② **面板拒绝路径**前记 `m.active` / 端标记 / 认领集 / 解析缓存 → 受占切换被拒 → 四者与前态逐字段相等；**核 / CLI 受占** ⇒ 切换成立（指针翻至目标槽 + 记录按 D-4 + 保留集 = 空释放旧认领）∧ 下次保存 fork（与 ③ 同源）；
 ③ 甲进程离开 X 后乙进程认领 X：甲经 `/session X` 再切入 ⇒ 甲不认领 X（占用判）∧ 下次保存 fork（既有语义）；④ 双端对称（CLI 与 VSC 端壳**同名落点**同判据——F-CR1 释放面；F-CR2 零副作用面 = 面板拒绝路径：端壳函数内受占分支零写 ∧ 调用面前置判据）。
 
-**依赖**：核槽面（`session-lifecycle.mjs` `switchToSlot`/`newSession`/`slotOccupancy`）· VSC 端壳（`session-io.mjs` `switchToSlot`/`newSlot` · `panel-messages-session.mjs`）· 设计档 `docs/core/design/SESSION.md` · ACP 例外核；批档 = `docs/batches/2026-09-21-session-claim-release.md`。
+**依赖**：核槽面（`session-lifecycle.mjs` `switchToSlot`/`newSession`/`slotOccupancy`）· VSC 端壳（`session-io.mjs` `switchToSlot`/`newSlot` · `panel-messages-session.mjs`）· 设计档 `docs/core/design/SESSION.md` · ACP 例外核。
 
 ### 2.4 启动等待：会话 GC 热路径 + sessions 存量（2026-09-21 用户报「启动的时间好长」· 台账 #173）
 
@@ -82,7 +82,7 @@ VSC 侧对应面住 `thincoder-vscode/src/extension/session-io.mjs` · `session-
 ⑤ T5 VSC `deactivate` 后 manifest 无本进程条目（端壳机判）；
 ⑥ 既有 session 系 / key-handler 系测试全绿。
 
-**依赖**：核槽面（`thincoder-core/session-slots-manifest.mjs` `saveManifest`/`staleClaims`）· CLI `thincoder-cli/src/tui/key-handler.mjs` 退出分支 · VSC `thincoder-vscode/src/extension.mjs` deactivate · 设计档 `docs/core/design/SESSION.md`（§6.10 D-2/D-4）· 批档 = `docs/batches/2026-09-21-exit-claim-release.md`。
+**依赖**：核槽面（`thincoder-core/session-slots-manifest.mjs` `saveManifest`/`staleClaims`）· CLI `thincoder-cli/src/tui/key-handler.mjs` 退出分支 · VSC `thincoder-vscode/src/extension.mjs` deactivate · 设计档 `docs/core/design/SESSION.md`（§6.10 D-2/D-4）。
 
 ## 3. 非功能性需求
 
@@ -92,7 +92,7 @@ VSC 侧对应面住 `thincoder-vscode/src/extension/session-io.mjs` · `session-
 
 > **来源** = `thincoder-cli/docs/requirements/SESSION.md`（144 行 · CLI 产品需求档）——根层裁定后该档 = **迁移期参照历史**（只读 · 不维护）。
 > **并入** = 该档中「根层所缺」的**需求条目正文**（总体需求 / 功能性 / 非功能性 / 范围边界）——条目**编号与文本承旧档**（编号 = 既有引用锚，重编号会再制造引用漂移）。
-> **不并** = 「待设计澄清」段（设计面）· 各节「来源：批次 …」注 · 档首迁移注记 · 变更记录（见 §5）。
+> **不并** = 「待设计澄清」段（设计面）· 各节「来源：批次 …」注 · 档首迁移注记 · 变更记录。
 
 ### 4.1 会话恢复与端分离（旧档 §10.1）
 
@@ -103,7 +103,7 @@ VSC 侧对应面住 `thincoder-vscode/src/extension/session-io.mjs` · `session-
 - **F3**：VS Code 面板同构（F1/F2 镜像）。
 - **F4**：`/new` / `/session N` / 面板「打开历史会话」→ 更新本端记录；删除本端记录指向的槽 → 记录**显式置空**，下次启动全新起步。
 - **F5（会话列表 = 盘面实读）**：会话列表（CLI `/session` · VSC 面板下拉 · 桌面左列）的条目来源 = **会话目录盘面实读**（本 cwd 槽文件枚举）；**manifest 不参与清单条目集**（职责 = 认领 / active 指针 / 摘要复用）；盘上存在的会话文件必须在列表可见，不因 manifest 条目缺失而隐形。
-  判定句：存在「文件在盘 ∧ manifest 无条目」的槽 ⇒ 列表含该条（回退链照旧）；槽文件删除 ⇒ 列表即消失。（来源 = 用户 2026-09-28 走查裁定；批档 = `docs/batches/2026-09-28-session-list-disk.md`）
+  判定句：存在「文件在盘 ∧ manifest 无条目」的槽 ⇒ 列表含该条（回退链照旧）；槽文件删除 ⇒ 列表即消失。（来源 = 用户 2026-09-28 走查裁定）
 
 **范围边界**：ACP 会话行为不变、**不读本端记录**；混合版本局部退化（数据安全不变）；手动跨端接续保留；数据零丢失（只改「恢复目标选择」）。
 **非功能**：NF1 **不新增跨端共享可变字段**（本端记录是本端单写者文件）· NF2 记录写入原子（.tmp+rename）且失败容忍 · NF3 启动成本不增 · NF4 跨端并发语义不回归（活槽绝不双写）。
@@ -124,7 +124,7 @@ VSC 侧对应面住 `thincoder-vscode/src/extension/session-io.mjs` · `session-
 - **F-R19b（检索族消歧）**：检索 / 记忆族工具描述互指消歧（何时用哪个）。
 - **F-R19c（索引优先检索 · 大会话可查）**：As a user, I want 超大会话（>200k 行 / >50k 消息）不再整档拒，so that 长命会话在最需回查时也能检索。判定句：超限会话经索引返回命中（不触整档拒）；索引不可用 / 库内无行 ⇒ 回落既有读径与护栏（逐字保留——零回归）。
 - **F-R19d（跨会话全库检索）**：As a user, I want 不知目录时也能跨会话检索（`all` 面：FTS 词 / 短语），so that 任意历史会话的裁定 / 决策可被找回。边界：单会话 `keyword` 保持既有子串语义（契约不变）；**主存零改**（索引 = 派生面 · 零权威 · 可重建 · 丢失自愈）；不做向量检索 / 自动淘汰 / 跨端索引协议。
-- **F-R19c / F-R19d 设计落点**：`docs/core/design/SESSION.md` §6.19（+ §6.13 / §6.14 收正）；批档 = `docs/batches/2026-09-22-session-index.md`。
+- **F-R19c / F-R19d 设计落点**：`docs/core/design/SESSION.md` §6.19（+ §6.13 / §6.14 收正）。
 - **NF-R19**：readonly；depth-0 only；会话文件为只读检索对象（不写不改）；性能 = **索引优先（派生索引库——可重建）· 主存回落**（索引不可用 ⇒ 既有逐文件流式读路径）；隐私 = 本机会话文件。
 
 ### 4.4 长会话记录内存有界（旧档 §14.1）
@@ -159,7 +159,7 @@ N-S3 CLI 写出的槽文件 `history` 数组与旧实现同构（version 2 + his
 ④ 冷 cwd 手动 GC 无 shell 通道（只接线自动残留 GC）——**注销（2026-09-21）**：VSC 已补命令入口 `thincoder.sessionGc`（数据面 API——双端同面；见 `docs/core/design/SESSION.md` §6.17 D-SE38）
 · ⑤ 记录存储形态 = **端面事实**（本端零该机制——非端差，如实登记；**写缝 = `pushRecord` 注入面**（`thincoder-core/context.mjs`——`pushReal` 双胞）；承载 = 端面 ∥ 单源 = §4.4 F-S7）· ⑥ `turnBusy()` 拒新会话 / 删除 / 切换 / 换项目（回合互斥）。
 坐标（实核 · 2026-09-28 复读）＝ `thincoder-vscode/src/extension/session-slots.mjs`（76 行）· `session-io.mjs`（246 行）· `panel-session.mjs`（312 行）· `session-gc.mjs`（21 行）——原 400 / 437 / 339 为 2026-09-21 读数，端壳归核瘦身（2026-09-26）后失真。
-用例 = `session-boot`（490 行 / 8 例，2026-09-28 复读）· `history-window`（192 行 / 8 例）· `history-restore`（236 行 / 9 例）· 集成 `scenario-04-session-recovery`（141 行 / 5 例）——**退场注**：四件随 2026-09-28 测试树全清重置退场（读数 = 退场前存档；批笔在册 = `docs/batches/2026-10-04-issue-fix-round4.md` §2.3）。
+用例 = `session-boot`（490 行 / 8 例，2026-09-28 复读）· `history-window`（192 行 / 8 例）· `history-restore`（236 行 / 9 例）· 集成 `scenario-04-session-recovery`（141 行 / 5 例）——**退场注**：四件随 2026-09-28 测试树全清重置退场（读数 = 退场前存档）。
 
 **二态化裁定行（2026-09-25 · 台账 #339① 需求层复核）**：① = **已裁保留**（结构性不对称——端 marker 单侧存在：只写 `.manifest.vscode`、永不碰 `.cli`）；②③⑥ = **已裁保留**（形态类——显示 / 互斥面；类判据单源 = `docs/vsc/design/WEBVIEW-PROTOCOL.md` §6.1 首）；④ = **已注销**（2026-09-21 VSC 补命令入口，双端同面——零动作）；⑤ = **端面事实**（非端差——行内改述）。
 
@@ -181,36 +181,4 @@ N-S3 CLI 写出的槽文件 `history` 数组与旧实现同构（version 2 + his
 
 **依赖（上下游）**：上游 = 槽文件（单源）· 会话账本 `{hash}.json.manifest`；下游 = 三端列表（CLI `/session` · VSC 会话栏 · 桌面左列）· `read_history` 的 `cwd:` 发现面 · ACP `session/list`（协议面 `?? 0` 保持——登记）。无新增外部依赖。
 
-**来源 / 落点**：批档 = `docs/batches/2026-09-28-ledger-reliability.md`；台账 = #487 + 本行；设计落点 = `docs/core/design/SESSION.md`（待设计舱定形）。
-
-## 5. 不并项与历史沿革（B 轮 · 2026-09-14）
-
-| 旧档节 | 内容 | 何故不并 |
-|---|---|---|
-| §11.1「待设计澄清」段（VSC resumed 信号载体 / CLI applySession 收敛落点 / 双端测试文件） | 实现级选型待定项 | **设计面**——机制与落点已入设计档 `docs/core/design/SESSION.md` §6.11 |
-| 各节「来源：批次 …」注 + 档首「迁移注记 + 移出清单」 | 批次来源指针与迁出记录 | 时点材料——批次档承载；迁出记录属历史留痕 |
-| §14.1 内的「设计档 §14.x」回指行 | 设计面指针 | 机制已入设计档（本档只留需求层）；指针形态随迁不逐条复制 |
-| 变更记录 | 逐批流水账 | 历史叙述——本档自有变更记录 |
-| VSC 仓档（`requirements/SESSION.md`）的「变更记录」与对位档头 | 一次性材料 + 历史流水 | VSC 端差 / 坐标 / 用例已并 §4.5（2026-09-15 批 8）；批次档承载 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/requirements/CORE-UNIFICATION.md` 拆分（来源：§1 边界原则 · §3 N1–N8 回指）+ 设计档 `SESSION.md`（§2.1 #89 · §2.2 #123–#127 · §3.1 A14 派生）；**无新增需求**。
-- 2026-09-14（**B 轮并入 · 第 2 批**）：新增 §4 **需求条目**（会话恢复与端分离 / 运行环境自我感知 / 跨会话检索与消歧 / 长会话记录内存有界——自 `thincoder-cli/docs/requirements/SESSION.md` 逐节比对后并入需求正文；**编号与文本承旧档**）+ §5 **不并项与历史沿革**；**本档新增需求 0**（纯回填）；首部加需求条目面指针一行。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：新增 §4.5 **VSC 端条目**（六条端差登记 + 坐标 + 用例面——自 `thincoder-vscode/docs/requirements/SESSION.md` 并入；语义同源不重并）；§5 登记 VSC 档批次材料；**本档新增需求 0**（纯回填）。
-- 2026-09-21（**用户报告轮 · 新增需求**）：新增 **§2.3 会话认领释放与拒绝零副作用**（F-CR1–F-CR3——用户 01:46 报告「CLI 同时持有两个会话」+ 01:49 委托「排批这两个问题都处理吧」；台账 #165/#161②；批档 `docs/batches/2026-09-21-session-claim-release.md`）。**本档首次新增需求**（此前各轮均为回填/派生）。
-- 2026-09-21（**用户事故报告轮 · 新增需求**）：新增 **§2.5 优雅退出认领释放**（F-XR1–F-XR4——用户 21:56 实测 Ctrl+C×2 正常退出后重启未恢复旧会话（槽 41→空槽 44）；台账 #211；批档 `docs/batches/2026-09-21-exit-claim-release.md`；修法方向用户 22:26 批准）。
-- 2026-09-22（**session-index 批 · 需求面 · 主 agent 落笔**——承用户 09:25「a 立批」裁决 + 批档 `docs/batches/2026-09-22-session-index.md`）：**新增 F-R19c / F-R19d**（索引优先 · 大会话可查 / 跨会话全库检索）+ **NF-R19 性能句收正**（「v1 逐文件流式读（无索引）」→「索引优先 · 主存回落」）+ §4.4 范围边界句收正（「不改 JSON 读取路径」→「保留为回落面」）。**本档新增需求 2 条**（R19 族扩面）。
-- 2026-09-22（**session-index 批 · 评审轮 1 修正 · 主 agent 落笔**——评审 id=18 · 🔴#1）：**F-S4 第二句收正**（「跨会话 `path=` 保持读槽文件 JSON（投影全量——兼容不变）」→「索引优先 + 主存回落（索引不可用 / 库内无行 ⇒ 既有读径与护栏逐字保留）」）+ **F-R19c / F-R19d 补设计落点指针**（评审 #8 需求侧半幅）。
-- 2026-09-22（**pending-triage 批 · 需求面 · 主 agent 落笔**——承用户裁决（#168① 认账改做）+ 批档 `docs/batches/2026-09-22-pending-triage.md` §1 上抛③）：**F-CR1 释放覆盖面扩展**（ACP `session/close` 关闭面 · 跨 cwd 释放 · VSC 端壳机判）+ **F-CR3 零回归条款加 `session/close` 除外**（该批评审轮 1 的 #168 相抵项）。
-- 2026-09-25（**end-diff-registry 批 · 需求层二态化轮 · eng-designer**——承 `docs/batches/2026-09-25-end-diff-registry.md` §2 上抛①〔父侧明示委托本轮落〕 · 台账 #339①）：§4.5 端差六条二态化——①/②③⑥ = **已裁保留**（① 结构性不对称；②③⑥ 形态类）；④ = 已注销（零动作）；⑤ 改述为**端面事实**；裁定行落地。**零新语义**。
-- 2026-09-28（**会话列表盘面实读 · 用户裁定 · 主 agent 落笔**）：新增 **§4.1 F5**——列表 = 盘面实读（槽文件枚举）；manifest 与清单解耦（用户 04:27 走查实测后裁定「清单不能从 manifest 选，只能从盘面实际读，让 manifest 参与清单列表是过度设计」；症状 = `D:\teamcode` 50 槽文件仅显 2 条）。台账 #475；批档 `docs/batches/2026-09-28-session-list-disk.md`。
-- 2026-09-28（**评审轮 1 发现 #9 处置 · 主 agent 落笔**——承批 `docs/batches/2026-09-28-session-list-disk.md` §3）：§4.5 坐标 / 用例面读数刷新（2026-09-28 复读：76 / 246 / 312 / 21 行；用例 490·8 / 192·8 / 236·9 / 141·5；原读数为 2026-09-21 时点）——端壳归核瘦身（09-26）后失真，**零语义**（纯读数）。
-- 2026-09-28（**会话账本摘要可靠化 · 用户裁定 · 主 agent 落笔**——用户 06:00「列表计数的问题缓存可以在，但是能让他靠谱点吗？别老出问题？」）：新增 **§4.6**（F-L1–F-L5：零权威 / 可重建 / 丢失自愈 / 失效可见 / 写安全——派生面判据承 F-R19 先例）；台账 #487 + 本行；批档 `docs/batches/2026-09-28-ledger-reliability.md`。
-- 2026-09-28（**§4.6 随动 · 用户裁定 · 主 agent 落笔**——用户 06:05「不需要公开入口让用户去操作，用户不会做这个」）：F-L2 收正——**重建全自动**（无人操作）；§4.6 增「**不做**」行（不设用户操作入口）。
-- 2026-09-28（**§4.6 F-L3 收正 · 用户裁定 · 主 agent 落笔**——用户 06:08「可以懒刷新的，碰到 0 或者没有的时候就去核实一下更新一下」）：F-L3 定为**懒核实**（读面遇不可信摘要（含计数不可得）⇒ 当场核实该档 + 回写 ⇒ 回快路不重复；首答不得被拖慢）。
-- 2026-09-28（**§4.6 补依赖段 + D23 形态对盘 · 主 agent 落笔**〔父侧直接执行 · 可 revert〕——承设计 §6.25 判据句 4）：§4.6 增「依赖（上下游）」（五要素齐）；D23 显示形态与设计对盘——桌面 = **段缺席**（既有 `Number.isFinite` 门，零改）∥ CLI / VSC / `read_history` = 「—」。
-- 2026-09-30（**#726 · F-S7 新增 · 主 agent 落笔**〔父侧直接执行 · 可 revert〕——承批 `docs/batches/2026-09-30-cross-end-digest-recovery.md` §1 · 用户 18:24 ∥ 18:28 令）：§4.4 新增 **F-S7**（消化生命周期面记录——`digest` 痕三型 + `subagent` 归档快照入记录存储（人读线 ∥ 不入机器线）；读面 `historyWindow {records:true}` opt-in（默认关 ⇒ 存量读面零破）；端侧重建为各端消费义务；机制单源位置 = 跨端承接批设计裁定）；源 = #726（#719 U1 承接：用户可见端差默认消灭）。
-- 2026-10-01（**#726 U2 父侧笔〔可 revert〕**——承批档 `docs/batches/2026-09-30-cross-end-digest-recovery.md` §七 U2）：§4.5⑤ 补注——「端面事实」加**写缝 = `pushRecord` 注入面**（`thincoder-core/context.mjs`——`pushReal` 双胞）∥ 承载 = 端面 ∥ 单源 = §4.4 F-S7；§4.4 边界句 ∥ N-S3 **逐字复核保持成立**（零改）。**零新语义**（需求侧补注）。
-- 2026-10-02（**文档清账轮 · 执行轮 3（core/requirements + cli + vsc）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：宽面 2 行折行（140 ∥ 159——语义零改）。**零新语义**。
-- 2026-10-04（**issue 修复批·四 · #825 需求侧 · 主 agent 直接执行 · 可 revert**——承批档 `docs/batches/2026-10-04-issue-fix-round4.md` §2.3 ⑤）：§4.5 用例面四件改**裸名 + 读数存档 + 退场注**（`session-boot` ∥ `history-window` ∥ `history-restore` ∥ 集成 `scenario-04-session-recovery`——2026-09-28 测试树全清重置退场；死 token 全形零命中）。**零新语义**（引用形收正）。
+**来源 / 落点**：台账 = #487 + 本行；设计落点 = `docs/core/design/SESSION.md`（待设计舱定形）。

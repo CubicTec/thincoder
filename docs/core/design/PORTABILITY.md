@@ -143,7 +143,7 @@
 > **W4 状态注（2026-09-15）**：VSC 端镜像实现已删——VSC 经 `@thincoder/core/conventions.mjs` 引用（单源；下表坐标 = 迁移前 as-of）。
 > **W15 状态注（2026-09-15）**：VSC 端装配/注入面（i18n 投影 · 提醒转口 · 蒸馏适配 · 事件中继）随 W15 核单源化收口；
 > 本节坐标逐个可达（实核：`agent/tool-gates.mjs:78` 落在 eng-coder 子门注释段 · `:81-84` = eng-coder 子门实体 · `:92` = 父门（门条件）/`:97` = 其 hint 分支 · `agent/run-helpers.mjs:71` = `hasCodeMutations` 体内〔声明 `:70`〕）。 （迁移期引文——档已迁核）
-> **B1 状态注（2026-09-29 parity-b1 · `docs/batches/2026-09-29-parity-b1-vsc-core.md`）**：端侧门 / 守卫（`tool-gates.mjs` ∥ `execute-tools.mjs` 族）随核退役——VSC 主机经核主循环走核判决（核单源）；端侧源码无分类消费者文本（零命中——实读 2026-10-05）——现读登记 = §3.8 行 8。本节下表 VSC 门 / 守卫坐标为迁移期引文（历史）。
+> **B1 状态注（2026-09-29 parity-b1）**：端侧门 / 守卫（`tool-gates.mjs` ∥ `execute-tools.mjs` 族）随核退役——VSC 主机经核主循环走核判决（核单源）；端侧源码无分类消费者文本（零命中——实读 2026-10-05）——现读登记 = §3.8 行 8。本节下表 VSC 门 / 守卫坐标为迁移期引文（历史）。
 
 | 面 | VSC 落点（实核） | 差异注 |
 |---|---|---|
@@ -231,7 +231,7 @@
 | D9 | **改点 = 分类器本体**（`conventions.mjs` 缺省面），非门内定向谓词（2026-09-27 · F9） | 语义一致性 = 单一权威（F1 / FR12）：「什么算产品代码」只能有一个答案；消费面随核自动随动（端侧旧门已随核退役——端面经核单源，端侧零改）；F9 判据线即以 `classifyPath` 四例书写。**否决备选（门内定向谓词·消费面零扰动）**：（i）与 F9 注册判据线不符（判据在 `classifyPath`）（ii）再造第二判据 = 本档 §2 所消的漂移（iii）VSC 镜像需再落一份拷贝或回引核谓词（= 分类器本体，等价） |
 | D10 | **三值闭集扩为四值：新增 `aux`**（辅助面）；aux 规则置于 temp / doc **之后**、兜底之前 | 最小差分性质：既有分类逐条不变，唯「曾落兜底 code」的 `test` / `tests` / `scripts` / `.thincoder/tmp` 路径改判 aux——既有用例零改全绿的机制保证（N1）。**否决备选**：◎复用 `temp`——「test/** 判 temp」使同档 `classifyPath` 与 `isTempPath` 同词两义，或把长期资产并入「可清理 / 保留期」词义（`thincoder-core/agent/helpers.mjs:146` offload 三日清理 · `thincoder-core/session-gc.mjs:63` `.tmp` 保留期在册）——后续按「temp ⇒ 可清理」判断的消费面即误伤；◎复用 `doc`——语义不实 + verify 文档快径把辅助面独立变更整段跳过；◎新谓词不改值域——同 D9（ii）（iii）且与 F9 判据线不符 |
 | D11 | **消费面差分 = 接受并登记**（§3.7 逐面核销），本轮不改任何消费面判据 | 分类单源 + 「相关性」归各消费面自持：`isCodePath` 一以贯之，差分即「aux = 非产品代码」的直接推论；逐面登记 + 消解路径在册（§3.7），避免「静默改行为」 |
-| D12 | **提示词面同步 = 本批必带**（测试入父侧可直改类目） | 分类与分流背离即触发「授权判据 ≠ 绕过门禁 ⇒ 停下上报」纪律（`thincoder-core/prompts/discipline-engineering.md:24` + `docs/core/design/ENG-TOKEN-BINDING.md:152` AC-M4-5）——结构一致性要求同批闭口；内容权 = 主 agent，落笔按面分述：中文审核面 = eng-designer 笔 · 英文运行面 = eng-coder 落笔（受影响文件表落点 = `docs/batches/2026-09-27-eng-write-exemption.md` §2.4） |
+| D12 | **提示词面同步 = 本批必带**（测试入父侧可直改类目） | 分类与分流背离即触发「授权判据 ≠ 绕过门禁 ⇒ 停下上报」纪律（`thincoder-core/prompts/discipline-engineering.md:24` + `docs/core/design/ENG-TOKEN-BINDING.md:152` AC-M4-5）——结构一致性要求同批闭口；内容权 = 主 agent，落笔按面分述：中文审核面 = eng-designer 笔 · 英文运行面 = eng-coder 落笔 |
 | D13 | 三族键**并入 manifest schema**（顶层平级键 + 缺省值入 `DEFAULT_MANIFEST`）——键名 / 形态 / 缺省**逐字承前**；`docRoot`（文档层根集合）与 `advisor.docMap`（地图文件单指针）**并存** | 迁移 = 逐字抄写（用户项目零改名零改形）；schema 侧落形 / 默认 / 校验 / 结构不对称理由 = `MANIFEST.md` §2.4 KD-M1-31（本档不复述）。**否决备选**：包一层 `conventions` 对象（三族分属分类 / 索引 / 注入三消费族——包层零收益）· 三族键不入默认档（`fillDefaults` 只搬已知键——不入则读面取不到，或另造「可选识别键」第三类键）· 与 `docRoot` 合并（根集合 vs 文件指针——形态相反） |
 | D14 | 读面 = `conventions.mjs` 新增 `loadProjectDeclaration(cwd)`（投影三族键 + 归一 + 冻结 + 按档路径缓存），装载经 `manifest.mjs` 的 `readManifest` / `manifestFilePath` **单源** | 装载方向**单向**（`conventions.mjs` → `manifest.mjs`；反向零出边——本模块保持叶子零项目依赖）；两模块**同属模式无关面**（全模式消费）⇒ 耦合非模式耦合。**否决备选**：裁判档内自读自解析（同一档两份读取器 + 第二份根解析——`MANIFEST.md` KD-M1-18 禁形）· 投影落 `manifest.mjs`（分类归一 / 扩展名点号归一 / 段语义挤进项目模型模块——两个所有者）· 保留 `loadConventions` 名（名实不符——载体已非 conventions 档） |
 | D15 | **退役全链**：`CONVENTIONS_REL_PATH` / `loadConventions` / `DEFAULT_CONVENTIONS` / `clearConventionsCache` / 逐键类型校验全删——无兼容读、无弃用期并行；旧档在场 = **一行可见告警**（`console.warn` + `logEvent('declaration:retired-file')`）+ 存在性检查（`existsSync`——**内容零解析**、零回退） | 用户逐字「不要同时保留二者」；告警 = 可迁移纪律（静默停用 = 哨兵失效不可见——本档问题本体），非机制（零读零回退）。**否决备选**：静默不读（旧声明静默失效——分类面静默回默认，正是本板块要消灭的失效类）· 兼容读 + 告警（双机制并存——用户否）· 自动迁移脚本（一次性动作造第二条写路径——`MANIFEST.md` KD-M1-11 同族否决） |
@@ -295,7 +295,7 @@
 
 > **声明对象 `root` 收正（同号）**：等值断言随形状收正——CLI T-29 / T-30 / T-31 · VSC T-V25 / T-V26（比对 = `{ ...conv, root: null }` 与 `DEFAULT_DECLARATION`——`root` 非声明值）。
 
-**F11 新增用例（编号本席定——避撞实核 2026-10-08；机检件 = 单元测试档 `docs/batches/2026-10-08-gate-jurisdiction.test.mjs`——不进集成测试树）**：
+**F11 新增用例（编号本席定——避撞实核 2026-10-08；机检件 = 单元测试档——不进集成测试树）**：
 
 | 用例 | 面 | 断言（判据线） |
 |---|---|---|
@@ -310,69 +310,3 @@
 2. **FR10–FR15 正文搬迁归位**（CLI 侧 `thincoder-cli/docs/_archive/design/ENGINEERING-MODE.md` 旧文 → 需求档）——父侧裁决项。
 3. **本仓自指面**（`AGENTS.md` 的检查声明）——父侧落笔。
 4. **F9 缺省射程外**（2026-09-27）：CI 配置（`.github/**`）与 `.thincoder/**` 非 `tmp` 面（如 `.thincoder/memory/**`）仍判 code——如需父侧直放 = 另裁（历史「工程工具面被拦」类残余）。
-
-## 7. 不并项与历史沿革
-
-### 7.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/PORTABILITY.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档 §1.1–§1.5 | 批次问题陈述 / 范围分割选型 / 本批条目清单 PO-1–PO-12 / 批次间顺序建议 / 归属判定与新建授权留痕 | 一次性批次范围材料——机制本身已落 §2–§3 |
-| 旧档 §3 逐条修法 | 逐条修法流水（含 as-of 行号与「现状 → 改法」对照） | 修法已完成（§2 给现状落点）；as-of 行号属历史证据 |
-| 旧档 §4.4 逐字文本 | 提示词编辑面的逐字目标文本（EN / 中文镜像） | 文本落地后**权威 = 提示词档本体**（`thincoder-core/prompts/**` + 正本 `docs/core/design/prompts/`）——本档不复制（D2） |
-| 旧档 §5 受影响文件全清单 | 批次受影响文件与增量估算 | 一次性批次材料 |
-| 旧档 §6 用例表 + §7 验收标准 AC-01–AC-14 | 批次验收材料 | 机制已落；现行回归面见 §5 |
-| 旧档 §9 边界 / §10 待定项 / §11 批次二 VSC 镜像面节 | 批次边界与排期 | 一次性批次材料；VSC 面按 P1 归本档（VSC 轮） |
-| 旧档档头状态行（设计稿（待评审））+ 变更记录 | 时点状态与逐批流水 | 批次语境——本档自有变更记录 |
-
-### 7.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 提示词文案本体 | 六档编辑面的落地文本 | **产品代码**——落点 `thincoder-core/prompts/**`；中文正本 `docs/core/design/prompts/` |
-| VSC 端镜像实现面 | `thincoder-vscode/src/**` 同类判据 | **已并入（批 6）**——§3.6 坐标 + §5 测试面（VSC 保持独立实现、语义同源——**分类裁判面除外**：W4 已核单源，VSC 经 `thincoder-core/conventions.mjs` 引用（§3.6 W4 状态注）） |
-| VSC 批次二档 §1 三态对位表 · §3 逐条修法流水 · §4.4 逐字提示词文本 · §5 受影响文件全清单 · §6 用例 T-V01–T-V19 · §7 验收 AC-V01–AC-V14 · §9 边界 · §10 open-1–3 | 一次性批次材料（对位勘察 / 修法 as-of 行号 / 逐字施工文本 / 用例与验收）+ open 面 | **不并**——对位结论已落 §2–§3（VSC 面 §3.6）；逐字提示词文本 = 产品代码（落 `thincoder-vscode/src/prompts/**`——本体即权威，D2）；open 项归父侧（(d) 类） |
-| 实施台账指针（P1–P28 缺陷登记） | 缺陷编号登记面 | 项目台账（`docs/TODO.md`）面——本档只留机制 |
-
-## 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（issue 修复批·五 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round5.md` §2（唯一承载面——一次性批次材料）。
-**本批（引擎面缺口 · 2026-10-05）落点表** = `docs/batches/2026-10-05-engine-face-gaps.md` §2（唯一承载面——一次性批次材料；#941 ∥ #944 面）。
-**本批（门禁辖域收正 · 2026-10-08）落点表** = `docs/batches/2026-10-08-gate-jurisdiction.md` §2（唯一承载面——一次性批次材料；#1104 ∥ #1102 ∥ #1103 伴随）。
-
-- 2026-10-08（**门禁辖域收正批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-08-gate-jurisdiction.md` §1 · 用户 2026-10-08 16:37 裁定 · 台账 #1104（#1102 并批；#1103 伴随——父笔））：§2「父侧设计门禁」行收正（辖域 = 目标所属项目）；§3.1 增「读向按用点」条；§3.2 API 表增行 8（`declarationForTarget`——辖域单点）；§3.4 设计门禁行收正（hint = 所属项目 manifest 路径）；**新增 §3.9**（F11 消费面核销六面）；§4 增 D20；§5 增 T-36 / T-37 / T-38 / T-V28；头部 as-of 补 2026-10-08 一枚。
-- 2026-10-08（**门禁辖域收正批 · 设计评审轮 1 修正 · eng-designer——fix 轮；承批档 `docs/batches/2026-10-08-gate-jurisdiction.md` §3 发现 3**）：§5 T-V28 扫描面钉死 = 源码树（`thincoder-core/**` ∥ `thincoder-vscode/src/**`——排除 tmp ∥ 归档 ∥ 文档副本）。**零新语义**。
-- 2026-10-08（**门禁辖域收正批 · 实施轮后坐标读回 · 主 agent——父侧直接执行 · 机械零语义**）：§2 / §3.8 / §3.9 三处门块行号读回（`:89-111` ⇒ `:94-125`）∥ §3.9 冻结窗行号（`:121-144` ⇒ `:135-158`）∥ §3.2 行 8 补 `declaration.mjs:230`。
-
-- 2026-10-05（**批 engine-face-gaps · 设计评审轮 1 修正 · eng-designer——fix 轮；承批档 `docs/batches/2026-10-05-engine-face-gaps.md` §3 发现 1**）：§3.6 增 **B1 状态注**（端侧门 / 守卫随核退役——端侧无分类消费者文本；VSC 零改随核）；§3.6 变更集判据行收正（`thincoder-vscode/src/agent/run-helpers.mjs:15`——取核转口，端侧无自有消费点）；§3.8 行 8 收口为单一表述（端侧源码无消费者文本 + 端面经核单源）；D19 删失效句（端面再付一份——端侧门副本已不存在）。零机制语义改。
-- 2026-10-05（**批 engine-face-gaps · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-05-engine-face-gaps.md` §1 · 台账 #941；经父裁 L7 两度拆分后本批 = {#941, #944}——#942 ∥ #943 转 `docs/batches/2026-10-05-engine-tools-gaps.md`；#940 转 `docs/batches/2026-10-05-review-gate-gaps.md`）：§3.2 分类语义增 `state` 值（优先级 aux 后 ∥ 最小差分 ∥ 常量叶面）+ API 表（`classifyPath` 五值 ∥ +`isStatePath` 行）+ 单一实现面随动；新增 §3.8 消费面核销（八面）；§4 增 D19；§5 增 T-34 / T-35。实施 = 本批实施轮。
-- 2026-10-04（**issue 修复批·五 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round5.md` §1 · 台账 #835）：§3.1 补 **`index.publicRepos` 入判补登句**（值比较——与 `excludePaths` 同款）。**零新语义**（登记补句）。
-- 2026-10-02（**文档清账轮 · 执行轮 2（core/design 后段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 1 处 R4 形退场（死名 `tool-gates.mjs` 去坐标尾——端档已删）。**零新语义**。
-
-- 2026-09-15（**B 式迁移轮 · 第 2 批**）：建档——`thincoder-cli/docs/design/PORTABILITY.md` 内容重建入基准层（旧档一字未改、原地作参照历史）。
-  ① 择**机制面**重建（分类裁判单源 / 声明面 / 降级契约 / 索引回退 / `/eng` 无前提）；批次范围裁定 · 逐条修法流水 · 逐字提示词文本 · 受影响文件清单 · 用例表与 AC · VSC 镜像面节 → §7 逐项登记不并；
-  ② 坐标一律改现状路径并经实核（`thincoder-core/conventions.mjs` 等）；③ 新增 §5 测试面（回指现行测试档）、§8 体量（**该节现不在档——现节 = §1–§7 + 变更记录**，2026-09-27 实核）。
-- 2026-09-15（**B 式迁移轮 · VSC 第 6 批 · 并入 · eng-designer**）：新增 §3.6 VSC 端镜像面——自 `thincoder-vscode/docs/design/PORTABILITY.md`（批次二）并入（分类裁判 / 声明面 / 门禁 / 注入 / 索引坐标按现状实核；消息文案逐字本体住产品代码不复制）；§5 补 VSC 测试档三行；§6 边界行 2 收口 + §7.2 登记 VSC 批次材料不并（(d) 类）。
-- 2026-09-15（**S2 W4 · VSC 单元**）：§3.6 状态收正——VSC 端镜像实现已删（`thincoder-vscode/src/conventions.mjs`；现体 = `thincoder-core/conventions.mjs`，VSC 经核单源引用）；分类裁判 / 变更集判据两行坐标收正（只落状态行，机制条文零改）。
-- 2026-09-15（**S2 W15 · VSC 单元 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W15〔重定版〕）：§3.6 头部加 W15 状态注（装配/注入面核单源化收口；本节坐标逐处实核仍在位——`tool-gates.mjs` · `run-helpers.mjs:71`）；机制条文零改。
-- 2026-09-18（**失效表达清理批 · 本批直接执行 · 可 revert**——承用户 2026-09-18 裁定「修订式表达很害人，失效的表达一定要删掉」）：§6 边界表删「VSC 端镜像（已并入批 6）」行（原条 2），余条顺次编号。历史沿革 = 本档既有历史段 + 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-- 2026-09-27（**工程模式写门放行批 · F9 辅助面缺省** · eng-designer）：§3.2 分类语义扩四值（新增 `aux`——置 temp / doc 之后、兜底之前，既有分类零扰动）；§3.1 补 `codePaths` 收回行；新增 §3.7 消费面核销表 + §3.6 F9 状态注；§4 增 D9–D12；§5 补两端用例表与零改承诺；§6 补射程外行；头部需求侧指针收正到 `docs/core/requirements/PORTABILITY.md`。
-- 2026-09-27（**写门放行批 · 评审轮 1 收正 · 父侧直接执行〔例外②③〕 · 可 revert**）：§3.6 F9 状态注证据指针收正（T-V10–T-V12 ⇒ T-V22–T-V24——对齐 §5 用例表）· §3.2 `isAuxPath` 行补消费方注明 · D12 补受影响文件表落点（批档 §2.4）· §5 T-27 补 CLI 夹具注；变更记录 2026-09-15 行「§8」引用加现状注（零语义）。 （机检豁免——用例退场登记）
-- 2026-09-27（**conventions.json 退役批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-27-conventions-retire.md` §1 · 用户 2026-09-27 19:39 裁定）：
-  声明载体换源——§3.1 改写为 `PROJECT-MANIFEST.json` 三族键（`codePaths` / `index.*Extensions` / `advisor.{docMap,standardsDoc}`；含 `codePaths` 收回行随动）；§2 表三行收正（装载面 / 默认判据单源 / 载体）；
-  §3.2 API 表换名（`loadProjectDeclaration` / `clearDeclarationCache` + `DEFAULT_DECLARATION` 行）；§3.4 增退役档可见行 + 门禁指路改 manifest；§3.6 VSC 声明面行同判收正；
-  §4 重写 D2 + 增 D13–D16（载体 / 读向 / 退役链 / 校验口径）；§5 增新用例表；§6 射程外示例路径换现行物。机制条文（分类四值 / 优先级 / 降级契约）零改。
-- 2026-09-27（**conventions.json 退役批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-27-conventions-retire.md` §3 发现 5 / 6，父侧全数接受）：
-  ① 声明对象形状句（§3.2——`{ declared, codePaths, index, advisor }` + `declared` 判据 = 三族任一偏离缺省）；
-  ② 退役告警钉死（§3.1 · §3.4——落点 = `loadProjectDeclaration` 内 · 基准 = `manifestFilePath` 项目根 · 频次 = 每缓存一次）+ T-30 / T-V26 补基准断言（§5）。零新语义。
-- 2026-09-27（**写门放行批 · 交付后设计面登记轮** · eng-designer——fix 轮；承 `docs/batches/2026-09-27-eng-write-exemption.md` §1.7 裁定〔只报项 1/2/3 + 审计偏离 1 全接受〕）：
-  ① §3.2 API 表行 as-of 行号回填（`classifyPath:93` · `isCodePath:103` · `isDocPath:109` · `isTempPath:49` · `isAuxPath:119`——原记 `:73` / `:82` / `:88` / `:40` 收正）；§2 表行同载占位同笔兑现（`loadProjectDeclaration` 拟新增——行号实施轮读回）；
-  ② §3.2 增「段匹配含祖先段」双向已登记代价（fail-closed 向 = T-04 注既有登记 · fail-open 向 = 本笔登记）+ 消解路径（候选 · 另批 · 台账 #465 在册）+ 测试面同根读数（TMPDIR 锚定）。零新语义。 （机检豁免——用例退场登记）
-- 2026-09-27（**conventions.json 退役批 · 设计评审轮 2 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-27-conventions-retire.md` §3 轮次 2 发现 6）：§3.1 / §3.2 `declared` 判据钉死为**值比较**——与缺省值等值 ⇒ 假（显式写入但值 = 缺省照判假）。零新语义。
-- 2026-09-28（**守卫族微修批 · 设计轮** · eng-designer——承 `docs/batches/2026-09-28-guard-face-micro.md` §1 · 台账 #465）：§3.2 段匹配面收口为**项目根相对面**（面判 + 面不可判处置 + 面判读数表 + 测试面同根项收口；「已登记代价 · 双向」与消解候选句随其落定为现行规则）；
-  §3.2 声明对象形状句增 `root`（`DEFAULT_DECLARATION.root = null`）；§2 / §3.2 五处 `拟新增` 占位与漂移行号实核回填（as-of 2026-09-28）；§4 增 D17 / D18；§5 增 T-33 / T-V27 + `root` 收正句。
-- 2026-09-28（**守卫族微修批 · 设计评审轮 1 修正** · eng-designer——fix 轮；承 `docs/batches/2026-09-28-guard-face-micro.md` §3 轮次 1 发现 2 / 6 / 8 / 11 / 12）：
-  §3.2「单一实现面」条收口三谓词与面判链关系（含 `isTempPath`）+ API 表行 4 同指；§7.2 登记行括注限定非分类裁判面；§2 行补档级行数（244 行 ⇒ 本批 ≈275 行）+ 批档 §2 指针；档头 as-of 补 2026-09-28 一枚；§5 T-33 补根内 doc 面读数（共七读数）。零新语义。

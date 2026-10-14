@@ -106,37 +106,3 @@ const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_T
 | D-P3 | 非法配置值**回退默认**（不静默禁用、不立即超时） | 手写 JSON 的 0/负数/字符串不得变成「关掉超时」；否决「非法即视为 0」 |
 | D-P4 | `maxTurns` 默认 100 → **200**，且同步四处 TUI 显示兜底 | 撞墙重试是主要痛点；否决「只改 DEFAULTS，显示面留 100」（P3 漂移） |
 | D-P5 | **不动** `goalTurns` 与 `DEFAULT_SUBAGENT_TURNS` | 语义独立（goal 模式 / 子代理各有自己的预算面）；否决「一并抬到 200」 |
-| D-P6 | TUI **不给** `timeoutMs` 加编辑项 | 长尾配置不进交互菜单——手写 config.json 足够；否决「菜单膨胀」 |
-
-## 8. 不并项与历史沿革
-
-### 8.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/AGENT-PARAMS.md`（CLI 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实现 2026-08-24 评审修订后实施；npm 0.12.43」） | 时点状态行 / 发版号 | 批次语境——现行态已入 §2–§5 |
-| 旧档 §2.1 的代码块（旧检查点写法） | 改动前的原样代码摘录 | 现行写法已入 §2（只留推导式一行） |
-| 旧档 §3「受影响文件」表 | 单次改动的文件 × 动作清单 | 一次性材料——现行坐标入 §6.1 |
-| 旧档 §4「验收标准」AC1–AC8 | 一次性验收清单（含已删测试文件锚） | 批次材料——现行约束已入 §2–§4 |
-| 旧档变更记录 | 2026-08-24 立项流水 | 历史叙述——本档自有变更记录 |
-
-### 8.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 旧档 §3 表内「相关设计文档 MODIFY」 | 泛指多档的同步改动 | 无具体落点——现状散档已各自收正 |
-| 旧档引用的 `test/advisor.test.mjs` / `test/agent.test.mjs` | 已删测试（存量测试清零批） | 陈旧坐标——不并；现行测试面见 §6.2 （迁移期引文） |
-| VSC 端「30 硬帽」 | 端特有问题 | **已并入（批 6）**——§4 注 + §6.3 行 5（VSC 侧现状 = 无 `Math.min` 截断） |
-| VSC 旧档 `AGENT-PARAMS-TUNING.md` §3 受影响文件表 · §4 AC1–AC9 · 变更记录流水 | 批次材料（单次改动清单 / 一次性验收 / 历史流水） | **不并**——现行坐标入 §6.3；机制约束已入 §2–§4（(d) 类） |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 3 批**）：建档——`thincoder-cli/docs/design/AGENT-PARAMS.md` 内容重建入基准层（旧档一字未改、原地作参照历史）；坐标改写为现状路径并实核（`advisor/compaction.mjs` · `advisor/loop.mjs` · `config.mjs` · `thincoder-core/agent/helpers.mjs` · `thincoder-core/agent/setup.mjs` · `tui/cmd-config.mjs`）；
-  新增 §5 参数总表（本档为参数族唯一权威）；批次材料 / 状态行 / 变更流水不并（§8）。
-- 2026-09-15（**B 式迁移轮 · VSC 第 6 批 · 并入 · eng-designer**）：新增 §6.3 VSC 端接线——自 `thincoder-vscode/docs/_archive/design/AGENT-PARAMS-TUNING.md` 并入（评审超时 / 面板透传 / explore 30 硬帽移除 / maxTurns 200 逐项实核；VSC 默认落在 `advisor/compaction.mjs` 而非旧档所记 `run.mjs`——按现状收正）；
-  §4 补 VSC 注 + §8.2 VSC 行收口（(d) 类批次材料登记）；需求侧头注随批 4 建档收正。
-- 2026-09-26（**撞帽检查点批 · eng-coder**）：§5 总表 +1 行——登记 N7 零写盘带护栏键 `agent.barrenTurnLimit`（默认 120，常量单源；解析 / 计数 / 跳闸三点坐标实核，as-of 2026-09-26）。
-- 2026-09-26（**载入面缺口批 · eng-designer**——用户 14:50 裁定 D「取消零产出阈值」）：§5 总表 **删「零写盘带护栏（N7）」整行**——`agent.barrenTurnLimit` / `DEFAULT_BARREN_TURN_LIMIT` 常量与解析 / 计数 / 跳闸三点坐标一并撤销（N7 整条撤销；撞帽检查 = 无条件，取舍口径见 `docs/core/design/TURN-CAP-CONTINUE.md` §1 #8 / §5 D-TC18）。
-- 2026-10-07（**文档清账批 · fix 轮 · eng-designer**——承批档 `docs/batches/2026-10-07-doc-cleanup.md` §2 · 台账 #954b）：陈旧坐标收正——`REVIEW_TIMEOUT_MS` 常量 `compaction.mjs:37` ⇒ `:42`（五处）∥ 消费点 `loop.mjs:103` ⇒ `:104`（三处）∥ 「`run.mjs` re-export」谓词删（现盘核：零 re-export——`thincoder-core/advisor/compaction.mjs:42` ∥ `loop.mjs:104` 实读）。**零语义**。

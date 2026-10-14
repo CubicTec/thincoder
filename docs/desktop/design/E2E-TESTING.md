@@ -3,7 +3,7 @@
 **面**：测试基建（`thincoder-desktop/test/`）——本档是该面的单源设计。
 **权威面**：真 Electron（真进程 / 真窗口 / 真 DOM）——本批判据钉死；web 快筛不作替代（本批判不做）。
 **上位单源**：`docs/core/design/TESTING.md`（测试纪律 / 承载选型 / 单入口门禁 —— 本档**引用不重述**，D2）。
-**本批**：`docs/batches/2026-09-26-desktop-e2e-infra.md`（§1 判据 · §2 批条目）。
+**本批**：E2E 基建批（§1 判据 · §2 批条目）。
 
 ## 1. 方案与理由
 
@@ -64,7 +64,7 @@ _electron.launch({
 
 `env` 缺省 = `process.env`（包类型声明原文：`env` = “Specifies environment variables that will be visible to Electron. Defaults to `process.env`.”）⇒ **本契约必须显式传 env**，否则继承来的环境变量既漏真家、又可能带毒。
 
-**`ELECTRON_RUN_AS_NODE` 必须删除**：该变量若被继承，electron 二进制会退化为纯 node ⇒ 启动报错成**假红**。此坑本仓已实证（见批档 `docs/batches/2026-09-25-desktop-impl-3.md` §5.4 第 2 条的实测读数与有效形）；显式传 env 即对本坑免疫。
+**`ELECTRON_RUN_AS_NODE` 必须删除**：该变量若被继承，electron 二进制会退化为纯 node ⇒ 启动报错成**假红**。此坑本仓已实证（见桌面实现三批 §5.4 第 2 条的实测读数与有效形）；显式传 env 即对本坑免疫。
 
 ### 3.2 隔离契约
 
@@ -116,7 +116,7 @@ _electron.launch({
 10. `await app.close()` ⇒ 清理两枚临时目录（§3.2 清理行）；全程 `page.on("pageerror")` 收集须为空。
 
 **边界**：本序不出网、不押真实模型（零 provider = 发送必败面即判据；成功面**不做** —— §8）· 不截图（固定落点 PNG 判据 = §3.3 第 7 步）· 断言只走 `data-*` 锚与 console 字面（**零文案匹配** —— 临时家无 `locale` 配置，词面非本序判据）· `project:open` 无 `data-path` 形（主进程原生对话框）⇒ 真点面 = 会话控制面项目钮 + **主进程对话框测试侧替换**（返回 `PROJ`——第 6 步）；
-引导面 `project:open` 控件维持**在场断言**（第 4 步）· **`no-session` 面 ∕ 其引导动作步不作本序覆盖**——无可达 UI 驱动路（`tab:close` 控件随 R13 裁撤全树零命中 ∧ `session:delete` 末项门〔会话数 ≤ 1 拒〕∧ 开项目恒一次 resume 分配——实读 `thincoder-desktop/src/main/session-actions.mjs:58-73`）；登记 = `docs/batches/2026-09-29-desktop-copy-vsc-align.md` §2.12。
+引导面 `project:open` 控件维持**在场断言**（第 4 步）· **`no-session` 面 ∕ 其引导动作步不作本序覆盖**——无可达 UI 驱动路（`tab:close` 控件随 R13 裁撤全树零命中 ∧ `session:delete` 末项门〔会话数 ≤ 1 拒〕∧ 开项目恒一次 resume 分配——实读 `thincoder-desktop/src/main/session-actions.mjs:58-73`）；登记 = 复制面对齐批 §2.12。
 
 ### 3.6 账本警示面序（即用例 5 的执行序 · 六序）
 
@@ -151,7 +151,7 @@ _electron.launch({
 | `docs/desktop/design/E2E-TESTING.md` | 0 | 本档 | 设计单源 |
 | `docs/desktop/design/PROJECT.md` | 410（as-of 2026-09-26 落笔轮；盘上现值 431 内容行——批 A 修正轮落于其后） | +10 行（七处小改 + 值收正两处 + 行宽折行两处） | **已落**（2026-09-26 放行落笔轮）⇒ §8-7（已解） |
 | `docs/core/design/TESTING.md` | 413 | +3 行（多实现面行补桌面面 / §10 边界口径收正） | **已落**（2026-09-26 放行落笔轮）⇒ §8-4 / §8-5（已解） |
-| `docs/batches/2026-09-29-model-menu-parity.test.mjs`（单元测试档——非集成域） | **300**（内容行数 · 9 用例——实读 2026-09-29；自 `.thincoder/tmp/` 转正） | —（随批留存 · 不登记） | 模型菜单全渠批测试（handler 面（真核探针径 + 本地回环 HTTP 桩）· 通道四件套结构机检 · store 纯动作 · 触发六径）；**集成测试档未建**（回退载体 = 真机 R5 ∕ R6——触发链面不可装载）；集成域现盘空（`thincoder-desktop/test/integration/` 零档） |
+| 模型菜单全渠批族单元测试档（非集成域） | **300**（内容行数 · 9 用例——实读 2026-09-29；自 `.thincoder/tmp/` 转正） | —（随批留存 · 不登记） | 模型菜单全渠批测试（handler 面（真核探针径 + 本地回环 HTTP 桩）· 通道四件套结构机检 · store 纯动作 · 触发六径）；**集成测试档未建**（回退载体 = 真机 R5 ∕ R6——触发链面不可装载）；集成域现盘空（`thincoder-desktop/test/integration/` 零档） |
 
 > 表内「现行数 / 预估增量」为**各批落笔时读数**（as-of；行内已注日期者从其注）；全盘现值**单源** = `docs/desktop/design/PROJECT.md` §4.1（各档现行值——R3 期六档行已入册）；本批触碰面「现行 ⇒ 预期」= 该档 §4.2 各批行；**集成测试档行随 2026-09-28 测试树全清重置退场**（盘上无档——重建时按 §4.1 惯例登记「集成测试 +1」）。
 
@@ -206,8 +206,8 @@ _electron.launch({
 > **R10 · 子代理面板 ∕ live 面**（flow 批）：真机 = **右列子代理全族**（出生 ∕ 走时 ∕ ⏹ ∕ 终态留场 ∕ 归档 ∕ 计数贴 ∕ 空态）——**人工走查 + 父侧真跑闭合**（离线不可产组同 T-DSK45；**测试覆盖随全清令取消**——不新增用例号）。
 > **flow 批 · 桌面 ⇒ VSC 对齐（R1–R13 · 真机走查面登记）**：卡三面（R1）· 待发送三态 ∕ 步边界取批（R3）· timer 到期唤醒（R4）· 附件贴图两径（R5）· 文件链接点开（R2）· 失焦通知两档 ∕ 子代理 2s 走时（R6）· provider 四流程（R8）· 悬挂窗四态（R9）·
 > 状态行逐段（CLI 同刻 · R11）· 会话流逐面（VSC 同刻 · R12）· 会话控制下拉与左列零残留（R13）——R10 见上行；R7（装配序面）不入本走查——**人工走查 + 父侧真跑闭合**（各轮探针读数 = flow 批档 §5 在册）；**测试覆盖随全清令取消**——不新增用例号（单源 = flow 批 §2.3 第 3 条 + R12 未办 5）。
-> **模型菜单全渠批**（2026-09-29）落 `R1`–`R7` 真机条目行（桌面 + VSC 同配置对拍——**父侧收口时跑**；R1–R7 = 真机条目代号，**不新增 T-DSK 用例号**——沿「真机走查面登记」先例）；机检 = 单元测试档 `docs/batches/2026-09-29-model-menu-parity.test.mjs`（9 用例 · 随批留存 · 不入集成测试树）；判据单源 = `docs/desktop/design/PROJECT.md` §7 + `docs/desktop/design/IPC.md` §2「模型清单注」。
-> 边界 / 错误三条（`T-DSK27b`–`T-DSK27d`）**登记不做**，不静默缩水；编号以 `docs/desktop/design/PROJECT.md` §7 落定序为准（`T-DSK27` = 2026-09-26 落 · `T-DSK32` = 批 B 追加轮落 · `T-DSK37` = R3c 落——自铸披露 = `docs/batches/2026-09-27-render-core-r3.md` §5）。
+> **模型菜单全渠批**（2026-09-29）落 `R1`–`R7` 真机条目行（桌面 + VSC 同配置对拍——**父侧收口时跑**；R1–R7 = 真机条目代号，**不新增 T-DSK 用例号**——沿「真机走查面登记」先例）；机检 = 单元测试档（模型菜单全渠批族 · 9 用例 · 随批留存 · 不入集成测试树）；判据单源 = `docs/desktop/design/PROJECT.md` §7 + `docs/desktop/design/IPC.md` §2「模型清单注」。
+> 边界 / 错误三条（`T-DSK27b`–`T-DSK27d`）**登记不做**，不静默缩水；编号以 `docs/desktop/design/PROJECT.md` §7 落定序为准（`T-DSK27` = 2026-09-26 落 · `T-DSK32` = 批 B 追加轮落 · `T-DSK37` = R3c 落——自铸披露 = 渲染核 R3 批 §5）。
 
 ## 7. 边界（不做）
 
@@ -244,68 +244,10 @@ _electron.launch({
 
 | 文件 | 预估行数 | 说明 |
 |---|---|---|
-| `thincoder-desktop/test/run.mjs` · `thincoder-desktop/test/files.mjs` | **49 / 3**（实读 2026-09-29） | 单入口 + 显式清单（清单↔盘上两向自检——照 `docs/core/design/TESTING.md` §10 形态；`files.mjs` 值口径 = 内容行数）；`thincoder-desktop/test/` 现盘 = `files.mjs` ∕ `rc-resolve.mjs` ∕ `run.mjs` 三档（测试覆盖全清重置后——单元 = 单元测试档不登记 ∕ 集成件 = 落盘时登记 +1；单源 = `docs/batches/2026-09-28-test-layer-prompts.md` §1.15–§1.23） |
-| 用例模块（原 48 档） | — | **2026-09-28 测试树全清重置**：存量测试全退（清单 = `thincoder-desktop/test/files.mjs` 空清单）；单元 = 单元测试档（名随批次档 · 住 `docs/batches/` · 不登记 · 随批留存）；集成件 = 落盘时登记 +1（单源 = `docs/batches/2026-09-28-test-layer-prompts.md` §1.15–§1.23；同上行） |
+| `thincoder-desktop/test/run.mjs` · `thincoder-desktop/test/files.mjs` | **49 / 3**（实读 2026-09-29） | 单入口 + 显式清单（清单↔盘上两向自检——照 `docs/core/design/TESTING.md` §10 形态；`files.mjs` 值口径 = 内容行数）；`thincoder-desktop/test/` 现盘 = `files.mjs` ∕ `rc-resolve.mjs` ∕ `run.mjs` 三档（测试覆盖全清重置后——单元 = 单元测试档不登记 ∕ 集成件 = 落盘时登记 +1；单源 = 测试层口径批 §1.15–§1.23） |
+| 用例模块（原 48 档） | — | **2026-09-28 测试树全清重置**：存量测试全退（清单 = `thincoder-desktop/test/files.mjs` 空清单）；单元 = 单元测试档（名随批次档 · 住 `docs/batches/` · 不登记 · 随批留存）；集成件 = 落盘时登记 +1（单源 = 测试层口径批 §1.15–§1.23；同上行） |
 | `thincoder-desktop/.gitignore` | **9**（实读 2026-10-04；前读 8（实读 2026-10-01〔实施落盘〕）；构建窗余项 +1——`dist-*/` 条目） | 忽略 `thincoder-desktop/test/artifacts/`（运行期产物不进 git——KD 单源 = 本档 KD-10）∥ `.thincoder/`（代理运行期状态）∥ `dist/` ∥ `dist-*/`（打包产物不进 git） |
 
 **行数面机检**：`checkConfig.lineCounts`（`PROJECT-MANIFEST.json`，运行根单读）**逐条声明节域——本表为其一**（本域值行单源）；后续本域新档由落盘批在本表补值行，`docs/desktop/design/PROJECT.md` §4.1 同拍补指针行（沿 §4.1 纪律）。
 **原址指针**：本族各行在 `docs/desktop/design/PROJECT.md` §4.1 已改一行指针（as-of 2026-10-02）。
 
-## 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（文档体系重组批（DOC-MIGRATION） · 2026-10-02）落点表** = `docs/batches/2026-10-02-doc-structure-reorg.md` §2（唯一承载面——一次性批次材料）。
-**本批（桌面第二实例提示 · 2026-10-03）落点表** = `docs/batches/2026-10-03-desktop-second-instance-notice.md` §2（唯一承载面——一次性批次材料）。
-**本批（模型切换解锁 · 2026-10-04）落点表** = `docs/batches/2026-10-04-desktop-model-switch-unlock.md` §2（唯一承载面——一次性批次材料）。
-
-- 2026-09-26 建档：桌面端 E2E 测试基建设计（`playwright-core` 驱动 · `thincoder-desktop/test/integration/` 首例 · 家目录隔离 · 固定 PNG 落点 · 单入口并入）。
-- 2026-09-26 收正（交付前自检）：坐标形统一为**仓根相对全路径**（`thincoder-desktop/…` / `docs/…`——与桌面端兄弟档同形）；行宽收正；标记语义收正（「拟新增」只留未落盘的新用例档，运行期产物与 `.gitignore` 记「新增」）；§7 增第 9 条（UI / 交互决策 = 空集）；§8 增第 12 项。
-- 2026-09-26（**放行落笔轮**）：用例号收正 `T-DSK25 ⇒ **T-DSK27**`（T-DSK25 / 26 为批 A 所占——`docs/desktop/design/PROJECT.md` §7 已落）；`docs/desktop/design/PROJECT.md` 七处落定（§8-7 已解）· 回指链闭合（需求档 **D14**——§8-2 已解）
-  · `docs/core/design/TESTING.md` 两处落定（§8-4 / §8-5 已解）· 计数面口径落定（§8-9 已解）· KD-7 行宽折行（契约锚清单落表下注——零新增，行宽收正）。
-- 2026-09-27 修正轮（评审 #1–#10 落位）：KD-4 重写（否决项只指产品码改动 · 退路 = 测试侧 `--user-data-dir` 成文）· §3.2 userData 落位行 + 退路段（实施首步实证 · 含两况）· 第 5 / 6 步与 KD-7 注锚限作用域（`[data-settings] [data-section]`）· 契约锚引线收正（`thincoder-desktop/renderer/views/settings.mjs` 263-265 ⇒ 269）
-  · `thincoder-desktop/test/run.mjs` 入 §4 表（§8-10 收口）· KD-3 / §1③ 判据句改引 `docs/core/design/TESTING.md` §4.1 / §4.3 · 第 7 步补目录预建 · §4 补锁文件行 · 驱动四条依据落 as-of 读数（KD-1 加失败退路）· `PROJECT.md` 行改 as-of 口径 · KD-7 补 §4.5 对齐句。
-- 2026-09-27（**实施后对账轮**）：§6 T-DSK27 态序收正为实证序 `ready,none,ready,ready` · §3.2 / §4 userData 面按现行生效面陈述（`--user-data-dir`——env 改向不达该面）· §4 去「（拟新增）」+ 值回填 **137** 内容行 · §8-11 去 `unverified` · §8-12 转已落 · §8 增第 13 项（改善项 · 登记待裁）；明细 = `docs/batches/2026-09-26-desktop-e2e-infra.md` §2.11。
-- 2026-09-27（**批 B 追加轮**）：§3.5 新增（用例 2 = `T-DSK32` 首启空态引导冒烟 · 十一序 + 边界）· §3.4 加同径注（零新通道 / 零新 DOM 锚）· §4 增 `桌面 integration/first-run-smoke 用例档` 行（0 ⇒ ~140 · 待实施）+ 表下 as-of 口径注 · §6 增 `T-DSK32` 行（✅ 做）+ 表下注按批分立
-  · §7 项 5 / 项 9 **按批读**（批 B 追加轮驱动的引导面 UI / 交互决策单源 = `docs/desktop/design/UI.md` §1「批 B 追加注」）；明细 = `docs/batches/2026-09-27-desktop-chat-panel-b.md` §2.12。
-- 2026-09-27（**批 B 追加轮 · 修正轮**——设计评审 §3 轮次 1 逐号点修）：§3.5 **重定驱动面**（十一序 ⇒ **十二序**）：向导退场真点 ⇒ 夹具预置会话槽族档 ⇒ 左列最近目录项真点开项目（实落 `no-message`）
-  ⇒ 关唯一标签核 `no-session` ⇒ 引导面 `session:create` 真点（旁证）；桥直调步删 · §3.4 收正「零新通道」+ 本批登记锚 `data-guide` · §4 / §6 行同笔 · 明细 = `docs/batches/2026-09-27-desktop-firstrun-smoke.md` §2.10。
-- 2026-09-27（**批 B 追加轮 · 注记修正轮 #106**——设计评审 §3 轮次 2 注记 N3 落）：§3.2 fixture 行加用例面限定（「唯一预置内容」= **用例 1 面；用例 2 见 §3.5**）；明细 = `docs/batches/2026-09-27-desktop-firstrun-smoke.md` §2.11。
-- 2026-09-27（**批 B 追加轮 · 实施后对账轮**）：§4 表两行收正（`first-run-smoke.test.mjs` 0 ⇒ **171** 已落 · `files.mjs` 12 ⇒ **19**——两档入册 · 净 0 行）。明细 = `docs/batches/2026-09-27-desktop-firstrun-smoke.md` §2.12。
-- 2026-09-28（**R3 结算随收 · 设计面收正微轮**——承 `docs/batches/2026-09-27-render-core-r3.md` §5.9）：§4 补 `chat-render.test.mjs` 行（0 ⇒ **146** 已落）；§6 补 `T-DSK37` 行（✅ 做——R3c）+ 表下注「按批读」补 R3c 落项。零新语义。
-- 2026-09-28（**状态栏对齐批 · 设计轮**）：§4 增 `statusline-align.test.mjs` 行（拟新增 · 0 ⇒ ≈110——估价）· §6 增 `T-DSK39` 行（状态栏对齐——真 Electron 打开态对表 · ⏳ 待实施）+ 表下注「按批读」同笔；明细 = `docs/batches/2026-09-28-statusline-align.md` §2。
-- 2026-09-28（**状态栏对齐批 · 设计评审轮 1 修正**——发现 6 / 10 逐号点修）：§6 `T-DSK39` 输入与 ① 步**点名真点路径**（最近目录项〔`project:open` + `data-path`〕⇒ 自动续会话开页；备路 = 会话行〔`session:switch`〕）+
-  补**夹具前置**（第二枚临时目录作项目根 · 槽 `cwd` = `PROJ`）· §4 该档行同笔 · 表下「单源」口径收正（§4.1 各档现行值 + §4.2 各批触碰面）。明细 = `docs/batches/2026-09-28-statusline-align.md` §2。
-- 2026-09-28（**账本可靠批 · 桌面微轮 · 设计轮**——F-L4 桌面端落点）：§4 增 `thincoder-desktop/test/integration/ledger-notice.test.mjs` 行（拟新增 · 0 ⇒ ≈100）· §3.6 新增（`T-DSK40` 账本警示面 · 六序）· §6 增 `T-DSK40` 行 + 按批读注同笔；明细 = `docs/batches/2026-09-28-ledger-reliability.md` §2 微轮块。
-- 2026-09-28（**状态栏对齐批 · flags 供面口径修订轮**——实施座实测上抛 + 父侧裁定）：§6 `T-DSK39` 夹具按**可达态**改**两臂**（主臂 = `engineering:true ∧ planMode:false`〔四真不可达——实读 `thincoder-core/session-lifecycle.mjs:126-133`〕· 第二臂 = `planMode:true ∧ engineering:false`）；
-  ② 断言随臂收正（主臂三段亮 + `plan` 零节点 / 第二臂 `plan` 亮 + `eng` 零节点；保留 = 段在场 ⊆ 16 码闭集 · 相对序 = 闭集序 · 假 / 缺 ⇒ 零节点）+ 夹具补 `title` 一条（`title` 段在场判据——`newSlotData` 缺省空串，实读 `thincoder-core/session-slot-write.mjs:48`）。明细 = `docs/batches/2026-09-28-statusline-align.md` §2。
-- 2026-09-28（**账本可靠批 · 报告面收正轮 · eng-designer**——承三座报告面父侧处置项）：§4 两行按盘收正（`statusline-align.test.mjs` 0 ⇒ **142** · `ledger-notice.test.mjs` 0 ⇒ **121**——均已落；`files.mjs` 12 ⇒ **22**）· §6 `T-DSK39` / `T-DSK40` 两行「待实施」⇒「✅ 做」+ 表下按批读注同拍。明细 = `docs/batches/2026-09-28-ledger-reliability.md` §2.12。
-- 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-28-desktop-vsc-align-3.md` §1）：§4 增 `thincoder-desktop/test/integration/align3-face.test.mjs` 行（拟新增 · 0 ⇒ ≈160）· §6 增 **`T-DSK42` / `T-DSK43`** 两行（对齐第三批真机面——拟新增）
-  + `T-DSK37` 块序收正随拍（`user/reasoning/assistant/user`——恢复帧次序）；明细 = 批档 §2。
-- 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 修正轮 1 · eng-designer**——评审轮 1 逐号点修〔8 / 12 / 13〕）：§4 `align3-face.test.mjs` 行补**断言面二分**（离线可产 / 离线不可产⇒人工走查 + 父侧真跑闭合）；§6 `T-DSK42` / `T-DSK43` 两行同拍（② / ③详情面 / ①②③⑥ 标离线不可产；⑤ 设置面 Esc 关闭、⑥ 审批卡真置焦入列）+ 按批读注补本批行。明细 = 批档 §2 修正轮 1 块。
-- 2026-09-28（**对齐第三批 · 小修族 25 + 相抵 2 · 微收正轮 · eng-designer**——承批档 §3 轮次 2 新发现 **#17**）：§4 `align3-face.test.mjs` 行与 §6 `T-DSK42` 行断言面收正——「文件链接」移出**离线可产断言面**（历史卡零链接 ⇒ `.file-link` 离线不可产），改标**离线不可产**并入「人工走查 + 父侧真跑闭合」组。明细 = `docs/batches/2026-09-28-desktop-vsc-align-3.md` §3 轮次 2。
-- 2026-09-28（**timer-wake 阶段 2 批 · 设计收尾轮 · eng-designer**——承 `docs/batches/2026-09-28-timer-wake-phase2.md` §2）：§4 增 `timer-wake-face.test.mjs` 行（拟新增 · 0 ⇒ ≈120）· §6 增 **`T-DSK44`** 行（到期触发面——拟新增）+ 按批读注同笔；D16 义务在册（验收由父侧真跑闭合）。明细 = 批档 §2。
-- 2026-09-28（**回合中插入批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-28-desktop-midturn-input.md` §2）：§4 增 `thincoder-desktop/test/integration/midturn-input.test.mjs` 行（拟新增 · 0 ⇒ ≈130）· §6 增 **`T-DSK45`** 行（回合中插入——拟新增）+ 按批读注同笔；
-  机检面点名（`thincoder-desktop/test/queued-input.test.mjs`（拟新增））；D16 义务在册。明细 = 批档 §2。
-- 2026-09-28（**timer-wake 阶段 2 批 · 设计评审轮 1 修正（父侧直接执行 · 可 revert）**——承评审 #28 发现 #6）：`T-DSK44` 机检面口径三处统一——§4 行 / §6 行 / 按批读注同拍（**机检面 = 单元域 `timer-wake.test.mjs`**（离线可产）；真机档 `timer-wake-face.test.mjs` = 离线不可产组 ⇒ 人工走查 + 父侧真跑闭合）。明细 = 评审 #28。
-- 2026-09-28（**回合中插入批 · 设计收尾微轮 · eng-designer**——承批档 §5 交付转报落点随正）：§6 `T-DSK45` 行机检面落点随正——`thincoder-desktop/test/agent-host-queued.test.mjs`（U217–U219——原 `thincoder-desktop/test/agent-host.test.mjs` 触 500 硬限按在册预案拆出 ∕ 假面共享 `thincoder-desktop/test/agent-host-harness.mjs`）。明细 = 批档 §2（迁移期引文——测试档已退场）。
-- 2026-09-28（**文档回填与卫生轮**（台账 #516）· eng-designer）：§4 `midturn-input` 行 0 ⇒ **135**（实读 2026-09-28——已落）· §6 `T-DSK45` 行机检面补 **midturn 用例族 U217–U226** 全谱（U216 空位不回收）。**零新语义**。
-- 2026-09-28（**桌面功能对位批 · 设计面收正轮（fix · #129）· eng-designer**——承 flow 批 R10 交付）：§6 按批读注补 **R10 · 子代理面板 ∕ live 面** 行（真机面 = 右列子代理全族——人工走查 + 父侧真跑闭合；测试面随全清令取消）。明细 = `docs/batches/2026-09-28-desktop-feature-parity.md` §2。
-- 2026-09-29（**doc-sync-residuals 批 · flow 真机面同步轮 · eng-designer**——承台账 #549 ∕ flow 批 §2.3 第 3 条 + R12 未办 5）：§6 按批读补 **flow 批 · 桌面 ⇒ VSC 对齐（R1–R13）** 真机走查面行（逐面 + 全清令注）。**零新语义**（登记面）。
-- 2026-09-29（**复制面对齐 VSC 批 · 修正轮 2（评审 #58 · 发现 1 ∕ 5 ∕ 6 同族扫）· eng-designer**）：§3.3 第 5 ∕ 6 步段集四段 ⇒ **七段**（`SECTIONS` 冻结序 + 段指针按盘收正）；
-§3.6 第 4 步 ∕ §6 `T-DSK40` 行警示行锚按盘收正（下拉首行 ∕ `div.session-ledger-notice` ∕ `.session-item` 计数）。**同机制同值**（单源 = `docs/desktop/design/PROJECT.md` §6.1 ∕ `docs/desktop/design/UI.md` §1）。明细 = 批档 §2.10。
-- 2026-09-29（**复制面对齐 VSC 批 · 修正轮 3（§3 轮次 3 · 评审 #76 · 发现 1–11 逐号点修）· eng-designer**）：发现 1（🔴 开项目驱动路径按 R13 后形态重锚——§3.5 步 5/6 ∕ §3.6 步 3 ∕ §6 两行：会话控制面项目钮 `button.session-project` + **主进程对话框测试侧替换**（返回 `PROJ`））+ 发现 5（测试层同步：§4 集成档行「已落 ⇒ 已退」、
-`files.mjs` **3** ∕ `run.mjs` **49**、「机检面」改述单元测试档惯例）+ 发现 9（设置入口锚改 `#settings-btn`——原 `info-row.mjs` 面退场）。明细 = 批档 §2.11。
-
-- 2026-09-29（**desktop-residuals-sweep 批 · 波 D（非冻结档面）· eng-designer**——承 `docs/batches/2026-09-29-desktop-residuals-sweep.md` §2 · 台账 #540）：退役锚两处处置——§3.5 步 8 `tabbar.mjs` 出处括注删（R13 裁撤无继任）∥ 2026-09-28 行 `agent-host-harness.mjs` 加迁移期引文标记（测试树全清重置）。**零新语义**。
-- 2026-09-29（**复制面对齐 VSC 批 · 修正轮 4（§3 轮次 4 · 评审 #107 · 发现 1–5 逐号点修）· eng-designer**）：发现 3（`no-session` 面 ∕ 其引导动作步无可达路 ⇒ 裁退——§3.5 序列 12 ⇒ **10** 步（标题 ∕ §4 档行 ∕ §6 两处随拍；依据 = `tab:close` 零命中 ∧ `session:delete` 末项门 ∧ 开项目恒一次 resume 分配——边界句在册）+ 发现 1（`:131` 机检面改述复核 = 已在盘）+ 发现 5 同族（§4 集成档行复核）。明细 = 批档 §2.12。
-- 2026-09-29（**模型菜单全渠批 · W3 文档轮 · eng-designer**——承 `docs/batches/2026-09-29-model-menu-parity.md` §2.6 W3 #14）：§4 增单元测试档行（**300** 行 · 9 用例——集成测试档未建，回退载体 = 真机 R5 ∕ R6）· §6 增 **`R1`–`R7`** 真机条目行（桌面 + VSC 同配置对拍——父侧收口）+ 按批读注同笔。明细 = 批档 §2。
-- 2026-09-29（**doc-sync-residuals 批 · 修正轮（评审 #202 发现 7）· eng-designer**）：§6 按批读 flow 批行**面-号逐项对齐**——逐面挂 R 号（R1 ∕ R3 ∕ R4 ∕ R5 ∕ R2 ∕ R6 ∕ R8 ∕ R9 ∕ R11 ∕ R12 ∕ R13）；R10 注「见上行」、R7 注「不入本走查」（号配单源 = flow 批 §2.2 ∕ §2.8 ∕ §2.9 各轮验收行）。**零新语义**（登记面）。
-
-- 2026-09-29（**doc-backfill 批 · 波 1 · eng-designer**——承 `docs/batches/2026-09-29-doc-backfill.md` §2 · 台账 #594）：§3.5 步 2 骨架三锚首锚收正——
-  `[data-slot="projects"]`（R13 已裁撤）⇒ `[data-slot="session-control"]`（骨架 = `thincoder-desktop/renderer/index.html:40`；常量 = `thincoder-desktop/renderer/mount-sessions.mjs:37` `SESSION_SLOT`）。**零新语义**（锚面收正）。
-- 2026-09-29（**撤会话头 + 工具头色批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-desktop-head-toolcolor.md` §2 · 台账 #668）：§6 `T-DSK43` 行 ③ 句随动——「会话头三值控件 `disabled`」⇒ **「输入区模型 ∕ 推理钮 `disabled`」**（会话头面退场；三值居所 = 输入区控件行——单源 = `docs/desktop/design/UI.md` §1 输入区行）。**零新语义**（面名收正）。
-- 2026-09-29（**口子清零二轮 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-29-hatch-clearance-2.md` §2 · 台账 #673）：§8 项 13 收正——改善项 = **可选**（用户 2026-09-27 口径「参数通道偏好」）· 现形已实证 ⇒ **非缺口**（「另批裁」句退场）；触发条件 = 核侧新增 home 依赖点令隔离失效 ⇒ 随触面批补 seam。**零新语义**。明细 = 批档 §2。
-- 2026-10-02（**文档体系重组批（DOC-MIGRATION）· 2c 前置步 · 文件账分片轮（切片 3 · 余量收尾）· eng-designer**——承批档 `docs/batches/2026-10-02-doc-structure-reorg.md` §2 · 台账 #813）：**§9 新立**（文件账）——§9.1 本域族行 **3** 行（`thincoder-desktop/test/run.mjs` · `thincoder-desktop/test/files.mjs` ∥ 用例模块行 ∥ `.gitignore`〔KD-10 单源——`dist/` 半随行〕——自 `docs/desktop/design/PROJECT.md` §4.1 逐字迁入；原址各改一行指针）。**零新语义**（迁移 ∥ 指针 ∥ 判域在册）。
-- 2026-10-03（**桌面第二实例提示轮 · 跨档随正轮 · eng-designer**——承批档 `docs/batches/2026-10-03-desktop-second-instance-notice.md` §1 · 台账 #838）：三处随正——§1④ `thincoder-desktop/src/main/main.mjs:70` ⇒ **`:92`**；**KD-4** ∥ §3.2 userData 行「非主实例静默退出 ⇒ `firstWindow()` 挂起 / 超时」⇒「非主实例弹模态框待点击（非 `--smoke` 径）⇒ 子进程阻塞待人工点击」（`thincoder-desktop/src/main/main.mjs:70-73` ⇒ **`:92-106`**）——隔离仍为唯一正解零改。**零新语义**（随正）。明细 = 批档 §2 形式化块。
-- 2026-10-04（**模型切换解锁批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-desktop-model-switch-unlock.md` §2 · 台账 #918）：**T-DSK43 ③** 句收正（「两钮 `disabled`」⇒ **可点**——落盘保护 ∥ 回写门 = 解锁批批内件）。**零新语义**。明细 = 批档 §2。
-- 2026-10-04（**模型切换解锁批 · 修正轮（评审 #53 · 发现 7）· eng-designer**——承批档 `docs/batches/2026-10-04-desktop-model-switch-unlock.md` §3 轮次 1 · 台账 #918 · 父侧裁 = 全采纳）：§6 `T-DSK43` ③ 判据行去沿革从句（新态直陈——沿革载本档变更记录）+ 中断键句按核件两态收正（非在飞 ⇒ 键隐）；§4 / §6 面名收正（忙态写门 ⇒ 忙态两钮可点）。**零新语义**。明细 = 批档 §2 修正块。

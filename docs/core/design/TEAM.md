@@ -1,7 +1,7 @@
 # 团队客户端（TEAM）· 登录与接入
 
 > 板块归属 = **核心统一**（阶段二「一个核 + 两个薄壳」延伸——团队客户端面：三端共用机制）；本档 = 该机制设计档。
-> 需求单源 = `docs/server/requirements/PROJECT.md` §2:31 + AC-31（本批需求锚 = `docs/batches/2026-10-10-team-login-client-access.md` §1）。
+> 需求单源 = `docs/server/requirements/PROJECT.md` §2:31 + AC-31。
 > 服务面单源 = `docs/server/design/client/CLIENT.md`（端点 ∥ token 机制——本档不复制）；配置系统 = `docs/core/design/CONFIG.md`（`team` 段指针 = §6.4）；渠道与模型 = `docs/core/design/PROVIDER.md`（派生条目 = §6.25）。
 > 建档：2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer** · 台账 #1212）。
 
@@ -137,8 +137,8 @@
 | core | `thincoder-core/team.mjs`（**登录面补全批增**） | **196 ⇒ ≈240**（+`teamVerify`——服务端校验三值（valid ∥ invalid ∥ unreachable）；实施落盘回填） |
 | core | `thincoder-core/i18n.mjs`（**登录面补全批增**） | **113 ⇒ ≈120**（+`status.team.invalid` 两语） |
 
-- 单元测试档三件（跨档集——件数口径与服务端板档 §6 本批块对拍）：服务端单件 = `docs/batches/2026-10-10-team-login-client-access.test.mjs`（实施落盘 **305**——**入 server 链**（`prepublishOnly` 38 ⇒ 39））∥ 本册件 = `docs/batches/2026-10-10-team-login-client-access-ends.test.mjs`（核 + 三端结构面——实施落盘 **410**；**不入链**——跨面件无宿主产品链）∥
-  桌面面单件 = `docs/batches/2026-10-10-team-login-client-access-desktop.test.mjs`（实读 **364**；**不入链**——桌面包无 `prepublishOnly` 链）。
+- 单元测试档三件（跨档集——件数口径与服务端板档对拍）：服务端单件（实施落盘 **305**——**入 server 链**（`prepublishOnly` 38 ⇒ 39））∥ 本册件（核 + 三端结构面——实施落盘 **410**；**不入链**——跨面件无宿主产品链）∥
+  桌面面单件（实读 **364**；**不入链**——桌面包无 `prepublishOnly` 链）。
 - `thincoder-core/agent-tools/settings.mjs` ±0（`team` 不入 `DEFAULTS`——工具面零改）。
 
 ## 5. 验收判据（端侧面——回指 AC-31 ①–⑤）
@@ -174,22 +174,6 @@
 
 ## 7. 边界（不做）
 
-- 不做登录 token 管理面（清单/吊销 = 控制台 key 页 ∥ CLI key 命令——既有面；**token 轮换同理——无端侧可达机制，另裁项**：设置卡「轮换」本批零控件——见批档 §2 未裁点） ∥ 不做多账号/多服务器切换（单登录态） ∥ 不做离线缓存 ∥ 不做授权码/device-flow（已搁置） ∥ 不做周期轮询校验（校验 = 触发点制——§2.6） ∥ 不做团队面板（状态 = 常显段/项；入口 = 登/退面） ∥ 不做新文案（四句失败句 ∥ 未登录句 ∥ 两条一次性提示沿用逐字；新态词仅「已失效——重新登录」）。
+- 不做登录 token 管理面（清单/吊销 = 控制台 key 页 ∥ CLI key 命令——既有面；**token 轮换同理——无端侧可达机制，另裁项**：设置卡「轮换」本批零控件） ∥ 不做多账号/多服务器切换（单登录态） ∥ 不做离线缓存 ∥ 不做授权码/device-flow（已搁置） ∥ 不做周期轮询校验（校验 = 触发点制——§2.6） ∥ 不做团队面板（状态 = 常显段/项；入口 = 登/退面） ∥ 不做新文案（四句失败句 ∥ 未登录句 ∥ 两条一次性提示沿用逐字；新态词仅「已失效——重新登录」）。
 - **已认账（token 生命周期——口径①）**：累积可预期（每次登录一枚 ∥ 无过期 ∥ 不自动清理）——清理 = 用户面（key 列表逐把吊销——既有面）；换 server 重登（单登录态覆盖）⇒ 旧 server 的 token 不在本机——撤销径 = 旧 server 控制台 key 列表（`webui/ME.md` §2.1 ∥ `GET /api/me` ∥ CLI `key revoke`）。
 - 不改 `memory.team`（B3 面） ∥ 不动 personal/project 记忆 ∥ 不自动改 `defaultModel` ∥ 不切换会话模型 ∥ 不动手工 provider 条目。
-
-## 变更记录
-
-- 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：建档——定位与边界 ∥ 机制面（`team` 段 ∥ 派生条目 ∥ 登录/退出流程 ∥ 可见性 ∥ 三端同构）∥ 决策 D-TM1–6 ∥ 受影响文件预算（24 行）∥ 验收判据（AC-31 ①–⑤）∥ 用例 ∥ 边界。实施 = 本批实施轮。
-- 2026-10-10（**team-login-client-access 批（B1）· 设计评审轮 1 修正（fix 轮 · 发现 3 ∥ 7 ∥ 8 ∥ 9 ∥ 12）· eng-designer**——承批档 §3 轮次 1 · 台账 #1212）：§4 批内件对账（服务端单件入链 ∥ 本册件不入链）+ `config.mjs` 行越线注与拆分预案指针 ∥ §2.5 删「（含等待秒数）」（秒数无载体——三句逐字同判据保持；三端已同拍）∥ §2.4 ∥ §3 D-TM3 消费面计数统一「四消费面」（与 `PROVIDER.md` §6.25 同拍）∥ §7 增 token 生命周期已认账两条。**零新语义**（评审发现的直接导出项）。
-- 2026-10-10（**team-login-client-access 批（B1）· 实施期设计相抵修复 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §2 实施期修复块 · 台账 #1212）：§2.2 ∥ §2.3 补**返回形 + 端侧就地提示**句（`notice: "manual-name-conflict"` 仅同名冲突时在场 ∥ `revokeDelivered`——缺席 = true）∥ §2.5 增**一次性提示**行 + 判据扩（三端逐字同句 ∥ 读面零提示字段）。**零新语义**（父侧裁定直接导出项）。
-- 2026-10-10（**team-login-client-access 批（B1）· 实施期档-码差一修复（`write_failed` 补设计）· eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §2 实施期修复块 · 台账 #1212；父侧裁定 = 保留第四值并补设计——写盘失败须真报警；第四句用词 = 「本机配置写入失败」）：§2.5 新增**失败理由域四值句**（`network` / `credentials` / `rate_limited` / `write_failed`——本机配置落盘失败；与出词四句同序对位）+ 出词表补第四句 + 判据行同拍。**零新语义**（父侧裁定直接导出项）。明细 = 批档 §2 实施期修复块。
-- 2026-10-10（**team-login-client-access 批（B1）· 实施期收尾小修 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §2 实施期修复块 · 台账 #1212）：§2.2 步 4 分类出词补第四值（本机配置写入失败）∥ §2.5 补 **`reason` 判据句**（核心分类单源）∥ §6 E1 补写盘失败位（`write_failed`）；
-  §2.1 `team` 段行措辞收正（未知键原样通过——与 settings 工具实装对齐）∥ §4 i18n 估数随第四句顺正（VSC **+≈15 键/表** ∥ 桌面 **+≈13 键**）。**零新语义**（父侧派发项直接导出）。明细 = 批档 §2 实施期修复块。
-- 2026-10-10（**team-login-client-access 批（B1）· 设计面登记与估数补齐 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §2 实施期修复块 · 台账 #1212）：**§4** VSC 块 +`webview/chat-messages.js` 行（**271 ⇒ ≈276**——三 `case` 接线 ≈+5，舱 C 披露补登记）
-  ∥ **§2.5** `reason` 判据句 ∥ **§6** E1 判据位措辞同字（「本机配置写盘失败」⇒「本机配置写入失败」——与句面同字）。**零新语义**。明细 = 批档 §2 实施期修复块。
-- 2026-10-10（**team-login-client-access 批（B1）· 实施后回填轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §5 · 台账 #1212）：**§4** 表全量按现盘实读收正（四块 25 行改「现行 ⇒ 实读（实施落盘）」+ 补登三缺行 `thincoder-cli/src/tui/model-picker.mjs` **324** ∥ `thincoder-cli/src/tui/provider-admin.mjs` **248** ∥ `thincoder-desktop/src/main/providers.mjs` **302 ⇒ 311**；批内件 **305** ∥ **410**）∥ **§2.5** 括注同字（「落盘」⇒「写入」）∥ **§1** 去「（拟新增）」。**零新语义**（读数 ∥ 登记）。明细 = 批档 §2 实施后回填块。
-- 2026-10-10（**login-entry-completion 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §1 · 台账 #1229–#1232；用户 14:33–14:46 连续四提 + 14:48 点火）：§2.5 增**入口（登/退）∥ 常显面 ∥ 设置面（管理）**三行并按新面收正四行（登录/退出动作 ∥ 当前态 ∥ 一次性提示括注）∥ 增 **§2.6 登录态校验与吊销感知**（`teamVerify` 三值 ∥ 触发点制 ∥ 态模型 ∥ 词形 ∥ 引导重登）∥ §3 增 **D-TM7**（校验制）∥ **D-TM8**（登/退移出设置面）∥ §4 增 core 两行（`team.mjs` ∥ `i18n.mjs`）∥ §5 增补全批判据 ⑥⑦⑧ ∥ §6 增 N3 ∥ B3 ∥ §7 边界收正（`/team` 已落句退场；增轮换另裁 ∥ 零轮询 ∥ 零新文案三条）。**产品码零触（设计轮）**。
-- 2026-10-10（**login-entry-completion 批 · 设计评审轮 1 修正（fix 轮 · 发现 10）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 1 · 台账 #1229–#1232）：§2.6 态模型判序写死（未登录首判——`verify` 值不参与渲染）+ `verify` 清位补全（logout 落盘 ∥ 状态复读见 token 缺席）。**零新语义**（评审发现的直接导出项）。
-- 2026-10-10（**login-entry-completion 批 · 设计评审轮 2 修正（fix 轮 · 发现 2）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 2 · 台账 #1229–#1232）：§4 VSC 块 `thincoder-vscode/src/extension/team.mjs` 行补**现行 ⇒ 预期**（**34 ⇒ ≈44**——+`teamVerify` 转口（转口四件）；前读 34 保留）。**零新语义**（评审发现的直接导出项）。明细 = 批档 §2 fix 轮补记。
-- 2026-10-10（**login-entry-completion 批 · 设计档回填轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §5（#151 VSC 交卷）· 台账 #1242）：§4 VSC 两行按实读收正（`settings-team.js` **141 ⇒ 133**——卡降管理面 ∥ `settings.js` 句去 B1 期 `bindTeamControls()` 形——登录面补全批净删；**199 ⇒ 203** 读数不变）。**零新语义**（读数 ∥ 形态随正）。

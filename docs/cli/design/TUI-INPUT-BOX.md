@@ -5,7 +5,7 @@
 > 对位档 = `docs/vsc/design/WEBVIEW-INPUT.md`（VSC webview 输入面——语义同源、各端独立实现；端差已消解）。
 > **本档是输入框的唯一行为契约：任何对输入框 / 键处理的修改，先读这里，改完更新这里。**
 > 建档：2026-09-15（**B 式迁移轮 · 第 6 批**——`thincoder-cli/docs/design/TUI-INPUT-BOX.md` 内容重建；
-> 旧档**二态混装**（当前态 + 第 31 批目标态）已按「第 31 批设计已实现」收口为单态现行契约——见 §9.1）。
+> 旧档**二态混装**（当前态 + 第 31 批目标态）已按「第 31 批设计已实现」收口为单态现行契约）。
 > 本档坐标与行数 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 > 模块地图（各模块职责）= `docs/cli/design/TUI.md` §1；本档只落输入框行为与键处理语义。
 
@@ -297,27 +297,3 @@ F13 attention 判据不破（queued 反馈零注意力色对——`docs/cli/desi
 - **标题提示**（`render-frame.mjs`）：` Inject Message ` 面提示 = `" Enter send, Esc cancel │ ←→↑↓ Home/End move │ Ctrl+V paste "`；
   现行共用段中 `Shift+Enter / Ctrl+J newline` 与 `Ctrl+I inject` 在本面移除（单行框无换行键；框内 Ctrl+I 被模态吞）。
   共用段条件由 `title !== " Question "` 收窄为 `title === " Input " || title === " Processing... "`。
-
-## 9. 不并项与历史沿革
-
-### 9.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/design/TUI-INPUT-BOX.md`——**原地保留作参照历史**（保留 ≠ 维护）。
-> **二态混装收口**：旧档为「当前态 + §9 第 31 批目标态」两态并置；第 31 批（方向键编辑）**已实现**
-> （`state.interruptPrompt = { chars, cursor }` 与 `arrow-editing 用例档` 均在位——as-of 2026-09-15 实核）。
-> ⇒ 本档按**单态现行契约**重建：目标态已并入 §3 / §8 正文。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档 §9 第 31 批设计节 | 问题陈述 / 方案选型对比（A / B / C / D 四族候选）/ 契约变更清单 / 决策记录 D-31.1–D-31.8 | 一次性批次设计材料——机制结论已入本档 §3 / §8 正文 |
-| 旧档 §9.5 受影响文件表 | as-of 2026-09-11 行数与增量快照 | 时点快照（实装后已漂移）——现行档位以实测为准 |
-| 旧档 §9.6 用例表（T-A1–T-A11）· §9.7 验收标准（AC-E1-1–AC-E1-10） | 批次验收材料 | 验收已完成——不变量已入正文；用例宿主 = `CLI arrow-editing 用例档` |
-| 旧档 §9.8 边界 + 档头「设计已落档、实现待批准」状态行 | 批次边界与在途状态 | 批次语境——实现已落地，边界语义已入 §1–§8 |
-
-### 9.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 挂起决策 / 队列机制的正文 | 挂起状态机、settle 时序、池管理 | `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8——本档只落输入框侧行为（§4） |
-| question 工具协议面 | 提问工具契约、CUSTOM 哨兵定义 | `docs/core/design/TOOLS.md`（question 行）+ `docs/cli/design/TUI-COMMANDS.md` |
-| 输入层状态机的宿主实现细节 | `key-handler` 族 / `key-modes` 内部结构 | 实现面——落点 `thincoder-cli/src/tui/key-handler.mjs` + 五族 `key-handler-{ctrlc,modals,scroll,busy,edit}.mjs` · `key-modes.mjs`（本档只留行为契约） |

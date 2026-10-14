@@ -61,13 +61,3 @@
 ## 6. 上抛/余项
 
 - 本面无独立上抛/余项。
-
-## 变更记录
-
-- 2026-10-14（**sandbox-exec-rebuild 批 · 收口修复轮（设计面）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §6 行账注）：§3 `views-audit.mjs` 行补实读 **250**（2026-10-14 现读——链上 ≈177 陈估收口）。**产品码零触（设计轮）。**
-
-- 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：本档自 `webui/WEBUI.md` §2.3①–⑤ 及三表归位行逐字迁入（零语义；标题携原题逐字——「另含后批可见面 ⑥⑦」句保留，⑥⑦ 内容 = `webui/ME.md` §2.1/§2.2）；文内 § 引用改指（§2.1→`webui/SYSTEM.md` §2.1 ∥ §2.8⑥/§2.10 跨档形等）；AC-15 行三拆之 ②–⑤ 片段（+ 尾句）入本档；档目链去重 ⇒ 单源句（`webui/WEBUI.md` §1）；原址保位 stub 在 `webui/WEBUI.md`。**产品码零触。**
-- 2026-10-11（**控制台实走修复轮（走查轮）· 主 agent 直接执行 · 可 revert**——承 `docs/batches/2026-10-11-console-walkthrough-round.md` §1 · 台账 #1299；用户 00:0x 原话「你到底记录哪些日志？连容器启停都没日志」）：§2.1④ 审计面两处落实现——① 类型下拉接沙盒两型（`sandbox_event` ∥ `sandbox_rule`——全十三型在册）；② 详情模板增沙盒 `kind` 族渲染（kind 文案 + name/containerId/image/volume/address/host 逐值——枚举外原值兜底）；行数随正（实读 144〔当轮口径〕；2026-10-12 复核盘面 146 ⇒ `kind` 补四键 +4 ⇒ 实读 150）。同源随动 = `webui/SANDBOX.md` §2.1（不做项销记） ∥ `webui/SYSTEM.md` §6（AC-28 口径）。
-- 2026-10-12（**admin-agent-awareness 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-admin-agent-awareness.md` §1 · 台账 #1310；功能点 43⑥ ∥ AC-43⑥）：§2.1④ 审计面落实现——`agent_event` 行接**专用详情模板**（`tool · subject · 成败 · 〔截断〕 · summary`——非裸 JSON；`bash` 命令原文/读文件路径可见）+ 按型模板计数收正（「三型模板」⇒ **四类**——`agent_event` 行随 admin-agent-chat 批入册时漏登，本批一并收）；行数随正（`views-audit.mjs` 实读 150 ⇒ ≈166）；同源随动 = `accounts/ACCOUNTS.md` §2.1（detail 扩字段） ∥ `webui/SYSTEM.md` §3（i18n 两表 +3 键） ∥ `agent/ADMIN-AGENT.md` §14.4。**产品码零触（设计轮）。**
-- 2026-10-12（**team-projects-permissions 批（B2）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §1 · 台账 #1216；需求 44 ∥ AC-44）：§2.1④ 审计面随正——类型下拉十三型 ⇒ **十四型**（`project_event` 入册）+ 详情模板增 `project_event` 专用支（`kind` 族 + sourceId/name/counts/trigger/username/level 逐值）+ 按型模板计数收正（四类 ⇒ **五类**）；§3 `views-audit.mjs` 行随正（⇒ ≈178——`project_event` 型接 + 详情支 +≈12）；§4 AC-15 行 nav 链随正（我的 4 ∥ 管理 11）。同源随动 = `accounts/ACCOUNTS.md` §2.1（`project_event` 行） ∥ `webui/PROJECTS.md` §3/§4 ∥ `gateway/API.md` §2.9。**产品码零触（设计轮）。**
-- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277））：§2.1④ `project_event` 行详情模板补 `project_delete` 键（projectId/displayName/address/memberCount——R64；`kind` 族枚举外原值兑底不变）。**产品码零触（设计轮）。**

@@ -7,7 +7,7 @@
 > 需求侧 = `docs/core/requirements/SEND-STALL-DISTILL.md`（FR1–FR4 / N1–N5）。
 > 建档：2026-09-15（**B 式迁移轮 · VSC 批 3**——`thincoder-vscode/docs/_archive/design/SEND-STALL-DISTILL-TUNING.md` 内容重建入基准层；
 > 旧档原地一字不改、留作参照历史）。CLI 侧同名档（`thincoder-cli/docs/design/SEND-STALL-DISTILL.md`）**已并入（2026-09-15 · CLI 尾部真批）**——
-> CLI 独有面（TUI 保存回调接线 / 退出 flush 有界等待）已入 §2.3 / §2.6 / §3，(d) 类入 §5.1。
+> CLI 独有面（TUI 保存回调接线 / 退出 flush 有界等待）已入 §2.3 / §2.6 / §3。
 > 本档坐标 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 > **2026-09-29 P2 三拆收正注（core-hygiene 批 · §2.8 行 5）**：核 `agent.mjs` 主循环面已分档（`agent/run-start.mjs` ∕ `agent/turn-loop.mjs` ∕ `agent/chat-call.mjs`；`agent.mjs` = 105 行编排面）——本档核侧坐标逐处收正（随行注「三拆前」= 旧坐标）。
 
@@ -108,48 +108,3 @@ flush 点 = 每轮 `runAgentTurn` 的 finally——`:286-287`，render 已先行
 | D-SD9 | 槽位快照用 `ensureSlot` 而非裸读 | 首个回合可先于状态解析——裸读会把 null 冻进快照、槽守卫恒拒绝 |
 | D-SD10 | 失败静默（返回 null，不替换不保存） | 蒸馏是体验优化面——失败不得影响回合结果与历史 |
 
-## 5. 不并项与历史沿革
-
-### 5.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-vscode/docs/_archive/design/SEND-STALL-DISTILL-TUNING.md`（VSC 产品档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实现——2026-08-25 … marketplace / Open VSX 0.1.49」） | 时点状态行 + 发版号 | 批次语境——现行态已入 §2–§3 |
-| 旧档 §2.1 / §2.2 / §2.3 内嵌代码块 | 改动前的原样代码摘录（逐字实现形态） | 现态源码即权威——正文只留机制与坐标 |
-| 旧档 §4 验收标准 AC1–AC8 | 一次性验收清单 | 批次材料——行为面由现行测试族覆盖 |
-| 旧档「评审 #1 / #2 / #5」括注 | 单批评审批注与批序 | 一次性材料——结论已入 §4 决策表 |
-| 旧档变更记录（2026-08-25 起逐批流水） | 历史叙述 | 本档自有变更记录 |
-
-> **CLI 侧来源档** `thincoder-cli/docs/design/SEND-STALL-DISTILL.md`（2026-09-15 CLI 尾部真批对账并入）——原地保留作参照历史。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档状态行（「已实现（2026-08-25 实施；npm 0.12.43）」） | 时点状态行 + 发版号 | 批次语境——现行态已入 §2–§3 |
-| 旧档 §2.1 / §2.3 / §2.4 内嵌代码块 | 实现形态摘录 | 现态源码即权威——正文只留机制与坐标（与 VSC 侧同型判例一致） |
-| 旧档 §3 验收清单（「轮末 runAgent 不等待蒸馏（<1s 返回）…全套测试通过」） | 一次性验收清单 | 批次材料——行为面由现行测试族覆盖 |
-| 旧档变更记录（含 2026-09-05 模块拆分注） | 历史叙述 | 拆分结论已反映于 §3 坐标；本档自有变更记录 |
-
-### 5.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 旧档 §1「评审 #4」括注（机制本体归 CLI 端） | 跨档归属指针 | 已归位——本体见 `docs/core/design/CONTEXT-COMPACTION.md` §6.9 |
-| 旧档「文档地图惯例」注 | 旧树地图惯例 | 树降格后失效——登记表已退休 |
-| CLI 侧同名档未迁面（CLI 台账列为后续批） | CLI 产品档正文 | **已并入（2026-09-15 CLI 尾部真批）**——CLI 独有面入 §2.3 / §2.6 / §3，(d) 类入 §5.1 |
-
-## 变更记录
-
-- 2026-09-15（**CLI 尾部真批 · 并入既有 · eng-designer**）：`thincoder-cli/docs/design/SEND-STALL-DISTILL.md` 逐节对账并入——
-  CLI 独有面入档：TUI 保存回调接线（`tool-events.mjs:402` `onDistilled` → `saveSessionImpl`，§2.3 / §3）· **§2.6 CLI 退出前 flush**
-  （有界等待 5s · 不摘除 `_pendingDistill`）；§3 坐标表「保存回调 / 退出 flush」两行按实装收正（原核/CLI 栏仅「—（会话退出 flush）」——不完整）；
-  (d) 类（状态行 / 内嵌代码块 / 验收清单 / 逐批流水）入 §5.1。旧档原地一字不改。
-- 2026-09-15（**B 式迁移轮 · VSC 批 3**）：建档——`thincoder-vscode/docs/_archive/design/SEND-STALL-DISTILL-TUNING.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；坐标改写为现状路径并实核（`thincoder-core/agent.mjs` · `explore-distill.mjs` · `context.mjs`；
-  `thincoder-vscode/src/agent/run-stages.mjs` · `thincoder-vscode/src/{explore-distill.mjs,compact.mjs,extension/panel-chat.mjs,extension/panel-callbacks.mjs}`）；
-  内嵌代码块与验收清单不并（§5）；蒸馏本体指向 `CONTEXT-COMPACTION.md` §6.9（D2 单一权威源）。
-- 2026-09-18（**坐标漂移收正轮 · eng-designer**——承 `docs/batches/2026-09-18-distill-prefix.md` §5 八、登记 · 台账 #76）：坐标按实况收正（机制条文零改）——
-  发射点 VSC `thincoder-vscode/src/agent/run-stages.mjs:261`（原 `:232`）· `onDistilled` 触发 `:267`（原 `:243`）· 核发射面区间 `thincoder-core/agent.mjs:341-348`（原 `:342-347`）；
-  蒸馏本体 VSC `thincoder-vscode/src/explore-distill.mjs:29`（原 `:154`——该档现为 55 行调用期适配器）· 核 `thincoder-core/explore-distill.mjs:141`（原 `:145`）。
-- 2026-09-29（**core-hygiene 批 · P3 文档收正 · eng-designer**——承批档 `docs/batches/2026-09-29-core-hygiene.md` §2.8 行 5）：核侧坐标按 **P2 三拆**收正——轮末发射 ∕ 下一轮 await ∕ 双保险 = `agent/turn-loop.mjs` ∕ `agent/run-start.mjs`（字段声明 = `thincoder-core/agent.mjs:79`）；档头补三拆收正注。机制条文零改。

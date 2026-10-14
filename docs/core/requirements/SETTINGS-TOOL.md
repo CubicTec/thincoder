@@ -77,16 +77,4 @@ agent 需要在不打断会话的前提下查看 / 修改运行配置（模型�
 |---|---|---|
 | 旧档「部分承载 = `docs/design/TOOLS.md` §5」指针 | 跨档承载句 | 归 `docs/core/design/TOOLS.md`（本档只留设计侧指针） |
 | 「机制在位无档补建」建档批注 | 建档批序 | 一次性材料——归批次档 |
-| CLI 侧同名需求档未迁面 | CLI 产品需求正文 | **已并入（2026-09-15 CLI 尾部真批）**——缺口入 §2–§4，(d) 类入 §5.1；**§4 错误边界行已按双端实装收正**（详见变更记录） |
-
-## 变更记录
-
-- 2026-09-30（**跨线清零批 #677 · F-ST5 细化** · 主 agent）：敏感键遮蔽判定句细化——段内复合名入遮（camelCase ∕ 前缀复合，形如 `refreshToken` ∕ `clientSecret` ∕ `privateKey`；假阳方向安全——只丢值、键名可见）。依据 = 设计 `docs/core/design/SETTINGS-TOOL.md` D-ST17 ∕ §2.4（C2 采纳）；承接批 = `docs/batches/2026-09-30-crossline-clearance.md`（I13 实施面）。
-
-- 2026-09-15（**CLI 尾部真批 · 并入既有 · eng-designer**）：`thincoder-cli/docs/requirements/SETTINGS-TOOL.md` 逐节对账并入——
-  **缺口**：F-ST7（值解析去引号裁定）· F-ST2 热应用语义细节 · F-ST4 无静默集合相等判据 · N-ST5 / N-ST6 · CLI 边界族（§4）· 持久性边界（F-S1.6 入 §4）；
-  **收正**：§4「已知键之外一律拒绝」与双端实装相反（未知键原样通过——`thincoder-core/agent-tools/settings.mjs:128` / VSC 同型 `:135` + 双端描述句）⇒ 按现状收正；
-  (d) 类（状态行 / N-S1.3 陈旧口径 / VSC 跨仓引例）入 §5.1。档头补设计侧指针（本批新建 `docs/core/design/SETTINGS-TOOL.md`）。旧档原地一字不改。
-- 2026-09-15（**B 式迁移轮 · VSC 批 4**）：建档——`thincoder-vscode/docs/requirements/SETTINGS-TOOL.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；判定句坐标按现状实核改写（`thincoder-vscode/src/{agent-tools/settings,agent/setup,config-io}.mjs`）；
-  敏感键判定按判据句书写（不列字面键段名，避与实现词表分叉）。
+| CLI 侧同名需求档未迁面 | CLI 产品需求正文 | **已并入（2026-09-15 CLI 尾部真批）**——缺口入 §2–§4，(d) 类入 §5.1；**§4 错误边界行已按双端实装收正** |

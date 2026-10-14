@@ -107,6 +107,9 @@ HostConfig:
 
 ## 5. 主机侧件②：出站闸本体（`egress.mjs`——求值 → 规则文本 → 下发）
 
+- **开关（缺省关——2026-10-14 现状）**：出站管控由 `egressEnforced(config)` 判定（判据 = `config.sandbox.egressEnforce === true`；缺省 false——实现 = `thincoder-server/src/sandbox/egress.mjs:29`）；
+  关 ⇒ **零下发**——全部下发入口同径早退（`ensureEgressApplied` 返回 `{skipped:true, mechanism:"off"}`——不推规则、不动节点既有表；实现 = `thincoder-server/src/sandbox/egress.mjs:294`）；盒侧闸 DNS 注入随开关（§6）。
+  **启用（严格模式）= 功能齐后的后续轮**（用户 2026-10-14：「安全性问题押后，等跑通以后再说，别套着枷锁跳舞」）——启用后按本节机制生效。
 - **求值单源** = `rules.mjs`（`listRules` ∥ `evaluateEgress` ∥ `HARD_DENY_CIDRS`——控制面与主机面同判；本档零第二求值）。
 - **规则文本（nft——KD-SV-76 全量重算幂等）**：表 `inet thincoder_egress`；**基线链两条 = `hook forward` + `hook input`**（同锚 `iifname "tcws*"`、同盒链同位次；`forward` = 盒 → 外发向 ∥ `input` = 盒 → 宿主自身方向（**本机投递不经 forward**——P2 宿主 22 口即此向）；两条俱在方为「全协议/全端口」；主机自身与其他容器流量零涉）；盒链内位次 = 强制面总序（SANDBOX §4）：
   ① L1 不变量（`127.0.0.0/8` ∥ `169.254.0.0/16`）⇒ `drop`；
@@ -121,7 +124,7 @@ HostConfig:
 
 ## 6. 出站闸②：域名闸与待批（`dns-gate.mjs`——server 进程内 DNS 应答器）
 
-- **面**：UDP 53（server 进程自持——`node:dgram`；零新进程 ∥ 零节点侧常驻）。盒内解析器 = 建盒 `Dns` 注入（§3）；盒内硬编码 DNS/DoH ⇒ 非白名单目标 ⇒ nft 默认拒（fail-closed）。
+- **面**：UDP 53（server 进程自持——`node:dgram`；零新进程 ∥ 零节点侧常驻）。盒内解析器 = 建盒 `Dns` 注入（§3）——**注入随总开关（§5）：缺省关 ⇒ 不注入**（盒走 docker 缺省解析——本闸零流量；实现 = `thincoder-server/src/sandbox/box.mjs:146`）；盒内硬编码 DNS/DoH ⇒ 非白名单目标 ⇒ nft 默认拒（fail-closed）。
 - **归属判**：收包源 IP ∈ 某工作区网络网段（建网络后读 `IPAM.Subnet` 记录于进程内 map；重启后按需重读）；非盒源 ⇒ 忽略（零答）。
 - **请求处理**（全链 ≤ 60s 持答窗——`pendingTimeoutSeconds`）：
   ① 解析上游（3s 预算——答与判同源，零解析 ⇒ REFUSED）；
@@ -328,6 +331,8 @@ HostConfig:
 - **跨批排序约束（在册）**：底座可换真机闭环（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起）**前置 = `deploy/sandbox/Dockerfile` 件位契约就绪**（契约 = 本档 §8 件位 `/opt/thincoder/app`；落地 = member-face 批）；件位契约未就绪 ⇒ 收口轮该腿如实 SKIP（零假 PASS——探针整套同口径），机检腿（假件）不受阻。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-off 轻通道轮 · 收尾链设计回笔 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-off.md` §1；用户 2026-10-14 裁「安全性问题押后，等跑通以后再说，别套着枷锁跳舞」）：§5 增**开关（缺省关）**句（判据 = `config.sandbox.egressEnforce === true` ∥ 缺省 false ⇒ 零下发）∥ §6 盒侧闸 DNS 注入随开关句。**产品码零触（设计轮）。**
 
 - 2026-10-14（**sandbox-onboarding-removal 批 · 延迟三档落地轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §2「不在本批（承接/延迟）」；重做批收口闭 ⇒ 延迟条件消解；用户 2026-10-14 裁「撤」）：§16 连接面 TLS 余项行去「托管接入面 TLS」子项（装机径 TLS 条随任务式退场删；承接 = 手工登记 + 管理面 chat 内动作——单源 = `sandbox/SANDBOX.md` §3 接入面）。**产品码零触（设计轮）。**
 

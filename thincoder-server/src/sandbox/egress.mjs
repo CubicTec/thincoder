@@ -23,13 +23,13 @@ export const NFT_TABLE = "thincoder_egress"
 export const NFT_CHAIN = "tcws_egress"
 export const EGRESS_ANCHOR = "tcws*"
 export const IPT_CHAIN = "TC-EGRESS"
+export const IPT_ANCHOR = "tcws+"
 
 /** 出站管控总开关（2026-10-14 用户裁：现阶段不设默认全禁——「安全性问题押后，别套着枷锁跳舞」；严格模式 = 后续轮）。
  *  判定 = `config.sandbox.egressEnforce === true`；缺省 false = 不下发全禁规则集（节点既有表人工拆在案——零下发即零重建）∥ 盒侧不注入闸 DNS（见 box.mjs）。 */
 export function egressEnforced(config = {}) {
   return config?.sandbox?.egressEnforce === true
 }
-export const IPT_ANCHOR = "tcws+"
 
 /** 域规则解析预算（§5——3s）。 */
 export const RESOLVE_TIMEOUT_MS = 3000

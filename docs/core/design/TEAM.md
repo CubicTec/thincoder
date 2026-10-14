@@ -51,8 +51,8 @@
 ### 2.4 派生条目的可见性（停用/隐藏）
 
 - **可用性**：派生条目无 `apiKey` ⇒ 不参与运行时解析（`hasKey` 既有判据——零新代码）；不触发「渠道无效」类提示（回退序跳过）。
-- **列表可见性**：`derived === true` ∧ 无 key ⇒ 从 provider 列表/模型候选面隐藏（**四消费面各一处过滤**：CLI 模型候选（`thincoder-cli/src/tui/model-picker.mjs`） ∥ CLI provider-admin ∥ VSC `providerStatus`（`thincoder-vscode/src/extension/settings.mjs`）∥
-  桌面 `providerList`（`thincoder-desktop/src/main/providers.mjs`）——与 `docs/core/design/PROVIDER.md` §6.25 同拍）；**登录态下在场**（正常参与，key 掩码显示）。
+- **列表可见性**：`derived === true` ∧ 无 key ⇒ 从 provider 列表/模型候选面隐藏（**五消费面各一处过滤**：CLI 模型候选（`thincoder-cli/src/tui/model-picker.mjs:115/:271`） ∥ **CLI `/config` provider 列表（`thincoder-cli/src/tui/cmd-config.mjs:297/:307`）** ∥ CLI provider-admin（`thincoder-cli/src/tui/provider-admin.mjs`） ∥ VSC `providerStatus`（`thincoder-vscode/src/extension/settings.mjs`）∥
+  桌面 `providerList`（`thincoder-desktop/src/main/providers.mjs`）；**共单源** = `isDerivedProviderHidden`（`provider-admin.mjs:23`）——与 `docs/core/design/PROVIDER.md` §6.25 同拍）；**登录态下在场**（正常参与，key 掩码显示）。
 - **不自动改**：不写 `defaultModel` ∥ 不切换当前会话模型 ∥ 不动既有手工条目（登录唯一副作用 = §2.2 两处写）。
 
 ### 2.5 三端同构面（能力与文案）
@@ -68,7 +68,7 @@
 | 失败出词 | 网络不可达——请检查地址与端口 ∥ 用户名或密码错误 ∥ 登录尝试过于频繁 ∥ 本机配置写入失败 | 同四句 | 同四句 |
 | 一次性提示 | 同名冲突（登录当刻）：「已存在同名 provider「team」——未自动添加；请改名或删除后重登」；吊销未达（退出当刻）：「服务端吊销未达」 | 同两句（登/退面就地提示） | 同两句（登/退面就地提示） |
 | 常显面（2026-10-10 增） | 状态行状态段簇尾：已登录 ⇒ ` │ <成员>@<主机>`（主机 = `URL.host`）；未登录 ⇒ **零注入**（逐字节等价负控）；已失效 ⇒ 段转「已失效——重新登录」警示色 | 状态栏 item：已登录 ⇒ 成员名（tooltip = 服务器 + 端标签）；未登录 ⇒ 入口「登录团队服务器」；已失效 ⇒ 警示色「已失效——重新登录」 | 状态栏段：已登录 ⇒ 成员名（悬停 = 服务器）；未登录 ⇒ 入口段「登录团队服务器」；已失效 ⇒ 警示色「已失效——重新登录」 |
-| 设置面（管理 · 2026-10-10 收正） | 无设置卡（argv ∥ 命令族即管理面） | 「团队」卡 = 管理面：端标签 ∥ 详情（server ∥ member ∥ label）；**零登/退控件**；「轮换」= 另裁项（无端侧可达机制——本批零控件） | 「团队」段 = 管理面：同左形 |
+| 设置面（管理 · 2026-10-10 收正） | 无设置卡（argv ∥ 命令族即管理面） | 「团队」卡 = 管理面：端标签 ∥ 详情（server ∥ member ∥ label）；**零登/退控件**；「轮换」= 另裁项（无端侧可达机制——零控件） | 「团队」段 = 管理面：同左形 |
 
 **失败理由域（失败形 `{ ok:false, reason }`——四值单源）**：`network` ⇔「网络不可达——请检查地址与端口」∥ `credentials` ⇔「用户名或密码错误」∥ `rate_limited` ⇔「登录尝试过于频繁」∥ `write_failed`（本机配置写入失败）⇔「本机配置写入失败」。
 
@@ -78,9 +78,9 @@
 
 ### 2.6 登录态校验与吊销感知（`teamVerify`——2026-10-10 登录面补全批）
 
-**动机**：token 被服务端吊销（控制台 key 页吊销 ∥ 其他路径）后，本地 `team.token` 仍在场 ⇒ 三端照显「已登录」（现三端零处理——用户 2026-10-10 14:46 同族裁定链；本批补）。
+**动机**：token 被服务端吊销（控制台 key 页吊销 ∥ 其他路径）后，本地 `team.token` 仍在场 ⇒ 三端照显「已登录」（现三端零处理——用户 2026-10-10 14:46 同族裁定链；已补）。
 
-- **核件**：`teamVerify()`（`thincoder-core/team.mjs` 本批新增）——`GET <server>/api/client/me`（Bearer = `team.token`；端点单源 = `docs/server/design/client/CLIENT.md` §2）；
+- **核件**：`teamVerify()`（`thincoder-core/team.mjs` 新增）——`GET <server>/api/client/me`（Bearer = `team.token`；端点单源 = `docs/server/design/client/CLIENT.md` §2）；
   返回**三值闭集**：`{ state: "valid" }`（200）∥ `{ state: "invalid" }`（401——token 被吊销 ∥ 无效）∥ `{ state: "unreachable" }`（网络不可达 ∥ 其他非 401 失败）。**只读**——零写盘、零状态（调用面持结果）。
 - **触发点制**（不设周期轮询——零新定时器）：① 启动一次（`team.token` 在场时）；② 登/退面开合时（桌面面板开 ∥ VSC item 点击流起手）；③ CLI `/team status` 活校验。
 - **态模型**：`loggedIn`（本地判据——§2.1）× `verify` 四值（`null` 未验 ∥ `valid` ∥ `invalid` ∥ `unreachable`）。显示三态（**判序写死**）：**未登录**（`loggedIn` 假——**首判**；`verify` 值不参与渲染）∥ **已登录**（`loggedIn` 真 ∧ `verify ≠ invalid`）∥ **已失效**（`loggedIn` 真 ∧ `verify === invalid`——token 在场被吊销）。
@@ -174,6 +174,6 @@
 
 ## 7. 边界（不做）
 
-- 不做登录 token 管理面（清单/吊销 = 控制台 key 页 ∥ CLI key 命令——既有面；**token 轮换同理——无端侧可达机制，另裁项**：设置卡「轮换」本批零控件） ∥ 不做多账号/多服务器切换（单登录态） ∥ 不做离线缓存 ∥ 不做授权码/device-flow（已搁置） ∥ 不做周期轮询校验（校验 = 触发点制——§2.6） ∥ 不做团队面板（状态 = 常显段/项；入口 = 登/退面） ∥ 不做新文案（四句失败句 ∥ 未登录句 ∥ 两条一次性提示沿用逐字；新态词仅「已失效——重新登录」）。
+- 不做登录 token 管理面（清单/吊销 = 控制台 key 页 ∥ CLI key 命令——既有面；**token 轮换同理——无端侧可达机制，另裁项**：设置卡「轮换」零控件） ∥ 不做多账号/多服务器切换（单登录态） ∥ 不做离线缓存 ∥ 不做授权码/device-flow（已搁置） ∥ 不做周期轮询校验（校验 = 触发点制——§2.6） ∥ 不做团队面板（状态 = 常显段/项；入口 = 登/退面） ∥ 不做新文案（四句失败句 ∥ 未登录句 ∥ 两条一次性提示沿用逐字；新态词仅「已失效——重新登录」）。
 - **已认账（token 生命周期——口径①）**：累积可预期（每次登录一枚 ∥ 无过期 ∥ 不自动清理）——清理 = 用户面（key 列表逐把吊销——既有面）；换 server 重登（单登录态覆盖）⇒ 旧 server 的 token 不在本机——撤销径 = 旧 server 控制台 key 列表（`webui/ME.md` §2.1 ∥ `GET /api/me` ∥ CLI `key revoke`）。
 - 不改 `memory.team`（B3 面） ∥ 不动 personal/project 记忆 ∥ 不自动改 `defaultModel` ∥ 不切换会话模型 ∥ 不动手工 provider 条目。

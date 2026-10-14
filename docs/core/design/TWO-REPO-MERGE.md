@@ -1,7 +1,7 @@
 # 两仓合并（TWO-REPO-MERGE）· 设计
 
 > 板块 = **两仓合并**——架构级机制档：本档承载**设计层 + 测试层**（需求层已拆出，见下）。
-> 需求侧 = `docs/core/requirements/TWO-REPO-MERGE.md`（**统一面**——本批同批迁入，与本档同名成对）。
+> 需求侧 = `docs/core/requirements/TWO-REPO-MERGE.md`（**统一面**——同批迁入，与本档同名成对）。
 > **phase 1（目录合并）已闭环**；**phase 2（核心统一）**的演进通道 = `docs/core/design/CORE-UNIFICATION.md`（其需求侧 = `docs/core/requirements/CORE-UNIFICATION.md`）——不在本档展开。
 > 建档：2026-09-15（**B 式迁移轮 · 第 2 批**——`thincoder-cli/docs/design/TWO-REPO-MERGE.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
 > 本档坐标与行数 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
@@ -80,7 +80,7 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | 对象 | 现行处置 |
 |---|---|
 | 路径 token（规范档 / 留痕档内的 `thincoder-cli/…` · `thincoder-vscode/…`） | **零改写**——子目录名沿用后自动成为正确的仓内路径 |
-| `（X 仓）` 注记 | **停新增**；留痕档（`docs/batches/` · `_archive/`）冻结不动；现行档**随触碰改写**（D10） |
+| `（X 仓）` 注记 | **停新增**；留痕档（`_archive/`）冻结不动；现行档**随触碰改写**（D10） |
 | 同名撞车（两产品各自的同名档） | **不物理合并**——两产品文档分层保留在各自子目录内，撞车不成立 |
 | 文档地图 | 基准层地图 = `docs/README.md`；各产品地图各留一份（各管各产品）；仓根 `README.md` = 合并仓总览 |
 | 三部分落点（core / cli / vsc） | 规划 = `docs/core/design/DOC-SYSTEM.md`；迁移台账 = `docs/core/design/DOC-MIGRATION.md`（CLI 树）· `docs/vsc/design/VSC-MIGRATION.md`（VSC 树） |

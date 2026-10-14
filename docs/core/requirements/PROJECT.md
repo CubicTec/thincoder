@@ -2,7 +2,7 @@
 
 > 板块 = **产品定性**——ThinCoder 产品族的定位与跨产品共享契约（三独立产品 / 共享配置与会话 / Provider 契约）。
 > 本档 = 产品级定性面的**需求层权威**（决策表 + 共享契约——承旧 VSC 档 `PROJECT.md` 的产品级定性面）。
-> VSC 专有面（界面 / 入口 / 审批 / webview 形态 / 会话流时序）= `docs/vsc/requirements/PROJECT.md`（本批同 split——切分规则见 §5.2）。
+> VSC 专有面（界面 / 入口 / 审批 / webview 形态 / 会话流时序）= `docs/vsc/requirements/PROJECT.md`（同 split——切分规则见 §5.2）。
 > CLI 侧同名档（`thincoder-cli/docs/requirements/PROJECT.md`——产品定性更完整）**已并入（2026-09-15 · CLI 尾部真批 · 按其档头自注对账合并）**——
 > 产品级定性面（品类 / 用户 / 核心承诺 / 产品边界 / 定位坐标 / 两种工作模式 / 总体需求 / v1 范围 / v2 团队记忆 / 技术与质量约束）入 §5。
 > 建档：2026-09-15（**B 式迁移轮 · VSC 批 5**——`thincoder-vscode/docs/requirements/PROJECT.md` 拆分重建：产品级定性面 ⇒ 本档；

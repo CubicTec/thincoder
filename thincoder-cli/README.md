@@ -231,6 +231,9 @@ Code conventions: pure `.mjs`, no semicolons, no third-party npm dependencies al
 
 ## Changelog
 
+### 0.12.74 (2026-10)
+- **Core `^0.10.7`** — document index scoping: `docs/batches/**` excluded by default; index scope is now declared by manifest (declared dirs ∪ first-level subdirectory manifests).
+
 ### 0.12.73 (2026-10)
 - **Core `^0.10.6`** — P0 packaging hotfix: the published core now ships `browser/`, so fresh installs no longer crash at startup.
 - Fixed: startup `ERR_MODULE_NOT_FOUND` after install (missing `@thincoder/core/browser/*` in the tarball whitelist — fixed via core `0.10.6`).

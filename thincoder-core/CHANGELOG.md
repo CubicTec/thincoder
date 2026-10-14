@@ -3,6 +3,15 @@
 All notable changes to the core package are documented here.
 Format: Keep a Changelog · 中文 · 号在发布时定（CalVer——见 `docs/RELEASE.md` §4）。
 
+## [0.10.7] — 2026-10-14
+
+> 0.10.6 → 0.10.7（月内 +1——发布时定号）
+
+### Added
+
+- **批次档不入文档索引（#1366）**：`docs/batches/**` 无条件默认排除（用户 19:03「不管 manifest 里配置没配置排除路径，都把批次档目录排除掉」）；读面准入过滤同拍。
+- **索引范围声明化（#1367）**：只索引 manifest 声明目录 ∪ 一级子目录（用户 19:25「只索引 manifest 指定的目录……还要考虑一级子目录下的 manifest」）；结构门替换开放式排除；manifest 写 ⇒ 范围缓存失效。
+
 ## [0.10.6] — 2026-10-13
 
 > 0.10.5 → 0.10.6（月内 +1——发布时定号；P0 热修）

@@ -111,7 +111,7 @@ function chainHost() {
       if (command.includes("findmnt")) return "/ xfs rw,pquota\n"
       if (command.includes("xfs_info")) return "bsize=4096\n"
       if (command.includes("report -p -b -n")) return `${memo.projectId} 0 0 ${(memo.diskMb * 1024 * 1024) / 4096} 0 [------]\n`
-      if (command === "command -v nft") return "/usr/sbin/nft\n"
+      if (command === "sh -c 'command -v nft'") return "/usr/sbin/nft\n"
       return ""
     },
   })

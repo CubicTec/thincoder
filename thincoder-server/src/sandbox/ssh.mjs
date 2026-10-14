@@ -1,11 +1,11 @@
 /**
- * ssh.mjs — SSH 传输（sandbox/SANDBOX.md §3「托管接入」∥ §14 KD-SV-85；runner-admin-console 批——台账 #1236）：
+ * ssh.mjs — SSH 传输（sandbox/SANDBOX.md §3 主机凭据块（传输单源）∥ §14 KD-SV-85；runner-admin-console 批——台账 #1236）：
  * spawn 系统 openssh（密钥 `-i <0600 文件>` ∥ 密码 `sshpass -e`——环境变量口径，不入 argv/ps）∥ keyfile/known_hosts 落数据目录
- * ∥ 主机指纹 TOFU（`accept-new` + 首见记录；变更 ⇒ 停 + 「重新信任」重试）∥ 超时/输出截断；`execImpl` 注入 = 测试。
+ * ∥ 主机指纹 TOFU（`accept-new` + 首见记录；变更 ⇒ 停 + 如实报（重发命令即重新信任））∥ 超时/输出截断；`execImpl` 注入 = 测试。
  *
  * 无人值守口径：密钥径 = `BatchMode=yes`（不弹交互）∥ 口令径 = 不带 `BatchMode`（带了直接弃用口令面——真机 A/B 核 2026-10-11），
  * 改 `NumberOfPasswordPrompts=1` + `PreferredAuthentications=password` ∥ `PubkeyAuthentication=no`（单提示、仅口令面——KD-SV-85）∥ `ConnectTimeout=10`；逐条命令、非交互；sudo 口令经 stdin（`sudo -S`——§3）。
- * 零第三方运行期依赖（系统 openssh——KD-SV-85）；本档只做传输，决定/重试/步骤 = 上层（agent 环 ∥ 任务面）。
+ * 零第三方运行期依赖（系统 openssh——KD-SV-85）；本档只做传输，决定/重试/步骤 = 上层（chat 回合环 ∥ 主机凭据面）。
  */
 import { spawn } from "node:child_process"
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
@@ -54,7 +54,7 @@ export function removeKeyFile(file) {
   }
 }
 
-/** 指纹变更后清 stale 条目（「重新信任并重试」的机器面——重交任务即重信任；免人工翻文件——提议⑬）。
+/** 指纹变更后清 stale 条目（「重新信任并重试」的机器面——重发命令即重信任；免人工翻文件）。
  *  known_hosts 行形：`<名> <算法> <指纹>`——非 22 端口 = `[host]:port` 前缀。 */
 export function forgetHost(baseDir, host, port = 22) {
   const file = join(sshDir(baseDir), "known_hosts")
@@ -119,7 +119,7 @@ export function spawnSsh(cmd, args, { env = process.env, input = null, timeoutMs
   })
 }
 
-/** 本机 `sshpass` 在场检查（密码认证前置——§3 宿主前提；缺 ⇒ S2 停 + 报因）。 */
+/** 本机 `sshpass` 在场检查（密码认证前置——缺 ⇒ 登录面「宿主缺 sshpass」人话，见下发失败分支）。 */
 export async function hasSshpass({ execImpl = spawnSsh } = {}) {
   const res = await execImpl("sshpass", ["-V"], { timeoutMs: 5000 })
   return !res.spawnError && res.code === 0
@@ -135,7 +135,7 @@ function truncate(text) {
 function classifyFailure(stderr, host) {
   const text = String(stderr ?? "")
   if (/REMOTE HOST IDENTIFICATION HAS CHANGED|Host key verification failed/i.test(text)) {
-    return new SshError("fingerprint_changed", "主机指纹已变更——确认后重试（重交任务即重新信任）")
+    return new SshError("fingerprint_changed", "主机指纹已变更——确认后重试（重发命令即重新信任）")
   }
   if (/Permission denied|Too many authentication failures|Authentication failed/i.test(text)) {
     return new SshError("auth", `无法登录：认证被拒（检查用户名/密钥/口令——${host}）`)
@@ -172,7 +172,7 @@ export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeout
     let args
     let env = process.env
     if (authKind === "key") {
-      const file = keyFile ?? writeKeyFile(baseDir, `onboarding-${process.pid}-${Math.random().toString(16).slice(2, 8)}`, String(secret ?? ""))
+      const file = keyFile ?? writeKeyFile(baseDir, `ssh-${process.pid}-${Math.random().toString(16).slice(2, 8)}`, String(secret ?? ""))
       if (keyFile && !keyWritten) {
         writeKeyFile(baseDir, keyName, String(secret ?? ""))
         keyWritten = true
@@ -212,9 +212,10 @@ export function createSshExecutor({ baseDir, execImpl = spawnSsh, defaultTimeout
     if (result.timedOut) throw new SshError("timeout", `命令超时（${timeoutS}s——${host}）：${truncate(result.stderr)}`)
     // 分类门限：只吃 ssh 自身失败（exit 255）的 stderr——远程命令级 stderr（如 EACCES「Permission denied」）不分类、原样上抛
     // （2026-10-14 修：命令级 EACCES 曾被误报「认证被拒」——诊断失真，实证见台账 #1408）
+    // 残余口径：远程命令自身以 255 退出时无法与 ssh 失败区分（ssh 保留码语义）——已接受，不另设判据。
     const failure = result.code === 255 ? classifyFailure(result.stderr, host) : null
     if (failure) {
-      if (failure.kind === "fingerprint_changed") forgetHost(baseDir, host, port) // 重交任务 = 重新信任（提议⑬）
+      if (failure.kind === "fingerprint_changed") forgetHost(baseDir, host, port) // 重发命令 = 重新信任
       throw failure
     }
     if (result.code === 255) throw new SshError("unreachable", `无法登录：连接失败（${host}）——${truncate(result.stderr).slice(0, 300)}`)

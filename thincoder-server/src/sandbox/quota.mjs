@@ -69,7 +69,7 @@ async function applyXfs({ exec, mount, path, projectId, diskMb }) {
   return { mechanism: "xfs-project", readback: { hardBlocks: hard, blockSize: bsize, expectedBlocks: expected } }
 }
 
-/** ext4 项目配额径（`chattr -R +P` + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
+/** ext4 项目配额径（`chattr -R -p <id> +P`（赋号＋继承同句） + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
 async function applyExt4({ exec, mount, path, projectId, diskMb, mechanism }) {
   // 赋号＋继承同句（"chattr -R +P" 裸形恒成功——只打继承标记不赋项目号 ⇒ 赋号句必须直接在场；真机实证 2026-10-14）
   await step(exec, "ext4 项目标记", `chattr -R -p ${projectId} +P ${path}`)

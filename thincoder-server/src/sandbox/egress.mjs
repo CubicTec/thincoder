@@ -7,7 +7,7 @@
  *   ① L1 不变量 ⇒ drop ∥ ② 内置允许（server 地址:HTTP 口 + UDP 53）⇒ accept ∥ ③ 显式 deny 行 ⇒ drop ∥
  *   ④ 允许集（显式 allow ∥ 种子 allow 解析集 ∥ 临时集——逐 IP 过闸子集）⇒ accept ∥ ⑤ 种子 deny 行 ⇒ drop ∥ ⑥ 默认 ⇒ drop。
  * 域规则 ⇒ 服务端解析（3s 预算）⇒ 逐 IP 过 `evaluateEgress`（`host` 在场）⇒ 允许的 IP 入 allow 集；解析空 ⇒ 零 allow 条目（fail-closed）。
- * 下发 = SSH：`command -v nft` 探（无 ⇒ iptables 备径：`TC-EGRESS` 链重建，**两向同挂**——`FORWARD` + `INPUT` 各一跳入
+ * 下发 = SSH：`sh -c 'command -v nft'` 探（无 ⇒ iptables 备径：`TC-EGRESS` 链重建，**两向同挂**——`FORWARD` + `INPUT` 各一跳入
  * `TC-EGRESS`（同锚 `-i tcws+`、同序））⇒ 删旧表（不存在 ⇒ 跳过）⇒ `nft -f -` 落全量定义（单事务原子）。
  * 就位复核 = 进程内 per-node 记录 `{ rulesRev, ok, at }` 对当前修订号；缺 ∥ 失败 ∥ 落后 ⇒ 先补下发；补发失败 ⇒ 调用方停（fail-closed）。
  * 漂移披露：外部手改节点 nft ⇒ 下次下发（全量重算）收正；两次下发之间 = 漂移窗（不做常驻守护）。

@@ -61,7 +61,7 @@ function resolver(map) {
 function fakeExec({ calls = [] } = {}) {
   const run = async (command, opts = {}) => {
     calls.push({ command, stdin: opts.stdin ?? null, label: opts.label ?? null })
-    if (command === "command -v nft") return { exitCode: 0, stdout: "/usr/sbin/nft\n", stderr: "" }
+    if (command === "sh -c 'command -v nft'") return { exitCode: 0, stdout: "/usr/sbin/nft\n", stderr: "" }
     return { exitCode: 0, stdout: "", stderr: "" }
   }
   run.calls = calls
@@ -365,7 +365,7 @@ test("N67c 规则变更 ⇒ 同步下发 + 响应告警：成事腿 `egressState
         if (cmd === "sshpass" && args[0] === "-V") return { code: 0, stdout: "1.09", stderr: "" } // sshpass 探针（非真 ssh 调用）
         const command = String(args.at(-1) ?? "")
         calls.push({ remote: command, input: opts.input ?? null })
-        if (command === "command -v nft") return { code: 0, stdout: "/usr/sbin/nft\n", stderr: "" }
+        if (command === "sh -c 'command -v nft'") return { code: 0, stdout: "/usr/sbin/nft\n", stderr: "" }
         if (failPush && command === "nft -f -") return { code: 1, stdout: "", stderr: "nft: 拒（假件）" }
         return { code: 0, stdout: "", stderr: "" }
       },

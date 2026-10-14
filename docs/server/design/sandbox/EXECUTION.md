@@ -98,7 +98,7 @@ HostConfig:
 - **取值**：`diskMb`（全局默认 ⇒ 每工作区覆写——既有取值序；生效 = 建盒/重建——② 配额就位步在三链在场（§3 建盒 ∥ 启动确保链 ∥ 轮换重建））。
 - **机制（项目配额优先 ∥ loopback 备选——KD-SV-74）**：探明工作区根的文件系统与挂载选项 ⇒
   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
-  ② ext4（`prjquota` 挂载）⇒ `chattr -R +P` + `setquota -P`；
+  ② ext4（`prjquota` 挂载）⇒ `chattr -R -p <id> +P`（赋号＋继承同句） + `setquota -P`；
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 + `mkfs.ext4` + 挂载到工作区路径——备选；落法细节实施当刻以真机探明为准）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **读回核**：应用后读回配额读数（`xfs_quota report` 类）；读数不符 ⇒ 同停。
@@ -115,7 +115,7 @@ HostConfig:
   ⑥ 默认 ⇒ `drop`（全协议/全端口）。
   逐行端口/协议在场 ⇒ 收窄到该端口/协议；通配（单层左）在求值器内已归一为具体目标（主机侧只收具体 CIDR/IP 集）。
   域规则 ⇒ **服务端解析**（`node:dns`；3s 预算）⇒ 逐 IP 过 `evaluateEgress`（`host` 在场）⇒ 允许的 IP 入 allow 集；解析空 ⇒ 零 allow 条目（fail-closed）。
-- **下发** = SSH 逐条：`command -v nft` 探（无 ⇒ iptables 备径：`TC-EGRESS` 链 flush + 重建，**两向同挂**——`FORWARD` + `INPUT` 各一跳入 `TC-EGRESS`（同锚 `-i tcws+`、同序 = 盒链位次照上；缺 `INPUT` 跳 ⇒ 盒 → 宿主自身方向裸奔））⇒ 删旧表（不存在 ⇒ 跳过）⇒ `nft -f -` 落全量定义（**两条基线链 + 盒链——单事务原子**）。幂等 = 重复下发同结果（零残渣）。
+- **下发** = SSH 逐条：`sh -c 'command -v nft'` 探（无 ⇒ iptables 备径：`TC-EGRESS` 链 flush + 重建，**两向同挂**——`FORWARD` + `INPUT` 各一跳入 `TC-EGRESS`（同锚 `-i tcws+`、同序 = 盒链位次照上；缺 `INPUT` 跳 ⇒ 盒 → 宿主自身方向裸奔））⇒ 删旧表（不存在 ⇒ 跳过）⇒ `nft -f -` 落全量定义（**两条基线链 + 盒链——单事务原子**）。幂等 = 重复下发同结果（零残渣）。
 - **下发触发**：① 规则增删（写面——落库后同步下发，≤15s/节点、多节点并发；失败 ⇒ 行在 + 响应告警 + `egressState` 标「未就位」）② 待批裁定（§6——裁定后先下发再应答）③ 盒生命周期**就位复核**（建盒/启动前：进程内 per-node 记录 `{rulesRev, ok, at}` 对当前修订号；缺 ∥ 失败 ∥ 落后 ⇒ 先补下发；补发失败 ⇒ **停**（不建盒/不起盒——闸为盒前置，fail-closed）；**两基线链 + 盒链同事务落——复核即全覆盖**）；失败审计 kind = `egress_apply_failed`。
 - **漂移披露**：外部手改节点 nft ⇒ 下次下发（全量重算）收正；两次下发之间 = 漂移窗（如实登——本批不做常驻守护/定时复核）。
 

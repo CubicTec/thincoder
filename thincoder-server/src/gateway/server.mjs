@@ -111,6 +111,10 @@ export function createGatewayServer({ config = {}, routes, log = null, staticSit
       socket.destroy()
     }
   })
+  // 空闲连接超时（2026-10-14 走查笔 5——用户「Failed to fetch」根因）：Node 默认 5s 太短——弹窗填表 >5s 后
+  // 浏览器在已关闭的 keep-alive 连接上发 POST 必败（浏览器不重试 POST；GET 会静默换连接不掉线）；提到 5 分钟。
+  server.keepAliveTimeout = 300000
+  server.headersTimeout = 306000
   return server
 }
 

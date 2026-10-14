@@ -30,7 +30,7 @@ const PKG = JSON.parse(readFileSync(join(ROOT, "thincoder-server", "package.json
 const VIEW_SRC = readPublic("views-sandbox.mjs")
 const CSS = readPublic("style.css")
 
-/** 本批新增键（81 沙盒 + 1 nav——§2.2 键族登记；两表逐键同步）。 */
+/** 本批新增键（拆除批后幸存 56 沙盒 + 1 nav——2026-10-14 随正；原 82：任务面 25 键随退场）。 */
 const NEW_KEYS = [
   "admin.sandbox.title", "admin.sandbox.runnersTitle", "admin.sandbox.addRunner", "admin.sandbox.noNodes", "admin.sandbox.allOffline",
   "admin.sandbox.name", "admin.sandbox.address", "admin.sandbox.namePh", "admin.sandbox.addressPh", "admin.sandbox.checking",
@@ -41,14 +41,9 @@ const NEW_KEYS = [
   "admin.sandbox.containerName", "admin.sandbox.image", "admin.sandbox.imagePh", "admin.sandbox.volume", "admin.sandbox.volumePh",
   "admin.sandbox.colState", "admin.sandbox.stateCreated", "admin.sandbox.stateRunning", "admin.sandbox.stateExited", "admin.sandbox.start",
   "admin.sandbox.stop", "admin.sandbox.containerCreated", "admin.sandbox.containerEmpty", "admin.sandbox.removeContainerTitle", "admin.sandbox.removeContainerNote",
-  "admin.sandbox.containerDeleted", "admin.sandbox.onboardingBtn", "admin.sandbox.onboardingHost", "admin.sandbox.onboardingHostPh", "admin.sandbox.onboardingPort",
-  "admin.sandbox.onboardingUser", "admin.sandbox.authKind", "admin.sandbox.authKey", "admin.sandbox.authPassword", "admin.sandbox.secretKey",
-  "admin.sandbox.secretPassword", "admin.sandbox.secretPh", "admin.sandbox.sudoSecret", "admin.sandbox.onboardingName", "admin.sandbox.model",
-  "admin.sandbox.modelPick", "admin.sandbox.noModels", "admin.sandbox.credentialMode", "admin.sandbox.credBurn", "admin.sandbox.credKeep",
-  "admin.sandbox.s5Notice", "admin.sandbox.fieldRequired", "admin.sandbox.submitting", "admin.sandbox.onboardingStart", "admin.sandbox.onboardingStarted",
-  "admin.sandbox.tasksTitle", "admin.sandbox.colStep", "admin.sandbox.colTime", "admin.sandbox.stateInstalling", "admin.sandbox.stateReady",
-  "admin.sandbox.stateFailed", "admin.sandbox.tasksEmpty", "admin.sandbox.stopAt", "admin.sandbox.revoke", "admin.sandbox.revokeConfirm",
-  "admin.sandbox.revoked", "nav.page.admin.sandbox",
+  "admin.sandbox.containerDeleted", "admin.sandbox.authKind", "admin.sandbox.authKey", "admin.sandbox.authPassword", "admin.sandbox.secretKey",
+  "admin.sandbox.secretPassword", "admin.sandbox.secretPh", "admin.sandbox.sudoSecret", "admin.sandbox.fieldRequired", "admin.sandbox.submitting",
+  "admin.sandbox.revoke", "nav.page.admin.sandbox",
 ]
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
@@ -179,12 +174,12 @@ test("① 运行面：六列在册 ∥ 在线/离线徽标 ∥ 离线行红标 �
     assert.ok(cellsOf(rows[0]).includes(fRunner().version), "版本列")
     assert.equal(fFind(mount, (node) => node.className === "badge ok")?.textContent, ZH["admin.sandbox.online"], "在线徽标")
     assert.ok(fFind(mount, (node) => node.textContent === ZH["admin.sandbox.empty"]) === null, "有节点 ⇒ 空态缺位")
-    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/overview", "GET /api/admin/sandbox/onboarding"], "首读两件（镜像源卡/镜像表 = 标签②懒读——console-tabs-component 批后；容器区待展开）")
+    assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/admin/sandbox/overview"], "首读一件（2026-10-14 拆除批后：任务面读随退场；镜像源卡/镜像表 = 标签②懒读；容器区待展开）")
     // 全离线（节点面不整页禁用——两钮恒在场）
     const offline = await fMount({ runners: [fRunner({ online: false, version: null, containers: null, status: "unavailable" })] })
     const alert = fFind(offline.mount, (node) => node.tag === "p" && node.textContent === ZH["admin.sandbox.allOffline"])
     assert.ok(alert !== null && alert.hidden === false, "全离线 ⇒ 提示条在场")
-    assert.ok(byText(offline.mount, ZH["admin.sandbox.addRunner"]) !== null && byText(offline.mount, ZH["admin.sandbox.onboardingBtn"]) !== null, "禁用面缺位（两钮恒在场）")
+    assert.ok(byText(offline.mount, ZH["admin.sandbox.addRunner"]) !== null, "禁用面缺位（添加节点钮恒在场——2026-10-14 拆除批后单钮）")
     assert.ok(cellsOf(offline.mount).includes("—"), "离线节点容器计数不外推 ⇒ 「—」")
     assert.equal(fFindAll(offline.mount, (node) => node.tag === "tr" && node.className === "error").length, 1, "离线行红标")
     // 无节点（另一文案）
@@ -325,141 +320,9 @@ test("④ 容器区：展开懒加载 ∥ 四列 ∥ 态文案三形 + 枚举外
   } finally { delete globalThis.document }
 })
 
-// ── ⑤ 托管接入弹窗（八字段 ∥ S5 预告知 ∥ 汇总提交体）────────────────────────────
-
-test("⑤ 托管接入：八字段 ∥ S5 窗内预告知句 ∥ 模型下拉源 ∥ 汇总提交体（可选项省略）∥ 必填门 ∥ 无模型门", async () => {
-  try {
-    const { calls, mount, modal } = await fMount({ routes: { "POST /api/admin/sandbox/onboarding": () => ({ run: fRun() }), "GET /api/admin/providers": () => ({ providers: PROVIDERS }) } })
-    await byText(mount, ZH["admin.sandbox.onboardingBtn"]).fire("click")
-    const dialog = modal()
-    const text = textOf(dialog)
-    for (const label of ["admin.sandbox.onboardingHost", "admin.sandbox.onboardingPort", "admin.sandbox.onboardingUser", "admin.sandbox.authKind", "admin.sandbox.secretKey", "admin.sandbox.sudoSecret", "admin.sandbox.onboardingName", "admin.sandbox.model", "admin.sandbox.credentialMode"]) {
-      assert.ok(text.includes(ZH[label]), `字段在册：${label}`)
-    }
-    assert.ok(text.includes(ZH["admin.sandbox.s5Notice"]), "S5 窗内预告知句在册（开监听重启 Docker ⇒ 既有容器短暂中断）")
-    const modelSelect = fFind(dialog, (node) => node.tag === "select" && optionsOf(node).some((option) => option.textContent === MODEL_IDS[0]))
-    assert.deepEqual(optionsOf(modelSelect).map((option) => option.textContent), [ZH["admin.sandbox.modelPick"], ...MODEL_IDS], "模型下拉源 = provider 注册表现有模型")
-    assert.equal(fFind(dialog, (node) => node.tag === "input" && node.attrs.type === "number").value, "22", "SSH 端口缺省 22")
-    const kindSelect = fFind(dialog, (node) => node.tag === "select" && optionsOf(node).some((option) => option.value === "password"))
-    const modeSelect = fFind(dialog, (node) => node.tag === "select" && optionsOf(node).some((option) => option.value === "keep"))
-    assert.equal(optionsOf(modeSelect).map((option) => option.textContent).join("|"), `${ZH["admin.sandbox.credBurn"]}|${ZH["admin.sandbox.credKeep"]}`, "凭据处置两态（缺省 burn）")
-    const form = fFind(dialog, (node) => node.tag === "form")
-    await form.fire("submit")
-    assert.equal(calls.filter(([method]) => method === "POST").length, 0, "空表单 ⇒ 不提交")
-    assert.ok(textOf(dialog).includes(fill(ZH["admin.sandbox.fieldRequired"], { field: ZH["admin.sandbox.onboardingHost"] })), "必填门人话")
-    // 秘密标签随认证方式（key ⇒ 私钥 ∥ password ⇒ 登录密码）
-    kindSelect.value = "password"
-    await kindSelect.fire("change")
-    assert.ok(textOf(dialog).includes(ZH["admin.sandbox.secretPassword"]), "认证 = 密码 ⇒ 秘密标签换名")
-    // 汇总提交体（sshPort 数值 ∥ sudoSecret/name 可选项省略）
-    const inputs = fFindAll(dialog, (node) => node.tag === "input")
-    inputs[0].value = "10.0.0.6"
-    inputs[2].value = "ubuntu"
-    fFind(dialog, (node) => node.tag === "textarea").value = "secret-material"
-    modelSelect.value = MODEL_IDS[1]
-    modeSelect.value = "keep"
-    await form.fire("submit")
-    assert.deepEqual(calls.filter(([method]) => method === "POST").at(-1)[2], { host: "10.0.0.6", sshUser: "ubuntu", auth: { kind: "password", secret: "secret-material" }, model: MODEL_IDS[1], credentialMode: "keep", sshPort: 22 }, "汇总体（sudoSecret/name 缺省 ⇒ 省略键）")
-    assert.ok(calls.some(([tag, message]) => tag === "flash" && message === ZH["admin.sandbox.onboardingStarted"]), "发起 flash")
-    assert.equal(modal(), null, "成功 ⇒ 关窗")
-    // 无模型门（provider 表空 ⇒ 提示项 + 前端先行拦）
-    const noModels = await fMount({ routes: { "POST /api/admin/sandbox/onboarding": () => ({ run: fRun() }), "GET /api/admin/providers": () => ({ providers: [] }) } })
-    await byText(noModels.mount, ZH["admin.sandbox.onboardingBtn"]).fire("click")
-    const nmDialog = noModels.modal()
-    assert.ok(textOf(nmDialog).includes(ZH["admin.sandbox.noModels"]), "无可用模型 ⇒ 提示项")
-    const nmInputs = fFindAll(nmDialog, (node) => node.tag === "input")
-    nmInputs[0].value = "10.0.0.6"
-    nmInputs[2].value = "ubuntu"
-    fFind(nmDialog, (node) => node.tag === "textarea").value = "s"
-    await fFind(nmDialog, (node) => node.tag === "form").fire("submit")
-    assert.equal(noModels.calls.filter(([method]) => method === "POST").length, 0, "无模型 ⇒ 前端先行拦（不提交）")
-  } finally { delete globalThis.document }
-})
-
-// ── ⑥ 装机任务区（三态 ∥ 停在哪步 ∥ 读数展开 ∥ 3s 轮询定终态停 ∥ 撤销凭据）────────
-
-test("⑥ 装机任务区：三态徽标 ∥ 失败「停在哪步」∥ 展开取详情（步骤读数）∥ 在途 3s 读时轮询定终态停 ∥ keep 态撤销凭据", async () => {
-  const realSetTimeout = globalThis.setTimeout
-  const timers = []
-  const pendingTimers = []
-  globalThis.setTimeout = (fn, ms, ...rest) => {
-    if (ms === SANDBOX.TASK_POLL_MS) { timers.push(ms); pendingTimers.push(fn); return -1 } // 只记录（不实执行——零悬挂定时器）
-    return realSetTimeout(fn, ms, ...rest)
-  }
-  try {
-    assert.equal(SANDBOX.TASK_POLL_MS, 3000, "在途轮询间隔 = 3s")
-    // 列表 = 步骤无读数（服务端形——onboarding.mjs `runView`）；详情 = 携 `steps[].readings`
-    const failed = fRun({ id: 7, host: "10.0.0.7", status: "failed", step: "S5", credential: { mode: "keep", state: "sealed" }, steps: [{ id: "S1", status: "done" }, { id: "S5", status: "failed" }] })
-    const ready = fRun({ id: 8, host: "10.0.0.8", status: "succeeded", step: "S8", credential: { mode: "burn", state: "burned" }, steps: [{ id: "S8", status: "done" }] })
-    const routes = {
-      "DELETE /api/admin/sandbox/onboarding/7/credential": () => ({ ok: true }),
-      "GET /api/admin/sandbox/onboarding/7": () => ({ run: { ...failed, steps: [
-        { id: "S1", status: "done", note: "受理", readings: { host: "10.0.0.7", sshUser: "ubuntu", authKind: "key", credentialMode: "keep" } },
-        { id: "S5", status: "failed", note: "开 API 监听失败", readings: { command: "systemctl restart docker", exitCode: 1, summary: "unit not found" } },
-      ] } }),
-    }
-    const { calls, mount, modal } = await fMount({ routes, runs: [fRun(), failed, ready] })
-    const labels = fFindAll(mount, (node) => node.tag === "span").map((node) => node.textContent)
-    for (const label of [ZH["admin.sandbox.stateInstalling"], ZH["admin.sandbox.stateFailed"], ZH["admin.sandbox.stateReady"]]) assert.ok(labels.includes(label), `三态文案在册：${label}`)
-    assert.deepEqual(["running", "failed", "ready", "succeeded", "weird"].map((status) => SANDBOX.runStateLabel(status)), [ZH["admin.sandbox.stateInstalling"], ZH["admin.sandbox.stateFailed"], ZH["admin.sandbox.stateReady"], ZH["admin.sandbox.stateReady"], ZH["admin.sandbox.stateInstalling"]], "态映射（枚举外 ⇒ 在途）")
-    assert.deepEqual(timers, [3000], "在途 ⇒ 恰一枚 3s 轮询")
-    assert.equal(calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding/7").length, 0, "未展开 ⇒ 零详情取数（懒取）")
-    // 任务行展开 = 详情取数一次 ⇒ 步骤清单 + 读数（失败 ⇒ 停在哪步）
-    await fFind(mount, (node) => node.tag === "td" && node.textContent === "10.0.0.7").parent.fire("click")
-    assert.equal(calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding/7").length, 1, "展开 ⇒ 详情取一次")
-    await tick()
-    const detail = textOf(mount)
-    assert.ok(detail.includes(fill(ZH["admin.sandbox.stopAt"], { step: "S5" })), "失败 ⇒ 停在哪步（列表 `step`）")
-    assert.ok(detail.includes("S1 — 受理") && detail.includes("S5 — 开 API 监听失败"), "步骤名 + note（详情形 `id`/`note`）")
-    assert.ok(detail.includes("host: 10.0.0.7") && detail.includes("sshUser: ubuntu") && detail.includes("authKind: key"), "读数逐键（对象形——键：值）")
-    assert.ok(detail.includes("command: systemctl restart docker") && detail.includes("exitCode: 1") && detail.includes("summary: unit not found"), "读数三件（命令/退出码/摘要）")
-    // 撤销凭据（keep 态——二次确认）
-    await byText(mount, ZH["admin.sandbox.revoke"]).fire("click")
-    const dialog = modal()
-    assert.ok(textOf(dialog).includes(ZH["admin.sandbox.revokeConfirm"]), "二次确认句")
-    assert.equal(fFind(dialog, (node) => node.tag === "h3").textContent, ZH["admin.sandbox.revoke"], "窗题 = 撤销凭据")
-    await fFind(dialog, (node) => node.tag === "button" && node.className === "danger").fire("click")
-    assert.deepEqual(calls.find(([method]) => method === "DELETE"), ["DELETE", "/api/admin/sandbox/onboarding/7/credential", null], "撤销路径")
-    assert.ok(calls.some(([tag, message]) => tag === "flash" && message === ZH["admin.sandbox.revoked"]), "撤销 flash")
-    // 单链：撤销后重读不叠排（pollTimer 在场 ⇒ 零新排）
-    assert.deepEqual(timers, [3000], "单链——重读不叠排")
-    const readsBefore = calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding").length
-    pendingTimers[0]()
-    await tick()
-    assert.equal(calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding").length, readsBefore + 1, "放行一轮 ⇒ 重读一次")
-    assert.deepEqual(timers, [3000, 3000], "重读后一枚续排（链式单枚）")
-    // burn 态 ⇒ 零撤销钮
-    const burned = await fMount({ runs: [ready] })
-    assert.equal(byText(burned.mount, ZH["admin.sandbox.revoke"]), null, "burn 态零撤销钮")
-    // 定终态停：全终态 ⇒ 零新定时器
-    const settledCount = timers.length
-    const settled = await fMount({ runs: [ready] })
-    assert.equal(timers.length, settledCount, "全终态 ⇒ 零新排（定终态停）")
-    assert.equal(settled.calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding").length, 1, "定终态仍读一次（读时读）")
-    // 离页/重渲 ⇒ 停机（挂载点断开卫）
-    const stale = await fMount({ runs: [fRun({ id: 9 })] })
-    const staleReads = stale.calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding").length
-    const staleTimer = pendingTimers.at(-1)
-    stale.mount.isConnected = false
-    staleTimer()
-    await tick()
-    assert.equal(stale.calls.filter(([, path]) => path === "/api/admin/sandbox/onboarding").length, staleReads, "挂载点断开 ⇒ 轮询自停")
-    // 详情取数失败 ⇒ fail 收口 + 零步骤读数（不假造）
-    const badDetail = await fMount({ runs: [{ ...fRun({ id: 7, steps: [{ id: "S1", status: "done" }] }) }] })
-    await fFind(badDetail.mount, (node) => node.tag === "td" && node.textContent === "10.0.0.6").parent.fire("click")
-    await tick()
-    assert.equal(badDetail.calls.filter(([tag]) => tag === "fail").length, 1, "详情失败 ⇒ fail 收口（任务面不反噬）")
-    assert.equal(textOf(badDetail.mount).includes("S1 —"), false, "详情失败 ⇒ 零步骤读数（不假造）")
-    assert.deepEqual(calls.filter(([tag]) => tag === "fail"), [], "主挂载无障碍路径零 fail 收口")
-  } finally {
-    globalThis.setTimeout = realSetTimeout
-    delete globalThis.document
-  }
-})
-
 // ── ⑦ i18n 两表（§2.2——本批键族 ∥ 基键集 ∥ `err.upstream_error` 改值）─────────
 
-test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ `err.upstream_error` 携 {detail} ∥ 键数终值", () => {
+test("⑦ i18n：57 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基键集双向相等 ∥ `err.upstream_error` 携 {detail} ∥ 键数终值", () => {
   for (const key of NEW_KEYS) {
     for (const [lang, table] of [["zh", ZH], ["en", EN]]) {
       assert.ok(typeof table[key] === "string" && table[key].trim() !== "", `${lang} 表缺键：${key}`)
@@ -467,7 +330,7 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
     assert.equal(placeholders(ZH[key]), placeholders(EN[key]), `占位符不对位：${key}`)
     assert.equal(CJK.test(EN[key]), false, `en 值含 CJK：${key}`)
   }
-  assert.equal(NEW_KEYS.length, 82, "本批键数（81 沙盒 + nav 1）")
+  assert.equal(NEW_KEYS.length, 57, "本批键数（原 82——2026-10-14 拆除批后幸存 56 沙盒 + nav 1）")
   // 基键集双向相等（自称名族 = 仅 zh；`.one` 变体族 = en 独有——沿既有口径排除）
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
@@ -481,19 +344,19 @@ test("⑦ i18n：82 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964 ⇒ 962 ∥ 967**（team-ledger 批 +67/表 ⇒ sandbox-container-actions 批 +3/表）⇒ **实读 970 ∥ 975**（gitee-namespace-kinds 批 +8/表）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [1041, 1046], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表 + sandbox-container-terminal 批 +14/表 + 重做批 i18n 面 +10/表 + B/D 修复轮 −2/表（`audit.placement_failed` +1 ∥ me.sandbox 退三）——2026-10-14 随正；实读）")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [1102, 1107], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表 + sandbox-container-terminal 批 +14/表 + 重做批 i18n 面 +10/表 + B/D 修复轮 −2/表（`audit.placement_failed` +1 ∥ me.sandbox 退三）——2026-10-14 随正 ⇒ 1102 ∥ 1107（2026-10-14 拆除批：沙盒部 −23/表；同窗他批并计，收口复读））")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────
 
-test("⑧ 静态面：档目 62 ∥ 61 ∥ nav 管理 10 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
-  // 档目（62 ∥ 61——2026-10-14 随正）
+test("⑧ 静态面：档目 68 ∥ 67 ∥ nav 管理 10 ∥ app 接线 ∥ 行数/行宽 ∥ 零外链 ∥ t 字面量闭合 ∥ 类名双向闭合", () => {
+  // 档目（68 ∥ 67——2026-10-14 复读随正）
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [62, 61], "档目 62 ∥ 61（2026-10-14 随正：重做批新档——底座 ∥ 连接 ∥ 终端件合计 +8）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [68, 67], "档目 68 ∥ 67（2026-10-14 复读随正：重做批新档 +8 ⇒ 他批同窗新档并计）")
   assert.ok(names.includes("views-sandbox.mjs"), "新档在册")
   // nav（管理 11 ∥ sandbox 项末位）
   const admin = NAV.NAV_GROUPS.find((group) => group.key === "admin")
-  assert.equal(admin.items.length, 10, "管理 10（2026-10-13 project-sources-merge 批：单入口后收正）")
+  assert.equal(admin.items.length, 11, "管理 11（原 10——2026-10-14 复读随正：他批同窗 MCP 管理项 +1）")
   assert.deepEqual(admin.items.at(-1), { key: "sandbox", labelKey: "nav.page.admin.sandbox", path: "/admin/sandbox" }, "sandbox 项末位（labelKey 单源）")
   // app.mjs 接线（import + PAGES 行）
   const appSrc = readPublic("app.mjs")
@@ -517,7 +380,7 @@ test("⑧ 静态面：档目 62 ∥ 61 ∥ nav 管理 10 ∥ app 接线 ∥ 行�
     for (const literal of window.matchAll(/["'`]([^"'`]*)["'`]/g)) for (const token of literal[1].split(/\s+/)) if (token) used.add(token)
   }
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const token of ["badge", "off", "detail-row", "stack-box", "step-list"]) assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`)
+  for (const token of ["badge", "off", "detail-row", "stack-box"]) assert.ok(used.has(token) && cssClasses.has(token), `本批新类双向闭合：${token}`) // `step-list` 随拆除批退场（2026-10-14）
    // `:root` 76 ∥ 悬停八条（2026-10-11 走查轮后基线——AC-19 canon；2026-10-12 走查实修④ `--vscode-*` 族桥 +8；2026-10-14 随正：终端调色板 +18（`--term-*`））
   const cssClean = stripComments(CSS)
   assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8 ⇒ 2026-10-14 终端调色板 +18）")

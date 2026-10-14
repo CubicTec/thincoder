@@ -671,8 +671,8 @@ test("⑨ i18n：+12 键两表逐字 ∥ 占位符一致 ∥ en 零 CJK ∥ 键�
     assert.equal(consumer.includes(key), true, `消费在册（views-sandbox-terminal.mjs）：${key}`)
   }
   assert.equal(containers.includes("admin.sandbox.terminal"), true, "第七钮键消费在册（views-sandbox-containers.mjs）")
-  assert.equal(Object.keys(ZH_SANDBOX).length, 269, "zh 沙盒部件键数 269（原 220——2026-10-14 随正：后批增 49）")
-  assert.equal(Object.keys(EN_SANDBOX).length, 269, "en 沙盒部件键数 269（原 220——2026-10-14 随正：后批增 49）")
+  assert.equal(Object.keys(ZH_SANDBOX).length, 246, "zh 沙盒部件键数 246（原 220 ⇒ 269（后批增 49）⇒ 2026-10-14 拆除批 −23）")
+  assert.equal(Object.keys(EN_SANDBOX).length, 246, "en 沙盒部件键数 246（原 220 ⇒ 269（后批增 49）⇒ 2026-10-14 拆除批 −23）")
 })
 
 // ── ⑩ 静态面 ────────────────────────────────────────────────────────────────

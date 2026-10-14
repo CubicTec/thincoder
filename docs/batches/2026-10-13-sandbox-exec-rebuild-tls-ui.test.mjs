@@ -361,8 +361,8 @@ test("⑥ i18n：+17 键两表逐字 ∥ 占位符一致 ∥ en 零 CJK ∥ 消�
     else assert.equal(SOURCE.includes(key), true, `消费在册（views-sandbox-connection.mjs）：${key}`)
   }
   assert.deepEqual(Object.keys(ZH_SANDBOX).sort(), Object.keys(EN_SANDBOX).sort(), "两表键集相等（逐键同步）")
-  assert.equal(Object.keys(ZH_SANDBOX).length, 269, "zh 沙盒部件键数 269（220 + 32 底座/凭据 + 17 连接族）")
-  assert.equal(Object.keys(EN_SANDBOX).length, 269, "en 沙盒部件键数 269")
+  assert.equal(Object.keys(ZH_SANDBOX).length, 246, "zh 沙盒部件键数 246（220 + 32 底座/凭据 + 17 连接族 − 23（2026-10-14 拆除批））")
+  assert.equal(Object.keys(EN_SANDBOX).length, 246, "en 沙盒部件键数 246（2026-10-14 拆除批 −23）")
 })
 
 // ── ⑦ 静态面（行数 ∥ 零色字面量 ∥ 零新变量）──────────────────────────────────────

@@ -1,9 +1,9 @@
 /**
  * chat.mjs — 聊天式驱动（`agent/ADMIN-AGENT.md` §11 ∥ KD-SV-88/89；admin-agent-chat 批——台账 #1254）：
- * 会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环——与任务式同一环语义）∥ 帧流编解码（`turn`/`delta`/`usage`/`call`/`result`/`end`）
+ * 会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环）∥ 帧流编解码（`turn`/`delta`/`usage`/`call`/`result`/`end`）
  * ∥ 逐条落库（库两表——v14）∥ 终态收尾（成功 ∥ 模型错误 ∥ 预算超限 ∥ 空回合 ∥ 手动中止）∥ 重启收尾（`running` ⇒ `idle` + notice）。
  *
- * 回合语义（§11）：用户发一条 ⇒ 环跑到**自然结束**（模型无工具调用 = 成功——与任务式的 `report` 终态不同源故本档自持环体；
+ * 回合语义（§11）：用户发一条 ⇒ 环跑到**自然结束**（模型无工具调用 = 成功——终态判据本档自持；
  * 预算常量/模型出口装配与 `run.mjs` **同源复用**——`DEFAULT_MAX_CALLS`/`DEFAULT_MAX_DURATION_MS`/`loadCoreChat`）。终止五形：
  * ① 自然结束（`succeeded`）∥ ② 预算超限 `budget` ∥ ③ 模型出口抛错 `model_error` ∥ ④ 空回合 `empty_turn` ∥ ⑤ 手动中止 `aborted`（KD-SV-107）——②③④⑤ ⇒ notice 行 + `chat_stop` 审计 + `end` 帧 `failed`。
  * 中止面（KD-SV-107——chat-shell-align 批）：**进程内登记表**（`Set<chatId>`——`requestChatAbort` ∥ `isChatAbortRequested` ∥ `clearChatAbort`；零持久化，
@@ -83,7 +83,7 @@ export const CHAT_SUBJECT_MAX = 2000
 
 /** 系统简报基础段（§11——管理面用途句 + 行动纪律句；提示词级，非机制门）。 */
 const CHAT_SYSTEM_BASE = [
-  "你是 ThinCoder server 的管理面 agent（聊天式驱动）。用途 = 运维/管理：托管接入 ∥ 机队（节点/容器）∥ 成员与 provider 管理 ∥ 审查排障——非开发用途。",
+  "你是 ThinCoder server 的管理面 agent（聊天式驱动）。用途 = 运维/管理：机队（节点/容器）∥ 成员与 provider 管理 ∥ 审查排障——非开发用途。",
   "你可以调用管理面工具（members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec）直接读写 server 管理面；工具结果 = `{ ok, … }`（`ok:false` 时看 message 自行纠正或改路线）。",
   "",
   "# 行动纪律",
@@ -203,7 +203,7 @@ function actorNameOf(db, memberId) {
 
 /** 历史重放 = `chat-store.mjs`（§11/§17.3——本档经顶部重导出；条目形 `replayEntriesOf` 供 A3 覆盖映射——见 `runChatTurn` 装配段）。 */
 
-/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形——同任务面口径；
+/** 回合内工具调用归一（核 `{ id, name, arguments }` ∥ OpenAI `{ id, function:{ name, arguments } }` 两形——核协议口径；
  *  `extra_content`（思考签名——§17.3 A1）在场 ⇒ 携 `extraContent`（落库/回放形）。 */
 export function normalizeToolCalls(toolCalls = []) {
   return (Array.isArray(toolCalls) ? toolCalls : []).map((call, index) => ({
@@ -271,7 +271,7 @@ export function argsFullOf(rawArguments) {
   return maskSecrets(JSON.stringify(maskArgs(parsed)), [])
 }
 
-/** 敏感值集（本轮工具入参中的敏感键值——下游文本一并掩蔽；沿任务面 `maskSecrets(text, secrets)` 口径）。 */
+/** 敏感值集（本轮工具入参中的敏感键值——下游文本一并掩蔽；沿 `maskSecrets(text, secrets)` 口径）。 */
 export function secretValuesOf(value, out = []) {
   if (Array.isArray(value)) {
     for (const item of value) secretValuesOf(item, out)
@@ -280,7 +280,7 @@ export function secretValuesOf(value, out = []) {
   if (value === null || typeof value !== "object") return out
   for (const [key, item] of Object.entries(value)) {
     if (SENSITIVE_KEYS.includes(String(key).toLowerCase())) {
-      if (typeof item === "string" && item.length >= 4) out.push(item) // 短值不掩（会误伤普通文本——沿任务面 maskSecrets 门）
+      if (typeof item === "string" && item.length >= 4) out.push(item) // 短值不掩（会误伤普通文本——沿 maskSecrets 门）
       continue
     }
     secretValuesOf(item, out)

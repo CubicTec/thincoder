@@ -150,4 +150,105 @@ VERDICT: pass
 **用户批准（2026-10-14 09:23）**：父侧呈报「撤除批（删码实施轮）——设计+评审+fix 轮全在案，回「批」即派」→ 用户回 **「批」** = 授权派实施轮（设计评审 #141 pass（🔴 0）+ fix 轮（发现 1–8）落地在案；排法 = 发布轮 0.10.7 收口后开工 ✓——发布轮已于本日 09:0x–09:2x 全链收口）。
 
 ## §5 实施记录（eng-coder）
+
+**状态行**：实施完成（删码 15 档落盘（两档整档删）；单测 8/8 绿；内部发散审计 + advisor 代码评审 pass，响应表全处置）
+
+**交付摘要（任务式装机〔托管接入〕码面删净——设计单源 = 本档 §2 ∥ `sandbox/SANDBOX.md` §16 R87②）**
+
+整档删：
+
+- `thincoder-server/src/sandbox/onboarding.mjs`（现读 354 ⇒ 0）∥ `thincoder-server/src/sandbox/onboarding-routes.mjs`（现读 103 ⇒ 0）。
+- `thincoder-server/public/views-sandbox.mjs`：删「托管接入」钮 ∥ 两弹窗 ∥ 装机任务区三态 + 辅助件（`TASK_POLL_MS`/`runStateLabel`/`readingLines`/`stepItem`/`pollGeneration` 等）∥ imports 两件（`confirmModal`/`deriveModels`）⇒ **实测删 232 / 增 8（净 −224；519 ⇒ 295 内容行）**。**两说取齐**（§2 [待裁]）：取实测净 −224 为真值（`webui/SANDBOX.md` §3 实测 ≈190 为准，差入 = 同批注释收正 8 行）。
+- `thincoder-server/src/agent/tools.mjs`：整档收为掩蔽单源（删任务面五工具 + `STEP_IDS` + 环装配）⇒ 净 −223（229 删 / 6 增；⇒ 18 行）；留守 = `maskSecrets`（消费 = `chat.mjs` ∥ `member-relay.mjs` ∥ `hosts.mjs`）。
+- `thincoder-server/src/agent/run.mjs`：删任务面两件（`runAgentTask`/`buildModelExit`）+ 环装配 + 出口装配 ⇒ 净 −117（125 删 / 8 增；⇒ 34 行）；留守共享五件（`DEFAULT_MAX_CALLS = 60` ∥ `DEFAULT_MAX_DURATION_MS = 1200000` ∥ `TRIMMED_FACES` ∥ `loadCoreChat` ∥ `providerModelRefs`）。
+
+逐点删/收正：
+
+- `src/sandbox/routes.mjs`：删 onboarding import ∥ 四端点注册段 ∥ 遗孤 `resumeInterrupted` ⇒ 净 −4（413 ⇒ 409）；导出面 = `registerSandboxRoutes` 独件。
+- `src/agent/chat.mjs`：系统提示用途句去「托管接入」（与 ADMIN-AGENT §11 三面口径取齐）——1 行。
+- `public/i18n-{zh,en}-sandbox.mjs`：删任务面 23 键/表 ⇒ 沙盒部 269 ⇒ 246；**两键改名**（`onboardingPort ⇒ hostCredPort` ∥ `onboardingUser ⇒ hostCredUser`——消费方 = `host-credential.mjs`，值/界面零变）；`noNodes` 值改承接种（zh/en 同拍）。
+- `public/i18n-{zh,en}-system.mjs`：删 `audit.sandboxKind.onboarding_*` 5 键/表 ⇒ 系统部 −5/表。
+- `public/views-audit.mjs`：删 5 条 onboarding kind 映射（**fix 轮回位连带误删的留守键 `host_credential_revoke`**——见 fix round）。
+- `public/host-credential.mjs`：两键改名 6 处 + 注释（清单外新触——改名连带）。
+- `public/style.css`：删死 CSS `.step-list` + 注释收正。
+- `src/sandbox/ssh.mjs`：指涉收正（头注 §3「托管接入」⇒ 主机凭据块 ∥ TOFU 句「重交任务」⇒「重发命令即重新信任」∥ `hasSshpass` 注释 ∥ 回退密钥名 `onboarding-<pid>` ⇒ `ssh-<pid>`）；**该档改动已随父侧 25d1f848 一并提交**（同档含父侧 1 处修复；无独立未提交残留）。
+- `src/store/credential-crypto.mjs`：注释改史注（消费方清单按实读重列 ∥ 抽取来源档已删 ⇒ 改史注）。
+- 零动声明：`src/store/migrations.mjs`（表史/停机留史）∥ 主机凭据面本体（`hosts.mjs` 等）∥ 段号零重编号 ∥ 零新机制/端点/工具。
+
+**验证（命令 + 读数）**
+
+- 本批单测档（新增）：`node --import ./thincoder-server/test/rc-resolve.mjs --test docs/batches/2026-10-14-sandbox-onboarding-removal.test.mjs` ⇒ **8/8 pass**（① 两档删净 + 仓内零引用 ② `registerSandboxRoutes` 36 端点 ∥ 零 onboarding ∥ 导出面独件 ③ `maskSecrets` 独件 + 行为逐值 ④ `run.mjs` 五件值逐值 + 两件已删 ⑤ `views-sandbox.mjs` 源零命中 + `admin.sandbox.*` 全域引用键闭合 ⑥ 表 `sandbox_onboarding` 在表 18 列 + 零读写面 ⑦ 扫描闸 ⑧ 审计 kind 映射 ↔ 两表双向闭合）。
+- 语法：改动 15 档 `node --check` 全 OK；全树相对 import 解析扫（src+public+bin 158 档）= **0 断链**。
+- 扫描：`src` + `public` 全域 `onboarding|onboard|托管接入` ⇒ 余项**仅** `src/store/migrations.mjs` 12 处（建表史/停机留史注——合法面）。
+- 键面：`admin.sandbox.*` 全域字面引用（全部 `public/*.mjs` 消费面）⇒ 两表**零欠账**；`audit.sandboxKind.*` 映射 ↔ 两表键集**双向闭合**（36 = 36）。
+- 跨批测试档实读与因果分类见下条（含改前基线对照——只读法）。
+
+**跨批随正件（父侧笔）——逐件实读与因果分类**
+
+运行法：`node --import ./thincoder-server/test/rc-resolve.mjs --test <档>`（自 `thincoder/` 仓根）；「因」列区分**本批因果**（因本批改动而红/必红）与**存量**（改前基线即红——同档同腿已核）。
+
+| 档（随正件族） | 本刻实读 | 因 | 需随正点（父侧判） |
+|---|---|---|---|
+| `2026-10-10-runner-admin-console-agent.test.mjs` | `ERR_MODULE_NOT_FOUND`（导已删档；现读 637） | 本批 | 设计已定：整档删 |
+| `2026-10-10-runner-admin-console-ui.test.mjs` | pass 3 ∥ fail 5（①⑤⑥⑦⑧） | 本批（⑤⑥⑦）+ 存量（①⑧） | ⑤/⑥ 任务面用例删；① 首读断言改；⑦ 键数；⑧ 档目 |
+| `2026-10-11-console-tabs-component.test.mjs` | pass 4 ∥ fail 5（③⑤⑥×3） | 本批 + 存量 | 任务区/两钮/首读断言；键数 854∥859 ⇒ 当刻实读 |
+| `2026-10-12-admin-chat-creds-merge.test.mjs` | pass 5 ∥ fail 4（含 N81） | 本批 + 存量 | N81 用例删（移交机制随件退场）；i18n/档目腿随正 |
+| `2026-10-12-team-projects-permissions.test.mjs` | 未跑（顶部导入已删档 ⇒ 必红） | 本批 | `onboarding.mjs` 导入 + 用途删 |
+| `2026-10-08-server-public-structure.test.mjs` | 未跑（指纹/键数必红） | 本批（−28/表）+ 存量 | ANCHOR 指纹两枚 + 键数 1041∥1046 ⇒ 当刻实读。**本批净 −28/表**（沙盒部 −23 ∥ 系统部 −5）；**本刻实读 = 1102 ∥ 1107**（含他批同窗增键）；本刻指纹参考 zh `63cdbd6948997ebee797f8d2f691eb8e55e0fdea6bf6350857e890c2c6236e94` ∥ en `9382d74146d7b797e77fd4a01e7dfc85516818910a748611d8ac0e461f025abf`——**含他批同窗键，收口须复读** |
+| `2026-10-06-server-gateway.test.mjs` | pass 11 ∥ fail 2（迁移 `user_version` 24≠22 ∥ 临时目录 EPERM） | **存量**（改前基线同红） | 表在场断言留（表存续）✓ 净变 ±0 |
+| **`2026-10-13-server-core-unification.test.mjs`（R87② 清单外——本批发现）** | pass 8 ∥ fail 2（腿① `run.mjs 接新档` ∥ 腿② A1 任务面） | 本批 | 腿① `SOURCE(run.mjs).includes("./chat-compact.mjs")`（`chat-compact` 仅任务面消费 ⇒ 随退场不再接）∥ 腿② `runAgentTask`/`buildModelExit` 两面断言删 |
+| 键数指纹族（设计「等」字覆盖面）：`2026-10-13-sandbox-container-terminal-ui`（269）∥ `…-exec-rebuild-base-ui`（269）∥ `…-exec-rebuild-tls-ui`（269） | 三条 ⑨/⑥ 腿红 | 本批（沙盒部 −23） | 269 ⇒ **246**/表 |
+| 存量红（非本批因果——逐条读过断言原文）：`2026-10-11-admin-agent-chat-ui`（键数 970∥975 + 档目 54∥53）∥ `2026-10-06-server-i18n`（前端档集快照）∥ `2026-10-11-admin-agent-chat-tools`（七件 vs 八件——`exec` 他批）∥ `2026-10-13-project-sources-merge`（nav `/me/chat` ∥ CSS 核对表 ∥ shell 键）∥ `2026-10-12-team-projects-permissions-ui`（nav `/me/chat` ∥ shell 键数 61≠63）∥ `2026-10-11-sandbox-{docker-admin,image-sources,image-quick-pull,pull-by-source,volumes}-ui`（public 档集快照 43/42 陈旧）∥ `2026-10-10-server-small-fixes` ∥ `2026-10-13-team-ledger`（键数 970∥975 存量）∥ `2026-10-10-runner-admin-console.test.mjs`（迁移版本 22≠24） | 存量 | 与退场批无关（各档期望值早落后于他批增量）；父侧按存量处置，不并入本批 |
+
+**决策透明表**
+
+| # | 决定 | 依据 ∥ 替代与被否理由 |
+|---|---|---|
+| 1 | `ssh.mjs` 报文句「重交任务即重新信任」⇒「重发命令即重新信任」 | 交任务面已退场（词面死指）；机制零变（`forgetHost` 照旧，行为 = 下次命令即重信任） |
+| 2 | 回退密钥名 `onboarding-<pid>-…` ⇒ `ssh-<pid>-…` | 扫描清面（名中已无「任务」义）；替代（留旧名）= 活面留 onboarding 词素 ⇒ 否 |
+| 3 | i18n 两键改名 `onboardingPort/User` ⇒ `hostCredPort/User` | 消费方存活（`host-credential.mjs`）；替代（留旧名——省 6 处改动）= 活面留词素 ⇒ 否；值/界面零变 |
+| 4 | `noNodes` 值改承接种（zh/en 同拍） | 原值指引已退场功能（「或用『托管接入』自动装机」）= 死指引；新值 = 手工登记 + 对话页内动作（KD-SV-135） |
+| 5 | 注释改史注（`tools.mjs`/`run.mjs`/`credential-crypto.mjs`） | 逐字删段会留悬空「任务式环/任务面」指涉；史注按记录面写法（日期 + 退场事由 + 承接） |
+| 6 | 改动前基线取法 = 只读（`git show HEAD:<path>` 思路——本轮实作为「stash 一次后核读」） | 见事故披露；共享树上一切工作树级 git 操作已禁（父侧急令） |
+| 7 | 清单外新触档（如实列）：`public/host-credential.mjs`（改名连带 6 处）∥ `public/style.css`（死 CSS）∥ `public/i18n-*-system.mjs`（审计 5 键——设计 §2③ 面）∥ `src/store/credential-crypto.mjs`（注释史注） | 全为退场连带（键改名/键删/死码/死指），零新语义；设计 §2 已含审计键删与 UI 面删，`host-credential.mjs` 为改名连带 |
+
+**fix round 记录（自审发现——1 轮 1 处，已修）**
+
+- **fix #1 · `public/views-audit.mjs` 连带误删留守键**：删 6 行——除设计五条 `onboarding_*` 外连带了**主机凭据面留守键 `host_credential_revoke`**（该键 i18n 两表仍在册 ⇒ 审计行会落原值兜底，界面欠账）。已回位（净变 `0 5`）。**同类面机检补强**：本批单测新增 ⑧（映射 ↔ 两表 `audit.sandboxKind.*` 键集**双向闭合**——漏映/悬空同红）∥ ⑤ 扩为 `admin.sandbox.*` **全域**引用键闭合（全部 `public/*.mjs` 消费面 ⇒ 实读零欠账）。此类「删键而消费仍在」的欠账两向均已机检覆盖。
+
+**事故披露（本批出 · 共享工作树）**
+
+- 我为取「改前基线」误用 `git stash`（工具忽略路径参数 ⇒ 整树暂存，含父侧六处 + 他会话十处在途）；pop 首试因并行批四档冲突被拒，随即（并行批落盘后冲突消除）pop 成功：`stash list` 空 ∥ 改动全回 ∥ 逐项核读在位。父侧已入册（本档 §1 事故条）；此后本仓禁 `git stash`/`checkout --`/`restore`/`reset`，基线改只读路。L1 影响面 = 暂存窗内并行批写档（4 档批档 md 走 auto-merge，内容 = 暂存版本）——已逐档核在位。
+
+**记录面收正（承内部发散审计——§5 自纠，D6 复读）**
+
+- **行数读数收正**（口径 = 本机 `split("\n")` 计法；`git show HEAD:<档>` 复核）：`routes.mjs` **412 ⇒ 407（净 −5）**——我首稿写「净 −4（413 ⇒ 409）」为误（413 = 设计口径，−≈4 = 设计估；实测 −5，多出 1 行 = 遗孤 `resumeInterrupted` 调用行随定义删）∥ `views-sandbox.mjs` 519 ⇒ 295（净 **−224**）∥ `tools.mjs` 241 ⇒ 18（净 −223）∥ `run.mjs` 150 ⇒ 33（净 −117）∥ `i18n-{zh,en}-sandbox` 300 ⇒ 277（净 −23/表）∥ `views-audit` 252 ⇒ 247（净 −5）∥ `style.css` 385 ⇒ 383（净 −2）∥ `credential-crypto`/`chat.mjs`/`host-credential` 行数零变（逐字替换）∥ 两删档 HEAD 现读 353/102（设计口径 354/103——尾行计法差 1）。
+- **两说取齐（收正）**：`views-sandbox.mjs` 实测 = `git diff --numstat` **删 232 / 增 8 ⇒ 净 −224**；两档既有估（`webui/WEBUI.md` §5 链 −≈95 ∥ `webui/SANDBOX.md` §3 实测 ≈190）均为删段估算，差额来源 = 估算未含注释块/辅助件/空行段与同批 8 行收正 ⇒ **收口值取实测 −224**（本题闭合）。
+- **随正件坐标补齐**（承审计 A 项——file:line 级）：键数指纹族三档腿位 = `docs/batches/2026-10-13-sandbox-container-terminal-ui.test.mjs:633`（⑨ 腿）⇒ 断言 `:674-675` ∥ `…-exec-rebuild-base-ui.test.mjs:317`（⑥ 腿）⇒ `:395-396`（另 `:386`）∥ `…-exec-rebuild-tls-ui.test.mjs:313`（⑥ 腿）⇒ `:364-365`；动作 = `269 ⇒ 246`/表。
+- **死指清尾（承审计 C 项——🔵 词面，本批域内已清）**：`src/sandbox/ssh.mjs:39/:48/:53`「任务收尾/任务终态」⇒「命令用毕/命令终态」（对齐 `hosts.mjs` 用毕即删口径；行为零变）∥ `src/agent/chat.mjs:3` 去「与任务式同一环语义」死比照 ∥ `:206`/`:274`/`:283` 去「同任务面口径/沿任务面」三处死指（⇒ 核协议口径 / `maskSecrets` 口径）。清零后复跑：本批单测 **8/8 pass** ∥ 两档 `node --check` OK。
+- **清尾域外余项（本批未触——交父侧/域主裁）**：`src/agent/chat-tools.mjs:451`（「任务面同函数」）∥ `src/agent/docker-ops.mjs:3`（「任务式/聊天式两驱动单源」）/`:7`（「任务面 = 主机 + `args.endpoint`」）/`:21`（「沿任务面口径」）∥ `src/sandbox/hosts.mjs:22`（「与任务面同量级」——主机凭据面本体，本批禁触）∥ `src/store/migrations.mjs:371`（表史注——零动）。性质 = 「任务」词面死指，**不在验收① 三词射程**（审计判 🔵）；本批按「零扩面」留报告不擅动。
+
+**内部发散审计（轮次 1 · explore 审计子代理）**
+
+- 结论：**DEVIATIONS（产品面零偏差；记录面 🟡2 + 🔵3，零 🔴）**。核过面（逐条给坐标）：残留全扫 ✅（src 12 处全在建表史/停机留史 ∥ public 全域 0；含 bin/test 全域同判）∥ `node --check` 14 档 ✅ ∥ 单测八腿断言实读 + **端点数独立复算 36**（routes 15 + 容器 10 + 镜像 3 + 卷 2 + 工作区 6；镜像源 7 ∥ 私有仓 4 属 `bin` 另行注册）+ 审计映射 36 键全区 ✅ ∥ UI 面 ✅（295 行、零托管接入件、246 键/表实算吻合、`noNodes` 承接种两语同拍）∥ 删过头 ✅（`maskSecrets` 消费链全活、run 五件在位、主机凭据面完好、两档建表史留存）∥ 清单外改动 ✅（16 档全部在 §5 声明，零未声明档）。
+- 处置：A/B 已按上条收正（坐标 + 读数）∥ C 域内清尾、域外留报告 ∥ D 取齐闭合 ∥ E 收正。审计自身约束（如实）：只读审计**未独立复跑单测**（以断言实读 + 端点数/键数独立复算代偿）∥ 无 git 上下文 ⇒ 基线读数由其建议 `git show` 复核（本段 D6 行已按此复核）。**fix round 计数 = 1（审计前自审）+ 1（承审计 C：死指清尾）= 2 轮，全部收敛，无第 3 轮。**
+
+**内部代码评审（轮次 1 · advisor · 对象 = 本批 14 档交付面）**
+
+- 判定：**VERDICT: pass**（🔴 0 ∥ 🟡 2（均非必改）∥ 🔵 1 + 域外注记 2）。评审独立复核了核心判据：两档删净（目录列举无 onboarding*，全域仅 migrations 12 行建表史命中）∥ **端点数独立复算 36**（routes 15 ∥ 容器 10 ∥ 镜像 3 ∥ 卷 2 ∥ 工作区 6——逐 `routes.add` 行计数，与单测②同值）∥ 审计映射 36 键 ↔ 两表 36 键双向闭合 ∥ i18n 两族两语逐行同位对齐（zh 277 / en 278，差 = 尾空行）∥ chat 工具面八件在场（承接缝）∥ 表 18 列 DDL 原样 + 仓内零读写面。
+- 其核验声明（如实）：只读评审、无执行工具 ⇒ 未独立复跑单测（以断言实读 + 端点数/键数独立复算代偿）。
+
+**评审响应表（逐条处置）**
+
+| # | 严重度 | 发现 | 处置 |
+|---|---|---|---|
+| 1 | 🟡（非必改） | `src/sandbox/ssh.mjs` `hasSshpass` 现零消费（唯一调用方 = 已删任务面；全域 grep 仅定义行；两处旁批测试只作 `deps` 键传入而 src 内无读取）——本批自审未覆盖「导出面孤儿」类留痕 | **已处置（标注制，不删）**：注释补「当前零消费（任务面退场后保留——传输面 API，待接线方取用）」；**不删** = R87② 删码清单未列该项，删属超设计——是否删由父侧另批裁 |
+| 2 | 🔵 | `src/store/credential-crypto.mjs:48` 注释「调用方转任务失败」= 任务面死指（域内未清，且未列 §5 域外余项） | **已修**：改指实际消费面口径（「调用侧转工具级错误人话；消费面 = 主机凭据 ∥ 私有仓凭据 ∥ 连接材料 ∥ 成员/MCP 凭据 ∥ project 域 git 源」） |
+| 3 | 🟡（非必改） | `src/agent/chat.mjs` 733 行 › 500 软线（亦越项目 §6 预案触发线 650）——**存量**，本批仅 1 行用途句改动 | **本批不处置**（沿 R3 不升级、不并入退场批）；记录在案，建议父侧另批按既有先例（`chat-store.mjs`）拆档 |
+| — | 域外注记 | `thincoder-server/Dockerfile:9`「# 托管接入宿主前提……」词面残留（不在本批评审清单/扫描射程）∥ 跨批随正件红（§5 表已列） | 留报告交父侧/域主裁；本批零触 |
+
+- 修后复跑：本批单测 **8/8 pass** ∥ 两档 `node --check` OK。
+
+**终态**：**clean**（评审 pass + 响应表全处置；修正轮次 = 3（自审 1 + 承审计 1 + 承评审 2 项——同轮内 2 处）——全收敛，无未决项）。
+
 ## §6 验证与收口（父代理）

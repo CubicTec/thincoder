@@ -46,13 +46,19 @@ const APP = readPublic("app.mjs")
 
 /** 本批新增键（2——两表逐键同步）；zh 值逐字。 */
 const NEW_KEYS = { "admin.sandbox.tabImages": "镜像与镜像源", "admin.sandbox.imageNode": "节点" }
-/** public/ 档集快照（本批 +1：`tabs.mjs`——档目 43 ∥ 42 ⇒ 48 ∥ 47（2026-10-12 team-projects-permissions 批后））。 */
-const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "i18n-en-admin.mjs", "i18n-en-core.mjs", "i18n-en-me.mjs", "i18n-en-project.mjs", "i18n-en-sandbox.mjs",
-  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-me.mjs", "i18n-zh-project.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs",
-  "i18n-zh-system.mjs", "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs", "style.css", "tabs.mjs",
-  "views-admin-projects.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs", "views-chat.mjs", "views-git-sources.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
-  "views-projects.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-containers.mjs", "views-sandbox-image-sources.mjs",
-  "views-sandbox-images.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs", "views-system.mjs", "views-usage.mjs"]
+/** public/ 档集快照（2026-10-14 复读随正：68 ∥ 67——各批同窗新档并计；本批 +1：`tabs.mjs`）。 */
+const PUBLIC_SNAPSHOT = ["app.mjs", "dom.mjs", "favicon.png", "health.mjs", "host-credential.mjs", "i18n-en-admin.mjs",
+  "i18n-en-core.mjs", "i18n-en-ledger.mjs", "i18n-en-mcp.mjs", "i18n-en-me.mjs", "i18n-en-project.mjs", "i18n-en-sandbox.mjs",
+  "i18n-en-shell.mjs", "i18n-en-system.mjs", "i18n-en.mjs", "i18n-zh-admin.mjs", "i18n-zh-core.mjs", "i18n-zh-ledger.mjs",
+  "i18n-zh-mcp.mjs", "i18n-zh-me.mjs", "i18n-zh-project.mjs", "i18n-zh-sandbox.mjs", "i18n-zh-shell.mjs", "i18n-zh-system.mjs",
+  "i18n-zh.mjs", "i18n.mjs", "index.html", "modal.mjs", "model-specs-snapshot.mjs", "nav.mjs",
+  "style.css", "tabs.mjs", "terminal-codec.mjs", "terminal-core.mjs", "terminal-link.mjs", "terminal-render.mjs",
+  "terminal-vt.mjs", "views-admin-projects.mjs", "views-admin.mjs", "views-audit.mjs", "views-auth.mjs", "views-chat-composer.mjs",
+  "views-chat-messages.mjs", "views-chat.mjs", "views-git-sources.mjs", "views-ledger.mjs", "views-mcp.mjs", "views-me-chat-composer.mjs",
+  "views-me-chat-messages.mjs", "views-me-chat.mjs", "views-me-sandbox.mjs", "views-me.mjs", "views-models.mjs", "views-overview.mjs",
+  "views-projects.mjs", "views-providers-modals.mjs", "views-providers.mjs", "views-sandbox-base.mjs", "views-sandbox-connection.mjs", "views-sandbox-containers.mjs",
+  "views-sandbox-image-sources.mjs", "views-sandbox-images.mjs", "views-sandbox-terminal.mjs", "views-sandbox-volumes.mjs", "views-sandbox.mjs", "views-system-config.mjs",
+  "views-system.mjs", "views-usage.mjs"]
 
 /** CJK 机检类（Han ∥ CJK 标点 ∥ 全角形——「—」「…」等中性标点不在内）。 */
 const CJK = /[\u3000-\u303f\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff00-\uffef]/
@@ -288,10 +294,9 @@ test("③ 沙盒分标签：两面板划分 ∥ 卡题去重 ∥ 懒（首激活
     assert.equal(byText(mount, ZH["admin.sandbox.title"]) !== null, true, "页题「沙盒」在场")
     assert.equal(String(activeTab(mount).textContent), ZH["admin.sandbox.runnersTitle"], "首标签 = 运行面（缺省）")
 
-    // 归位逐件（标签①）：提示条 ∥ 两钮 ∥ 节点表 ∥ 装机任务区
-    assert.deepEqual([byText(panelRunners, ZH["admin.sandbox.addRunner"]) !== null, byText(panelRunners, ZH["admin.sandbox.onboardingBtn"]) !== null], [true, true], "「添加节点」∥「托管接入」入标签①")
+    // 归位逐件（标签①）：提示条 ∥ 单钮 ∥ 节点表（装机任务区随拆除批退场——2026-10-14）
+    assert.equal(byText(panelRunners, ZH["admin.sandbox.addRunner"]) !== null, true, "「添加节点」入标签①（2026-10-14 拆除批后单钮）")
     assert.equal(byText(panelRunners, ZH["admin.sandbox.name"]) !== null, true, "节点表入标签①")
-    assert.equal(byText(panelRunners, ZH["admin.sandbox.tasksTitle"]) !== null, true, "装机任务区（h4）入标签①")
     assert.equal(fFindAll(panelRunners, (node) => node.tag === "h3").every((node) => node.textContent !== ZH["admin.sandbox.runnersTitle"]), true, "卡题去重：运行面卡 h3 去（面题入标签——同词不双题）")
     assert.equal(fFind(panelRunners, (node) => node.tag === "section" && String(node.className).includes("card")) !== null, true, "卡壳保留（岔口㈡）")
 
@@ -300,7 +305,7 @@ test("③ 沙盒分标签：两面板划分 ∥ 卡题去重 ∥ 懒（首激活
 
     // 懒：首激活前零读（镜像源清单 ∥ 镜像表）；页级单源读取已触发（首激活面板）
     assert.deepEqual([callsOf(calls, "GET", "/api/admin/sandbox/image-sources"), callsOf(calls, "GET", "/api/admin/sandbox/runners/1/images")], [0, 0], "标签②未激活 ⇒ 镜像源清单/镜像表零读（懒——㈢ 裁定）")
-    assert.deepEqual([callsOf(calls, "GET", "/api/admin/sandbox/overview"), callsOf(calls, "GET", "/api/admin/sandbox/onboarding")], [1, 1], "标签①首激活触发页级读取（节点清单 + 装机任务）")
+    assert.deepEqual([callsOf(calls, "GET", "/api/admin/sandbox/overview")], [1], "标签①首激活触发页级读取（节点清单——2026-10-14 拆除批后单源）")
 
     // 激活标签②（懒建）：镜像源清单 + 镜像表随建读
     await buttonImages.fire("click")
@@ -311,7 +316,7 @@ test("③ 沙盒分标签：两面板划分 ∥ 卡题去重 ∥ 懒（首激活
 
     // 归位逐件（标签②）：镜像卡（h3 imagesTitle + 节点选单）∥ 镜像源卡（h3 保留）
     const imageCardHeads = fFindAll(panelImages, (node) => node.tag === "h3").map((node) => node.textContent)
-    assert.deepEqual(imageCardHeads, [ZH["admin.sandbox.imagesTitle"], ZH["admin.sandbox.sourcesTitle"]], "标签② = 镜像卡 + 镜像源卡（卡题逐枚）")
+    assert.deepEqual(imageCardHeads, [ZH["admin.sandbox.imagesTitle"], ZH["admin.sandbox.sourcesTitle"], ZH["admin.sandbox.baseTitle"], ZH["admin.sandbox.credTitle"]], "标签② = 镜像卡 + 镜像源卡 + 盒底座镜像卡 + 私有仓凭据卡（卡题逐枚；后两卡他批同窗入——2026-10-14 复读随正）")
     const select = fFind(panelImages, (node) => node.tag === "select")
     assert.deepEqual([select.attrs.id ?? null, select.parent.tag], [null, "label"], "节点选单在场（标签行）")
     assert.equal(textOf(select.parent).includes(ZH["admin.sandbox.imageNode"]), true, "选单 label = `imageNode` 键")
@@ -415,8 +420,7 @@ test("⑤ 零回归：五族动作面装配点逐族在场 ∥ 镜像区零残�
     assert.equal(callsOf(calls, "GET", "/api/admin/sandbox/runners/1/images"), 0, "镜像区零残留于节点展开（迁标签②）")
     assert.equal(byText(panelRunners, ZH["admin.sandbox.imagesTitle"]), null, "镜像区题不入标签①")
 
-    // 任务族：装机任务区在场（空态句）
-    assert.equal(byText(panelRunners, ZH["admin.sandbox.tasksEmpty"]) !== null, true, "任务族：装机任务区照旧（空态）")
+    // （任务族随拆除批退场——2026-10-14）
 
     // 弹窗保活：切换标签不关窗（`closeActiveModal` 收口口径不变——切换非路由切换）
     await tabButtons(mount)[1].fire("click")
@@ -440,16 +444,16 @@ test("⑥ i18n：本批 2 键两表逐键在场 ∥ 键集双向相等 ∥ zh �
   }
   const SELF_NAMES = new Set(["lang.zh", "lang.en"])
   const base = (table) => new Set(Object.keys(table).filter((key) => !SELF_NAMES.has(key)).map((key) => key.replace(/\.one$/, "")))
-  assert.equal(Object.keys(ZH).length, 854, "zh 键数 854（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读；跨批件 `2026-10-08-server-public-structure.test.mjs` 同拍随正）")
-  assert.equal(Object.keys(EN).length, 859, "en 键数 859（2026-10-11 批组 + 走查实修后 + 走查实修④ kind +4 + 轻通道笔 10 +2 + admin-agent-awareness 批 +3 + team-projects-permissions 批 +158——实读）")
+  assert.equal(Object.keys(ZH).length, 1102, "zh 键数 1102（2026-10-11 批组 + … ⇒ 2026-10-14 复读随正：拆除批沙盒部 −23/表；同窗他批并计）")
+  assert.equal(Object.keys(EN).length, 1107, "en 键数 1107（2026-10-11 批组 + … ⇒ 2026-10-14 复读随正：拆除批沙盒部 −23/表；同窗他批并计）")
   assert.deepEqual([...base(ZH)].filter((key) => !base(EN).has(key)), [], "仅 zh 键（自称名族除外）")
   assert.deepEqual([...base(EN)].filter((key) => !base(ZH).has(key)), [], "仅 en 键")
 })
 
-test("⑥ 静态面：档目 48 ∥ 47 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合", () => {
+test("⑥ 静态面：档目 68 ∥ 67 ∥ 行数/行宽 ∥ 零外链/零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合", () => {
   const names = readdirSync(PUBLIC_DIR).sort()
-  assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（本批 +1：`tabs.mjs`）")
-  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [48, 47], "档目 48 ∥ 47（test 口径——2026-10-12 team-projects-permissions 批后）")
+  assert.deepEqual(names, [...PUBLIC_SNAPSHOT].sort(), "public/ 文件集合 = 快照（2026-10-14 复读随正）")
+  assert.deepEqual([names.length, names.filter((name) => name !== "favicon.png").length], [68, 67], "档目 68 ∥ 67（test 口径——2026-10-14 复读随正）")
   const cssClasses = new Set([...CSS.matchAll(/\.([a-z][a-z0-9-]*)/g)].map((match) => match[1]))
   for (const [name, source] of Object.entries(SOURCES)) {
     const lines = source.split("\n").length
@@ -473,9 +477,9 @@ test("⑥ 静态面：档目 48 ∥ 47 ∥ 行数/行宽 ∥ 零外链/零 CJK �
   assert.equal(TABS.createTabs !== undefined && typeof TABS.createTabs === "function", true, "公共组件导出面（node 可 import——经头位取件）")
 })
 
-test("⑥ AC-19 canon：`:root` 58 ∥ 行悬停清单不变 ∥ `:hover` 8（七 + 页签一）∥ 门禁链含本批件", () => {
+test("⑥ AC-19 canon：`:root` 76 ∥ 行悬停清单不变 ∥ `:hover` 8（七 + 页签一）∥ 门禁链零批内件", () => {
   const cssClean = stripComments(CSS)
-  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 58, ":root 58（2026-10-11 走查轮后基线——㈣ 裁定后 ⇒ 2026-10-12 走查实修④ +8）")
+  assert.equal([...cssClean.match(/:root\s*\{[^{}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（2026-10-11 走查轮后基线 ⇒ 2026-10-12 走查实修④ +8 ⇒ 2026-10-14 终端调色板 +18——复读随正）")
   const rules = [...cssClean.matchAll(/([^{}]*)\{([^{}]*)\}/g)].map((match) => [match[1].trim().replace(/\s+/g, " "), match[2].trim().replace(/\s+/g, " ")])
   const hovers = rules.filter(([selector]) => selector.includes(":hover"))
   assert.deepEqual(hovers.map(([selector]) => selector).sort(),
@@ -486,7 +490,7 @@ test("⑥ AC-19 canon：`:root` 58 ∥ 行悬停清单不变 ∥ `:hover` 8（�
   assert.equal(rules.find(([selector]) => selector === "button.tab:hover")[1], "background: var(--hover);", "页签悬停取 `--hover` 底（② 型表在册）")
   assert.deepEqual(rules.find(([selector]) => selector === "button.tab.active"), ["button.tab.active", "background: var(--selected); color: var(--accent);"], "页签选中态 = `--selected` 底 + `--accent` 字")
   const chain = PKG.scripts.prepublishOnly.match(/docs\/batches\/[^\s"]+/g) ?? []
-  assert.ok(chain.includes(BATCH_FILE), "本批件在链（prepublishOnly）")
+  assert.ok(chain.length === 0, "批内件不入链（2026-10-12 用户裁：prepublishOnly 门禁链撤除）")
   for (const rel of chain) assert.ok(existsSync(join(ROOT, rel)), `链目标在盘：${rel}`)
   assert.equal(IMAGES.createImageSection !== undefined, true, "镜像区件导出面零改（接口零改——仅题行去重）")
 })

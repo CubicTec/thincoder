@@ -36,7 +36,7 @@ function ensureSshDir(baseDir) {
   return dir
 }
 
-/** 私钥落盘（0600——用完即弃面：任务收尾清理；§3）。 */
+/** 私钥落盘（0600——用完即弃面：命令用毕清理；§3）。 */
 export function writeKeyFile(baseDir, name, content) {
   const dir = ensureSshDir(baseDir)
   const file = join(dir, `${name}.key`)
@@ -45,12 +45,12 @@ export function writeKeyFile(baseDir, name, content) {
   return file
 }
 
-/** 私钥清理（任务收尾——尽力而为）。 */
+/** 私钥清理（命令用毕——尽力而为）。 */
 export function removeKeyFile(file) {
   try {
     if (file && existsSync(file)) rmSync(file, { force: true })
   } catch {
-    /* 清理尽力而为——任务终态已定 */
+    /* 清理尽力而为——命令终态已定 */
   }
 }
 
@@ -117,12 +117,6 @@ export function spawnSsh(cmd, args, { env = process.env, input = null, timeoutMs
       /* stdin 已关（进程早退）——close 面收口 */
     }
   })
-}
-
-/** 本机 `sshpass` 在场检查（密码认证前置——缺 ⇒ 登录面「宿主缺 sshpass」人话，见下发失败分支）。 */
-export async function hasSshpass({ execImpl = spawnSsh } = {}) {
-  const res = await execImpl("sshpass", ["-V"], { timeoutMs: 5000 })
-  return !res.spawnError && res.code === 0
 }
 
 /** 截断（尾保留——错误尾最有诊断价值）。 */

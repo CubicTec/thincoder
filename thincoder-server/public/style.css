@@ -233,14 +233,12 @@ dialog.modal::backdrop { background: var(--backdrop); }
 .detail-grid dt { color: var(--muted); }
 .detail-grid dd { margin: 0; }
 
-/* ── 沙盒页·运行面与托管接入（views-sandbox.mjs——§2.8①）：状态徽标 ∥ 展开行 ∥ 容器/步骤块 ──── */
-.badge { border: var(--bw) solid var(--border); border-radius: var(--r-2); padding: 0 var(--sp-2); } /* ② 徽标（中性——在线/离线与装机三态同形） */
+/* ── 沙盒页·运行面（views-sandbox.mjs——§2.8①）：状态徽标 ∥ 展开行 ∥ 容器区 ──── */
+.badge { border: var(--bw) solid var(--border); border-radius: var(--r-2); padding: 0 var(--sp-2); } /* ② 徽标（中性——在线/离线两态共用） */
 .badge.ok { color: var(--ok); border-color: var(--ok); }
 .badge.off { color: var(--danger); border-color: var(--danger); }
-.detail-row > td { background: var(--panel); white-space: normal; } /* 展开行（容器区/步骤读数——长文可折行） */
+.detail-row > td { background: var(--panel); white-space: normal; } /* 展开行（容器区/卷区——长文可折行） */
 .stack-box { display: flex; flex-direction: column; gap: var(--sp-4); }
-.step-list { margin: 0; padding-left: var(--sp-6); font-size: var(--fs); }
-.step-list li { margin: var(--sp-2) 0; }
 
 /* ── 沙盒·容器详情/日志/用量与镜像族（views-sandbox-containers.mjs ∥ views-sandbox-images.mjs——§2.8①；零新变量 ∥ 零新悬停规则）── */
 .snippet.wrap { white-space: pre-wrap; overflow-wrap: anywhere; } /* 环境块：长值折行 */

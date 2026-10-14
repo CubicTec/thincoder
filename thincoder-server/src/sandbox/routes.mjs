@@ -4,7 +4,7 @@
  * sandbox-exec-rebuild 批收正（本档）：**队列死件删净**（原两处展示面 `sweepStuckTasks` 续跑调用随队列退场全删——KD-SV-161）∥
  * **工作区面拆出**（workspace 列表/建/改/动作四路由 + 视图件外迁 `workspace-routes.mjs`——直调链重写归其档；本档零残留）∥
  * **连接面 TLS 档**（增补 #2——KD-SV-192…195：添加节点体扩 `connection`/`tls`；新 `PUT …/runners/:id/connection` 全列覆写）。
- * 容器面十路由与镜像族/卷族/托管接入三族已拆 `container-routes.mjs` ∥ `image-routes.mjs` ∥ `volume-routes.mjs` ∥ `onboarding-routes.mjs`（§13 分族成档）。
+ * 容器面十路由与镜像族/卷族两族已拆 `container-routes.mjs` ∥ `image-routes.mjs` ∥ `volume-routes.mjs`（§13 分族成档）。
  * `/api/admin/sandbox/*`（判权 `requireAdmin`）∥ `/api/me/sandbox/*`（成员面——会话 + 恒本人过滤）。
  *
  * 节点面（§3）：添加 = 连通自检（引导步 → 协商 → 复读——`docker.mjs`；TLS 档三件入 `https.request` 选项）⇒ 落行 + **网段 deny 幂等带入**（§4 强制面 ⑤）
@@ -28,7 +28,6 @@ import { parseHostCredentialInput, revokeHostCredential, setHostCredential } fro
 import { registerContainerRoutes } from "./container-routes.mjs"
 import { registerImageRoutes } from "./image-routes.mjs"
 import { registerVolumeRoutes } from "./volume-routes.mjs"
-import { registerOnboardingRoutes } from "./onboarding-routes.mjs"
 import { registerWorkspaceRoutes } from "./workspace-routes.mjs"
 import { createHostExec, placePendingWorkspaces } from "./box.mjs"
 import { dispatchEgressAll } from "./egress.mjs"
@@ -49,9 +48,9 @@ function hostOfAddress(address) {
 }
 
 /**
- * 注册沙盒控制台面（节点/规则/待批/设置面）+ 成员面 + 子族（容器/镜像/卷/托管接入）。
+ * 注册沙盒控制台面（节点/规则/待批/设置面）+ 成员面 + 子族（容器/镜像/卷）。
  * 注入口径（单元测试档替身）：`now`（时钟——生产行为不变）∥ `fetchImpl`（Docker 传输——节点面 ∥ 探活；明文行恒用之，零行为变化）∥
- * `config`（TLS 连接材料解密所需——增补 #2）∥ `requestImpl`（`node:https` 假件缝——缺省 `null`）∥ `deps`（托管接入面替身——见 `onboarding.mjs`）。
+ * `config`（TLS 连接材料解密所需——增补 #2）∥ `requestImpl`（`node:https` 假件缝——缺省 `null`）∥ `deps`（单元测试假件缝——`execImpl` ∥ `resolveImpl` ∥ `importSegmentDenies` ∥ `dnsGate`；逐点见各子族注册行）。
  */
 export function registerSandboxRoutes(routes, { db, config = {}, log = null, now = Date.now, fetchImpl = fetch, requestImpl = null, deps = {} } = {}) {
   if (!db) throw new Error("registerSandboxRoutes：缺少 db（openDatabase 产物）")
@@ -405,8 +404,4 @@ export function registerSandboxRoutes(routes, { db, config = {}, log = null, now
   registerImageRoutes(routes, { db, fetchImpl, config, requestImpl, now })
 
   registerVolumeRoutes(routes, { db, fetchImpl, config, requestImpl, now }) // 卷族（拆分档——SANDBOX §13 分族成档；sandbox-volumes 批）
-
-  // ── 托管接入面（四端点转注册——`bin` ±0；起跑后立即交回，进度经读时轮询）────
-  const onboarding = registerOnboardingRoutes(routes, { db, config, log, now, deps })
-  onboarding.resumeInterrupted() // 重启恢复（KD-SV-86）：在途 `running` ⇒ `interrupted`（如实收尾 + 凭据按模式处置）
 }

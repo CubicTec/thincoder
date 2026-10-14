@@ -365,7 +365,7 @@ test("execOnHost（假 ssh）：非零退出 ⇒ ok:true + 退出码；行凭据
     assert.equal(out.exitCode, 0)
     assert.equal(out.subject, "echo ***; sudo -S id", "subject 过掩蔽")
     assert.equal(app.ssh.calls.length, 1)
-    assert.equal(app.ssh.calls[0].input, `${SUDO}\n`, "sudo 口令经 stdin（sudo -S 判定）")
+    assert.equal(String(app.ssh.calls[0].input), `${SUDO}\n`, "sudo 口令经 stdin（sudo -S 判定；2026-10-14 随正：边界层 stdin = Buffer 形）")
 
     const sshSvc = await load("thincoder-server/src/sandbox/ssh.mjs")
     const keyFiles = () => app.ssh.calls.map((call) => call.args[1]).filter((file) => typeof file === "string" && file.endsWith(".key"))
@@ -429,7 +429,7 @@ test("N80/N83/B78/N82：chat 一轮 exec（帧 ∥ resultCode=退出码 ∥ subj
     assert.equal(first.stderr, "pw ***")
     assert.equal(first.subject, "sudo -S id", "subject = 命令原文")
     assert.ok(!JSON.stringify(first).includes(SECRET) && !JSON.stringify(first).includes(SUDO), "结果文本零秘密")
-    assert.equal(ssh.calls[0].input, `${SUDO}\n`, "sudo 口令经 stdin（sudo -S 判定——同任务面单源）")
+    assert.equal(String(ssh.calls[0].input), `${SUDO}\n`, "sudo 口令经 stdin（sudo -S 判定——同任务面单源；2026-10-14 随正：边界层 stdin = Buffer 形）")
     assert.ok(toolRows[1].content.length <= 4000, "结果可见形截断 ≤4000 字（B78）")
     assert.ok(JSON.parse(toolRows[1].data_json).summary.length <= 300, "tool 行 data_json.summary ≤300（N80——长输出 ⇒ 实截断）")
 
@@ -523,43 +523,6 @@ test("B77/E61：未登记凭据 ∥ 主机歧义 ∥ 命令空/超长 ∥ timeou
   }
 })
 
-// ── ⑧ N81（托管接入 keep ∧ 成功 ⇒ 移交）──────────────────────────────────────
-
-test("N81：托管接入 keep ⇒ 成功 ⇒ 移交七列（密文同源）+ run 行零化 + 'moved'；随后同主机 exec 可跑", async () => {
-  const app = await startApp({
-    withProvider: true, // 模型注册表（托管接入 POST 的 model 校验需在场）
-    turns: [turnCall("register", { host: "10.0.0.6", endpoint: "http://10.0.0.6:2375", step: "S6" }), turnCall("report", { ok: true, summary: "接入成功", step: "S8" })],
-  })
-  try {
-    const res = await call(app.base, "POST", "/api/admin/sandbox/onboarding", {
-      cookie: app.adminCookie,
-      body: { host: "10.0.0.6", sshUser: "ubuntu", auth: { kind: "key", secret: SECRET }, model: MODEL, credentialMode: "keep" },
-    })
-    assert.equal(res.status, 200, res.text)
-    const runId = res.json.run.id
-    const done = await waitFor(() => app.db.prepare("SELECT * FROM sandbox_onboarding WHERE id = ?").get(runId), { timeoutMs: 5000 })
-    const run = await waitFor(() => {
-      const row = app.db.prepare("SELECT * FROM sandbox_onboarding WHERE id = ?").get(runId)
-      return row.status === "succeeded" ? row : null
-    }, { timeoutMs: 5000 })
-    assert.equal(run.credential_state, "moved", "run 行 ⇒ 'moved'（一次性终态）")
-    assert.deepEqual([run.secret_cipher, run.sudo_cipher], [null, null], "run 行密列零化")
-    assert.ok(run.runner_id, `run 行关联 runner（#${run.runner_id}）`)
-    const host = app.runner(run.runner_id)
-    assert.equal(host.credential_state, "sealed", "主机行 = sealed")
-    assert.deepEqual([host.ssh_user, host.ssh_port, host.auth_kind], ["ubuntu", 22, "key"], "主机行逐列落值")
-    assert.equal(CRYPTO.decryptSecret(host.secret_cipher, CRYPTO.loadOrCreateCredentialKey(app.keyPath)), SECRET, "密文同源（原值可解）")
-    assert.equal(host.credential_updated_at, run.finished_at, "credential_updated_at = 移交当刻")
-    assert.ok(done.status, "读数稳定")
-
-    const out = await HOSTS.execOnHost(host, { command: "docker version" }, { config: app.config, execImpl: app.ssh.execImpl })
-    assert.equal(out.ok, true, "移交给的凭据可供 exec")
-    assert.equal(app.ssh.calls.at(-1).command, "docker version")
-  } finally {
-    await app.close()
-  }
-})
-
 // ── ⑨ i18n 两表键面 + 新档在场 ────────────────────────────────────────────────
 
 test("i18n/档目随正：主机凭据档在场；两表键面同步（zh=en ∥ en 零 CJK）；沙盒 +13 ∥ admin +3 ∥ kind +2", async () => {
@@ -585,7 +548,7 @@ test("i18n/档目随正：主机凭据档在场；两表键面同步（zh=en ∥
     assert.ok(ZH[`audit.sandboxKind.${kind}`] !== undefined && EN[`audit.sandboxKind.${kind}`] !== undefined, `kind 键在场：${kind}`)
   }
   const zhKindKeys = Object.keys(ZH).filter((key) => key.startsWith("audit.sandboxKind."))
-  assert.equal(zhKindKeys.length, 28, "kind 族 26 ⇒ 28")
+  assert.equal(zhKindKeys.length, 36, "kind 族（各批 kind 增额并计；2026-10-14 复读随正 36 ⇒ 拆除批退役 onboarding_* 五键后实读）")
 
   const file = join(ROOT, "thincoder-server/public/host-credential.mjs")
   assert.equal(existsSync(file), true, "新档在场：public/host-credential.mjs")

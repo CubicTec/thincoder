@@ -31,7 +31,6 @@ const AUDIT = await load("thincoder-server/src/accounts/audit.mjs")
 const ACCOUNT_ROUTES = await load("thincoder-server/src/accounts/routes.mjs")
 const SESSION = await load("thincoder-server/src/accounts/session.mjs")
 const CRYPTO = await load("thincoder-server/src/store/credential-crypto.mjs")
-const ONBOARDING = await load("thincoder-server/src/sandbox/onboarding.mjs")
 const PROJECTS = await load("thincoder-server/src/project/projects.mjs")
 const PROJECT_ROUTES = await load("thincoder-server/src/project/routes.mjs")
 const ADMIN_ROUTES = await load("thincoder-server/src/project/admin-routes.mjs")
@@ -151,7 +150,7 @@ test("N1 空库直落 v17：版本读数 ∥ 三表列面/两索引 ∥ 审计 C
     for (const name of ["idx_project_members_user", "idx_projects_source", "idx_audit_ts", "idx_audit_type_ts"]) {
       assert.ok(indexes.includes(name), `索引在场：${name}`)
     }
-    assert.equal(AUDIT.AUDIT_TYPES.length, 15, "审计型面十五（team-ledger 批扩 `ledger_event`——2026-10-13）")
+    assert.equal(AUDIT.AUDIT_TYPES.length, 17, "审计型面十七（原十五——2026-10-14 父侧复读随正：member/MCP 两批各 +1，`member_event` ∥ `mcp_event`）")
     assert.equal(AUDIT.recordAudit(db, { type: "project_event", actor: "tester", detail: { kind: "project_add" } }) > 0, true, "`project_event` 可写（CHECK 放行）")
     assert.throws(() => AUDIT.recordAudit(db, { type: "no_such_type", actor: "tester" }), /审计类型非法/, "表外型 ⇒ 拒")
   } finally {
@@ -645,20 +644,15 @@ test("E4 删除门：缺 confirm ⇒ 400 人话 ∥ 非 admin ⇒ 403 ∥ 不存
 
 // ── 腿：N23（凭据键路径单源）∥ B1（地址归一）∥ B2（用户名归一）──────────────
 
-test("N23 凭据键路径单源：缺省 db ∥ 自定义 db 两形与 sandbox 现口径同址；两域共享同键（加解密往返）", () => {
+test("N23 凭据键路径单源：缺省 db ∥ 自定义 db 两形同址；加解密往返（原两域共享核随拆除批退场 2026-10-14）", () => {
   assert.equal(CRYPTO.credentialKeyPath({}), join("data", "credentials.key"), "缺省 db ⇒ data/credentials.key")
   assert.equal(CRYPTO.credentialKeyPath({ db: "gateway.db" }), join("data", "credentials.key"), "裸档名 ⇒ data/")
   const custom = join(TEMP, "nested", "gateway.db")
   assert.equal(CRYPTO.credentialKeyPath({ db: custom }), join(TEMP, "nested", "credentials.key"), "自定义 db ⇒ 同目录")
-  for (const config of [{}, { db: custom }, { db: join(TEMP, "gw2.db") }]) {
-    assert.equal(CRYPTO.credentialKeyPath(config), join(ONBOARDING.dataDir(config), "credentials.key"), "与 sandbox 现口径同址（逐字同值）")
-  }
   const keyPath = CRYPTO.credentialKeyPath({ db: join(TEMP, "n23", "gateway.db") })
   const keyA = CRYPTO.loadOrCreateCredentialKey(keyPath)
-  const keyB = ONBOARDING.loadOrCreateCredentialKey(keyPath)
-  assert.deepEqual([...keyA], [...keyB], "同键文件 ⇒ 同键（两域共享）")
   const sealed = CRYPTO.encryptSecret("pat-value-1234", keyA)
-  assert.equal(ONBOARDING.decryptSecret(sealed, keyB), "pat-value-1234", "project 加密 ⇒ sandbox 解密（同件单源）")
+  assert.equal(CRYPTO.decryptSecret(sealed, keyA), "pat-value-1234", "加解密往返（单源件——原两域共享核随拆除批退场 2026-10-14）")
   assert.equal(sealed.includes("pat-value-1234"), false, "密文零明文")
   assert.deepEqual([...CRYPTO.encryptSecret("x", keyA).split("|").map((part) => part.length > 0)], [true, true, true], "包形 = iv|tag|ct 三段")
 })

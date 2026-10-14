@@ -5,7 +5,7 @@
  *
  * 射程（判据源 = 批档 §2 ∥ `docs/server/design/agent/ADMIN-AGENT.md` §17 ∥ §7 判据行「与核取核形」）：
  *   腿① 件清单在场（§17.2：在盘 15 件 ↔ 服务面消费坐标 ∥ 本批新增 3 面落点——源级逐件）
- *   腿② A1 回灌形（chat 面 ∥ run 面）：回声族携 `reasoning_content`（缺值 ⇒ `""`）∥ 非回声族零字段 ∥
+ *   腿② A1 回灌形（chat 面——任务面已随拆除批退场 2026-10-14）：回声族携 `reasoning_content`（缺值 ⇒ `""`）∥ 非回声族零字段 ∥
  *        `extra_content` 在场才带 ∥ 落库 ⇔ 回放逐值（`data.reasoning` ∥ `data.toolCalls[].extraContent`）
  *   腿③ A2 历史修复：断链 `tool_calls` ⇒ 合成结果补齐（核件原文）∥ 孤儿 `tool` ⇒ 剔除 ∥ 常态零改（同序零增行）
  *   腿④ A3 压缩：真网关链 + 假上游 ⇒ 标记行落库（`data.kind/covers`）＋ 摘要调用出账（`usage` 可归因）＋ 上下文缩 ＋
@@ -37,7 +37,6 @@ const CHAT = await load("thincoder-server/src/agent/chat.mjs")
 const CHAT_STORE = await load("thincoder-server/src/agent/chat-store.mjs")
 const CHAT_COMPACT = await load("thincoder-server/src/agent/chat-compact.mjs")
 const CHAT_ENV_TOOLS = await load("thincoder-server/src/agent/chat-env-tools.mjs")
-const RUN = await load("thincoder-server/src/agent/run.mjs")
 
 // 核真件注入口（§17.2/§17.3——仓内直引；生产面 = 动载 `@thincoder/core/*`）
 const CORE_SPECS = await load("thincoder-core/model-specs.mjs")
@@ -149,7 +148,7 @@ test("腿① 件清单在场（§17.2）：在盘 15 件 × 服务面消费坐�
     assert.ok(compact.includes(`import("${specifier}")`), `chat-compact.mjs 应以动态 import 取 ${specifier}（§17.3 新增 3 面）`)
   }
   assert.ok(SOURCE("thincoder-server/src/agent/chat.mjs").includes("./chat-compact.mjs"), "chat.mjs 接新档")
-  assert.ok(SOURCE("thincoder-server/src/agent/run.mjs").includes("./chat-compact.mjs"), "run.mjs 接新档（A1 两面共用）")
+  assert.ok(SOURCE("thincoder-server/src/agent/run.mjs").includes("loadCoreChat"), "run.mjs 留守面（任务式环已退——chat-compact 由 chat.mjs 独接）")
   assert.ok(SOURCE("thincoder-server/src/agent/chat-store.mjs").includes("export function replayEntriesOf"), "回放面（含标记解析）归 chat-store")
 })
 
@@ -211,41 +210,6 @@ test("腿② A1 非回声族 ∥ 缺值回声 ⇒ `\"\"`（核件判据逐条）
   const live2 = fx2.model.calls[1].find((item) => item.role === "assistant" && item.tool_calls)
   assert.equal(live2.reasoning_content, "", "回声族缺值 ⇒ `\"\"`（核件判据）")
   assert.equal(JSON.parse(fx2.rows().find((item) => item.role === "assistant").data_json).reasoning, "", "落库同值（`\"\"` 亦在场）")
-})
-
-test("腿② A1 任务面（run.mjs）：出口携规格 ⇒ 核件构造；缺规格 ⇒ 零字段回落", async () => {
-  const SIG = { thoughtSignature: "sig-run-2" }
-  const seen = []
-  const sig = { i: 0 }
-  const exit = async ({ messages }) => {
-    seen.push(JSON.parse(JSON.stringify(messages)))
-    sig.i += 1
-    return sig.i === 1
-      ? { content: "", reasoning: "任务思考", toolCalls: [{ id: "c1", name: "echo", arguments: "{}", extra_content: SIG }] }
-      : { content: "", reasoning: "任务思考2", toolCalls: [{ id: "c2", name: "report", arguments: "{}" }] }
-  }
-  exit.spec = CORE_SPECS.specForModel("deepseek-flash")
-  const target = { schemas: [], async invoke() { return { ok: true } }, terminal: () => ({ ok: true, summary: "完成", step: null, readings: null }) }
-  const result = await RUN.runAgentTask({ brief: "简报", userMessage: "任务", tools: target, chat: exit, coreSpecs: CORE_SPECS })
-  assert.equal(result.status, "succeeded")
-  const live = seen[1].find((item) => item.role === "assistant" && item.tool_calls)
-  assert.equal(live.reasoning_content, "任务思考")
-  assert.deepEqual(live.tool_calls[0].extra_content, SIG, "任务面同携签名")
-  assert.equal(live.content, null)
-  assert.equal(RUN.buildModelExit !== undefined, true, "出口装配在场（`exit.spec` 挂携面）")
-
-  const sig2 = { i: 0 }
-  const exit2 = async ({ messages }) => {
-    seen.push(JSON.parse(JSON.stringify(messages)))
-    sig2.i += 1
-    return sig2.i === 1
-      ? { content: "", reasoning: "任务思考", toolCalls: [{ id: "c1", name: "echo", arguments: "{}" }] }
-      : { content: "", toolCalls: [{ id: "c2", name: "report", arguments: "{}" }] }
-  }
-  exit2.spec = null // 缺规格（缺核 ∥ 域外模型）
-  await RUN.runAgentTask({ brief: "简报", userMessage: "任务", tools: target, chat: exit2, coreSpecs: CORE_SPECS })
-  const live2 = seen[3].find((item) => item.role === "assistant" && item.tool_calls)
-  assert.equal("reasoning_content" in live2, false, "缺规格 ⇒ 零回声（核件判据）")
 })
 
 // ── 腿③ A2 历史修复 ───────────────────────────────────────────────────────────

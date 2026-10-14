@@ -126,7 +126,7 @@
 | `thincoder-core/tools/git.mjs:269/:295/:304/:317/:334/:358` | `snapshotBefore` 调用点 = tag delete / branch delete / `checkout -- <path>` / restore / stash pop / reset --hard —— **即 W1 括号内 6 项的实证** | ✅ |
 | `thincoder-core/tools/git-ext.mjs:54-57` | 共享辅助（`snapshotBefore` 族所在） | ✅ |
 
-**边界（WF 面）**：W2 括号枚举 `checkout -- <path>` · `restore` · `reset --hard` · `stash pop` · `clean -f` · 分支/标签删除 —— 其中 **`clean -f` 未在 `git.mjs` 六个调用点内出现**（节点 = `:269` / `:295` / `:304` / `:317` / `:334` / `:358`；`clean` 有快照属实的依据 = `TOOLS.md:551`「有快照类 = `rebase` · `clean` · `tag -d` · `branch -d` · `checkout -- <path>` · `restore` · `stash pop` · `reset --hard`」——**§6.14 批（`:470` 起）已记载其**）。⇒ **W2 文本的括号枚举与档面/代码面一致（六项 + `clean -f` = `TOOLS.md` §6.14 表已然）**，**非缺陷**，但**提示词面写了 `clean -f` 而 `git.mjs` 直读未见其调用点 ⇒ 归 §2.6 观察 3（超本批写域，登记）**。
+**边界（WF 面）**：W2 括号枚举 `checkout -- <path>` · `restore` · `reset --hard` · `stash pop` · `clean -f` · 分支/标签删除 —— 其中 **`clean -f` 未在 `git.mjs` 六个调用点内出现**（节点 = `:269` / `:295` / `:304` / `:317` / `:334` / `:358`），**但它的快照在 `git-ext.mjs:117`**（`clean` 分支，与 `git.mjs` 六处同机制、同辅助函数 `snapshotBefore`）——**见 §2.6 观察 3 的已闭记录**。
 
 ### §2.6 受影响文件表 + 逐条机判式 AC
 

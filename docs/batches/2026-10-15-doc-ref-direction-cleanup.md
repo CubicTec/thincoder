@@ -39,8 +39,44 @@
 - **不动**：批次档自身（记录面）· 台账 · `_archive/**` · `docs/README.md` 等非需求/设计档。
 - **禁脚本批量改文**（文档写作纪律）⇒ 逐档人工读改。
 
+### §1.x 父侧裁决 · 提示词双面对齐 U-1–U-4（2026-10-15 05:37）
+
+**背景**：设计席 `§2P`（#60）逐节确证 = **真缺 2 · 半真 6 · 误报 0**（半真 = 正文在盘、只缺节标题/归属）⇒ 上抛 U-1（**阻塞**）：「只补缺节、不改已有内容」与 D2 单一权威源相撞。
+
+**父侧先认错**：派单三处描述与实测有出入（**凭"节数不等"判"内容缺"、未先实读**）= **父侧派单缺陷**。设计席停下核对是**对的**。
+
+**U-1 裁决 ⇒ 允许三种最小收正**（判据 = **消除面间漂移**，不是补字数；**制造重复 = 更糟**）：
+
+| # | 补法 | 适用 | 具体 |
+|---|---|---|---|
+| **①** | **替换同源压缩句** | `common.md` CN `:79-81` | CN 那三行压缩句 ⇒ **替换为** EN 三节（`:100`/`:107`/`:110`）对应内容（**同源 ⇒ 替换不并列**——避 D2 同档双写） |
+| **②** | **插节标题** | `persona-engineering.md` CN `:61-66` | 五条正文**在盘**（裸挂在 `## 项目状态档` 下）⇒ **只加节标题**（归属收正），**正文逐字不动** |
+| **③** | **拆长行** | `advisor-design.md` EN `:2` | 三节文本**压在 `:2` 一整行** ⇒ **拆成独立节**（**内容不重写**，只分行 + 加标题） |
+
+**U-2 ⇒ 随批英译**：`advisor-design.md` EN 面内的中文节标题 ⇒ 英译（**术语保持原形**）。
+**U-3 ⇒ 不动**：`persona-normal.md` 两面节名集合不等 —— CN 内容在盘、只未独立成节 ⇒ 与 U-1 同类但不阻塞，**登记**。
+**U-4 ⇒ 实施面归属**：`prompts/**` 按 D1「提示词 = 主 agent 内容权 + eng-coder 落地」⇒ **实施另派 eng-coder**（设计席任务止于 §2P）。
+
+**实施判据**：三档**两面同步**（EN `thincoder-core/prompts/` ∥ CN `docs/core/design/prompts/`）· 按 ①②③ 逐处落 · **禁新写语义**（只做替换/加标题/拆行）· 自洽检查三道。
+
+**⚠️ 待用户裁**：裸「本批」类 **552 处 / 96 档** 是否清（A 全清 / B 不清 / C 只清 `（本批）` 括注）——**父侧倾向 C**，**等用户裁**。
+
+### §1.y 父侧裁决 · `<批名> 批`（无坐标）形（2026-10-15 05:39）
+
+**来源**：#58（P3）上抛——**判据 2（`DOC-DISCIPLINE.md:1254`）已点名此形**（`<具体批名> 批`（无坐标）· 同义族全在内）**与同批先例（§5.ab 🔴2/🔴3 · §5.ac 🟡1 判「超判据面 · 登记上抛」）相撞**。
+
+**裁 = A（全清）**。依据：
+1. **判据 2 = 权威源**（白纸黑字点名该形）。
+2. **先例的"超判据面"判定 = 判据尚未改正则时的旧口径** —— **判据收正（commit `936aa561`）后即覆盖**；**先例 / 既有库存不是偏离判据的理由**。
+3. 用户 03:20「不能引用批次档」+ 03:22「历史行中也不允许出现！」—— 语义明确覆盖。
+4. **同批 P2（#57）已按此清完 83 处** —— **同批两套口径 = 父侧缺陷**（父侧认）。
+
+**⇒ 处置**：`<批名> 批`（无坐标）**去批名、保日期/编号/结论事实**（先例：`VSC 批 N` ⇒ `VSC 侧第 N 批`）；`（本批）`/`本批注（…）` ⇒ 去自指；**例外**（判据本体 / 机制模板 / 目录归属）保留。
+
+**⚠️ 连带处置（父侧办 · 2026-10-15 05:39 当场）**：`§5.ab 🔴2/🔴3` 与 `§5.ac 🟡1` 的「超判据面 ⇒ 登记上抛」结论**随本裁决作废** —— 但其**原文属记录面**（那两轮当时的真实判定），**不回溯改**；**处置面**已由本裁决接管（#58 按判据 2 全清 · #63–#66 清自指标记）⇒ **残留项不再悬空**。
+
 ## §2 批次任务与设计（eng-designer）
-**状态行**：设计完成（#37 fix 轮点修 14 号逐条落地 · §4.5 编号集=引用集（悬空 §4.5.N = 0）· 两档已 git add）
+**状态行**：设计完成（§2P 块（提示词双面补齐 · 3 档）· 逐节确证 = 真缺 2 / 半真 6 / 误报 0 · 4 项上抛（U-1 阻塞：补法撞禁改范围））
 <§2 模板占位：本批条目（覆盖） / 设计档落点 / 机制设计 / 受影响文件与测试覆盖 / 验收对照 / 关键决策 / 上抛项>
 
 ### §2B.1 本批条目（覆盖）· B 块：存量引用清理
@@ -146,6 +182,43 @@
 **⚠️ 全批适用** —— `:1694` 已载「否则**全批 190 档会重复本类漏网**」；各批**在自身 15 档内**逐处扩扫。
 
 **④ 失效判据项须删（D8）**：若档内某验收/判据行**以「各档含『不并项与历史沿革』节」等已删产物为判据**（如 `VSC-MIGRATION-INVENTORY.md` 的 `A-VM4/10/15/17/21/25/27` · `:320`/`:323`/`:408`）⇒ 该判据项**规定的是已不存在的产物** ⇒ **删该项**（若该条还有其他可成立内容 ⇒ 改写保留其余）。
+
+**⑤ 判据② 形态补全（变体形 · 父侧 2026-10-15 05:17 实测）**
+
+**缺口**：判据②原写闭枚举（`批档 §N` / `批次档 §N` / `板档 §N` / `见批档 §N`）⇒ **漏掉变体形**：
+- **`批次档 \`<名>\` §N`**（反引号名夹在中间）
+- **`各批 §N`**
+- **`批档 \`:N\``**（冒号行号代理号）
+
+**实测**（全规范面 · 排 `_archive`/`prompts`/`batches`）：**298 处 / 45 档** —— 最重：`core/design/SESSION.md` 31 ∥ `desktop/design/ACTIVITY.md` 25 ∥ `core/design/BATCH-RECORD.md` 23 ∥ `core/design/DOC-DISCIPLINE.md` 19 ∥ `core/requirements/ENGINEERING-MODE-V2.md` 19 ∥ 其余 40 档。
+
+**⇒ 判据② 改为**正则式**（非枚举）**：
+
+```
+(批档|批次档|各批|板档)[^\n]{0,30}?(§\s*[\d.]+|`:\s*\d+`)
+```
+
+**判据一句话（不变）**：该处是「引用某一次具体执行」还是「讲机制 / 说它住哪」？前者删、后者留（例外三条）。
+
+**处置**：**补跑**（45 档）—— 与存量清理同批，排在收尾批之后。
+**来源**：`#52`（B6）advisor 轮 1 发现「三条判据放行变体形」+ 父侧全域实测。
+
+**⑥ 判据④ 形态补全（无「见」字的指针 · 父侧 2026-10-15 05:18 实测）**
+
+**缺口**：判据④原扫描式 `见\s*§` / `详见\s*§` / `见变更记录` —— **只抓带「见」字的指针**；而实测漏网形为：
+- **「（d) 类入 §N.M」**（`入` 字引出，无「见」）
+- **裸 `§N.M` 引用**（无任何引出词，如「按 §2.4 处置」）
+
+**来源**：`#46`（B1）fix 轮人工揪出两处（`DESIGN-TOKEN-SETTLEMENT.md:9` ∥ `NORMAL-MODE.md:12`）—— **两轮机械扫描均漏**，靠逐处回读发现。
+
+**⇒ 判据④ 扩为三式**：
+1. `见\s*§` / `详见\s*§` / `见上文` / `见该节` / `见变更记录`
+2. **`入\s*§`**（"入 §N.M" 类）
+3. **裸 `§\d+(\.\d+)*`**（无引出词的引用）—— 逐处核该节号**现是否存在**
+
+**判据一句话（不变）**：**该节号现在还在盘上吗？** 不在 ⇒ 同轮收正（删指针句或改指现存节）。
+
+
 
 
 **② 编号缺口补正**（删段所生 —— 是本次动作的产物，须收）：
@@ -1018,6 +1091,168 @@
 
 **状态行**：设计完成（14 号逐条落地 · §4.5 编号集=引用集（悬空 0）· 12 个 `####` 标题重编 · 需求档面样本 2 例补入 · D8↔⑧ 收归 + 三次令挂接表 · A-DD26 验收锚 + 用例 DD-73–DD-78 · §4.5.7 判据补「无路径字面」条 + 存量为四条 · 21 处失效判据项删 · 两档已 git add）
 
+### §2P.1 本批条目（覆盖）· P 块：提示词双面补齐
+
+> **块标签**：本节属 **P 块 = 提示词双面内容补齐**。本档另有两块：**A 块 = 三档重组**（`§2A.1–§2A.10`）∥ **B 块 = 存量引用清理**（`§2B.1` 及其后各节）。三块同住本档 §2，各自宣告不同对象与口径。P 块各节一律以 **`§2P.x`** 指称。
+
+**来源**：父侧 2026-10-15 派单书（用户面实测）——**同一条规矩，英文面与中文面说的不一样 ⇒ 读哪面决定行为**。
+
+**双面定义（本批射程）**：
+
+| 面 | 路径 | 角色 |
+|---|---|---|
+| EN 运行时面 | `thincoder/thincoder-core/prompts/` | **产品代码面**（运行时装配读它） |
+| CN 镜像面 | `thincoder/docs/core/design/prompts/` | **文档面镜像**（16 档同名） |
+
+**为什么是缺陷**：模型读到的提示词由**装配槽位**决定 —— 同一槽位名下的 EN / CN 两档，若同一条规矩两面写得不等，**读哪面就按哪面行动**。这不是风格差异：它使同一会话内不同角色（受 EN 面装配）与文档读者（看 CN 面）**依据两条不同的规矩**工作。
+
+**本批条目**：
+
+| # | 条目 | 缺口（父侧实测 · 本席逐档复核） | 回指 |
+|---|---|---|---|
+| P1 | `common.md` **CN 补 3 节** | EN 有、CN 无：`### 搜索工具优先级` · `### 代码库探索顺序` · `### 并行调用原则`（EN 在 `## 工具观` 节下；CN 该节只有一段无小标题的合体文字） | 派单书 1. |
+| P2 | `persona-engineering.md` **CN 补「批次档生命周期（五条）」节** | EN 有 `## Batch-record lifecycle (five rules)`（EN `:62–69`）、CN 无（CN `:60` 项目状态档节后直接接 `## 派发与收尾纪律`） | 派单书 2. |
+| P3 | `advisor-design.md` **EN 补 3 节** | CN 有、EN 无：`## 你的角色` · `## 评审标准` · `## 引用纪律`（CN `:5/:13/:44`） | 派单书 3. |
+
+**不在本批**：其余 13 档（含 `persona-normal.md` —— 派单书 4. 已判**误报**：CN 有内容，仅未独立成节 ⇒ **不动**）· `_archive/**` · 台账 · 引擎源码面 · 批档 `docs/batches/**`（除本段追加）。
+
+**关键简化**：**只补缺节、不改已有内容** —— 不重写、不重排、不动措辞风格。改面 = 纯增补。
+
+### §2P.2 设计档落点
+
+**落点 = 本档 §2 本身（本批次任务与设计节）—— 不另建设计档。**
+
+**为什么**：本批对象 = **提示词档自身**（`prompts/**` 16 档的 EN/CN 两面）。而 `docs/core/design/prompts/**` 与 `thincoder-core/prompts/**` 均为**产品代码面**（D1 写权矩阵：提示词 = 主 agent 内容权）；给「产品代码面的补正」另开一份设计档，等于为该面造第二权威源，且设计档本身会进入 RAG 检索面 —— 与本批「减少面间漂移」的目的相反。
+
+**⇒ 设计落在本段 + `§2P.3`/`§2P.4`**：口径（哪面更全、译法如何对齐、逐节判据）全部在本处给全，实施者照做即可。
+
+### §2P.3 逐档补法（以更全的那面为准）
+
+**总口径**：**以更全的那面为准，补到缺的那面** —— 缺的是 EN 就补 EN，缺的是 CN 就补 CN。补 = **翻译 + 落位**，非重写。
+
+| 档 | 缺面 | 补什么 | 源（更全面） | 补后落位 |
+|---|---|---|---|---|
+| `common.md` | **CN** | 3 节 | EN `:100/:107/:110` | CN `## 工具观` 节下，`### ` 小标题形（对齐 EN 现有层） |
+| `persona-engineering.md` | **CN** | 1 节 | EN `:62–69` | CN `## 项目状态档` 节后、`## 派发与收尾纪律` 节前（对齐 EN 同位） |
+| `advisor-design.md` | **EN** | 3 节 | CN `:5–11` ∥ `:13–25` ∥ `:44–46` | EN 档头后（「## Your role」位）、「## Output Format」节前 ∥ 判据段后、「## Output Format」节前 ∥ 「## Output Format」节后 |
+
+**`common.md` CN 补 3 节（从 EN 译）**
+
+- EN 现形（`thincoder-core/prompts/common.md:99–111`）：`## 工具观（Tool discipline）` 下依次 `### 搜索工具优先级` / `### 代码库探索顺序` / `### 并行调用原则`。
+- CN 现形（`docs/core/design/prompts/common.md:78–81`）：`## 工具观（Tool discipline）` 节下**只有一段合体文字**（`- **搜索**：…` / `- **代码库探索**：…` / `- **并行**：…`），**三个小标题全无**。
+- **判定 = 真缺**（不是「节名不同但内容在」）：CN 那 3 行是**内容压缩形**，缺的正是 EN 三节的**展开正文**（工具表优先级与后备判据 · 连续两次垃圾结果即换 · 被墙走镜像路径 · 手抓前先扫工具表 · 结构与意图与细节的顺序 · 批量并行不串行）。⇒ **须补 3 节**。
+- **⚠ 落位须先议定（本席发现 · 见 §2P.6 F-1）**：CN 现有那 3 行与 EN 三节**语义同源、详略不同** ⇒ 若直接插入三节，CN 将出现「同一件事一段压缩 + 三节展开」并存。**处置建议**：**以 EN 三节替换 CN 那 3 行压缩句**（不是并列添加）—— 但这已越出「只补缺节、不改已有内容」的派单禁改范围 ⇒ **见 §2P.6 F-1 + §2P.7 U-1，上抛父侧裁**。
+
+**`persona-engineering.md` CN 补「批次档生命周期（五条）」节（从 EN 译）**
+
+- EN 现形（`thincoder-core/prompts/persona-engineering.md:62–69`）：节标题 `## Batch-record lifecycle (five rules)` + 五条（① 一次实现轮的界 ② 长度·轮次护栏 ③ 闭合/退役动作 ④ 新档↔旧档接续 ⑤ 判定权）+ 末行 `- **Non-retroactive**`。
+- CN 现形：**该节整体不存在** —— CN `:60` 项目状态档节的末行（`**不砖死**…`）之后**直接接 `:61` 的 `1. **一次实现轮的界**`**，五条**裸挂在 `## 项目状态档` 节下**（**无节标题**），`:65` 同 EN 五条逐条对应，`:66` = 非追溯行。
+- **判定 = 半真**（本席加严）：CN **五条正文在盘**（`:61–66`），缺的**只是节标题** `## 批次档生命周期（五条）` ⇒ 挂错了父节（挂在 `## 项目状态档` 下）。**但**派单书点名的另一处 **`Start-up booking`/「开场登记」段却是真缺**（EN `:96` 有，CN 全档 0 命中）—— 见 §2P.6 F-2。
+- **补法**：① 在 CN `:61` 前插入节标题 `## 批次档生命周期（五条）`（五条归属收正）② 补 `Start-up booking` 段 —— **但该段 EN 住 `## Dispatch & close discipline` 的轻通道条内**，CN 同位置（`:96` 轻通道条）**无此段** ⇒ 补的是**那一段派生文本**，非整节。
+- **⚠ 同上越界**：插节标题 = 改已有结构的归属（不是纯粹「加一节」）⇒ **见 §2P.7 U-1**。
+
+**`advisor-design.md` EN 补 3 节（从 CN 译）**
+
+- CN 现形（`docs/core/design/prompts/advisor-design.md`）：`## 你的角色（身份——读判据前先读）`（`:5–11`）· `## 评审标准（逐维度评估设计）`（`:13–25`）· `## 引用纪律`（`:44–46`）。
+- EN 现形（`thincoder-core/prompts/advisor-design.md`）：**这三节的内容都在**，但**被压成 `:2` 一整行**（`... ## Your role (identity — read before the criteria) ... ## Review Criteria Evaluate the design against these dimensions: 1. **Requirements coverage** ...`）+ `:22` 行内嵌了 `## Citation Discipline`。**节标题的独立行不存在**。
+- **判定 = 真缺（标题形）**：EN 缺的是**节标题独立成行**这一形态 —— 文本在，结构无。⇒ 补标题行 + 按 CN 的分节把 `:2` 长行拆开。
+- **英文译法须与 EN 既有术语一致**：`VERDICT` · `designId` · `DESIGN-TOKEN` · `file:line` · `unverified` · `🔴/🟡/🔵` 等**保持原形不译**；节名对译为 `## Your role (identity — read before the criteria)` · `## Review Criteria (evaluate the design dimension by dimension)` · `## Citation Discipline`。
+
+### §2P.4 译法与结构对齐口径
+
+**三条**：
+
+1. **节标题两面语义对应**（不要求逐字）。例：`### 搜索工具优先级` ↔ `### Search-tool priority`（可命名 `### 搜索工具优先级（Search-tool priority）`）；`## 批次档生命周期（五条）` ↔ `## Batch-record lifecycle (five rules)`。
+2. **机制术语保持两面一致 —— 工具名 · 命令 · 键名 · 判据名不译**。清单（抽检用 ≥3/档）：`read` · `write` · `edit` · `hashline_edit` · `insert_after` · `apply_patch` · `delete` · `file_ops` · `ls` · `glob` · `grep` · `tree` · `repo_outline` · `code_search` · `doc_search` · `read_image` · `execute` · `bash` · `git` · `settings` · `peer_instances` · `process` · `get_current_time` · `wait_for` · `timer` · `verify` · `memory` · `fetch` · `websearch` · `checkpoint` · `subagent` · `advisor` · `consult_*` · `question` · `notify_parent` · `ledger` · `batch` · `batchDoc` · `VERDICT` · `designId` · `DESIGN-TOKEN` · `file:line` · `unverified` · `PROJECT-MANIFEST.json` · `mcp__*` · `*_web_search*` · `*_search_prime` · `gh-proxy.com`。
+3. **⚠ 标题形（`##` vs `###`）以更全面为准，但须保持该档既有层级体系** —— `common.md` 三节在 EN 是 `###`（在 `## 工具观` 下）⇒ CN 补的也须 `###`，**不得**升为 `##`（升 = 造出 EN 无有的顶层节，反而制造新的面间不等）。
+
+### §2P.5 验收对照（回指本批条目 · 每条可机判）
+
+| # | 验收 | 回指 | 判据（机检式） |
+|---|---|---|---|
+| P-AC1 | 三档各面补齐（`common.md` CN · `persona-engineering.md` CN · `advisor-design.md` EN） | P1 · P2 · P3 | 逐档抽标题集比对，缺面标题集 ⊇ 更全面标题集 |
+| P-AC2 | **补后逐档节名集合两面一致**（语义对应） | P1 · P2 · P3 | 逐档列两面 `^#{2,4}` 标题，逐条给出对照映射（允许译名不同，不允许条目数不等） |
+| P-AC3 | **术语一致性**：机制术语两面相同 | 本批口径 | 每档抽 ≥3 个机制术语，两面各扫一次，命中数 ≥1 且字形逐字相同 |
+| P-AC4 | **声称 ↔ 实测** | 全批 | 报告里每个读数附命令 + 原始输出；不得只给结论 |
+| P-AC5 | `git add` 已落（本批改名档） | 全批 | `git status --porcelain` 中本批档为 staged |
+
+**用例表**：
+
+| # | 场景 | 输入 | 期望 |
+|---|---|---|---|
+| T1 | 正常 · CN 补节 | `common.md` CN 补 3 节 | CN 标题集含 3 个 `###` 节，名与 EN 语义对应 |
+| T2 | 正常 · EN 补节 | `advisor-design.md` EN 补 3 节 | EN 标题集含 3 个 `##` 节 |
+| T3 | 边界 · 两面本已对齐的节 | `## 语言纪律` 等 14 节 | **零改动**（不得顺手重译） |
+| T4 | 边界 · 误报档 | `persona-normal.md` | **零改动**（派单书 4. 已判误报） |
+| T5 | 错误 · 顺手改措辞 | 补节时「顺便」润色该档其他节 | **禁** —— 越出「只补缺节」射程 |
+| T6 | 错误 · 升层级 | CN 的 3 节写成 `##` | **禁** —— 须 `###`（对齐 EN 层次） |
+
+### §2P.6 设计轮发现（逐条上报）
+
+- **F1（真项 · 须裁）**：`common.md` CN 的 `## 工具观` 节**已有 3 行压缩句**（`:79–81`：`- **搜索**：…` / `- **代码库探索**：…` / `- **并行**：…`），与 EN 三节**语义同源、详略不同**。⇒ 派单书写「CN 只有『工具路由』」与实际**不合** —— CN 该处**有内容**，只是**未独立成节**。**这与派单书 4. 对 `persona-normal.md` 的误报判定是同一种形态**（「节名不同 / 未成节」≠「内容缺失」）。**处置建议 = 以 EN 三节替换 CN 那 3 行压缩句**（避免同档双写同一机制 —— 违 D2 单一权威源）；但替换 = 改已有内容，**撞派单禁改范围** ⇒ **上抛（U-1）**。
+- **F2（真项 · 加严派单描述）**：`persona-engineering.md` CN **五条正文在盘**（`:61–66`）—— 派单书写「EN 有『批次档生命周期（五条）』节，CN 无」**方向对、程度过重**：CN 缺的是**节标题 + 父节归属**（五条裸挂在 `## 项目状态档` 下），非五条内容。**但派单书另点的 `Start-up booking`/「开场登记」是真缺**（EN `:96` vs CN 0 命中）⇒ 本批 **P2 实际两件事**：① 补节标题（收正五条归属）② 补 `Start-up booking` 段。
+- **F3（真项 · 加严派单描述）**：`advisor-design.md` EN **三节文本在盘**（全压在 `:2` 一整行 + `:22` 内嵌），缺的是**标题独立成行**。⇒ 本批 P3 实际 = **拆行 + 补标题**，非「补内容」。**影响**：若实施者按「补内容」理解，会**重写**这三节 ⇒ 与已有文本重复（违 D2）⇒ 必须先拆行、再核有无遗漏句。
+- **F4（一致性项 · 本席可当场修）**：`advisor-design.md` EN `:32–34` 与 CN `:48–50` 的「批次档 §3 落档」节**两面部是中文标题**（`## 批次档 §3 落档（仅设计评审——工具已挂载时）`）—— 该节在 EN 档里以中文出现，**属两面不一致的残留形态**。**本批不动**（不在「补缺节」射程；且改它 = 改已有内容）⇒ **登记，上抛（U-2）**。
+- **F5（观察到 · 非阻塞）**：派单书称「16 档同名」—— 实测 `thincoder-core/prompts/` 与 `docs/core/design/prompts/` **各 16 档、档名逐一同名**（已核）。另有两处**同名但不属本批射程**的 prompts 树：`thincoder-cli/docs/_archive/design/prompts/` · `thincoder-vscode/docs/_archive/design/prompts/`（`_archive/**`，本批禁动）。**登记不报缺**。
+- **F6（观察到 · 非阻塞）**：`persona-normal.md` 两面**节名集合不等**（CN 5 节 / EN 6 节，EN 多 `## Main-agent role — only the top-level agent has these capabilities.`）—— 本批**不动**（派单书 4. 已判「不动」），**但该档存在与 P1–P3 同形态的缺口** ⇒ **登记，供父侧决定是否另开轮**（U-3）。
+
+### §2P.7 上抛项（父侧裁决权 · 本席不擅裁）
+
+- **U-1（须裁 · 阻塞 F1/F2）**：**「只补缺节，不改已有内容」与「D2 单一权威源」在本批对象上相撞**。`common.md` CN 的 3 行压缩句与 EN 三节同源 —— **并列添加** ⇒ CN 同档双写（违 D2）；**替换** ⇒ 越出「只补缺节、不改已有内容」禁区。同理 `persona-engineering.md` CN 的节标题插入 = 改归属。**本席倾向 = 允许「替换同源压缩句 + 插节标题」这两种最小收正**（否则补出来的 CN 面反而制造新的内部重复）。**请裁**。
+- **U-2（须裁 · 低优先）**：`advisor-design.md` 的「批次档 §3 落档」节标题在 **EN 档内为中文** —— 是否随本批一并英译（抑或另开轮）。
+- **U-3（须裁 · 非本批对象）**：`persona-normal.md` 两面节名集合不等（CN 5 / EN 6）—— 派单书已判「不动」；本席**复核确认该档确有同级缺口**（EN 独有 `## Main-agent role` 节）⇒ 是否另开轮。
+- **U-4（知会 · 非阻塞）**：本批实施面 = **产品代码面**（`prompts/**` 16 档），按 D1 写权矩阵**内容权 = 主 agent**。本席**只出设计（本段）**，不动一字；实施须走**主 agent 内容落笔 + eng-coder 落盘**，或主 agent 直改（`prompts/**` 无 eng-coder 独占约定）—— 请父侧定派法。
+
+### §2P.8 关键决策记录
+
+| # | 决策 | 否决备选 | 依据 |
+|---|---|---|---|
+| **PD-1** | **设计落本档 §2，不另开设计档** | 另建 `docs/core/design/PROMPT-MIRROR-ALIGN.md` | 对象 = 产品代码面（提示词）；另开档 = 为该面造第二权威源 + 该档自身进 RAG 检索面（与本批目的相反） |
+| **PD-2** | **以更全面为准、单向补** | 两面折中重写 | 用户面判据「读哪面决定行为」——折中 = 两面都变，改面扩大；单向补 = 改面最小 |
+| **PD-3** | **术语不译**（工具名 / 命令 / 键名 / 判据名） | 全译 | 机制术语一旦译开，两面读者对同一工具的印象不再可对账；且英文原形是运行时实际工具名 |
+| **PD-4** | **补的节保持源面层级**（`###` 不升 `##`） | 按目标面习惯重排层级 | 升层级 = 造出源面没有的顶层节 ⇒ 制造**新的**面间不等（本批目的正是消不等） |
+| **PD-5** | **`persona-normal.md` 零动** | 一并补 | 派单书 4. 明判误报「不动」；且本席复核（F6）虽有同级缺口，但**超出派单射程** ⇒ 登记上抛，不擅扩 |
+
+### §2P.9 边界（本批不做什么）
+
+- **不做**：改已有节的措辞 / 重译既有对照 / 重排节序 / 改层级 / 动其他 13 档 / 动 `_archive/**` / 动台账 / 动引擎源码面。
+- **不做**：把两面**逐字对齐** —— 只要求**节名集合语义对应 + 机制术语一致**，不要求句句同文（两面本就是双语，逐字对齐不成立）。
+- **不做**：脚本批改 —— 逐档 `read` → `edit` → 回读（文档写作纪律 + 写入面是一档一槽位，禁区同 B 块）。
+
+**受影响文件表（供 §5 对账）**：
+
+| 档 | 面 | 现行数（as-of 2026-10-15） | 预计增量 |
+|---|---|---|---|
+| `common.md` | CN | 180 | **+12 ~ +16**（3 节展开，替换或并列待 U-1 裁） |
+| `persona-engineering.md` | CN | 213 | **+10 ~ +14**（节标题 1 行 + `Start-up booking` 段 ≈9–13 行） |
+| `advisor-design.md` | EN | 48 | **+6 ~ +10**（拆 `:2` / `:22` 长行 + 3 个标题独立成行；净增主要来自拆行） |
+
+**跨档行数口径**：三档均为 `.md` 文档面，**不适用**「≤500 行 advisory ∥ ≤800 行硬限」（该口径只适用源文件；同批先例 = `§2A.2.1` 行数线口径声明）。
+
+### §2P.10 逐节确证表（补之前先实读两面 —— 证该节真缺）
+
+**判据**：**「真缺」= 该面既无该节标题、亦无该节正文**；**「半真」= 正文在盘但无节标题 / 未成节**；**「误报」= 内容与节皆在，仅节名不同**。
+
+| # | 档 | 面 | 节 | 判定 | 证据（两面逐处实读） |
+|---|---|---|---|---|---|
+| 1 | `common.md` | CN | `### 搜索工具优先级` | **真缺（内容形）** | EN `thincoder-core/prompts/common.md:100–105` 五句展开；CN `docs/core/design/prompts/common.md:79` 仅 `- **搜索**：任何搜索前先查工具表，MCP 搜索工具是首选…` 一句 ⇒ 无节标题、正文覆盖不到 EN 五句 |
+| 2 | `common.md` | CN | `### 代码库探索顺序` | **半真** | EN `:107–108` 有标题 + `repo_outline → doc_search → code_search. Structure → intent → details.`；CN `:80` 仅 `- **代码库探索**：repo_outline → doc_search → code_search（结构 → 意图 → 细节）。` ⇒ 内容等价、**节标题缺** |
+| 3 | `common.md` | CN | `### 并行调用原则` | **半真** | EN `:110–111`；CN `:81` `- **并行**：独立的读类工具调用合并到一条回复批量发出（并发执行）——串行逐个调用浪费回合。` ⇒ 内容等价、**节标题缺** |
+| 4 | `persona-engineering.md` | CN | `## 批次档生命周期（五条）` | **半真（标题缺 + 归属错）** | EN `:62–69` 节标题 + 五条 + `Non-retroactive` 行；CN `:61–66` **五条正文在盘**，但裸挂在 `## 项目状态档` 节下、**无节标题** ⇒ 缺标题、归属错位 |
+| 5 | `persona-engineering.md` | CN | `Start-up booking`（开场登记）段 | **真缺** | EN `:96` `**Start-up booking**: at round open (before the first pen) create the round batch record + the round ledger row…`；CN 全档 `开场登记` / `Start-up booking` **命中 = 0** |
+| 6 | `advisor-design.md` | EN | `## Your role` | **半真（文本在、标题缺）** | CN `:5–11`（标题 + 四条 + 末句）；EN `:2` 单行内含 `## Your role (identity — read before the criteria) … 4. **Neutrality**…` ⇒ 文本在、**标题无独立行** |
+| 7 | `advisor-design.md` | EN | `## Review Criteria` | **半真（文本在、标题缺）** | CN `:13–25`（标题 + 十维 + 补充检查项）；EN `:2` 尾 + `:3–12`（十维分列）⇒ 标题 `/ ## Review Criteria Evaluate the design against these dimensions:` 内嵌在 `:2` 行尾 |
+| 8 | `advisor-design.md` | EN | `## Citation Discipline` | **半真（文本在、标题缺）** | CN `:44–46`；EN `:22` 行尾内嵌 `## Citation Discipline When you cite design-document text…` ⇒ 标题无独立行 |
+
+**⇒ 汇总**：**真缺 2**（`common.md` CN 搜索节 · `persona-engineering.md` CN `Start-up booking` 段）· **半真 6**（余下六处）· **误报 0**（`persona-normal.md` 的误报判定已由派单书给出，本批零动）。
+
+**「半真」为什么仍要补**：节标题是**结构坐标** —— 没有它，检索（RAG）与该档读者都**看不出这是一个独立规矩**，只当它是上一节的延续。这与本批判据「读哪面决定行为」同源：**结构缺 = 规矩的可发现性缺**。
+
+### §2P.11 口径说明（两块惯用语的差异登记）
+
+- 本档 B 块（存量引用清理）沿用「批档 §N / 批次档」等简写在**其写域内**指称批次档，属**B 块既有书写惯例**。
+- **P 块（本块）写域 = `prompts/**`**，其写域内的「批次档 §3 落档」等字面是**提示词文本本体**（`batch` 工具入参 `segment:"§3"` 的说明），**不是** B 块意义上的批档引用 ⇒ **P 块不受 B 块判据约束，反之亦然**。两块判据面互不覆盖，各按自己的口径判。
+
 ## §3 设计评审（评审子代理）
 
 ### 轮次 1（评审子代理）
@@ -1106,1380 +1341,8 @@ VERDICT: pass
 **说明（§3 写入口）**：本节经 `batch(action:"append", segment:"§3")` 写入，工具自带轮次戳。
 
 ## §4 用户批准（主 agent）
-## §5 实施记录（eng-coder）
-
-### 实施记录（R13 尾批 · eng-coder · 2026-10-15）
-
-**任务书** = 本档 §2 + 设计档 `docs/core/design/DOC-DISCIPLINE.md` §4.5（清洗规则权威 · `:1186` 起）。
-**实施范围** = R13 十档（§4.5 ④ 逐档清单 `:1388-1394` 与本档任务书逐档一致 —— 已核）：
-
-| # | 档 | live | inCL | CL |
-|---|---|---|---|---|
-| 1 | `docs/core/requirements/I18N.md` | 0 | 0 | 6 |
-| 2 | `docs/core/requirements/SEND-STALL-DISTILL.md` | 0 | 0 | 6 |
-| 3 | `docs/core/requirements/TRACES.md` | 0 | 0 | 6 |
-| 4 | `docs/core/design/EDIT-HELPERS.md` | 0 | 0 | 5 |
-| 5 | `docs/core/design/TOOL-OUTPUT-LIMITS.md` | 0 | 0 | 5 |
-| 6 | `docs/core/design/WRITE.md` | 0 | 0 | 5 |
-| 7 | `docs/core/requirements/WORKSPACE.md` | 0 | 0 | 5 |
-| 8 | `docs/server/design/webui/SYSTEM.md` | 0 | 2 | 5 |
-| 9 | `docs/core/requirements/ENGINEERING-MODE-V2-SPEC-CHECKLIST-REMOVAL.md` | 0 | 0 | 4 |
-| 10 | `docs/server/design/webui/ADMIN.md` | 0 | 1 | 4 |
-
-**开工前复测（实施轮基线 · 判据 = §4.5 ⑤ 命令逐字）**：R13 十档 `docs/batches/` 命中 —— **活面 0**（十档逐档 0）；段内 3 处 = `SYSTEM.md` 2 ∥ `ADMIN.md` 1。
-**判据（本批验收）= 十档内活面命中 0（例外三条除外）+ 变更记录段全删**。
-
-### §5.1 R11 实施轮（15 档 · 全为变更记录段面引用）
-
-**任务范围**（本批 15 档 · 权威分批表 = `docs/core/design/DOC-DISCIPLINE.md` §4.5 ④ R11 · live 0 ∥ inCL 32 ∥ CL 164）：
-
-`docs/server/design/webui/TABS.md` · `docs/vsc/design/PROJECT-SWITCHER.md` · `docs/cli/requirements/FEATURES.md` · `docs/core/design/CHECKPOINT.md` · `docs/core/requirements/SETTINGS-TOOL.md` · `docs/server/design/webui/ME.md` · `docs/core/design/ESCALATE.md` · `docs/core/design/AGENT-PARAMS.md` · `docs/server/design/webui/READINGS.md` · `docs/cli/design/TUI-TOOL-OUTPUT.md` · `docs/core/requirements/AGENT-PARAMS.md` · `docs/core/requirements/ENG-TOKEN-BINDING.md` · `docs/core/requirements/ENGINEERING-MODE-V2-SPEC-PROMPT-PIPELINE.md` · `docs/core/requirements/LOGGING.md` · `docs/core/requirements/METHODOLOGY.md`
-
-### §5.2 动作（规则一 · 删段）
-
-15/15 档 `## 变更记录` 段**整段删**（标题行起 → 文末或下一同级标题前一行）——判据 = §4.5 ③ 规则一 P1。
-**动因**：本批 32 处批档引用**全部**住在这 15 个段内（inCL=32、live=0）。
-
-**P5 同轮收正（2 处死指针）**：
-1. `docs/cli/design/TUI-TOOL-OUTPUT.md:8`——`（2026-09-29——见变更记录）` ⇒ `（2026-09-29）`（本档 §8 段删后该指针成死 ⇒ 删指针片段、保留日期；规则一 P5）。
-2. `docs/core/requirements/SETTINGS-TOOL.md:80`——表格单元格内 `（详见变更记录）` ⇒ 删该片段（同 P5）。
-
-### §5.3 边界形态（逐条履行 · 逐档 read 回看）
-
-| 边界 | 处置 | 证据 |
-|---|---|---|
-| §4.5 ③ 规则一 P2（`不并项与历史沿革` 族留） | **留**——本批 15 档共 **30 个**沿革 / 不并项标题逐条在位 | 扫描读数 30（逐档复读） |
-| 例外 ① 规则正文 | 本批 15 档内无规则载体档 ⇒ 无命中 | 自建扫描 0 命中 |
-| 例外 ② 机制模板形 `docs/batches/<批>-<主题>.md` | 15 档内 0 处 | 自建扫描 0 命中 |
-| 例外 ③ 目录级归属句「流水归 `docs/batches/`」 | 15 档内 0 处 | 自建扫描 0 命中 |
-| 表格空壳行 | **无**——本批唯一表格内批档命中 = SETTINGS-TOOL.md:80 单元格片段，删片段后同格「何处不并」列语义完整 | 逐档 read 回看 |
-| 残句 | **无**——15 档尾部均收于完整结构元素（标题 ∥ 表格行） | 逐档 read 回看 |
-| `_archive/**` / 台账 / 本批外档 | **零触** | `git diff --stat` 逐档列示 |
-
-### §5.4 验收读数（初测 → 改后 · 同一命令）
-
-| 档 | 初测 batches 命中 | 改后 | 行数（初 → 改后） |
-|---|---|---|---|
-| `server/design/webui/TABS.md` | 5（全段内） | **0** | 97 → 82 |
-| `vsc/design/PROJECT-SWITCHER.md` | 4（全段内） | **0** | 172 → 158 |
-| `cli/requirements/FEATURES.md` | 4（全段内） | **0** | 220 → 207 |
-| `core/design/CHECKPOINT.md` | 2（全段内） | **0** | 218 → 205 |
-| `core/requirements/SETTINGS-TOOL.md` | 1（全段内） | **0** | 93 → 81 |
-| `server/design/webui/ME.md` | 6（全段内） | **0** | 133 → 121 |
-| `core/design/ESCALATE.md` | 0 | **0** | 173 → 162 |
-| `core/design/AGENT-PARAMS.md` | 1（全段内） | **0** | 143 → 133 |
-| `server/design/webui/READINGS.md` | 6（全段内） | **0** | 74 → 64 |
-| `cli/design/TUI-TOOL-OUTPUT.md` | 0 | **0** | 120 → 111 |
-| `core/requirements/AGENT-PARAMS.md` | 1（全段内） | **0** | 79 → 70 |
-| `core/requirements/ENG-TOKEN-BINDING.md` | 0 | **0** | 84 → 75 |
-| `core/requirements/ENGINEERING-MODE-V2-SPEC-PROMPT-PIPELINE.md` | 0 | **0** | 44 → 35 |
-| `core/requirements/LOGGING.md` | 0 | **0** | 92 → 83 |
-| `core/requirements/METHODOLOGY.md` | 2（全段内） | **0** | 126 → 117 |
-| **合计** | **32**（与 §4.5 ④ R11 `inCL=32` 吻合） | **0** | |
-
-**自建扫描（§4.5 ⑤ 命令口径 · 域 = 六目录 design ∥ requirements、除外 `_archive` / `prompts`）**：扫描档 **193** ∥ 全仓活面命中 **673**（= 其余在途批 R1–R10 / R12–R13 的存量，非本批）∥ **R11 15 档命中 = 0**。
-
-### §5.5 决策透明表
-
-| # | 决策 | 备选 | 依据 |
-|---|---|---|---|
-| 1 | ESCALATE.md / TUI-TOOL-OUTPUT.md / ENG-TOKEN-BINDING.md / ENGINEERING-MODE-V2-SPEC-PROMPT-PIPELINE.md / LOGGING.md 五档「初测 0 命中」仍执行删段 | 保留（无引用即无违规） | 用户 2026-10-15 03:24 裁定「设计文档中不出现变更记录」= **段本身即违规形态**，与段内是否含批档坐标无关；§4.5 ② 清账①「整段删」无「按引用数豁免」口 |
-| 2 | P5 死指针「同轮收正」采用**删指针片段**（非改指别处） | 改指 git 历史 / 提交信息 | §4.5 ① 方向分界句「无『别处』可指」+ §4.5 ③ 规则二改形三禁③「不新增新引用」——改指 git 提交信息 = 新增引用，违反减法口径 |
-| 3 | 本批零脚本批改（逐档 read → 逐档 edit） | 脚本批量截断 | 文档写作纪律「禁脚本批量改文」；§4.5 ⑦ 第 3 行动作列 = 逐批实施轮逐档执行 |
-
-### §5.6 审计与代码评审轮次与终态
-
-（本节由本轮内部审计 / 评审回填——见下）
-
-**状态行**：实施完成（15 档四样全清；命中集−例外三条=0；审计 1 轮零偏离，终态 clean）
-
-### §5.1 本批实施（R4 · eng-coder · 2026-10-15）
-
-**范围**：R4 批 15 档（权威分批表 §4.5 ④ `:1297`）——**只删，零新写**（逐档人工读改，无脚本批改）。
-
-**执行工序（§4.5 ② 硬序：先删段、后删引用片段）**：逐档 ① 先删 `## 变更记录` 整段（规则一 P1：自标题行至下一同级或更高级标题前一行；末节则至 EOF）② 再删活面引用片段（规则二 A–D 四类）③ 删段所生「见变更记录 / 本档自有变更记录」死指针同轮收正（规则一 P5）。
-
-**逐档读数（初测 → 改后 · 命中数 = `docs/batches/`）**：
-
-| # | 档 | 初测 | 改后 | 残余性质 |
-|---|---|---|---|---|
-| 1 | `docs/core/requirements/TOOLS.md` | 14 | **0** | — |
-| 2 | `docs/core/design/ANCHOR-DEBT-REPAIR.md` | 11 | **2** | 例外③ 树级范围句（`:228` 修复域边界 / `:346` AC 非触面清单——均 `docs/batches/**` 整树，无特定批次指向） |
-| 3 | `docs/vsc/design/WEBVIEW.md` | 75 | **0** | — |
-| 4 | `docs/core/design/MULTI-INSTANCE-COLLAB.md` | 29 | **1** | 例外③ 树级（`:176` 扫描域枚举内 `docs/batches/**` = 记录/归档面） |
-| 5 | `docs/desktop/requirements/PROJECT.md` | 52 | **0** | — |
-| 6 | `docs/server/design/ops/OPS.md` | 50 | **0** | — |
-| 7 | `docs/core/design/PROXY.md` | 29 | **0** | — |
-| 8 | `docs/core/requirements/SESSION.md` | 18 | **0** | — |
-| 9 | `docs/desktop/design/PANEL-READBACK.md` | 6 | **0** | — |
-| 10 | `docs/core/requirements/ENGINEERING-MODE-V2.md` | 6 | **2** | 例外③（`:212` 文档资产清单内 `docs/batches/` 目录位）+ 例外②（`:670` `docs/batches/<旧档>` 机制模板占位符） |
-| 11 | `docs/server/requirements/PROJECT.md` | 57 | **0** | — |
-| 12 | `docs/cli/design/TUI.md` | 67 | **0** | — |
-| 13 | `docs/cli/design/ACP-CLIENT.md` | 16 | **0** | — |
-| 14 | `docs/core/design/TEAM.md` | 16 | **0** | — |
-| 15 | `docs/desktop/requirements/COMPOSER.md` | 9 | **0** | — |
-| | **合计** | **455** | **5** | 5 = 例外闭集（② 1 处 + ③ 4 处） |
-
-**残余 5 处 = 例外三条闭集，逐处形态**（§4.5 ③ 规则三）：
-- **例外③ 目录级归属句（4 处）**：`ANCHOR-DEBT-REPAIR.md:228`（修复域边界裁定表行「冻结批档 `docs/batches/**` | 不入修复域」）· `:346`（AC-4 非触面清单「不触 … / `docs/batches/**`」）· `MULTI-INSTANCE-COLLAB.md:176`（判据扫描口径枚举「记录面 / 归档面（`docs/batches/**` · `**/_archive/**`）」）· `ENGINEERING-MODE-V2.md:212`（文档资产表「过程 | 批次档 | … | `docs/batches/`」目录位）——**四条均指整树/目录，无一条指向某一已删批档**。
-- **例外② 机制模板形占位符（1 处）**：`ENGINEERING-MODE-V2.md:670`「`前情 = docs/batches/<旧档> §N（已收口 <日期>）`」——占位符形态，非实指。
-
-**P5 同轮收正（6 处）**——删段所生死指针，全部改为「流水归 git 历史」或删括注：
-- `TOOLS.md:239` · `SESSION.md:193`（§5 沿革表行「本档自有变更记录」→「流水归 git 历史」）
-- `MULTI-INSTANCE-COLLAB.md:353` · `TUI.md:785` · `ACP-CLIENT.md:407`（同族行同收正）
-- `server/requirements/PROJECT.md:252`（正文括注「两处原判被用户推翻，见变更记录」→ 删括注尾）
-
-**交付读数**：`git diff --stat` 15 档 = **97 insertions / 1062 deletions**（删除为主导——纯减法，零语义改）。
-
-**边界合规（禁止范围）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档；未改语义（只删，其余逐字不动）；未脚本批改；未新写。
-
-### §5.1 R9 实施记录（eng-coder · 2026-10-15 · initial 轮）
-
-**批 = R9**（§4.5 ④ 逐档清单 15 档 · 读数 `live=11 / inCL=72 / CL=270`）。**工序序 = 先删段 → 后删活面引用片段**（§4.5 ② 硬序）。
-
-**执行方式**：逐档 `read` → 逐处语义判断 → `edit` 行/内容定向删（**零脚本批改**——文档写作纪律）。
-
-**① 删段（11 档 · 变更记录段整段删）**——判据 = §4.5 ③ 规则一 P1（标题含「变更记录」⇒ 整段删，至下一同级/更高级标题前）：
-
-| 档 | 段标题 | 删前行区间 | 删前行数 |
-|---|---|---|---|
-| `core/requirements/ENGINEERING-MODE-V2-SPEC-MANIFEST.md` | `## 变更记录` | :87–:96 | 10 |
-| `server/design/webui/TERMINAL.md` | `## 变更记录` | :110–:117 | 8 |
-| `core/design/TWO-REPO-MERGE.md` | `## 变更记录` | :194–:200 | 7 |
-| `core/requirements/CONFIG.md` | `## 变更记录` | :61–:67 | 7 |
-| `core/requirements/ENGINEERING-MODE-V2-SPEC-BATCH-SEGMENT.md` | `## 变更记录` | :55–:60 | 6 |
-| `vsc/requirements/VSC-MIGRATION.md` | `## 4. 变更记录` | :42–:46 | 5 |
-| `desktop/requirements/CHAT.md` | `## 变更记录` | :15–:18 | 4 |
-| `desktop/requirements/SHELL.md` | `## 变更记录` | :15–:17 | 4 |
-| `core/design/ENGINEERING-MODE-V2.md` | `## 4. 变更记录` | :531–:605 | 75 |
-| `cli/design/TUI-INPUT-BOX.md` | `## 变更记录` | :325–:395 | 70 |
-| `cli/design/TUI-COMMANDS.md` | `## 变更记录` | :227–:266 | 40 |
-| `cli/requirements/TUI.md` | `## 变更记录` | :93–:125 | 33 |
-
-**未删段档**（无变更记录段）：`core/requirements/DOC-SYSTEM.md` · `vsc/design/VSC-MIGRATION-INVENTORY.md` · `core/design/prompts/common.md`（提示词档 · 本批零触）。
-
-**② 活面引用片段删（8 档 · 11 处 → 0）**：
-
-| # | 档:行 | 改前（片段） | 改后 | 类 |
-|---|---|---|---|---|
-| 1 | `ENGINEERING-MODE-V2-SPEC-MANIFEST.md:54` | `；来源 = 批 \`docs/batches/2026-09-27-conventions-retire.md\` §2` | `；来源 = 2026-09-27 用户裁定（\`conventions.json\` 退役并入）` | A（保留日期 + 因果，删批坐标） |
-| 2 | `webui/TERMINAL.md:5` | `建档：2026-10-13（批 \`docs/batches/…sandbox-container-terminal.md\` 设计轮 · eng-designer · 台账 #1374）` | `建档：2026-10-13（设计轮 · 台账 #1374）` | A |
-| 3 | `CONFIG.md:26` | `；批 = \`docs/batches/2026-09-29-provider-config-family.md\`` | 整片段删（句末） | A |
-| 4 | `VSC-MIGRATION.md:4` | `+ 批次档 \`docs/batches/2026-09-15-vsc-doc-migration.md\` §1` | 整片段删（句末） | A |
-| 5 | `CHAT.md:5` | `——2026-10-02 文档体系重组批（DOC-MIGRATION）波 3；批档 \`docs/batches/2026-10-02-doc-structure-reorg.md\`。` | `——2026-10-02 文档体系重组（DOC-MIGRATION）波 3。` | A |
-| 6 | `SHELL.md:5` | 同 #5 同形 | 同 #5 | A |
-| 7 | `DOC-SYSTEM.md:32` | `；源批 = \`docs/batches/2026-09-29-tools-carryover.md\`（设计 §2.3）` | 整片段删（格末） | A |
-| 8 | `TWO-REPO-MERGE.md:184` | `旧档档头状态行（…）+ 变更记录` | `旧档档头状态行（…）`（删「+ 变更记录」指针片段） | P5 |
-
-**③ P3 沿革表单列指向行删（父侧裁 · 3 行）**——判据 = §4.5 ③ 规则一 P3（沿革表内**整行语义 = 指向旧档「§变更记录」**⇒ 删该行）：
-
-| # | 档:行 | 被删行 | 判定 |
-|---|---|---|---|
-| 1 | `cli/requirements/TUI.md:85` | `\| 旧档 §变更记录 \| 逐批流水 \| 历史叙述——本档自有变更记录 \|` | 旧档位置列 = 旧档 §变更记录 · 内容列 = 逐批流水 ⇒ **整行语义 = 指向旧档§变更记录** |
-| 2 | `cli/design/TUI-INPUT-BOX.md:316` | `\| 旧档 §变更记录 \| 逐批流水（2026-08-03/04…） \| 历史叙述——本档自有变更记录 \|` | 同上形态 |
-| 3 | `cli/design/TUI-COMMANDS.md:215` | `\| 旧档变更记录中本面相关行 \| 逐批流水 \| 历史叙述——本档自有变更记录 \|` | 同上形态（旧档变更记录中本面相关行） |
-
-**④ P5 死指针收正（1 处）**：`cli/design/TUI-INPUT-BOX.md:5` — 「端差已消解——历史见变更记录 misc-four 行」⇒ 「端差已消解」（删段所生死指针，同轮收正 · 保留结论）。
-
-**范围边界**：只动本批 15 档（`docs/core`、`docs/cli`、`docs/desktop`、`docs/vsc`、`docs/server` 之 requirements ∥ design 树）——未触 `_archive/**` · 台账 · 本批外档 · `docs/batches/**`（记录面）· 提示词（`prompts/**` 本批零触）。**未做脚本批改**（逐处读改）。
-
-**遗留（登记 · 不动 · 父侧裁为另开批缺口）**：`TWO-REPO-MERGE.md:184` 的「何故不并」列仍载「批次语境——本档自有变更记录」——属**沿革表理由句**（非单列指向行），父侧裁「P2 + 无明文授权 ⇒ 不动」。
-
-**待收尾**：③ 例外三条命中 3 处（`TWO-REPO-MERGE.md:83` · `:190` · `VSC-MIGRATION-INVENTORY.md:19`）——全 = 目录级归属句（例外 ③，§4.5 ③ 规则三），**判据为保留**；已在上表外单列。
-
-### §5.x R12 实施记录（eng-coder · 2026-10-15）
-
-**批 = R12**（权威分批表 §4.5 ④ `:1378-1387` 逐档清单 · 15 档 · live=0 / inCL=14 / CL=104）。
-
-**动作**（两条 · 逐档 read→判→改→回读，未用脚本）：
-
-1. **① 面 · 变更记录段整段删**（§4.5 ③ 规则一 P1）——15 档逐档删 `## 变更记录` 段（标题起至文件末，本批 15 档该段**均为文末末节**）。**纯删除：diff 合计 +0 / −104 行**。
-2. **② 面 · 活面引用片段删**——本批 15 档实测**活面引用 = 0**（inCL 14 处全数住在被删段内，随段消失）⇒ 规则二 A–D 四类**本批零适用**。
-
-**改后逐档读数（初测 → 改后）**：
-
-| 档 | 初测(inCL/CL) | 改后 段 | 改后 `docs/batches/` | diff |
-|---|---|---|---|---|
-| `core/requirements/STRUCTURE-DEBT.md` | 0/9 | 已删 | 0 | +0/−9 |
-| `cli/requirements/CRASH-REPORTS.md` | 1/8 | 已删 | 0 | +0/−8 |
-| `core/requirements/CHECKPOINT.md` | 1/8 | 已删 | 0 | +0/−8 |
-| `core/requirements/VERIFY-REDESIGN.md` | 0/8 | 已删 | 0 | +0/−8 |
-| `core/requirements/BROWSER-TOOL.md` | 3/7 | 已删 | 0 | +0/−7 |
-| `core/requirements/CONSULTATION.md` | 1/7 | 已删 | 0 | +0/−7 |
-| `core/requirements/MCP.md` | 1/7 | 已删 | 0 | +0/−7 |
-| `core/requirements/PHILOSOPHY.md` | 0/7 | 已删 | 0 | +0/−7 |
-| `core/requirements/TWO-REPO-MERGE.md` | 1/7 | 已删 | **1（例外③）** | +0/−7 |
-| `cli/requirements/TUI-TOOL-OUTPUT.md` | 0/6 | 已删 | 0 | +0/−6 |
-| `core/design/API-CONTRACT.md` | 3/6 | 已删 | 0 | +0/−6 |
-| `core/design/APPLY-PATCH.md` | 1/6 | 已删 | 0 | +0/−6 |
-| `core/design/HASHLINE-EDIT.md` | 1/6 | 已删 | 0 | +0/−6 |
-| `core/design/INSERT-AFTER.md` | 1/6 | 已删 | 0 | +0/−6 |
-| `core/requirements/ESCALATE.md` | 0/6 | 已删 | 0 | +0/−6 |
-| **合** | **14/104** | **15/15 删** | **1（例外③）** | **+0/−104** |
-
-**判据读数（§4.5 ⑤ 自建扫描式 · cwd=仓根）**：扫描 193 档 ⇒ 全仓 **LIVE-HITS 1052**（余量 = 他批存量）；**R12 十五档命中 = 0（例外③ 1 处不计）** ⇒ **本批判据 = 「命中集 − 例外三条」= 0 ✅**。
-
-**父侧裁决执行（越权回滚）**：
-- **① `TWO-REPO-MERGE.md:73` 单元格**：我先前改为 `git 提交历史（项目级时序日志）` = 改指别处（违 §4.5 ①）⇒ **已回滚原样** `| 批次实施流水与回滚点 | 一次性施工材料 | \`docs/batches/\`（项目级时序日志） |`（例外③ 目录级归属句，**不删**）。回读命中 ✅。
-- **② 沿革表 9 处「本档自有变更记录」句**：判为**「何故不并」理由句**（非 P3「单列指向旧档『§变更记录』的行」）⇒ **不动**；我先前改写的 1 处（`CRASH-REPORTS.md:88`）**已回滚原句**。其余 8 处未被改写（随 checkpoint 回滚复原）。
-- **③ 三档（CHECKPOINT/CONSULTATION/MCP）不并项表行**：判为**理由句行**（非 P3 单列指向行）⇒ **不删**（先前删除动作随回滚复原，现为原样）。
-
-**执行序内说明**：本轮中途发生**并行 checkout 回滚**（20:12:35 十二档改动被 `git checkout` 连带复原）⇒ 已按裁决重做一次；终态以下表读数为准。
-
-**机检（`node scripts/doc-check.mjs` · cwd=仓根）**：`OK(行宽)`；锚悬空 1127（**全为本批存量常态红**——本批即清这笔账）。**R12 十五档无新增悬空**（逐档核：余下命中全为迁移期引文/报告面符号，非本批动作所生）。
-
-### §5.1 实施轮（R8 · eng-coder · 2026-10-15）
-
-**本批 = R8**（15 档，权威清单 = 设计档 §4.5 ④ `DOC-DISCIPLINE.md:1337-1346`）：`core/design/ADVISOR-GUARDS.md` · `cli/design/CLI-DEBT.md` · `server/design/webui/SANDBOX.md` · `server/design/agent/MEMBER-AGENT.md` · `server/design/metering/METERING.md` · `core/design/DOC-CODE-RECONCILE.md` · `core/design/EDIT.md` · `core/design/SETTINGS-TOOL.md` · `core/requirements/ADVISOR-CONVERGENCE.md` · `server/design/webui/STYLE.md` · `core/design/TRACES.md` · `cli/requirements/ACP-CLIENT.md` · `core/design/WORKSPACE.md` · `core/requirements/NORMAL-MODE.md` · `server/design/EVOLUTION.md`。
-
-**初测读数**（设计档 §4.5 ⑤ 命令，域内逐档）：15 档 live 合计 **15**（每档 1 处活面命中）；每档均带 `## 变更记录` 段（inCL 逐档 2–24，CL 行 11–40）。合计 inCL **135** ∥ CL **335**——与设计档 §4.5 ④ R8 行 `15/135/335` 逐值吻合。
-
-**逐档处置**（① 删变更记录段整段 ∥ ② 删活面引用片段，均按 §4.5 ③ 规则一 / 规则二）：
-
-| 档 | live 命中（改前） | 处置 | 处置后读数 |
-|---|---|---|---|
-| `core/design/ADVISOR-GUARDS.md` | :95（A 类批坐标注） | 删批档坐标句 + 删 :96 尾括注 + 删 §变更记录段（429–467） | live 0 / CL 0 |
-| `cli/design/CLI-DEBT.md` | :6（A 类） | 删 KD-26 批坐标句 + 删 §变更记录段（68–105） | live 0 / CL 0 |
-| `server/design/webui/SANDBOX.md` | :97（D 类表格单元格，2 处） | 删两处批档片段（读数留）+ 删 §变更记录段（178–214） | live 0 / CL 0 |
-| `server/design/agent/MEMBER-AGENT.md` | :391（C 类一次性材料） | 删批档路径（保留档名）+ 删 §变更记录段（438–467） | live 0 / CL 0 |
-| `server/design/metering/METERING.md` | :5（A 类） | 删批档坐标（保留日期）+ 删 §变更记录段（153–176） | live 0 / CL 0 |
-| `core/design/DOC-CODE-RECONCILE.md` | :378（B 类落点表） | 删批档坐标（保施工材料结论）+ 删 §变更记录段 | live 0 / CL 0 |
-| `core/design/EDIT.md` | :99（C 类） | 删批档路径 + 删 §变更记录段（含批落点指针前置块） | live 0 / CL 0 |
-| `core/design/SETTINGS-TOOL.md` | :111（C 类 + 表格） | 删批档路径与批次档坐标括注 + 删 §变更记录段 | live 0 / CL 0 |
-| `core/requirements/ADVISOR-CONVERGENCE.md` | :188（C 类） | 删活体复现链括注 + 删 §变更记录段 + **P5 收正** :4「见变更记录」死指针 | live 0 / CL 0 |
-| `server/design/webui/STYLE.md` | :210（A 类） | 删批坐标括注 + 删 §变更记录段 | live 0 / CL 0 |
-| `core/design/TRACES.md` | :78（A 类） | 删批档坐标 + 删 §变更记录段 | live 0 / CL 0 |
-| `cli/requirements/ACP-CLIENT.md` | :92（A 类） | 删落批坐标 + 删 §变更记录段 | live 0 / CL 0 |
-| `core/design/WORKSPACE.md` | :44（A 类标题内） | 删设计源坐标（保留日期）+ 删 §变更记录段 | live 0 / CL 0 |
-| `core/requirements/NORMAL-MODE.md` | :118（A 类） | 删落点坐标（保留日期）+ 删 §变更记录段 | live 0 / CL 0 |
-| `server/design/EVOLUTION.md` | :5（A 类） | 删批档坐标（保留日期）+ 删 §变更记录段 | live 0 / CL 0 |
-
-**改后复扫（自建扫描 = 设计档 §4.5 ⑤ 命令，域内逐档）**：15 档 live 合计 **0** ✅；每档 `## 变更记录` 段 0 命中；全批残余 `docs/batches/` 字面仅 1 处 = `ADVISOR-GUARDS.md:422`「流水归 `docs/batches/` + git 历史」（**例外 ③ 目录级归属句**，命令内机械剔除）。
-
-**例外三条命中登记（本批）**：① 本档规则正文 = 无（本批无 DOC-DISCIPLINE.md）；② 机制模板形 = 无；③ 目录级归属句 = `ADVISOR-GUARDS.md:422` 1 处（保留）。
-
-**范围外发现（未动）**：`core/design/ADVISOR-CONVERGENCE.md:246`「见变更记录」死指针——该档**不在 R8**（R8 含 `core/requirements/ADVISOR-CONVERGENCE.md`），未动，报告父侧。
-
-**🔴 阻塞事件（须父侧裁）**：全部 15 档编辑完成后，复扫 `live 0` 已成立；其后 **04:12:35** 有外部进程把 **11 档整档还原至 HEAD 版本**（ADVISOR-GUARDS 468 行 · webui/SANDBOX 215 行 · MEMBER-AGENT 288 行（另一修订） · METERING · DOC-CODE-RECONCILE · EDIT · SETTINGS-TOOL · core/requirements/ADVISOR-CONVERGENCE · STYLE · TRACES · WORKSPACE · NORMAL-MODE · EVOLUTION）。**同秒同 mtime = 整档批量还原**，形态同本批档 §2.12 已记的「父侧 `git checkout` 连坐丢失」。**同时被还原的还有这些档的未提交新版内容**（我执行时的基线 ≠ HEAD：MEMBER-AGENT 基线 468 行 / HEAD 288 行）——即并发批的在途成果一并被丢弃。已 `notify_parent` 上抛，**未自行重做**（避免与并发写者互相覆盖）。既存成果：4 档编辑仍在暂存区（`cli/design/ACP-CLIENT.md` · `cli/design/CLI-DEBT.md` · `cli/requirements/ACP-CLIENT.md` · `core/requirements/ADVISOR-CONVERGENCE.md`）。
-
-### R2 剩余 12 档实施轮 · 受阻上报（eng-coder · 2026-10-15）
-
-**结论：未执行任何改动——任务书前提被事实推翻，按「停下上报」纪律打回。**
-
-**任务书载明的权威规则 = `docs/core/design/DOC-DISCIPLINE.md` §4.5（`:1186` 起）「批档可删性契约与存量清理工序」——盘上查无此内容。**
-
-实测（cwd = 仓根 · as-of 2026-10-15 04:15）：
-
-| 查项 | 任务书预期 | 盘上实测 |
-|---|---|---|
-| §4.5 标题 | 「批档可删性契约与存量清理工序」（`:1186` 起） | `### 4.5 关键决策记录`（`:1176` · D-V5-1…D-V5-13 表） |
-| 节结构 | §4.5 → §4.6 → §4.7（D-V5 表顺延） | §4.5 关键决策记录 → §4.6 边界（无 §4.7） |
-| 规则一 P1–P5（删段边界判据式） | 在位 | **零命中** |
-| 规则二 四类删引用口径 A–D | 在位 | **零命中** |
-| 例外三条（闭集） | 在位 | **零命中** |
-| 「批档可删性」/「清洗规则」/「规则一」/「规则二」/「例外三条」 | — | 全档 **0 处** |
-
-**另两项相关实测**：
-
-1. **本档自身带的 `## 变更记录` 段仍在**：`DOC-DISCIPLINE.md:1459` —— 与「批档可删性」方向相反的旧纪律 **§1 D8 细则仍在**（`:30`「历史去向 = 记录面：该档变更记录留一行」· `:32`「记录面（保留零触）：变更记录 / …」）。
-2. **本批 12 档全部 = HEAD 干净态**（`git status --porcelain` 空）——即前一轮 #8 声称的 3 档成果**亦不在盘上**；`docs/batches/` 下 992 个批档 = 工作区 `D`（staged-deleted）态、盘上仅存 9 档。
-
-**判因（证据推论）**：本批档 §2 记载过同类事件——「#95 经两轮评审通过后成果已永久丢失——`DOC-DISCIPLINE.md` 被 `git checkout` 连坐回滚至 HEAD 原版」（§2.12 `:268`）。**本轮疑似再次发生**：§4.5 重写（含 P1–P5 / 规则二 A–D / 例外三条）+ §1 D4 细则二 + §5 A-DD25 一并丢失，回退为 HEAD 原版（§4.5 = 旧「关键决策记录」表）。`git log -- docs/core/design/DOC-DISCIPLINE.md` 最近三次提交均与本批无关（`70d377e7` / `6402b07e` / `26233590`）。
-
-**打回理由（为何不能自行补造）**：三条清洗规则（删段边界 P1–P5 · 四类改形 A–D · 例外三条闭集）是**判据的权威单一源**（D2）——任务书明令「读它；冲突时以 §4.5 为准」。规则正文缺失 ⇒ 我无法判定：① 段终止的确切层级判据 ② 四类各自的删/留边界 ③ 例外三条的闭集内容。**自造判据 = 违反「不得静默偏离设计」，且会制造第二权威源**。故不执行，上报。
-
-**未触碰任何档**（`docs/**` 零改动 · 零脚本 · 零新写）。本档 §5 已写入本条（写入成功）。
-
-### §5.2 R9 事故重做 + 终态读数（eng-coder · 2026-10-15）
-
-**事故（外部回滚 · 并发单次事件）**：§5.1 记的 15 档清洗完成后，**8 档改动被外部 `git checkout` 连坐回滚至 HEAD**（与 §2.12 同一故障模式）：丢失档 = `ENGINEERING-MODE-V2-SPEC-MANIFEST.md` · `TERMINAL.md` · `TWO-REPO-MERGE.md` · `CONFIG.md` · `ENGINEERING-MODE-V2-SPEC-BATCH-SEGMENT.md` · `ENGINEERING-MODE-V2.md` · `DOC-SYSTEM.md`（活面片段）。存活档 = `VSC-MIGRATION.md`（需求侧）· `CHAT.md` · `SHELL.md` · `TUI-INPUT-BOX.md` · `TUI-COMMANDS.md` · `TUI.md`。期间 HEAD 前移（并行批在提交）。**已逐处重做丢失的 8 处**（逐档 read → edit 行/内容定向删）。父侧确认「并发事故是单次事件（20:12:35），现已过」。
-
-**四类处置落实（逐处 · 判据 + 动作 + 读数）**：
-
-| # | 位置 | 判据 | 动作 | 读数 |
-|---|---|---|---|---|
-| 1 | `cli/requirements/TUI.md` 原 `:85` | 整行语义 = 指向旧档「§变更记录」（旧档位置列 = 旧档 §变更记录；内容列 = 逐批流水）⇒ **P3 单列指向行** | **删该行**（表其余 4 行留） | 沿革表现收于原 `:84`（迁移前设计档路径行）✅ |
-| 2 | `cli/design/TUI-INPUT-BOX.md` 原 `:316` | 同上形态（旧档 §变更记录 / 逐批流水）⇒ P3 | **删该行** | 沿革表现收于原 `:315`（§9.8 边界行）✅ |
-| 3 | `cli/design/TUI-COMMANDS.md` 原 `:215` | 同上形态（旧档变更记录中本面相关行 / 逐批流水）⇒ P3 | **删该行** | §6.1 表现收于原 `:214`（§9 交互层行）✅ |
-| 4 | `core/design/TWO-REPO-MERGE.md:184` | 合并行（旧档档头状态行 + 变更记录）——**非**单列指向行 ⇒ **P5 收正**（删指针，不改指别处、不改写新语义） | 删「+ 变更记录」指针片段；「何故不并」列理由句**保留**（属超授权项 · 不动） | `:184` 现读「旧档档头状态行（评审通过 · 用户批准 · 批 1 已实施）∥ 时点状态与逐轮流水 ∥ 批次语境——本档自有变更记录」✅ |
-
-**§5.1 补正**：④ P5 死指针收正应为 **2 处**（`TUI-INPUT-BOX.md:5` + §5.1 表 #8 `TWO-REPO-MERGE.md:184`），§5.1 末「待收尾 3 处」更正为「遗留 1 处 = `TWO-REPO-MERGE.md:184` 理由句（不动）」。
-
-**终态读数（逐档 · HEAD 基线 → 现态 · 机械式 = §4.5 ⑤ 扫描式）**：
-
-| 档 | CL 前→后 | live 前→后 | batchrefs 前→后 | 处置 |
-|---|---|---|---|---|
-| `core/requirements/ENGINEERING-MODE-V2-SPEC-MANIFEST.md` | 10→0 | 1→0 | 3→0 | 删段+删引用片段 |
-| `server/design/webui/TERMINAL.md` | 8→0 | 1→0 | 3→0 | 删段+删引用片段 |
-| `core/design/TWO-REPO-MERGE.md` | 7→0 | 2→2 | 2→2 | 删段（2 处 = 例外③） |
-| `core/requirements/CONFIG.md` | 7→0 | 1→0 | 2→0 | 删段+删引用片段 |
-| `core/requirements/ENGINEERING-MODE-V2-SPEC-BATCH-SEGMENT.md` | 6→0 | 0→0 | 2→1 | 删段（余 1 = 例外②） |
-| `vsc/requirements/VSC-MIGRATION.md` | 5→0 | 1→0 | 2→0 | 删段+删引用片段 |
-| `desktop/requirements/CHAT.md` | 4→0 | 1→0 | 1→0 | 删段+删引用片段 |
-| `desktop/requirements/SHELL.md` | 4→0 | 1→0 | 1→0 | 删段+删引用片段 |
-| `core/design/prompts/common.md` | 0→0 | 0→0 | 1→1 | **零触**（例外②） |
-| `core/requirements/DOC-SYSTEM.md` | 0→0 | 1→0 | 1→0 | 删引用片段 |
-| `vsc/design/VSC-MIGRATION-INVENTORY.md` | 0→0 | 1→1 | 1→1 | 零触（例外③） |
-| `core/design/ENGINEERING-MODE-V2.md` | 75→0 | 0→0 | 20→0 | 删段 |
-| `cli/design/TUI-INPUT-BOX.md` | 68→0 | 0→0 | 17→0 | 删段+删引用片段+P3/P5 |
-| `cli/design/TUI-COMMANDS.md` | 40→0 | 0→0 | 15→0 | 删段+P3 |
-| `cli/requirements/TUI.md` | 33→0 | 0→0 | 10→0 | 删段+P3 |
-| **合计** | **267→0** | **10→3** | **81→5** | —— |
-
-**判据读数（§4.5 ⑤ 扫描式 · 15 档域）**：**活面命中 = 3**（全 = 例外③目录级句：`TWO-REPO-MERGE.md:83`·`:190` · `VSC-MIGRATION-INVENTORY.md:19`）；**命中集 − 例外集 = 0** ✅。例外②2 处（`BATCH-SEGMENT.md:24`·`:27`=模板形占位符 ∥ `prompts/common.md:136`）命令内机械剔除。
-
-**审计与代码评审（本会话内 · 全链）**：
-- **内部一致性审计**（read-only explore 子代理 · 重跑）：**CLEAN**——四类偏差（未清/越界/语义漂移/空壳）逐类未发现；5 处残余全 = 例外②/③；`common.md` 确认零触。
-  - 首轮审计读到的是**回滚后旧态**（本次事故）⇒ 已重做后重跑，终态 CLEAN。
-- **代码评审**（advisor · type=code）：**VERDICT: pass**（无 🔴 / 无 must-fix 🟡）。登记 5 项：①🟡 = `DOC-DISCIPLINE.md` §4.5 权威规则**不在盘**（本批自身的丢档事件 · **显式排除项另链**）②🔵 设计侧同名档属他批 ③🔵 `TWO-REPO-MERGE.md:184` 理由句空指（父裁不动 · 另批）④🔵 批档 §5 规则引用待 §4.5 回填自洽 ⑤🔵 域外注：需求侧 `core/requirements/ENGINEERING-MODE-V2.md` 真活面引用（`:699`/`:717`）属他批。
-
-**范围边界**：只动本批 15 档——未触 `_archive/**` · 台账 · 本批外档 · `docs/batches/**`（记录面）· 提示词面（`prompts/**` 本批零触）。**未做脚本批改**（逐处读改 · 重做亦为逐处）。
-
-**终态**：`clean`（审计 CLEAN + advisor pass · 0 轮 fix）。
-
-### §5.7 回滚事故与重做（并发写致成果丢失 · 记录面留痕）
-
-**事故**：首轮删段完成后，实施者的 15 档成果**被并发操作部分回滚**——复查时 12 档的 `## 变更记录` 段复现、仅 3 档（`vsc/design/PROJECT-SWITCHER.md` ∥ `cli/requirements/FEATURES.md` ∥ `cli/design/TUI-TOOL-OUTPUT.md`）保住删除。
-**致因（实读 reflog）**：并发批的 `git` 提交 / checkout 操作落在 `docs/**` 上（`cbcf2b26`「docs: delete all batch records (649 files) + clear batch refs and changelog sections」等），实施者的工作树改动未先经 checkpoint 固化 ⇒ 被连坐。**同现象在本批档 §2.12 已有前例**（前一次重写成果随 `git checkout` 永久丢失）。
-
-**处置**：**逐档重新 read → 逐档重新 edit**（不使用脚本批改，遵文档写作纪律）——12 档重做后与首轮读数**逐档一致**（行数逐一吻合：TABS 82 ∥ CHECKPOINT 205 ∥ SETTINGS-TOOL 81 ∥ ME 121 ∥ ESCALATE 162 ∥ AGENT-PARAMS 133 ∥ READINGS 64 ∥ req/AGENT-PARAMS 70 ∥ ENG-TOKEN-BINDING 75 ∥ SPEC-PROMPT-PIPELINE 35 ∥ LOGGING 83 ∥ METHODOLOGY 116）。
-
-**稳定性复核**：重做后连续 **3 次**（间隔 6s）复跑判据，读数恒为 `hits=0 / segs=0`——成果已稳。
-
-### §5.8 P2 边界裁定（父侧裁决 · 2026-10-15）
-
-**上抛项**：15 档中 **9 档共 10 行**带「本档自有变更记录」（如 `PROJECT-SWITCHER.md:141` · `CHECKPOINT.md:190` · `SETTINGS-TOOL.md:63` · `ESCALATE.md:142/:152` · `AGENT-PARAMS.md:123` · `TUI-TOOL-OUTPUT.md:101` · `req/AGENT-PARAMS.md:52/:61` · `METHODOLOGY.md:108`），全部住在 §沿革表「何故不并」列内。
-
-**冲突**：① §4.5 ③ 规则一 **P2**（`DOC-DISCIPLINE.md:1217`）+ §4.5 ⑥（`:1456`）明写沿革族「**无一条需改**」；② 同批档 §5（R4 轮 · 另一 coder 已交付）`:491` 把同形句列为 P5 死指针并已改。
-
-**父侧裁决 = 保持原样（按 P2 不动）**：
-- P2 是设计正文明文判据，**先例不构成依据**（R4 的处置属越权，已由父侧另行处理）⇒ 该 10 行**不在本批改动授权内**；
-- 「变更记录段废除后『本档自有变更记录』作为理由句失据」= **真缺口，但属设计层规则**（须另开批走设计 → 评审），**非实施层自裁**——父侧已记账。
-
-**本批落实**：该 10 行**零触**；15 档 `docs/batches/` 命中 = **0**（硬指标不变）。
-
-### §5.9 内部审计与代码评审判定
-
-| 轮 | 类型 | 结论 | 处置 |
-|---|---|---|---|
-| 1 | 内部探索审计（explore 子代理 · 只读） | 判定 `divergent`，报 3 项 | 逐项复核后 **2 项判为误报**、**1 项上抛父侧** |
-| — | 误报① 越界（其称 `docs/core/requests/SETTINGS-TOOL.md` 被触） | 该路径**不存在**（实读 `docs/core` 只有 `design` / `requirements`）——审计者路径笔误，所指数值实为 `requirements/SETTINGS-TOOL.md` = **本批 15 档之一**，非越界 | 无需动作 |
-| — | 误报② 漏项（其称 `req/AGENT-PARAMS.md` 的 `### 5.1 历史沿革` 整节缺失） | **实读在位**——`:44` 标题 + `:46` 引文块 + `:48–:61` 完整表（审计者 grep 取样致误判） | 无需动作 |
-| — | 真项③ 「本档自有变更记录」10 行的 P2/P5 口径冲突 | **上抛父侧 → 已裁：按 P2 不动**（见 §5.8） | 已闭环 |
-| 2 | 内部代码评审（advisor · 只读） | 与审计**独立**复现同一处 P2/P5 争议（其亦倾向按 R4 先例收正） | 同由上抛闭环；**未采纳「按先例收正」**——父侧明裁先例非依据 |
-
-**终态**：`clean` —— 判据（活面命中 0）达标；唯一实质分歧点（P2 边界）已按父侧裁决闭环并留痕；无未决项、无擅自偏离。
-
-**逐档 read 回看（D6）**：15 档尾部均收于完整结构元素（标题 ∥ 表格行 ∥ 正文句）；沿革族标题 **30 个**逐条在位；无残句 / 无空壳行 / 无悬空列表项。
-
-### §5.2 R1 15 档实施轮（eng-coder · 2026-10-15 · initial）
-
-**批 = 父侧派单 15 档**（均 `docs/core/design/`）：`TEAM.md` · `TEAM-LEDGER.md` · `TESTING.md` · `TOOLS.md` · `TRACES.md` · `TURN-CAP-CONTINUE.md` · `TWO-REPO-MERGE.md` · `VERIFY-REDESIGN.md` · `WORKSPACE.md` · `WRITE.md` · `TOOL-OUTPUT-LIMITS.md` · `EDIT-HELPERS.md` · `ADVISOR-CONVERGENCE.md` · `ADVISOR-GUARDS.md` · `ENGINEERING-MODE-V2.md`。
-
-**任务书** = 派单书（自含判据，逐条）：① `## 变更记录` 段整段删 ② `## N. 不并项与历史沿革` 族整节含表删 ③ `### N.1 历史沿革` 子节删 ④ 活面 `docs/batches/` 片段删（**不改指别处**；空壳表行 ⇒ 删行）∥ 段终止判据 = 标题行起 ⇒ 下一层级 ≤ 起始标题层级的标题前一行止 ∥ 例外三条保留（① 规则正文 ② 机制模板形/通用样例 ③ 目录级归属句）∥ 判据读作 **命中集 − 例外三条 = 0**。
-
-**口径冲突与裁（本批关键事件）**：派单书 ②③（沿革族删）与**已通过评审的设计档 §2.5 裁定 C / §2.12 / §4.5⑥「族 ⇒ 留」直接相反**。判为「同一机制两处相反指令」⇒ **未自选边，即时 `notify_parent` 上抛**（列双方 `file:line` + 我方倾向）。父侧裁 **「按 B 全删（A 已过期）」**，依据 = 用户 2026-10-15 04:15/04:16 两次明令（「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」）+ 04:20 判据（「只需最终状态；被改掉的错误会在 RAG 场景下成污染」）。批档 §2 `:76` 起已落「父侧口径变更」块可核。**裁后按 B 全量执行**。
-
-**执行方式**：逐档 `read` → 逐处 `edit`/`hashline_edit` 定向删 → 回读 → 下一档。**零脚本批改**（文档写作纪律）。
-
-**逐档读数（初测 → 改后 · 命中 = `docs/batches/` 字面 + `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题）**：
-
-| # | 档 | 删项 | 初测(标题/batchref) | 改后 | 行数(初→改) |
-|---|---|---|---|---|---|
-| 1 | `TEAM.md` | §变更记录 + 3 活面片段 | 1/3 | **0/0** | 195→180 |
-| 2 | `TEAM-LEDGER.md` | §变更记录 + 2 活面片段 | 1/2 | **0/0** | 128→122 |
-| 3 | `TESTING.md` | §9 族 + 2 活面片段 + 3 P5 死指针 | 1/3 | **0/1（例外③）** | 453→441 |
-| 4 | `TOOLS.md` | §8 族 + §变更记录 + 16 活面片段 + 档头句收正 | 2/17 | **0/1（例外②）** | 1607→1402 |
-| 5 | `TRACES.md` | §8 族 + §变更记录 + 1 活面片段 | 2/7 | **0/0** | 153→119 |
-| 6 | `TURN-CAP-CONTINUE.md` | §6 族 + §变更记录 + 2 活面片段 | 3/2 | **0/0** | 226→149 |
-| 7 | `TWO-REPO-MERGE.md` | §10 族 | 3/2 | **0/1（例外③）** | 194→164 |
-| 8 | `VERIFY-REDESIGN.md` | §8 族 + §变更记录 | 3/0 | **0/0** | 159→120 |
-| 9 | `WORKSPACE.md` | §8 族 + §变更记录 + 1 活面片段 | 3/3 | **0/0** | 116→89 |
-| 10 | `WRITE.md` | §8 族 | 3/0 | **0/0** | 83→64 |
-| 11 | `TOOL-OUTPUT-LIMITS.md` | §8 族 | 3/0 | **0/0** | 155→133 |
-| 12 | `EDIT-HELPERS.md` | §8 族 | 3/0 | **0/0** | 104→84 |
-| 13 | `ADVISOR-CONVERGENCE.md` | §13 族 + §变更记录 + 2 活面/死指针 | 2/2 | **0/0** | 488→429 |
-| 14 | `ADVISOR-GUARDS.md` | §12 族 + §变更记录 + 3 活面片段 | 2/3 | **0/0** | 468→417 |
-| 15 | `ENGINEERING-MODE-V2.md` | **无（本档本就零命中）** | 0/0 | **0/0** | 531→531 |
-
-**合计**：删 变更记录段 **11** 个 ∥ 沿革族 **11** 个 ∥ 活面/死指针片段 **约 34 处**；`git diff --stat` = **14 档改，+37 / −657**（纯减法主导 · 零语义新增）。`ENGINEERING-MODE-V2.md` 零改（初测即 0 命中——派单清单含它，实测无需动作）。
-
-**验收读数（自建扫描 · 15 档全域 · 逐档回读）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题命中 = **0**（15/15 档）✅
-- `docs/batches/` 字面命中 = **3**，逐条 = **例外三条闭集**：
-  1. `TESTING.md:93` = 例外③（`docs/batches/*.test.mjs` —— 单元测试档**存放位置**的目录级归属句，非指向某一批档）
-  2. `TOOLS.md:718` = 例外②（`docs/batches/<batch>-<topic>.md` 角括号**机制模板形**占位符）
-  3. `TWO-REPO-MERGE.md:83` = 例外③（`docs/batches/` · `_archive/` 作**留痕档**的目录级归属句）
-⇒ **命中集 − 例外三条 = 0** ✅
-
-**边界形态（逐条履行）**：无残句（15 档尾部均收于完整结构元素——表行/列项/节末句）∥ 无空壳表行（据任务书「空壳行 ⇒ 删行」——本批无此类：删除均为整节/整段，未产生孤立表头）∥ 无重复行（TEAM.md 首次编辑曾生一行重复 ⇒ 已回读发现并删，终态干净）∥ 无法用的 `§6–§8`/`见变更记录` 等失效指称残留（TOOLS.md 档头、TESTING.md `:32/:33/:286`、ADVISOR-CONVERGENCE.md `:214/:246`、ADVISOR-GUARDS.md `:233`、TWO-REPO-MERGE.md 段内——**同轮收正**（P5））。
-
-**机检（`node scripts/doc-check.mjs` · cwd=仓根）**：`FAIL(行宽) = 2 行`（`prompts/common.md:41`、`server/design/webui/CHAT.md:164`）——**均非本批 15 档**；`FAIL(锚) = 812 条悬空` = 本批（全批）存量常态红（本次即清这笔账）。**15 档内零新增 FAIL**（逐档核）。
-
-**范围边界**：只动本批 15 档——未触 `_archive/**` · 台账 · 提示词（`prompts/**`）· 本批外任何档 · `docs/batches/**`（记录面）。**未做脚本批改**（逐处读改）。**报告父侧（域外见闻）**：`docs/core/design/AGENT-PARAMS.md` 仍带 §8 沿革族（3 标题）——该档**不在本批 15 档**，未动（属他批射程）。
-
-**状态行**：实施完成
-
-### §5.3 实施轮（本批 15 档 · eng-coder · 2026-10-15 · initial）
-
-**任务书** = 本档 §2（含 §2.10 父侧口径变更块：用户 04:15/04:16「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」）。
-
-**本批 15 档**（全在 `docs/core/design/`）：
-`ARCHITECTURE.md` · `API-CONTRACT.md` · `AGENT-LOOP.md` · `AGENT-LOOP-SUBAGENT.md` · `AGENT-LOOP-UPSTREAM.md` · `BASH-EXECUTOR-FACE.md` · `BROWSER-TOOL.md` · `CHECKPOINT.md` · `CONFIG.md` · `CONSULTATION.md` · `CONTEXT-COMPACTION.md` · `DOC-CODE-RECONCILE.md` · `DOC-SYSTEM.md` · `EDIT.md` · `ESCALATE.md`
-
-**动作（四类 · 逐档 `read` → `edit` → 回读 · 零脚本）**：
-
-1. **`## 变更记录` 段整段删**（判据 = 标题行起至下一同/高级标题前一行；末节则至 EOF）——10 档命中。
-2. **`## N. 不并项与历史沿革` 族整节含表删**（用户 04:15/04:16 令覆盖 §2 的 P2「留」）——`### N.1 历史沿革` / `### N.2 不并项登记` / `### N.3 需求侧` 随族删——10 档命中。
-3. **活面 `docs/batches/` 引用片段删**（不改指别处；表格单元格删后成空壳 ⇒ 删行）——逐档逐处。
-4. **删段所生死指针同轮收正**（P5）——`§8` / `§8.2` / `§16 变更记录` / `本档 §6–§8` 类自指与 `见变更记录` 类共 **13 处**。
-
-**逐档读数（初测 → 改后 · 判据 = 该档内 `docs/batches/` 命中数 ∥ `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题数）**：
-
-| # | 档 | 行数 初→改后 | batches 初→改后 | 历史标题 初→改后 |
-|---|---|---|---|---|
-| 1 | `ARCHITECTURE.md` | 250 → **201** | 4 → **0** | 3 → **0** |
-| 2 | `API-CONTRACT.md` | 4302 | 0 → 0 | 0 → 0 |
-| 3 | `AGENT-LOOP.md` | 660 → **505** | 58 → **0** | 3 → **0** |
-| 4 | `AGENT-LOOP-SUBAGENT.md` | 1046 → **859** | 62 → **1** | 1 → **0** |
-| 5 | `AGENT-LOOP-UPSTREAM.md` | 1397 → **1370** | 28 → **0** | 1 → **0** |
-| 6 | `BASH-EXECUTOR-FACE.md` | 179 → **174** | 3 → **0** | 1 → **0** |
-| 7 | `BROWSER-TOOL.md` | 552 → **541** | 13 → **0** | 1 → **0** |
-| 8 | `CHECKPOINT.md` | 205 → **181** | 0 → 0 | 3 → **0** |
-| 9 | `CONFIG.md` | 247 → **208** | 14 → **0** | 4 → **0** |
-| 10 | `CONSULTATION.md` | 265 → **216** | 6 → **0** | 4 → **0** |
-| 11 | `CONTEXT-COMPACTION.md` | 732 → **707** | 0 → 0 | 3 → **0** |
-| 12 | `DOC-CODE-RECONCILE.md` | 475 → **430** | 5 → **0** | 4 → **0** |
-| 13 | `DOC-SYSTEM.md` | 446 → **400** | 16 → **4** | 1 → **0** |
-| 14 | `EDIT.md` | 156 → **116** | 10 → **0** | 4 → **0** |
-| 15 | `ESCALATE.md` | 162 → **129** | 0 → 0 | 3 → **0** |
-| | **合** | | **219 → 5** | **36 → 0** |
-
-**残余 5 处 = 例外三条闭集**（逐处形态）：
-- **例外② 机制模板形**：`AGENT-LOOP-SUBAGENT.md:789`——`docs/batches/<批档词干>.test.mjs` 角括号占位符。
-- **例外③ 目录级归属句**：`DOC-SYSTEM.md:142`（`docs/batches/` 原地不动）· `:145`（两产品树 batches 并入 `docs/batches/`）· `:172`（不含 `docs/batches/` 41 档）· `:284`（扫替域扣时序日志 `docs/batches/`）——四条均指整树/目录，无一条指向某一已删批档。
-
-**判据读数（自建扫描式 · cwd = 仓根 · 域 = 本批 15 档）**：
-`docs/batches/` 命中 **5**（全例外）⇒ **命中集 − 例外三条 = 0** ✅；`^#{2,4}.*(变更记录|历史沿革|不并项)` = **0** ✅；死指针 = **0** ✅。
-
-**内部探索审计（read-only explore 子代理）**：
-
-| 轮 | 报项 | 复核判定 |
-|---|---|---|
-| 1 | 🔴 漏删 `docs/batches/` ×21 处 + 死指针 ×16 处 | **部分成立**——`§8`/`§8.2`/`§16` 自指死指针 **13 处为真**（已同轮修，见下「审计后修正」）；「变更记录」作为**正文/表格单元格词面**的 17 处**不成立**——本批删的是「段」与「族」，正文里描述性的「变更流水账」词面不在删除集（父侧口径 = 删段 + 删族 + 删批档引用片段，非清除词面） |
-| 1 | 🟡 `AGENT-LOOP-UPSTREAM.md:667` 列数塌陷 | **误报**——实读该行 `|` 计数 = 6，与表头一致，无塌陷 |
-| 1 | 🟡 `DOC-SYSTEM.md:241` 例外清单漏计 | **成立（分类无碍）**——`:241` 实为目录级归属句（例外③）；改判据后命中数 5 → 6（按含 `batches` 字面的宽口径 = 8，其中 L94 = 例外② 模板形、L237/L241 = 例外③）——**逐条仍全属例外** |
-
-**审计后修正（13 处死指针 · 逐处）**：
-- `CHECKPOINT.md:71`（`见 §8` + `§8.2`）· `:125`（`见 §8.2`）· `:8`（`§6–§8` 自述）
-- `CONSULTATION.md:97`（`见 §8` + `§8.2`）· `:8`（`§6–§8`）
-- `CONTEXT-COMPACTION.md:45`（`见 §8`）· `:8`（`§6–§8`）
-- `CONFIG.md:8`（`§6–§8` + `详见 §6 / §8`）
-- `AGENT-LOOP.md:8`（`§6–§8`）· `:176`（`见 §8`）· `:416`（`§8.2`）· `:433`/`:434`（`§8.2` 表列）
-- `DOC-SYSTEM.md:174`（`§16 变更记录`）
-
-处置 = **删指针片段 / 去自指**（不新增引用、不改指别处——遵 §4.5 ① 方向分界与改形三禁③）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：**行宽 —— 本批 15 档零超宽**（FAIL 的 2 行 = `prompts/common.md:41` ∥ `webui/CHAT.md:164`，**均非本批档**）。锚悬空为全仓存量常态红（本批即清这笔账的一部分），**本批 15 档无新增悬空**。
-
-**范围边界**：只动本批 15 档（`git diff --stat` 逐档核对 · 12 档有改动 + `API-CONTRACT.md` 本来即零命中故无 diff）——未触 `_archive/**` · 台账 · `prompts/**`（产品代码面）· 本批 15 档以外任何档。**未做脚本批改**（逐档逐处读改）。**未夹带新语义**（除死指针收正外一律纯删除）。
-
-**决策透明表**：
-
-| # | 决策 | 备选 | 依据 |
-|---|---|---|---|
-| 1 | 正文/表格里的「变更记录」**词面**保留不动 | 一并清除词面 | 父侧口径 = 删「段」+ 删「族」+ 删「批档引用片段」；**词面不属删除集**（如「变更流水账」是描述，非段本身）——静默扩面 = 越权 |
-| 2 | 沿革族**整节删**（含表），覆盖 §2 的 P2「留」 | 按 P2 保留 | 用户 2026-10-15 04:15/04:16 明令「不要记录历史沿革」——后令覆盖前判据（指令优先级 1 > 4） |
-| 3 | 死指针处置 = **删片段 / 去自指** | 改指 git 历史 / 提交信息 | §4.5 ① 方向分界「无『别处』可指」+ 改形三禁③「不新增引用」——改指 = 新增引用，违减法口径 |
-| 4 | `API-CONTRACT.md` 零命中仍逐档 read 核对 | 跳过 | 初测 0 ≠ 无需核（须确认确无该两类形态）——实读确认：生成区+语义区两节，无变更记录段、无族、无批档引用 |
-
-**状态行**：实施完成（本批 15 档 · `docs/batches/` 命中 219→5（全例外闭集）· 历史标题 36→0 · 死指针 13 处已同轮收正 · 例外三条 = 命中集−例外集 = 0 ✅ · 行宽零超宽 · 内部审计 1 轮（2 类误报+1 类真项已闭环））
-
-### §5.3 实施轮：历史性内容删除（15 档 · core/design · eng-coder · 2026-10-15）
-
-**批 = 15 档**（`docs/core/design/`）：`HASHLINE-EDIT.md` · `I18N.md` · `INSERT-AFTER.md` · `LEDGER.md` · `LEDGER-SELF-CONTAINED.md` · `LOGGING.md` · `MEMORY.md` · `MODEL-BENCH.md` · `MODEL-SPECS.md` · `PORTABILITY.md` · `PROVIDER.md` · `PROXY.md` · `SEND-STALL-DISTILL.md` · `SESSION.md` · `SETTINGS-TOOL.md`。
-
-**权威依据**：用户 2026-10-15 04:15 / 04:16 逐字令「**变更记录全删！我不需要你保留沿革记录！**」「**不要记录历史沿革！**」（父侧裁定：A 方覆盖 B 方——批档 §2 P2 / §2.5 裁定 C / §2.12 ⑥ 的「沿革族留」已**过期**）。判据句（父侧更正）= **命中集 − 例外三条 = 0**。
-
-**动作（三样删 + 活面片段删）**：
-1. **`## 变更记录` 段整段删**（P1；标题行起 ⇒ 下一层级 ≤ 起始标题层级的标题前一行止；末节至 EOF）。
-2. **`## N. 不并项与历史沿革` 族整节含表删**（含 `### N.1 历史沿革` 子节）。
-3. **活面 `docs/batches/` 片段删**（删坐标保事实结论；整行语义只是批档指针者 ⇒ 删整行；批档单元测试档引用 ⇒ 删路径保结论）。
-4. **P5 同轮收正**：删段/删族所生的死指针（§8 / §8.1 / §8.2 / §8.3 / §5.1 指向已删族、档头自述失实）⇒ 逐处删指针或改述。
-
-**执行方式**：逐档 `read` → 逐处语义判断 → `edit`/`hashline_edit` 行/内容定向删（**零脚本批改**——文档写作纪律）。
-
-**逐档读数（命令：仓根 execute 脚本，`^\#{2,4}.*(变更记录|历史沿革|不并项)` 逐档计数 + `docs\/batches\/` 逐档计数）**：
-
-| 档 | 行数 | 标题命中 | batches 命中 | 其中例外② | 残余 |
-|---|---|---|---|---|---|
-| HASHLINE-EDIT.md | 70 | 0 | 0 | 0 | 0 |
-| I18N.md | 63 | 0 | 0 | 0 | 0 |
-| INSERT-AFTER.md | 76 | 0 | 0 | 0 | 0 |
-| LEDGER.md | 473 | 0 | 0 | 0 | 0 |
-| LEDGER-SELF-CONTAINED.md | 307 | 0 | 0 | 0 | 0 |
-| LOGGING.md | 124 | 0 | 0 | 0 | 0 |
-| MEMORY.md | 924 | 0 | 3 | 3 | 0 |
-| MODEL-BENCH.md | 2034 | 0 | 5 | 5 | 0 |
-| MODEL-SPECS.md | 2116 | 0 | 0 | 0 | 0 |
-| PORTABILITY.md | 312 | 0 | 0 | 0 | 0 |
-| PROVIDER.md | 741 | 0 | 0 | 0 | 0 |
-| PROXY.md | 173 | 0 | 0 | 0 | 0 |
-| SEND-STALL-DISTILL.md | 110 | 0 | 0 | 0 | 0 |
-| SESSION.md | 1096 | 0 | 0 | 0 | 0 |
-| SETTINGS-TOOL.md | 138 | 0 | 0 | 0 | 0 |
-| **合计** | | **0** | **8** | **8** | **0** |
-
-**判据 = 「命中集 − 例外三条」= 0 ✅**（标题命中 0 ✅）。
-
-**例外② 保留 8 处（父侧明令 · 逐处登记）**：
-- `MEMORY.md:735` — `isExcludedRelPath` 排除谓词**正例**（`docs/batches/x.md` ∥ `docs/batches` 恰等 ∥ `thincoder/docs/batches/x.md` 工作区根形 ∥ `a/docs/batches/b.md`）⇒ **判据正文**（删则谓词无例可依）。
-- `MEMORY.md:756` — 判据项 L-⑦-1 谓词矩阵正例（同上四条 + 自定义值 ∥ 数组值）。
-- `MEMORY.md:758` — 判据项 L-⑦-2 夹具树（`docs/batches/**` + 干扰树 `batches/` ∥ `docs/batchlog/` 反向围栏）。
-- `MODEL-BENCH.md:1620` — 探针 child 装配 `batchDoc: "docs/batches/probe-fixture-<族>.md"`（**角括号占位符 = 机制模板形**）。
-- `MODEL-BENCH.md:1658 / :1675 / :1692` — 探针沙箱夹具树 `probe-fixture-p1|p2|p3.md`（**假想树 · 非本仓文件**）。
-- `MODEL-BENCH.md:1702` — 每族 `targets` 表（`p2 = docs/batches/probe-fixture-p2.md`）。
-
-**P5 死指针收正 11 处（删族/删段所生 · 逐处登记）**：
-- `LOGGING.md:8` · `MEMORY.md:8` · `PROVIDER.md:8` · `SESSION.md:8` · `I18N.md:8`——档头「机制面（§6–§8 …不并项与历史沿革…沿革）」⇒ 改「（§6–§7 …机制 / 契约的实质描述 · 关键决策）」。
-- `LOGGING.md:48` · `MEMORY.md:82` · `PROVIDER.md:64` · `SESSION.md:68`——「**不并**者见 §8：…」⇒ 整行删。
-- `MEMORY.md:283`（§8.2）· `:371`（§8.3）· `:438`（§8.3）· `:907`（§8.3）——内联 §8.x 指针 ⇒ 删指针片段。
-- `SESSION.md:231`（§8.2）· `:241`（§8.2）· `:423`（§8.1）——同 ⇒ 删指针片段。
-- `PROXY.md:7`（§8.1）· `:91`（§8.1）——同 ⇒ 删指针片段。
-- `SEND-STALL-DISTILL.md:10`（§5.1）——同 ⇒ 删指针片段。
-
-**交付读数**：15 档 `git diff --numstat` 合计 **+77 / −1846 行**（删除主导——纯减法，零语义改）。
-
-**边界合规（禁止范围）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档；未改指别处 · 未新写；未脚本批改（逐处读改）。
-
-### §5.x R15 批实施记录（eng-coder · 2026-10-15 · initial 轮）
-
-**本批 = 15 档**（`docs/server/design/` 的 `PROJECT.md` + `webui/` 12 档 + `gateway/API.md` + `store/STORE.md`）。
-**口径** = 批档 §2「父侧口径变更」块（用户 2026-10-15 04:15/04:16 令）：**① `## 变更记录` 段整段删 ∥ ② `## N. 不并项与历史沿革` 族整节含表删 ∥ ③ `### N.1 历史沿革` 子节删 ∥ ④ 活面 `docs/batches/` 片段删片段**（不改指别处；空壳表格行删行）。
-**判据** = **命中集 − 例外三条 = 0**（例外 ① 规则正文 ∥ ② 机制模板形/通用样例 ∥ ③ 目录级归属句）。
-
-#### 一、开工前实测（实施轮基线）
-
-**关键发现（与任务书读数的偏差）**：任务书列的「15 档内 `docs/batches/` 命中 = 0」与实际结构不符——实测 15 档**无一含 `不并项与历史沿革` 族 / `### N.1 历史沿革` 子节」（全档 0 命中）**；且 6 档（`TERMINAL.md` ∥ `TABS.md` ∥ `ME.md` ∥ `READINGS.md` ∥ `SYSTEM.md` ∥ `ADMIN.md`）**已被前序轮次清空**（无 CL 段、无批档引用）⇒ **本轮实际施工面 = 9 档**。
-
-| # | 档 | 行数（改前） | CL 段位置 | 活面批档引用 | 段内引用 |
-|---|---|---|---|---|---|
-| 1 | `PROJECT.md` | 930 | :771 | **80** | 122 |
-| 2 | `gateway/API.md` | 577 | :481 | 1 | 74 |
-| 3 | `store/STORE.md` | 763 | :709 | 1 | 43 |
-| 4 | `webui/WEBUI.md` | 456 | :319 | 1 | 113 |
-| 5 | `webui/LEDGER.md` | 79 | :72 | 2 | 4 |
-| 6 | `webui/MCP.md` | 78 | —— | 1 | —— |
-| 7 | `webui/CHAT.md` | 283 | :253 | **12** | 19 |
-| 8 | `webui/SANDBOX.md` | 215 | :178 | 1 | 24 |
-| 9 | `webui/STYLE.md` | 324 | :308 | 1 | 11 |
-| 10–15 | `TERMINAL` ∥ `TABS` ∥ `ME` ∥ `READINGS` ∥ `SYSTEM` ∥ `ADMIN` | —— | 无 | 0 | 0 |
-
-#### 二、执行动作（逐档 read → edit → 回读 · 零脚本批改）
-
-**① 删段（8 档 · 整段删至文档末）**——`PROJECT.md` ∥ `API.md` ∥ `STORE.md` ∥ `WEBUI.md` ∥ `LEDGER.md` ∥ `CHAT.md` ∥ `SANDBOX.md` ∥ `STYLE.md` 的 `## 变更记录` 段（均为文末末节 ⇒ 删至 EOF）。
-
-**② PROJECT.md 额外删 `## 历史段`（:331–770 · 440 行）**——迁移前冻结面（原 §4 决策索引 101 行 + 原 §6 总账注①–⑳），判据 = 用户令「不要记录历史沿革！只需清晰明确的最终状态」。**该段是本批最大单一删除块**。
-
-**③ 活面批档片段删（三类形态 · 逐处语义判定）**：
-
-| 形态 | 例子（改前 → 改后） | 处数 |
-|---|---|---|
-| **建档坐标** | `> 建档：2026-10-06（批 \`docs/batches/2026-10-06-server-gateway.md\` 设计轮；…）` → `> 建档：2026-10-06（设计轮；…）` | 4（API ∥ STORE ∥ WEBUI ∥ 板 ROJECT ∥ LEDGER ∥ MCP） |
-| **测试档全路径** | 单元测试档（`docs/batches/2026-10-13-server-mcp.test.mjs`） → 单元测试档（`2026-10-13-server-mcp.test.mjs`） | 6（板 PROJECT ×3 ∥ MCP ×1 ∥ CHAT ×2） |
-| **裸「批档 §N」指针** | `判据落点 = 批档 §2 ∥ 本行` → `判据落点 = 本行`；`受影响档表 = 批档 §2` → `受影响档表 = 本档 §2` | **20** |
-
-**④ 死指针同轮收正（删段所生 · 10 处）**：板 PROJECT 内「档末历史段」指针（`:3` 头注 + `:127`/:163 两处迁移指向行 + `:88`/`:90` 文档地图两行）∥ `SYSTEM.md:86`/`:88`「`design/PROJECT.md` 历史段·原 §6」指向 ∥ 8 处「需求档变更记录在册」（需求档 CL 段已被前序轮删除 ⇒ 这些指针已成死）∥ 2 处「该档变更记录 :565/:659」（同上）。
-
-#### 三、验收读数（逐档 · 改后复扫）
-
-| 档 | 行数（改前 → 改后） | 删行 | `docs/batches/` 残余 | CL/历史沿革 标题 |
-|---|---|---|---|---|
-| `PROJECT.md` | 930 → **326** | 604 | **3**（例外③ 全树通配形） | 0 |
-| `gateway/API.md` | 577 → **481** | 96 | 0 | 0 |
-| `store/STORE.md` | 763 → **709** | 54 | 0 | 0 |
-| `webui/WEBUI.md` | 456 → **319** | 137 | 0 | 0 |
-| `webui/LEDGER.md` | 79 → **72** | 7 | 0 | 0 |
-| `webui/MCP.md` | 78 → **72** | 6 | 0 | 0 |
-| `webui/CHAT.md` | 283 → **252** | 31 | 0 | 0 |
-| `webui/SANDBOX.md` | 215 → **178** | 37 | 0 | 0 |
-| `webui/STYLE.md` | 324 → **308** | 16 | 0 | 0 |
-| `TERMINAL`/`TABS`/`ME`/`READINGS`/`SYSTEM`/`ADMIN` | 110/82/121/64/99/158 | **0**（已清） | 0 | 0 |
-| **合** | —— | **≈988** | **3**（全 = 例外③） | **0** |
-
-**判据读数**：`命中集 − 例外三条 = 0` ✅（残余 3 处逐处核 = `docs/batches/*.test.mjs` 通配形·描述「单元测试档住哪」的目录级归属句 = 例外③）。
-**机检（`node scripts/doc-check.mjs`）**：本批 15 档**零新增行宽 FAIL**（改后 `FAIL(行宽)：2 行` = `core/design/prompts/common.md:41` ∥ `desktop/design/COMPOSER.md:316`，**均非本批档**）；锚悬空 617 条 = 全仓存量（本批即清这笔账的残面）。
-**中途自捕一误**：CHAT.md `:164` 首次 edit 致单行 314 字符越宽 ⇒ 复跑机检捕获 ⇒ **折行修复**，复跑通过（D6 回读有效性的实证）。
-
-#### 四、边界合规（禁止范围）
-
-**只删**：四样 + 批档引用片段；**其余逐字不动**。未触 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档；**未脚本批改**（逐处 read→edit→回读）；**未新写**语义；未改指别处。
-
-#### 五、范围外观察（登记 · 不动作）
-
-**READINGS.md 并发改动**：`git diff --numstat` 显示该档 `0 插入 / 10 删除`（纯 CL 段删除），但**本席从未对该档发出任何 edit**——开工前扫描时该档已为 64 行干净态。判 = **并发写者所改**（本仓 94 档在途修改、多批并行），**非本席动作**，如实登记为观察项。
-
-**父侧判据句更正已落实**：任务书原文「15 档内 `docs/batches/` 命中 = 0」自相抵（与例外三条冲突）⇒ 按父侧更正口径执行「**命中集 − 例外三条 = 0**」，逐档读数按此报。**另**：任务书「15 档」与「本批 15 档」表述中 `PROJECT.md` 归入 server/design 根（非 webui/）——已按实际路径施工，无歧义。
-
-#### 六、终态
-
-**实施完成** —— 9 档施工（6 档前序已清）· 删 ≈988 行 · 残余命中 0（例外三条除外）· 逐档回读无残句/空壳行/重复行 · 零脚本 · 零越界。
-
-### §5.4 内部代码评审（advisor · type=code）+ 修正
-
-**评审范围** = 本批 15 档（`paths` 逐一列示）+ 任务书（本档）。**VERDICT = changes-required**（3 项 🔴 · 同一缺陷类）。
-
-**发现与处置（逐条）**：
-
-| # | 位置 | 发现 | 判定 | 处置 |
-|---|---|---|---|---|
-| ① | `DOC-CODE-RECONCILE.md:13` | 死自指 `见 §8.1`——该档节号现只到 `§7`（§8 族已随本批删） | **成立**（🔴） | 删片段 `——见 §8.1`（保结论「跨仓面整类退役（两仓合并 S4）」） |
-| ② | `DOC-CODE-RECONCILE.md:29` | 死自指 `，见 §8.1`（决策表行内） | **成立**（🔴） | 删片段 `，见 §8.1`（保「旧档「本仓面 ∪ 对端仓面」为两仓合并前口径」） |
-| ③ | `ESCALATE.md:11` | 死自指 `，(d) 类入 §8.1`——该档节号现只到 `§7` | **成立**（🔴） | 删片段 `，(d) 类入 §8.1`（保「已入 §5 / §6」——两节实在） |
-| ④ | 本档 §2.1 / §2.4 / §2.7 读数三处并存 | 读数漂移（已在 §2.9 F1 登记「批边界只看比例」） | **非缺陷**（已登记） | 无需动作 |
-| ⑤ | `AGENT-LOOP-SUBAGENT.md:789` | `docs/batches/<批档词干>.test.mjs` 残留 | **例外②** 机制模板形 | 保留 |
-| ⑥ | 多档正文/表格「变更记录」词面 | 词面非删除集（§5.3 决策 1） | **非缺陷** | 保留 |
-
-**修正轮（1 轮 · 3 处）**：逐处 `read` → `edit` → 回读——
-
-- `DOC-CODE-RECONCILE.md:13` ✅ 现读 `（仓根 = \`thincoder/\`）。**跨仓面整类退役**（两仓合并 S4）。`；`§8.1` 残留 = 0。
-- `DOC-CODE-RECONCILE.md:29` ✅ 现读 `**选定**（**收正**：旧档「本仓面 ∪ 对端仓面」为两仓合并前口径）`；`§8.1` 残留 = 0。
-- `ESCALATE.md:11` ✅ 现读 `…已入 §5 / §6。`；`(d) 类入 §8.1` 残留 = 0。
-
-**修正后复扫（判据式不变）**：本批 15 档 —— `docs/batches/` 命中 **5**（全例外）⇒ **命中集 − 例外三条 = 0** ✅；历史标题 = **0** ✅；`见变更记录` 类死指针 = **0** ✅；**死自指 = 0** ✅（另以「引用节号 vs 实存节号」全档比对复核：余下 `§8.x` / `§9` / `§16` / `§10.1` 引用**逐条为跨档引用**（`DOC-SYSTEM.md` / `TESTING.md` / `PROVIDER.md` / `TOOLS.md` / `ENGINEERING-MODE-V2.md` / `WEBVIEW.md` / 批档段号）或本档实存节，**无新增悬空**）。
-
-**审计与代码评审轮次与终态**：
-
-| 轮 | 类型 | 结论 | 处置 |
-|---|---|---|---|
-| 1 | 内部探索审计（explore · 只读） | divergent（3 类报项） | 逐项复核：1 类真（死指针，已修）· 2 类误报/非缺陷 |
-| 1 | 代码评审（advisor · type=code） | **changes-required**（🔴3 / 🔵2 / 🟡1） | 3 修（见上）+ 3 非缺陷（登记）；无 Deferred |
-| 1(修) | 修正轮复扫 | 追平：死自指 0 · 判据 = 0 | —— |
-
-**终态**：`clean`（判据达标 + 评审 🔴 全清 + 修正后复扫全绿）。
-
-**范围边界（修正轮）**：只改 `DOC-CODE-RECONCILE.md` + `ESCALATE.md` 两档 3 处——未触本批外档；**未夹带新语义**（纯删死指针片段）。
-
-### §5.3 R1 审计与代码评审轮次与终态（eng-coder · 2026-10-15 · initial）
-
-**① 内部一致性审计（read-only explore 子代理 · 重跑）**：**CLEAN**——四类（未清/越界/语义漂移/空壳）逐类未发现；例外三条判定复核通过（`TESTING.md:93` 例外③ ∥ `TOOLS.md:717` 例外② ∥ `TWO-REPO-MERGE.md:83` 例外③）；四档关键边界完整（`TOOLS.md` §9 ∥ `TESTING.md` §10 ∥ `TURN-CAP-CONTINUE.md` §1–§5 ∥ `ADVISOR-CONVERGENCE.md` §14 无重复 ∥ `ADVISOR-GUARDS.md` §11 为末节）；无空壳/残句/重复行。审计提出两项待裁（节号断层 / `TESTING.md` §7 未读全）——**均已由本席实核闭环**（§7 无悬空；节号断层见 ② 发现 4）。
-
-**② 代码评审（advisor · type=code）**：**VERDICT: changes-required**（发现 7 项）——**关键发现 = 判据面过窄**：
-- 🔴 **发现 1（实质违规 · 漏删）**：`TEAM.md:177`「见批档 §2 未裁点」——活面批档指针**不含 `docs/batches/` 字面** ⇒ 逃过验收扫描 ⇒ **「命中集 = 0」是假达标**。
-- 🟡 **发现 2**：`TEAM.md:140`「与服务端板档 §6 本批块对拍」同型漏网。
-- 🟡 **发现 3**：`ADVISOR-CONVERGENCE.md:206` —— 死指针（指向已删 §13）+ 残留沿革叙述（P5 未收正）。
-- 🔵 4 项（`TESTING.md` 节号断层 8→10 ∥ `TOOLS.md:215` 「本批不并入」词面 ∥ `TOOLS.md:274` 旧档来源注 ∥ `ADVISOR-GUARDS.md:188` 机制正文）——**判为口径内/射程外，保留**。
-
-**③ 本席自修（采纳 3 项 + 主动扩扫 · 同轮收正）**：
-
-| # | 处置 | 落点 |
-|---|---|---|
-| 🔴1 | 删「——见批档 §2 未裁点」片段，保留「设置卡「轮换」本批零控件」事实结论 | `TEAM.md:177` |
-| 🟡2 | 删「——件数口径与服务端板档 §6 本批块对拍」子句，保留三读数 | `TEAM.md:140` |
-| 🟡3 | **整句删**（死指针 §13 + 沿革叙述「本修正轮收正（沿革一句复归 §3.1，指针随正）」） | `ADVISOR-CONVERGENCE.md:206` |
-| **扩扫（本席主动）** | **按发现 1/2 的漏网形（`批档 §N` / `批次档 §N` / `板档 §N` 无路径字面）全档复扫**——另揪出 **11 处**同型真违规并逐处删片段：`TOOLS.md:427/661/947/1034/1134/1233/1255`（+`1255` 的「批档 §5 四腿落点表」）∥ `TESTING.md:382/385/398` ∥ `TRACES.md:93` | 见左 |
-
-**④ 复扫定稿（扩扫后 · 逐档复读）**：
-- `^#{2,4}.*(变更记录\|历史沿革\|不并项)` 标题 = **0**（15/15）✅
-- `docs/batches/` 字面 = **3**，全 = 例外闭集（② `TOOLS.md:717` ∥ ③ `TESTING.md:93` ∥ ③ `TWO-REPO-MERGE.md:83`）⇒ **命中集 − 例外三条 = 0** ✅
-- **无路径字面批档指针（`批档 §N` 等）**：复扫后**剩余全部 = 机制正文**（`ENGINEERING-MODE-V2.md` 11 处 = 批档机制本体设计句 ∥ `TESTING.md:107/111/118/120/124` = 批次档 §6 契约 ∥ `TOOLS.md:797/801/803/804` = 提示词正本引句 ∥ `ADVISOR-GUARDS.md:188` = 快照面豁免规则句）——**均属例外②（机制正文）**，非指向某一批档 ✅
-- 完整验收式：**（标题 ∪ 批档指针）− 例外三条 = 0** ✅
-
-**⑤ 发现上报父侧（判据面缺口 · 非本批返工）**：**批档 §4.5 ⑤ 扫描式的命中集应补入「无路径字面批档指针形」**（`见批档 §N` / `批次档 §N` / `板档 §N`）——否则**全批 190 档会重复本类漏网**（本批 15 档即实测 13 处，靠人工扩扫才捕获）。此为**判据面**问题（`DOC-DISCIPLINE.md` §4.5 域），非本批 15 档交付缺陷。
-
-**⑥ 机检（`node scripts/doc-check.mjs`）**：`FAIL(行宽) = 2 行`（`prompts/common.md:41` ∥ `server/design/webui/CHAT.md:164`）——**均非本批 15 档**；`FAIL(锚) = 812 条悬空` = 本批（全批）存量常态红。**15 档零新增 FAIL** ✅
-
-**终态**：`clean`（审计 CLEAN + advisor changes-required 的 3 项 + 主动扩扫 11 处**全部同轮修复**；复扫定稿 = 完整判据 0 命中）。
-
-**状态行**：实施完成（R1 15 档 + 口径冲突上抛裁决 + 审计 CLEAN + advisor 修复闭环）
-
-#### 七、审计与代码评审（本会话内全链）
-
-| 轮 | 类型 | 结论 | 处置 |
-|---|---|---|---|
-| 1 | **内部探索审计**（explore 子代理 · 只读 · 四轴） | **CLEAN** —— 未清 / 越界 / 语义漂移 / 结构损伤 四轴逐轴未发现偏差；`PROJECT.md` §1–§9 完整 + §9 上抛表结构连贯；三档大删除（`PROJECT.md` −604 ∥ `WEBUI.md` −137 ∥ `API.md` −96）逐档核 = 历史段/沿革/引用片段，**非现态内容** | 无需动作 |
-| 2 | **代码评审**（advisor · type=code） | **VERDICT: pass** —— 无 🔴 / 无 must-fix 🟡；5 项登记（🔵 主） | 🔵 #1（半清片段）+ 🔵 #5（同形）已自修（见下） |
-
-**advisor 登记逐项处置**：
-- **🔵 #1**（`webui/MCP.md:63` 半清片段——批档坐标只削去路径前缀，留裸文件名 `2026-10-13-server-mcp.test.mjs`）⇒ **已自修**：整片段删，载体列改「单元测试档 + 收口轮（浏览器实走）」。
-- **🔵 #5**（`webui/CHAT.md:232` 同形）⇒ **已自修**：改「对话页对齐单元测试档两用例收正——取件面白名单用例（…）」。
-- **🔵 #2**（`PROJECT.md:159/249/321` 三处 `docs/batches/*.test.mjs` 通配形）⇒ **判为合规保留**（例外③ 目录级归属句，与任务书例外③ 例证逐字同形），登记备查。
-- **🔵 #3**（死指针「已同轮收正」声明）⇒ **复核证实**：`PROJECT.md:3` 与 `SYSTEM.md` 尾均已无悬空指针。
-- **🔵 #4**（批档 §5.x 记录面自洽性）⇒ **无动作**：记录自陈工面 9 档，如实。
-
-**未采纳 / 未动作项及其理由**：19 处**裸单元测试档文件名**（`PROJECT.md` 12 处 ∥ `CHAT.md` 3 处 ∥ `ME.md` 1 处 等）判为**保留**——判据为「`docs/batches/` 引用片段」；裸文件名**无 `docs/batches/` 路径**，属测试用例归属事实（可追溯性），删之即删验收证据；与例外② 「机制正文举例」同族。
-
-**fix 轮次与终态**：**1 轮自修**（advisor 🔵 #1/#5 → 两处改后回读通过）；**终态 = `clean`**（审计 CLEAN + advisor pass + 自修后复扫判据仍 0）。
-
-### §5.10 本批 15 档实施（core/requirements · eng-coder · 2026-10-15 · initial 轮）
-
-**任务书** = 本档 §2 §2.3「父侧口径变更（2026-10-15 04:2x）」块 + 父侧逐字派单（用户 04:15/04:16「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」）。
-**范围** = `docs/core/requirements/` 下 15 档（父侧点名）：`ENGINEERING-MODE-V2.md` · `AGENT-LOOP.md` · `PROMPT-SYSTEM.md` · `MEMORY.md` · `TOOLS.md` · `SESSION.md` · `PROJECT.md` · `CONFIG.md` · `DOC-SYSTEM.md` · `TESTING.md` · `PHILOSOPHY.md` · `METHODOLOGY.md` · `PORTABILITY.md` · `TURN-CAP-CONTINUE.md` · `CONTEXT-COMPACTION.md`。
-
-**工序**（逐档 `read` → `edit` → **改后回读** → 下一档；**零脚本批改**）：
-1. **① 面 · 删段**：`## 变更记录` 段整段删（11 档命中）；`## N. 不并项与历史沿革` 族 + `### N.1 历史沿革` 子节**整节含表删**（10 档命中）——判据 = 段终止「标题行起 ⇒ 下一层级 ≤ 起始层级的标题前一行止」。
-2. **② 面 · 活面 `docs/batches/` 片段删**：A 类（批坐标注——保留日期 + 台账号）∥ 表格单元格片段删 ∥ 整行为纯批指针者 ⇒ **删行**（空壳行不留在盘）。
-3. **P5 同轮收正**：删段/删族所生**死指针**同轮收正（见下「边界形态」表）。
-
-**逐档读数（初测 → 改后 · 命中数 = `docs/batches/` 字面）**：
-
-| # | 档 | 变更记录段 | 沿革族 | 活面片段删 | 行数初→后 |
-|---|---|---|---|---|---|
-| 1 | `ENGINEERING-MODE-V2.md` | 无 | 无 | 4（`:609`·`:610`·`:699`·`:717` 片段；另 `:701`「见批档」指针） | 765 → 761 |
-| 2 | `AGENT-LOOP.md` | ✅ 删 | ✅ 删 | 11 | 416 → 351 |
-| 3 | `PROMPT-SYSTEM.md` | ✅ 删 | ✅ 删 | 10 | 332 → 278 |
-| 4 | `MEMORY.md` | ✅ 删 | ✅ 删 | 8 | 345 → 312 |
-| 5 | `TOOLS.md` | ✅ 删 | ✅ 删 | 7 | 271 → 231 |
-| 6 | `SESSION.md` | ✅ 删 | ✅ 删 | 8 | 217 → 185 |
-| 7 | `PROJECT.md` | 无 | ✅ 删 | 0 | 164 → 131 |
-| 8 | `CONFIG.md` | 无 | ✅ 删 | 0 | 61 → 54 |
-| 9 | `DOC-SYSTEM.md` | 无 | 无 | 0（**零命中档**） | 42 → 42 |
-| 10 | `TESTING.md` | ✅ 删 | ✅ 删 | 1（`:197`） | 285 → 254 |
-| 11 | `PHILOSOPHY.md` | 无 | ✅ 删 | 0 | 202 → 182 |
-| 12 | `METHODOLOGY.md` | 无 | ✅ 删 | 0 | 116 → 95 |
-| 13 | `PORTABILITY.md` | ✅ 删 | ✅ 删 | 0 | 135 → 87 |
-| 14 | `TURN-CAP-CONTINUE.md` | ✅ 删 | ✅ 删 | 0 | 86 → 49 |
-| 15 | `CONTEXT-COMPACTION.md` | ✅ 删 | ✅ 删 | 0 | 111 → 86 |
-
-**合计**：变更记录段删 **11 档**；沿革族删 **10 档**；活面片段删 **41 处**；`docs/batches/` 初测命中 **50 → 改后 9**（9 全为例外三条，见下）。
-
-**判据读数（验收口径 = 父侧 04:2x 更正后的「命中集 − 例外三条 = 0」）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` 命中 = **0**（15 档全域）。
-- `docs/batches/` 命中 = **9**，**全数 = 例外三条**（逐处登记见下）⇒ **命中集 − 例外集 = 0** ✅。
-- 机检（`node scripts/doc-check.mjs`）：本 15 档**无一条新增悬空**——逐档核 = HEAD 与本轮「迁移期引文」族逐行比对 **+0**；本档 16 条 `✗` 全为 HEAD 既存「路径/坐标·迁移期引文——列报 · 不入闸」族（非本批动作所生，且不入闸）。
-
-**例外三条逐处登记（保留 · 不动）**：
-
-| # | 处 | 类别 | 形态 |
-|---|---|---|---|
-| 1 | `ENGINEERING-MODE-V2.md:212` | ③ 目录位置 | 文档资产表「默认目录」列 = `docs/batches/`（描述批档住哪，非指特定批档） |
-| 2 | `ENGINEERING-MODE-V2.md:670` | ② 模板占位 | 前情指针 `前情 = docs/batches/<旧档> §N（已收口 <日期>）`（角括号占位符） |
-| 3 | `PROMPT-SYSTEM.md:85` | ② 模板占位 | 批次档常识 `docs/batches/<批>-<主题>.md`（占位符形） |
-| 4 | `MEMORY.md:284` | ③ 目录级归属 | F-S15 机制正文「批次档面 = 产品自定记录面（`docRoot.batches` 默认 `docs/batches`）」（机制定义，非指特定批档） |
-| 5 | `MEMORY.md:288` | ② 机制判据夹具 | F-S15 判定句夹具「对 `docs/batches/**` 零命中」（机制判据的通用路径形态，非指特定批档） |
-| 6 | `TESTING.md:47` | ③ 目录级归属 | 单元测试 = 开发期工具「住批次目录（`docs/batches/`）」 |
-| 7 | `TESTING.md:75` | ③ 目录级归属 | F6 三层来源「单元测试档……住 `docs/batches/`」 |
-| 8 | `TESTING.md:102` | ③/② 目录 + glob | N1 slow「作用域 = 单元测试档（`docs/batches/*.test.mjs`）」（glob 形态） |
-| 9 | `TESTING.md:119` | ③ 目录级归属 | 执行层划分「单元测试档住 `docs/batches/`、不入收集」 |
-
-**边界形态（逐档 read 回看 · 判据 = 不残留残句 / 空壳行 / 重复行）**：
-
-| 边界 | 处置 | 证据 |
-|---|---|---|
-| 空壳行（整行语义 = 纯批档指针） | **删行**（不留 `（台账 #NNN）。` 类空壳） | 逐档 read 回看：`AGENT-LOOP.md` 4 处纯批指针行删除后无残行 |
-| 残句（删片段后句子不完整） | **无**——删片段均落在括注 / 句尾坐标位，删后各句完整 | 逐档 read 回看 |
-| 死指针（删段/族后「见 §5」·「见 §6.1」类） | **同轮收正 6 处**（删指针片段；见下） | 逐档 read 回看 + 回读核对 |
-| 重复行 | **无** | 逐档 read 回看 |
-| 表格结构（删片段后表格列语义） | **完整**——`MEMORY.md:284`（例外③）等表格单元删片段后语义完整 | 逐档 read 回看 |
-
-**P5 同轮收正（6 处死指针 · 均为删段/删族所生）**：`AGENT-LOOP.md:43`（`（见 §5）`）· `MEMORY.md:46`（`变更记录（见 §5）`）· `TOOLS.md:43`（`（见 §5）`）· `SESSION.md:95`（`（见 §5）`）· `PORTABILITY.md:86`（`（不并，见 §6.1）`）· `CONTEXT-COMPACTION.md:58`（`（见 §5）`）——均删指针片段，实质句保留。
-
-**范围边界（禁止范围 · 零触）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档；**未改指别处**（无一处把批引改指他处）；**未新写**（纯减法）；**未脚本批改**（逐档 read→edit→回读）。
-
-**事故留痕（一次）**：`AGENT-LOOP.md` 首批（batched `edit` 含 line 定位）因**行号随前序删除漂移**致 3 处误删（含 §4.16 标题 / §4.17 标题）——**已用 `git checkout` 回滚该档后按唯一内容定位重做**，终态无残留（现行 diff 逐行核过）。其余 14 档未受影响。
-
-### §5.11 审计与代码评审轮次与终态（本批 15 档 · eng-coder · 2026-10-15）
-
-**内部一致性审计（read-only explore 子代理 · 1 轮）**：判定 = **发现 7 项**，逐项复核：
-- **真项 2**（引擎自建）：`PORTABILITY.md:8` · `PROJECT.md:7` 的「(d) 类入 §6.1」= **本批删族所生死指针** ⇒ **已同轮收正**（删指针片段；§6.1 所指之沿革族已随本批删除）。
-- **误报/超授权 5**：`CONTEXT-COMPACTION.md:58` · `TOOLS.md:43` · `SESSION.md:95`（「不并」枚举内「变更记录」词）∥ `PROMPT-SYSTEM.md:171`（「变更记录只落本档」）∥ `METHODOLOGY.md:76`（「设计文档按三节 + 变更记录组织」）——**判为「设计层规则残留」、不动**：此五处改「变更记录」= **改写规则语义**，超出「只删四样 + 批档引用片段」的授权；且本档 §5.8 已立先例（同形句「属设计层规则，须另开批走设计 → 评审，非实施层自裁」）。**审计者已按 P5 修的同形句（`TOOLS.md:43` 等）亦仅收正「（见 §5）」死指针**，未删「变更记录」词——与本节处置一致。
-
-**独立代码评审（advisor · type=code · 2 轮）**：
-- **轮 1 VERDICT: `changes-required`** —— 1 🟡（must-fix）+ 2 🔵。🟡 = `CONFIG.md:8` 存「详见 §4 / §5」，而本批已删该档 §5 族 ⇒ **P5 死指针遗漏**（判据面盲区：验收判据只含 `docs/batches/` 字面 + 标题正则，不含同档 `§N` 指针）。
-- **轮 2 VERDICT: `pass`** —— 复读实档核：`CONFIG.md:8` 现读「……——详见 §4。」，` / §5` 片段已删；余 `§5`/`§6` 命中全为**跨档指针**（`CORE-UNIFICATION.md` §5 ∥ 设计档 `CONFIG.md` §6.x），无同档悬空；档结构 = §1–§4（与 §5 族删除一致）。**新议题扫描 = 无新 🔴**。
-
-**fix 轮（1 轮 · 3 处同轮收正 · 全为 P5 死指针）**：
-
-| # | 档:行 | 改前 | 改后 | 来源 |
-|---|---|---|---|---|
-| 1 | `PORTABILITY.md:8` | `…入 §5；(d) 类入 §6.1。` | `…入 §5。` | 内部审计真项 |
-| 2 | `PROJECT.md:7` | `…入 §5；(d) 类入 §6.1。` | `…入 §5。` | 内部审计真项 |
-| 3 | `CONFIG.md:8` | `…——详见 §4 / §5。` | `…——详见 §4。` | advisor 轮 1 🟡 |
-
-**终态**：`clean` —— 判据（`^#{2,4}.*(变更记录|历史沿革|不并项)` = 0 ∥ `docs/batches/` 命中集 − 例外三条 = 0）达标；审计真项 2 + 评审 🟡 1 **全部同轮收正**；5 项设计层规则残留按先例**不动并登记**；无未决项。
-
-**边界合规（终态复核）**：15 档写域 ⊂ 授权面；`_archive/**` / 台账 / `prompts/**` / 本批外档**零触**；**未改指别处 · 未新写 · 未脚本批改**。
-
-### 5.1 交付摘要（eng-coder）
-
-**范围**：`docs/desktop/design/` 下 15 档的四样删改——① `## 变更记录` 段整段删 ② `## N. 不并项与历史沿革` 族整节删 ③ `### N.1 历史沿革` 子节删 ④ 活面 `docs/batches/` 片段删片段（**不改指别处**；空壳表格行 ⇒ 删行；保留句子其余语义）。
-
-**判据（父侧两次更正后口径）**：**命中集 − 例外三条 = 0**。例外三条 = ① 规则正文 ② 机制模板形 / 通用样例占位符（角括号）③ 目录级归属句（「住 `docs/batches/`」、「`docs/batches/` 历史档」等）。
-
-**逐档读数**（初测 → 改后；`hdr` = 变更记录 / 历史沿革 / 不并项 标题命中数；`refs` = 含 `docs/batches/` 的行数）：
-
-| 档 | 行数（初 → 改后） | hdr | refs（初 → 改后） | 终态 |
-|---|---|---|---|---|
-| PROJECT.md | 1822 → 1305 | 0 | 200+ → **1** | 例外③ |
-| UI.md | 878 → 618 | 0 | 200+ → **0** | clean |
-| SETTINGS.md | 755 → 675 | 0 | 200+ → **0** | clean |
-| ACTIVITY.md | 480 → 447 | 0 | 66 → **0** | clean |
-| COMPOSER.md | 357 → 312 | 0 | 63 → **0** | clean |
-| IPC.md | 583 → 372 | 0 | 141 → **0** | clean |
-| RENDERER.md | 561 → 404 | 0 | 118 → **0** | clean |
-| SHELL.md | 346 → 243 | 0 | 63 → **1** | 例外③ |
-| MENU.md | 174 → 161 | 0 | 28 → **0** | clean |
-| SESSIONS.md | 223 → 213 | 0 | 22 → **0** | clean |
-| CHAT.md | 261 → 237 | 0 | 28 → **0** | clean |
-| PACKAGING.md | 481 → 466 | 0 | 21 → **0** | clean |
-| E2E-TESTING.md | 312 → 254 | 0 | 38 → **3** | 例外③ ×3 |
-| PANEL-READBACK.md | 219 → 214 | 0 | 6 → **1** | 例外③ |
-| WEB-QUICKCHECK.md | 199 → 199 | 0 | 0 → **0** | 无段标题 · 零引用（零改动） |
-
-**合计**：`hdr` 15 档全 **0**；`refs` 全档合计 **6**，全部为例外③（「住 `docs/batches/`」×5 · 「`docs/batches/` 历史档」×1）⇒ **命中集 − 例外三条 = 0**。
-
-**边界形态举例**（删片段保留句义）：
-- 初：`批档 = \`docs/batches/2026-10-02-desktop-settings-menu-upgrade.md\`；决策单源 = …` → 改后：`决策单源 = …`（前半句删除，后半语义保留）
-- 初：`单源 = 批档 \`docs/batches/2026-09-30-digest-persistence.md\` §2 ∥ …` → 改后：`单源 = 消化面留档批 §2 ∥ …`
-- 表格行：`| 5 | \`docs/batches/2026-09-29-desktop-rebuild-fidelity-M604.test.mjs\`（单元测试档） | …` → 改后：`| 5 | 重建保真 M604 单元测试档 | …`（描述性名号，非路径）
-- 保留：`（名随批次档 · 住 \`docs/batches/\` · 不登记 · 随批留存）`（例外③ 目录级归属句，未动）
-
-**顺带清理**（均属本批删段连坐 · 已在本档内）：
-- COMPOSER.md `## 变更记录` 删除后残留一条孤立 changelog 行（2026-10-10 purge-residue-sweep 条）⇒ 一并删（其归属段已整体删除）。
-- 若干净面残留 `批档 §N` 简写（= 本批记录自身 §N 指代）——**未动**：该形在 15 档内是既有书写惯例（本次 `git diff` 中 `批档 §` 均为长行因他处替换而整体 +1，简写本体非本次新增）。
-
-### 5.2 决策透明表
-
-| # | 决策 | 依据 |
-|---|---|---|
-| 1 | `docs/batches/` 表格行 ⇒ 改描述性名号（如「重建保真 M604 单元测试档」）而非删行 | 父侧口径：空壳表格行才删行；有实义的行保语义 |
-| 2 | 例外③ 的 6 处保留 | 判据明文（目录级归属句） |
-| 3 | 单元测试档文件名（`docs/batches/*.test.mjs`）按同规格清洗（去路径保名） | 命中集判据不含「文件 vs 目录」之分；父侧口径 = 命中即清 |
-| 4 | `WEB-QUICKCHECK.md` 零改动 | 无段标题且零 `docs/batches/` 引用 |
-| 5 | 设计档 `批档 §N` 简写未动 | 非 `docs/batches/` 路径命中；系档内既有惯例 |
-
-### 5.3 验证
-
-**方法**：逐档 `read` → `edit` → 回读核对（禁脚本批量改文档）；每档完成后以 node 行扫描复算 `hdr` / `refs` 读数；末轮全 15 档汇总复算 + 残留形态扫描（`TMP` 标记 / 空壳括号 / 悬空连接符 / `批档` 后接标点）。
-
-**命令与结果**：
-```
-node -e "<15 档 hdr/refs 汇总扫描>"          → hdr 合计 0；refs 合计 6（全部例外③）
-node -e "<残留形态正则扫描>"                  → suspect=0
-git diff --filter '^\+.*批档 §'              → 命中均为长行整体变更，简写本体非新增
-```
-
-**终态**：命中集 − 例外三条 = 0（干净）。**未跑仓库套件**——按纪律，repo suite 只在父侧收口跑一次，eng-coder 链内不跑。
-
-### 5.4 变更文件（15 档 · 全属本批声明面）
-
-`docs/desktop/design/` 下：`PROJECT.md` `UI.md` `SETTINGS.md` `ACTIVITY.md` `COMPOSER.md` `IPC.md` `RENDERER.md` `SHELL.md` `MENU.md` `SESSIONS.md` `CHAT.md` `PACKAGING.md` `E2E-TESTING.md` `PANEL-READBACK.md`（14 档有改动）；`WEB-QUICKCHECK.md`（零改动，读数在册）。
-
-**无声明外文件改动**。
-
-### 5.5 边界与上抛
-
-- **未动**：`_archive/**`、台账、`prompts/**`、本批 15 档以外任何档。
-- **设计档漂移**：本次未触任何机制语义句；档头 D 号 / 文件账表行等结构面零改（仅引用片段删除）。
-- **遗留观察（供父侧酌情登记）**：15 档内仍广泛存在 `批档 §N` 简写（指本批记录自身）——非本次判据对象，如需统一处置请另行下判。
-
-### §5.10 实施轮（本批 15 档 · 三样删除 + 活面片段删 · eng-coder · 2026-10-15）
-
-**任务书** = 父侧派单书（自含四类判据）+ 本档 §2.10/§2.12。**注**：设计档 `DOC-DISCIPLINE.md` §4.5 重写**不在盘**（回退为旧「关键决策记录」表）⇒ 判据以派单书为准（自含）。
-
-**本批 15 档**：`docs/core/design/` 的 `DOC-DISCIPLINE.md` · `PROMPT-SYSTEM.md` · `MANIFEST.md` · `BATCH-RECORD.md` · `LIGHT-CHANNEL.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `AGENT-PARAMS.md` · `ENG-TOKEN-BINDING.md` · `MCP.md` · `PORTABILITY.md` + `docs/cli/design/` 的 `TUI.md` · `TUI-COMMANDS.md` · `TUI-INPUT-BOX.md` · `TUI-SESSION-VIEW.md` · `TUI-TOOL-OUTPUT.md`。
-
-**动作（四类 · 逐档 `read` → `edit` → 回读 · 零脚本）**：
-1. **`## 变更记录` 段整段删**（含带号形 `## N. 变更记录`、无标题变更流水尾）——7 档命中。
-2. **`## N. 不并项与历史沿革` 族整节含表删**（含 `### N.1 历史沿革` / `### N.2 不并项登记`）——10 档命中。
-3. **活面 `docs/batches/` 引用片段删**（不改指别处；批量指向片段即删）——6 档命中。
-4. **删段所生死指针同轮收正（P5）**——13 处（详见下）。
-
-**逐档读数（初测 → 改后 · 判据 = 该档 `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题数 ∥ `docs/batches/` 命中数）**：
-
-| # | 档 | 行数 初→改后 | 历史标题 初→改后 | batchRef 初→改后 |
-|---|---|---|---|---|
-| 1 | `DOC-DISCIPLINE.md` | 1680 → 1436 | 2 → **0** | 62 → **31**（全例外①/③） |
-| 2 | `PROMPT-SYSTEM.md` | 882 → 807 | 3 → **0** | 20 → **3**（例外①②③） |
-| 3 | `MANIFEST.md` | 1016 → 798 | 1 → **0** | 21 → **1**（例外②） |
-| 4 | `BATCH-RECORD.md` | 615 → 503 | 2 → **0** | 38 → **15**（例外②） |
-| 5 | `LIGHT-CHANNEL.md` | 266 → 226 | 1 → **0** | 10 → **0** |
-| 6 | `DESIGN-TOKEN-SETTLEMENT.md` | 288 → 221 | 4 → **0** | 20 → **0** |
-| 7 | `AGENT-PARAMS.md` | 133 → 109 | 3 → **0** | 0 → **0** |
-| 8 | `ENG-TOKEN-BINDING.md` | 270 → 212 | 3 → **0** | 0 → **0** |
-| 9 | `MCP.md` | 256 → 196 | 4 → **0** | 12 → **0** |
-| 10 | `PORTABILITY.md` | 313 → 313 | 3 → **0** | 3 → **0** |
-| 11 | `TUI.md` | 799 → 768 | 3 → **0** | 0 → **0** |
-| 12 | `TUI-COMMANDS.md` | 226 → 199 | 2 → **0** | 0 → **0** |
-| 13 | `TUI-INPUT-BOX.md` | 324 → 300 | 2 → **0** | 0 → **0** |
-| 14 | `TUI-SESSION-VIEW.md` | 232 → 204 | 2 → **0** | 0 → **0** |
-| 15 | `TUI-TOOL-OUTPUT.md` | 111 → 89 | 2 → **0** | 0 → **0** |
-| | **合** | | **34 → 0** | **185 → 50（全例外）** |
-
-**P5 同轮收正 13 处（删段/删族所生死指针）**：
-- `PROMPT-SYSTEM.md:10`（机制面 `§6–§8` ⇒ `§6–§7`，§8 已删）
-- `MCP.md:8`（机制面 `§6–§8` ⇒ `§6–§7`；去「不并项与历史沿革」项）+ `MCP.md` 原 `:54`（「不并者见 §8」整行删）+ 原 `:49-55`（§5 后「2026-10-0x 批次落点指针」整块删）
-- `TUI-INPUT-BOX.md:8`（「见 §9.1」删——§9 族已删）
-- `ENG-TOKEN-BINDING.md:7`（「见 §8.1」删——§8 族已删）
-- `DESIGN-TOKEN-SETTLEMENT.md` 原 `:119` 孤行删（§8 表头已删后残留的表体行——空壳行）+ `§9` 前多余空行归一
-- `LIGHT-CHANNEL.md:174-176`（随动面三条里「+ 变更记录」删×4）
-- `TUI.md:489`（受影响文件表行「+ 变更记录一行」删）
-- `PROMPT-SYSTEM.md:157/169/170/648`（指「各批变更记录 / → 变更记录 2026-10-09 条 / 2026-10-13 条 / 本档变更记录 2026-09-29 条」的片段删或改指本档活节）
-- `DOC-DISCIPLINE.md` §4.2.8 家族引用收正（见下「父侧 C 裁」）
-
-**父侧 C 裁落地（`DOC-DISCIPLINE.md` §4.2.8——删历史块、留现行块）**：
-- 标题改终态形：`#### 4.2.8 参照历史树（两树 · 只读红线 ∥ 不在扫描域）`（去「已撤除」「历史沿革」「时点标注」）。
-- `> 本条已失效 …` 引述块 **删**；`**历史沿革（原判据面——不再生效）**` 整块（4 bullet：族定义 / 裁定 / 原判据面登记三项含 `docs/batches/*` 死指针 / 史实见证）**删**。
-- `**现行仍然有效面**` 块 **留**（改标 `**现行面**`——三条现行规矩逐字保留：只读红线 ∥ 不在扫描域 ∥ 跨树引用纪律）。
-- **连带死指针同轮收正**：J-2 表行 4（原指「§4.2.8『历史沿革…』→『原判据面登记三项』块」⇒ 改「§4.2.8 存史块」+ 处置 = 已随条目清理删除）· §4.2.7 「§4.2.8 判据登记 ①/无后缀」两处引用删 · §4.2.7 判据登记 2「族定义见 §4.2.8」⇒「（只读红线——§4.2.8）」· A-DD11「see §4.2.8『现行仍然有效面』」⇒「见 §4.2.8」· A-DD19 ⑥「§4.2.8 时点锚行」⇒「（已删）」· §7 产品树镜像域「§4.2.8 族已随 v2 单引擎收敛撤除…已标失效」⇒ 改述为终态句（「两树不在扫描域 ⇒ 其内悬空不参与机检（§4.2.8）」）。
-
-**验收读数（逐档自建扫描 · 判据 = 派单书）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` = **0**（15/15 档）✅（`DOC-DISCIPLINE.md` 唯一命中项 = §4.2.8 旧标题，已随 C 裁改终态形 ⇒ 现 0）。
-- `docs/batches/` 命中 **50**（DOC-DISCIPLINE 31 ∥ BATCH-RECORD 15 ∥ PROMPT-SYSTEM 3 ∥ MANIFEST 1）——**逐处判类 = 例外①②③闭集**：
-  - **例外① 规则正文**：`DOC-DISCIPLINE.md` 全 31 处（§1 D8/D4 细则的规则推导引证；§3.x 条目内的「单源 = 批档 …」登记；§4.2 判据面登记）——纪律档=规则载体，规则必须能写出被禁字面（派单书明文「规则正文保留」）。
-  - **例外② 机制模板形 / 扫描命令**：`BATCH-RECORD.md` 全 15 处（`docs/batches/<x>.md` ∥ `<批>-<主题>.md` ∥ `<旧档>` 占位符 + `readdirSync('docs/batches')` 扫描命令）· `PROMPT-SYSTEM.md:220`（`docs/batches/<batch>-<topic>.md` 路径形）· `MANIFEST.md:779`（夹具 `docs/batches/<x>.md`）。
-  - **例外③ 目录级归属句**：`PROMPT-SYSTEM.md:307/696`（「清 `docs/batches/` 硬路径」= 清理规则描述，指整树非某一批）。
-  - ⇒ **命中集 − 例外三条 = 0** ✅。
-- 逐档回读：**无空壳表行**（唯一空壳 = `DESIGN-TOKEN-SETTLEMENT.md:119` 孤行，已删）· **无残句**（15 档尾部均收于完整结构元素）· **无重复行**（逐档 dup=0）· **无标题层级跳变**（逐档 jumps=0）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：`FAIL(锚): 414 条悬空`（= 全批存量常态红——本批即清这笔账）· `FAIL(行宽): 1 行超 300`（= `docs/core/design/prompts/common.md:41`，**非本批 15 档**）。**本批 15 档零新增超宽**（15 档 >300 行全为表格行——表格行按 §3.1 豁免）。**未做全仓 `npm test`**（repo suite = 父侧收口轮跑）。
-
-**内部审计与代码评审（本会话内）**：
-- **首轮内部探索审计**：报 `divergent` —— 但经复核**其读到的是回滚/旧快照**（其称 `DOC-DISCIPLINE.md` 仍有 `## 变更记录` + §4.2.8 旧标题「已撤除…」——盘上已均为 0）⇒ **判误报**，已重跑。
-- **二轮内部探索审计（对正确盘面）**：`divergent`（轻微）——类别 A（历史标题）= **0 全通过**；类别 F（`docs/batches/` 活面违规）= **0**；报 6 项残留：`PROMPT-SYSTEM.md:157/169/170/648`（指已删段的片段）· `TUI.md:489`（同）· `DESIGN-TOKEN-SETTLEMENT.md` §8 号缺（**编号缺口——非本批授权范围，未补**）· `PROMPT-SYSTEM.md` §10 在 §9 前（**既有顺序——非本批所生，未动**）⇒ **前 5 处已当轮修**，后 2 处 = 编号/顺序面（派单书「其余逐字不动」⇒ 不动，登记）。
-- **代码评审（advisor · type=code）**：`changes-required`——🔴2（D8 规则正文 `:30/:32` 仍把「变更记录 / 不并项与历史沿革」列为「记录面（保留零触）」；`:30` 仍写「该档变更记录留一行」）∥ 🟡3（`:813/815/842/843/1332` 区带名集仍以 `变更记录 ∥ 历史沿革` 为输入 · J-2 表行 4 指 §4.2.8 存史块 · `:587/1284/1040` 内联 as-of 坐标）∥ 🔵1（claim-vs-disk 对账）。
-- **本席对 🔴2 的判定 = 属设计层规则（D8 规则正文改述），非本批四类删除动作**：派单书明令「只删三样 + 批档引用片段，其余逐字不动」+「规则正文保留」；其改动 = D8 细则**改述**（去「变更记录」项 / 加「git 提交信息」）——本档 §2.13 🔴1 **已记该改述为完成**，但**盘上未落**（claim-vs-disk 缺口）⇒ **上抛父侧裁**（不在本批授权内，不擅自改述）。
-- **🟡3 逐项判定**：区带名集（`:813/815/842/843/1332`）= **规则输入值**（宽度豁免规则按声明区带名集判）——属例外① 规则正文（规则必须能写出被禁区带名），且 `:815` 已自报「现盘 0 命中」⇒ 留；J-2 表行 4 = 记录面登记行（已含终态结论「已随条目清理删除」）⇒ 留；`:587/1284/1040/1041` = 规则段内 as-of 登记行（各携 as-of 限定语，指向**他档**或本档立案时坐标）⇒ 留（沿 §4.2.8「as-of 读数 = 出处注」判据）。
-
-**范围边界**：本批实际编辑 **14 档**（`PORTABILITY.md` **本席零编辑**——其实读时其 §7 沿革与 `docs/batches/` 引用已由**并发写者**删除：`git diff` 其 3+/69− 与 §7 整节删除非本席笔迹；本席读到的 = 已被并发清后的态）。未触 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档。**未做脚本批改**（逐档逐处读改）。**未夹带新语义**（除 P5 死指针收正与 §4.2.8 C 裁外，一律纯删除）。
-
-**状态行**：实施完成（15 档 · 历史标题 34→0 · 活面批档引用 = 命中集−例外三条 = 0 · 行宽零新增 · 零脚本 · 内部审计 2 轮 + 代码评审 1 轮 · 2 项上抛父侧（D8 改述未落 / §4.2.8 裁后 §4.2.8 家族引用已收正））
-
-### 5.6 审计轮次与终态
-
-**内部探索审计（read-only 子代理 · 1 轮）**：对照任务书四项判据核验 15 档。
-
-| 核验项 | 结果 |
-|---|---|
-| ① `## 变更记录` 标题命中 | 0 ✓ |
-| ② `## N. 不并项与历史沿革` 族标题命中 | 0 ✓ |
-| ③ `### N.1 历史沿革` 命中 | 0 ✓ |
-| ④ `docs/batches/` 命中集 − 例外三条 | **6 − 6 = 0** ✓ |
-| 半删残留（空标题 / 孤立 changelog 行 / 悬空前导） | 零命中 ✓ |
-| 语法破损形（`（；` · `批档。` · `= ，` · 行尾悬空 `∥` · 连续标点） | 零命中 ✓ |
-| 越界（`_archive/**` / `prompts/**` / 15 档外改动） | 未见越界 ✓ |
-
-**四类偏差判定：无偏离**（PARTIAL / SILENT-SIMPLIFICATION / DOC-DRIFT / OUT-OF-LIST 四类均未发现）。
-自报的 6 处例外③位置经独立复核对，逐处逐字相符。
-
-**审计向我提出的一条证据缺口 — 已由我在交付前实测闭环**：审计无法看 git 上下文，故「15 档以外是否有改动」只有自报可依。我实测补证：
-
-```
-git diff --name-only -- docs/desktop/design/   → 恰 14 档（与声明面逐项相符）
-git diff --stat  -- docs/desktop/design/       → 15 files changed（14 档 + 批次档）
-```
-
-**工作树洁净度（重要 · 供父侧知悉）**：`git status --porcelain` 显示工作区另有约 140 项已修改档（`docs/core/design/**`、`docs/cli/design/**`、`docs/server/design/**`、`docs/core/requirements/**`，以及 `thincoder-cli/**` `thincoder-core/**` `thincoder-desktop/**` `thincoder-render-core/**` `thincoder-server/**` `thincoder-vscode/**` 的产品码，另有若干未跟踪档如 `.r6-*.txt`、`scripts/check-pack.mjs`）。
-
-**这些均非本会话产物**——本会话写面仅 14 档设计档 + 本批次档（上表已证）。判定依据：本会话全部写操作经 `edit` / `insert_after` 工具，目标路径逐条可数，且 `git diff --stat` 限定到 `docs/desktop/design/` 时恰为本会话所改 14 档。该批他改动 = **本会话开始前既存的脏工作树**（可能来自并行会话或未提交基线）。**本会话未触碰其中任何一项**；此事实一并披露，供父侧在收口提交时甄别。
-
-**审计轮次**：1 轮（探索审计）→ 无修正轮（零偏离 → 无需 fix）。
-**代码评审轮次**：本任务为文档清洗（非产品码），未经内部 advisor 代码评审——按纪律，文档面交付由父侧收口面把关。
-**终态**：`clean`。
-
-### §5.x R18 批实施记录（vsc/design 8 档 + cli/design 7 档 · eng-coder · 2026-10-15 · initial 轮）
-
-**任务书** = 本档 §2 §2.3「父侧口径变更（2026-10-15 04:2x）」块 + §2.10 方向变更 + 父侧逐字派单（用户 04:15/04:16「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」）。
-
-**本批 15 档**：
-- `docs/vsc/design/` 8 档：`VSC-MIGRATION.md` · `SETTINGS.md` · `WEBVIEW.md` · `VSC-DEBT.md` · `WEBVIEW-PROTOCOL.md` · `WEBVIEW-INPUT.md` · `VSC-MIGRATION-INVENTORY.md` · `PROJECT-SWITCHER.md`
-- `docs/cli/design/` 7 档：`TUI.md` · `TUI-COMMANDS.md` · `TUI-INPUT-BOX.md` · `TUI-SESSION-VIEW.md` · `TUI-TOOL-OUTPUT.md` · `ACP-CLIENT.md` · `ACP-PROTOCOL-COMPLIANCE.md`
-
-**工序**（逐档 `read` → `edit` → **改后回读** → 下一档；**零脚本批改**）：
-1. **① 变更记录段整段删**（判据 = 标题行起 ⇒ 下一层级 ≤ 起始层级的标题前一行止；末节至 EOF）——**5 档命中**：`SETTINGS.md`（`:759`–EOF）· `WEBVIEW-PROTOCOL.md`（`:554`–EOF）· `WEBVIEW-INPUT.md`（`:195`–EOF）· `VSC-DEBT.md`（`:711`–EOF，`## 11. 变更记录`）· `SETTINGS.md` 见上。
-2. **② 不并项与历史沿革族整节含表删**——**5 档命中**：`SETTINGS.md` §4（`:711`–`:733`）· `WEBVIEW.md` §7（`:615`–`:640`）· `WEBVIEW-PROTOCOL.md` §8（`:363`–`:383`）· `WEBVIEW-INPUT.md` §6（`:142`–`:166`）· `PROJECT-SWITCHER.md` §5（`:131`–`:143`）· `ACP-CLIENT.md` §10（`:394`–`:417`）。
-3. **③ `### N.1 历史沿革` 子节**——随族删（含在 ② 内；无单独成节者）。
-4. **④ 活面 `docs/batches/` 片段删**（删坐标保事实结论；整行语义 = 纯批指针者 ⇒ 删行；**不改指别处**）——**初测 33 处 → 改后 1 处**（见下）。
-
-**逐档读数（初测 → 改后 · 标题 = `^#{2,4}.*(变更记录|历史沿革|不并项)` ∥ batchRef = `docs/batches/` 字面）**：
-
-| # | 档 | 行数 初→改后 | 标题 初→改后 | batchRef 初→改后 |
-|---|---|---|---|---|
-| 1 | `vsc/design/VSC-MIGRATION.md` | 163 → 163 | 0 → 0 | 0 → 0 |
-| 2 | `vsc/design/SETTINGS.md` | 904 → 734 | 4 → **0** | 82 → **0** |
-| 3 | `vsc/design/WEBVIEW.md` | 731 → 704 | 3 → **0** | 0 → 0 |
-| 4 | `vsc/design/VSC-DEBT.md` | 774 → 708 | 1 → **0** | 31 → **0** |
-| 5 | `vsc/design/WEBVIEW-PROTOCOL.md` | 783 → 532 | 4 → **0** | 85 → **0** |
-| 6 | `vsc/design/WEBVIEW-INPUT.md` | 259 → 170 | 4 → **0** | 27 → **0** |
-| 7 | `vsc/design/VSC-MIGRATION-INVENTORY.md` | 494 → 492 | 0 → 0 | 1 → **1**（例外③） |
-| 8 | `vsc/design/PROJECT-SWITCHER.md` | 158 → 144 | 2 → **0** | 0 → 0 |
-| 9 | `cli/design/TUI.md` | 768 → 768 | 0 → 0 | 0 → 0 |
-| 10 | `cli/design/TUI-COMMANDS.md` | 199 → 199 | 0 → 0 | 0 → 0 |
-| 11 | `cli/design/TUI-INPUT-BOX.md` | 300 → 300 | 0 → 0 | 0 → 0 |
-| 12 | `cli/design/TUI-SESSION-VIEW.md` | 204 → 204 | 0 → 0 | 0 → 0 |
-| 13 | `cli/design/TUI-TOOL-OUTPUT.md` | 89 → 89 | 0 → 0 | 0 → 0 |
-| 14 | `cli/design/ACP-CLIENT.md` | 763 → 738 | 3 → **0** | 0 → 0 |
-| 15 | `cli/design/ACP-PROTOCOL-COMPLIANCE.md` | 360 → 360 | 0 → 0 | 0 → 0 |
-| | **合** | | **17 → 0** | **226 → 1** |
-
-**交付读数**：`git diff --numstat` = **8 档改 · +30 / −532**（删除主导 · 纯减法 · 零语义新增）；7 档初测即零命中 ⇒ 无 diff（逐档 `read` 确认为「确无三类形态」）。
-
-**判据读数（父侧口径 = 命中集 − 例外三条 = 0）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` = **0**（15/15 档）✅
-- `docs/batches/` 命中 = **1**，逐处 = **例外③ 目录级归属句**：`VSC-MIGRATION-INVENTORY.md:19`（迁移普查表行「`docs/batches/*.md` | 34 | 8443 | 批次档（**不迁**——用户 2026-09-14 21:37「批次档不迁」）」= 描述「批档住哪 / 迁不迁」，非指向某一批档）⇒ **命中集 − 例外三条 = 0** ✅
-
-**P5 同轮收正（删段/删族所生死指针 · 逐处）**：
-- `WEBVIEW.md:651`——「各档『不并项与历史沿革』节」指针片段删（保 INVENTORY §9.2 主指针）
-- `VSC-MIGRATION-INVENTORY.md` 原 `:262`——整行删（整行语义 = 纯指针「逐档并入/不并：见各落点档的『不并项与历史沿革』节」）
-- `SETTINGS.md:683`——「日期指向 = 变更记录。」删（指向本档已删段 ⇒ 死指针；审计发现，同轮收正）
-- `SETTINGS.md:229`——「出处 = `docs/vsc/requirements/WEBVIEW.md` 变更记录 22:1x 条」删（活面指记录面 ⇒ 违 D4 细则二；审计发现，同轮收正）
-
-**边界形态（逐档 read 回看 · 判据 = 无残句 / 空壳行 / 重复行 / 标题层跳变）**：
-- **残句 = 无**——删片段均落括注 / 句尾坐标位，删后各句完整；尾部均收于完整结构元素（表行 / 节末句）。
-- **空壳行 = 无**——本批删除均为整节 / 整段 / 整行，未产孤立表头。
-- **重复行 = 无**（改动所生）——复扫 flagged 的 13 处同形行逐处核 = **改动前既有**的跨表表头重复（如 VSC-DEBT 三处 `| # | 候选方案 | …`），非本批所生。
-- **标题层立即相邻 / 双空行 = 无**（`WEBVIEW.md` §8 前补一空行；`VSC-MIGRATION-INVENTORY.md` 删行后双空行归一）。
-- **一处自捕误**：`VSC-DEBT.md:625` 首次 edit 产残句（「> 本书 = 本批三条目…）」）⇒ **回读发现 ⇒ 二次修正为「> 本批三条目 #91 / #254 / #301；本节 = VSC 半：设置面 ②③④ + 超限档。」**（D6 回读有效性实证）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：`FAIL(锚) = 271 条悬空`（全仓存量常态红——本批即清这笔账的残面）· `FAIL(行宽) = 1 行超 300`（= `docs/core/design/prompts/common.md:41`，**非本批 15 档**）。**本 15 档零新增悬空 ∥ 零超宽**（逐档核）。
-
-**审计与代码评审（本会话内全链）**：
-1. **内部探索审计（explore 子代理 · 只读）**：判定 **2 项残句级发现**——`SETTINGS.md:683`（「日期指向 = 变更记录」= 指向本档已删段）+ `SETTINGS.md:229`（跨档指 `requirements/WEBVIEW.md` 变更记录节）⇒ **2 项均成立 · 已同轮收正**；其余（A-VM* 行 / `:320`/`:323`/`:408` 的「不并项与历史沿革」表述）判为 **指向「概念」而非指向已删节** ⇒ 非判据命中，登记。
-2. **代码评审（advisor · type=code）**：判定 **`changes-required`**——🔴4（**同一缺陷类 = 无路径字面批档指针**：`SETTINGS.md` 19 处 ∥ `VSC-DEBT.md` 24 处 ∥ `VSC-MIGRATION-INVENTORY.md` 12 处 ∥ `ACP-CLIENT.md` 5 处）∥ 🟡3（`PROJECT-SWITCHER.md:125` ∥ `WEBVIEW.md` 4 处 ∥ claim-vs-disk 对账）∥ 🔵2。
-3. **本席实地复核其读数**：复扫「`(批档|批次档)\s*§`」全 15 档 = **77 处**（`VSC-DEBT` 24 ∥ `SETTINGS` 19 ∥ `INVENTORY` 12 ∥ `TUI` 9 ∥ `ACP-CLIENT` 5 ∥ `WEBVIEW` 4 ∥ `TUI-INPUT-BOX` 2 ∥ `VSC-MIGRATION` 1 ∥ `PROJECT-SWITCHER` 1）——**acknowledged ≙ advisor 判据成立**，但其「must fix」是否落本批 = **授权问题**（见下「上抛」）。
-
-**🔴 上抛项（授权冲突 · 同一机制两处相反指令 · 未自选边 · 已 `notify_parent`）**：
-- **A 方（派单书字面）**：「只删：四样 + **批档引用片段**；**其余逐字不动**」；四样第④样写「活面 `docs/batches/` 引用片段」⇒ 无路径字面的 `批档 §N` 指针**不在其内** ⇒ 按字面不动。
-- **B 方（用户令 + 本批自身 R1 先例）**：用户 03:20「**文档不能引用批次档！**」；本档 §5.3（R1 轮）：1645 把同形（`TEAM.md:177`「见批档 §2 未裁点」）判为「**实质违规 · 漏删**」并明言「『命中集 = 0』**是假达标**」；:1665 已上抛「扫描式命中集应补入**无路径字面批档指针形**……否则**全批 190 档会重复本类漏网**」；R1 据此**手工扩扫删了 13 处**同形。
-- **本席倾向 = B**（用户令优先级 1 > 派单书字面；本批 R1 已立先例）——但删它 = 超派单书字面授权 ⇒ **上抛待裁**，**未自行处置**。
-- **连带待裁**：`VSC-MIGRATION-INVENTORY.md` 的 `A-VM4/10/15/17/21/25/27` 验收行 + `:320`/`:323`/`:408`——仍以「各档含『不并项与历史沿革』节」为判据，而该族**已被本批整体删除** ⇒ 现在规定一个**已不存在的产物**（同属「其余逐字不动」 vs D8「失效表述须删」的冲突）。
-
-**范围边界（禁止范围 · 零触）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档（含记录面 `docs/batches/**`）；**未改指别处**（无一处把批引改指他处）；**未新写语义**（纯减法）；**未脚本批改**（逐档逐处 read→edit→回读）。
-
-**终态**：`stalled`（**实施面完成** —— 四样全删 · 标题 0 · `docs/batches/` 命中集−例外三条 = 0 · 审计 2 真项已收正 · 机检零新增；**但 advisor `changes-required` 的 🔴4 项（77 处无路径字面批档指针）因**授权冲突**未处置 ⇒ 待父侧裁后收口）。
-
-### §5.y R18 批 · 无路径批档指针清账 + FEATURES 档补清（eng-coder · 2026-10-15 · 父侧裁 B 后）
-
-**父侧裁决（2026-10-15，逐字要点）**：**B（删）**——派单书字面（四样④只写 `docs/batches/` 路径形）**是父侧写法漏洞、不是有效授权边界**；判据面按**已确立口径**扩到无路径字面形。依据链三条（父侧给）：① 用户令 03:20「文档不能引用批次档！」——`批档 §N` / `批次档 §N` **就是「引用批次档」**；② 本批先例（`§5.3` 评审发现 1 把 `TEAM.md:177`「见批档 §2 未裁点」判为「实质违规 · 漏删 …『命中集 = 0』是假达标」；R1 轮**主动扩扫**另揪 11 处同型）；③ `§2` 重组设计自身即写「⑤ 显式覆盖**无路径字面**的批档指针（`批档 §N` / `批次档 §N` / `板档 §N`）」。
-**第二问同裁 B（修）**：`VSC-MIGRATION-INVENTORY.md` 的 `A-VM4/10/15/17/21/25` 行 + `:320/:323/:408` 以「各档含『不并项与历史沿革』节」为判据——该族已被本批整体删除 ⇒ 这些行**规定一个已不存在的产物** ⇒ D8「失效表述须删」的对象（改法 = 整条只因该族存在而存在 ⇒ 删该条；尚余其他可成立内容 ⇒ 改写保留）。
-
-**执行动作（逐档 `read` → `edit` → 回读 · 零脚本）**：
-
-| # | 动作 | 处数 | 说明 |
-|---|---|---|---|
-| 1 | **无路径批档指针片段删** | **77** | `SETTINGS` 19 ∥ `VSC-DEBT` 24 ∥ `VSC-MIGRATION-INVENTORY` 12 ∥ `TUI` 9 ∥ `ACP-CLIENT` 5 ∥ `WEBVIEW` 4 ∥ `TUI-INPUT-BOX` 2 ∥ `VSC-MIGRATION` 1 ∥ `PROJECT-SWITCHER` 1 —— 逐处**删片段保事实**（如 `——取舍 = 批档 §2 KD-4` 删；`. 用例 = 批档 §2.4 W17-17` ⇒ `（用例 = W17-17）`）；**整行语义 = 纯指针者 ⇒ 删行**（如 `VSC-DEBT` 两处纯指针行、`INVENTORY` `:262` 纯指针行）；**不改指别处 · 不新写** |
-| 2 | **A-VM 家族失效判据项收正** | 6 条 | `A-VM4`「各落点档含『不并项与历史沿革』节；…」⇒ 删该族判据项保其余；`A-VM10`「三档『不并项与历史沿革』节在场…」⇒ 删；`A-VM15/17/21/25` 同法（逐条只删该族项，其余判据逐字保留） |
-| 3 | **`:320/:323/:408` 同法** | 3 处 | 「逐条归属 = 两产物档各自的『不并项与历史沿革』节」⇒ 「各自的条目表（现行写法）」；「方案选型 / 待裁 / 变更记录住主档」句按现态留 |
-| 4 | **删段/改判据所生死指针同轮收正** | — | `VSC-DEBT` 三处 `A12/A14/A15` 与 `KD-16` 的「批次档 §1.5 判据 N」⇒ 改指本档 `§12.4` 第 N 条；`A-VM26/30` 的 `git status` 写域句删「+ 批次档 §2」 |
-| 5 | **`cli/requirements/FEATURES.md` 补清**（父侧点名单档） | 1 族 | §4「不并项与历史沿革」整族含子节删（`## 4.` 标题行起 ⇒ EOF：`:182`–`:206`· **25 行纯删除**） |
-| — | **审计所报两项「非本批所生」既存瑕疵 · 未动**（登记） | 2 | ① `SETTINGS.md:93` 一处 `（端壳` 未闭合（**本批前既存**的拼接痕，非本批删片段所生）；② `WEBVIEW-INPUT.md:153–154` 表行跨两行（既存表体写法，表格仍渲染）——均**不在本批授权面**，登记父侧 |
-
-**逐档读数（改前 → 改后 · 判据 = 标题 `^#{2,4}.*(变更记录|历史沿革|不并项)` ∥ `docs/batches/` 字面 ∥ 无路径批档指针 `(批档|批次档|批次任务档)\s*§`）**：
-
-| # | 档 | 行数 | 标题 前→后 | batches 前→后 | 无路径 前→后 |
-|---|---|---|---|---|---|
-| 1 | `vsc/design/VSC-MIGRATION.md` | 163 | 0→0 | 0→0 | 1→**0** |
-| 2 | `vsc/design/SETTINGS.md` | 904→**734** | 4→**0** | 82→**0** | 19→**0** |
-| 3 | `vsc/design/WEBVIEW.md` | 731→**704** | 3→**0** | 0→0 | 4→**0** |
-| 4 | `vsc/design/VSC-DEBT.md` | 774→**708** | 1→**0** | 31→**0** | 24→**0** |
-| 5 | `vsc/design/WEBVIEW-PROTOCOL.md` | 783→**532** | 4→**0** | 85→**0** | 0→0 |
-| 6 | `vsc/design/WEBVIEW-INPUT.md` | 259→**170** | 4→**0** | 27→**0** | 0→0 |
-| 7 | `vsc/design/VSC-MIGRATION-INVENTORY.md` | 494→**492** | 0→0 | 1→**1**（例外③） | 12→**0** |
-| 8 | `vsc/design/PROJECT-SWITCHER.md` | 158→**144** | 2→**0** | 0→0 | 1→**0** |
-| 9 | `cli/design/TUI.md` | 768 | 0→0 | 0→0 | 9→**0** |
-| 10 | `cli/design/TUI-COMMANDS.md` | 199 | 0→0 | 0→0 | 0→0 |
-| 11 | `cli/design/TUI-INPUT-BOX.md` | 300 | 0→0 | 0→0 | 2→**0** |
-| 12 | `cli/design/TUI-SESSION-VIEW.md` | 204 | 0→0 | 0→0 | 0→0 |
-| 13 | `cli/design/TUI-TOOL-OUTPUT.md` | 89 | 0→0 | 0→0 | 0→0 |
-| 14 | `cli/design/ACP-CLIENT.md` | 763→**737** | 3→**0** | 0→0 | 5→**0** |
-| 15 | `cli/design/ACP-PROTOCOL-COMPLIANCE.md` | 360 | 0→0 | 0→0 | 0→0 |
-| 16 | `cli/requirements/FEATURES.md` | 207→**182** | 4→**0** | 0→0 | 0→0 |
-| | **合** | | **21→0** | **226→1** | **77→0** |
-
-**判据读数（三条全绿）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` = **0**（16/16 档）✅
-- `docs/batches/` 命中 = **1** → `VSC-MIGRATION-INVENTORY.md:19`，**经父侧点名复核 = 例外③ 目录级归属句**（迁移普查表逐层计数行：`| docs/batches/*.md | 34 | 8443 | 批次档（**不迁**——用户 2026-09-14 21:37「批次档不迁」） |`——**只描述「批档住哪 / 迁不迁」，不指向任何具体批档**）⇒ **保留 · 已在册** ✅
-- 无路径批档指针 = **0**（16/16 档）✅
-- **死指针 = 0**（删段/改判据所生者逐处同轮收正，见行动表 #4）✅
-
-**交付读数**：`git diff --numstat` 16 档合计 **+111 / −600**（纯减法主导；16 档中 3 档零改 ⇒ 无 diff）。`FEATURES.md` = **0 插 / 25 删**（§4 整族纯删除）。
-
-**边界形态（逐档 read 回看 + 机械复扫）**：
-- **无标题相邻 / 无空壳表（表头零数据行）/ 无连续三空行 / 无残句**（收尾均落在完整结构元素——表行 / 节末句）——16 档机械复扫 **0 命中**。
-- **`+` 行完整性复扫**：全部新增行的无「`=` 尾 / 标点开头 / 空表格行」形态（0 suspect）。
-- **一处自捕误**（前段）：`VSC-DEBT.md` 首次 edit 产残句「> 本书 = 本批三条目…）」⇒ 回读发现 ⇒ 二次修正（D6 实证）。
-- **并发写事件登记**：`VSC-MIGRATION-INVENTORY.md` 执行期间有**外部写者**改动该档（`git diff` 出现本席未发的 A-VM 族判据项收正 8 插 10 删）——本席**未覆盖**其改动，只在其后追加本席的指针片段删（逐处 `read` 后定位）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：汇总 = 候选 56550 ∥ **悬空 271**（= **改前同一读数**，证明本批 77 处删除 + 25 行族删**零新增悬空**）∥ 注记豁免 246 ∥ 拟新增 23 ∥ 迁移期引文 312 ∥ 声明源缺失 0。`FAIL(行宽) = 1 行超 300` = `docs/core/design/prompts/common.md:41`（**非本批档**）。**本批 16 档零 ✗ 行**（逐档核——20 条 `✓` 全为「路径/坐标·迁移期引文——列报 · 不入闸」既存声明面）。
-
-**内部探索审计（read-only explore 子代理 · 对终态重跑）**：**CLEAN —— 四类偏差逐类未发现**（① 无越界 ② 无漏清 ③ 无结构损伤 ④ 无残留指向已删对象）。审计复核确认：`docs/batches/` 唯一幸存者 = 例外③；无路径指针 16 档全 0；无标题相邻 / 空壳表 / 双空行 / 残句；「迁移期引文」标记类引用**自陈其对象已不在盘**、非悬空。审计另报 **2 项既存瑕疵**（`SETTINGS.md:93` 未闭合括号 · `WEBVIEW-INPUT.md:153–154` 表行跨行）——均**本批前既存 · 非本批所生**、不在授权面 ⇒ 未动，登记父侧。
-
-**通则落实（本批口径 · 父侧 2026-10-15 定）**：**「引用批次档」一律删——含无路径字面形；例外三条（① 规则正文 ② 机制模板形 / 通用样例占位符 ③ 目录级归属句）除外。**
-
-**范围边界（禁止范围 · 零触）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 16 档以外任何档（含记录面 `docs/batches/**`）；**未改指别处 · 未新写语义 · 未脚本批改**。
-
-**终态**：`clean`（标题 0 ∥ `docs/batches/` 命中集−例外三条 = 0 ∥ 无路径批档指针 0 ∥ 死指针 0 ∥ 结构复扫 0 命中 ∥ 机检零新增 ∥ 内审 CLEAN）。
-
-### §5.z 实施轮：终态外历史内容删除 + 批档死引用清除（10 档实作 + 5 档零改 · eng-coder · 2026-10-15 · initial 轮）
-
-**任务书** = 父侧逐字派单（自含四类判据）+ 用户 2026-10-15 令「**变更记录全删！我不需要你保留沿革记录！**」「**不要记录历史沿革！**」+ 设计判据面 `DOC-DISCIPLINE.md` §4.5（P1–P5 · 例外三条闭集 · 混合节处置 · 四条验收判据）。
-**判据（四条齐 · §4.5.7）**：① `docs/batches/` 路径字面 − 例外三条 = 0 ② 无路径字面批档指针（`批档 §N` 等）= 0 ③ `^#{2,4}.*(变更记录|历史沿革|不并项)` = 0 ④ 同档死指针 = 0。
-
-#### 一、开工前复测（与前轮读数的偏差）
-
-**关键偏差（实测）**：任务书列的 10 档中 **`WEBVIEW-PROTOCOL.md` · `WEBVIEW-INPUT.md` · `ADVISOR-CONVERGENCE.md`（§3.6 除外）· `TURN-CAP-CONTINUE.md`** 四档**已被前序/并发轮清为空**（开工前逐档复扫：标题 0 ∥ `docs/batches/` 0）；4 档 `desktop/requirements/{PACKAGING,ACTIVITY,MENU,SESSIONS}.md` 亦**全清**（0 行 0 引用）⇒ **实际施工面 = 7 档有改动**（另 `WEBVIEW-PROTOCOL` / `WEBVIEW-INPUT` 在实施期间被**并发写者**改动——本席**未发任何 edit**，见「并发登记」）。
-
-**5 档补充档（原清单外）全缺**：`docs/core/design/` 下 **无** `AGENT-TOOLS.md` · `ADVISOR-SETTLE.md` · `ARTIFACT.md` · `ATTACHMENTS.md` · `CONSULT.md`（`glob` 全仓 + `Get-ChildItem -Recurse` 双证 = 0 命中）⇒ **跳过**（任务书已授「若不存在则跳过并在报告说明」）。
-
-#### 二、执行动作（逐档 `read` → `edit` → 回读 · 零脚本批改）
-
-| # | 档 | 动作 | 处数 |
-|---|---|---|---|
-| 1 | `server/design/project/PROJECTS.md` | ① `## 变更记录` 整段删（`:255`–EOF）；② `:6` 建档行批档坐标删（保留 日期/批名/台账号）；③ `:166` 用例表 A/D 两件批档路径删（改描述性名号） | 3 |
-| 2 | `server/design/ledger/LEDGER.md` | ① `## 变更记录` 整段删（`:159`–EOF）；② `:7` 建档行坐标删；③ `:101` 单测档路径片段删（保行其余义）；④ `:157` R74 行内嵌 `跨批守卫件 docs/batches/…test.mjs` 坐标删（保「跨批守卫件（服务端公开结构）」义） | 4 |
-| 3 | `vsc/requirements/WEBVIEW.md` | ① §5 族（`## 5. 不并项与历史沿革` + `### 5.1 历史沿革` + 沿革表）整族删；② `## 变更记录` 整段删（`:149`–EOF）；③ `:48` 复发实据行两处批档坐标删（保「复发实据」）；④ **混合节**：`### 5.2 迁移期状态登记（非不并项——须随批收口）` = 现行块 ⇒ **留**，标题去「(非)不并项」否定词面 ⇒ 升为 `## 5. 迁移期状态登记（须随批收口）`；⑤ 死指针收正 `:93`（「详见 §2 F-W17」保，「21:1x 变更记录」删） | 5 |
-| 4 | `core/requirements/CORE-UNIFICATION.md` | ① `## 变更记录` 整段删（`:178` 起 `---` 分隔 + 段，至 EOF）；② `:6` 建档行坐标删；③ `:151` 依据行坐标删；④ `:108` F14 行 `批次档 §1` 无路径指针 ⇒ 改述（保「用户裁定（2026-09-13，追加裁定「目录改名」）」） | 4 |
-| 5 | `core/design/STRUCTURE-DEBT.md` | ① §5 族（`## 5.` + `### 5.1` + `### 5.2`）整族删；② `## 变更记录` 整段删（至 EOF）；③ `:23` #9 行尾「来源 = TUI 假死批 §2.4（批档 …）」片段删；④ `:32` #1 行「唯一超宽面 = docs/batches/… 3 行」片段删 | 4 |
-| 6 | `core/requirements/PROVIDER.md` | ① §5 族（`## 5. 不并项与历史沿革（B 轮）`+表）整族删；② `## 变更记录` 整段删（至 EOF）；③ `:29` 源行 `（批 = docs/batches/…）` 坐标删（保批名语境）；④ `:34` 源行批档坐标删（删括注）；⑤ `:54`「**不并** = … （见 §5）」整行删（指已删族 ⇒ 死指针 + 族内理由句）；⑥ `:165` `（批档 §1 在册…）` 无路径指针片段删；⑦ `:87`「见变更记录」死指针片段删 | 7 |
-| 7 | `core/design/ADVISOR-CONVERGENCE.md` | ① **§3.6「本批材料归属（D2）」整节删**（父侧裁：内容 = 纯批档指向 ⇒ 零长期面价值）；② §3.7 → **§3.6** 顺次重编号（消编号缺口）；③ 同档两处 `§3.7` 指针同轮收正（`:165` / `:167` → `§3.6`） | 3 |
-
-#### 三、逐档读数（初测 → 改后 · 判据 = 标题 `^#{2,4}.*(变更记录\|历史沿革\|不并项)` ∥ `docs/batches/` 字面 ∥ 无路径指针 `(批档\|批次档\|批次任务档\|板档)\s*§`）
-
-| # | 档 | 行数 初→后 | 标题 初→后 | batches 初→后 | 无路径 初→后 | 终态 |
-|---|---|---|---|---|---|---|
-| 1 | `server/design/project/PROJECTS.md` | 262 → **254** | 1 → **0** | 7 → **0** | 0 → **0** | clean |
-| 2 | `server/design/ledger/LEDGER.md` | 164 → **158** | 1 → **0** | 6 → **0** | 0 → **0** | clean |
-| 3 | `vsc/requirements/WEBVIEW.md` | 208 → **148** | 4 → **0** | 19 → **0** | 0 → **0** | clean |
-| 4 | `core/requirements/CORE-UNIFICATION.md` | 206 → **178** | 1 → **0** | 7 → **0** | 1 → **0** | clean |
-| 5 | `core/design/STRUCTURE-DEBT.md` | 88 → **45** | 4 → **0** | 8 → **0** | 0 → **0** | clean |
-| 6 | `core/requirements/PROVIDER.md` | 208 → **179** | 2 → **0** | 7 → **0** | 1 → **0** | clean |
-| 7 | `core/design/ADVISOR-CONVERGENCE.md` | 427 → **423** | 0 → **0** | 0 → **0** | 0 → **0** | clean（§3.6 删 + 重编号） |
-| 8 | `vsc/design/WEBVIEW-PROTOCOL.md` | 532 | 0 → 0 | 0 → 0 | 0 → 0 | 已清（并发写者） |
-| 9 | `vsc/design/WEBVIEW-INPUT.md` | 170 | 0 → 0 | 0 → 0 | 0 → 0 | 已清（并发写者） |
-| 10 | `core/design/TURN-CAP-CONTINUE.md` | 149 | 0 → 0 | 0 → 0 | 0 → 0 | 已清（前序轮） |
-| 11–14 | `desktop/requirements/{PACKAGING,ACTIVITY,MENU,SESSIONS}.md` | 17/17/14/17 | 0 → 0 | 0 → 0 | 0 → 0 | 已清（前序轮） |
-| — | **合** | — | **13 → 0** | **54 → 0** | **2 → 0** | |
-
-#### 四、验收读数（四条齐 · 15 档全域 · 改后回读）
-
-- **判据 ①** `docs/batches/` 路径字面 = **0**（15/15 档）✅
-- **判据 ②** 无路径字面批档指针 = **0**（15/15 档）✅
-- **判据 ③** `^#{2,4}.*(变更记录|历史沿革|不并项)` = **0**（15/15 档）✅
-- **判据 ④** 同档死指针 = **0**——扫描 `见\s*§` / `详见\s*§` / `见上文` / `见该节` / `见变更记录` 共 18 处**逐处核该节号现是否存在**（逐处 `read` 目标档节标题比对）：**18/18 = 现存节**（自档现存节 16 处 ∥ 跨档现存节 2 处——`PROVIDER.md:4`→`CORE-UNIFICATION.md` §5 ∥ 其余自档）⇒ **零死指针** ✅
-
-#### 五、边界形态（逐档 read 回看 + 机械复扫）
-
-- **无残句 / 无空壳行 / 无重复行**（改动所生）——机械复扫（`（；`/`；）`/连续标点/空表格行 等 9 式）**0 命中**；逐档尾部均收于完整结构元素。
-- **混合节处置**（`WEBVIEW.md` §5.2）——按 §4.5.6：**删历史块（§5 + §5.1 沿革表）、留现行块（迁移期状态登记表）**；节标题去否定词面（「非不并项」）改陈述终态形并升为 `## 5.`。
-- **编号缺口收正**（`ADVISOR-CONVERGENCE.md`）——§3.6 删后 §3.5→§3.7 断层 ⇒ §3.7 顺次重编号为 §3.6 + 同档两处指针同轮收正。
-- **一处存量非本批**：`PROVIDER.md:161–162` 双空行 ∥ `STRUCTURE-DEBT.md:24–25` 双空行——**改前既有**（HEAD 同形），非本次动作所生，**未动**。
-- **零脚本批改**（逐档 `read` → `edit` → 回读）。
-
-#### 六、范围边界（禁止范围 · 零触）与并发登记
-
-- **未动**：`_archive/**` · 台账 · `prompts/**`（产品代码面）· 本批 15 档以外任何档 · `docs/batches/**`（记录面）。**未改指别处 · 未新写语义**（纯减法；CORE-UNIFICATION `:108` 与 PROVIDER `:29` 为「删坐标保结论」的改述，非新增引用）。
-- **并发写者登记（如实）**：`vsc/design/WEBVIEW-PROTOCOL.md`（`git diff` = 2 插 / 253 删）∥ `vsc/design/WEBVIEW-INPUT.md`（2 插 / 91 删）——两档 `## N. 不并项与历史沿革` 族由**外部写者**在本席实施期间删除；**本席未对其发出任何 edit**（开工前复扫两档已 0 命中）。**非本席动作**，登记供父侧收口甄别。
-- **机检（`node scripts/doc-check.mjs` · cwd=仓根）**：本批 7 改动档**零新增 FAIL**（逐档核）；`STRUCTURE-DEBT.md:21/:26` 与 `ADVISOR-CONVERGENCE.md:191` 的 `✓` 项全为「路径/坐标·迁移期引文——列报 · 不入闸」**既存声明面**；`PROJECTS.md:139` 的「行数」报项 = `db.mjs` 行数估差（**HEAD 既有**，本席未触该行）。全仓 FAIL/悬空 = 存量常态红。
-
-#### 七、决策透明表
-
-| # | 决策 | 备选 | 依据 |
-|---|---|---|---|
-| 1 | `WEBVIEW.md` §5.2 现行块**留**（仅改标题） | 随族整节删 | §4.5.6 混合节判据「删的是污染不是规范」——§5.2 = 迁移期现行状态追踪（含未收口项），删则丢现行面 |
-| 2 | 表格单元格批档坐标**删片段保行**（非删行） | 整行删 | 任务书「空壳表格行 ⇒ 删行」——删片段后该行仍有独立语义（行数/职责），非空壳 |
-| 3 | `ADVISOR-CONVERGENCE.md` §3.6 删 + §3.7 重编号 | 留编号缺口 | 父侧裁「§3.6 零长期面价值 ⇒ 删整节」+ §2 编号缺口补正「顺次重编号并同轮收正指针」 |
-| 4 | `CORE-UNIFICATION.md:108` / `PROVIDER.md:29` 改述保结论 | 整行删 | 该行尚有可独立成立语义（用户裁定/批名语境）——删坐标保语义，非删行 |
-| 5 | 5 档补充档不存在 ⇒ 跳过 | 另找同名档 | 全仓双证 0 命中（`glob` + `Get-ChildItem -Recurse`）；任务书授「若不存在则跳过并说明」 |
-
-#### 八、终态
-
-**实施完成** —— 7 档施工（8 档前序/并发已清）· 标题 13→0 ∥ `docs/batches/` 54→0 ∥ 无路径指针 2→0 ∥ 死指针 0 · 四条验收判据齐绿 · 逐档回读无残句/空壳/重复 · 零脚本 · 零越界。
-
-### §5.z 15 档实施轮（cli/design 7 + cli/requirements 5 + core/design 3 · eng-coder · 2026-10-15 · initial）
-
-**任务书** = 本档 §2 §2.3「父侧口径变更（2026-10-15 04:2x）」块（`:79`–`:120`）+「族形态变体」块（`:101`–`:103`）；用户令 04:15 / 04:16「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」；判据句 04:20「只需要清晰明确的最终的状态……被改掉的错误会在 RAG 场景下成为污染」。
-
-**本批 15 档**（逐档均在盘核实）：
-- `docs/cli/design/` 7 档：`ACP-CLIENT.md` · `CRASH-REPORTS.md` · `TUI-COMMANDS.md` · `TUI-INPUT-BOX.md` · `TUI-SESSION-VIEW.md` · `TUI-TOOL-OUTPUT.md` · `TUI.md`
-- `docs/cli/requirements/` 5 档：`ACP-CLIENT.md` · `CRASH-REPORTS.md` · `FEATURES.md` · `TUI-TOOL-OUTPUT.md` · `TUI.md`
-- `docs/core/design/` 3 档：`AGENT-LOOP-ASYNC-POOL.md` · `AGENT-PARAMS.md` · `ANCHOR-DEBT-REPAIR.md`
-
-**动作（四类 · 逐档 `read` → `edit` → **改后回读** → 下一档；零脚本批改）**：
-
-| # | 动作 | 命中 |
-|---|---|---|
-| 1 | `## 变更记录` 段整段删（含带号形；段终止 = 标题行起 ⇒ 下一层级 ≤ 起始层级的标题前一行止；末节至 EOF） | **3 档**：`cli/design/CRASH-REPORTS.md`（§6 至 EOF）· `core/design/AGENT-LOOP-ASYNC-POOL.md`（`:1261` 至 EOF）· `core/design/ANCHOR-DEBT-REPAIR.md`（§9 至 EOF） |
-| 2 | `## N. 不并项与历史沿革` 族整节含子节删（判据 = 标题含「不并项」或「历史沿革」，**不限定编号/层级/后缀**） | **6 档**：`cli/design/CRASH-REPORTS.md` §6 · `cli/requirements/ACP-CLIENT.md` §6 · `cli/requirements/CRASH-REPORTS.md` §5 · `cli/requirements/TUI-TOOL-OUTPUT.md` §5 · `cli/requirements/TUI.md` §5 |
-| 3 | `### N.1 历史沿革` / `### N.2 不并项登记` 子节（含在 ② 内，随族删） | 同上 6 档（无单独成节者） |
-| 4 | 活面 `docs/batches/` 引用片段删（不改指别处）；**整行语义 = 纯批指针者 ⇒ 删行** | **实体施工面 = `core/design/AGENT-LOOP-ASYNC-POOL.md`（79 → 0）** + `core/design/ANCHOR-DEBT-REPAIR.md`（11 → 2，两处均例外①③）+ 3 处无路径形指针（`cli/design/ACP-CLIENT.md:338` · `cli/design/TUI-COMMANDS.md:184` · `cli/design/TUI.md:743`） |
-| 5 | **P5 同轮收正**：删段/删族所生死指针 | 逐处登记见下「P5 收正」 |
-
-**关键发现（与派单清单的偏差 · 如实披露）**：派单书列 15 档为「有 `docs/batches/` 引用」的档；**实测 11 档（cli 全部 + `core/design/AGENT-PARAMS.md`）`docs/batches/` 命中本就 = 0** —— 真施工面 = **4 档**（`AGENT-LOOP-ASYNC-POOL.md` 主导 79 处 ∥ `ANCHOR-DEBT-REPAIR.md` 11 处 ∥ `cli/design/CRASH-REPORTS.md` 0 处但含族 ∥ `cli/requirements/` 4 档含族）。故 **13 档有 diff、2 档零改**（`cli/design/TUI-SESSION-VIEW.md` · `cli/design/TUI-TOOL-OUTPUT.md` —— 初测即 0 命中，逐档 `read` 确认确无三类形态）。
-
-**逐档读数**（初测 → 改后 · `hdr` = `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题数 ∥ `bat` = `docs/batches/` 字面 ∥ `np` = 无路径字面批档指针 `(批档|批次档|批次任务档|板档) §`）：
-
-| # | 档 | 行数 初→改后 | hdr 初→后 | bat 初→后 | np 初→后 |
-|---|---|---|---|---|---|
-| 1 | `cli/design/ACP-CLIENT.md` | 737 | 0→0 | 0→0 | 0→0 |
-| 2 | `cli/design/CRASH-REPORTS.md` | 184→**158** | 3→**0** | 0→0 | 0→0 |
-| 3 | `cli/design/TUI-COMMANDS.md` | 199 | 0→0 | 0→0 | 0→0 |
-| 4 | `cli/design/TUI-INPUT-BOX.md` | 300 | 0→0 | 0→0 | 0→0 |
-| 5 | `cli/design/TUI-SESSION-VIEW.md` | 204 | 0→0 | 0→0 | 0→0 |
-| 6 | `cli/design/TUI-TOOL-OUTPUT.md` | 89 | 0→0 | 0→0 | 0→0 |
-| 7 | `cli/design/TUI.md` | 768 | 0→0 | 0→0 | 0→0 |
-| 8 | `cli/requirements/ACP-CLIENT.md` | 149→**127** | 3→**0** | 0→0 | 0→0 |
-| 9 | `cli/requirements/CRASH-REPORTS.md` | 97→**77** | 3→**0** | 0→0 | 0→0 |
-| 10 | `cli/requirements/FEATURES.md` | 182 | 0→0 | 0→0 | 0→0 |
-| 11 | `cli/requirements/TUI-TOOL-OUTPUT.md` | 55→**36** | 3→**0** | 0→0 | 0→0 |
-| 12 | `cli/requirements/TUI.md` | 92→**72** | 3→**0** | 0→0 | 0→0 |
-| 13 | `core/design/AGENT-LOOP-ASYNC-POOL.md` | 1418→**1260** | 1→**0** | **79→0** | **42→0** |
-| 14 | `core/design/AGENT-PARAMS.md` | 109 | 0→0 | 0→0 | 0→0 |
-| 15 | `core/design/ANCHOR-DEBT-REPAIR.md` | 418→**395** | 1→**0** | **11→2**（例外①③） | 3→0 |
-| | **合** | | **14→0** | **90→2** | **45→0** |
-
-**P5 收正（删段/删族所生死指针 · 逐处登记）**：
-- `cli/design/CRASH-REPORTS.md:94`——「实测值见 §6 不并登记」⇒ 删片段（§6 族已删）。
-- `cli/design/ACP-CLIENT.md:338`——「本批受影响文件…= 2026-09-15 core-defect-fixes 批 §四；验收 = 同批 §五 V4」⇒ 改「本档 §3.5；验收 = 可机器验证（V4）」。
-- `cli/design/TUI-COMMANDS.md:184`——「用例表见批次档」⇒ 「用例表随本档」。
-- `cli/design/TUI.md:743`——「（批档本地用例 · 全清令）」⇒ 「（单元测试档本地用例）」。
-- `core/design/AGENT-LOOP-ASYNC-POOL.md:10`——「三分前变更史 = `AGENT-LOOP-SUBAGENT.md` 变更记录（历史归记录面）」⇒ 「三分前变更史与逐条流水 = git 提交（历史归记录面）」（指向已废段 ⇒ 收正）。
-- `core/design/AGENT-LOOP-ASYNC-POOL.md:11`——「（core-hygiene 批 · §2.8 行 5）」⇒ 删 `§2.8 行 5`（批档段号）。
-- `core/design/AGENT-LOOP-ASYNC-POOL.md:325`——受影响文件表行「§6.20 + 变更记录」⇒ 「§6.20」；同表删「`docs/batches/2026-09-15-cli-async-discard.md` … §2 / §3 已落」整行。
-- `core/design/AGENT-LOOP-ASYNC-POOL.md:131`——「= 批次档 §2.4 表逐字一致」⇒ 「= 本节表逐字一致」。
-- `core/design/ANCHOR-DEBT-REPAIR.md:5` 等——批档坐标片段删（逐处，见下「边界形态」）。
-- `core/design/AGENT-PARAMS.md:51`——「（批 6 并入——见 §6.3 行 5）」⇒ 「（见 §6.3 行 5）」（批序号坐标删；`§6.3` 同档实存）。
-
-**边界形态（逐档 read 回看 · 判据 = 无残句 / 空壳行 / 重复行）**：
-
-| 边界 | 处置 | 证据 |
-|---|---|---|
-| **残句** | **无**——删片段均落括注 / 句尾坐标位，删后各句完整；15 档尾部均收于完整结构元素（表行 / 节末句） | 逐档 read 回看 + 尾行读数 |
-| **空壳表格行**（删片段后单元格无实义） | **无新增**——`AGENT-LOOP-ASYNC-POOL.md` 受影响文件表删「`docs/batches/*.md` …」整行（该行语义 = 纯批档行，无其余内容）；其余删片段均保行内其余语义 | 逐档 read 回看 |
-| **重复行** | **1 处自捕**——`CRASH-REPORTS.md` 首次编辑（batch 含 line 定位）多删一空行（158 行位置），回读发现后**已在同批内修正为删至正确边界**（现 158 行，尾部结构完整） | 改后复扫 + 尾行读数 |
-| **标题层级** | **无跳变**——删段/删族后各档标题序列连续（`ANCHOR-DEBT-REPAIR.md` §1–§8 · `AGENT-LOOP-ASYNC-POOL.md` §6.8–§6.34.11 等） | 逐档回读 |
-| **编号** | `cli/design/ACP-CLIENT.md` 缺 §10 · `cli/design/TUI-INPUT-BOX.md` 缺 §9——**既存编号空缺**（非本批所生：前者原为「受影响文件 / AC / 用例」节按一次性材料纪律删后未补号；已在档内注明）；本批「其余逐字不动」⇒ **不补号**，登记 | 逐档回读 |
-
-**验收读数（自建扫描 · 15 档全域 · 逐档回读 · cwd = 仓根）**：
-- `^#{2,4}.*(变更记录|历史沿革|不并项)` 命中 = **0**（15/15 档）✅
-- `docs/batches/` 字面命中 = **2** —— 逐条 = **例外闭集**：
-  1. `ANCHOR-DEBT-REPAIR.md:228` = 例外①（**规则正文**：「冻结批档 `docs/batches/**` 不入修复域」——排除规则的文本自身必须能写出被禁字面）
-  2. `ANCHOR-DEBT-REPAIR.md:346` = 例外③（**目录级归属句**：AC-4 非触面清单「…/ 批次目录（`docs/batches/**`）」，指整树非某一批档）
-  ⇒ **命中集 − 例外三条 = 0** ✅
-- 无路径字面批档指针（`批档 §N` / `批次档 §N` / `板档 §N` 形）= **0**（15/15 档）✅
-- **同档死指针 = 0** —— 逐处核：全档 `见 §N` 类引用逐条落在**同档实存节**或**跨档指针**，无悬空（审计独立复核一致）✅
-
-**净读数（`git diff` 量化）**：本批 13 档有改动 —— **`docs/batches/` 引用行 −89 / +1**（唯一新增者 = `ANCHOR-DEBT-REPAIR.md:346` 重写行内的例外③ 目录级短语）；`git diff --stat` 合计 **+88 / −427**（删除主导 · 纯减法 · 零语义新增）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：`FAIL(锚) = 203 条悬空`（全仓存量常态红 —— 本批即清这笔账的残面）· `FAIL(行宽) = 1 行超 300`（= `docs/core/design/prompts/common.md:41`（307 字符），**非本批 15 档**）。**本批 15 档零新增悬空**（逐档核：本批档的 `✗` 行全为**既存「迁移期引文——列报 · 不入闸」族**——含 `cli/design/CRASH-REPORTS.md:34` 一条，系本批前既有标记，非本批所生）。**未跑仓库套件**（repo suite = 父侧收口轮跑一次，eng-coder 链内不跑）。
-
-**内部探索审计（read-only explore 子代理 · 1 轮 · 四轴）**：判定 **CLEAN** —— 未清残留 / 越界写入 / 结构损伤 / 残留死指针四轴逐轴未发现偏差；例外三条判定独立复核通过；审计另报 **2 项待父侧定**（均不构成偏差）：
-1. `AGENT-LOOP-ASYNC-POOL.md:642` / `:1219`——裸「批档」词面（**无 `§N`、无路径**）；审计按父侧 04:44 判据字面（`批档 §N` 形）判非命中 ⇒ **本席同判保留**（机制/泛指句，无解析对象）。
-2. 编号空缺（`ACP-CLIENT.md` 缺 §10 · `TUI-INPUT-BOX.md` 缺 §9）——删后未补号形态，非结构损伤、无悬空引用 ⇒ 本批不动，登记。
-
-**独立代码评审（advisor · type=code · 1 轮）**：VERDICT = **`changes-required`**（🔴1 + 🟡2 + 🔵 若干）。逐项复核与处置：
-
-| # | 评审发现 | 本席复核判定 | 处置 |
-|---|---|---|---|
-| 🔴1 | `ANCHOR-DEBT-REPAIR.md:346` 的 `§4 清单` / `§3-Q4 边界` 指「本批档 §2/§4」，属死指针 | **驳回（误报）**——实读该档：`§4` = 「受影响文件全清单」`:320`（**同档节**）· `§3-Q4` = 「边界」`:224`（**同档节**）；全行无批档坐标，唯一 `docs/batches/` 出现 = 例外③ 目录级短语。评审把**同档节号**误读为批档段号 | 无动作（已逐行核证） |
-| 🟡1 | `AGENT-PARAMS.md:51` 仍存 `（批 6 并入——见 §6.3 行 5）` | **成立**——`批 6` 为无路径的批序号坐标（引用批次档的性质同源） | **已修**：删 `批 6 并入——` 保 `（见 §6.3 行 5）` |
-| 🟡2 | `FEATURES.md:102` 保留 `26 ⇒ 27…27 ⇒ 28` 过渡叙述 | **驳回（超授权）**——该处为**计数行 + 出处注**（`### 2.9 Slash 命令（28 个 …）`），**非**四样删除对象（无 `docs/batches/`、非历史标题、非批档指针）；评审建议的「改写为终态形」= **内容改写**，超「只删」授权 | 无动作（登记） |
-| 🔵 | `CRASH-REPORTS.md:34` 的 `（迁移期引文——档已删）` | **驳回**——该标记 = 引擎既有豁免标记族（`doc-check` 判为「列报 · 不入闸」），**本批前既存**（`git diff` 证实非本席笔迹），非删除对象 | 无动作（登记） |
-| 🔵 | `cli/requirements/TUI.md:7` 指 `cli/design/TUI.md` §8（该档现无 §8） | **半成立**——跨档指针（非判据④「同档死指针」射程）；`cli/design/TUI.md` §8 系**前序批**所删，非本批所生 | 登记父侧（跨档，非本批授权面） |
-| 🔵 | `AGENT-LOOP-ASYNC-POOL.md:642/:1219`（同审计） | 同审计判定 | 保留 · 登记 |
-
-**fix 轮（1 轮 · 1 处）**：`AGENT-PARAMS.md:51` —— `（批 6 并入——见 §6.3 行 5）` ⇒ `（见 §6.3 行 5）`；改后回读通过（该档三类判据仍全 0）。
-
-**fix 后复扫（判据式不变）**：15 档 —— 标题命中 **0** ✅ · `docs/batches/` 命中 **2**（全例外①③）⇒ **命中集 − 例外三条 = 0** ✅ · 无路径批档指针 **0** ✅ · 同档死指针 **0** ✅。
-
-**范围边界（禁止范围 · 零触）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档（含记录面 `docs/batches/**`——仅追加本段）；**未改指别处**（无一处把批引改指他处）· **未新写语义**（纯减法；唯一例外 = `AGENT-LOOP-ASYNC-POOL.md:10` 死指针句的收正述、`ANCHOR-DEBT-REPAIR.md:346` 例外③ 短语的原样重写）· **未脚本批改**（逐档逐处 read→edit→回读）。
-
-**并发写者登记（非本席动作）**：`docs/cli/design/TUI-INPUT-BOX.md` 在本会话期间有外部写者改动（`git diff` 显示 4 行变更，本席对该档**零 edit**——开工前扫描其三类判据即全 0）；`git status` 另示 R18 批在 `cli/design/TUI.md` / `ACP-CLIENT.md` 的在途改动痕迹。本席**未覆盖**其改动。
-
-**状态行**：实施完成（15 档 · 标题 14→0 · `docs/batches/` 90→2（全例外①③）· 无路径批档指针 45→0 · 同档死指针 0 · 内部审计 1 轮 CLEAN · advisor 1 轮 1 真项已修（🔴 驳回为误报）· 零脚本 · 零越界）
-
-### §5.w 本批 15 档实施（core/design · eng-coder · 2026-10-15 · initial 轮）
-
-**任务书** = 父侧逐字派单（自含四条判据）+ 本档 §2 §2.3「父侧口径变更（2026-10-15 04:2x）」块（`:79`–`:120`）+「族形态变体」块（`:101`–`:103`）+「混合节处置」块（`:105`–`:111`）+「验收判据必须含同档死指针」块（`:113`–`:120`）+ §2「父侧追加两项」③（`:130`–`:148`，**无路径字面批档指针**——父侧 04:5x 裁 A：按 §2 ③ 一并清）。
-**用户令**：04:15 / 04:16「变更记录全删！我不需要你保留沿革记录！」「不要记录历史沿革！」；判据句 04:20「只需要清晰明确的最终的状态……被改掉的错误会在 RAG 场景下成为污染」。
-
-**本批 15 档**（均在盘核实）：`docs/core/design/` 的 `ANCHOR-DEBT-REPAIR.md` · `BASH-EXECUTOR-FACE.md` · `BATCH-RECORD.md` · `BROWSER-TOOL.md` · `CORE-UNIFICATION.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `DOC-MIGRATION.md` · `DOC-SYSTEM.md` · `LIGHT-CHANNEL.md` · `MCP.md` · `TRACES.md` · `MULTI-INSTANCE-COLLAB.md` · `DOC-DISCIPLINE.md` · `MANIFEST.md` · `PROMPT-SYSTEM.md`。
-
-**动作（四类 · 逐档 read → edit/hashline_edit → 改后回读 → 下一档；零脚本批改）**：
-
-| # | 动作 | 命中 |
-|---|---|---|
-| 1 | `## 变更记录` 段整段删（含带号形；段终止 = 标题行起 ⇒ 下一层级 ≤ 起始层级的标题前一行止；末节至 EOF） | **4 档**：`CORE-UNIFICATION.md`（`:1777`–EOF，−255 行）· `DOC-MIGRATION.md`（`:582`–EOF，−76 行）· `MULTI-INSTANCE-COLLAB.md`（`:357`–EOF，−107 行） |
-| 2 | `## N. 不并项与历史沿革` 族整节含子节删（判据 = 标题含「不并项」或「历史沿革」，不限定编号/层级/后缀） | **3 档**：`DOC-MIGRATION.md` §7（`:170`–`:188`）· `MULTI-INSTANCE-COLLAB.md` §10（`:342`–`:355`） |
-| 3 | 混合节处置（删历史块、留现行块；节标题去历史/否定词面） | **1 档**：`MULTI-INSTANCE-COLLAB.md` §5「checklist 并发同步（F4）——**已废（历史沿革）**」整节删（历史条 + 史实存 + 现行承接（= 指向 §3/§4/§6 及其他活档，无独立规范内容）） |
-| 4 | 活面 `docs/batches/` 引用片段删（不改指别处）；**整行语义 = 纯批指针者 ⇒ 删行** | **6 档**：`CORE-UNIFICATION.md`（−60 处）· `DOC-MIGRATION.md`（−19）· `MULTI-INSTANCE-COLLAB.md`（−24）· `DOC-DISCIPLINE.md`（−21）· `MANIFEST.md`（−12）· `PROMPT-SYSTEM.md`（−1 重写行）· `ANCHOR-DEBT-REPAIR.md`（0 改 · 2 处例外①③保留） |
-| 5 | **无路径字面批档指针**（`批档 §N` / `批次档 §N` / `板档 §N`）逐处删片段（父侧裁 A） | **10 档**：`CORE-UNIFICATION.md`（46→0）· `DOC-MIGRATION.md`（17→0）· `MULTI-INSTANCE-COLLAB.md`（5→0）· `BASH-EXECUTOR-FACE.md`（14→0）· `LIGHT-CHANNEL.md`（11→0）· `MANIFEST.md`（13→0）· `PROMPT-SYSTEM.md`（41→2，两处为规则正文例外①）· `DOC-DISCIPLINE.md`（53→13，全例外①）· `BATCH-RECORD.md`（10→3，全例外①）· 1 处自捕（详见下） |
-| 6 | **P5 同轮收正**：删段/删族所生**同档死指针** | 逐处登记见下「同档死指针」 |
-
-**逐档读数**（初测 → 改后 · `hdr` = `^#{2,4}.*(变更记录|历史沿革|不并项)` 标题数 ∥ `bat` = `docs/batches/` 字面 ∥ `np` = 无路径字面批档指针 `(批档|批次档|批次任务档|板档)\s*§`）：
-
-| # | 档 | 行数 初→改后 | hdr 初→后 | bat 初→后 | np 初→后 |
-|---|---|---|---|---|---|
-| 1 | `ANCHOR-DEBT-REPAIR.md` | 395 | 0→0 | 2→2（例外①③） | 0→0 |
-| 2 | `BASH-EXECUTOR-FACE.md` | 174 | 0→0 | 0→0 | 14→**0** |
-| 3 | `BATCH-RECORD.md` | 503 | 0→0 | 15→15（例外②） | 10→**3**（例外①） |
-| 4 | `BROWSER-TOOL.md` | 541 | 0→0 | 0→0 | 1→**0** |
-| 5 | `CORE-UNIFICATION.md` | 2031→**1776** | 1→**0** | 64→**0** | 46→**0** |
-| 6 | `DESIGN-TOKEN-SETTLEMENT.md` | 221 | 0→0 | 0→0 | 1→**0** |
-| 7 | `DOC-MIGRATION.md` | 676→**581** | 4→**0** | 21→**0** | 17→**0** |
-| 8 | `DOC-SYSTEM.md` | 400 | 0→0 | 4→4（例外③） | 0→0 |
-| 9 | `LIGHT-CHANNEL.md` | 226 | 0→0 | 0→0 | 11→**0** |
-| 10 | `MCP.md` | 196 | 0→0 | 0→0 | 1→**0** |
-| 11 | `TRACES.md` | 119 | 0→0 | 0→0 | 0→0（零改动 · 零命中） |
-| 12 | `MULTI-INSTANCE-COLLAB.md` | 448→**335** | 5→**0** | 29→**0** | 5→**0** |
-| 13 | `DOC-DISCIPLINE.md` | 1693 | 0→0 | 38→38（例外①） | 53→**13**（例外①） |
-| 14 | `MANIFEST.md` | 798 | 0→0 | 1→1（例外②） | 13→**0** |
-| 15 | `PROMPT-SYSTEM.md` | 807→**806** | 0→0 | 3→3（例外①②③） | 41→**2**（误报） |
-
-**判据读数（四条齐 · 15 档全域 · 改后回读）**：
-- **判据 ①** `docs/batches/` 路径字面命中 = **63**，逐处 = **例外三条闭集**（例外① 规则正文：`DOC-DISCIPLINE.md` 全 38 处（§4.5 清账规则 / D8 规则正文 / 真样本 before→after 例表）· 例外② 机制模板形：`BATCH-RECORD.md` 全 15 处（`docs/batches/<批>-<主题>.md` 占位符 + `readdirSync('docs/batches')` 扫描命令——本档即批档机制本体档）· `MANIFEST.md:779`（夹具 `<x>.md`）· `PROMPT-SYSTEM.md:220`（路径形）· 例外③ 目录级归属句：`DOC-SYSTEM.md` 4 处（「原地不动」「不进五部分」）· `PROMPT-SYSTEM.md:307/696`（清 `docs/batches/` 硬路径 = 清理规则）· `ANCHOR-DEBT-REPAIR.md:228/346`）⇒ **命中集 − 例外三条 = 0** ✅
-- **判据 ②** 无路径字面批档指针 = **18**（`BATCH-RECORD.md` 3 · `DOC-DISCIPLINE.md` 13 · `PROMPT-SYSTEM.md` 2）——逐处判类 = **例外①（规则正文 / 机制本体句）**：`BATCH-RECORD.md`:104/113/341（批次档机制自身描述「评审写进批次档 §3」/「V3 判据射程」/「三方条目一致 = 批次档 §2」）· `DOC-DISCIPLINE.md`:22（D7 槽位名）/85/1026（V3 判据）/1130（防滥用规则）/1254/1258/1259/1295/1334/1336/1388/1430/1434（清账判据面自身）/`PROMPT-SYSTEM.md`:136/137（**误报**——`需求档 / 批次档）` 非 `§` 形） ✅
-- **判据 ③** `^#{2,4}.*(变更记录|历史沿革|不并项)` = **0**（15/15 档）✅
-- **判据 ④** 同档死指针 = **0** —— 扫描 `见\s*§` / `详见\s*§` / `见上文` / `见该节` / `见变更记录` 全 15 档共 144 处，**逐处核该节号现是否存在**（自建校验器：提取每档标题节号集，比对 `见 §N` 目标；校验器经反例验证可检出悬空）：**0 悬空** ✅
-
-**边界形态（逐档 read 回看 + 机械复扫）**：
-- **残句 = 0 首捕**：删片段均落括注 / 句尾坐标位，删后各句完整；15 档尾部均收于完整结构元素。
-- **空壳表格行 = 0**：删片段均保行内其余语义（如 `MANIFEST.md` AC 行删 `批档 §2` 保 `KD-M1-xx` + 结论）。
-- **重复行 = 0**：逐档 dup 复扫 0。
-- **标题层级 = 无跳变**（逐档回读）。
-- **一处自捕误（PROMPT-SYSTEM 编辑中）**：批内一次 `edit` 因 old/new 混入多余 `； §2）` 残片 ⇒ **回读发现 ⇒ 同轮修正**（D6 实证）。
-- **一处语义修正（同批连坐）**：`PROMPT-SYSTEM.md` 删 `## 变更记录` 段后，`:743` 仍存**一条孤立 changelog 行**（`**变更记录**：2026-10-15 新增（#1465…）`——宿主段已删、行本体漏网，且判据 ③ 按标题匹配故扫不出）⇒ **advisor 轮 1 🔴 发现 ⇒ 已删该整行**（同 P1「整段删」收尾）。
-
-**同档死指针（判据④ · 逐处登记）**：**0 悬空**。删段 / 删族 / 删行所生引用逐处核过：`CORE-UNIFICATION.md` 删 §变更记录后，档内 `见 §N` 全落同档实存节或跨档指针；`DOC-MIGRATION.md` §7 族删后 §9/§10/§11 内引用零悬空；`MULTI-INSTANCE-COLLAB.md` §5/§10 删后 §6–§9 引用零悬空。**独立校验器反例验证**（构造虚拟「见 §5」无 §5 档 ⇒ 检出）确认校验有效。
-
-**父侧裁决落地（04:5x · 裁 A）**：无路径字面批档指针**一并清**（依据链 = 用户令 03:20「文档不能引用批次档！」+ §2 ③ + 本批先例 #28/#30/#32）——见行动表 #5。**例外三条保留**（① 规则正文 / 机制本体句 ② 机制模板形 / 通用样例 ③ 目录级归属句）。
-
-**机检（`node scripts/doc-check.mjs` · cwd = 仓根）**：改后 vs 基线（git stash 对照）⇒ **15 档新 FAIL 文件 = 0**（基线 10 档 → 改后 9 档，零新增）。存量 ✗ 全为「路径/坐标·迁移期引文——列报 · 不入闸」既存声明面。**未跑仓库套件**（repo suite = 父侧收口轮跑一次，eng-coder 链内不跑）。
-
-**内部探索审计（read-only explore 子代理 · 1 轮 · 四轴）**：判定 **CLEAN** —— 未清残留 / 越界误删 / 语义漂移结构损伤 / 残留指向已删对象 四轴**逐轴零偏差**；例外三条判定独立复核通过（`DOC-DISCIPLINE.md:1385–1388` 真样本 before→after 判为规则本体例外① ∥ `BATCH-RECORD.md` 全档 = 机制模板形例外②）；轴 4 逐指针核目标节现存（`DOC-DISCIPLINE.md` §4.5 族 13/13 导航对齐）。
-
-**独立代码评审（advisor · type=code · 2 轮）**：轮 1 VERDICT = `changes-required`（🔴1 / 🟡5 / 🔵2）⇒ 逐项复核：
-- **🔴1（成立 · 已修）**：`PROMPT-SYSTEM.md:743` 孤立 changelog 行（如上）。
-- **🟡3 / 🟡4（编号补正 · **上抛父侧**）**：`DESIGN-TOKEN-SETTLEMENT.md` 缺 §8 · `PROMPT-SYSTEM.md` §10 在 §9 前——§2 ② 明令「顺次重编号 + 同轮收正指针」，**但 §2 ② ⚠ 条**：「若重编号会破坏跨档引用（其他档引这些节号）⇒ **停下报父侧**，不要盲改」。**查实证**：前者 §10 被 **4 处产品代码文件**引用（`thincoder-core/agent/dispatch-gates.mjs:98` ∥ `agent-tools/subagent.mjs:6/:118/:119/:197`——**产品码面，写域外**）；后者 §10 被同域 `LIGHT-CHANNEL.md:201` + 8 处内引 §10.2 引用。⇒ **命中 ⚠ 条 · 未自决 · 已 `notify_parent` 上抛**（附引用清单；倾向 = 全不动登记另批——跨仓引用协调 = 父侧职权）。**另注**：两档编号缺口均为 **HEAD 既有**（非本批四删所生）。
-- **🟡5（成立 · 已修）**：`DOC-DISCIPLINE.md:23` D8 表行「历史归**记录面**（变更记录 / 沿革 / 批档）」与 `:33–:34` 细则块「记录面 = 批档 / 台账 / git 提交信息 + 变更记录段已废除」互斥 ⇒ 收正表行为「历史去向 = **git 提交**（档内不留任何历史行——变更记录段 / 历史沿革 已废除）」——与 §2「父侧追加① D8 改述」判据句「无互斥表述」一致。
-- **🟡6（成立 · 已修）**：收口槽位枚举仍含「变更记录」项（规定已废产物）⇒ `DOC-DISCIPLINE.md:22`（D7 行）+ `BATCH-RECORD.md:406`（§5.3）两处同笔去项（D2 单一权威源：槽位权威 = D7 行，两端同步）。
-- **🔵7 / 🔵8（非缺陷 · 保留）**：§4.5.7 例外命名与 §4.5.4 编号口径用词不齐（语义可对上）· 扫描域文述「render-core 只 design」vs 码块「六根同式」（`existsSync` 跳过 ⇒ 行为等价）——🔵 非阻断。
-- 轮 2 VERDICT = **`pass`**：🔴1 已修验证（`grep 变更记录` = 0 命中）· 🟡5/6 已修验证 · 🟡3/4 记录为未闭合协调项（非 must-fix）· 🔵 照登；**新 🔴 = 0**。
-
-**范围边界（禁止范围 · 零触）**：未动 `_archive/**` · 台账 · `prompts/**` · 本批 15 档以外任何档（含 `AGENT-LOOP*.md` 四档——按派单撤出）；**未改指别处**（无一处把批引改指他处——删片段时凡有「日期 / 台账号 / 事实结论」者一律保留）· **未脚本批改**（逐档逐处 read→edit→回读）。
-
-**并发写者登记（如实）**：`DOC-DISCIPLINE.md` 在我工作期间另有 **uncommitted 未提交改动**（`D4 细则二` / `D8 细则` 块——属 §2「父侧追加① D8 改述」的另一任务面，`git diff` 显示 +331/−74 中的非我笔迹部分）；`git stash list` 另有 `stash@{0}: On main: r3-cleanup-wip`（他写者 WIP）。我**未覆盖**其改动，仅在其上追加本批编辑；**非本席动作**，登记供父侧收口甄别。
-
-**状态行**：实施完成（15 档 · 历史标题 11→0 · `docs/batches/` 命中集−例外三条 = 0 · 无路径批档指针 198→18（余 18 全例外①/误报）· 同档死指针 0 · 零脚本 · 零越界 · 内部审计 1 轮 CLEAN · advisor 2 轮（轮 1 🔴1+🟡2 已修 · 轮 2 pass）· 2 项编号补正上抛父侧待裁）
-
-### §5.w 补记 · 编号补正上抛的父侧裁决与终态（eng-coder · 2026-10-15）
-
-**父侧裁决（2026-10-15 · 逐字要点）**：**B —— 全不动、登记另批**。两条编号补正**本就不该进本批**：
-
-1. **编号缺口非本批四删所生**（实证：两档 §8 / §9–§10 缺口在 **HEAD 即存**）⇒ **不是本次动作的产物** ⇒ 不适用「删段所生须同轮收正」（该判据前提 = 本次动作产生）⇒ **本批不含它**。
-2. **跨产品码引用**（`DESIGN-TOKEN-SETTLEMENT.md §10` 被 `thincoder-core/agent/dispatch-gates.mjs:98` ∥ `agent-tools/subagent.mjs:6/:118/:119/:197` 引用）⇒ **改它 = 跨仓 / 跨面协调 = 父侧职权**，不在执行者写域。
-3. **牵动面 > 四类删除面**（`PROMPT-SYSTEM.md §10` 被同域 `LIGHT-CHANNEL.md:201` + 8 处内引 `§10.2` 引用，批档亦引）⇒ 越界。
-
-父侧自认派单缺陷：§2 ② 写「编号缺口补正」时**未做前提限定**（应写「仅限本次删段所生者」）、**未预设跨面引用的停线**。
-
-**⇒ 本席处置 = 两档零动**（`DESIGN-TOKEN-SETTLEMENT.md` · `PROMPT-SYSTEM.md` 均未改一行）。
-
-**登记（转父侧转台账）· 编号缺口两处**：
-
-| 档 | 缺口位 | 引用面 | 为何不动 |
-|---|---|---|---|
-| `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md` | 缺 `## 8`（`:108` `## 7` → `:119` `## 9. 评审凭证`） | `§10` 被 **4 处产品代码文件**引用（`thincoder-core/agent/dispatch-gates.mjs:98` ∥ `thincoder-core/agent-tools/subagent.mjs:6` / `:118` / `:119` / `:197`） | 跨产品码面（写域外）；重编号即令 4 处跨仓指针成死指针（§2 ② ⚠ 条）；且缺口 HEAD 即存，非本批所生 |
-| `docs/core/design/PROMPT-SYSTEM.md` | 编号乱序：`:786` `## 10. 提示词双面流程` 在 `:863` `## 9. 反向引用` **之前** | `§10` 被 `docs/core/design/LIGHT-CHANNEL.md:201` 引用；档内 `§10.2` 计数表被 8 处内引；上游批档（`2026-10-15-light-prompt-why.md` 等）亦引 `§10.2` | 牵动面 > 四类删除面（重编号须同轮收正 9 处以上指针 + 跨档）；且乱序 HEAD 即存，非本批所生 |
-
-**终态**：本批**四删项**（变更记录段 / 不并项与历史沿革族 / 活面 `docs/batches/` 片段 / 无路径字面批档指针）+ 混合节处置 + 同档死指针收正 —— **全部完成**；编号补正两处 **零动 · 已登记**（父侧转台账）。
-
 ## §6 验证与收口（父代理）
+
+> **§5 实施记录** = 本批共 2351 行 / 49 小节（多轮 eng-coder 交付）⇒ 按用户 2026-10-15 批「拆批档」**移出至 `2026-10-15-doc-ref-direction-cleanup.records.md`**（卷宗 · 记录面，不回溯改）。
+> 移出依据 = 用户 03:39「批档只是批档，执行过了就无意义了……批次档必须是能够随时清理掉的」。**活面判据 / 结论已并入设计档与批档 §1/§2/§6。**
+

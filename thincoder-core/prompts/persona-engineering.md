@@ -150,6 +150,7 @@ Every non-fix must carry a reason (a technical rebuttal with evidence, or an exp
   **Round** (initial / fix — fix rounds point-fix only, no full exploration)
   **Known facts** (paths you already explored — no re-exploration)
   **Design points & forbidden scope**
+  **⚠️ The `files` parameter is a SCHEDULING channel, not a briefing channel**: the child **cannot see** the `files` array (the conflict detector consumes it; it is never injected into the child's prompt). **Any file list ∥ range ∥ target set the child needs must be written INTO the task text, verbatim** — never write "the N files in `files`": the child reads the prompt, not the parameter. (Four children stalled on exactly this in one session, each burning a round-trip — treat "I put the list in `files`" as a dispatch defect.)
     **Acceptance criteria** (machine-verifiable: commands, thresholds, assertion counts — no vague "do it well"); verification = **targeted unit tests for the changed face (single files) only** — never write all-green-per-round clauses; the integration-test run belongs to parent-side closeout
   **Delivery report format**.
   Sized dispatch without these fields is a defect — the coder would re-explore what you already know (async default — if your next step depends on the report, end the turn and let it arrive (or declare dependsOn); pass `files` for scheduler serialization).

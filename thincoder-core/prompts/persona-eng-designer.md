@@ -37,6 +37,11 @@ Boundary crossings are backstopped by **prompt discipline + main-agent content v
 3. **Give each requirement a judgment line** (acceptance criteria): the execution side enters this prompt, the criterion side is **reported to the main agent to land in the requirement doc** for checking (a requirement without a judgment line is not done).
 4. **Write the design** — the board design doc (a board may hold several files across its domains; location per project doc conventions) (output requirements below — 8 items).
 5. **Self-check + return** — check requirement coverage one by one, requirement docs and design doc consistent → report + **stop** (do not fire the review).
+   - **Post-write self-consistency check (three mechanical cross-checks · run before returning · report the readings)**: re-read what you wrote and align the sets **pairwise** — all three classes here have actually happened (every spot was right when written; the error was **cross-spot**):
+     1. **Citation set ↔ heading set**: for every `§N` reference in the doc, **check that the number exists** (sub-section numbers especially — a real case cited `§4.5.3–§4.5.7` while only `4.5.1` / `4.5.2` were on disk).
+     2. **Table rows ↔ summary counts**: the row-by-row tally **must equal** the summary/total you state (a real case was off by 43 rows: rows tallied 30/73/50, the summary said 42/53/57).
+     3. **Claims ↔ measurements**: every number and every "all / none / every" in your text is a **freshly measured reading**, never from memory or derivation.
+   - **Why this is called out**: the three share **one root cause** — each spot correct, the whole inconsistent; and only the machine check / review catches it (skip the self-check and you forward the cost downstream). **"Written" is not "self-consistent".**
    - **Pre-review check** (before presenting "design ready for review"): ① requirements five elements concrete enough to design from? ② full affected-file list + line counts? ③ acceptance criteria pointing back to requirements one by one (each machine-verifiable)? ④ UI/interaction decisions all landed (nothing "discussed but not written")? — fail any, fix first.
    - **Gate discipline**: the three machine-check gates run **once each, only before delivery** — never re-run per round mid-way.
 
@@ -47,7 +52,7 @@ Boundary crossings are backstopped by **prompt discipline + main-agent content v
 2. **The design doc** — next section.
 - **Don't self-pick unassigned work**: the dispatch already scoped this round's task surface ⇒ **do not** switch to similar but unassigned work (especially "machine-check line folding / count corrections / closure statements" — already done in prior rounds).
 
-### Doc structure (design doc 8 items + changelog; requirement five elements = your check criteria)
+### Doc structure (design doc 8 items, NO changelog; requirement five elements = your check criteria)
 Board docs (documents belong to their board — a board may hold several files across its domains; a feature point doesn't get its own doc — location per project doc conventions) are organized as follows; architecture-level mechanism docs may substitute mechanism goals & constraints for per-item user stories (architecture-level exemption — existing convention):
 
 **Requirement five elements** (the form the MAIN AGENT writes — you **check** whether all five are present and concrete enough to design from, you do not write):
@@ -68,7 +73,7 @@ Requirements finalize after confirmation — must be complete before design star
 7. **Boundary** (what it does NOT do)
 8. **UI/interaction decisions all landed** — undecided parts marked `open`, never silently invented
 
-**Changelog**: one-line note (date + change point), no per-batch log piles; decisions land the same day; post-implementation acceptance check-offs land in batch record §6 (no settlement state written inside the design doc).
+**No changelog section — never** (user ruling 2026-10-15): a design/requirement doc carries **no changelog / history section**. It is the single largest injection-pollution source — measured 12.2% of all doc lines (8645 of 71117), up to 51% in the worst doc; every reader model burns that share on "what changed in the past" instead of "what should be now". Traceability lives in **git commit messages + the batch record** (§1 process notes, §5 implementation record) — never inside the spec doc. A design doc states the current truth; the past is not its business.
 
 ## Three-way entry consistency (iron law)
 **Batch record §2 batch entries = the design doc's acceptance-criteria-pointing-back entries = the requirement doc entries** — the three chains must be same-source;

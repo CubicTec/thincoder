@@ -62,6 +62,7 @@ export class ChatPanel {
     // it on every invocation because runAgent's startup snapshot cannot change.
     this._autoApprove = false
     this._questionQueue = []  // pending inline question-tool prompts (panel, not native popups)
+    this._secretQueue = []    // pending secret-input cards (`ctx.onSecretInput`——凭据窗；§6.22 ⑧)
     this._statusBar = null    // status-bar run indicator (idle/running/waiting)
     // C2（SESSION-FLOW-C F-C2a——忙态单来源）：_turnState 枚举 {idle, running, susp}——
     // running = 回合（含会话内 digest/用户回合）执行中；susp = 挂起会话活跃（或释放窗口
@@ -241,7 +242,7 @@ export class ChatPanel {
     this._statusBar.show()
   }
 
-  /** running = agent turn active; waiting = permission/question prompt pending. */
+  /** running = agent turn active; waiting = permission / question / secret-input prompt pending. */
   _setStatus(state) {
     if (!this._statusBar) return
     if (state === "running") {
@@ -280,9 +281,9 @@ export class ChatPanel {
   }
 
   /** Waiting prompts beat running; without pending prompts, fall back to turn state.
-   *  F-W13（§4.4）：waiting 判据 = 权限 / 批权限 / question 三队列；释放 ⇒ 必刷（单源 = `releasePermission`）。 */
+   *  F-W13（§4.4）：waiting 判据 = 权限 / 批权限 / question / 凭据窗四队列；释放 ⇒ 必刷（单源 = `releasePermission`）。 */
   _refreshStatus() {
-    if (this._permissionQueue.length > 0 || this._questionQueue.length > 0 || this._batchPermissionQueue?.length > 0) { this._setStatus("waiting"); return }
+    if (this._permissionQueue.length > 0 || this._questionQueue.length > 0 || this._secretQueue.length > 0 || this._batchPermissionQueue?.length > 0) { this._setStatus("waiting"); return }
     this._setStatus(this.turnBusy() ? "running" : "idle")
   }
 

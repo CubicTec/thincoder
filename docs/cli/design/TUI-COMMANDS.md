@@ -193,7 +193,7 @@
   - `/team login` —— 三问步（地址 → 账号 → 密码；**掩码回显**——同 §3.1 团队步）+ 核 `teamLogin`；成 ⇒ 结果行（argv 同形——同名冲突 `notice` ⇒ 就地提示·逐字同句）+ `state.team` 复读 +（`defaultModel` 未设 ⇒ 追开模型 picker——「登录成即用」兜现；已设 ⇒ 零打断）；败 ⇒ **四句逐字**（`TEAM.md` §2.5）。
   - `/team logout` —— 未登录 ⇒ 未登录句（幂等——零动作）；已登录 ⇒ 核 `teamLogout`；成 ⇒ 结果行 + 一次性提示（吊销未达 ⇒ 「服务端吊销未达」逐字）+ `state.team` 复读。
   - 表外子命令 ⇒ 用法行（fail-closed——沿 argv 同口径）。
-- **问句载体**：模态族第三支（团队问句面在场 ⇒ 键路由至问句步——Esc 取消 ∥ Enter 提交）；步进机制 = `ask-steps.mjs` 共享小件（§1——wizard 文本步与 `/team login` 共用；含掩码位）。
+- **问句载体**：模态族第三支（团队问句面在场 ⇒ 键路由至问句步——Esc 取消 ∥ Enter 提交）；**第四支 = SSH 凭据窗**（SSH-SESSION 批——面体 `thincoder-cli/src/tui/secret-prompt.mjs` ∥ 键面序 2c）；步进机制 = `ask-steps.mjs` 共享小件（§1——wizard 文本步与 `/team login` 共用；含掩码位）。
 - **可机判**：单元测试档直驱——`/team` 注册面（两表各含 team 行）；三层子命令行为（临时 config + HTTP 桩：成/败四句/未登录句/吊销未达句）；`/team login` 掩码位；状态段切片随动。
 - **边界**：不做团队面板；不改 argv `team` 命令面（零变）；登/退不经设置面（无设置卡——命令族即管理面）。
 
@@ -233,6 +233,7 @@
 **本批（流尾台账行组退役 · 2026-10-04）落点表** = `docs/batches/2026-10-04-stream-ledger-lines-retire.md` §2（唯一承载面——一次性批次材料）。
 **本批（login-entry-completion · 2026-10-10）落点表** = `docs/batches/2026-10-10-login-entry-completion.md` §2（唯一承载面——一次性批次材料）。
 
+- 2026-10-14（**ssh-session 批 · 设计收口轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 CLI 腿）：§5.5 问句载体行补**第四支 = SSH 凭据窗**（面体 `secret-prompt.mjs` ∥ 键面序 2c——TUI.md §4 同拍）。**零产品码**。
 - 2026-10-10（**login-entry-completion 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §1 · 台账 #1229 ∥ #1230；用户 14:33–14:49 裁定链）：新增 **§3.1 首启向导两路**（F19——route 屏三行 ∥ 同屏换取 ∥ 已填保真 ∥ 以后再说 ∥ 可机判）∥ **§5.5 `/team` 命令族**（三子命令 ∥ 活校验 ∥ 掩码 ∥ 边界）∥ §1 模块地图两行（`cmd-team.mjs` 入册 ∥ `ask-steps.mjs` 新行 ∥ wizard 行随正）。语义单源 = `docs/core/design/TEAM.md` §2 ∥ §2.6。
 - 2026-10-10（**login-entry-completion 批 · 设计评审轮 1 修正（fix 轮 · 发现 4）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 1 · 台账 #1229–#1230）：§3.1 ∥ §5.5 补同名冲突 `notice` 就地提示落点（结果行位——逐字同句；一次性事件）。**零新语义**（评审发现的直接导出项）。
 - 2026-10-10（**login-entry-completion 批 · 交互细节补（父侧轻通道笔 · 可 revert）**——承 #150 设计缺口上抛：CLI 首启向导「← 换一种方式」的键盘激活未点名）：§3.1 该行补**键盘激活**口径——provider 步 = 行作列表**末行**（↑↓ 选中 + Enter）；团队三问步 = **↑ 聚焦该行 + Enter**（输入框 Enter=提交 ∥ Esc=取消 语义零改）；行文本**须含可见提示**。**零新语义**（键位 ∥ 提示文案级；被否 = 专属键 ∥ 仅显示不可激活——后者等于给用户一个谎）。

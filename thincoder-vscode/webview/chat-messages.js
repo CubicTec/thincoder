@@ -24,6 +24,8 @@ import { showWelcomePanel, maybeShowWelcome, onWelcomeTeamLoginResult } from "./
 import { handleAutoApprove, handleAgentSettings, handlePlanMode } from "./mode-buttons.js"
 import { handleModelsMessage } from "./model-picker.js"
 import { showQuestion } from "./question.js"
+// §6.22 ⑧（ssh-session 批 · VSC 腿）：凭据 / 秘密输入卡端壳（`question.js` 同族）
+import { showSecretInput } from "./secret-input.js"
 import { showPermissionRequest, showBatchPermissionRequest } from "./permission.js"
 import { applyHistoryPage } from "./history.js"
 import { clearStatusText, handleStatusText, showCompressStatus, showDigestStatus } from "./chat-status.js"
@@ -195,6 +197,20 @@ export function initMessageLoop(deps) {
         // 作答径端壳移除（`question.js`）——这里管 extension 主动取消的卡）。promptId 精确匹配；
         // 无 promptId（旧 host）→ 移除全部 question 卡（中止即整轮作废——无悬挂卡）。
         const cards = [...document.querySelectorAll(".question-card")]
+        for (const c of cards) {
+          if (m.promptId == null || String(c.dataset.promptId) === String(m.promptId)) c.remove()
+        }
+        break
+      }
+      // §6.22 ⑧（ssh-session 批 · VSC 腿）：凭据 / 秘密输入卡（`question` 同族——载荷 = 核结构化
+      // 字段 + 词键；值只走返回路 `secretInputResponse`）。
+      case "secretInput":
+        showSecretInput(ctx, m.payload, m.promptId)
+        break
+      case "secretInputCancelled": {
+        // extension 侧中止未答凭据卡（Stop / abort——`makeAskSecretInPanel` onAbort）——按 promptId
+        // 精确匹配移除（questionCancelled 同构；无 promptId → 移除全部凭据卡——无悬挂卡）。
+        const cards = [...document.querySelectorAll(".secret-card")]
         for (const c of cards) {
           if (m.promptId == null || String(c.dataset.promptId) === String(m.promptId)) c.remove()
         }

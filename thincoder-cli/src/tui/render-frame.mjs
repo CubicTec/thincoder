@@ -18,6 +18,8 @@ import { computeLayout, subagentVisibleLines } from "./layout.mjs"
 import { basename } from "node:path"
 import { readFileSync } from "node:fs"
 import { isYesNoModal } from "./interaction.mjs" // X8 跟进①：y/n-only 族判据单源
+// SSH 凭据窗标题（SSH-SESSION 批 §6.22 ⑧——overlay 标题行 keys.title 投影；面体单源 = secret-prompt.mjs）
+import { secretPromptTitle } from "./secret-prompt.mjs"
 
 export { convCacheKey, renderConversation, countConvLines } from "./render-conversation.mjs"
 
@@ -99,7 +101,9 @@ export function renderPicker(state, cols, panel, overlay) {
   const right = p && p.filteredItems?.length ? `${p.index + 1}/${p.filteredItems.length} ` : ""
   // 过滤提示：无filter时显示 "type to filter"，有filter时显示输入内容
   const filterHint = p ? (p.filter ? `│ ${p.filter}` : "│ type to filter") : ""
-  const rawLeft = p ? ` ❯ ${p.title} ${filterHint} ` : state.teamAsk != null ? " ❯ Team login " : " ❯ Setup "
+  // 标题左段（末支 = SSH 凭据窗 · SSH-SESSION 批 §6.22 ⑧——keys.title 核字典投影）
+  const rawLeft = p ? ` ❯ ${p.title} ${filterHint} ` : state.teamAsk != null ? " ❯ Team login "
+    : state.secretPrompt != null ? ` ❯ ${secretPromptTitle(state.secretPrompt)} ` : " ❯ Setup "
   // 2026-08-31 会诊（advisor round1 🔵）：标题行与条目行一致留 8 格余量——Ambiguous 字符
   // （❯/│ 等）在 CJK 终端渲染 2 格，余量不足时右侧 n/m 位置指示会被截。
   const left = sliceByWidth(rawLeft, Math.max(1, cols - 8 - stringWidth(right)))
@@ -223,7 +227,8 @@ export function renderInputBox(state, W, boxLines, cols, inputLayout, inputOffse
  *  提示消解即消失）；awaiting = 回合结束等待输入（链尾置位——processing / 挂起两态期间不派生）。
  *  @returns {"blocked"|"awaiting"|null} */
 export function attentionKind(state) {
-  if (state.permission || state.question) return "blocked"
+  // SSH 凭据窗（SSH-SESSION 批 §6.22 ⑧）：与审批/提问同族——回合被用户面阻塞（chip 显「等待你的回答」）
+  if (state.permission || state.question || state.secretPrompt) return "blocked"
   if (state.attentionAwaiting && !state.processing && !state.suspended && !state._suspPending) return "awaiting"
   return null
 }
@@ -348,6 +353,8 @@ function inputBoxStyle(state) {
     title = " Setup "
   } else if (state.teamAsk) {
     title = " Team login "
+  } else if (state.secretPrompt) { // SSH 凭据窗（SSH-SESSION 批 §6.22 ⑧——掩码输入面）
+    borderColor = C.warn; title = " SSH Credentials "
   } else if (state.processing) {
     title = " Processing... "
   } else {
@@ -386,6 +393,7 @@ function buildStatusLine(state, agent, { cols, slashCommands }) {
   if (state.picker) return " type: filter │ ↑↓/PgUp/PgDn: select │ Enter: confirm │ Esc: cancel"
   // 团队问句面（模态族第三支——登录面补全批）：主键面 = Esc 取消 ∥ Enter 提交（输入框编辑·零滚动）
   if (state.teamAsk) return " Type then Enter │ Esc: cancel"
+  if (state.secretPrompt) return " Type then Enter │ Esc: cancel" // SSH 凭据窗（SSH-SESSION 批 §6.22 ⑧）
   if (state.wizard) {
     const w = state.wizard
     // route 屏与 provider 步同为列表步；团队步焦点在回退行上时 Enter = 确认回退

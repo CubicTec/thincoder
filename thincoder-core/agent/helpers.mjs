@@ -370,9 +370,11 @@ export function readonlyToolNames(tools) {
 }
 
 /** Depth>0 tool exclusions — subagents never get the interactive main-session tools (`question`:
- *  no user to ask; the routing guidance already lives in every persona file). Single source for
- *  the repo: the shell-side depth>0 filter consumes this set (design = TOOLS.md §6.16 / D-TO11). */
-export const SUBAGENT_TOOL_EXCLUSIONS = new Set(["question"])
+ *  no user to ask; `ssh`: the credential window is a user-facing event AND the session pool
+ *  belongs to the main session — no UI at depth>0 and no session to hand back; the routing
+ *  guidance already lives in every persona file). Single source for the repo: the shell-side
+ *  depth>0 filter consumes this set (design = TOOLS.md §6.16 / D-TO11 + §6.22). */
+export const SUBAGENT_TOOL_EXCLUSIONS = new Set(["question", "ssh"])
 
 /** Apply the depth>0 exclusion set — always returns a NEW array (parent table untouched).
  *  #9（TOOLS.md §6.19）：`bash` 的 `async` 参仅 depth-0——子代副本删参（照 `family-tools.mjs:98`

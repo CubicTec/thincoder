@@ -1130,6 +1130,236 @@ Notes:
 **口径注（逐字文本面归属）**：本节内联 = 本批 `thincoder-core/tool-docs/delete.md` **改前→改后逐字留痕**（承 §6.20 先例——工具面批描述文本变更以本档 §6.x 持逐字文本面）；**实读 `PROMPT-SYSTEM.md` 现持面** = 描述面**机制与预算**（§6.11——外置单源 ∥ 预算表唯一权威处 ∥ 写作契约 → §6.9），该描述档文本**不在该档**（零命中）；描述文本**运行期单源** = `thincoder-core/tool-docs/delete.md`（核内唯一副本）——非二次归属（变更留痕）。
 用例表 ∕ 受影响文件 ∕ 验收回指 = 批档 `docs/batches/2026-10-05-engine-tools-gaps.md` §2（一次性批次材料——本档不重述）。
 
+### 6.22 SSH 会话工具（SSH-SESSION）（2026-10-14 · 批 ssh-session · 台账 #1436）
+
+**来源**：用户 2026-10-14 16:03–16:08「用 thincoder 做网络管理」讨论定形（原话链见批档 §1）；需求 = `docs/core/requirements/TOOLS.md` §4.8（S1–S5 ∥ NS1–NS5 ∥ 边界四条 ∥ 相容性核对 5 条 ∥ 裁决三条——用户 2026-10-14 16:49–16:52 三裁在表）。
+本节 = 设计面权威（机制 / 落点 / 判据）；批档 `docs/batches/2026-10-14-ssh-session.md` §2 = 一次性材料（本批条目 / 文件基准行账 / 判据回指）。
+
+**落点判定（邻位新节 · 非独立档——写明理由）**：§4.7 TTY-DRIVE 的**设计面从未落地**（旧档 `docs/core/design/E2E-HARNESS.md` 已删除、「设计面待重做」随后随台账 #8 废弃）⇒ **无「独立档」先例可随**；本条性质 = 工具面机制（与 §6.12–§6.21 同类同冠形：`### 6.x <主题>（<批次> · 台账 #N）`）⇒ 落本档邻位新节，档数零增（`docs/README.md` 地图零动）。
+
+#### 机制选型（选定 = **零原生件路**：系统 openssh + `ssh -tt` + `SSH_ASKPASS` + 流式管道；D-TO17）
+
+**① 本地侧无 PTY 也成立（本能力的设计支点）**：`ssh -tt` 强制**远端**分配 PTY——本地无终端（我们的 stdin/stdout = 管道）也照配（`ssh(1)` 原文：「Multiple `-t` options force tty allocation, even if ssh has no local tty」）。
+⇒ 本地侧无需真 PTY（无需原生件），远端设备拿到真 PTY（`--More--` / 提示符 / 行编辑等终端行态成立）。
+**父侧候选核对（如实）：`ssh -tt` + 流式管道 + `SSH_ASKPASS`（`SSH_ASKPASS_REQUIRE=force`）成立——零原生件满足 S1–S3 的机制条件（端到端 = 实施轮真机腿）**；据 = 本设计轮实测两条腿（见文末「实测证据」）+ 上游源码两读（`readpass.c` / `sshconnect2.c`）。
+**残余未知（实施轮实测项，不假装已核）**：本地无终端时 ssh 请求的远端 PTY 行列数（尺寸口径未核）——缓解 = 会话内 `terminal length 0` / `stty` 类命令 + `--More--` 处理路（见 ③）。
+
+**② 密码喂入链（客户端侧 password ∥ keyboard-interactive 两径都覆盖）**：
+ssh 的客户端口令提问只有一条通道 ⇒ `read_passphrase()`（`sshconnect2.c`：`userauth_passwd` 传 `flags=0` ∥ `input_userauth_info_req`（keyboard-interactive，网络设备常用）传 `echo ? RP_ECHO : 0`——**两径同源**）。
+`SSH_ASKPASS_REQUIRE=force` ⇒ `use_askpass=1; allow_askpass=1`（`readpass.c`——**与 `DISPLAY` 无关**；无此变量则 Windows 无 `DISPLAY` 时口令提问退化为空串 ⇒ 必用 `force`）。
+调用契约（上游）：askpass 程序经 fork ∥ `posix_spawnp`（Windows 端口 `FORK_NOT_SUPPORTED` 支）执行——**argv[1] = 提示语本体**、stdout 接管道、ssh 读回首行作口令。
+**本设计落地形（三步，全零原生件）**：
+
+| 件 | 形 | 说明 |
+|---|---|---|
+| 包装档 | Windows = `askpass-<pid>.cmd`（`"<node>" "<helper>" %*`）∥ POSIX = `.sh`（`#!/bin/sh` + `exec "<node>" "<helper>" "$@"`，0700） | 运行期写入本工具临时目录（内容零秘密——仅路径）；`<node>` 取 `process.execPath`（Electron 宿主另补 `ELECTRON_RUN_AS_NODE=1`——复用既有单点 `tools/node-child.mjs` `nodeChildEnv`） |
+| 助手档 | `thincoder-core/tools/ssh-askpass.mjs`（拟新增 · 非工具） | 读环境变量取秘密 → 输出到 stdout（仅此一行）；`SSH_ASKPASS_PROMPT === "confirm"` ⇒ 输出 `yes`（主机确认路，见 ⑤）；零日志 / 零落盘 |
+| 秘密传递 | ssh 子进程环境变量 `TC_SSH_SECRET`（名以实施轮为准） | 取 `sshpass -e` 同族先例（服务端面：口令经环境变量、**不入 argv / ps**）；**如实记**：该值在 ssh 进程环境内存活至会话结束（同用户可读进程环境——未再做遮蔽，实施轮可另评更紧通道） |
+
+**连接判定形 = 预探升格**（父侧 2026-10-14 裁定 A——承实施轮；探连 = 判定步）：探连 = **全会话形**（`-tt` + 保活 + 管道，`NumberOfPasswordPrompts=0`）——成功即**升格为会话**（密钥机全程**恰 1 次连接**，零二次探连）。
+**认证类失败**（password ∥ keyboard-interactive 两径——预探短路同点）⇒ 终止探连 → 弹凭据窗 → **单次**带密会话（`NumberOfPasswordPrompts=1`——错口令一次即败，不静默重试）；**指纹变更 ∥ 不可达 ∥ 连接超时 ⇒ 弹窗之前硬停**（E2 / E3 语义）。
+**不带 `BatchMode`**（带了会直接弃用口令面——服务端面真机 A/B 核 2026-10-11 在案）。
+
+**③ 提示符 / 静默判定（「该我发了」的判据）**：`send` 后等待**静默窗**（缺省 800 ms 无新输出）**或**会话提示符正则命中（可选 `promptPattern`，agent 可设）⇒ 判定「已就绪」返回；未判定 ⇒ 到**硬超时**（缺省 10 s）返回**部分输出 + 可读句**（含 `ssh#N` / host / 已等时长——**不静默挂起**）。
+`--More--` 分页：识别并原样呈现（agent 发空格继续）；**第一刀不做自动翻页**（边界句，见文末）。
+终端噪声：输出面 = 文本流——CRLF 归一 + ANSI CSI/OSC 转义剥离（**非逐屏渲染**；原始字节面不保真，边界句）。
+
+**④ 会话生命周期（保活 / 闲置 / 关闭）**：
+
+| 面 | 口径 |
+|---|---|
+| 池 | `thincoder-core/agent-tools/ssh-session.mjs`（拟新增）单点（照 `bash-async.mjs` 池先例）；条目 = `{id, host, user, port, child, state, buf, logPath, idleTimer, secretRefs}` |
+| 取号 | `ssh#N`（共用既有 id 命名空间——`bash#N` / `browser#N` 同族） |
+| 保活 | 进程长命（回合之间**不杀**）；ssh 侧 `ServerAliveInterval=30` + `ServerAliveCountMax=4`（死对端约 2 分钟内退出 ⇒ 会话转 `dead`） |
+| 闲置 | 缺省 **600 s** 无 send/read ⇒ 自动关闭 + digest 注记（照异步结算注入先例）；**不做配置项**（免「配置项须有配置界面」连带——数值 = 常量；日后要可调 ⇒ 另批带界面） |
+| 关闭 | `close` = stdin 结束 → 1.5 s 宽限 → 杀进程树（`tools/process-tree.mjs` 单源）；返回末段输出 |
+| 回合中断 | 会话**存活**（照 F2 豁免先例）；在飞 `read` 返回部分 + `(interrupted)` |
+| 会话中止（agent 会话结束） | 逐条杀树 + 清池（挂点 = `agent-tools/async-discard.mjs` 收尾族） |
+| 上限 | 并存活会话 ≤ 4（照 `BG_TASK_MAX` 族）；超限**显式拒**（不静默关旧） |
+| depth 门 | 工具**不进子代面**（`thincoder-core/agent/helpers.mjs` `SUBAGENT_TOOL_EXCLUSIONS` += `ssh`）——凭据窗 = 用户面事件（与 `question` 同类），且会话池归主会话；边界句 |
+
+**⑤ 连接建立（复用本机 ssh 配置 · 主机指纹口径）**：
+`ssh -tt -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=4 [-p <port>] [user@]host`；`port` / `user` 未给 ⇒ **不下发该选项**（让本机 `~/.ssh/config` 兜底）；**不覆盖** `-F` / `UserKnownHostsFile` / 代理 / `IdentityFile` / agent（配置与证件全复用——S1）。
+主机指纹：**继承本机策略**（不下发 `StrictHostKeyChecking`）——首见经确认路（askpass `confirm` 提示 ⇒ 助手答 `yes`，照交互式首见语义记入本机 `known_hosts`）；**效果说明（知情）**：本机策略为默认 `ask` 时该路**等效 accept-new**——首见指纹不经人核入档；与「否决强制 `accept-new` 覆盖」不冲突：所否决 = 主动下发覆盖（放宽本机严格配置），本条 = 继承策略下的确认应答；**指纹变更 ⇒ 硬停**（ssh 自身拒连，不自动改写、不重试）；本机配置若为 `yes` 则一并继承其严格性。
+
+**⑥ 超时与输出帽**：`connect` 有连接超时（`ConnectTimeout=10`）；`read`/`send` 有硬超时（缺省 10 s，可显式给更大值）；单次返回帽缺省 **8 000 字符**（**保尾** + 截断注记）；全量流式落 `configDir/tool-results/<ts>-ssh-<N>.log`（复用既有落盘族与保留期；工具结果侧超 64K 仍走既有 offload——零新帽族）。
+
+**⑦ 凭据零入上下文（NS4 的机制面）**：
+
+- 值**不进**：工具入参（`secret_input` 无值参）∥ 工具结果（只回状态句）∥ 会话档 / 消息面 ∥ trace / 日志（弹窗值不落任何持久面）。
+- **回显遮蔽（新机制，如实写明）**：远端若把键入秘密回显进输出流（部分设备 / 程序会），写入后对**捕获面与日志面**做值遮蔽——移除输出中该秘密字面（含跨 chunk 切分：保留 `len-1` 尾缓冲）；秘密内存存活至会话关闭（仅供遮蔽过滤器），关闭即弃。
+- 弹窗值**零留存**：端面不写入会话状态（CLI 掩码步先例「掩码步零留存——不着状态」照搬）。
+
+**⑧ 三端弹窗载荷（`onSecretInput` 注入缝——照 `onQuestion` 先例）**：
+
+```text
+ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user, port,
+                    fields:[{ name, masked, required, prefill }], keys:{ title, prompt } })
+  → { <name>: <值> }（提交）| null（取消）
+```
+
+载荷 = 结构化字段（值只在返回路上）；**词面 = i18n 键**（核字典 + 端投影——照 `onWait` `waitStatusOf` 先例）；值不回显、不入日志、不入结果。
+落点（三端各一，形同 `onQuestion`）：CLI = `tool-events.mjs` 回调 + TUI 模态面（掩码回显复用 `ask-steps.mjs` `maskEcho` 先例；非 TUI 径 `input.askHidden` 先例）∥ VSC = `panel-callbacks.mjs` 卡片（`makeAskInPanel` 同族）∥ 桌面 = `agent-bridge.mjs` 转口（`askQuestion` 同族）。
+**掩码守卫（反交错 · 裁 A——父侧 2026-10-14）**：Ctrl+F 入场排除集 += 凭据窗 ∥ 团队问句面 ∥ 密码步（单源 = `ask-steps.mjs` `askMaskActive`——掩码面明文旁路封口）；凭据窗在场（含搜索框已开时弹出）⇒ 键路由归掩码面、明文不落搜索面（已开搜索支路 = 另批小修项）。
+**无 UI 场合（ACP / headless / 无回调）⇒ 可读错误句**（不挂起、不静默——照 `question.mjs` 无 UI 抛例）。
+**⑨ 非密字段预填档（裁决 ② 落地面）**：小档 `configDir/ssh-hosts.json`（拟新增——私档，随 configDir 生命周期，仓库零落点）；条目 = `{host, port, user, lastUsedAt}`（读键 = `host[:port]`，缺省 22）；写入 = **认证成功后**（白名单 = 非密字段——密码 ∥ 口令值零字段，合「不做凭据托管」边界）；复用 = ① `connect` 未给 `user` 时取记录值（状态行注明「user 来自本机记录」）② 凭据窗 `user` 字段预填同值（可改）；**密码零预填 ∥ 零记忆**。
+
+#### 接口契约（工具面 · 实现面）
+
+| 面 | 落点 | 形 |
+|---|---|---|
+| 工具本体 | `thincoder-core/tools/ssh.mjs`（拟新增） | `ssh` 工具：动作表见下；`readonly:false` + `isReadonlyAction(args)`（`list`/`read` ⇒ 只读 ⇒ 免审批；写动作照常询问——钩子消费点 = `agent/dispatch-gates.mjs:130`，先例 = 端壳 git 装饰面） |
+| 会话机制 | `thincoder-core/agent-tools/ssh-session.mjs`（拟新增） | 池 / 连接 / askpass 包装生成 / 读写 / 沉降 / 遮蔽 / 生命周期（单点） |
+| 口令助手 | `thincoder-core/tools/ssh-askpass.mjs`（拟新增） | ssh 经包装档调用（独立进程）——非工具、不注册 |
+| 注册面（F1） | `thincoder-core/tools/index.mjs` | `builtinTools` + 导出面各一行；VSC 端装配清单 `thincoder-vscode/src/tools/index.mjs` 同拍（端侧零实现副本——W14 单源律） |
+| depth 门 | `thincoder-core/agent/helpers.mjs` | `SUBAGENT_TOOL_EXCLUSIONS` += `ssh`（单点） |
+| 审批面 | `thincoder-core/permission.mjs` | `formatPermission` 加 `ssh` 行——**将发送的原文**（人可见；显示面提示，非拦截——D-TO2 同旨）；**携密径改掩码占位**（值不回显——见 NS3 判据） |
+| 回调解 | `thincoder-core/agent/dispatch-run.mjs` | `toolCtx` +`onSecretInput: callbacks.onSecretInput` |
+| 收尾面 | `thincoder-core/agent-tools/async-discard.mjs` | 会话中止 ⇒ 杀会话树 |
+| 文案面 | `thincoder-core/i18n.mjs` | 弹窗 / 状态 / 失败句键（核字典单源，三端投影） |
+
+**动作表**（`ssh { action, ... }`）：
+
+| action | 参数 | 返回（摘要） |
+|---|---|---|
+| `connect` | `host`（必）· `user` / `port`（可选——缺省交本机配置）· `label`（可选） | `ssh#N` + 状态行（密钥机零弹窗 / 密码机一次凭据窗）+ 首屏提示符输出 |
+| `send` | `id`（必）· `data`（必；不结尾换行时默认补 `\r`——设备 Enter 语义）· `settle`（可选开关/口径）· `timeoutMs` | 该轮输出（≤ 帽）+ 就绪判据结论（静默 ∥ 提示符命中 ∥ 超时） |
+| `read` | `id` · `timeoutMs` · `maxChars` | 上次读后新增输出（无则等至静默/超时） |
+| `secret_input` | `id` · `label`（可选） | 触发凭据窗 → 掩码写入 + `\r`；返回状态句 + 输出增量（**值永不出现**） |
+| `close` | `id` | 末段输出 + 关闭确认 |
+| `list` | — | 在活会话清单（id / host / user / 状态 / 空闲秒）——上下文压缩后的恢复路 |
+
+状态行冠形（每返回首行，便于判读）：`[ssh (<id>) <host> — <state> · idle <n>s]`。
+
+#### 落点文件清单（预计 · file 级；现况列 = 2026-10-14 实读；端侧逐档 Δ = 实施轮首读钉基线——落点 = 批档 §5 首读读数 ∥ 判据 = Δ 后各档 ≤ 500 结构线）
+
+| # | 档 | 现况 | 预计 | 动作 |
+|---|---|---|---|---|
+| 1 | `thincoder-core/tools/ssh.mjs`（拟新增） | — | 新 ≈180–260 | 工具本体 + 参数 schema + 动作分发（薄接线） |
+| 2 | `thincoder-core/agent-tools/ssh-session.mjs`（新） | — | 新 ≈320–420（预计）⇒ **实落 439**（内容行；物理 440）——超预计；触 500 顾问线 ⇒ 按本条授权句拆出运行面（行 16） | 会话池 / 连接流（预探升格——机制 ②）/ 动作面 / 凭据窗 / 非密预填档 / 生命周期（单点） |
+| 3 | `thincoder-core/tools/ssh-askpass.mjs`（拟新增） | — | 新 ≈30–50 | 口令助手（独立进程入口） |
+| 4 | `thincoder-core/tool-docs/ssh.md`（拟新增） | — | 新 | 工具描述（**英文运行面 = 产品代码**：内容权归主 agent、落笔归 eng-coder——本设计只给必备内容点：动作表 / 凭据零回显纪律 / 边界（不做全屏 / 不做文件传输隧道）/ 会话与闲置口径） |
+| 5 | `thincoder-core/tools/index.mjs` | 80 行 | +2 | 注册 + 导出 |
+| 6 | `thincoder-core/agent/helpers.mjs` | 491 行 | +1 | 子代面排除集 |
+| 7 | `thincoder-core/permission.mjs` | 113 行 | +6–10 | `formatPermission` `ssh` 行 |
+| 8 | `thincoder-core/agent/dispatch-run.mjs` | 185 行 | +1 | `onSecretInput` 透传 |
+| 9 | `thincoder-core/agent-tools/async-discard.mjs` | 221 行 | +3–5 | 会话中止收尾 |
+| 10 | `thincoder-core/i18n.mjs` | 116 行 | +3–6 键（预计）⇒ **实落 `ssh.*` 8 键双语**（+9 行） | 弹窗 / 状态 / 失败句（核字典单源 · 三端投影） |
+| 11 | `thincoder-vscode/src/tools/index.mjs` | 189 行 | +2 | 端装配清单（零实现副本） |
+| 12 | CLI 端（**实落 16 档** = 12 档 + 新档 `thincoder-cli/src/tui/secret-prompt.mjs` 201 + 3 档随动） | 实读 2026-10-14：`tui/render-frame.mjs` **495**（余 5——另批拆）∥ `tui/tool-events.mjs` 460 ∥ 余档 ≤ 262（逐档 = 批档 §5 落点表） | ≈+60–110（含新档）（预计）⇒ 实读 ≈+271（含新档） | 回调 + 掩码模态面（含掩码守卫——机制 ⑧）+ 随动 |
+| 13 | VSC 端（**实落 13 档** = 3 档 + 通道 / 分发 / 字典 / 样式等 10 档随动 + 新档 `webview/secret-input.js` 112） | `src/extension/panel-callbacks.mjs` 326 ⇒ **360**（实读 2026-10-14）∥ `src/extension/panel-chat.mjs` 261 ⇒ 264 ∥ `webview/question.js` 26（卡面端壳先例——新档同族） | ≈+50–90（含 webview 面）（预计）⇒ 实读逐档 Δ = 批档 §5 落点表 | 卡片面（`panel-callbacks.mjs` **:293** 注入点——`askInPanel` 同族）+ 消化面回落 + webview 卡面 |
+| 14 | 桌面端（**实落 13 档** = 2 档 + 门表 / 通道面 / 渲染面等 11 档随动 + 新档 `thincoder-desktop/renderer/secret-prompt.mjs` 323） | `src/main/agent-bridge.mjs` 325 ⇒ **331**（实读 2026-10-14）∥ `renderer/questions.mjs` 48（零改——面体落新档） | ≈+40–80（含渲染面）（预计）⇒ 实读逐档 Δ = 批档 §5 落点表 | 转口（注入 `askSecret` + 回调 `onSecretInput`）+ 渲染面弹窗（`secretPrompt` 切片） |
+| 15 | 单测 | — | 新 1 档（预计）⇒ **实落四档**（核 537 ∥ CLI 331 ∥ VSC 409 ∥ 桌面 633——四腿批内件；逐档 = 批档 §5 四腿落点表） | `docs/batches/2026-10-14-ssh-session{,-cli,-vsc,-desktop}.test.mjs`（夹具替身 ssh——照服务端 `execImpl` 注入先例；随批档存放，不进 `test/` 树） |
+| 16 | `thincoder-core/agent-tools/ssh-transport.mjs`（**新**——拆档产物：行 2 授权句落形） | — | 新（实读 **311**——内容行） | 运行面：askpass 链 / 子进程 / 沉降 / 遮蔽 / 输出帽 / 失败分类 |
+| 17 | `thincoder-core/agent-tools/subagent-scheduler.mjs`（清单外随动——取号扫描域） | 448 行 | +3（实读 **451**） | 取号扫描域 += `_sshSessions`（不扩 ⇒ 取号与存活 ssh 会话 id 撞号） |
+> **近线注**：`render-frame.mjs` **495**（余 5——**另批拆**：候选 = 状态栏族 ⇒ 拆出 `status-line.mjs`（拟新增）；台账 #1437）∥ `tool-events.mjs` **460**（余 40）。
+> **读数口径**：预计列未逐格回填者——以批档 §5 四腿落点表为准（本表 = 预计面；实读面 = §5）。
+
+#### 验收判据（S1–S5 / NS1–NS5 逐条 → 判据句 · 机检形）
+
+| 需求条目 | 判据句（机检形） |
+|---|---|
+| **S1** 建会话（密钥优先 · 密码窗） | 密钥 / agent 机：`connect` 成功且**凭据窗回调零调用**；配置复用：不给 `-p`/`user` 时生效项来自本机配置（读回 `ssh -G <host>` 同值比对面）。密码机：`connect` **恰触发一次**凭据窗，链路含 askpass 调用（助手留痕夹具）且连接成功 |
+| **S2** 多往返 · 状态保持 | 同一 `ssh#N` 上 ≥2 轮 `send`/`read` 往返；状态判据 = 会话内设可见状态（POSIX：`cd /tmp` 后 `pwd` 回显 `/tmp`；设备：模式提示符变化），且**跨回合**（两次工具调用间隔 > 60 s）仍持 |
+| **S3** 交互流程（提示符 / 确认 / 分页） | 夹具（脚本化替身 = 会输出提示符 / `--More--` 的假设备）：`read` 在 ≤ settle 上限内返回并含提示符判据；`--More--` 出现在返回文本中，随后 `send(" ")` 返回后续页；非全屏（边界） |
+| **S4** 读回驱动 · 保活 | 两次调用间隔 > 60 s 会话仍活（`read` 正常）；闲置超时到点 ⇒ 自动关闭 + 注记注入（可读）；单次返回 ≤ 帽（8 000 字符缺省）且全量在 log（读 log 与返回尾部一致） |
+| **S5** 用户可插话 · 实时可见 | 工具输出经既有 `onToolOutput` 流入端面（三端装配面实读：CLI/VSC/桌面 各一处接线）；插话 = 用户经对话面发消息（既有机制、零新面——**不声称新增**） |
+| **NS1** 零第三方运行时依赖 | 已裁 = **⓪ 零原生件**（需求档 §4.8 裁决 1）：`package.json` 运行时依赖零新增（实施轮 diff 读数为零）+ 全链实走（`connect`/`send`/`read`/`close` 经系统 openssh）。**版本面注**：askpass 径需 OpenSSH ≥8.4（`SSH_ASKPASS_REQUIRE`）——macOS 自带 ∥ Linux 主流发行版均满足；例外 = RHEL 8 / CentOS 8 代（8.0p1）⇒ 兼容 = 占位 `DISPLAY` 走旧语义（新旧两代都通，实施轮落地） |
+| **NS2** 不卡死 | 超时夹具（睡死不输出的替身）：`read`/`send` 在硬超时内返回**可读失败句**（含 id / host / 已等时长）；输出帽生效；零静默挂起 |
+| **NS3** 破坏性动作先确认 | `ssh` 的写动作**每次经既有审批门**（`onPermissionRequest` 计数 ≥ 1 / 调用）；审批文案一般含**将发送原文**；**携密径（`secret_input` 及一切携带秘密值的调用）= 掩码占位**（形如「将发送：••••••（携密——值不回显）」；由 = 值入文案即入上下文 ∥ 审批记录 ⇒ 违 NS4；不豁免 = 携密动作仍属写动作，门不放松）；零新增文本拦截（D-TO2 同旨）；`list`/`read` 免审批（`isReadonlyAction` 判据） |
+| **NS4** 凭据零入上下文 | 夹具密码 = 唯一随机串（含回显替身）：**全量扫描**会话档 / 工具结果 / `tool-results` log / trace ⇒ **0 命中**；弹窗值不落端面状态（端面状态转储 0 命中） |
+| **NS5** 宿主层 = 核 | 会话逻辑只住 `thincoder-core/**` **四档**（`thincoder-core/tools/ssh.mjs` ∥ `thincoder-core/tools/ssh-askpass.mjs` ∥ `thincoder-core/agent-tools/ssh-session.mjs` ∥ `thincoder-core/agent-tools/ssh-transport.mjs`——拆档 = 500 顾问线落形；端侧零实现副本——VSC 只加清单行、桌面只加回调）；探针可枚举 `ssh` 在注册面（F1） |
+
+#### 用例表（正常 / 边界 / 错误）
+
+| # | 类 | 输入 | 期望 |
+|---|---|---|---|
+| N1 | 正常 | 密钥机 `connect` | 成功；凭据窗零调用；返回提示符 |
+| N2 | 正常 | 密码机 `connect`（窗内提交） | 连接成功；askpass 助手留痕 1 次 |
+| N3 | 正常 | `send("cd /tmp")` → `send("pwd")` | 第二轮输出含 `/tmp`（状态保持） |
+| N4 | 正常 | 设备 `enable` 流程：`send("enable")` → `secret_input` | 掩码提交 + 提示符推进；返回值内含密码字面 **0 次** |
+| B1 | 边界 | 单次输出 > 帽 | 返回保尾 + 截断注记；log 全量 |
+| B2 | 边界 | 慢设备（静默窗到点无提示符） | 返回部分 + 「未检出提示符」可读句（非失败） |
+| B3 | 边界 | 空闲 600 s | 自动关闭 + 注记；此后 `send` 回「会话已结束」 |
+| B4 | 边界 | 第 5 条并发会话 | 显式拒（含上限句） |
+| B5 | 边界 | `--More--` 分页 | 识别 + 空格继续（第一刀不自动翻页） |
+| E1 | 错误 | 口令错（1 次） | 可读失败句（认证被拒）；会话不入池；窗口不重弹 |
+| E2 | 错误 | 主机不可达 / 连接超时 | 可读失败句（区分超时 ∥ 拒连，照服务端分类族） |
+| E3 | 错误 | 主机指纹变更 | 硬停 + 可读句（**不自动改写** known_hosts） |
+| E4 | 错误 | 用户在窗内取消 | 工具返回可读句（不挂起、不重弹；**取消 ⇒ 零后续尝试**——探连 = 判定步，不重发） |
+| E5 | 错误 | 远端主动断（会话中 ssh 进程退出） | 后续调用返回「会话已结束」；池条目转终态 |
+| E6 | 错误 | 平台 ssh 无 askpass（假想）∥ 无 UI 场合 | 可读失败句 + 指引（改密钥 / agent）；无 UI ⇒ 明示无输入面 |
+
+#### 关键决策（含否决备选）
+
+- **D-TO17 机制 = 零原生件路**（系统 openssh + `-tt` + askpass + 管道）：择据 = 机制可行性成立（口令链两腿实测 + `-tt` 语义文档面 + 源码两读）∧ 不破「零第三方运行时依赖」承诺 ∧ 三端同构（核内单源）；S1–S3 端到端 = 实施轮真机腿。
+  否决备选：① **node-pty 本地真 PTY**（已裁 ⓪ 零原生件——本条只需**远端** PTY，原生件代价换不来收益；裁决见本节「裁决记录」）；② **`sshpass`**（第三方二进制；Windows 不可用——服务端面先例仅限 Linux 容器）；③ **本地 `script`/`winpty` 包装**（`script` 不跨三平台；`winpty` 该形态已实证不可用）；④ **凭据经 argv / stdin**（argv 入 ps；stdin 与会话数据管道冲突——且 ssh 口令路不读 stdin）。
+- **D-TO18 凭据通路面 = `ctx.onSecretInput` 注入缝 + askpass 环境变量**：弹窗值只在回调返回路 + 子进程环境内流动，零入参 / 零入结果 / 零落盘 / 零状态留存 + 回显遮蔽。
+  否决备选：① **值作工具入参**（入上下文与记录——直接违 NS4）；② **文件传递秘密**（落盘残留面）；③ **fd 传递**（Windows 链路含 `cmd` 中介、继承面未核——不选未验路）；④ **每次提示重弹**（同一连接内多次弹窗——体验与必要性均不成立）。
+- **从属决策（同节，含否决）**：主机指纹 = 继承本机策略（否决「强制 `accept-new` 覆盖」——覆盖会**放宽**本机严格配置；否决「仅 `BatchMode` 拒连」——密码机全灭）；审批 = 工具调用级既有门 + `isReadonlyAction` 只读豁免（否决「按危险词表拦」——文本匹配非边界，D-TO2 同旨）；depth>0 排除（否决「子代可用」——凭据窗 = 用户面事件）；闲置 600 s 不设配置项（免配置界面连带）；`--More--` 不自动翻页（第一刀窄面）。
+
+#### 先例调查结论
+
+| 对象 | 结论 |
+|---|---|
+| **§4.7 TTY-DRIVE（同族）** | **机制同族、内核不共用**：彼需**本地**真 PTY（被驱动对象任意 ⇒ `ssh -tt` 帮不上，其 U1 判据 = 被驱动进程自判真终端）；本条只需**远端** PTY（本机 ssh 客户端代配）⇒ 零原生件可行性不同。**依赖政策**：形式同题，**本设计不建议合并裁定**（可行选项集不同：本条 ⓪ 零原生已实测成立；§4.7 的零原生路不覆盖其 U1 判据）——是否一并裁 = 用户的裁量。**设计面**：§4.7 无在册设计（见本节「落点判定」）——本设计**不引用**其任何设计坐标（零悬空指针） |
+| 服务端面 `thincoder-server/src/sandbox/ssh.mjs`（同仓先例 · 异面） | spawn 系统 openssh 同路；**沿用**：连接超时 10 s / 失败分类族（auth ∥ unreachable ∥ fingerprint_changed）/ 输出帽语义 / 密钥径无人值守口径（`BatchMode=yes`）。**分述**：该面 = 服务器代管主机（Linux 容器、`sshpass` 口令径、逐条命令非交互）；本条 = 本机直连（三端、askpass 口令径、多往返会话）——面分述、纪律同源（D2） |
+| **同族池机制（后台服务族）** | 实现 = `thincoder-core/agent-tools/`：`bash-async.mjs` ∥ `browser-async.mjs`；设计节 = `AGENT-LOOP-ASYNC-POOL.md` §6.10 ∥ 本档 §6.19 ∥ `BROWSER-TOOL.md` §2.11（均 `docs/core/design/`）；先例批 = `2026-09-29-tools-carryover.md` §2.1 · `2026-10-07-browser-async-fix.md`（均 `docs/batches/`） |
+| 凭据零回显纪律 | 异面先例 = 服务端 webui 凭据卡（密文零回显）+ CLI 端掩码步（`ask-steps.mjs`「掩码步零留存」）/ `input.askHidden`——本条 = 第三例，纪律同源、实现各端自持 |
+| 弹窗注入缝 | `onQuestion` 三端形（`dispatch-run.mjs:107` ∥ CLI `tool-events.mjs:377` ∥ VSC `panel-callbacks.mjs:259` ∥ 桌面 `agent-bridge.mjs:278`）——`onSecretInput` 逐点照形 |
+| §4.2 F5（工具不与用户对话） | 相容：**凭据输入窗 = F5 所指「专门机制」的实例**（输入的是凭据，不是对 agent 的作答）；被驱动端提示（设备 `Password:` / `--More--`）≠ 与用户对话 |
+
+#### 裁决记录（三条 · 选定 + 备选在册 · 用户 2026-10-14 16:49–16:52 三裁在表）
+
+**① PTY 依赖政策**（需求档 §4.8 裁决 1；同 §4.7 依赖政策同题——不合并裁定理由见「先例调查结论」）：
+
+| 面 | 内容 |
+|---|---|
+| **选定** | **⓪ 零原生件**——系统 openssh + `-tt` + askpass + 管道（本设计选定路） |
+| **备选在册** | ① `node-pty` 运行时依赖（破「零第三方运行时依赖」承诺；各平台预编译口径）② devDependency（运行时无该能力）③ 降级形态（密码 / 交互流程不可用——网络设备主对象基本全灭） |
+| **选定代价在册** | 平台 askpass 支持逐平台验（版本面 = NS1 判据注）；提示符 ∥ 静默判定 = 文本启发式（无 PTY 级信号）；本地无终端时远端 PTY 尺寸未核（实施轮实测） |
+
+**②「记住密码」= ③ 只记非密字段**（需求档 §4.8 裁决 2；预填面细化 = 机制 ⑨）：
+
+| 面 | 内容 |
+|---|---|
+| **选定** | **③ 只记非密字段**——记 host / user（明文），密码每次弹 |
+| **备选在册** | ① 第一刀不做（会话内复用、关闭即弃）② 持久存储（秘密静态存储——与「不做凭据托管」边界相抵） |
+| **落地面** | 预填档机制 ∥ 落点 ∥ 键形 ∥ 复用范围 = 机制 ⑨；**密码零预填 ∥ 零记忆** |
+
+**③ 跨平台口径**（需求档 §4.8 裁决 3）：
+
+| 面 | 内容 |
+|---|---|
+| **选定** | **三平台实现面全覆盖 + 验证口径收窄** |
+| **备选在册** | ① 三平台各一条实机验证腿（本环境仅 Windows 实机 + MSYS 副证）② 部分平台先行（须写能力缺口边界句） |
+| **判据** | 实现面齐全 = 核内两形包装档（Win `.cmd` ∥ POSIX `.sh`）零平台分支缺口；实机腿 = 仅 Windows；mac / Linux = 按文档实现 + 用户反馈迭代（不作实机完成声称） |
+
+#### 边界（本节不做）
+
+- **不做全屏终端仿真**（vim 类 TUI 不伺候）；**不做逐屏渲染 / 光标语义**——输出面 = 文本流。
+- **不做凭据托管 / 不落盘密码**——仅记非密字段（host / user 预填——裁决记录 ②）；密钥事务仍归本机 ssh 配置 / agent。
+- **mac / Linux 无实机腿**（按文档实现 + 用户反馈迭代——实机腿 = 仅 Windows；裁决记录 ③ 判据）。
+- **不做文件传输（scp / sftp）与隧道管理（`-L`/`-R`）**——后一刀在册（需求档边界同句）。
+- **不做跨会话存活**（agent 会话结束 = 会话灭）；**不做子代面**（depth>0 排除）。
+- **不做 `--More--` 自动翻页 / 不做危险命令文本拦截**（后者全交审批门——D-TO2 同旨）。
+- **不引本地 PTY 包装**（`script` / `winpty` / `sshpass` 皆不入——见 D-TO17 否决集）。
+- **不改需求档**（需求面缺口如现 ⇒ 上抛主 agent）。
+
+#### 实测证据（本设计轮 · 可复跑 · 残留 `%TEMP%\ssh-session-design-probe\`——仓库零污染）
+
+| # | 探针 | 读数 |
+|---|---|---|
+| 1 | Windows OpenSSH **9.5p1**（`C:\Windows\System32\OpenSSH\ssh.exe`）+ `-tt` + 管道 + `SSH_ASKPASS`（`.cmd`）+ `SSH_ASKPASS_REQUIRE=force` | askpass **被调用**（留痕 = `"tcdesignprobe@10.0.0.6's password: "`）；到认证阶段（仅因口令故意错 ⇒ `Permission denied (publickey,password)` · exit 255） |
+| 2 | 生产形（`.cmd` → `node` 助手 → 环境变量取秘密）· **无 `DISPLAY`** | 同形通过：助手留痕 `envSecret=present`，秘密经 stdout 回 ssh（无 `DISPLAY` 依赖实证） |
+| 3 | Git/MSYS OpenSSH **10.3p1**（`C:\Program Files\Git\usr\bin\ssh.exe`）+ `.sh` askpass（`#!` + 0700） | 同形通过（留痕同上）——POSIX 形包装档可用 |
+| 4 | 两二进制字面扫描 | 均含 `SSH_ASKPASS` / `SSH_ASKPASS_REQUIRE` |
+| 5 | 上游源码两读（`readpass.c` ∥ `sshconnect2.c`，openssh-portable ∥ PowerShell/openssh-portable） | `force` ⇒ `allow_askpass=1`（与 DISPLAY 无关）；口令 ∥ keyboard-interactive 两径均走 `read_passphrase`；askpass `argv[1]` = 提示语、stdout 管道读回 |
+| 6 | 连通性 | `10.0.0.5:22` / `10.0.0.6:22` 均 OPEN（9 ms / 5 ms）——真机腿可跑 |
+| 7 | 未核项（如实） | 本地无终端时 ssh 请求的远端 PTY **行列尺寸**；密码/交互在**真实网络设备**上的端到端（实施轮真机腿） |
+
+> 用例表副本 ∕ 受影响文件基准行账 ∕ 条目回指 = 批档 `docs/batches/2026-10-14-ssh-session.md` §2（一次性材料）。
+
 ## 7. 并入的关键决策记录（含否决备选）
 
 | # | 决策 | 理由 / 否决备选 |
@@ -1149,7 +1379,9 @@ Notes:
 | D-TO13 | `file_ops` 动作感知 = **入单源谓词**（`copy` ⇒ 只 `dest`；`move` / `rename` 等 ⇒ `source` + `dest`）+ **端特例分支清零** | 详见 §6.17 裁定 5（台账 #333）。否决备选：① 核向端对齐（端窄形态转正）——单源化只消灭两处漂移、不判规则对错，先让核吃正确规则（用户 2026-09-25 15:16「先修正核、再单源化」）；② 只改设计档字面而谓词不动（核仍登记 `copy` 源 ⇒ 对端假提示不消）；③ 逐消费点各自按动作判别（多份形态 = 下轮漂移源——D-TO12 同旨） |
 | D-TO14 | **node 语义子进程启动面 = 核内单点 `nodeChildEnv`**（`thincoder-core/tools/node-child.mjs`（**已落** · 2026-09-29）——判据 `process.versions.electron`；Electron 宿主补 `ELECTRON_RUN_AS_NODE:"1"`，否则原样 `base`）；消费 = `execute.runNode` ∕ `lint` 快路径（经 `exec-run` `opts.env` 透传） | 详见 §6.18（台账 #602）。否决备选：① 两消费点各自内联判据（重复检测——第二点漏修即复发）· ② 端注入缝 `configureNodeChildEnv`（判据 = 运行时能力、无端差值可注入——新增缝 + 三端接线代价 > 收益）· ③ 直改父进程 `process.env`（污染父进程并殃及后续全部子进程）· ④ 依赖 PATH `node` ∕ 随产物分发 node（不可靠 ∕ 破零依赖）· ⑤ `exec-run` 内按 `cmd === process.execPath` 隐式补 env（对普通命令不可见的分叉） |
 | D-TO15 | **工具面首用可发现性 = 描述面载明 + 建即填 + 判据可辨性**（spawn 六字段入 `tool-docs/subagent.md`——门零改 ∥ `batch` create 增 `ledger` / `board` 可选参建即填档头台账行 ∥ 死占位判据收为「档头结构行值形」——正文引用豁免） | 详见 §6.20（① 的落面 = `AGENT-LOOP-SUBAGENT.md` §6.30——D2）。否决备选：撞门学习（描述面缺口——用户 16:53 点火）· create 参数面零扩展（时序耦合顾虑——可选参化解：给则填 / 不给走手工法）· 全文子串 ∕ 泛形判据（引用误杀）· 引用需转义形（判据转写作规约——误伤依旧） |
-| D-TO16 | `delete` 增**空目录分支**（非空拒——保险丝）+ `write-path` 增 `rmdir` op；`tool-docs/delete.md` ∥ param desc 同拍去被禁面指引 | 机制与依据 = §6.21（台账 #943）：要求层删除红线（`PROMPT-SYSTEM.md:96`「删除只走既有工具面」）——工具面补全即矛盾消；保险丝 = `rmdir` 自身语义（ENOTEMPTY），零新拒逻辑。否决：① **纯文本收正**（只删「rm -rf」句——能力缺口原样，机检判据「清空目录不再需要 shell 删除动词」不达）；② **实装极窄白名单**（提示词面 + 新门机制——体积远大于 delete 一个分支）；③ **`file_ops` 增 delete**（双工具面同能力——单主原则）；④ **递归删除选项**（违 fail-closed——非空目录数据不可回） |
+| D-TO16 | `delete` 增**空目录分支**（非空拒——保险丝）+ `write-path` 增 `rmdir` op；`tool-docs/delete.md` ∥ param desc 同拍去被禁面指引 | 机制与依据 = §6.21（台账 #943）：要求层删除红线（`PROMPT-SYSTEM.md:96`「删除只走既有工具面」）——工具面补全即矛盾消；保险丝 = `rmdir` 自身语义（ENOTEMPTY），零新拒逻辑。否决：① **纯文本收正**（只删「rm -rf」句——能力缺口原样，机检判据「清空目录不再需要 shell 删除动词」不达）；② **实装极窄白名单**（提示词面 + 新门机制——体积远大于 delete 一个分支）；③ **`file_ops` 增 delete**（双工具面同能力——单主原则）；④ **递归删除选项**（违 fail-closed——非空目录数据不可回）
+| D-TO17 | **SSH 会话机制 = 零原生件路**（`ssh -tt` 强制远端 PTY + `SSH_ASKPASS`（`SSH_ASKPASS_REQUIRE=force`）口令链 + 流式管道；本地侧无需 PTY）+ 池 ∥ 闲置 600 s ∥ 帽 ∥ 审批门既有族 | 详见 §6.22（台账 #1436）：机制可行性成立（口令链两腿实测 + `-tt` 语义面 + 源码两读；端到端 = 实施轮真机腿）；不破零依赖；三端同构。否决：node-pty（只需远端 PTY）· `sshpass` · `script` ∕ `winpty` · argv ∕ stdin 传密 |
+| D-TO18 | **凭据通路面 = `ctx.onSecretInput` 注入缝 + 子进程环境变量**（值只在回调返回路 + ssh 进程环境流动；零入参 ∥ 零入结果 ∥ 零落盘 ∥ 端面零状态留存 + 回显遮蔽） | 详见 §6.22「⑦/⑧」（NS4 机检形 = 全量扫描 0 命中）。否决备选：值作工具入参（入上下文与记录——直违 NS4）· 文件传递（落盘残留面）· fd 传递（Windows 含 `cmd` 中介、继承面未核——不选未验路）· 每次提示重弹 | |
 
 ## 8. 不并项与历史沿革
 
@@ -1200,6 +1432,14 @@ Notes:
 **边界（本增量不做）**：不做 task 工具本体改动（保留）；不做台账（M2 承接）；不做「归册三选一」替代流程（M10 一并砍）。
 
 ## 变更记录
+
+- 2026-10-14（**ssh-session 批 · 收口面文档修正轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 四腿漂移申报 ∥ 父侧裁定 A）：§6.22 与现盘实施齐平——② 补**预探升格**（探连 = 全会话形 + `NumberOfPasswordPrompts=0`；成功即升格（密钥机恰 1 次连接）；认证类失败 ⇒ 凭据窗 ⇒ 单次带密会话；指纹 / 不可达 / 超时 ⇒ 弹窗前硬停）∥ ⑧ 补**掩码守卫（反交错 · 裁 A）**（Ctrl+F 入场排除集；凭据窗在场 ⇒ 明文不落搜索面）；
+  落点表随正（会话 439（拆出运行面 311 = 行 16）∥ i18n 8 键 ∥ 端侧逐档实读（CLI 16 档 / VSC 13 档 / 桌面 13 档）∥ 单测四档）+ 行 16 / 行 17 补行（`ssh-transport.mjs` ∥ `subagent-scheduler.mjs` 取号扫描域）+ 近线注收正（`render-frame` 495/500——另批拆 · 台账 #1437）∥ NS5 两 ⇒ **四档** ∥ E4「零连接尝试」收细（取消 ⇒ 零后续尝试）。**零产品码**。
+
+- 2026-10-14（**ssh-session 批 · 设计评审轮 1 修正轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §3 轮次 1 发现 ②–⑧ · 父侧裁定全收）：§6.22 三裁决 + 网查版本面合入（NS1 收 ⓪ 单支 + 版本面注；选项节转裁决记录形；非密预填档 = 机制 ⑨（落点 ∥ 键形 ∥ 复用范围）；跨平台验证口径写实；携密径审批文案 = 掩码占位；同族池机制三坐标；端侧逐档基线实读；前向引用补「拟新增」标记）；§7 D-TO17 择据同拍收正。**零产品码**。
+
+- 2026-10-14（**ssh-session 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §1 ∥ 需求档 §4.8 · 台账 #1436）：新增 **§6.22 SSH 会话工具（SSH-SESSION）**（零原生件路（`-tt` + askpass + 管道）‖ 口令链 ‖ 提示符判定 ‖ 生命周期 ‖ 超时与帽 ‖ 三端弹窗载荷（`onSecretInput`）‖ 落点清单 ‖ S1–S5 / NS1–NS5 判据 ‖ 用例表 ‖ 先例调查 ‖ 裁决记录 ‖ 边界）；
+  §7 加 **D-TO17 / D-TO18**。**零产品码**（设计轮）。
 
 - 2026-10-07（**浏览器工具批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-browser-tool.md` §2 · 台账 #1007）：§6.7 逐工具契约加 **browser** 条（自启浏览器 + CDP 直控 + 引用步进 + click/evaluate 审批门；设计权威 = `BROWSER-TOOL.md`）。
 

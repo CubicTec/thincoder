@@ -108,7 +108,7 @@ export async function digestTurn(ctx, upstream = false) {
   const tail = state.lines.length
   freezeStartSnapshot(state, agent, tail)
   const digestCtx = manual
-    ? { ...ctx, askPermission: null, askBatchPermission: null, askQuestion: null }
+    ? { ...ctx, askPermission: null, askBatchPermission: null, askQuestion: null, askSecretInput: null }
     : ctx
   const d0 = Date.now()
   logEvent("digest:start", { pendingN: pend0, ...(upstream ? { upstream: true } : {}) })

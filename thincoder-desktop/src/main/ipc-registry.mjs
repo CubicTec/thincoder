@@ -1,5 +1,6 @@
 /**
- * ipc-registry.mjs — 通道注册表族（`docs/desktop/design/IPC.md` §2「唯一入册面」）：**五十二项**（B1 批三新 —— 团队族 `team:status` ∥ `team:login` ∥ `team:logout`，末位 49–51；登录面补全批一增 —— `team:verify`，末位 52；转口档 `src/main/team.mjs`）
+ * ipc-registry.mjs — 通道注册表族（`docs/desktop/design/IPC.md` §2「唯一入册面」）：**五十三项**（B1 批三新 —— 团队族 `team:status` ∥ `team:login` ∥ `team:logout`，末位 49–51；登录面补全批一增 —— `team:verify`，末位 52；
+ * SSH 会话批增一 —— `secret:respond`（凭据门出口），末位 53；转口档 `src/main/team.mjs`）
  * = 白名单逐项 → 处理体映射（`HANDLERS` 表）+ 注册序（`registerIpcHandlers`）——**#28 拆点出档**
  * （批档 §2.5「通道注册表族出档」；纯搬零语义改 —— 表 ∕ 注册 ∕ 定序逐行沿出档前 `ipc.mjs`）。
  *
@@ -16,7 +17,7 @@ import {
   CHANNELS, ipcStats,
   readConfig, openProjectChannel, recentProjects, sessionList, sessionCreate, sessionSwitch,
   sessionRename, sessionDelete, sessionResume, approvalRespond, historyPage, msgSend, msgInterrupt,
-  questionRespond, sessionPrefs, subagentStop, fileOpen, sessionFlags, atComplete, recordAppend, themeState,
+  questionRespond, secretRespond, sessionPrefs, subagentStop, fileOpen, sessionFlags, atComplete, recordAppend, themeState,
   panelState,
   sessionGc, sessionIndex,
 } from "./ipc.mjs"
@@ -85,6 +86,7 @@ const HANDLERS = Object.freeze({
   "team:login": teamLoginChannel,
   "team:logout": teamLogoutChannel,
   "team:verify": teamVerifyChannel,
+  "secret:respond": secretRespond,
 })
 
 /** 按白名单逐项注册（白名单项无处理体 ⇒ 抛——装配期即知，不静默）。 */

@@ -83,7 +83,7 @@ reasoning, provider, images? } → extension _chat()
 
 历史断链事故：只改发射端与渲染端、漏桥 ⇒ `model` 字段自发布首日被丢弃（2026-08-26 修复 + 锁桥测试）。string / 对象双分支在 payload 构造处统一推导（对象载荷字段透传、string 分支字段 `undefined` 安全降级）。
 
-### 3.2 协议增量登记（三十一项——只增不改）
+### 3.2 协议增量登记（三十四项——只增不改）
 
 | # | 消息面 | 增量 | 发射点 | 接收点 |
 |---|---|---|---|---|
@@ -124,8 +124,11 @@ reasoning, provider, images? } → extension _chat()
 | 29 | `teamLoginResult`（**新消息**——host → webview） | `{ ok, reason?, notice? }`——登录回执（`reason` 四值 → 四句出词；`notice` 单码 → 同名冲突一次性提示——单源 = `SETTINGS.md` §2.20） | `panel-messages-settings.mjs` `handleTeamLogin`（实施后实读回填） | `webview/chat-messages.js` `case` → `webview/settings-team.js` `onTeamLoginResult` |
 | 30 | `teamLogout`（**新消息**——webview → host） | 无载荷——退出上行（服务端吊销 best-effort；网络失败照清本地） | `webview/settings-team.js`（退出钮上发） | `src/extension/panel-messages.mjs` `case` → `panel-messages-settings.mjs` `handleTeamLogout`（实施后实读回填） |
 | 31 | `teamLogoutResult`（**新消息**——host → webview） | `{ ok, revokeDelivered? }`——退出回执（缺席 = true；`false` ⇒「服务端吊销未达」一次性提示） | `panel-messages-settings.mjs` `handleTeamLogout`（实施后实读回填） | `webview/chat-messages.js` `case` → `webview/settings-team.js` `onTeamLogoutResult` |
+| 32 | `secretInput`（**新消息**——host → webview） | `{ payload, promptId }`——凭据 / 秘密输入卡（SSH 会话批；`payload` = 核 `onSecretInput` 原样透传（`{ kind, sessionId, host, user, port, fields[], keys{} }`）；`promptId` = 面板单调计数（逐卡配对）；**值只在返回路**） | `src/extension/panel-callbacks.mjs` `makeAskSecretInPanel`（`:88`）+ `cbs.onSecretInput`（`:293`） | `webview/chat-messages.js:207` `case` → `webview/secret-input.js` `showSecretInput` |
+| 33 | `secretInputResponse`（**新消息**——webview → host） | `{ values:{…}|null, promptId }`——凭据卡应答（提交 = 值包 ∥ 取消 = `null`；host 按 `promptId` 精确配对，迟到 / 错序不误 resolve 队头） | `webview/secret-input.js:23`（发射位——字面量构造 `:21`） | `src/extension/panel-messages.mjs:297` `case` → `panel-messages-turn.mjs` `handleSecretInputResponse`（`:175-188`） |
+| 34 | `secretInputCancelled`（**新消息**——host → webview） | `{ promptId }`——abort（Stop）释放未答凭据卡（`questionCancelled` 同构：按 `promptId` 精确移除；无 `promptId`（旧 host）⇒ 移除全部凭据卡） | `src/extension/panel-callbacks.mjs:93`（`makeAskSecretInPanel` onAbort） | `webview/chat-messages.js:210` `case`（摘 `.secret-card`） |
 
-纪律 = **只增不改**（不新增消息类型族、不改既有字段语义）——**新增 / 变更一律入本节登记表**（行 1–31 即全部在案增量；表外增量不入）。发射 / 接收落点：
+纪律 = **只增不改**（不新增消息类型族、不改既有字段语义）——**新增 / 变更一律入本节登记表**（行 1–34 即全部在案增量；表外增量不入）。发射 / 接收落点：
 `thincoder-vscode/src/extension/panel-callbacks.mjs:169`（statusText）· `:170`（turnFrame）· `thincoder-vscode/src/extension/panel-index.mjs:29` ·
 `thincoder-vscode/webview/chat.js:260` · `thincoder-vscode/webview/status-bar.js:27-30/46`。
 
@@ -352,7 +355,7 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | D-P8 | 状态文本载体 = **结构化 `statusText` 消息**（kind 判别 → webview 按 locale 渲染） | 否决 host 直发成品文本（host 不知 locale——复制 i18n = 双源）· 否决不做（判定句要求用例锁新增状态文本） |
 | D-P9 | Send 可见性 = running 期**隐藏** | 否决禁用态（双范式 + 仍占位） |
 | D-P10 | `scrolled N` 段不设——滚动状态 = 悬浮回底钮（§6.1 滚动行：实证例外——行为证据） | 否决补文本段（N 需新造单位 + 与钮重复） |
-| D-P11 | 协议增量 = **只增不改**、**三十一项**登记（§3.2） | 否决 host 直发成品文本 · 否决新增 `turnStart` 族 |
+| D-P11 | 协议增量 = **只增不改**、**三十四项**登记（§3.2） | 否决 host 直发成品文本 · 否决新增 `turnStart` 族 |
 | D-P12 | 合并权限卡**并入 `promptId` 族**（单一释放通道 `releasePermission` + id 精确匹配 + 孤儿回写） | 否决单开释放语义（同语义两通道 · 消费者按类分支）；`shift()` 队列头匹配已驳（D-P4 同据——陈旧卡不误 resolve） |
 | D-P13 | `waiting` 判据含**批权限队列** + **释放即刷**（刷新点 = 释放通道单点 `releasePermission`） | 否决逐路径各补 `_refreshStatus()`（散点——漏一处即残留）· 否决判据只列权限 / question（批卡停驻期读作 idle——状态栏失去「需你输入」语义） |
 | D-P14 | 诊断上行 `panelDiag` = **新消息（行 8 登记）**——出生 / 终态事件面痕迹入主侧日志 | 否决只留 webview 环形日志（DevTools 不可回读——本次事故正因不可回读而盲；理由详见 `WEBVIEW.md` D-W22）· 否决并入既有上行消息字段（无同缝——`webviewReady` 是一次性启动拍） |
@@ -449,6 +452,8 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | `question` | src/extension/panel-callbacks.mjs:55 | webview/chat-messages.js:177 | `活` | — |
 | `questionCancelled` | src/extension/panel-callbacks.mjs:62 | webview/chat-messages.js:180 | `活` | — |
 | `reasoning` | src/extension/panel-callbacks.mjs:145 | webview/chat-messages.js:61 | `活` | — |
+| `secretInput` | src/extension/panel-callbacks.mjs:88（`makeAskSecretInPanel`——SSH 会话批，2026-10-14 实读） | webview/chat-messages.js:207 | `活` | 凭据 / 秘密输入卡（载荷 `{ payload, promptId }`——核 `onSecretInput` 原样透传；**值只在返回路**；§3.2 行 32） |
+| `secretInputCancelled` | src/extension/panel-callbacks.mjs:93（onAbort——摘卡） | webview/chat-messages.js:210 | `活` | abort 释放未答凭据卡（`questionCancelled` 同构；§3.2 行 34） |
 | `sessions` | src/extension/panel-session.mjs:262 | webview/chat-messages.js:134 | `活` | 载荷增 `ledger`（账本异常注记——LEDGER-RELIABILITY 批；渲染 / 文案 = `WEBVIEW.md` §4）；② 列收正 = 实施后现位（原记 `:249`——实读 2026-09-28） |
 | `shellCandidates` | src/extension/panel-messages-settings.mjs:187/src/extension/panel-settings-push.mjs:106/src/extension/panel-settings-push.mjs:95 | webview/chat-messages.js:168 | `活` | 打开拍回批（F-W8）；另有 `getShellCandidates` 拉取路径 |
 | `statusText` | src/extension/panel-callbacks.mjs:168/src/extension/panel-index.mjs:29 | webview/chat-messages.js:200 | `活` | `kind` 族 = 载荷变体（不单列——over-count #1 已证伪） |
@@ -527,6 +532,7 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 | `saveProxySettings` | webview/settings-env.js:113 | src/extension/panel-messages.mjs:351 | `活` | 载荷 = 逐字段（`SETTINGS.md` §2.8） |
 | `saveShellSettings` | webview/settings-env.js:129/:144 | src/extension/panel-messages.mjs:350 | `活` | F-W11 接线落地（`SETTINGS.md` §2.9）；空值 ⇒ 删键 = 路径册 #2（`System default` 显式项） |
 | `saveWebsearchKey` | webview/settings-tools.js:36 | src/extension/panel-messages.mjs:288 | `活` | — |
+| `secretInputResponse` | webview/secret-input.js:23（发射位——字面量构造 `:21`；2026-10-14 实读） | src/extension/panel-messages.mjs:297 | `活` | 凭据卡应答（提交 = 值包 ∥ 取消 = `null`；host 侧 `handleSecretInputResponse`（`panel-messages-turn.mjs:175-188`）按 `promptId` 配对；§3.2 行 33） |
 | `selectModel` | webview/input.js:31 | src/extension/panel-messages.mjs:229 | `活` | 忙期照写（2026-10-04 解锁批——钮面零门；落盘保护 = 偏好键单写者——`WEBVIEW.md` §4.2）· 会话选定写回 —— `WEBVIEW.md` §4.10 |
 | `selectReasoning` | webview/input.js:32 | src/extension/panel-messages.mjs:239 | `活` | 忙期照写（同上——`WEBVIEW.md` §4.2） |
 | `setAdvisorGuard` | webview/input.js:37/webview/settings-agent.js:167 | src/extension/panel-messages.mjs:346 | `活` | — |
@@ -546,6 +552,8 @@ webview：agentSettings 快照 → mode-buttons.js 的 `_engOn` → `#eng-btn` �
 **方向口径**：本表只收 webview → host。**「删」= host 消费位在位而 webview 发射恒无（死 handler）**——处置逐条入批档（`docs/batches/2026-09-18-vsc-settings-wiring.md` §2）并已随实现落地（三删 + 一接线转活——**本表现零 `删` 行**）；**删除落地 ⇒ 源零位 ⇒ 表行同步退场**（不留悬空行——同 §12 口径）。**「补」= 发射在位而 host 缺消费位**（本表现零行）。
 
 ## 变更记录
+
+- 2026-10-14（**ssh-session 批 · 设计收口轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 VSC 腿 · 台账 #1436）：§3.2 补**行 32–34**——凭据 / 秘密输入卡三新消息（`secretInput` ∥ `secretInputResponse` ∥ `secretInputCancelled`）：方向 / 载荷 / 落点在册（形单源 = 核 `TOOLS.md` §6.22 ⑧；协议形 = `question` 家族同构）+ 计数三处同拍（标题「三十一项 ⇒ **三十四项**」∥ 纪律行「行 1–31 ⇒ 1–34」∥ §7 D-P11 同改）∥ §12 补两行（`secretInput` ∥ `secretInputCancelled`）∥ §13 补一行（`secretInputResponse`）——实施落地实读登记（2026-10-14）。**协议判别式集 ∥ 既有消息名 / 载荷字段零变**（新增消息登记）。明细 = 批档 §5 VSC 腿。
 
 - 2026-10-10（**team-login-client-access 批（B1）· 设计面登记与估数补齐 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §2 实施期修复块 · 台账 #1212）：
   **§3.2 补行 27–31**——团队族五新消息（`teamStatus` ∥ `teamLogin` ∥ `teamLogout` ∥ `teamLoginResult` ∥ `teamLogoutResult`）：方向 / 载荷 / 回执面在册（形单源 = `docs/vsc/design/SETTINGS.md` §2.20）

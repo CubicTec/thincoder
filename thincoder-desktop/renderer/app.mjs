@@ -42,6 +42,7 @@ import { createMenuActions } from "./menu-actions.mjs" // 菜单动作分派（D
 import { createPanelReadout } from "./panel-readout.mjs" // 实况回读上报（子代理面板批 —— `panel:state` 渲染→主单向；帧出口挂点见 `applyFrame`）
 import { initPoolWidth, refreshResizerLabel } from "./pool-width.mjs" // 右栏宽度拖动（D30 · #742 —— chrome 级直写面）
 import { attachSearch } from "./search.mjs"
+import { attachSecretPrompt } from "./secret-prompt.mjs" // 凭据弹窗族（SSH 会话批 —— `ev:secret` 待答项 ⇒ 弹窗；值只在返回路）
 import { configuredFlag, patchSettings, returnToBottom, setFollowing, store } from "./store.mjs"
 import { initTheme } from "./theme.mjs" // 主题三态（D33 · #743 —— chrome 级状态直写面；装配期一次 + 切片播种）
 import { MAX_RENDER_BLOCKS, attachScroll, compensateTop, nextWindow } from "./views/chat-scroll.mjs"
@@ -61,6 +62,9 @@ const panelReadout = createPanelReadout({ invoke: (channel, payload) => host?.in
 // 重挂触发切片（`SESSION_KEYS` / `CHAT_KEYS` …… 各面自持处为单源）随分派体出档 `renderer/frame-dispatch.mjs`（更新纪律收核批 —— 键面 = 分派语义；装配面只留帧接线与面回调表）。
 const { paintPool, handlers: poolHandlers } = attachPool(host) // 池面一族（右栏重挂 + 两出口 —— 出档 `renderer/mount-pool.mjs`）
 const { paintCards } = attachCards(host) // 卡面一族（提问 / 计划 —— 挂载 + 作答 / 取消出口；出档 `renderer/mount-cards.mjs`）
+// 凭据弹窗一族（SSH 会话批 —— 自持订阅：活动会话有待答凭据项 ⇒ 开 ∥ 无 ⇒ 退场；出档 `renderer/secret-prompt.mjs`；
+// 值只在返回路 —— 不入 store ∥ 不入日志）。装配一次；退订句柄本档无消费点（页面生命周期 = 进程生命周期）。
+attachSecretPrompt(host)
 // 设置面 / 向导一族（自持订阅 —— 出档 `renderer/mount-settings.mjs`；目录出口复用项目面链）；
 // `onProvidersChanged`（全渠扇出批 · #3）= 设置面 provider 写成功 ⇒ 输入区候选面强制刷新（迟绑定：`composer` 于下行装配）；
 // 返回面 `team.refresh`（登录面补全批）= 团队面启动读口（于下行触发）。

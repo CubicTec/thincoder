@@ -75,6 +75,20 @@ export function formatPermission(name, args) {
     const at = lastPageUrl() ? ` @ ${lastPageUrl()}` : ""
     return cap(`${action}${shown ? ` ${shown}` : ""}${at}`, 300)
   }
+  if (base === "ssh") {
+    // TOOLS.md §6.22 NS3：写动作展示「将发送的原文」（人可见判据——显示面提示，非拦截）；
+    // 携密径（`secret_input`）改**掩码占位**——值入文案即入上下文 ∥ 审批记录 ⇒ 违 NS4（值不回显）。
+    const action = String(args.action ?? "")
+    const sid = args.id ? `ssh#${String(args.id).replace(/^ssh#/i, "")}` : "ssh"
+    if (action === "connect") {
+      const target = args.host ? `${args.user ? `${args.user}@` : ""}${args.host}${args.port ? `:${args.port}` : ""}` : "(missing host)"
+      return cap(`${target}${args.label ? `（${args.label}）` : ""}`, 300)
+    }
+    if (action === "send") return `${sid} — 将发送：\n${cap(String(args.data ?? ""), 500)}`
+    if (action === "secret_input") return `${sid} — 将发送：••••••（携密——值不回显）${args.label ? `（${args.label}）` : ""}`
+    if (action === "close") return `${sid} — 关闭会话`
+    return cap(`${action} ${sid}`, 300)
+  }
   return cap(summarize(args), 300)
 }
 

@@ -20,6 +20,10 @@ import { lintTool } from "@thincoder/core/tools/linter.mjs"
 import { lspTool, configureLspHost } from "@thincoder/core/tools/lsp.mjs"
 import { executeTool } from "@thincoder/core/tools/execute.mjs"
 import { questionTool } from "@thincoder/core/tools/question.mjs"
+// SSH 会话工具族（批 ssh-session · 台账 #1436 · 设计单源 = `docs/core/design/TOOLS.md` §6.22）——
+// 端装配清单行（零实现副本）：实现在核（`@thincoder/core/tools/ssh.mjs`），凭据窗经
+// `ctx.onSecretInput` 缝落本端卡片（`src/extension/panel-callbacks.mjs` `makeAskSecretInPanel`）。
+import { sshTool } from "@thincoder/core/tools/ssh.mjs"
 import { gitTool as coreGitTool } from "@thincoder/core/tools/git.mjs"
 import { websearchTool, fetchTool } from "@thincoder/core/tools/web.mjs"
 import { fileOpsTool, processTool, getCurrentTimeTool, waitForTool } from "@thincoder/core/tools/ops.mjs"
@@ -162,7 +166,7 @@ export { globTool, grepTool }
 export { bashTool }
 export { websearchTool, fetchTool }
 export { insertAfterTool, applyPatchTool, lsTool, deleteTool }
-export { lintTool, lspTool, executeTool, questionTool, readImageTool }
+export { lintTool, lspTool, executeTool, questionTool, sshTool, readImageTool }
 export { codeSearchTool, docSearchTool }
 export { ideTool, focusTool, fileOpsTool, processTool, getCurrentTimeTool, waitForTool, treeTool }
 export { toOpenAISchema }
@@ -175,7 +179,7 @@ export const builtinTools = [
   lintTool, lsTool, deleteTool,
   globTool, grepTool, bashTool,
   gitTool,
-  websearchTool, fetchTool, questionTool,
+  websearchTool, fetchTool, questionTool, sshTool,
   repoOutlineTool, codeSearchTool, docSearchTool,
   lspTool, executeTool,
   memoryTool,

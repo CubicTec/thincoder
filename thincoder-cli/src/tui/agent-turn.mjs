@@ -106,7 +106,7 @@ async function runAgentTurnInner(ctx, text, opts) {
 /** runAgentTurn 正文（原 `runAgentTurnInner` 逐字——唯一改动 = 链尾 `sync()` 上收收口层 `finally`）。 */
 async function runAgentTurnBody(ctx, text, opts) {
   const { autoTurn = false, skipSession = false, upstreamTurn = false, timerTurn = false } = opts ?? {} // upstreamTurn / timerTurn：系统轮旗标（§6.27.12.5 D/I · §6.30.3 D-TW4）——透传核 `runAgent`，仅供域文本选择
-  const { agent, state, pushLine, pushLabel, render, scheduleRender, ensureAssistantLabel, askPermission, askBatchPermission, askQuestion, handleSlash } = ctx
+  const { agent, state, pushLine, pushLabel, render, scheduleRender, ensureAssistantLabel, askPermission, askBatchPermission, askQuestion, askSecretInput, handleSlash } = ctx
   // 可注入覆盖（测试用）；默认走真实实现
   const runAgentImpl = ctx.runAgent ?? runAgent
   const saveSessionImpl = ctx.saveSession ?? saveSession
@@ -181,7 +181,7 @@ async function runAgentTurnBody(ctx, text, opts) {
   render()
 
   const { callbacks, flushStream } = buildToolCallbacks({
-    agent, state, pushLine, render, scheduleRender, ensureAssistantLabel, askPermission, askBatchPermission, askQuestion, saveSessionImpl,
+    agent, state, pushLine, render, scheduleRender, ensureAssistantLabel, askPermission, askBatchPermission, askQuestion, askSecretInput, saveSessionImpl,
   })
 
   // try/finally: every exit path — including an unexpected throw inside the catch

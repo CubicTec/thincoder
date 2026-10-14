@@ -3,6 +3,8 @@
  *  `state.search.capped` 提示标志（渲染面提示行；次要无界面）。
  */
 import { SEARCH_MATCH_CAP } from "./display-budget.mjs"
+// 搜索入场守卫的掩码族判据（2026-10-14 裁 A——SSH 凭据窗批）：团队密码步掩码位单源 = ask-steps.mjs
+import { askMaskActive } from "./ask-steps.mjs"
 
 export function performSearch(state) {
   if (!state.search) return
@@ -51,11 +53,24 @@ export function scrollToMatch(state, lineIndex) {
   state.scroll = Math.max(0, state.lines.length - estimatedLine - visibleH + 3)
 }
 
+/** 掩码族在场（裁 A 三处泄漏类单源——凭据窗整面 ∥ 团队问句面整面 ∥ 密码步）：搜索层让位判据
+ *  （进场 ∥ 已开两态同守；逐键重判——不依赖「进场时」一次判定）。 */
+function maskSurfacePresent(state) {
+  return state.secretPrompt != null || state.teamAsk != null || askMaskActive(state)
+}
+
 /** Handle search-mode keyboard events.
  *  Returns true if the key was consumed (search mode handled it).
  *  Call before other handlers so search mode has priority. */
 export function handleSearchKey(str, key, state, render) {
-  // Ctrl+F toggles search mode ON
+  // 反交错明文口（2026-10-14 · SSH 凭据窗批 fix 轮）：掩码族在场 ⇒ 搜索层整体让位——键一律走
+  // 掩码层（含「搜索已开 → 凭据窗弹出」交错：否则键入旁路到 `state.search.query` 明文回显）。
+  // 返回 false 使键按无搜索态照常下行（掩码面吞面 ∥ 可打印键落编辑族 = 掩码层收字）；
+  // 搜索态原地保留——掩码退场即恢复（query 不清、匹配不清）。
+  if (maskSurfacePresent(state)) return false
+
+  // Ctrl+F toggles search mode ON——权限 / 提问模态在场时不入场（模态独占按键——搜索框可开不可用）；
+  // 掩码族在场时由上行让位守卫统管（Ctrl+F 同不入场）。
   if (key.ctrl && key.name === "f" && !state.permission && !state.question) {
     if (!state.search) {
       state.search = { query: "", matches: [], index: 0 }

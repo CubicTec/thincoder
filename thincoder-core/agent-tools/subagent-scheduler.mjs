@@ -398,14 +398,15 @@ export function maybeRefillAsync(parent) {
  * spawn（subagent-spawn.mjs async 分支）、escalate（escalate-async.mjs）、async-advisor
  * 池（advisor-async.mjs——§6.10 跨池共号）、**后台 bash 任务池**（bash-async.mjs——#9：
  * `_bgTasks` 同入扫描域——VSC 形计数器不随 run 存活，缺此扫描会与在途 bg 条目撞号）、
- * **后台浏览器动作池**（browser-async.mjs——批 browser-async-fix：`_browserTasks` 同入）共用；
+ * **后台浏览器动作池**（browser-async.mjs——批 browser-async-fix：`_browserTasks` 同入）、
+ * **SSH 会话池**（ssh-session.mjs——批 ssh-session：`_sshSessions` 同入——同因）共用；
  * executeAsyncSpawn 直读 counter（分配与
  * 消费同步——无 await 间隙）。CLI 两池键均为字符串（set(String(id))——解析分支防御保留）。
  * @returns {number} 全池唯一的下一 id（单调——进程内）
  */
 export function nextSubagentId(parent) {
   let poolMax = 0
-  for (const pool of [carrierField(parent, "_asyncSubagents"), carrierField(parent, "_asyncAdvisors"), carrierField(parent, "_bgTasks"), carrierField(parent, "_browserTasks")]) {
+  for (const pool of [carrierField(parent, "_asyncSubagents"), carrierField(parent, "_asyncAdvisors"), carrierField(parent, "_bgTasks"), carrierField(parent, "_browserTasks"), carrierField(parent, "_sshSessions")]) {
     if (!pool || pool.size === 0) continue
     for (const k of pool.keys()) {
       const n = typeof k === "number" ? k : Number.parseInt(k, 10)

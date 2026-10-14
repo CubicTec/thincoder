@@ -34,7 +34,8 @@
  *  VSC `panel-callbacks.mjs:102-103`；同点收口 `subKey` 消费 = sync 块冻结）；② 增 `goalOf` 采样注入面 ——
  *  goal 工具结果时点采样 ⇒ `ev:goal`（核 `agent.goal` 单源；值形对齐核卡渲染预期）。
  * 依赖面 = 注入（零宿主依赖 ⇒ 平 node 直测）：`post(channel, payload)` = 主进程出站面 ·
- * `askSingle` / `askBatch` / `askQuestion` = 三门挂起（表与 resolve 在 `suspensions.mjs`，本档只转口、不持表）·
+ * `askSingle` / `askBatch` / `askQuestion` / **`askSecret`** = 四门挂起（表与 resolve 在 `suspensions.mjs`，本档只转口、不持表；
+ * `askSecret` = SSH 会话批增凭据门 —— 载荷七键与值返回路面 = 设计 §6.22 ⑧）·
  * `syncLiveOf(key, head)` = 核 sync registry 只读采样（X10 可中止事实——核不可算，须端供给）。
  */
 import {
@@ -122,7 +123,7 @@ function subChunkOf(face, a, b) {
  *  非协议 ⇒ `ev:token` 文本面；推理 chunk ⇒ `ev:reasoning`）——十键为 `ev:*` 出站映射，第十一键 `onUsage` 非通道（见下）；
  *  **R4 增四回调**（`onWait` ⇒ `ev:statusText`；`onCompressStart` ∕ `onCompress` ∕ `onCompressFail` ⇒ `ev:compress`——见档头 R4 注）；
  *  `reassertLive` = 存活投影挂点（宿主拍体调用面）：
- *  `createBridge({post, askSingle, askBatch, askQuestion, tokensOf, syncLiveOf, now, advisorOf, extractLinks})` ⇒ `bridge(key)`。每帧 `key` 前置并入
+ *  `createBridge({post, askSingle, askBatch, askQuestion, askSecret, tokensOf, syncLiveOf, now, advisorOf, extractLinks})` ⇒ `bridge(key)`。每帧 `key` 前置并入
  *  （帧 payload 自带同名键时后者胜 —— 形状同原实现）。
  *  **对齐第三批两注入面（皆可缺省 —— 缺 ⇒ 该项零载波，零连带）**：`advisorOf(key)` = advisor 轮次只读采样
  *  （宿主 `agent-host.mjs` 供 `_advisorRound` / `provider.model`；返回 `null` ⇒ 不携两键）；
@@ -132,7 +133,7 @@ function subChunkOf(face, a, b) {
  *  ⇒ 零载波；`null` = goal 缺席（取消）——两义不可合）。
  *  relay 面 per-键 scope（`pendingAsync` / `queued` 缓存——核 `createRelayScope`；**多会话互不串味**：
  *  各键 `role#id` 可同名，缓存不得跨键共享）。 */
-export function createBridge({ post, askSingle, askBatch, askQuestion, tokensOf, syncLiveOf, now, advisorOf, extractLinks, persistDistilled, goalOf }) {
+export function createBridge({ post, askSingle, askBatch, askQuestion, askSecret, tokensOf, syncLiveOf, now, advisorOf, extractLinks, persistDistilled, goalOf }) {
   const scopes = new Map() // 会话键 → relay scope（懒建 · 随键存活）
   const scopeOf = (key) => {
     if (!scopes.has(key)) scopes.set(key, createRelayScope())
@@ -276,6 +277,11 @@ export function createBridge({ post, askSingle, askBatch, askQuestion, tokensOf,
       // 作答门（`question` 工具 ⇒ 用户真作答）：转口 `askQuestion` ⇒ 返**悬起 Promise**（出站与结算住
       // `suspensions.mjs` —— 桥零文案）；工具结果 = 作答串 ∥ 取消串（`QUESTION_CANCELLED`）。
       onQuestion: (question, options) => askQuestion(key, question, options),
+      // 凭据门（SSH 会话工具族 ⇒ 用户真输入 —— `ctx.onSecretInput` 缝，`docs/core/design/TOOLS.md` §6.22 ⑧）：
+      // 转口 `askSecret` ⇒ 返**悬起 Promise**（出站与结算住 `suspensions.mjs` —— 桥零文案）；返回值 =
+      // `{ <name>: <值> }`（窗内提交）∥ `null`（取消 / 打断）。**值只在返回路**：桥本面零转写 ∥ 零落盘 ∥ 零日志
+      // （载荷只携描述面 `fields` / `keys` —— 值不由本档产生也不由本档落写）。
+      onSecretInput: (req) => askSecret(key, req),
       onTaskUpdate: (items) => at("ev:task", { items }),
       // 蒸馏落位（R3 · #520 —— 核 `explore-distill.mjs:150`）：机器行已被压缩版替换 ⇒ 注入面按本键立即
       // 重落盘（落盘动作经端侧装配 —— 桥零宿主依赖律不破；缺注入 ⇒ 零动作，不假造落盘）。

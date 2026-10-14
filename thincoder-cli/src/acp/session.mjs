@@ -17,9 +17,10 @@ import { runAgent } from "@thincoder/core/agent.mjs"
 import { saveSession } from "@thincoder/core/session.mjs"
 import { buildAcpCallbacks } from "./bridge.mjs"
 
-export function createAcpSession({ id, agent, notify, request = async () => { throw new Error("no request channel") }, log = () => {}, run = runAgent, save = saveSession, clientCaps = {} }) {
+export function createAcpSession({ id, agent, notify, request = async () => { throw new Error("no request channel") }, log = () => {}, run = runAgent, save = saveSession, clientCaps = {}, onSecretInput = null }) {
   let controller = new AbortController()
-  const callbacks = buildAcpCallbacks({ sessionId: id, agent, notify, request, log, clientCaps })
+  // onSecretInput（SSH-SESSION 批 §6.22 ⑧）：无 UI 显式拒由装配侧给（acp.mjs）；缺省零注入
+  const callbacks = buildAcpCallbacks({ sessionId: id, agent, notify, request, log, clientCaps, onSecretInput })
   let queue = Promise.resolve()
   let busy = false
 

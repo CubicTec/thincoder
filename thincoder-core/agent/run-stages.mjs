@@ -18,7 +18,7 @@ import { carrierField, getAsyncPool, releaseSettledEntry } from "../agent-tools/
 import { accountDigestRound, isDigestRound } from "./digest-account.mjs"
 // 批 4 CLI-ASYNC-DISCARD（AGENT-LOOP-ASYNC-POOL.md §6.20）：中止分支「只清已死」收尾单点
 // （#9：+ 后台 bash 任务族——逐条杀树 + 出池 + 墓碑）
-import { discardAbortedPool, discardAbortedAdvisors, discardAbortedBgTasks, discardAbortedBrowserTasks } from "../agent-tools/async-discard.mjs"
+import { discardAbortedPool, discardAbortedAdvisors, discardAbortedBgTasks, discardAbortedBrowserTasks, discardAbortedSshSessions } from "../agent-tools/async-discard.mjs"
 // R10 L3 (MULTI-INSTANCE-COLLAB §2a.5 D-L3a)：回合末域登记 flush（写工具钩子累积 →
 // 整写一次本实例 peers 文件——无写入跳过；失败容忍不抛）
 import { flushPeerDomains } from "../peer-domains.mjs"
@@ -216,6 +216,7 @@ export async function finalizeAgentTurn(agent, ctx) {
     discardAbortedAdvisors(agent)
     discardAbortedBgTasks(agent)
     discardAbortedBrowserTasks(agent) // 批 browser-async-fix：后台浏览器动作同面（不杀浏览器）
+    discardAbortedSshSessions(agent) // 批 ssh-session：SSH 会话同面（逐条杀树——远端连接该断）
     // R17: the consult family dies with the user stop (marked stopped — no digest).
     cleanupConsultSessions(agent)
     // ASYNC-RESULT-CONTAINER.md D2：pending 单容器——中止丢弃 consult/escalate 族停靠

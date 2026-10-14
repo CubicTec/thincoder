@@ -46,6 +46,10 @@
  * **`/help` 增量（同批 2026-10-01②）六键**（`slash.help.label` ∥ `slash.desc.{model,auto,plan,eng,help}`）——
  * 消费面 = 端装配面 `printHelp` 口经核 `formatHelp` 取词（非面板拦截段）；en 值 = CLI 同名命令 `desc` 逐字（机检）。
  * 零落盘 · 零 `node:` / 零裸包（渲染面静态闭包判据）。
+ * ⑭ **凭据弹窗族（SSH 会话批 · 2026-10-14 · 台账 #1436）**：`renderer/secret-prompt.mjs` 取词三键
+ * （`secret.label` 对话可及名 ∥ `secret.submit` ∥ `secret.cancel`）——值逐字同 VSC `locales/{en,zh}.json` 同名键
+ * （同批三端词面对齐）；载荷 `keys.title` / `keys.prompt`（核字典键）与字段标签 `ssh.field.<name>` 不在本档
+ * （核域键经 `config:read` 投影，缺键兜底 = 键名自身 ∥ 字段原名）。
  */
 export const VIEWS_DICT = Object.freeze({
   en: {
@@ -234,6 +238,10 @@ export const VIEWS_DICT = Object.freeze({
      "slash.desc.plan": "toggle plan mode (design first, then implement)",
      "slash.desc.eng": "toggle engineering mode — strict methodology enforcement",
      "slash.desc.help": "this list",
+    // ── ⑭ 凭据弹窗族（SSH 会话批 · 2026-10-14 —— 值逐字同 VSC `locales/en.json` 同名键）──
+    "secret.label": "Credential input",
+    "secret.submit": "Submit",
+    "secret.cancel": "Cancel",
   },
   zh: {
     // ── ① 对话流 ──
@@ -418,5 +426,9 @@ export const VIEWS_DICT = Object.freeze({
      "slash.desc.plan": "切换计划模式（先设计，再实现）",
      "slash.desc.eng": "切换工程模式——严格方法论约束",
      "slash.desc.help": "本清单",
+    // ── ⑭ 凭据弹窗族（同上一一对应 —— 值逐字同 VSC `locales/zh.json` 同名键）──
+    "secret.label": "凭据输入",
+    "secret.submit": "提交",
+    "secret.cancel": "取消",
   },
 })

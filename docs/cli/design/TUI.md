@@ -32,7 +32,8 @@
 | `thincoder-cli/src/tui/update-notice.mjs` | 后台升级提示（`upgradeFailureText` / `pendingNoticeReady` 纯函数 + `createUpdateNotice` 装配） |
 | `thincoder-cli/src/tui/key-handler.mjs` | 按键分发**分派器**（#226 拆分后留守）：attention 清位 + 三模态前置委派（permission / question / search）+ Ctrl+C 族委派 + F1 快捷键表 + Ctrl+I 入口 + interrupt 模态 + 五族顺序委派（委派守卫 = 原块入口条件）；`clearAttention` / `convMaxScroll` 导出 |
 | `thincoder-cli/src/tui/key-handler-ctrlc.mjs` | Ctrl+C 族（picker 取消 / 武装窗口全停 / 挂起态两级中止 / 回合 interrupt / 空闲退出武装——五分支） |
-| `thincoder-cli/src/tui/key-handler-modals.mjs` | picker 导航（含窗口高度同源）+ 首启 wizard 两步键处理 |
+| `thincoder-cli/src/tui/key-handler-modals.mjs` | picker 导航（含窗口高度同源）+ 首启 wizard 两步键处理
+| `thincoder-cli/src/tui/secret-prompt.mjs` | SSH 凭据窗面体单源（SSH-SESSION 批 §6.22 ⑧——模态族第四支）：载荷归一 · 步进 · 掩码判据 · 目标 / prompt / 标签行 · `secretPromptSubmit` / `secretPromptCancel` / `runSecretPrompt`（字段决议闭包——值只走返回路）· 无 UI 拒件 `refuseSecretInput` |
 | `thincoder-cli/src/tui/key-handler-busy.mjs` | **busy 门禁**（Enter 队列受理（容量 8）+ 吞面四 / Tab 吞——`docs/cli/design/TUI-INPUT-BOX.md` §4.1） |
 | `thincoder-cli/src/tui/key-handler-scroll.mjs` | 翻页（PgUp / PgDn + `loadOlder` 边界加载）/ ↑↓ 三规则 + 历史导航 / ←→ · Home · End 光标 |
 | `thincoder-cli/src/tui/key-handler-edit.mjs` | 编辑族：Tab 补全 / Ctrl+U 清框 / 退格 · 删除 / Enter（多行换行 · 挂起空闲入队（容量 8） · `submit`）/ Ctrl+V 文本 · Alt+V 图片粘贴 / 可打印字符 |
@@ -94,7 +95,7 @@
 - **Shift+Enter**：stdin 层 `translateShiftEnter` 把 CSI-u 的 Shift+Enter 序列翻译为 `\x1b\r` → `key-handler-edit.mjs` 插入 `\n`
   （多行键三层方案见 `docs/cli/design/TUI-INPUT-BOX.md` §5）。
 - **state 对象**（渲染全部数据源）：`lines` / `streaming` / `reasoning` / `_advisorBlocks` / `input`（codepoint 数组）/
-  `cursor` / `history` / `scroll` / `_foldScroll` / `_followTail` / `processing` / `controller` / `permission` / `question` /
+  `cursor` / `history` / `scroll` / `_foldScroll` / `_followTail` / `processing` / `controller` / `permission` / `question` / `secretPrompt`（SSH 凭据窗——模态族第四支） /
   `picker` + `pickerStack` / `wizard` / `tasks` / `dims` / `tokens` / `ctxCache` / `search` / `expandedBlocks` / `foldEnabled` /
   `exitArmed` / `suspAbortArmed` / `_lineIdCounter` / `subTasks` / `queue` / `interruptPrompt` / `pendingNotice` /
   `pendingInput` / `attentionAwaiting`（§7）/ `_history*` 等。
@@ -126,14 +127,16 @@
 ```text
 permission（y/n/a/esc；batch a/o/n；continue / retry y/n）
 → question（选项 ↑↓ / enter / esc，自由文本——key-modes）
-→ search 模式（Ctrl+F 进入：Ctrl+N/P/G/R 导航、esc 退出、字符输入过滤）
+→ search 模式（Ctrl+F 进入：Ctrl+N/P/G/R 导航、esc 退出、字符输入过滤）——**入场排除集 = 权限 ∥ 提问 ∥ 凭据窗 ∥ 团队问句面 ∥ 密码步**（掩码守卫——见下）
 → interruptPrompt（Ctrl+I 后输入注入消息——创建 / 模态分支先于 picker）
 → picker 栈 / wizard（↑↓ 选择、enter 确认、esc 取消）
+→ 凭据窗（`secretPrompt`——Esc 整窗取消 ∥ Enter 提交（含 `enter` ∥ 裸 `\r` 变体）；↑↓ / PgUp·PgDn 归面并吞；可打印键落编辑族）
 → 正常输入编辑（字符 / 退格 / Ctrl+U / Ctrl+V / ↑↓ 竖移·历史 / 多行）
 ```
 
 - **模态分支**（`key-modes.mjs`）：permission / question / interruptPrompt 激活时**消费全部按键**（含未匹配键——不落入下层编辑路径）；
   搜索模态另居 `key-handler-search.mjs`。
+- **掩码守卫（反交错——SSH-SESSION 批 · 裁 A）**：凭据窗 / 团队问句面 / 密码步在场 ⇒ Ctrl+F **不入场**（搜索框 = 明文面——旁路封口；单源 = `ask-steps.mjs` `askMaskActive`）；**掩码三面**（凭据窗 / 团队问句面 / 密码步）在场（含搜索框已开时弹出）⇒ 键路由归掩码面、明文不落搜索面（已开搜索支路 = **键路由每键重判**——随本批小复触落代码）。
 - **busy 门禁**（`processing` 含 digest 单一判据）：**输入不禁**——打字照常进输入框回显（提交面受理分流 = `docs/cli/design/TUI-INPUT-BOX.md` §4.1；吞面不回滚字符）；
   **Enter 提交 = busy 队列受理（容量 8）**（非模态期——放行判据 = `docs/cli/design/TUI-INPUT-BOX.md` §4.1（挂起两态不再排除）；
   二次提交语义同处，本档不重述——D2）；**斜杠命令同禁发**（白名单机制已删——`/exit` 也发不出，退出靠 Ctrl+C 终端层武装通道）；
@@ -939,3 +942,5 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 - 2026-10-12（**timer-completeness 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-10-12-timer-completeness.md` §1 · 台账 #1321）：§7.6 `/timers` 行扩 **kind 段**（`每 <N>m` ∥ `每天 <HH:MM>` ∥ `于 <YYYY-MM-DD HH:MM>`——一次性行逐字零变）；取消面句收正 = **取消 = 模型工具 `timer` 的 `cancel` 动作**（`/timers` 保持只读）。机制单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.18。明细 = 批档 §2。
 
 - 2026-10-12（**timer-completeness 批 · 设计评审轮 1 修正（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-timer-completeness.md` §3 轮次 1 · 评审 #282 · 父侧逐条裁收）：发现 1（🔴）§7.6 对位行收正 = **已接线（阶段 2）**（原「本批不接」句删——与 `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.5 ∥ §6.30.14 现态对齐；同节同族残留自查 = 零）；发现 3 §7.1 ∥ §7.2 登记 **周期项在途 ⇒ 除外恒生效——有意语义**（口径单源 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.18）；发现 7 §7.6 `/timers` 行 `<dur>` 定形（`<mm:ss>` ∥ `<h:mm:ss>`）＋ `每 <N>s` 非整分秒形。**机制零改**（错述收正 ∥ 口径登记 ∥ 格式定形）。明细 = 批档 §2 fix 轮块。
+
+- 2026-10-14（**ssh-session 批 · 设计收口轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 CLI 腿 ∥ 台账 #1436）：§1 模块地图补 `thincoder-cli/src/tui/secret-prompt.mjs` 行（凭据窗面体单源——模态族第四支）；§2 state 补 `secretPrompt` 切片；§4 状态优先级补**凭据窗行** + **掩码守卫（反交错）**条（Ctrl+F 入场排除集 ∥ 凭据窗在场明文不落搜索面——裁 A）。**零产品码**（收口面齐平）。

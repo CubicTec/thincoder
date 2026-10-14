@@ -1,7 +1,8 @@
 /**
  * panel-callbacks.mjs — runAgent 回调装配（webview 桥接面——2026-09-05 实践轮自
  * panel-chat.mjs runPanelChatImpl 按「骨干—细节两层」提取：回调工厂是独立决策
- * （25 个 onX 的 webview 桥协议——白名单字段/超时截断/压缩生命周期/子代理载荷），
+ * （25 个 onX 的 webview 桥协议——迁出时点数，今 28（含 ssh-session 批 `onSecretInput`）；
+ * 白名单字段/超时截断/压缩生命周期/子代理载荷），
  * 从 405 行回合驱动器提出后，impl 主干 = 阶段调用序列。闭包变量参数化：桥接目标
  * panel + 阶段产物（cwd/p/lines/槽位/autoTurn）作 deps——verbatim 移动，语义零变。
  * 四档结构拆分批（2026-09-18 · VSC-DEBT §12.2.3）：relay 中继面 + 任务可见性族投递队列迁出至
@@ -62,6 +63,34 @@ export function makeAskInPanel(panel) {
       if (i >= 0) panel._questionQueue.splice(i, 1)
       // promptId 随行——webview 据此移除对应卡片（questionCancelled case——chat.js）
       panel._panel?.webview.postMessage({ type: "questionCancelled", promptId: id })
+      resolve(null)
+    }
+    if (panel._abortController?.signal.aborted) onAbort()
+    else panel._abortController?.signal.addEventListener("abort", onAbort, { once: true })
+  })
+}
+
+/**
+ * Ask for a secret in the panel (persistent in-chat card, never auto-dismisses) — the VSC seat of the
+ * core `ctx.onSecretInput` injection seam（设计单源 = `docs/core/design/TOOLS.md` §6.22 ⑧）。
+ * `makeAskInPanel` 同族：队列条目按 `promptId` 配对（迟到 / 错序响应不误 resolve 队头）；
+ * Stop / abort ⇒ 摘卡 + resolve null（工具侧得可读句——不挂起）。返回该卡的按问函数。
+ * 值面纪律（NS4）：本函数只透传载荷与返回值——零日志 ∥ 零端面留存。
+ */
+export function makeAskSecretInPanel(panel) {
+  return (payload) => new Promise((resolve) => {
+    panel._secretSeq = (panel._secretSeq ?? 0) + 1
+    const id = panel._secretSeq
+    const entry = { id, resolve }
+    panel._secretQueue = panel._secretQueue ?? []
+    panel._secretQueue.push(entry)
+    panel._setStatus("waiting")
+    panel._panel?.webview.postMessage({ type: "secretInput", payload, promptId: id })
+    // Stop must release the waiting turn（同 makeAskInPanel）：无人应答的凭据卡不得让回合永久悬挂。
+    const onAbort = () => {
+      const i = panel._secretQueue.indexOf(entry)
+      if (i >= 0) panel._secretQueue.splice(i, 1)
+      panel._panel?.webview.postMessage({ type: "secretInputCancelled", promptId: id })
       resolve(null)
     }
     if (panel._abortController?.signal.aborted) onAbort()
@@ -138,6 +167,8 @@ export function buildPanelCallbacks(panel, deps) {
   // Agent state captured at onComplete, reused by the async onDistilled save — agent.mjs calls
   // onDistilled without args, so the persisted engineering fields ride the closure.
   let lastAgentState = {}
+  // 凭据卡按问函数（`makeAskInPanel` 同族——`onSecretInput` 注入缝的端侧供给）。
+  const askSecretInPanel = makeAskSecretInPanel(panel)
   const cbs = {
     onToken: (tok) => {
       // W15（事件中继面）：核 relay ⟦ev⟧ 事件 token → webview 活动区协议消息（识别即消费
@@ -257,6 +288,9 @@ export function buildPanelCallbacks(panel, deps) {
     // D-B1: same-response non-readonly tools ask ONCE (approveAll / oneByOne / deny).
     onBatchPermissionRequest: batchPermissionGate(panel),
     onQuestion: (question, options) => askInPanel(question, options),
+    // §6.22 ⑧（ssh-session 批 · VSC 腿）：凭据 / 秘密输入卡（`makeAskInPanel` 同族）——
+    // 载荷 = 核结构化字段（值只在返回路上）；返回 `{ <name>: <值> }` ∥ null（取消）。
+    onSecretInput: (payload) => askSecretInPanel(payload),
     // AGENT-LOOP-ASYNC-POOL.md §6.8: async settle events wake the suspension driver (no-op when it isn't parked —
     // panel._suspWake is set only while the driver waits for the next settle).
     // C2 (SESSION-FLOW-C F-C2e——触发点补)：挂起会话活跃期间（digest 间——轮末 282/300

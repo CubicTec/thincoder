@@ -76,6 +76,16 @@ export const CORE_MESSAGES = Object.freeze({
   "tool.done": { en: "done", zh: "完成" },
   // ── 台账（ledger）· F-LX3 变体键库首跑提示（批 2026-10-05-ledger-variant-db-notice · 台账 #935 · LEDGER.md §12.2 逐字；消费面 = CLI TUI 启动行）
   "ledger.variantDbNotice": { en: "Legacy variant-key ledger DB found for this project (pre-upgrade; rows may be outside the current ledger): thincoder ledger audit to inspect; thincoder ledger migrate to reconcile", zh: "检测到本项目的存量变体键台账库（升级遗留，数据可能未并入当前库）：thincoder ledger audit 查看；thincoder ledger migrate 收正" },
+  // ── SSH 会话（批 ssh-session · 台账 #1436 · TOOLS.md §6.22 ⑧——凭据窗词面单源；三端经本字典投影）──
+  "ssh.credentialTitle": { en: "SSH credential", zh: "SSH 凭据" },
+  "ssh.credentialPrompt": { en: "Enter the login credential for ${host}", zh: "输入 ${host} 的登录凭据" },
+  "ssh.secretTitle": { en: "SSH secret", zh: "SSH 密文" },
+  "ssh.secretPrompt": { en: "Enter the secret for ${host}", zh: "输入 ${host} 的密文" },
+  "ssh.field.user": { en: "Username", zh: "用户名" },
+  "ssh.field.password": { en: "Password", zh: "密码" },
+  "ssh.field.secret": { en: "Secret", zh: "密文" },
+  // 无 UI 失败句（E6；三端投影单源）：en 侧 = CLI 端 `SECRET_NO_UI_TEXT` 逐字（端常量收正为核键）。
+  "ssh.no_ui": { en: "ssh credential input requires an interactive UI (none in this context) - use key-based auth or ssh-agent", zh: "ssh 凭据输入需要交互界面（当前场合没有）——请改用密钥认证或 ssh-agent" },
 })
 // 深度冻结（机器消费面冻结——嵌套 { en, zh } 也冻结；浅冻结下值可被静默改写）。
 for (const entry of Object.values(CORE_MESSAGES)) Object.freeze(entry)

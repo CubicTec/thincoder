@@ -260,7 +260,7 @@
 > · **>300 软线判定**：行 48 ∥ 49 未触线（增量后峰值 ≤279——<300）；未涉 500 硬限。
 
 **本批（行 50–56）Δ 上界 + >300 软线判定**（manifest agent 工具面批 · 2026-10-08）：
-> · Δ 上界：`agent-tools/manifest.mjs` ≤ +260（新档——目标 ≈170）· `agent-tools.mjs` ≤ +2 · `family-tools.mjs` ≤ +4（187 ⇒ ≤191）· `dispatch-gates.mjs` ≤ +5（143 ⇒ ≤148）· `tool-docs/manifest.md`（已落——≤8,000 字符预算）· `check-vsix.mjs` ≤ ±1 · 单元测试档 = 本批自持（数值界外）。
+> · Δ 上界：`thincoder-core/agent-tools/manifest.mjs` ≤ +260（新档——目标 ≈170）· `agent-tools.mjs` ≤ +2 · `family-tools.mjs` ≤ +4（187 ⇒ ≤191）· `dispatch-gates.mjs` ≤ +5（143 ⇒ ≤148）· `tool-docs/manifest.md`（已落——≤8,000 字符预算）· `check-vsix.mjs` ≤ ±1 · 单元测试档 = 本批自持（数值界外）。
 > · **>300 软线判定**：本批触碰档增量后峰值——既有档 ≤191 ∥ 新增工具档 ≤260（均 <300）；未涉 500 硬限。
 > · **相邻面登记（父侧裁）**：`docs/core/design/TOOLS.md` §6.2 元工具清单（+`manifest` + 漂移两行 `notify_parent` ∥ `ledger`——已落）· §6.7 逐工具要旨行 · `docs/core/design/ENGINEERING-MODE-V2.md` §2.2 M1 行（工具面半句——在册）；`PROMPT-SYSTEM.md:402`「不造新工具」半句（限定句 + 例外句——已落；口径裁 = §2.5 条）。
 

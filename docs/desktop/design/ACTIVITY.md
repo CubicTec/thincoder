@@ -331,7 +331,7 @@
 | 10 | 单元测试档 | `docs/batches/2026-10-01-desktop-digest-teardown.test.mjs`（**已建成 · 638 行 · 七用例（7/7 绿）**——用例集单源 = 批档 §2 基础重裁块「用例集单表」（重写版；本表为准））：用例 1 单元素生命周期 ∥ 用例 2 座次 ∥ 锚 代码痕 grep 零命中（射击面以重裁版表为准——原修复轮版此注作废）∥ 用例 3 重挂复列末条 + 重挂首帧后稳态序（行族居其归档块之前——记录位次复列）∥ 用例 4 归档居其后（起跑窗「放族后」成立——随到入流 + 多枚到达序 + 迟到退化）∥ 用例 5 记录面负向锁 ∥ 用例 6 零存储面（`shiftKept*` 零存 ∥ 无锚可维——收帧清 ∥ 屏代清 ∥ 前插后移全无；**懒加载径（前插一页）断言：块序仍 ⇔ 记录序 ∥ 行族与其归档块相对序不变 ∥ 行族零动——零算术**）∥ 用例 7 **全流序对账**（恢复序 ≡ 记录序——机检 = 记录序列 → `chatTree` 文档序块序 `at` 升序 ⇔ 记录 idx；白名单两档 = 族内压缩 ∥ 跨页丢轮；障碍面 = 页读域窗口化——上抛在册）；**真机一例** = 滚动到顶 ⇒ 加载更早一页 ⇒ 序不乱；随批留存 · 不进集成测试树） | 全批 |
 | 11 | 设计档 | `docs/desktop/design/RENDERER.md` §1.1（六处 + 「消化行入流与重放规则」条——修复轮 1：原「静态落位锚」条零存储收正（F2）+ 序判据句（F3）+ 变更记录）· 本档 §1 KD-33 ∥ KD-55④ ∥ KD-60①④ ∥ KD-62①④⑦ ∥ `docs/desktop/design/PROJECT.md` §6.1 D4 ∥ §7 批注 ∥ **§4.1（改名行 ∥ 越层处置 ∥ 读数随实施轮）** ∥ §4.2 本块（行 1–5 ∥ 7 ∥ 8 ∥ 10 ∥ 11 修复轮收正） ∥ 变更记录 · `docs/desktop/design/UI.md` §2 项 5 两处（「锚改静态」⇒「锚整删」收正）+ 变更记录（`:18`/`:122` 零触）· **`docs/desktop/design/IPC.md` = 零触**（规范面 `座次|seat` 零命中——实读） | 全批 |
 
-零触面：记录面（形 ∥ 通道 ∥ 落盘节律 ∥ `clearDigest`——三端档全量照留）∥ 宿主面（`src/main/**`——起跑窗 ∕ reclaim ∕ reemitDone 零动）∥ 两端（CLI ∥ VSC——#754 已随正）∥ 核包 ∥ `renderer/store.mjs`。
+零触面：记录面（形 ∥ 通道 ∥ 落盘节律 ∥ `clearDigest`——三端档全量照留）∥ 宿主面（`src/main/**`——起跑窗 ∕ reclaim ∕ reemitDone 零动）∥ 两端（CLI ∥ VSC——#754 已随正）∥ 核包 ∥ `thincoder-desktop/renderer/store.mjs`。
 
 **本批（消化行自然形收正批 · 2026-10-01 · 台账 #768 · 批 `docs/batches/2026-10-01-digest-rows-natural-form.md`）行「现行 ⇒ 实读（实施落盘）」**
 （实读 2026-10-01——内容行数口径（文末换行不计）；机制 ∕ 判据单源 = 批档 §2 ∥ 本档 §1 **KD-62**；**父侧实施后读数回填（2026-10-01）**）：
@@ -349,7 +349,7 @@
 | 6 | 单元测试档 | `docs/batches/2026-10-01-digest-rows-natural-form.test.mjs`（**已建成 · 700 行**（内容行数口径〔文末换行不计〕· as-of 2026-10-01——A1–A3 补丁后）· 八用例（见 §7「消化行自然形收正批注」）；**8/8 绿**）；随批留存 · 不进集成测试树 | 全批 |
 | 7 | 设计档 | 本档 §1 **KD-62**（整条重写）∥ KD-36 ∥ KD-55 ∥ KD-60 ①②⑥ ∥ §3（原 `docs/desktop/design/PROJECT.md` §2.2） ∥ `docs/desktop/design/PROJECT.md` §6.1 D4 行 ∥ §7（置换批注）∥ §10 DA ① ∥ CR 涉句 ∥ **§4.2 本块** · `docs/desktop/design/RENDERER.md` §1.1（八处）· `docs/desktop/design/UI.md` §1 对话流行 ∥ 间距注项 5 · `docs/desktop/design/IPC.md` §1 `ev:digest` 行 + 三档变更记录 | 全批 |
 
-零触面：核包 ∥ 协议（**零新通道** ∥ 载荷零变）∥ 记录面（形 ∥ 通道 ∥ 落盘节律 ∥ `clearDigest`——零动）∥ 宿主面（`src/main/**`——起跑窗 ∥ reclaim 零动）∥ `renderer/events.mjs`（分派零改）∥ `thincoder-desktop/renderer/app.mjs`（构造 ∥ 结算径引调零改）∥ `renderer/store.mjs`（切片形状零改）
+零触面：核包 ∥ 协议（**零新通道** ∥ 载荷零变）∥ 记录面（形 ∥ 通道 ∥ 落盘节律 ∥ `clearDigest`——零动）∥ 宿主面（`src/main/**`——起跑窗 ∥ reclaim 零动）∥ `renderer/events.mjs`（分派零改）∥ `thincoder-desktop/renderer/app.mjs`（构造 ∥ 结算径引调零改）∥ `thincoder-desktop/renderer/store.mjs`（切片形状零改）
 ∥ 两端（CLI ∥ VSC——**本批零触**；端差在册 = `docs/desktop/design/PROJECT.md` §10 **DA** ①）；测试覆盖随修随加——不占设计条目（2026-09-27 裁定）。
 
 **本批（消化重放口径 · 2026-10-01 · 台账 #771 ∥ #773 · 批 `docs/batches/2026-10-01-digest-replay-choices.md`）行「现行 ⇒ 实读（实施落盘）」**（实读 2026-10-01——内容行数口径（文末换行不计）；机制 ∕ 判据单源 = 批档 §2 ∥ 本档 §1 **KD-62**；实施落盘 2026-10-01）：

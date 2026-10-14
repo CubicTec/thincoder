@@ -37,7 +37,7 @@
   可行形 = **link 形 + `--follow-symlinks`**（R1 打包窗实测 475 件；render-core 内嵌带发、永不发布——§2 KD-RC-1）· `@thincoder/core` 面「发布前物化（registry 解析）」纪律（`docs/RELEASE.md:141` §5.5 步 1）不动。
 
 **桌面端加载形**：主进程解析包路径（`createRequire(import.meta.url).resolve("@thincoder/render-core/package.json")`）⇒ `app://` 供给面**双根**：
-`/` → `renderer/`（现状 · `protocol.mjs:17` `RENDERER_ROOT`）· `/rc/` → 核包目录；渲染面以**同源绝对路径** import（`/rc/xxx.mjs`）。
+`/` → `renderer/`（现状 · `thincoder-desktop/src/main/protocol.mjs:17` `RENDERER_ROOT`）· `/rc/` → 核包目录；渲染面以**同源绝对路径** import（`/rc/xxx.mjs`）。
 
 - 判据：`protocol.mjs` 逃逸门（`relative()` 判据——`:53-54`）对各根同式施加 ⇒ 双根 = 显式登记第二条根 + 各根各留逃逸门（供给语义不变）。
 - 渲染面静态闭包守卫随动：`thincoder-desktop/test/guard-closure.test.mjs:70`「渲染面零裸包 / 零 `@thincoder/core`」⇒ 新增 `/rc/` 前缀白名单；**裸包禁令不变**（核经 URL 前缀取，不经 `node_modules` 裸名）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
@@ -65,7 +65,7 @@
 | # | 决策 | 理由 | 被否候选与何故否 |
 |---|---|---|---|
 | KD-RC-1 | 核落点 = **新顶层真包 `thincoder-render-core/`**（`@thincoder/render-core`，零依赖） | 与 `@thincoder/core` 同式（共享物 = 独立包——`docs/core/design/CORE-UNIFICATION.md` §2.6.1）；**链接 / 物化 / 断言三纪律 + 永不发布**：前三条复用（物化面 = 打包形实测收正，单源 = 本档 §1.3）；永不发布 = `private: true` / 零 `publishConfig`——两端内嵌带发、零 registry 端消费者（用户 2026-09-27 22:00 裁定；未发布即 E404） | 见 §1.3 被否 1 / 2 / 5 |
-| KD-RC-2 | 核**文件形 = `.mjs`** | 桌面 MIME 白名单（`protocol.mjs:22-29`：有 `.mjs`、无 `.js`）；VSC 已有 `.mjs` 实跑先例（`thincoder-vscode/webview/tool-card-restore.mjs`） | **`.js`**（须改桌面协议白名单；两端扩展名混用）；**只搬 `.js` 到核再让桌面加白名单**（白增一面，无收益） |
+| KD-RC-2 | 核**文件形 = `.mjs`** | 桌面 MIME 白名单（`thincoder-desktop/src/main/protocol.mjs:22-29`：有 `.mjs`、无 `.js`）；VSC 已有 `.mjs` 实跑先例（`thincoder-vscode/webview/tool-card-restore.mjs`） | **`.js`**（须改桌面协议白名单；两端扩展名混用）；**只搬 `.js` 到核再让桌面加白名单**（白增一面，无收益） |
 | KD-RC-3 | 核**输出形态 = DOM 构件 + 纯函数**（浏览器原生；不引框架、不定 HTML 字符串契约） | 两端渲染面同为 Chromium DOM；DOM 非宿主特权（§1.2）；VSC 现状 = DOM 命令式、桌面现状 = 描述符树——核构件（返回 DOM 节点）可被两端各挂各的壳（桌面挂载面直接 append） | **纯逻辑核（不碰 DOM）**（桌面须保第二份 DOM 实现 ⇒「共用核」名存实亡——用户改判对象即此）；**HTML 字符串核**（转义闸责任漂移 + 桌面现制零 HTML 注入面全量重构）；**引框架**（违零框架裁定） |
 | KD-RC-4 | 桌面**「零 Markdown」口径改判**：对话流文本面 ⇒ 经核 Markdown 呈现（`md.mjs` 单源；助手块 / 用户块同径） | 用户 2026-09-27 20:45 走查第 3 点「会话流…应该跟 VSC 对齐」+ D19 明列 Markdown；对齐须经同核（同文本 ⇒ 同渲） | **保留纯文本 `pre-wrap`**（背离走查原话；D19 列举失守）；**桌面自写第二份 md**（第二实现 = 漂移面）；**只渲助手块、用户块保纯文本**（同流两制 = 读感断层；VSC 用户块亦走 md） |
 | KD-RC-5 | 桌面**文件链接承载**（核 `linkifyPaths` 消费 + 宿主验存链 ⇒ `file:open`；行定位 = 外部编辑器 CLI 探测） | 「对齐第三批」D19 收正（2026-09-29 端差清算 · #627 消解）：验存闸 = 核值（宿主 `extractFileLinks` 同源 + 核包裹 + `file:open`）——单源 = `docs/desktop/design/PROJECT.md` §2 **KD-39** | **落链接 + 无出口**（假控件）；**核删 linkify**（VSC 消费面在——核不夺）；**端侧自析路径**（无验存闸 ⇒ 假链接） |
@@ -410,7 +410,7 @@ VSC `thincoder-vscode/webview/session.css` **215 ⇒ ≈219**（两钮（Rename 
 桌面逐档「现行 ⇒ 预期」= `docs/desktop/design/PROJECT.md` §4.2 本批行（就地给数——渲染面三档）；VSC ∥ `thincoder-core` = 零触；测试覆盖 = 单元测试档（`docs/batches/2026-10-01-desktop-slash-commands.test.mjs`（拟新增）——平 node · 随批留存）；`node scripts/api-contract.mjs --write`（生成区随动——实施轮后跑）。
 
 **斜径机制批 · `/help` 增量随动（同批 2026-10-01② · 台账 #761）**：核 `thincoder-render-core/composer/slash.mjs` **43 ⇒ ≈88**（+`formatHelp` 表→行集 ∥ 组序常量）· 核 `thincoder-render-core/composer/panel.mjs` **485**（实读 2026-10-04——修正轮按盘收正（489 ⇒ 485——队列守卫假满队修复批（#911）落盘后）；零触——打印口 = 端侧闭包注入）·
-  桌面 `thincoder-desktop/renderer/slash-commands.mjs` **41 ⇒ ≈66** · `renderer/mount-composer.mjs` **283 ⇒ ≈296** · `renderer/store.mjs` **307 ⇒ ≈322** ·
+  桌面 `thincoder-desktop/renderer/slash-commands.mjs` **41 ⇒ ≈66** · `renderer/mount-composer.mjs` **283 ⇒ ≈296** · `thincoder-desktop/renderer/store.mjs` **307 ⇒ ≈322** ·
   `renderer/views/chat-chrome.mjs` **221 ⇒ ≈252** · `renderer/views/chat-model.mjs` **105 ⇒ ≈117** · `renderer/views/chat-tree.mjs` **151 ⇒ ≈153** · `renderer/views/compress-status.mjs` **75 ⇒ ≈76** · `renderer/frame-dispatch.mjs` **53 ⇒ ≈56** ·
   `renderer/page-read.mjs` **282 ⇒ ≈294** · `renderer/i18n-views.mjs` **348 ⇒ ≈364** · `renderer/chat-fixes.css` **118 ⇒ ≈126**；桌面逐档「现行 ⇒ 预期」= `docs/desktop/design/PROJECT.md` §4.2 本批行（就地给数）；VSC ∥ `thincoder-core` 零触；测试覆盖 = 单元测试档续修（用例 8–11——随批留存）。
 

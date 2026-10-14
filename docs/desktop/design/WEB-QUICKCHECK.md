@@ -49,11 +49,11 @@
 | 前缀 | 供给根 | 档案 |
 |---|---|---|
 | `/__quickcheck/` | 本工具目录 | 工具资产（`host-shim.mjs`）——本机开发工具专用命名空间 |
-| `/rc/` | 核包根（`createRequire` 解析 `@thincoder/render-core/package.json` 所在目录——沿 `protocol.mjs:21` 同法） | 核件（渲染面 `/rc/…` 同源绝对路径 import 面不变） |
+| `/rc/` | 核包根（`createRequire` 解析 `@thincoder/render-core/package.json` 所在目录——沿 `thincoder-desktop/src/main/protocol.mjs:21` 同法） | 核件（渲染面 `/rc/…` 同源绝对路径 import 面不变） |
 | `/` | `thincoder-desktop/renderer/` | 渲染面全档 |
 
-- MIME 白名单 = `.html` ∥ `.mjs` ∥ `.css` ∥ `.svg` ∥ `.png` ∥ `.woff2`（表逐项同 `protocol.mjs:24-31`；表外 ⇒ 404）。
-- 门（fail-closed）：点段（`.` ∥ `..` 段）⇒ 404；逃逸（resolve 越根）⇒ 404（判据形对齐 `protocol.mjs:53-61`）。
+- MIME 白名单 = `.html` ∥ `.mjs` ∥ `.css` ∥ `.svg` ∥ `.png` ∥ `.woff2`（表逐项同 `thincoder-desktop/src/main/protocol.mjs:24-31`；表外 ⇒ 404）。
+- 门（fail-closed）：点段（`.` ∥ `..` 段）⇒ 404；逃逸（resolve 越根）⇒ 404（判据形对齐 `thincoder-desktop/src/main/protocol.mjs:53-61`）。
 - **注入**：`/` 与 `/index.html` 响应把 `thincoder-desktop/renderer/index.html:55` 的脚本行 `<script type="module" src="app.mjs"></script>` 替换为 **shim 脚本行 + 原行**（模块脚本按文档序执行 ⇒ shim 先于 `app.mjs` 求值）；**锚缺失 ⇒ 500 + stderr 明示**（fail-loud——不静默出未注入页）。
 
 ### 3.2 host shim 契约（`host-shim.mjs`）

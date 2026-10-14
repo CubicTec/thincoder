@@ -434,7 +434,7 @@ D21 视觉对齐批落形同径（`docs/desktop/design/UI.md` §1「本批注（
 
 **本批（parity-b10-ui · W6 届盘复读）行「实读落值」**（实读 2026-09-29 · W6 收口波——内容行数口径；三舱分片 ∕ 波面 = `docs/batches/2026-09-29-parity-b10-ui.md` §2.7 ∕ §5；逐档新旧值见上表行内注）：
 `thincoder-desktop/src/main/ipc.mjs` **322** · `ipc-registry.mjs` **86** · `preload.cjs` **78** · `settings.mjs` **324** · `providers.mjs` **300** · `mcp-servers.mjs` **262** · `settings-values.mjs` **109** · `settings-env.mjs` **95** ·
-`thincoder-desktop/renderer/app.mjs` **293** · `thincoder-desktop/renderer/index.html` **55** · `renderer/skin.css` **18** · `renderer/chrome.css` **450** · `thincoder-desktop/renderer/i18n.mjs` **500** · `renderer/i18n-views.mjs` **328** · `renderer/store.mjs` **300** ·
+`thincoder-desktop/renderer/app.mjs` **293** · `thincoder-desktop/renderer/index.html` **55** · `renderer/skin.css` **18** · `renderer/chrome.css` **450** · `thincoder-desktop/renderer/i18n.mjs` **500** · `renderer/i18n-views.mjs` **328** · `thincoder-desktop/renderer/store.mjs` **300** ·
   `renderer/mount-settings-exits.mjs` **224** · `renderer/mount-settings-segments.mjs` **356** ·
 **新档三件** = `renderer/settings-confirm.mjs` **80** · `renderer/mount-settings-segments-providers.mjs` **134** · `renderer/mount-settings-segments-agent.mjs` **154**（新档落盘随批登记——本表 + 上表行）；
 `thincoder-desktop/renderer/views/settings.mjs` **334** · `views/settings-agent.mjs` **227** · `views/settings-sections.mjs` **297** · `views/settings-controls.mjs` **130** ·
@@ -775,7 +775,7 @@ D21 视觉对齐批落形同径（`docs/desktop/design/UI.md` §1「本批注（
 | 3 | `thincoder-desktop/renderer/core.css` | **299 ⇒ 332**（面 20 段覆盖——推理内代码块同形消；**越 300 ⇒ 拆分预案 = 推理盒族出档 `renderer/core-reasoning.css`（拟新增）· 消解窗口 = 下个结构性触碰的批**） | D21②（§2.1 行 3） |
 | 4 | `thincoder-desktop/renderer/core-markdown.css` | **191 ⇒ 190**（容器分支收窄 `> :last-child` ⇒ `p:last-child` 单条） | §2.7 行 4 |
 | 5 | `thincoder-desktop/src/main/providers.mjs` | **300 ⇒ 315**（S3 `failure` 键贯链 `:105-107` 邻域；**越 300 ⇒ 拆分预案 = 验证 ∕ 探针族出档 `src/main/provider-verify.mjs`（拟新增）· 消解窗口 = 下个结构性触碰的批**） | S3（§2.1 行 6） |
-| 6 | `thincoder-desktop/src/main/loop-sampler.mjs` | **（已落 · ≈45）⇒ 77**（实读 2026-09-30——port 源 = VSC `src/extension/loop-sampler.mjs:67-76`） | S3① |
+| 6 | `thincoder-desktop/src/main/loop-sampler.mjs` | **（已落 · ≈45）⇒ 77**（实读 2026-09-30——port 源 = VSC `thincoder-vscode/src/extension/loop-sampler.mjs:67-76`） | S3① |
 | 7 | `thincoder-desktop/src/main/agent-host.mjs` | **262 ⇒ 277**（`ev:usage` 帧门判据修点——实读 2026-09-30） | N1① |
 | 8 | `thincoder-desktop/src/main/agent-assemble.mjs` | **32 ⇒ 102**（MCP 合入 `toolsFinalize` 缝体 + `attachManifest` 附着——落点级设计 = 批档 §2.8⑥） | §1.9-1∕2 |
 | 9 | `thincoder-desktop/src/main/turn-driver.mjs` | **252 ⇒ 252**（validateProvider 回执面——差 ⇒ 桌面补引导形；零行差） | §1.9-3 |
@@ -1614,7 +1614,7 @@ T-DSK30 的机检 = `thincoder-desktop/test/views-attach.test.mjs`（附件条�
 - 2026-09-29（**性能尾账批 · 实施后文档面随动轮 · eng-designer**——承 `docs/batches/2026-09-29-perf-residuals.md` §5）：§4.1 两行按盘收正（`thincoder-desktop/renderer/views/chat.mjs` **290**〔注句 ≈265 ⇒ **284** 同拍〕· `thincoder-desktop/renderer/views/chat-stream.mjs` **101**——`streamDelta` 四档 ⇒ **五档**枚举同拍）；
   §4.2 本批块转终读（新增 `thincoder-render-core/flow/live-scan.mjs` **351** ∕ `thincoder-render-core/flow/live-md.mjs` **179** ∕ `thincoder-render-core/flow/stream.mjs` **135** ∕ `thincoder-desktop/renderer/views/chat.mjs` **290** ∕ `views/chat-stream.mjs` **101**）。**零新语义**。明细 = 批档 §2。
 - 2026-09-29（**desktop-residuals-round3 批 · 波 D 登记 + 实施后文档面随动轮 · eng-designer**——承 `docs/batches/2026-09-29-desktop-residuals-round3.md` §2.13）：§4.1 行数账族按届盘实读收正（波 A–C 触档 **17 行**值收正 + `renderer/frame-dispatch.mjs` 落档去标 +
-  `renderer/views/pool-tree.mjs` **174** 新登行 + 越层段 `renderer/store.mjs` ∕ `renderer/views/chat-chrome.mjs` 两档新入册（九 ⇒ **十一档**）+ 贴层段 ∕ 次大句随动）；**零新语义**（读数 ∕ 登记）。
+  `renderer/views/pool-tree.mjs` **174** 新登行 + 越层段 `thincoder-desktop/renderer/store.mjs` ∕ `renderer/views/chat-chrome.mjs` 两档新入册（九 ⇒ **十一档**）+ 贴层段 ∕ 次大句随动）；**零新语义**（读数 ∕ 登记）。
 
 - 2026-09-29（**doc-sync-carryover 批 · 文档随动族收正轮 · eng-designer**——承 `docs/batches/2026-09-29-doc-sync-carryover.md` §1 · 台账 #639 ∕ #644 ∕ #646 ∕ #647 ∕ #648 ∕ #650）：
   §4.1 行数账族 **17 行**按届盘实读收正（含 `views/chat-scroll.mjs` **109** ∕ `views/activity-new.mjs` **112**——RF 波 3 后；`views/activity.mjs` 行留待 RF 波 4 收口）+ `views/chat-model.mjs` 出档注 **≈95 ⇒ 104**；
@@ -1645,7 +1645,7 @@ T-DSK30 的机检 = `thincoder-desktop/test/views-attach.test.mjs`（附件条�
 - 2026-09-29（**口子清零二轮 · 修正轮（评审轮 1 · 发现 1 ∕ 4 ∕ 8 逐号）· eng-designer**——承批档 §3 轮次 1）：§8 边界句收正（「编辑器」⇒「编辑器本体」· 删「打开」·「保存」——余暂缓三件 = 文件视图 ∕ 编辑器本体 ∕ 内置 diff）；§4.1 增 `loop-sampler.mjs` 行（拟新增 · ≈45）+ 越层段 i18n 行补第五档备案（`renderer/i18n-status.mjs` ∕ 启动条件 >450）+ 贴层段补本批触碰两档（`providers.mjs` ∕ `core.css` ⇒ 越 300——拆分预案 ∕ 消解窗口）；§4.2 增本批「现行 ⇒ 预期」块（十五行）。**零新语义**（登记 ∕ 句面收正）。明细 = 批档 §2.8。
 
 - 2026-09-29（**口子清零二轮 · 修正轮 2（评审轮 2 · 10 条逐号 · 发现 1 ∕ 10）· eng-designer**——承批档 §3 轮次 2）：KD-46 理由列收正（`hostBusy` 档 = 消（补做——欠做，非能力缺失）；宿主忙采样器 = 新档 `loop-sampler.mjs` + `failure` 键贯链）；§6.1 D21 行两处同拍（「端差 3 项已全部处置」+「桌面会话控制面」）。**零新语义**（处置句 ∕ 词面收正）。明细 = 批档 §2.9。
-- 2026-09-29（**口子清零二轮 · 实施随动收正轮（父侧裁）· eng-designer**——承批档 `docs/batches/2026-09-29-hatch-clearance-2.md` §4 ∕ §5.6）：KD-48 虚拟化否决由句收正（窗口 200 ⇒ **150**——E10 落定同拍）· T-DSK17 行两值同拍（`> 200` ∕ 尾部 200 块 ⇒ **150**）；§4.1 行数账族按现盘实读收正（`views/settings-sections.mjs` **309** ∕ `renderer/composer-sync.mjs` **302** ∕ `renderer/i18n-views.mjs` **336** ∕ `thincoder-desktop/src/main/providers.mjs` **315** ∕ `renderer/core.css` **332**；`renderer/store.mjs` 复读同值零改）+ 越层段三档新入册（**十一 ⇒ 十四档**）+ 贴层段两档转出 + 本批块按盘回填（`providers.mjs` **315** ∥ `core.css` **332**）。**零新语义**（值 ∕ 登记 ∕ 读数收正）。明细 = 批档 §2.10。
+- 2026-09-29（**口子清零二轮 · 实施随动收正轮（父侧裁）· eng-designer**——承批档 `docs/batches/2026-09-29-hatch-clearance-2.md` §4 ∕ §5.6）：KD-48 虚拟化否决由句收正（窗口 200 ⇒ **150**——E10 落定同拍）· T-DSK17 行两值同拍（`> 200` ∕ 尾部 200 块 ⇒ **150**）；§4.1 行数账族按现盘实读收正（`views/settings-sections.mjs` **309** ∕ `renderer/composer-sync.mjs` **302** ∕ `renderer/i18n-views.mjs` **336** ∕ `thincoder-desktop/src/main/providers.mjs` **315** ∕ `renderer/core.css` **332**；`thincoder-desktop/renderer/store.mjs` 复读同值零改）+ 越层段三档新入册（**十一 ⇒ 十四档**）+ 贴层段两档转出 + 本批块按盘回填（`providers.mjs` **315** ∥ `core.css` **332**）。**零新语义**（值 ∕ 登记 ∕ 读数收正）。明细 = 批档 §2.10。
 - 2026-09-30（**桌面堆取证修复批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-30-desktop-heap-freeze.md` §1（282s 冻结全链取证）· 台账 #694）：§2 增 **KD-53**（桌面堆遥测与冻结取证——`heap-watch.mjs` 新档 ∕ 快照双径 ∕ 冻结现场门 ∕ `diagnostics.*` 键消费）· **KD-54**（堆累积收敛 = 诊断先行 + 对靶两腿；候选面实读在册；呈现语义零改硬边界）；§4.1 增 `thincoder-desktop/src/main/heap-watch.mjs` 行（已落 · ≈120）；§4.2 增本批「现行 ⇒ 预期」块（七行）；§10 增 **CP**（读数点名 + 现场归属补证）· **CQ**（装配表无驱逐登记）。
   本轮设计新面 = KD-53 ∕ KD-54（新增机制——待评审 ∕ 用户批准）；**产品码零触**。明细 = 批档 §2。
 

@@ -255,7 +255,7 @@ test("⑧ 骨架零改：index.html 无 font 字面（链序零动）", () => {
   const html = text(HTML)
   assert.ok(html.length > 0, "骨架缺失")
   assert.equal(/font-size|font-weight|letter-spacing|font-family/.test(html), false, "骨架携 font 字面（应零改）")
-  // 链序在位（11 档 CSS —— 排版单源 = theme.css 居首）。
+  // 链序在位（12 档 CSS —— 排版单源 = theme.css 居首）。
   for (const rel of CSS_FILES) {
     const href = `./${rel.split("/").pop()}`
     assert.ok(html.includes(href), `链序缺 ${href}`)

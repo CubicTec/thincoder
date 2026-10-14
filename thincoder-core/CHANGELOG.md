@@ -3,6 +3,12 @@
 All notable changes to the core package are documented here.
 Format: Keep a Changelog · 中文 · 号在发布时定（CalVer——见 `docs/RELEASE.md` §4）。
 
+## [Unreleased]
+
+### Added
+
+- **MCP 探活具名读数（#1431——2026-10-14 走查轮）**：`probeMcpServer` 返回值增 `tools`（工具名数组——原 `mcpTools` 到手即弃，控制台探活只见计数）；服务端页面随正（具名读数形，缺名回落计数形——零回归）。
+
 ## [0.10.7] — 2026-10-14
 
 > 0.10.6 → 0.10.7（月内 +1——发布时定号）

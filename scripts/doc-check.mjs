@@ -8,6 +8,7 @@
  * exemptions / lineCounts / widthExemptZones）——无硬编码路径 / 阈值；整档缺失 fail-closed（readManifest 拒，不静默 fallback）。
  * 本档不写 manifest（写门 = M1 writeManifest，writer:'main' 专权——唯一写 manifest 的路径）。
  * 用法：node scripts/doc-check.mjs [--root <仓根>] [--domain <产品域>]
+ * 2026-10-13（父侧直接执行 · 可 revert——#101 上抛闭环）：--domain 指不存在路径 ⇒ fail-closed（原落空扫「0 悬空」假绿；域路径 = 仓根相对解析，机制不猜）。
  * 导出：main / formatReport。
  */
 import { existsSync, readdirSync, realpathSync } from "node:fs";
@@ -91,6 +92,10 @@ export function main(argv = process.argv.slice(2), { cwd = process.cwd(), log = 
   const CRITERIA_KEYS = ["scanDirs", "lineWidth", "anchors.domain", "anchors.exclude", "exemptions", "lineCounts", "widthExemptZones"];
   log(`判据项 ${CRITERIA_KEYS.length} 项（${CRITERIA_KEYS.join(" / ")} = checkConfig 声明面——D3）`);
   const bases = domainArg ? [resolve(root, domainArg)] : discoverDomains(root);
+  if (domainArg && !existsSync(bases[0])) {
+    log(`FAIL(domain): 域路径不存在——${bases[0]}（--domain = 仓根相对路径；机制不猜，不落空扫假绿）。`);
+    return 1;
+  }
   if (!bases.length) bases.push(root);
   const zones = (Array.isArray(cfg.widthExemptZones) ? cfg.widthExemptZones : []).filter((z) => typeof z === "string" && z !== "");
   const zoneNote = zones.length ? `（区带豁免在效——${zones.join(" ∥ ")}；区带内超宽行不计）` : "";

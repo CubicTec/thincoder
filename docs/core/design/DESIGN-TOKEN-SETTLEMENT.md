@@ -165,7 +165,7 @@
 
 **边界（本增量不做）**：不做评审判据本身（advisor 内部——继承）；不做凭证格式改造（`uuid:expiresAt` 继承 v1，不重设 HMAC/签名层——已随 2026-09-06 裁定退役）。
 
-## 10. 槽位清点与批量消费（2026-10-07 · 批档 `docs/batches/2026-10-07-ledger-tool.md` · 台账 #927）
+## 10. 槽位清点、批量消费与回收读口（2026-10-07 · 批档 `docs/batches/2026-10-07-ledger-tool.md` · 台账 #927；回收读口 2026-10-14 · 批档 `docs/batches/2026-10-14-design-token-recovery.md` · 台账 #1384）
 
 **背景（本批因何而立）**：链终消费（§5 / §9 F2）只有逐枚通道、无清点面——已批准未消费槽只能从门禁拒文（`designId not found … held design ids`）反查；本仓 2026-10-07 实测会话槽 ≈87 枚（全活、龄 0–6.8 天——跨批累积）。已闭链批的活 token 滞留 = 复用漏洞 ⇒ 本批补**清点面**与**批量消费**；**签发链行为零改**（mint / settle / TTL / persist 语义与存储形零动——#868 可靠性面另论）。
 
@@ -176,6 +176,26 @@
 - **列表面（逐槽一行；龄升序——最老在前）**：`designId`（全串）∥ 状态（`live` / `expired`——`tokenExpired` 单源）∥ 时龄 `ageDays`（= now − (expiresAt − `effectiveTokenTtlMs`) 派生；TTL 配置曾改时为近似——如实注）∥ `expiresAt`（精确）∥ 批（下条）。尾行 = 计数行（总数 ∥ live ∥ expired）。
 - **「批」列来源**：会话内评审实例注册表（`_advisorRuns`——`advisor-async.mjs` `advisorRuns`）按 designId 命中 run ⇒ `docSetKey`（= 被审文档绝对路径集 JSON）中 `batches/` 段档取 basename；不可得（跨重启 / 模式重进 / 注册表回收）⇒ `—`。**零新存储**（不向槽表加元数据）。
 - **输出形**：行文本（紧凑——同 consume 面风格）；字段 / 序 / 降级标记 = 契约，行内措辞 = 实现面。
+
+**F-SL1 回收读口扩展（reveal——2026-10-14 · 批档 `docs/batches/2026-10-14-design-token-recovery.md` · 台账 #1384）**：
+
+- **背景**：令牌一直落盘（D1——槽文件 = 权威台账），缺的只是读口——令牌随上下文压缩 / 重启从父侧窗口丢失后，此前只能考古会话档案（实证 ≈10 分钟）。本扩展 = **只读取回面**：按槽取回令牌，零授权语义变更。
+- **参数面**：`designId`（可选——过滤到单槽；精确匹配；未知 ⇒ 拒 + 列在场 id）∥ `reveal`（可选 boolean；仅 `true` 揭值）。**`reveal:true` 必须携 `designId`**（一次一槽——不吐批量凭据、不做全量 dump）；两参皆缺 = 现行清点面**逐字零变**；`reveal` 非 boolean ⇒ 拒（fail-closed——同 `consume-design` 对 `expired` 的严格判定先例）。
+- **输出形**：`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；`reveal:true` 且槽活 ⇒ 槽行尾追加 `designToken=<全串>` + 回收行（「`designId` + `designToken` 原样入 eng-coder spawn——门禁严格相等校验」）。
+- **掩蔽口径**：只揭**活槽**（格式合法 ∧ 未过期）——过期 / 畸形槽 ⇒ `designToken=—`（如实注因，不揭值：两态在任何门禁都过不了，揭值零收益）；`designId` 非凭据（门禁拒文即照列 designId 清单），**token 值才是凭据**。
+- **日志互作（核清在案——读口结果不得经日志面二次泄露）**：工具结果前 200 字符经 `agent/dispatch-run.mjs` 的 `tool:done` 事件 `head` 字段落盘；`log.mjs` `SECRET_FORM` 现有三形均不匹配 `uuid:epoch` 值形（**实证缺口**）。
+  处置 = **`thincoder-core/log.mjs` `SECRET_FORM` 增 token 值形**（`[0-9a-f]{8}-…-[0-9a-f]{12}:\d{10,16}`——与 `batch.mjs` 凭据第三形同判据），内容级「截断到形态前」（宁可丢信息不漏密钥）；字段名黑名单（`designToken` / `token`）与 `batch.mjs` 写入剥离面**零改**。实施 = 本批实施轮。
+- **边界**：零写（不 reconcile 回写、不落盘——`unionSlots` 同源）；不改 spawn 门显式令牌语义（见下「自动解析取舍」）；不动 TTL / 消费机制；端面（VSC / 桌面）零改（只读动作级分类已覆盖）；跨重启可用（并集视图含槽文件）。
+
+**回收程序（用法——运行态；值不落文档、不贴用户面）**：
+
+1. 清点：`subagent` `action:'design-slots'`——按「批」列 / designId 认出目标槽；
+2. 取回：同 action + `designId` + `reveal:true` ⇒ 全串 `designToken`；
+3. 派发：`designId` + `designToken` **原样**入 eng-coder spawn（门禁严格相等）；
+4. 纪律照旧：及时使用 / 链终 `consume-design`（§5 ∥ §9 F2——本扩展零改；**恢复面 ≠ 囤积许可**）。
+
+**自动解析取舍（designId-only spawn 为何不做）**：**不做**（现状显式门 = 默认保持）。理由：token 值 = 凭据；**designId 非凭据**（清点面 / 拒文均照列）——门内按 designId 自动取槽 = 把授权退化为「知道 id 即可写码」，「评审通过 → 签发凭证 → 显式持凭证」链条在门面断掉。
+回收读口补的是**「取不回」**，不是「不用取」——恢复成本由读口消解（≈10 分钟考古 ⇒ 一次只读调用），门的显式性保留；如有反证（自动解析仍能保住凭证语义）⇒ 出案另裁（动门 = 凭证语义变更，须全链设计 + 用户裁）。
 
 **F-SL2 批量消费（`consume-design` 选择器扩展）**：
 
@@ -202,6 +222,10 @@
 U-SL1 清点全列（live/expired 双态 + 龄序）∥ U-SL2 批列派生（run 命中 ⇒ basename；缺失 ⇒ `—`）∥ U-SL3 `designIds` 批量（含未知 id no-op 幂等）∥ U-SL4 expired / olderThanDays 选择器。
 U-SL5 多选择器 / 空清单 ⇒ 拒 ∥ U-SL6 落盘失败 ⇒ 整体回滚（持久化注入错）∥ U-SL7 消费后同 id spawn 机械拒（不复活——槽文件已删）∥ U-SL8 多槽隔离（消费 A 不动 B）∥ U-SL9 工程模式门外拒。
 
+**回收读口用例（本批增补——单元测试档 `docs/batches/2026-10-14-design-token-recovery.test.mjs`）**：
+U-SL10 `reveal` 活槽 ⇒ 全串 token ∥ U-SL11 `reveal` 缺 `designId` / 非 boolean ⇒ 拒 ∥ U-SL12 过期 / 畸形槽 ⇒ 掩蔽（值零出现）∥ U-SL13 未知 `designId` ⇒ 拒 + 在场 id 列。
+U-SL14 缺省两态（无参 ∥ `designId` 过滤）零揭值（默认面回归）∥ U-SL15 日志面（`logEvent` + 测试缝）：含 token 值形串 ⇒ 落盘零 token 值。
+
 **关键决策**：
 
 | KD | 决策 | 否决 |
@@ -210,6 +234,7 @@ U-SL5 多选择器 / 空清单 ⇒ 拒 ∥ U-SL6 落盘失败 ⇒ 整体回滚�
 | KD-SL2 | 「批」= `_advisorRuns.docSetKey` 反查（零新存储） | 槽表加铸出期元数据（触签发链存储形——越禁）∥ 批档回扫（凭证值不落档——不可行） |
 | KD-SL3 | 批量选择器恰一 / fail-closed | `all` 核弹（无选择性）∥ 多选择器并集（歧义） |
 | KD-SL4 | 消费 = 单 persist / 整体回滚 | 逐枚落盘（半消费态）∥ 失败静默（盘留旧账） |
+| KD-SL5 | 回收读口 = **F-SL1 扩展**（`designId` 过滤 + `reveal` 单槽揭值；掩蔽 = 只揭活槽） | 新 action ∥ 新工具（动作 / 工具计数纪律——同 KD-SL1）∥ 全量 dump（凭据批量外扩——无用法）∥ spawn 门自动解析（凭证语义退化——「自动解析取舍」句） |
 
 **编号注记**：本批验收以批内编号承载（U-SL*；对应批档 §2 条目⑤）；需求侧候补 = `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md` F-D6 邻位补 F-SL 行（主 agent 笔）。
 
@@ -218,6 +243,9 @@ U-SL5 多选择器 / 空清单 ⇒ 拒 ∥ U-SL6 落盘失败 ⇒ 整体回滚�
 **2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
 **本批（会话锚解析修复（多档并存支持） · 2026-10-02）落点表** = `docs/batches/2026-10-02-manifest-resolution-fix.md` §2（唯一承载面——一次性批次材料）。
 **本批（代码笔通路 · 2026-10-09）落点表** = `docs/batches/2026-10-09-light-channel-code-path.md` §2（唯一承载面——一次性批次材料）。
+**本批（design-token-recovery · 2026-10-14）落点表** = `docs/batches/2026-10-14-design-token-recovery.md` §2（唯一承载面——一次性批次材料）。
+
+- 2026-10-14（**design-token-recovery 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` · 台账 #1384）：§10 增 **F-SL1 回收读口扩展**（`designId` 过滤 + `reveal` 单槽揭值；掩蔽 = 只揭活槽）+ **回收程序** + **自动解析取舍句**（designId-only spawn 不做）；日志互作 = `log.mjs` `SECRET_FORM` 增 token 值形（实施 = 本批实施轮）；§10 标题随动。**签发链行为零改**（mint / settle / TTL / persist / spawn 门零动）。
 
 - 2026-10-09（**代码笔通路批 · 设计评审修正轮 1（发现 #4）· eng-designer**——承批档 `docs/batches/2026-10-09-light-channel-code-path.md` §3 轮次 1）：§6.1 测试行自抵消正——删「在位」（档不在盘；形式对齐 §5 用例面 ∥ §6.3 测试面行）。**零新语义**。
 

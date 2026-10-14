@@ -135,7 +135,8 @@ export function createMeChatComposer(ctx, deps = {}) {
   // ── 模型候选（源 = `GET /api/me/chat/models`；核行形补 `label`/`reasoning`）──────
   let modelRows = []
   let pushHandler = null
-  const coreRowOf = (row) => ({ id: row.id, provider: "", group: "", label: row.id, reasoning: row.reasoning ?? [] })
+  const providerOf = (id) => { const s = String(id ?? ""); const i = s.indexOf("/"); return i > 0 ? s.slice(0, i) : s } // 归属名 = id 首段（首斜杠口径——server 面约定）；无斜杠 ⇒ 全串（分组行免空题——走查轮笔 2）
+  const coreRowOf = (row) => ({ id: row.id, provider: providerOf(row.id), group: providerOf(row.id), label: row.id, reasoning: row.reasoning ?? [] })
 
   /** 推送（核面板 `applyModels` 消费）：携 `rollback: true` = **显示面重派生**（零槽写——本档刷新专用：钮面字随当刻会话模型，免系统回声径回写）。
    *  `prefs.reasoning` = 当刻会话档位（`null` = 未设 ⇒ 核中性面 `—`——KD-SV-111）。 */
@@ -145,7 +146,7 @@ export function createMeChatComposer(ctx, deps = {}) {
     pushHandler?.({
       type: "models",
       models: modelRows,
-      prefs: model === "" ? {} : { model, provider: "", reasoning: chat?.reasoning ?? null },
+      prefs: model === "" ? {} : { model, provider: providerOf(model), reasoning: chat?.reasoning ?? null },
       rollback: true,
     })
   }

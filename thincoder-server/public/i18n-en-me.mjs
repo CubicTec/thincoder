@@ -92,6 +92,8 @@ export const EN_ME = Object.freeze({
   "me.chat.reread": "Reload",
   "me.chat.sessionsEmpty": "No sessions yet — click “New session” to start",
   "me.chat.threadEmpty": "No messages in this session yet — send one to start",
+  "me.chat.noSessionGuide": "No sessions in this workspace yet — click “New session” to start chatting (use “Pull” first if the repo isn't pulled yet).",
+  "me.chat.needSession": "No session yet — click “New session” at the top, then send.",
   "me.chat.listFailed": "Failed to load sessions and workspaces",
   "me.chat.detailFailed": "Failed to load the session",
   "me.chat.retry": "Retry",

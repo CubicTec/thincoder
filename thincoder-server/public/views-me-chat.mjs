@@ -157,6 +157,7 @@ export async function renderMeChat(ctx, mount) {
     if (workspaces.length === 0) return guide("me.chat.noWorkspace", [h("button", { type: "button", text: t("me.chat.createWorkspace"), onclick: () => openCreateWsModal() })])
     const ws = shownWorkspace()
     if (ws === null || ws.boxState !== "running") return guide("me.chat.wsBoxStopped", [h("button", { type: "button", text: t("me.chat.startWorkspace"), disabled: startingId !== null, onclick: () => { void startWorkspace() } })])
+    if (sessions.length === 0) return guide("me.chat.noSessionGuide", [h("button", { type: "button", text: t("me.chat.newSession"), onclick: () => openNewSessionModal() }), h("button", { type: "button", class: "tiny", text: t("me.chat.pull"), onclick: () => openPullModal() })]) // 零会话支（走查轮笔 3——原先落到「卷空」引导误导）
     return guide("me.chat.wsEmptyVolume", [h("button", { type: "button", text: t("me.chat.pull"), onclick: () => openPullModal() }), h("button", { type: "button", class: "tiny", text: t("me.chat.newSession"), onclick: () => openNewSessionModal() })])
   }
   // ── 活流面（核件装配——**块 = 步**（`turn` 帧开合）∥ 块内嵌当步工具卡 ∥ 一回合一个助手标签）──
@@ -231,7 +232,10 @@ export async function renderMeChat(ctx, mount) {
   }
   /** 发一条并读流（单 POST + NDJSON 帧流）：返回 `{ accepted, ended }`。成员面体 = `{ content }`（帧面无图片通道——§3.3 `run` 事件体裁；文本档已内联进 `content`）。 */
   async function onSend(text) {
-    if (activeId === null) return { accepted: false, ended: false }
+    if (activeId === null) { // 无会话发送 = 非静默引导（走查轮笔 3——原为静默丢弃）
+      if (threadBox.querySelector(".need-session") === null) threadBox.append(h("p", { class: "hint error need-session", text: t("me.chat.needSession") }))
+      return { accepted: false, ended: false }
+    }
     await reasoningWrite // 在飞档位写落地（选中即改 ⇒ 本回合生效——单变量串行；无在飞 ⇒ 直过）
     const sessionId = activeId
     liveReset()

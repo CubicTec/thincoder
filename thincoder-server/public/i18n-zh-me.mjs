@@ -91,6 +91,8 @@ export const ZH_ME = Object.freeze({
   "me.chat.reread": "重读",
   "me.chat.sessionsEmpty": "暂无会话——点「新会话」开始",
   "me.chat.threadEmpty": "本会话暂无消息——发一条开始",
+  "me.chat.noSessionGuide": "该工作区还没有会话——点「新会话」开始对话（仓库还没拉取就先「拉取」）。",
+  "me.chat.needSession": "还没有会话——先在顶部点「新会话」，再发送。",
   "me.chat.listFailed": "会话与工作区加载失败",
   "me.chat.detailFailed": "会话内容加载失败",
   "me.chat.retry": "重试",

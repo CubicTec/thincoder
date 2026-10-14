@@ -63,16 +63,19 @@
 | `POST /api/admin/mcp` | 新增：`{ name, transport, command?, args?, url?, wsUrl?, headers?, token?, env?, enabled? }`（`enabled` 缺省 = 启用——与 v24 DDL 缺省值 ∥ 控制台缺省勾同拍）⇒ 200 `{ id }`；形非法（名空/重名/传输三择/必填缺/类型错）⇒ 400（库零变） |
 | `PATCH /api/admin/mcp/:id` | 改（**字段缺席 = 不动**——providers 先例；敏感字段缺席 = 不变 ∥ `null` = 清）；`{ enabled }` 切换走本端点；形非法 ⇒ 400 库零变；不存在 ⇒ 404 |
 | `DELETE /api/admin/mcp/:id` | 删（硬删——providers 先例）＋ 关闭该服务器会话；不存在 ⇒ 404 |
-| `POST /api/admin/mcp/probe` | 探活（零副作用）：体 = `{ id?, name?, transport?, command?, args?, url?, wsUrl?, headers?, token?, env? }`——`id` 在场 ⇒ 缺席字段（含非秘密：`transport`/`command`/`url`…）一律**回落库内行**（编辑窗/行内探活）；`transport` 仅无 `id` 草稿态必填；全量草稿（新建窗）亦可 ⇒ 200 `{ ok, toolCount?, latencyMs?, error? }`（自含状态——`ok:false` 仍 200，沿 `proxy/test` 口径） |
+| `POST /api/admin/mcp/probe` | 探活（零副作用）：体 = `{ id?, name?, transport?, command?, args?, url?, wsUrl?, headers?, token?, env? }`——`id` 在场 ⇒ 缺席字段（含非秘密：`transport`/`command`/`url`…）一律**回落库内行**（编辑窗/行内探活）；`transport` 仅无 `id` 草稿态必填；全量草稿（新建窗）亦可 ⇒ 200 `{ ok, toolCount?, tools?, latencyMs?, error? }`（自含状态——`ok:false` 仍 200，沿 `proxy/test` 口径；`tools` = 工具名数组——非空字符串） |
 
 - **添加不强制探活**（先落库后探活——可达性非配置成立条件；**被否**：沿 runners「先自检后落库」fail-closed（MCP 服务器可后起——封死预配置））；探活 = 显式动作（窗内「测试」＋ 行内「探活」）。
 
 ### 3.3 探活（核件复用）
 
-- 件 = 核 `probeMcpServer`（`thincoder-core/mcp.mjs:97`——零副作用：不进 `_sessions` ∥ 不动工具面 ∥ `finally close`）；读数形 = `{ ok, toolCount, latencyMs }` ∥ `{ ok:false, error }`。
+- 件 = 核 `probeMcpServer`（`thincoder-core/mcp.mjs:97`——零副作用：不进 `_sessions` ∥ 不动工具面 ∥ `finally close`）；读数形 = `{ ok, toolCount, tools, latencyMs }` ∥ `{ ok:false, error }`（`tools` = 工具名数组——名非字符串/空名剔除；2026-10-14 走查轮增补）。
 - 超时 = 核 `INIT_TIMEOUT_MS`（30s——`thincoder-core/mcp/helpers.mjs:5`）；核件自持，服务端零第二套超时。
-- 读数呈现（控制台）= 对齐 CLI `/mcp test` 形（`thincoder-cli/src/tui/cmd-mcp.mjs:132-137`）：`✓ {toolCount} tools, {latencyMs}ms` ∥ `✗ {error}`。
+- 读数呈现（控制台）= 两形同件（`probeReadoutText`——`thincoder-server/public/views-mcp.mjs:58-63`；行内 ∥ 弹窗两入口同形）：**具名形**
+  `✓ {toolCount} 个工具：{tools}，{latencyMs}ms`（i18n `admin.mcp.probeOkNamed`）∥ **计数形**回落 `✓ {toolCount} 个工具，{latencyMs}ms`
+  （`tools` 缺失/空——零工具 ∥ 旧核响应；i18n `admin.mcp.probeOk`）；败 = `✗ {error}`。CLI `/mcp test` 形 = 计数形来源（`thincoder-cli/src/tui/cmd-mcp.mjs:132-137`）。
 - 探活零落库零审计（诊断面——沿 `proxy/test` ∥ `embedding/test` 先例）。
+- **发行链（补丁入镜径——本笔）**：服务器镜像内核 = npm 声明依赖（非仓内副本）⇒ 核侧补丁须随**核发行波**入镜（本笔挂下个常规核发行波——发行钩子 = 核 `CHANGELOG.md` `[Unreleased]` 行）；发行前生产读数 `tools` = 空 ⇒ 显示回落计数形。
 
 ### 3.4 控制台落点（一页一职责）
 
@@ -124,7 +127,7 @@
 |---|---|---|---|
 | N1 | 正常 | 假 db（一 stdio 服务器行）＋ 假建连替身：chat 一轮发起调用 | MCP 工具在场（名 = `{server}_{tool}`）；`call`/`result` 帧逐值；`chat_call` 行（tool=挂载名 ∥ subject=服务器名）；结果 ≤4000 字落库；预算计数含本次 |
 | N2 | 正常 | 真库 + 假 MCP 件（核真件仓内直引改替身）：POST 新增 ⇒ GET 列表 ⇒ PATCH `{enabled:false}` ⇒ GET ⇒ DELETE ⇒ GET | 行逐值（`hasSecrets` 布尔——零秘密）；停用后下回合工具面不含该服务器件；`mcp_event` 三 kind 行逐值 |
-| N3 | 正常 | 探活两径：行内（体 `{id}`）∥ 新建草稿（体 = 全量） | `{ ok:true, toolCount, latencyMs }` 逐值（替身）；库零变 ∥ 核 `_sessions` 零增（零副作用断言） |
+| N3 | 正常 | 探活两径：行内（体 `{id}`）∥ 新建草稿（体 = 全量） | `{ ok:true, toolCount, tools, latencyMs }` 逐值（替身）；库零变 ∥ 核 `_sessions` 零增（零副作用断言） |
 | N4 | 正常 | 编辑窗留空秘密 + 改 url ⇒ PATCH；「清除」勾 ⇒ PATCH `{token:null}` | 秘密列不变（库内密文逐值）∥ 清除后 `hasSecrets=false` |
 | N5 | 正常 | 停机收尾（假 stdio 件） | 停机路径调 `closeAllMcp`（假件断） |
 | B1 | 边界 | 建连失败（替身抛）＋ 冷却窗内第二回合 | 首回合跳过 + 日志；第二回合零连接尝试（假件计数）；窗满重试；探活成功 ⇒ 清冷却 |
@@ -191,6 +194,8 @@
 | R86 | **server-mcp 批（本批）——需求档回笔建议 ＋ 随正件 ＋ 披露 ＋ 待裁点 ＋ 部署收尾**：① 需求档回笔（主 agent 笔——**已办（2026-10-13）**）：**功能点 54 ∥ AC-54** 已入册（需求档验收表在册）；**AC-12 管理 10 ⇒ 11**；**AC-28 审计型 十六 ⇒ 十七（`mcp_event`）**（均已随正）；② 随正件（实施轮同拍——以当刻盘面实读为准）：`docs/batches/*.test.mjs` 档目/清单断言件族（`readdirSync(PUBLIC_DIR)` 命中 ≈18 件 + nav 计数断言件——新增 `views-mcp.mjs` + i18n 两部件 ⇒ 逐件清单/键集随正；起始坐标 = `2026-10-06-server-i18n.test.mjs:125` ∥ `2026-10-10-runner-admin-console-ui.test.mjs:489-501` ∥ `2026-10-11-admin-agent-chat-ui.test.mjs:322-341`）∥ `docs/README.md` 档数（server 设计 +2——父侧笔）∥ ③ 披露（不阻塞）：stdio = server 同机命令（等价 `bash` 在册）∥ 远端 MCP = server 新出网目的地（零白名单）∥ 第三方内容面（描述/输出 = 外部数据）∥ `command`/`args` 明文可含秘密 ∥ 工具数无上限 ∥ 冷却 = 进程内（重启清零）∥ `kill -9` 残留 stdio 子进程 ∥ 探活不落审计 ∥ ④ **待裁点**：机制级确认门（审批）= 本刀不加（无人值守口径）——如需另裁；⑤ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（加真实 MCP 服务器（web 搜索类）⇒ 探活 ✓ ⇒ 管理会话实调一轮 ⇒ 审计页一行） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
 ## 变更记录
+
+- 2026-10-14（**console-walkthrough-light 批（控制台走查·轻通道轮）· 设计正式化（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-14-console-walkthrough-light.md` §1 笔 1 · 台账 #1431）：§3.2 探活行响应形补 `tools?`；§3.3 读数形补 `tools` + 读数呈现改两形（具名形 ∥ 计数形回落——`probeReadoutText`）+ 增发行链注（核补丁挂下个常规核发行波——发行钩子已埋）；§8 N3 随正。同源随动 = `gateway/API.md` §2.13 ∥ `webui/MCP.md` §2.1/§4/§5。**产品码零触（设计正式化；代码在先落）。**
 
 - 2026-10-14（**server-mcp-admin-tools 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-14-server-mcp-admin-tools.md` §3 轮次 1（评审 #186——VERDICT = pass；发现 9 落本档两项）：① §2.1 事实核读收正——`TRIMMED_FACES` 现盘 = `thincoder-server/src/agent/run.mjs:17`、`"mcp"` 已删（挂载落点句同拍；收正动作行坐标 `:22` ⇒ `:17`）∥ ② §10 复核行 `chat.mjs` 读数刷新（实读 **733**——拆档线 720 **已越**；处置 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）。同源随动 = `agent/ADMIN-AGENT.md`（§7③ 腿 ∥ 变更记录）。同族随正：§11 AC-56 行验收表坐标 `:447` ⇒ `:457` ∥ 头部需求锚 `:540` ⇒ `:561`（并「待讨论行」⇒「已立案行」——需求档移位连带）。**零新语义（评审发现直接导出项）；产品码零触（设计轮）。**
 

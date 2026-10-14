@@ -131,7 +131,11 @@
   ⑤ **notice 映射** = `end.reason` 六值面（管理面五值 + `"box_lost"`——本面 +1——「工作区已断开…」）；盒自产扩展四值（`save_failed`/`busy`/`not_found`/`internal`）= 枚举外 ⇒ 服务端原文兜底（单源 = `agent/MEMBER-AGENT.md` §3.4）。
   ⑥ **思考档位面 = 开机**（核菜单 `selectReasoning` ⇒ `PATCH …/:id { reasoning }`；源 = `GET /api/me/chat/models` 行 `reasoning` 枚举 ∥ 未设 ⇒ 零字段——KD-SV-111 同口径会话级）。
   ⑦ **会话源 = 盒内**（题一裁定）：读史/列表/新建/改 = **向盒取指令**——盒未运行 ⇒ 不可达（就启动引导——非静默）；停盒 ⇒ 会话在场（卷恒留）；销毁 ⇒ 随卷去（确认门）；换机 ⇒ 随快照回（截至快照时点）。会话删除 = **出案（待裁——R79）**；重命名 = 不做。
-- **首次进入四相**（空态/引导——机制 = `agent/MEMBER-AGENT.md` §3.6）：无工作区 ⇒ 建 ∥ 盒未运行 ⇒ 启 ∥ 空卷 ⇒ 拉仓引导 ∥ 有事可做 ⇒ 直聊。
+  ⑧ **模型菜单行形 = 自 id 派生归属**：候选源 `/api/me/chat/models` 行 = `{ id, reasoning }`（零 provider 内部细节——`thincoder-server/src/agent/member-routes.mjs:144-155`）⇒
+  适配层 `providerOf(id)`（id 首段——首斜杠口径；无斜杠 ⇒ 全串）供给核菜单行 `provider`/`group` 与 `prefs.provider`（分组行标题 = `shortName(provider, group)`；选中 ✓ = `{model, provider}` 复合匹配——`thincoder-render-core/composer/model-menu.mjs:101/:215`）；
+  管理面对照 = `deriveModels` 真名（`thincoder-server/public/views-models.mjs:39`）。
+- **首次进入四相**（空态/引导——机制 = `agent/MEMBER-AGENT.md` §3.6）：无工作区 ⇒ 建 ∥ 盒未运行 ⇒ 启 ∥ 盒运行 + 零会话 ⇒ 建会话引导（「新会话」主钮 +「拉取」次钮）∥ 有事可做 ⇒ 直聊。
+- **零会话发送 = 非静默**：无会话发送 ⇒ 就地提示行（`me.chat.needSession`——`thincoder-server/public/views-me-chat.mjs:235-237`；草稿还原链不变）。
 - **呈现面 = 复用 `thincoder-render-core`**（§2.1 同件集 + `/rc/*` 第二根同源——「先查再造」纪律句续）；**公共适配层抽取 = 登记不做**（成员页自持同构件——抽取动管理面已对齐件，另轮；两页单源 = 核件）。
 - **不做**：会话删除 = 出案（待裁——R79；露钮与否）∥ 会话重命名/迁移 ∥ 管理面专属件（主机凭据/模型配置/审批卡）∥ 零本地记忆（压后——§3.9）∥ 移动壳（声明在册——§3.8）∥ 公共适配层抽取（登记）。
 
@@ -247,6 +251,8 @@
   - **披露（不阻塞）**：成员页与管理页适配层同构自持（抽取 = 登记后续——两页单源 = 核件）；`end.reason` 六值面（管理面五值 + `box_lost`）为本面差异；盒自产扩展四值（`save_failed`/`busy`/`not_found`/`internal`）枚举外 ⇒ 原文兜底（单源 = `agent/MEMBER-AGENT.md` §3.4）；拉仓凭据经盒按次（`agent/MEMBER-AGENT.md` §3.6 披露句）。
 
 ## 变更记录
+
+- 2026-10-14（**console-walkthrough-light 批（控制台走查·轻通道轮）· 设计正式化（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-14-console-walkthrough-light.md` §1 笔 2/笔 3 · 台账 #1431）：§2.2 差异清单增 ⑧（模型菜单行形 = 自 id 派生 `provider`/`group`——首斜杠口径）+ 四相句收正（③ 盒运行 + 零会话 ⇒ 建会话引导）+ 增零会话发送非静默句。同源随动 = `agent/MEMBER-AGENT.md` §3.6。**产品码零触（设计正式化；代码在先落）。**
 
 - 2026-10-14（**sandbox-onboarding-removal 批 · 设计轮 · eng-designer**——台账 #1383；用户裁「撤」）：§2.1 定位句去「托管接入」（用途枚举；任务式退场）。**产品码零触（设计轮）。**
 

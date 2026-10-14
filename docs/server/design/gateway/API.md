@@ -30,6 +30,7 @@
 
 - 分派 = `thincoder-server/src/gateway/server.mjs`（已落盘）注册行制——新端点 = 注册一行（断点列 = `EVOLUTION.md` §1-G1）。
 - 团队 key 面全部走 `Authorization: Bearer <key>`（OpenAI 兼容工具默认形——唯一接受形）。
+- **HTTP 服务面（连接层——keep-alive）**：`server.keepAliveTimeout = 300000` ∥ `headersTimeout = 306000`（`thincoder-server/src/gateway/server.mjs:114-117`——2026-10-14 走查笔 5）；口径 = **LAN 内部工具**（不套公网防护）：Node 缺省空闲超时 5s 下，浏览器在死连接上发**首个 POST 必败**（浏览器不重试 POST；GET 静默换连不受累——「填表 >5s ⇒ 拉取报错」即此）；复测点 = 空闲 ≥10s 后连接仍活。
 
 ## 2. OpenAI 三面
 
@@ -316,7 +317,7 @@
 | `POST /api/admin/mcp` | 新增：`{ name, transport, command?, args?, url?, wsUrl?, headers?, token?, env?, enabled? }`（`enabled` 缺省 = 启用）⇒ 200 `{ id }`；形非法（名空/重名/传输三择/必填缺/类型错）⇒ 400 `invalid_request_error`（库零变）＋ 审计 `mcp_event`（`server_add`） |
 | `PATCH /api/admin/mcp/:id` | 改（**字段缺席 = 不动**；敏感字段缺席 = 不变 ∥ `null` = 清）；`{ enabled }` 切换走本端点 ⇒ 200 `{ ok: true }`；形非法 ⇒ 400（库零变）；不存在 ⇒ 404 `not_found`；成事 ⇒ 审计 `server_update`（`keys` = 变更键名——值永不入） |
 | `DELETE /api/admin/mcp/:id` | 删（硬删）＋ 关闭该服务器会话（核 `removeMcpTools`）⇒ 200 `{ ok: true }`；不存在 ⇒ 404；成事 ⇒ 审计 `server_remove` |
-| `POST /api/admin/mcp/probe` | 探活（零副作用——不进会话 ∥ 不动库 ∥ 不落审计）：体 = `{ id?, name?, transport?, command?, args?, url?, wsUrl?, headers?, token?, env? }`——`id` 在场 ⇒ 缺席字段（含非秘密）一律回落库内行；`transport` 仅无 `id` 草稿态必填；全量草稿亦可 ⇒ 200 `{ ok, toolCount?, latencyMs?, error? }`（`ok:false` 仍 200——自含状态） |
+| `POST /api/admin/mcp/probe` | 探活（零副作用——不进会话 ∥ 不动库 ∥ 不落审计）：体 = `{ id?, name?, transport?, command?, args?, url?, wsUrl?, headers?, token?, env? }`——`id` 在场 ⇒ 缺席字段（含非秘密）一律回落库内行；`transport` 仅无 `id` 草稿态必填；全量草稿亦可 ⇒ 200 `{ ok, toolCount?, tools?, latencyMs?, error? }`（`ok:false` 仍 200——自含状态；`tools` = 工具名数组——非空字符串） |
 
 - 清单存储/凭据形/探活机制 = `mcp/MCP.md` §3（本表为其契约面）；控制台消费 = `webui/MCP.md` §2；用例 = `mcp/MCP.md` §8（N2/N3/E1）。
 
@@ -480,6 +481,8 @@
 - 管理面 agent 会话面不做（`agent/ADMIN-AGENT.md` §10）：SSH 凭据经 chat 文本输入 ∥ 会话删除/重命名/自动清理 ∥ 节点排空/禁用工具 ∥ 沙盒其余面工具——本档零复述；图片文件面（缩略图/下载/文件存储——KD-SV-109 边界）∥ 无源钮功能补齐（模式位/设置）∥ 思考档位的逐条覆写/状态行段（console-reasoning-levels 批——口径③④）∥ 跨会话并发/多标签同步（未裁）。
 
 ## 变更记录
+
+- 2026-10-14（**console-walkthrough-light 批（控制台走查·轻通道轮）· 设计正式化（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-14-console-walkthrough-light.md` §1 笔 1/笔 5 · 台账 #1431）：§2.13 探活行响应形补 `tools?`；§1 增「HTTP 服务面（连接层——keep-alive）」条（`keepAliveTimeout = 300000` ∥ `headersTimeout = 306000`——LAN 内部工具口径）。同源随动 = `mcp/MCP.md` §3.2/§3.3 ∥ `webui/I18N.md` §2.1。**产品码零触（设计正式化；代码在先落）。**
 
 - 2026-10-14（**sandbox-onboarding-removal 批 · 延迟三档落地轮（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §2「不在本批（承接/延迟）」；重做批收口闭 ⇒ 延迟条件消解；用户 2026-10-14 裁「撤」）：§2.5 前括注「托管接入面」条 ⇒ 「接入面」承接句（手工登记 + 管理面 chat 内动作——KD-SV-135；四端点退场 ∥ 表停机留史）∥ **四端点行删**（起 ∥ 列表 ∥ 详情 ∥ 撤销凭据）∥ §5 托管接入判据行删。**产品码零触（设计轮）。**
 

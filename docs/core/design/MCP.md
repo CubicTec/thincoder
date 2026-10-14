@@ -125,7 +125,7 @@ MCP（Model Context Protocol）客户端把外部 MCP server 的 `tools/list` �
 
 ### 6.7 探活（`probeMcpServer`）
 
-`thincoder-core/mcp.mjs` 导出的 `probeMcpServer(config)` 对一份配置做**一次性探活**：`createConnectedTransport(config)`（initialize + tools/list，含 token 合成与 postOnly 降级链）+ 计时 → `{ ok, toolCount, latencyMs, error }`，`finally transport.close()`。
+`thincoder-core/mcp.mjs` 导出的 `probeMcpServer(config)` 对一份配置做**一次性探活**：`createConnectedTransport(config)`（initialize + tools/list，含 token 合成与 postOnly 降级链）+ 计时 → `{ ok, toolCount, tools, latencyMs, error }`（`tools` = 工具名数组——2026-10-14 走查轮增补），`finally transport.close()`。
 
 **零副作用契约**：不进 `_sessions`、不动 `agent.tools`、无 onDead 挂钩、探完必关；**不复用 `connectMcpServer`**（避免污染 session 幂等表）；initialize 与 tools/list 同受 `INIT_TIMEOUT_MS`（30s）约束。调用点 = `/mcp test [name]` 与 add/edit 保存前的探活确认环。
 
@@ -174,7 +174,7 @@ MCP 工具、下轮重试）。**子代理不含 MCP**：装配仅 depth-0 展�
 - **命连接 / 重连细节（核 `mcp.mjs` name 键 session 面）**：`mcpConnect(config)` 幂等（核 `_sessions` Map：serverName → session `{ config, configFingerprint, state: { transport, tools } }`；端壳只保 client-id 面 `{ id, serverName, tools }`）；同 name 活连接且指纹一致 → 复用；`_reconnecting`
 （serverName → promise）去重双重建连；`transport.onDead` 死后后台退避重连（延迟表四轮），
 成功原位替换 `session.state.transport`（**name 键不变**——工具闭包动态取 transport）。
-- **探活（核 `probeMcpServer`——CLI 镜像）**：一次性 initialize + tools/list + 计时 → `{ ok, toolCount, latencyMs }` / `{ ok:false, error }`；**零副作用**（不进 `_sessions`、无 onDead 挂钩、finally close；handshake 失败 catch 中 `transport?.close()` 防泄漏）；initialize 与 tools/list 分页循环每页受 `INIT_TIMEOUT_MS`(30s) 约束。
+- **探活（核 `probeMcpServer`——CLI 镜像）**：一次性 initialize + tools/list + 计时 → `{ ok, toolCount, tools, latencyMs }` / `{ ok:false, error }`；**零副作用**（不进 `_sessions`、无 onDead 挂钩、finally close；handshake 失败 catch 中 `transport?.close()` 防泄漏）；initialize 与 tools/list 分页循环每页受 `INIT_TIMEOUT_MS`(30s) 约束。
 - **生命周期与面板反馈（端壳 `panel-mcp.mjs`）**：`closeAllMcp()`（extension deactivate / 面板 view dispose——逐核 session close）；`mcpDisconnectByName(name)`（面板 [Reconnect] 先断开再重连）；`mcpConnectedNames()` / `mcpConnectedToolCounts()`（●/○ 状态与工具数——读核 name 键 session 注册表）；连接 / 断开 / 重连变更在**下一轮 runAgent 装配**生效（热插拔）。
 - **agent 代配差异（无磁盘重读菜单）**：VSC 每轮 `loadRaw` 即磁盘——agent 用 edit 工具直接改 `mcp.servers[]` 后，下轮装配（重读 config）自然生效；无 CLI 的菜单边界磁盘重读 / fingerprint 对账交互（机制本体 = §6.4 / §6.8）。
 
@@ -251,3 +251,5 @@ MCP 工具、下轮重试）。**子代理不含 MCP**：装配仅 depth-0 展�
 - 2026-10-07（**MCP 键值行式输入批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-07-mcp-kv-input.md` §1 ∥ §2 · 台账 #1036）：§6.5 「headers / env 键值对输入」条补 **射程句**（本条 = CLI `/mcp` 表单面；GUI 两端 = 行式键值编辑器——口径单源 = `docs/vsc/design/SETTINGS.md` §2.4 ∥ `docs/desktop/design/SETTINGS.md` §1 **KD-76**；三端管理面输入形不一致 = 端差在册）· §7 **D-MC9** 同拍（射程括注）。**零新语义**（射程 ∥ 辖域收正——原「统一」措辞对三端面不再成立）。明细 = 批档 §2。
 - 2026-10-07（**MCP 键值行式输入批 · 设计评审修复轮（§3 轮次 1 · 发现 1）· eng-designer**——承批档 `docs/batches/2026-10-07-mcp-kv-input.md` §3 轮次 1 ∥ §2 修复轮块 · 台账 #1036）：§6.5「headers / env 键值对输入」**主句改 CLI 作用域表述**（「统一为逗号分隔」⇒「**CLI `/mcp` 表单面 = 逗号分隔**」——「统一」残句删；射程句 ∥ §7 **D-MC9** 括注零动）。**零新语义**（辖域表述收正）。明细 = 批档 §2 修复轮块。
 - 2026-10-10（**跨端对齐批 · 实施轮随动 · eng-coder**——承批档 `docs/batches/2026-10-10-cross-end-alignment.md` §2 · 台账 #1046）：§6.5「headers / env 键值对输入」条**改述为行集语义**（三端「行 = 一对」同源 + 载体差登记——CLI 逐对「选择 + 问句」序 ∥ GUI 行格；旧 CLI 串式半语法退场）· §7 **D-MC9** 同拍（裁决语义 ∥ 理由列改写）。**零新语义**（跨端对齐——输入形语义收正）。明细 = 批档 §2 三.3。
+
+- 2026-10-14（**console-walkthrough-light 批 · 设计评审轮 1 修正（fix 轮——范围外注记①成实）· eng-designer**——承批档 `docs/batches/2026-10-14-console-walkthrough-light.md` §1 笔 1 ∥ §3 轮次 1 注记① · 台账 #1431）：§6.7 探活返回形补 `tools`（工具名数组——核 `probeMcpServer` 返形；2026-10-14 走查轮增补）∥ §6.10 VSC 探活镜像句同拍。**发行波如实注**：`tools` 随下个常规核发行波到 npm 消费端（服务器镜像核 = npm 声明依赖——仓内核已落）。**产品码零触（设计正式化；代码在先落）。**

@@ -56,7 +56,7 @@
     · **防悬空**：已标记气泡的原文 ∉ `items` 且非本批 `merged` ⇒ 移除（已被消费且无回声面）。
     · **推送点**：受理 / **五个消费点**（**步边界 pickup** · driver 步骤 1 · 装载① splice · 装载② shift · **会话退出残余直发循环**）/ 忙分支判决（`count` 实况）/ `webviewReady` 握手重推（Reload 冷启按 `items` 重建 N 气泡——幂等快照）。
     **边界**：外部入口队满拒收 = 既有回显气泡**不带标记**（标记只随受理走；拒收提示 = 既有 `showWarningMessage`）；引用失效守卫（气泡已移除 / 清屏 ⇒ `isConnected` 假即弃引用——快照幂等重推自愈）；纯挂起等待面同款（同一规则——无另一形态）；CLI 对位 = `docs/cli/design/TUI-INPUT-BOX.md` §4.1 + `TUI.md` §7.5（待发送块——语义同源、形态各端自落）。
-  - ⑧ **统一消费语义（计划首动作即消费——收编落定 · 2026-09-29）**：取项 ∕ 步边界 ∕ 步边界缝三面同判——`slash` ⇒ 单条（原文 · 保序 · 不合并）；取项单源 = 核 `thincoder-core/queued.mjs` `takeQueuedBatchItem` ⇒ slash 首条不再滞留队首（复现两路 + 三用例 + 负控判红在册——源 = `docs/batches/2026-09-28-tech-debt-closeout.md` §5）；
+  - ⑧ **统一消费语义（计划首动作即消费——收编落定 · 2026-09-29）**：取项 ∕ 步边界 ∕ 步边界缝三面同判——`slash` ⇒ 单条（原文 · 保序 · 不合并）；取项单源 = 核 `thincoder-core/queued.mjs` `takeQueuedBatchItem` ⇒ slash 首条不再滞留队首（复现两路 + 三用例 + 负控判红在册）；
     落点 = `thincoder-vscode/src/extension/queued-pickup.mjs` 步边界（消费点）· 取项三处 = `panel-turn-stages.mjs` ∕ `suspension.mjs`（导入改指核件）；slash 可达且就地消费。
 
 - **Shift+Enter** 既有形态零动（核件键位面不处理——换行）。
@@ -139,31 +139,6 @@
 | D-I10 | 内联次序 = 字面量保护先于 Markdown 替换；恢复序 = 代码段先、反斜杠后 | 否决「代码段提取置于最前」（越界改变代码内反斜杠语义）· 否决保持原实现（代码段内容被二次解释——语料实证） |
 | D-I11 | 回归载体 = 新增单元测试档（纯函数直驱） | 否决并入既有渲染档（渲染契约无归属档）· 否决 happy-dom 驱动（渲染器零 DOM 依赖） |
 
-## 6. 不并项与历史沿革
-
-### 6.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-vscode/docs/design/WEBVIEW.md`（VSC 产品档）——**原地保留作参照历史**。下列内容**不并入本档**：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| §9.1 · §10.1 · §11.1.1 问题陈述与现场核实 | 各面缺陷的现场复现记录（Enter 双绑 / 组合期无守卫 / 下拉判据缺陷 / issue 对拍 R-1–R-5 / ↑↓ 门限断裂） | 一次性批次材料——**结论已在 §1–§2 契约**（修复已落地） |
-| §9.3 · §10.2 · §11.1.3 方案选型与决策过程 | busy 可见化 2 候选 · 占位符-恢复形态 3 候选 · 原始 HTML 策略 3 候选 | 一次性批次材料——结论已入 §1 / §4 / §5（D-I4 · D-I10）；否决理由归旧档 |
-| §9.5 · §10.5 · §11.1.4 · §11.2.3 受影响文件 | 各批施工面清单（文件行数 / 预计增量） | 一次性批次材料——行数随实现漂移，不具活档价值 |
-| §9.6 · §10.6 · §11.1.5 · §11.2.4 用例表 | T-B2-* / T-H* / T-MA10-* / T-MA13-* 表与手法注 | 一次性批次材料——**测试资产归测试层**（`thincoder-vscode/test/`） |
-| §9.7 · §10.7 · §11.1.6 · §11.2.5 验收标准 | 各批 AC 表 | 一次性批次材料——回指见 §9 |
-| §9.8 · §10.8 · §11.1.7 · §11.2.6 边界 | 各批「不做」清单 | 一次性批次材料——**在册登记项**（IME 矩阵 / 折行竖移 / 代码内反斜杠折叠 / 跨界族）已按现行口径并入 §1–§4 |
-| §10.3 逐字目标形态的 JS 代码块 | coder 照抄用的 `inline()` 全文 | 施工指令——**现态源码即权威**（`thincoder-render-core/md.mjs:34-64`）；本档只留契约 |
-| §10.1 修前 / 修后差异表 | 逐项对拍表 | 批次语境——差异边界（跨界配对族）已作登记写入 §4 |
-| §11.2.1 现状核对表 | 「三面板」逐一复核 | 现状已收敛为一行（§3 尾注） |
-
-### 6.2 迁移期登记（**非**不并项——随批收口）
-
-| # | 事项 | 现状 | 收口点 |
-|---|---|---|---|
-| 1 | 需求侧对应条目（Enter / 输入历史 / 说明句 / 转义）在 `AGENT-LOOP（VSC 侧·需求）` §10 / §12 / §14 | 未迁入基准层（统一面）——引用保持迁移期口径 | 统一面批次并入 `docs/core/requirements/AGENT-LOOP.md` 后翻转 |
-| 2 | 转义面历史修复（`webview/md.js` 的 esc-first 重写，2026-09-05） | 属既有实现史（git log 可查） | ——（已由 §4 现态契约取代） |
-
 ## 7. UI / 交互决策落档
 
 | # | 决策 | 状态 |
@@ -189,70 +164,6 @@
 | 5 | 机检（新增档 ≤500 行 · 无 >300 字符单行 · 文档锚零悬空） | N-M3 · N-M2 |
 
 **用例**：`thincoder-vscode/test/`（`webview-input-enter.test.mjs` · `webview-input-history.test.mjs` · `md-render-escape.test.mjs` · `activity-flow.test.mjs` ·
-`busy-injection-vsc.test.mjs` · `busy-injection-vsc-webview.test.mjs`（C-B2-6 面——含本批扩面行：会话在飞入槽 / 三支送达；「槽满跨载体」= T-V16-8——2026-09-25 file-tier-sweep 批拆分迁入）· 细则⑦ 面对拍锁 = `docs/batches/2026-09-29-parity-b2-queued.test.mjs`（单元测试档）· （机检豁免——用例退场登记）
+`busy-injection-vsc.test.mjs` · `busy-injection-vsc-webview.test.mjs`（C-B2-6 面——含本批扩面行：会话在飞入槽 / 三支送达；「槽满跨载体」= T-V16-8——2026-09-25 file-tier-sweep 批拆分迁入）· 细则⑦ 面对拍锁 = `parity-b2-queued.test.mjs`（单元测试档）· （机检豁免——用例退场登记）
 `chat-panel-messages.test.mjs`（busy 分流族））——用例表归测试层，本档不复制（D2）。
 
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · VSC 第 2 批**）：建档——源档 §9 / §10 / §11 的内容重建入基准层（旧档一字未改、原地作参照历史）；坐标按 as-of 2026-09-15 实核改写（源档坐标漂移多处——如 `input.js` Enter / 下拉判据、`activity-view.js` tail 射程，均按现态改写）；批次材料（问题陈述 / 选型 / 受影响文件 / 用例表 / 验收标准 / 边界）入 §6.1。
-- 2026-09-21（**无工作区守卫批 · 评审轮 1 修正轮 · eng-designer**——承批次档 §3 轮次 1 发现 6）：§1 零改面行改**纯现状表述**（去批次时点措辞——`applyBusyLock` 占位符含第三态（守卫 > busy > 常态））。**契约点 / 键面零变**。
-- 2026-09-21（**busy-injection 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-21-busy-injection.md` §2 · 需求授权 = CLI 需求档 F16 对称句）：
-  §1 增 **C-B2-6**（busy 排队注入对称修——普通回合 busy 面（`running && !_suspended`）本地气泡 + `queuedUserMessage` → host `_busyQueued` 单槽；
-  挂起会话内 busy / 纯挂起等待面零改；送达 = 回合尾装载两分支）；§7 增 U-I8；§9 行 1 补覆盖注记。**既有契约点 C-B2-1…5 / U-I2 / U-I7 零变**。
-- 2026-09-21（**busy-injection 批 · 设计评审轮 1 修正** · eng-designer——承 `docs/batches/2026-09-21-busy-injection.md` §3 发现 7）：C-B2-6 细则①措辞收正（拒收 + toast 提示；槽内既有消息不被覆盖）；细则②补送达侧气泡生命周期（与纯挂起既有 queued 路径同款——送达时本地气泡即视为该消息 user 回声面，回合流式渲染不重复出气泡）。契约判别式 / 槽名零变。
-- 2026-09-21（**无工作区守卫批**）：§1 增 C-B2-5（无工作区拒发可见提示 + 占位符第三态）；§1「零改面」行收正（`applyBusyLock` 出零改面）；§7 增 U-I7。**消息名 / 载荷字段零变**（新增 host → webview 消息 `workspaceGuard` 登记 = `WEBVIEW-PROTOCOL.md` §3.2 行 15）。
-
-- 2026-09-21（**busy-injection 批 · 设计评审轮 2 修正** · eng-designer——承 `docs/batches/2026-09-21-busy-injection.md` §3 轮次 2 发现 3）：
-  C-B2-4 规则句限定至收窄后仅存拒发面（挂起会话内 busy `running && _suspended`——拒发 + toast 不变）；U-I2 加同款限定注；
-  普通回合 busy 面回指 C-B2-6 排队注入。**C-B2-6 本体 / 契约判别式零变**。
-- 2026-09-22（**busy-injection 批 · 实施悬空裁定轮（fix round）· eng-designer**——承 `docs/batches/2026-09-21-busy-injection.md` §5 决策透明表 #5 / #6 + 父侧裁定）：
-  C-B2-6 细则① 扩 **webview 二次提交守卫**（判据 / 状态清除时机 / 提示形三面 + 判据源 host 推送 `busyQueued`）；细则族补 **⑥ 送达路由贴图降级对位**（与 idle 面同一判定函数，三调用点）；
-  细则⑤ 落点面同步；§7 U-I8 扩守卫与降级句；§9 用例面补 `busy-injection-vsc.test.mjs`。**判别式 / 槽名 / 既有契约点零变**（协议登记 = `WEBVIEW-PROTOCOL.md` §3.2 行 17 + §12 行 + §6.3 键 `input.slotFull`）。
-
-- 2026-09-22（**busy-extend 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-22-busy-extend.md` §1（E1 / E2））：**C-B2-4 删除**（busy 拒发 + `input.busyPlaceholder` toast——其唯一残面「挂起会话内 busy」本批回开为排队面 ⇒ 该契约点已无面）；
-  C-B2-6 扩面为「busy 即排队面（`running`）+ 单槽载体两态」（细则① 判据源扩两载体合计 / ② 送达补会话在飞支 / ③ 外部入口守卫撤销 / ④ digest 例外撤销 / ⑤ 落点同步 / ⑥ 两面同款来源标记）；
-  §7 U-I2 / U-I8 同步收正（U-I2 = 唯一 busy 拒面 = 单槽满；U-I8 = 排队面 `running` + 载体两态 + 三支送达）；§9 用例面行补本批档位。**C-B2-1/2/3/5 与 R-1…R-5 / U-I1/I3–I7 零变**（U-I2 · U-I8 本批收正——见上二处）。
-
-- 2026-09-22（**busy-extend 批 · 设计评审轮 1 修正** · eng-designer——承 `docs/batches/2026-09-22-busy-extend.md` §3 轮次 1 发现 #2 / #3 / #11 / #12）：
-  §7 U-I8 按 C-B2-6 收正（判据面 `running` 全面 / 载体两态 / 三支送达——「挂起会话内 busy 零改」与「回合尾装载两分支」两残留句退场）；
-  §1 C-B2-6 零改面补「空输入 = 既有静默（`send()` 出口）」；§1 零改面行录入面括注改述（录入不禁；提交面受理分流 = C-B2-6）；§9 行 1 枚举收正（去「busy 拒发可见提示」→ C-B2-6 细则①）。**C-B2-1/2/3/5 与 R-1…R-5 / U-I1/I3–I7 零变**。
-
-- 2026-09-24（**queue-visible 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1）：C-B2-6 细则族增 **⑦ 排队气泡「待发送」态**（锚定三支 = 本地标记 / 快照同文锚定 / 流尾新建；消费即清 = 四消费点推 `pending:false` + 握手重推；标/报面零改 = 标签行 + `data-raw` + `pending` 类，无新 CSS）；
-  §7 U-I8 补标记句；§9 用例面补 `queue-visible-vsc.test.mjs`。**契约判别式 / 槽名 / 送达三支 / 贴图降级面零变**（协议登记 = `WEBVIEW-PROTOCOL.md` §3 / §3.2 行 17 `text` 增字段 + §6.3 键 `queued.pending`）。
-
-- 2026-09-24（**queue-visible 批 · 需求裁定升级轮（多槽 + 合并消费）· eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1.10）：C-B2-6 正文与细则① / ⑦ 按**容量 8 + 合并消费**重写（满队判据 = `_busyQueuedCount >= 8`；消费 = 快照 `{pending, count, items, merged}` + 多条批**就地合并为一条气泡** / 单条批清标保留；推送点四消费点）；
-  U-I8 / §9 同步。**载体两态 / 三支送达 / 贴图降级 / C-B2-1–5 零变**（协议登记 = `busyQueued` 增 `count` / `items` / `merged` + §6.3 `input.slotFull` 值改）。
-
-- 2026-09-24（**queue-visible 批 · fix 轮（步边界 pickup）· eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1.11 / §1.12 / §1.13 · 用户 03:06 收正）：C-B2-6 正文补**步边界消费（主）**句（端壳循环头投递回调——`thincoder-vscode/src/agent.mjs:197` 邻位；系统轮不传回调）；
-  细则② 送达 **三支 → 四支**（增 ⓪ 步边界）；细则① / ⑦ 消费点枚举 **四 → 五**；U-I8 / §9 用例面同步。
-  **容量 / 满队 / 三支既有送达 / 贴图降级 / 零新 CSS 零变**（协议登记 = `WEBVIEW-PROTOCOL.md` §3 / §3.2 行 17 消费点枚举 + §6.3 `queued.pending` 值）。
-
-- 2026-09-24（**queue-visible 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §3 轮次 1 发现 #3）：C-B2-6 细则③ + U-I2 + §9 行 1 三处**单槽 → 队列（容量 8）**口径收正（唯一 busy 拒面 = 满队（第 9 条））。**细则① / ② / ⑦ 与契约判别式零变**。
-
-- 2026-09-24（**queue-visible 批 · 收口前补述（父侧/设计侧）· eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §5 决策透明表 #3 / #4）：
-  C-B2-6 细则⑦「标记」补**第三支**（未标记同文气泡 ⇒ 就地标记、不新建——判据序 ①②③）；细则② ⓪ 补**贴图批让位**句（同步面 ⇒ 携 `images` 的批不消费，留既有送达路径）+ 载体面补**贴图批退化**句（批内携图 ⇒ `count = 1` 逐条取）。
-  **契约判别式 / 容量 / 满队 / 消费点枚举 / 贴图降级面零变**——只追认已交付实现（零新增语义）。
-
-- 2026-09-25（**file-tier-sweep 批 · 评审轮 1 修正轮** · eng-designer——承 `docs/batches/2026-09-25-file-tier-sweep.md` §3 轮次 1 发现 4）：§9 用例面行收正——S3 拆分后 C-B2-6 面两档（`busy-injection-vsc.test.mjs` / `busy-injection-vsc-webview.test.mjs`）；「槽满跨载体」= T-V16-8 入 webview 档。**契约点 / 判别式零变**。 （机检豁免——用例退场登记）
-
-- 2026-09-29（**doc-sync-residuals 批 · 设计面残留收正轮 · eng-designer**——承 `docs/batches/2026-09-28-tech-debt-closeout.md` §1.19 收正行 ⑤ · 台账 #429）：§1 C-B2-6 细则族补 **⑧ 取批面放行**（`consumableAction` 两取批点——slash 不再滞留；KD-9 以备选结案；旧「入队门禁不可达」预设收正）。**零新语义**（落形登记）。
-
-- 2026-09-29（**批 parity-b2-queued · 实施收正轮 · eng-coder**——承 `docs/batches/2026-09-29-parity-b2-queued.md` §2 ∕ §2.10 · 台账 #566）：§1 C-B2-6 细则⑦ 合并形态声明句「实读 64」⇒ 核单源（转口）形 + 届盘实读 **26**（内容行计）；细则⑧ `consumableAction` 行号随动（转口档重排后第 24 行）。**零新语义**（副本退场——核单源转口）。
-- 2026-09-29（**批 parity-b4 · 实施收正轮 · eng-coder**——承 `docs/batches/2026-09-29-parity-b4-vsc-small.md` §2.7-W3）：§1 C-B2-6 降级判决函数行收正（判决函数 = 核 `attachments.mjs`——VSC `image-handler.mjs` 薄壳转口；缺省跑者 = 核 `vision-reader.mjs`）。**零新语义**（实施随动）。
-- 2026-09-29（**parity-b1-vsc-core 批 · 收口轮 · eng-coder**——承批档 `docs/batches/2026-09-29-parity-b1-vsc-core.md` §2.9）：**挂起 ∕ 循环接线句收正**——§1 C-B2-6 与 §7 U-I8 的「端壳循环头投递回调（`thincoder-vscode/src/agent.mjs:197` 邻位 ∕ 同址）」
-  ⇒ **核循环头 `consumeQueuedInput` 回调**（装配点 = `thincoder-vscode/src/extension/panel-turn-loop.mjs`）；细则②① 会话在飞消费点 = 核 `startSuspension` 步 1（端装配 = `suspension.mjs`——死坐标 `:285-300` 退场）；退出兜底 = 核 `done.residualInput` ⇒ 普通回合续发。**零新语义**（端接线事实收正）。
-- 2026-09-29（**b2-collection-correction 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-29-b2-collection-correction.md` §3 轮次 1 发现 2）：§1 细则⑧ KD-9 收结句收正为现态句（按 KD-1 口径——修订式对照句删除）；「slash 可达且就地消费」保留。**零新语义**。
-- 2026-09-29（**doc-sync-residuals 批 · 修正轮（评审 #202 发现 4）· eng-designer**）：§1 细则⑧ KD-9 收结句自细则面移出（历史在册 = 本段 2026-09-29「doc-sync-residuals」∥「b2-collection-correction」两条）；细则面只留现态句。**零新语义**。
-- 2026-09-29（**批 b2-collection-correction · 收正轮 · eng-coder**——承台账 #562）：§9 用例面死指针收正（`queue-visible-vsc.test.mjs` ⇒ 对拍锁 `docs/batches/2026-09-29-parity-b2-queued.test.mjs`）；§1 C-B2-6 细则①「双端同名常量」⇒「核单源常量」。**零新语义**。
-- 2026-09-29（**队列取项边缘收正批 · 实施轮 · eng-coder**——承 `docs/batches/2026-09-29-queue-pickup-edge.md` §2 ∕ §2.10 · 台账 #621 ∕ #624）：§1 C-B2-6 细则⑧ 收正为**统一消费语义**（计划首动作即消费——`slash` ⇒ 单条；取项 ∕ 步边界 ∕ 步边界缝三面同判）；
-  `consumableAction` 转口退役 + VSC 自持取项副本退场——核单源 = `takeQueuedBatchItem`。**语义收正**（收编归核——零新机制）。明细 = 批档 §2 ∕ §5。
-- 2026-09-29（**队列取项边缘收正批 · 修复轮（评审轮 1 · 发现 2 / 4）· eng-coder**——承批档 §3 轮次 1）：① 细则② 让位判据坐标按盘随动（行号 +2——收正）· ② 细则② 取项指针改指核件（原指 VSC 自持副本行——副本退场后悬空，收正）· ③ 细则⑦ 转口档读数按盘收正（`queued-merge.mjs` 实读 26 ⇒ **11**）。零码改（文档收正）。
-- 2026-09-29（**vsc-carryover 批 · 设计评审修正轮 2 · eng-designer**——承 `docs/batches/2026-09-29-vsc-carryover.md` §3 轮次 2 发现 2）：
-  §1 ∕ §2 输入面坐标按盘重锚——`input.js`（127 行）· `send.js`（12 行）· `autocomplete.js`（15 行）= 上提批搬核后接线档；
-  键位 ∕ 历史 ∕ 判据落点改指核 `thincoder-render-core/composer/panel.mjs` ∕ `thincoder-render-core/composer/atmenu.mjs`；
-  C-B2-3 收正为现态（`isOpen()` 单判据——缺元素支随工厂化退场）。**契约点 ∕ 判别式零变**。
-- 2026-09-30（**vsc-residuals 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-30-vsc-residuals.md` §2 · 台账 #680）：C-B2-3 行 ∕ vsc-carryover 条（2026-09-29）两处短形路径锚（`panel.mjs` ∕ `atmenu.mjs`）收正为 `thincoder-render-core/` 前缀全限定；后者同笔断行（行宽 ≈330 ⇒ 合规）。**零新语义**（坐标 ∕ 断行）。
-- 2026-10-01（**记录清账批 · 文档面收正轮 · eng-designer**——承 `docs/batches/2026-10-01-records-docs-reconcile.md` §2 · 台账 #696）：超宽表行断行收形 5 处（`:15` ∥ `:16` ∥ `:18` ∥ `:19` ∥ `:171`——表行续行拆分（空首列续行）——单行 ≤300 ∥ 内容逐字零改 ∥ 条目数不变）。**零新语义**（断行）。明细 = 批档 §2。
-- 2026-10-01（**记录清账批 · 修复轮（评审轮 1 · 发现 3——父侧采纳）· eng-designer**——承 `docs/batches/2026-10-01-records-docs-reconcile.md` §3 轮次 1）：C-B2-6 段续行重切 1 处（切点移至强调跨度闭合之后——原切点落跨度内部 ⇒ 两行未配对标记）；守恒 ∥ 单行 ≤300 ∥ 条目数不变 ∥ 重切 ±0 行。**零新语义**（断行）。明细 = 批档 §2。
-- 2026-10-02（**文档清账轮 · 执行轮 3（core/requirements + cli + vsc）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 1 处 R3 裸名化（记录行两处短形引用去目录段——`panel.mjs` ∕ `atmenu.mjs`）。**零新语义**。
-- 2026-10-04（**排队守卫假满队修复批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-composer-queue-gate-stick.md` §1 ∥ §2 · 用户 13:09 直裁 · 台账 #911）：C-B2-6 细则① 判据源句收正（`S._busyQueuedCount` = host 快照如实镜像——**端侧零本地增量**；满队门 = 如实直读；同 tick 空窗以宿主权威兜底）；细则⑦ 标记句「本地先行置位」收正（提交即反馈；host 快照对账收敛）。**契约点 ∥ 判别式 ∥ 容量零变**。明细 = 批档 §2。

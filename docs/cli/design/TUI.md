@@ -404,11 +404,11 @@ todo 面板（task 列表，≤5 行，全部 done 自动收起）
 **永久返回 null**（`subagent-blocks.mjs:82-83`）⇒ 该条目**此后全部 token 被静默丢弃** ⇒ 面板零块，
 而子代理照常跑完（`subagent-blocks.mjs:181` 丢弃分支无痕）。
 
-**证据链**（设计轮 read 实读 + 定向复现试跑；读数原文 = 批次档 §2.0）：
+**证据链**（设计轮 read 实读 + 定向复现试跑）：
 
 | # | 证据 | 结论 |
 |---|---|---|
-| E1 | 定向复现①：真实链路 撞域 → queued → 域释放 → `maybeRefillAsync` → `entry.start()`，捕获 token = `["explore#2/⟦ev⟧async\x1e","explore#2/[model]m"]`；真实 TUI 侧 waiting 块 → running 块 | 批次档 §1.1 假设「域释放补位路径缺发射」**= 证伪**（起跑链无缺陷） |
+| E1 | 定向复现①：真实链路 撞域 → queued → 域释放 → `maybeRefillAsync` → `entry.start()`，捕获 token = `["explore#2/⟦ev⟧async\x1e","explore#2/[model]m"]`；真实 TUI 侧 waiting 块 → running 块 | 「域释放补位路径缺发射」**= 证伪**（起跑链无缺陷） |
 | E2 | 定向复现②：`⟦ev⟧queued` 建块（panel 1 块）→ 墓碑 → 后续 `⟦ev⟧async` / `[model]` / turn / 文本 / 工具全投 | **panel 0 块、`subTasks` 空、`_pendingAsyncKeys` 缓冲不落地**——症状逐条复现 |
 | E3 | 逻辑必然：运行中子代理自身 token 流（turn / approval / 文本 / 工具）经 `ensureSubTaskKey` 即可建块 | 零块 ⇒ 必为**墓碑命中**（否则首个子 token 即建块）——排除「只是两个建块 token 丢了」 |
 | E4 | 同类失效**已被承认**：`tool-events.mjs:202-204` 注释逐字「it would tombstone a live block and drop its relay stream」+ `isAsyncSpawnResult` 守卫（`tool-display.mjs:119-126`） | 危险已被识别，但**只在 tool 结果一个入口设防**；墓碑本身**无存活条件** |
@@ -459,7 +459,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 **已终态（含 done-in-pool——`entry.done` 置位 = `async-settle.mjs:203`，settle 后未收集条目仍留池：`async-settle.mjs:259` / `thincoder-core/agent-tools/async-discard.mjs:13-14`）照旧冻结清场**；
 池外条目照旧冻结（中断 ghost 语义不变）。
 
-**P1 禁静默留痕**（批次档 §1.3 判据 3）：① 复活分支留痕——**走日志面** `logEvent("ev:subagent-block-revived")`；
+**P1 禁静默留痕**：① 复活分支留痕——**走日志面** `logEvent("ev:subagent-block-revived")`；
 **每次复活记一条（无去重状态）**——墓碑删后可再次命中复活，逐次留痕；若要「同 key 去重」须新增载体 = 第二份存活账，
 否决（D-ZB3 同源）。② `refreshQueuedTokens` 的 `catch {}`（`subagent-scheduler.mjs:357-359`）保持不破坏池状态，
 补 `logEvent("ev:queued-paint-failed")` 留痕。
@@ -516,11 +516,11 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 | # | 验收标准 | 机判 | 回指 |
 |---|---|---|---|
 | AC-ZB1 | 墓碑命中且条目**存活** ⇒ 复活建块 | T-ZB1 / T-ZB2 | 台账 #19 症状 |
-| AC-ZB2 | 墓碑命中且条目**不存活**（池外 / `entry.done === true`〔含 done-in-pool〕/ `entry.cancelled === true`）⇒ 维持丢弃（迟到 chunk 丢弃语义不回归） | T-ZB3 | 批次档 §1.1 by-design 面 |
-| AC-ZB3 | `freezeAllSubTasks` 不冻存活条目；已终态（含 done-in-pool）照旧冻结 | T-ZB4 | 批次档 §1.2 ②（清扫面） |
-| AC-ZB4 | 发射面零改：域释放补位仍发 `⟦ev⟧async` + `[model]`；queued 仍不发 `[model]` | 既有断言（`advisor-pool-queue.test.mjs:86/211`——**仅 async 面**）+ T-ZB1（**`[model]` 面**落位断言）（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） | 批次档 §1.3 判据 2 |
+| AC-ZB2 | 墓碑命中且条目**不存活**（池外 / `entry.done === true`〔含 done-in-pool〕/ `entry.cancelled === true`）⇒ 维持丢弃（迟到 chunk 丢弃语义不回归） | T-ZB3 | by-design 面 |
+| AC-ZB3 | `freezeAllSubTasks` 不冻存活条目；已终态（含 done-in-pool）照旧冻结 | T-ZB4 | 清扫面 |
+| AC-ZB4 | 发射面零改：域释放补位仍发 `⟦ev⟧async` + `[model]`；queued 仍不发 `[model]` | 既有断言（`advisor-pool-queue.test.mjs:86/211`——**仅 async 面**）+ T-ZB1（**`[model]` 面**落位断言）（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） | §6.8.1 发射面 |
 | AC-ZB5 | 降级面（无 `state._agent`）行为与批前逐字一致 | T-ZB5 | §6.8.1 降级路径条 |
-| AC-ZB6 | 留痕：复活分支与 relay 异常各留一条可观测痕（禁静默） | T-ZB6 | 批次档 §1.3 判据 3 |
+| AC-ZB6 | 留痕：复活分支与 relay 异常各留一条可观测痕（禁静默） | T-ZB6 | P1 禁静默留痕 |
 | AC-ZB7 | 两端集成测试绿（`npm test`） | `npm test`（cli + core） | 常规门 |
 
 **6.8.3.8 边界（本批不做）**
@@ -529,7 +529,7 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 - **不新增按族分支**：墓碑是共享单点，修复天然覆盖 subagent / escalate / advisor / consult / compress 五族，但**不新增任何按族代码**（非「扩族」）；**复活可达面** = 键可映射到 §6.8.3.3 两池条目者（subagent / escalate / advisor）；非池键（`compress#N` 等）判 false ⇒ 维持既有丢弃语义（零回归——非本批修面）。
 - **不改**：`isAsyncSpawnResult` 判定面（`tool-display.mjs:119-126`）· `⟦ev⟧cancelled` 出队语义（`subagent-blocks.mjs:189-199`）· `awaitingDigest`（等待消化）与 `_freezeAt` 锚点（§6.8.1 已结算待消化驻留零动——用户裁定）· `computePanelBlocks` 现算面。
 - **不引入**块落盘恢复；不改提示词 / 需求档 / `_archive/**`。
-- **VSC 对位不在本批**（VSC `panel-callbacks.mjs` / `suspension.mjs` 为独立实现）——登记为观察项（批次档 §2.7 同源）。
+- **VSC 对位不在本批**（VSC `panel-callbacks.mjs` / `suspension.mjs` 为独立实现）——登记为观察项。
 
 ### 6.9 消化轮（digest auto-turn）可见面（X9）
 
@@ -740,9 +740,9 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 | 终态消失 | `state.processing` 落 ⇒ 零注入 | `_turnState` 离 `running`（回合尾——`thincoder-vscode/webview/streaming.js:148` 邻位同清） | 位标 `running` 摘（回合尾三径）⇒ 段零节点 |
 | 阈值常量 | `QUIET_MS = 10000`（`render-frame.mjs`） | `QUIET_MS = 10000`（`status-bar.js`） | `QUIET_MS = 10000`（`statusline-segments.mjs`——沿 `USAGE_WARN` 先例） |
 
-**可机判（批档本地用例 · 全清令）**：`renderStatus` 纯函数直驱——桩 state（`processing` 真 ∧ `lastOutputAt` = 现刻 − 10s）⇒ strip-ANSI 含核键 `status.quiet` 现值串（en 缺省 = `Quiet 10s`）；`lastOutputAt` = 现刻 − 5s ⇒ 零该串 + 逐字节等价；`processing` 落 ⇒ 零注入。VSC ∕ 桌面判据 = 各端实现面节（同表）；真机 = 父侧真跑闭合（D16 义务）。
+**可机判（单元测试档本地用例）**：`renderStatus` 纯函数直驱——桩 state（`processing` 真 ∧ `lastOutputAt` = 现刻 − 10s）⇒ strip-ANSI 含核键 `status.quiet` 现值串（en 缺省 = `Quiet 10s`）；`lastOutputAt` = 现刻 − 5s ⇒ 零该串 + 逐字节等价；`processing` 落 ⇒ 零注入。VSC ∕ 桌面判据 = 各端实现面节（同表）；真机 = 父侧真跑闭合（D16 义务）。
 
-**观察（只报 · 父侧裁）**：① CLI 语言面现无 locale（台账 #7 未决——CLI 侧核键现渲缺省 en）⇒ 本读数 CLI 侧现为 en 值；键面已备（键面单源），CLI 多语言面落定即随动。② 「已提交未起跑（回执未现）」窗不在显示域——「发送回执超时」面（#568 另一半）未覆盖，如实登记（批档 §2 上抛项）。
+**观察（只报 · 父侧裁）**：① CLI 语言面现无 locale（台账 #7 未决——CLI 侧核键现渲缺省 en）⇒ 本读数 CLI 侧现为 en 值；键面已备（键面单源），CLI 多语言面落定即随动。② 「已提交未起跑（回执未现）」窗不在显示域——「发送回执超时」面（#568 另一半）未覆盖，如实登记（上抛项）。
 
 **VSC ∕ 桌面对位**：逐端实现面 ∕ 显示位 ∕ 判据 = `docs/vsc/design/WEBVIEW.md` §4.7 · `docs/desktop/design/UI.md` §1「本批注（停滞轻显形 · 2026-09-29）」（同语义、各自实现——非 byte-identical；一致性表见上）。
 ### 7.8 团队登录态段（F20 · 2026-10-10 · 登录面补全批 · 台账 #1231）

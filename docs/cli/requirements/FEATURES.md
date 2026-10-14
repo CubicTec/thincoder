@@ -179,28 +179,3 @@
 | N9 | 对外文档契约面 | README / `USAGE` / 用户可见提示串对 slash 命令 · 子命令 · 配置键 · 机制事件的列举须与实装可达面一致（判据句见 §2.13）。**度量方式**：无机检门——对外文本面不在 V5 源域（`docs/**`）内、`scripts/doc-check-anchors.mjs` 不覆盖 ⇒ 守护 = 同批改动 + 人巡；漂移处置 = 能力在位 ⇒ 改文档（反向删实装 = 违规） |
 | N10 | 盘根启动门 | cwd = 磁盘根（`X:\` ∥ `/`；win32 大小写归一）⇒ 会话面硬拦（默认 TUI ∥ `tui` ∥ `chat` ∥ `acp`）：一行提示（先进工作目录再启动）+ 非零退出；信息维护面（`-v` ∥ `--help` ∥ `memory` ∥ `upgrade` ∥ `completion` ∥ `session *`）放行。动机 = 盘根启动 ⇒ 全盘索引（实测案：`D:/` origin 13.2 万行，2026-10-08 已清）。**无强开旗**；家目录维持软防护（#867 先例，不升硬拦） |
 
-## 4. 不并项与历史沿革
-
-### 4.1 历史沿革（(d) 类——**不并**）
-
-> 来源档 `thincoder-cli/docs/requirements/FEATURES.md`（CLI 产品需求档）——**原地保留作参照历史**（保留 ≠ 维护）。下列内容不并入本档：
-
-| 旧档位置 | 内容 | 何故不并 |
-|---|---|---|
-| 旧档档头 | 「本档是什么（2026-09-10）」时点界定 + 格式债清理批注 | 批次语境——本档自有档头界定 |
-| 旧档 §十 | 「支持 17 家供应商预设、30+ 模型」的具体计数 | 计数随时点漂移——现行清点面以预设 / 规格表实现为准（§2.10） |
-| 旧档 `verify` 行的设计档指针 | `VERIFY-REDESIGN.md`（迁移前址） | 现行落点见 §2.2 / 迁移台账 `docs/core/design/DOC-MIGRATION.md` |
-| 旧档各行的迁移前路径 | `src/` 形坐标 | 迁移前仓形态——§2 已按现状清点面重写 |
-
-**清点面收正（本批 · 实核）**：旧档清单基于 2026-09-07 时点，与现行登记面相比**缺列现行能力**——
-`lsp` · `execute` · `file_ops` · `process` · `get_current_time` · `wait_for` · `tree` ·
-`settings` · `peer_instances` · `read_history` · `batch`；且 `escalate` 已并入 `subagent` 动作（不再独立成工具）。
-本批按**现行登记面**清点（§2），逐项坐标 = `thincoder-core/tools/index.mjs` · `thincoder-core/agent-tools.mjs`。
-
-### 4.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 旧档面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 各能力的机制设计 | 工具契约 / 注册 / 调度细节 | 各板块设计档（`docs/core/design/TOOLS.md` 等）——本档只清点（D2） |
-| 工具描述文本 | 模型可见描述 | **产品代码**——落点 `thincoder-core/tool-docs/**` |
-| VSC 侧同名档 | `thincoder-vscode/docs/requirements/FEATURES.md` | VSC 轮（`docs/vsc/`）——本档只收 CLI 面 |

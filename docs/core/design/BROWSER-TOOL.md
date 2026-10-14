@@ -426,7 +426,7 @@ Escape 面 = 既有机制自带（`autoApprove`/AUTO 模式 ∥ 批量许可）�
 | **N-BT3** 规模上限 | §2.3 ∥ §2.2 | 单元测试 T13：101 元素 ⇒ 截断标记；8001 字符 evaluate 值 ⇒ 截断标记 |
 | **N-BT4** 隔离与凭据 | §3.4 | 单元测试 T14：password 目标 type 回执含 `(hidden)` 且无明文；清单不含 password `[value=]` |
 | **N-BT5** 平台面 | §4 | 单元测试 T15：三平台候选表 + `BROWSER_PATH` 覆盖 + 找不到错误句（`resolveBrowser` 打桩——零真实文件系统依赖） |
-| **N-BT6** 可测试 | §5 ∥ 本表用例 | 单元测试档两档：单元测试（假传输——`WebSocketImpl`/`_deps` 注入缝）＋ 冒烟（真 Edge/Chrome 无头）；**缝纪律** = 缝默认回落真实现（`??` 缺省）、用例 `finally` 还原、冒烟测试零依赖缝；先红后绿读数入批档 §5 |
+| **N-BT6** 可测试 | §5 ∥ 本表用例 | 单元测试档两档：单元测试（假传输——`WebSocketImpl`/`_deps` 注入缝）＋ 冒烟（真 Edge/Chrome 无头）；**缝纪律** = 缝默认回落真实现（`??` 缺省）、用例 `finally` 还原、冒烟测试零依赖缝；先红后绿读数入单元测试档 |
 | **F-BT9** 键盘真输入 | §2.2 press ∥ §2.7 聚焦 ∥ §2.8 键面 | 单元测试 T17（键序列：命名键 / 可打印字符 / 修饰组合 / down-up 分离 / repeat / 聚焦失败）∥ T16（schema 面）；冒烟 S8：真按键驱表单（Enter 提交）成功 + 页面侧 `isTrusted === true` 读回 |
 | **F-BT10** 指针真输入 | §2.2 hover/wheel/mouse ∥ §2.7 坐标解析 | 单元测试 T18（鼠标序列逐形 + wheel 参）∥ T19（坐标 / 几何）；冒烟 S9（hover 驱出菜单）· S10（滚轮位移读数 = window 读数为卷动后值）· S11（坐标点击 / 双击） |
 | **F-BT11** 拖拽 | §2.2 drag ∥ §6 KD-16 | 单元测试 T20（序列 = 按下→移动×N→抬起 + steps + html5 拦截链）；冒烟 S12（拖拽结果断言）· S12b（html5 分支——dragIntercepted 链） |

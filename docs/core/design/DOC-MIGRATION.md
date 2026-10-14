@@ -3,7 +3,7 @@
 > 归属 = **文档体系板块**（`docs/core/design/DOC-SYSTEM.md` 的下游执行表）；本档 = **CLI 树 84 档的逐档二分（活 / 历史）+ 落点 + 批次分组**的唯一权威表；并载后续迁移执行方案（§10 v1 文档退役 ∥ §11 桌面端设计档按域拆分）。
 > 判据（**本节不复制**）→ `docs/core/design/DOC-SYSTEM.md` §5.1（P1–P5 归属判据句）· §4（目标目录结构）· §6（命名规则）。
 > 迁法（用户 2026-09-14 裁定「**明显应该是 B**」）= **旧档留原地一字不改 + 内容补写 / 重建进根层**。
-> 底本口径 = `thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**（不含 `design/prompts/` · `design/_archive/` · `docs/batches/`）。
+> 底本口径 = `thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**（不含 `design/prompts/` · `design/_archive/`）。
 > 依据口径 = 逐条 `file:line` 实核（as-of **2026-09-15**；§9 复跑收正 = 2026-09-16）；根层基准 = `docs/core/{design,requirements}/`（现 **49 + 38** 档——2026-09-16 复跑；见 §9.3 A21）。
 > 建档：2026-09-15（**eng-designer**——本批「二分 + 当场迁第一批」）；来源 = 原 `DOC-SYSTEM.md` §5.2 初分类表的**精化与证据补全**（承该档 §11 拆分规划）。
 
@@ -118,10 +118,10 @@
 ## 3. 待核（**已清空** —— 2026-09-15 裁定后全部定判）
 
 **去向**：原 9 档（两种读法单列）已由**用户 2026-09-15 裁定**逐档定判，并**同批实迁**——判与落点见 §2.1 / §2.2 对应行的「判」与「动作 / 落点」列（本表不再另立——D2 单一权威源）。
-裁定前的两读法（历史 / 活 · P1 / P2 / P3）与逐档依据 = 一次性裁定材料，留痕入 `docs/batches/` 迁移批次档 §2（本批）；各档「依据」列已按裁定后的**现状实核**改写。
+裁定前的两读法（历史 / 活 · P1 / P2 / P3）与逐档依据 = 一次性裁定材料（已不再在盘）；各档「依据」列已按裁定后的**现状实核**改写。
 **层归属不对称登记**：`RELEASE` 两档跨部分成对（设计 = `docs/cli/design/` · 需求 = `docs/core/requirements/`）——各自档头互注配对档位置（防读者以为漏档）。
 
-**迁移注意项（判栏无分歧 ⇒ 不入上表）**：`design/TUI-INPUT-BOX.md` 二态混装（当前态 + §8 / §9 目标态）——落点 P2 无分歧；**已收口（2026-09-15 第 6 批）**：第 31 批设计已实装 ⇒ 落点档按**单态现行契约**重建（收口记录 = `docs/batches/2026-09-14-doc-migration.md` §2 第 6 批）。
+**迁移注意项（判栏无分歧 ⇒ 不入上表）**：`design/TUI-INPUT-BOX.md` 二态混装（当前态 + §8 / §9 目标态）——落点 P2 无分歧；**已收口（2026-09-15 第 6 批）**：第 31 批设计已实装 ⇒ 落点档按**单态现行契约**重建。
 
 ## 4. 对账：已并入的 11 板块
 
@@ -166,25 +166,6 @@
 | 批 4 | **并入既有档的未并面** | design：AGENT-LOOP · PROMPT-SYSTEM · POOL-CONFIG-UNIFIED ⇒ CONFIG；req：MEMORY · AGENT-LOOP · PROMPT-SYSTEM · ADVISOR-CONVERGENCE · ASYNC-RESULT-CONTAINER · ESCALATE · SEND-STALL-DISTILL · SUBAGENT-OBSERVE-SEND · TURN-CAP-CONTINUE · TOOL-OUTPUT-LIMITS | **已落（2026-09-15 第 5 批）**——十三源档全并（含 AGENT-LOOP 拆分面 + ADVISOR-CONVERGENCE 需求档新建）；并入面 = 追加节，不新起档（防同名分裂） |
 | 批 5 | **CLI 专有面（P2）** | design：TUI · TUI-INPUT-BOX · TUI-TOOL-OUTPUT · ACP-CLIENT · CRASH-REPORTS；req：TUI · TUI-TOOL-OUTPUT · ACP-CLIENT · CRASH-REPORTS | **已落（2026-09-15 第 6 批）**——九源档全迁 `docs/cli/{design,requirements}/`（设计侧 7 档产物：TUI 按读者面拆三档）；`docs/cli/` 目录与两扫描器射程前置已于第 2 批满足 |
 | 批 6a | **其余 P1 活档（设计侧）** | ESCALATE · MULTI-INSTANCE-COLLAB · SETTINGS-TOOL · SEND-STALL-DISTILL · TURN-CAP-CONTINUE | **已落（2026-09-15 尾部真批）**：ESCALATE / SEND-STALL-DISTILL / TURN-CAP-CONTINUE 并入 VSC 批 3 同名根档；MULTI-INSTANCE-COLLAB / SETTINGS-TOOL 设计侧纯新建。 |
-| 批 6b | **其余 P1 活档（需求侧）** | AGENT-PARAMS · DESIGN-TOKEN-SETTLEMENT · ENG-TOKEN-BINDING · MULTI-INSTANCE-COLLAB · NORMAL-MODE · PORTABILITY · PROJECT · SETTINGS-TOOL · STRUCTURE-DEBT · VERIFY-REDESIGN（10 档——TESTING 已于第 4 批迁出，原列举属印刷残留） | **已落（2026-09-15 尾部真批）**：十档全并入 VSC 批 4 / 批 5 同名根档；VERIFY-REDESIGN 落点两读经**用户裁定 = 并入同名根档**。 |
-## 7. 不并项与历史沿革（本台账层）
-
-### 7.1 历史沿革（(d) 类——**不并**）
-
-> 本台账的前身 = `docs/core/design/DOC-SYSTEM.md` §5.2 初分类表（2026-09-14 建档）——**该表已被本档 §2 取代**（判据句仍住该档 §5.1，本档不复制）。
-
-| 旧表节 | 内容 | 何故不并 |
-|---|---|---|
-| `DOC-SYSTEM.md` §5.2 的档名穷举行 | 三行并列档名清单 | 形态不可逐档挂依据 / 动作——现改为逐档一行的二分表 |
-| 初分类「待核」列的 3 档 | 代理倾向与判读分歧 | 已逐档复核：POOL-CONFIG-UNIFIED 撤销待核（机制面确证 P1）· QUICKFIX-BATCH-3 与 SUBAGENT-ID-COUNTER-AGENT 转判历史 |
-
-### 7.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
-
-| 面 | 内容 | 何故不并（去向 / 触发） |
-|---|---|---|
-| 各批的搬迁记录 | 逐批执行流水 | 一次性批次材料——归批次档（`docs/batches/`） |
-| VSC 树档的二分 | `thincoder-vscode/docs/**` | 段序裁定「CLI 先全完 ⇒ 才动 VSC」——触发 = VSC 轮 |
-| 产品树 `_archive/` 与 `batches/` | 归档 / 时序日志 | 不进二分底本（§1 口径已排除） |
 
 ## 9. 迁移收尾（批 11 · 收口口径与未落尾巴落点——两迁移批共用）
 
@@ -192,7 +173,7 @@
 
 ### 9.1 收口段口径（两档共用）
 
-- **口径** = 「已吸收 + 尾巴移交 `docs/batches/2026-09-16-migration-wrapup.md`」；正文不回改；尾巴零丢项（逐条 = 已消 / 指向批 11 / 指向后继）。
+- **口径** = 「已吸收 + 尾巴移交批 11」；正文不回改；尾巴零丢项（逐条 = 已消 / 指向批 11 / 指向后继）。
 - §3：免设独立轮——一行「原轮无独立设计评审；评审面并入批 11 §3」（执笔 = 批 11 评审实例；缺则父侧代写并打标）。
 - §4 / §5：各一行——§4「收口裁定 = 批 11 设计 §9 + 用户批准见批 11 §4」（主 agent）；§5「实施主体已载于本档 §2 各轮；收口轮无新增实施」（父侧）。
 - §6：**收口判词**（口径句 + 三机检读数行 + 尾巴指针表）+ 状态行「已收口 2026-09-16」+ 冻结（L4）（父侧）。
@@ -224,7 +205,7 @@
 | B17–B20 | 收口段面四项 | 按 §9.1 统一处置（零丢项） | VSC 档 §6 | 本批闭环；B17/B18/B20 身份对齐见 §9.8⑤ |
 | B21 | 源档与现状冲突（语义面） | 请父侧确认活档口径 = 以现状为准（只读不回改） | VSC 档 §6 一行 | 确认后闭环 |
 | B24 | 「产品树降格批」不存在 · 68 处承接 | 裁 = 本批口径承接（族内列报·不入闸） | VSC 档 §6 一行 + 本 §9 | 条件（树退役 ⇒ 撤族/再处） |
-| B19 | 批次档 §2 超宽 3 行 | 已消（`:32/:34/:36` 折行已落 · 逐字节同；`:122` 注在位） | VSC 档 §6 一行「已消」 | 闭环（本批确认） |
+| B19 | 超宽 3 行 | 已消（`:32/:34/:36` 折行已落 · 逐字节同；`:122` 注在位） | VSC 档 §6 一行「已消」 | 闭环（本批确认） |
 | G9 | 引擎声明面 schema 跨档不可验 | 明标出射程（登记，不做伪校验） | 本 §9 + 判据登记 | 条件（若立声明面校验器再覆盖） |
 
 ### 9.4 phase-2 改判（G1–G10 处置）
@@ -248,21 +229,21 @@
 | AC-2 | 条目 2 / 3 | 尾巴表 12 行（= 条目分组数，见 AC-1） = §1 枚举（7 + 5）；每行含落点与触发 / 到期 | 表行计数 |
 | AC-3 | 条目 4 | 终态行在位 + 单一差项句可机判：三腿读数齐（锚 exit 1 · 3 条 / 宽度 exit 1 · 12 行 / 台账 exit 1 · 1 条）+ 逐项归属（锚 = 族实装面；宽度 = 在飞 / 他作者面；台账 = 台账面 / 批 6 核销面）+ 与 §9.4 逐字对齐 | 三命令复跑对读（锚默认双腿：根层域 exit 1 · 参照面腿 0）；终态行落点 = §9.4 + `docs/TODO.md`（行样见下注） |
 | AC-4 | 验收④ | 本批新增 = 0（宽度 / V1–V3 / 锚——基线 / 限域 / 处置见下注） | 三机检命令（见批 11 §2；宽度 = `scripts/doc-check-width.mjs`） |
-| AC-5 | 验收⑤ | 「193/37」= 批 6（RESIDUAL-DEBT）实读两参照树悬空读数（CLI 37 / VSC 193——`docs/batches/2026-09-16-residual-debt.md:13` / `:63` / `:145`——全量证据行）；实核 = **有据**（裁定 3 两树 + 裁定 6 两种口径已在轮）；现态 = 两树悬空 **0/0**（强扫复跑：族豁免 CLI 36 / VSC 188 条列报）；批 6 联动收正 = 无需 | 强扫复跑（`--engine v5`）+ 两档 §6 读数行（回指本行全量证据行） |
+| AC-5 | 验收⑤ | 「193/37」= 批 6（RESIDUAL-DEBT）实读两参照树悬空读数（CLI 37 / VSC 193——全量证据行）；实核 = **有据**（裁定 3 两树 + 裁定 6 两种口径已在轮）；现态 = 两树悬空 **0/0**（强扫复跑：族豁免 CLI 36 / VSC 188 条列报）；批 6 联动收正 = 无需 | 强扫复跑（`--engine v5`）+ 两档 §6 读数行（回指本行全量证据行） |
 
 **AC 补充注（修正轮 R1 · as-of 2026-09-16 复跑）**：
 - **AC-1 谓词**：指针行样式 = 含「→ 批 11 §9.3」；逐档期望计数 = CLI 7 / VSC 5，合计 12 = **条目分组数**（唯一 ID = 14——B19 双面）；计数命令 = 逐档按该 pattern 计数；阈值随 §9.8⑤ 身份对齐按 D3 同步。
 - **AC-3 终态行样**：`phase 2：核心统一 = 在途（差项 = 「S3 退出之一『三机检 exit 0』未达」——见 DOC-MIGRATION.md §9.4；as-of 2026-09-16）`——落 `docs/TODO.md`（主 agent）。
 - **AC-4 基线**（as-of 2026-09-16 实施轮复跑——后续复跑与此对读）：宽度 = 5 文件 12 行（评审轮 7 行 → 修正轮 8 行 → 实施轮 12 行）· V1–V3 = 4 条（他作者 / 在飞面——`2026-09-16-doc-length-rule-repeal.md`「本档 §7」×3 + `2026-09-16-residual-debt.md` ×1；本批新增 = 0）· 锚根层域 = 3 条（复跑 5 条 → 终核 3 条：`VSC-DEBT.md` 面 2 已消）。
 - **AC-4 限域**：宽度 = `scripts/doc-check-width.mjs` 之 `SCAN_DIRS`（`docs/{design,requirements,batches,core/design,core/requirements}`；表格行豁免）；V1–V3 = 同域全档；锚 = 根层八目录 + 参照面；根文件（`docs/TODO*.md`）超宽行不在闸域。
-- **AC-4 处置**：他作者 / 在飞面 = 逐档归其作者 / 父侧机械折行；本档段面 2 行（批档 §1 / §3）= 归段作者；§2 / §9 面新增 = 0。
+- **AC-4 处置**：他作者 / 在飞面 = 逐档归其作者 / 父侧机械折行；本档段面 2 行 = 归段作者；§2 / §9 面新增 = 0。
 - **A21 复跑 · 正向腿（实档 → 地图）**：`node -e "const fs=require('fs');const m=fs.readdirSync('docs/core/design').filter(f=>f.endsWith('.md'));const r=fs.readFileSync('docs/README.md','utf8');console.log(m.length, m.filter(f=>!r.includes(f)).length)"`
   ——as-of 2026-09-16 读 = `49 27`；补登后实测 = **`49 0`**（2026-09-16 实施轮复跑——A21 验收读数；两数留证 = `docs/README.md` §4）。
 - **A21 复跑 · 反向腿（路径形态引用）**：`node -e "const fs=require('fs');const r=fs.readFileSync('docs/README.md','utf8');const n=[...new Set([...r.matchAll(/core\/design\/([A-Za-z0-9._-]+\.md)/g)].map(x=>x[1]))];console.log(n.filter(f=>!fs.existsSync('docs/core/design/'+f)).length)"`
   ——as-of 2026-09-16 读 = `0`；补登后复跑 = `0`（实施轮）。
 
 **现态非本批因（明列 · as-of 2026-09-16 实施轮复跑）**：
-- 宽度 exit 1 = **5 文件 12 行**——他作者 / 在飞面为主（评审轮 7 行 → 修正轮 8 行 → 实施轮 12 行）；本档段面 **2 行**（批档 §1 / §3 各 1 行）= 归段作者机械折行。
+- 宽度 exit 1 = **5 文件 12 行**——他作者 / 在飞面为主（评审轮 7 行 → 修正轮 8 行 → 实施轮 12 行）；本档段面 **2 行** = 归段作者机械折行。
 - 锚根层域 exit 1 = **3 条**（全在 `DOC-DISCIPLINE.md` 面 3——`:34` / `:51` / `:737` 三行：V6 判据单元测试档拟新增·未创建；`VSC-DEBT.md` 面 2 已消——复跑不再列报）——族实装面 + 在飞面；参照面 = 0（族豁免列报不入闸）。
 - 台账 exit 1 = **1 条**（`TODO-archive.md:287` L4 证据路径不可解析——台账面 / 批 6 核销面）· 一致性 V1–V3 = **4 条**（两批档「本档 §7」4 处——他作者 / 在飞面）。
 - 发布门全绿 = 差项（AC-3），非本批阻断；本批 §2 / §9 面新增 = 0。
@@ -332,7 +313,7 @@
 | CLI | `docs/` 根（`README.md`） | `_archive/`（同名） | 1 | 257 |
 | CLI | **小计** | —— | **142** | **43,286** |
 
-**逐档名单（136 / 142 两列：源档 → 目标档）** = **批档 §2 在册**（一次性批次材料——本档只留规则与计数，D2 单一权威源：`docs/batches/2026-09-18-v1-retire.md` §2）。
+**逐档名单（136 / 142 两列：源档 → 目标档）** = **一次性批次材料在册**（本档只留规则与计数，D2 单一权威源）。
 **清单机核（复跑命令 · 期望输出见 §10.6 AC-1）**：
 `node -e "const fs=require('fs');for(const t of ['thincoder-vscode','thincoder-cli']){let a=0,r=0;const w=d=>{for(const n of fs.readdirSync(d)){const p=d+'/'+n;fs.statSync(p).isDirectory()?w(p):(/\/_archive\//.test(p)?r++:a++)}};w(t+'/docs');console.log(t,a,r)}"`
 
@@ -341,7 +322,7 @@
 - **生效读数（迁移集口径）**：三档自**迁移集**剔除 ⇒ 迁移集 = **139 档**（142 − 3）；**S0 侧实读仍为 `thincoder-cli 142 50`**（§10.3 机核命令读磁盘现状——迁移集 ≠ 读数）；**S7 终态 = `thincoder-cli 3 189`**（活面留 3 档 · 归档面 50 + 139 = 189）；
 - 原「迁」分支不取（政策未变；如改期另裁）——本块收正 = 父侧直接执行（可 revert）。
 
-**清单计数口径**：**迁移集 = 136 / 139**（三档留原地 ⇒ 自迁移集剔除；142 / 50 = 读数口径）；**机核读数 = S0 `136 17` / `142 50` ⇒ S7 `0 153` / `3 189`**；与批档 §2.3（一）逐名清单同源（D2）。
+**清单计数口径**：**迁移集 = 136 / 139**（三档留原地 ⇒ 自迁移集剔除；142 / 50 = 读数口径）；**机核读数 = S0 `136 17` / `142 50` ⇒ S7 `0 153` / `3 189`**；与逐名清单同源（D2）。
 
 ### 10.4 引用面核（迁后转悬空 **52 引用**（= 50 行） · 逐族处置）
 
@@ -352,9 +333,9 @@
 
 | 面 | 复跑命令（命令 A） | as-of 2026-09-18 05:5x 复跑读数 |
 |---|---|---|
-| 域内退役树前缀行 | `node -e "const fs=require('fs');let n=0;const w=d=>{for(const x of fs.readdirSync(d)){const p=d+'/'+x;if(fs.statSync(p).isDirectory()){if(!/_archive$/.test(x)&&p!=='docs/batches')w(p)}else if(p.endsWith('.md'))for(const l of fs.readFileSync(p,'utf8').split('\n'))if(/thincoder-(vscode|cli)\/docs/.test(l))n++}};w('docs');console.log(n)"` | **663 行**（**工具** = `node -e` 内联·同格命令；**射程** = 源域 `docs/**` 扣 `_archive`-尾目录与 `docs/batches/`；**as-of 2026-09-18 05:5x**——分量：`docs/core/**` 479 · `docs/vsc/**` 58 · `docs/cli/**` 48 · `docs/TODO*.md` 72 · `docs/README.md` 6）——其中**本批改指面内带前缀者 36 行**（= §10.4 逐族明细坐标行内带前缀者，同刻复扫；`docs/core` 29 / `docs/vsc` 7）⇒ **残类 = 627 行**（`docs/core/**` 450 · `docs/vsc/**` 51 · `docs/cli/**` 48 · `docs/TODO*.md` 72 · `docs/README.md` 6）。漂移：05:2x 读 = 661 ⇒ 残类 624（447 · 51 · 48 · 72 · 6）；读数随他笔在飞面浮动，逐次以 S0 复跑为准 |
+| 域内退役树前缀行 | `node -e "const fs=require('fs');let n=0;const w=d=>{for(const x of fs.readdirSync(d)){const p=d+'/'+x;if(fs.statSync(p).isDirectory()){if(!/_archive$/.test(x))w(p)}else if(p.endsWith('.md'))for(const l of fs.readFileSync(p,'utf8').split('\n'))if(/thincoder-(vscode|cli)\/docs/.test(l))n++}};w('docs');console.log(n)"` | **663 行**（**工具** = `node -e` 内联·同格命令；**射程** = 源域 `docs/**` 扣 `_archive`-尾目录与批次目录（批档住处的整树，非某一批档）；**as-of 2026-09-18 05:5x**——分量：`docs/core/**` 479 · `docs/vsc/**` 58 · `docs/cli/**` 48 · `docs/TODO*.md` 72 · `docs/README.md` 6）——其中**本批改指面内带前缀者 36 行**（= §10.4 逐族明细坐标行内带前缀者，同刻复扫；`docs/core` 29 / `docs/vsc` 7）⇒ **残类 = 627 行**（`docs/core/**` 450 · `docs/vsc/**` 51 · `docs/cli/**` 48 · `docs/TODO*.md` 72 · `docs/README.md` 6）。漂移：05:2x 读 = 661 ⇒ 残类 624（447 · 51 · 48 · 72 · 6）；读数随他笔在飞面浮动，逐次以 S0 复跑为准 |
 
-- **到期条件 = 命令 A 读数回 0**（残类被清扫完毕 ⇒ 本登记销项）；逐行明细 = S0 复跑输出（一次性材料 ⇒ 落批档 §5）。
+- **到期条件 = 命令 A 读数回 0**（残类被清扫完毕 ⇒ 本登记销项）；逐行明细 = S0 复跑输出（一次性材料——已不再在盘）。
 - **引-D（`docs/TODO*.md`）· 引-E（口径外）** 另有各族处置行（本段不重复——D2）；残类**不进 52 引用射程** = 本批不改不登逐行。
 
 | 族 | 判据句 | 引用 | 处置 |
@@ -365,7 +346,7 @@
 | **引-D 台账面** | `docs/TODO.md` · `docs/TODO-archive.md` 内的同类引用（迁后同转悬空） | （≈58 行，口径外） | **本批零动作**——两档 = 退役历史台账（`docs/README.md` §1），且**不入机检源域**（`scripts/doc-check-targets.mjs:17` `LEDGER_NAMES` 档名判）⇒ 不产闸面红；笔权 = 主 agent |
 | **引-E 口径外引用** | 仓根 `README.md`（5 行 · product-text 面）· 两产品 `AGENTS.md` / `src` / `webview` 注释 · 产品 `test/**` 头注（合计 **35 行 / 20 档**） | 35 行 | **本批零动作 + 登记**（不在 §2.5 引用面口径；笔权与处置归父侧；产品 `test/**` 头注为注释非断言——实核 `advisor-chain-guards.test.mjs:277-300` 的 `thincoder-*/docs/...` 为**测试自建临时夹具**，非读真树，零断裂） （已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文） |
 
-**逐族明细（= 执行轮改指清单 · `file:line` 逐条）**：族 A/C 的 **48 引用** = 下列 **19 档**（行号 as-of 2026-09-18 05:0x；其中 5 处坐标随他笔漂移——批档 §2.6 新证据 ⑤，S0 复跑时对齐）——
+**逐族明细（= 执行轮改指清单 · `file:line` 逐条）**：族 A/C 的 **48 引用** = 下列 **19 档**（行号 as-of 2026-09-18 05:0x；其中 5 处坐标随他笔漂移——新证据 ⑤，S0 复跑时对齐）——
 `docs/core/design/AGENT-PARAMS.md:85/:138` · `BATCH-RECORD.md:284` · `CONFIG.md:91/:96/:138/:146` · `CONSULTATION.md:99` · `CORE-UNIFICATION.md:567/:603/:1656` ·
 `DOC-CODE-RECONCILE.md:134` · `DOC-DISCIPLINE.md:505/:902` · `DOC-SYSTEM.md:22` · `ENG-TOKEN-BINDING.md:173` · `I18N.md:75` · `LEDGER.md:187` ·
 `PORTABILITY.md:5/:148` · `SEND-STALL-DISTILL.md:8/:114/:147` · `TOOL-OUTPUT-LIMITS.md:104/:160` · `docs/core/requirements/AGENT-LOOP.md:43×2/:127/:142/:224×2` ·
@@ -387,12 +368,12 @@
 - **轮 A（VSC 树）**：`thincoder-vscode/docs/**` 迁移（136 档）+ 该轮份额（被引对象 = VSC 树者）+ `thincoder-vscode/test/prompts-mirror-anchors.test.mjs` 改指 + 文档改笔（含**共享档**）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 - **轮 B（CLI 树）**：`thincoder-cli/docs/**` 迁移（**139 档**——phase-1 三档按 §10.3「已结清」块（`:341`–`:346`）留原地）+ 该轮份额（被引对象 = CLI 树者）+ `thincoder-cli/test/prompts-dual-source.test.mjs` 改指 + 文档改笔。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
-**份额切分（52 引用 · 单位与 §10.4 同）**：规则 = 按**被引对象所属树**归属（引-A / 引-C 按对象归档位 · 引-B 按对象树）；**轮 A / 轮 B 各自的份额数在 S3 按 §10.4 逐族明细逐行判定并记入批档 §5**（同一行双引用而分属两树者 ⇒ 该行两轮各改一处；**两轮合计 = 52 引用** = 判据）。原印「VSC 20 行 / CLI 17 行 / 引-C 13 引用」**销项**：单位未定义 ∧ 13 与族表「引-C = 4 引用」互斥（不可复现）——设计轮不预印估算数。
+**份额切分（52 引用 · 单位与 §10.4 同）**：规则 = 按**被引对象所属树**归属（引-A / 引-C 按对象归档位 · 引-B 按对象树）；**轮 A / 轮 B 各自的份额数在 S3 按 §10.4 逐族明细逐行判定并记账**（同一行双引用而分属两树者 ⇒ 该行两轮各改一处；**两轮合计 = 52 引用** = 判据）。原印「VSC 20 行 / CLI 17 行 / 引-C 13 引用」**销项**：单位未定义 ∧ 13 与族表「引-C = 4 引用」互斥（不可复现）——设计轮不预印估算数。
 **共享改笔**：`docs/README.md`（首部层级定位 + §2 政策行）落**轮 A 一次改毕**（两树同句）——轮 B 只核不发笔。
 
 | # | 步骤（逐轮 · `<树>` = 该轮树 · `<份额>` = 该轮引用份额） | 判据 / 读数 |
 |---|---|---|
-| S0 | **前置读数**：`node scripts/doc-check.mjs`（记 `汇总` 行）；`git status --porcelain`（记在途面）；**越树相对锚枚举**（§10.7 用例） | 基线锚悬空数落批档 §5；**在途文档债批未收口 ⇒ 不点火**（§2.5 执行窗口条件）；相对锚非 0 ⇒ 登记为已知遗留 |
+| S0 | **前置读数**：`node scripts/doc-check.mjs`（记 `汇总` 行）；`git status --porcelain`（记在途面）；**越树相对锚枚举**（§10.7 用例） | 基线锚悬空数入册；**在途文档债批未收口 ⇒ 不点火**（§2.5 执行窗口条件）；相对锚非 0 ⇒ 登记为已知遗留 |
 | S1 | **建归档根（`<树>`）**：`mkdir <树>/docs/_archive/` 含子目录 `design/` · **`design/prompts/`** · `requirements/` · `batches/`（**两树皆需**）· `guides/`（CLI 专有） | 目录在位 |
 | S2 | **迁移**（`git mv`，**逐档**）：按 §10.3 清单把**该轮树** 136 ∥ 142 档移入 `_archive/` + 原相对路径；**既有 `<层>/_archive/**` 不动** | `git status` 全为 `R`（rename）；`git diff --stat` = **零内容行**（纯 rename）；该轮树 `docs/` 下除 `_archive/` 与既有 `design/_archive/` 外为空 |
 | S3 | **引用改写（`<份额>`）**：按 §10.4 族 A/B/C 逐行处置该轮份额（族 A/C 路径改指 · 族 B 改指 canonical / 退场注记）；轮 A + 轮 B 合计 = 52 引用 | 改后 52 行全部可解析；**新增悬空 = 0** |
@@ -408,7 +389,7 @@
 | AC-1 清单闭合 | 台账 #22 · §2.5 判据 3 | 迁移集 = **136 / 139**（CLI 已剔 phase-1 三档——§10.3「已结清」块）· 既有归档 **17 / 50** 原地在位 · 归档后 **VSC** `docs/` 下仅 `_archive/` + 既有 `design/_archive/`；**CLI 侧例外**（三档留原地）：`docs/` 下 = `_archive/` + 既有 `design/_archive/` + `batches/` / `design/` / `requirements/` **三目录各 1 档**（`TWO-REPO-MERGE.md`）· **映射恒等**（每个 `R` 对目标 == 源档树内 `docs/` 相对路径加 `_archive/` 前缀） | §10.3 机核命令——**S0 基线**（迁移前·实读磁盘）：`thincoder-vscode 136 17` / `thincoder-cli 142 50`（CLI 读数含留原地三档——**迁移集 = 139**）；**S7 终态**（迁移后）：`thincoder-vscode 0 153` / `thincoder-cli 3 189`（`153 = 136 + 17` · `189 = 50 + 139`）；＋ **`R` 对断言**（AC 补充注 ①） |
 | AC-2 一字不改 | §2.5 判据 2（参照历史保留语义） | `git diff --stat -M` = 纯 rename（零 `+`/`-` 内容行）；逐档行数不变（25,784 / 43,286） | `git show --stat --find-renames` |
 | AC-3 引用面闭合 | §2.5 影响面表 | §10.4 **52 引用**（= 50 行）**全部可解析**（改指归档形 / canonical）；**零新增标记**（「迁移期引文」计数 **≤ S0 基线**——设计轮读数 = 1） | `node scripts/doc-check.mjs` 逐行核 + `汇总` 的「迁移期引文」计数 |
-| AC-4 零新增 | 批档 §2 验收 ⑤ | 终态 `汇总` 悬空 = **S0 基线值**（本批新增 **0**）· 行宽不增（差值式——**读数标与漂移说明 = AC 补充注 ②**） | 前后两次 `node scripts/doc-check.mjs` 对读 |
+| AC-4 零新增 | 验收 ⑤ | 终态 `汇总` 悬空 = **S0 基线值**（本批新增 **0**）· 行宽不增（差值式——**读数标与漂移说明 = AC 补充注 ②**） | 前后两次 `node scripts/doc-check.mjs` 对读 |
 | AC-5 测试 | §2.5 前提 2 | **差值式**：终态集成测试结果 vs **S0 基线** ⇒ **无新增失败**（绝对全绿不作判据——**既有红以 S0 基线为准，不假定具体档**）；**③/⑤ 重定宿主两例列必过项**（`prompts-mirror-anchors.test.mjs` 的 ③ 镜像源 / ⑤ 扫描根）+ 轮 B 同族例（`prompts-dual-source.test.mjs`） | S0 / S7 两次 `npm test` 对读（VSC 包；CLI 包随轮 B）+ 逐档 `node --test` |
 | AC-6 发布面 | §10.2 行 5 | CLI `package.json` / VSC `.vscodeignore` **零改**（`git status` 不含两文件） | `git status --porcelain` |
 | AC-7 声明面 | §10.2 行 6 | `checkConfig` 五键（= 声明面五项——`§10.2` 行 6）**零改**（**as-of 2026-09-18**；D3：键清单 = 列表长度） | `git diff PROJECT-MANIFEST.json` 空 |
@@ -418,7 +399,7 @@
 | 注 | 内容 |
 |---|---|
 | ① AC-1 `R` 对断言（映射恒等机核） | 命令 = `node -e "const{execSync}=require('child_process');const R=execSync('git diff --name-status -M',{encoding:'utf8'}).trim().split('\n').filter(l=>l.startsWith('R')).map(l=>l.split(/\s+/));console.log('R 对',R.length,'错配',R.filter(p=>p[1].indexOf('/docs/')<0||p[2]!==p[1].slice(0,p[1].indexOf('/docs/'))+'/docs/_archive/'+p[1].slice(p[1].indexOf('/docs/')+6)).length)"`——期望 `R 对 275 错配 0`（轮 A 后 = 136 / 两轮合计 = **275** = 136 + 139——三档留原地不入迁移集）；非零 ⇒ 红（防「移进错误子目录」型全过：计数不变 ∧ 纯 rename ∧ 源树为空三判据同过）。已 staged 时该命令加 `--cached` |
-| ② AC-4 读数标与漂移 | 读数标记 = **工具**（`scripts/doc-check.mjs` 锚检查悬空 / `scripts/doc-check-width.mjs` 行宽）· **射程**（`checkConfig.scanDirs` = `docs`——两产品树不在域）· **as-of**；同批各处读数不一致 = **他笔在飞面漂移**（§9.3 A21 面 = 5 文件 12 行 · 2026-09-16 复跑；§10.1 = 行宽 5 行 · 05:0x；批档 §2 = 行宽 6 行 · 05:1x；**修正轮 1 窗口（同 as-of 05:2x）两次复跑**：悬空 **288** / 行宽 **5 行**（批档 §2.6）与悬空 **285** / 行宽 **6 行**（批档 §2.4 AC-⑤）——两读数并存即他笔在飞面的漂移本身）⇒ 判据 = **差值式**，逐次以 S0 复跑为基线，不与他次读数比大小 |
+| ② AC-4 读数标与漂移 | 读数标记 = **工具**（`scripts/doc-check.mjs` 锚检查悬空 / `scripts/doc-check-width.mjs` 行宽）· **射程**（`checkConfig.scanDirs` = `docs`——两产品树不在域）· **as-of**；同批各处读数不一致 = **他笔在飞面漂移**（§9.3 A21 面 = 5 文件 12 行 · 2026-09-16 复跑；§10.1 = 行宽 5 行 · 05:0x；另两处记录面读数 = 行宽 6 行 · 05:1x；**修正轮 1 窗口（同 as-of 05:2x）两次复跑**：悬空 **288** / 行宽 **5 行**与悬空 **285** / 行宽 **6 行**——两读数并存即他笔在飞面的漂移本身）⇒ 判据 = **差值式**，逐次以 S0 复跑为基线，不与他次读数比大小 |
 | ③ AC-5 测试全集 | 枚举口径 = **三包** `test/**`（VSC / CLI / core）逐行检索退役树前缀（§10.5 S4）；as-of 05:5x 实扫 = **VSC 14 行 · CLI 10 行 · core 1 行**；命中 = **读取类两档**（①②）+ **注释类余项**（③）；`thincoder-vscode/test/doc-anchors.test.mjs`（评审轮 1 发现 7 引 §9.3 A22）**现不存在**（三包 `test/**` 实核；该路径 git 历史在册）⇒ 该条不构成本批测试范围 （迁移期引文） |
 
 ### 10.7 用例表（文档批口径 = 结构机检）
@@ -446,9 +427,9 @@
 
 ## 11. 桌面端设计档按域拆分 · 执行方案（2026-10-02 定形）
 
-**问题陈述**：桌面端设计五档（2026-09-25 拆分）中 `PROJECT.md`（2283 行）∥ `UI.md`（933 行）已是单热点——每一笔设计必动其一，并行批只得串行（四笔设计舱 #9–#12 排队）；档头 `D1–D37` 类范围计数使五档同拍（跨档同改面）。判据 = `docs/core/design/DOC-DISCIPLINE.md` §3.14（M-2 ∥ M-3 成片命中）+ §3.16（本条工序单源——**不重述**，D2）；触发先例登记 = `docs/batches/2026-09-25-desktop-design.md` §1.8–§1.9。
+**问题陈述**：桌面端设计五档（2026-09-25 拆分）中 `PROJECT.md`（2283 行）∥ `UI.md`（933 行）已是单热点——每一笔设计必动其一，并行批只得串行（四笔设计舱 #9–#12 排队）；档头 `D1–D37` 类范围计数使五档同拍（跨档同改面）。判据 = `docs/core/design/DOC-DISCIPLINE.md` §3.14（M-2 ∥ M-3 成片命中）+ §3.16（本条工序单源——**不重述**，D2）；触发先例登记 = 桌面端设计档拆分先例。
 
-**来源**：用户 2026-10-02 10:49 令 ∥ 10:50 放行 ∥ 10:56 追加（按域分界原则落提示词体系——§11.7）；承 `docs/batches/2026-10-02-doc-structure-reorg.md` §1。
+**来源**：用户 2026-10-02 10:49 令 ∥ 10:50 放行 ∥ 10:56 追加（按域分界原则落提示词体系——§11.7）。
 
 ### 11.1 目标结构（14 档域清单 —— 现址锚 as-of 2026-10-02 实读）
 
@@ -473,7 +454,7 @@
 
 **跨档计数热点消除（O-2 实例）**：五档档头的 `需求侧 D1–D37` 范围计数**摘除**、改稳定指针；档数枚举（「设计侧 N 档」类）只住总览档索引节（单源）；`§4.1 本端文件清单与行数预算` 行族按域拆、每域档自持族账（声明面随动 = §11.5 ②）。
 
-**档名查重结果（O-6 ④ 实核）**：14 名中唯 `SETTINGS.md` 与既有 `docs/vsc/design/SETTINGS.md` 同名——域内（`docs`）裸名引用面实测**零命中**（命中仅在 `docs/batches/**` = 闸域外）⇒ 处置 = 引用一律全路径形态（N-c 扩用），无需改名。
+**档名查重结果（O-6 ④ 实核）**：14 名中唯 `SETTINGS.md` 与既有 `docs/vsc/design/SETTINGS.md` 同名——域内（`docs`）裸名引用面实测**零命中**（命中仅在闸域外）⇒ 处置 = 引用一律全路径形态（N-c 扩用），无需改名。
 
 ### 11.2 迁法规则（实例口径 —— 工序单源 = §3.16 O-5，不重述）
 
@@ -597,79 +578,3 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 ### 11.11 open / 未决
 
 ① KD 行 ∥ UI 块级归属在波 0 逐行钉死前为**候选**（本表 = 域边界 + 现址锚形状）；② 需求分卷表 = 提案（主 agent 裁）；③ `SETTINGS.md` 同名处置 = 全路径形态（§11.1 查重行）；④ 变更记录整块留原址的「迁移前（≤ 迁移日）」标记形态——波 0 定形；⑤ `DOC-DISCIPLINE.md` §3.14 既有「`DOC-SYSTEM.md` §3.4 行 M-2 实例」登记不变（零随动）。
-
-## 变更记录
-
-- 2026-09-18（**判据面收正批（#64 ③）· eng-designer**——承 `docs/batches/2026-09-18-arbiter-face.md` §1）：§10.4 **禁出路行**收正为**节号指针**形态（字面单源 = `docs/core/design/DOC-DISCIPLINE.md` §4.2.10 定义位——他档不复述字面）；§10.7 用例表「标记出路」行同法去字面重述。
-  **历史信息转入本条**（原 §10.4 修订式句删——D8）：本设计原引「到期条件 = 标记数回 **0**」；该口径已收正为**不设「回 0」期**（判据单源 = `docs/core/design/DOC-DISCIPLINE.md` §4.2.10 到期条件行 · 2026-09-18 判据面收正批）；本设计的 52 引用处置不变（改指 · 零标记）。可 revert。
-
-- 2026-09-18（**v1 文档退役批（台账 #22）· 设计修正轮 2 · eng-designer**）：§10 按设计评审轮 2（PASS · 🟡 4 / 🔵 8 = 12 条）逐条收正（报告「号 → file:line」= 批档 §2.7）：
-  裁定传导——§10.3 已结清块（标题带生效读数 139 / 50；S0 实读保留 `142 50` + 迁移集 = 139；S7 终态 `3 189`）· §10.6 AC-1 结构判据补 CLI 例外句 + S7 `0 153` / `3 189` · `R` 对期望 **278 → 275**（补充注 ①、S7 行）· §10.5 轮 B 档数 142 → 139 并改指 §10.3 已结清块 · §10.9③ 改「已结清」；
-  计数与单位——§10.4 定义单位（引用 / 行；52 引用 = 50 行）+ 分量改**逐档求和 37 + 15**（原印 38 + 14 = 沙箱读，存档）· 命令 A 择一 `\|` → `|` 并同批重跑落标（663 / 改指面内 36 行 / 残类 627）· §10.5 份额切分改「S3 逐行判定 + 两轮合计 = 52 引用」（原印 20 / 17 / 13 销项）· 逐族明细 18 → **19 档**；
-  其余——§10.6 AC-5 括注改「既有红以 S0 基线为准」· 补充注 ② 补悬空两读数与漂移 · 注③ 枚举改**三包** `test/**`（带实扫读数）· S4 ① 处数改 **3–4 处（同串全量替换）** · §9 命令名与实存脚本对齐（`scripts/doc-check-anchors.mjs` / `scripts/doc-check-width.mjs`；`check-ledger.mjs` 注「随单引擎作废」）。
-
-- 2026-09-18（**v1 文档退役批（台账 #22）· 设计修正轮 1 · eng-designer**）：§10 按设计评审轮 1（PASS · 🟡 11 / 🔵 3 = 14 条）逐条收正（报告「号 → file:line」= 批档 §2.6）：
-  §10.1 候选 1 理由补「树内」限定 + 越树锚实扫 0 处；§10.3 补**待裁三档**标记（open ③ · 142 ⇄ 139 / 50）；§10.4 补**残类口径**（域内前缀行 661 / 残类 624 · 到期条件 · 命令 A）+ 引-A 树名收正 + 对账补**分量归属成因**；
-  §10.5 改「**一树一轮一提交**」并补**轮次结构**（前提 2 消解 · 份额切分）+ S1 目录清单补 `design/prompts/`（`batches/` 两树皆需）+ S4 补**测试面前置枚举**与两档处置（新登 `CLI prompts-dual-source 用例档`）；
-  §10.6 AC-1 并列 S0 / S7 两读数 + `R` 对断言 · AC-3 改「零**新增**标记」· AC-4 补读数标与漂移 · AC-5 改**差值式** + 必过项（AC 补充注 ①②③）；§10.7 补**越树相对锚前置枚举**用例；§10.8 补残类 / 相对锚边界句。
-
-- 2026-09-18（**v1 文档退役批（台账 #22）· 设计轮 · eng-designer**）：新增 **§10 v1 文档退役批 · 归档形执行方案**——落点选型 §10.1（三候选沙箱实跑：选定 +52 / 否决 +57）· 规则与接口契约 §10.2 · 逐树清单 §10.3 ·
-  引用面 52 行逐族处置 §10.4 · 执行步骤 S0–S7 §10.5 · 验收 AC-1–AC-7 §10.6 · 用例 §10.7 · 边界 §10.8 · open §10.9；形态与判据承 `docs/vsc/design/VSC-MIGRATION.md` §2.5（不重述，D2）；逐档名单 = 批档 §2（D2）。
-
-- 2026-09-16（**批 11 · 实施轮 · eng-designer**）：A20 落 `DOC-DISCIPLINE.md` §4.2.7 判据面登记追加条（「三元素 ⇏ 九元素」——基准层补写 · 参照面不回改）；A21 落 `docs/README.md` §4（core/design 补登 27 档 + 计数核对行）；
-  §9 读数 as-of 复跑收正（锚 3 条行号顺移 · 宽度 = 5 文件 12 行 · 台账 = 1 条（台账面）· V1–V3 = 4 条（他作者面）· A21 双向 = `49 0`）+ §8 行数重核。
-
-- 2026-09-16（**批 11 · 修正轮 R1 · eng-designer**）：§9 按评审轮 1 发现收正——§9.1 补判不出 4 条处置 + 称谓注；§9.3 A10 / A21 / A22 跨表对齐（差集 27 · 双向等式 · `TODO.md` 落点 · 权威表头）；
-  §9.4 差项句收正（三腿逐读 + 归属）· G4 口径（10 = 时点读数）；§9.5 AC-1 谓词 / AC-3 判据与落点 / AC-4 基线限域处置 / AC-5 全量证据行 + AC 补充注；
-  `:7` 根层基准复跑收正（49 + 38）；三腿 + 报告态读数 as-of 复跑收正（锚 3 条——修正轮复跑 5 → 3：`VSC-DEBT.md` 面 2 已消 · 宽度 8 行 · 台账 0 · 报告态 5 处 / distinct 3）；
-  A21 双向命令对（`49 27` / `0`）+ AC-3 报告态注 + AC-4 基线 as-of 写明 + 批 11 §2 A21 摘要同步 + AC-5 族豁免读数标注（CLI 36 / VSC 188）+ AC-3 终态行样逐字对齐 §9.4。
-
-- 2026-09-16（**批 11 · 迁移收尾（设计轮）· eng-designer**）：新增 **§9 迁移收尾**（收口口径 §9.1 · 选型 5 项 §9.2 · 尾巴十二条落点 §9.3 · phase-2 改判 §9.4 · 验收 §9.5 · 用例 §9.6 · 边界 §9.7 · open §9.8）；§8 行数重核。
-
-- 2026-09-15（**迁移批 · 尾部真批（断点续作）· 15 档并入收口 · eng-designer**）：§2.1 五行（第 17 / 24 / 32 / 34 / 44 行）
-  + §2.2 十行（第 4 / 10 / 11 / 18 / 19 / 21 / 22 / 27 / 28 / 37 行）「后续批」→「**本批迁**」（逐行补实核依据 + 落点）；§5 小计重算闭合（本批迁 49 → **64** · 后续批 15 → **0**——清零）；§6 批 6a / 6b 行标**已落**、批 7 残留行销项、标题 15 → **0**；§1 根层基准档数按现状收正（17+17 → 50+37——2026-09-16 复跑再正 = 49 + 38，见 §9.3 A21）；§8 行数重核。
-  **本批实迁 15 档**：设计 5（ESCALATE / SEND-STALL-DISTILL / TURN-CAP-CONTINUE 并入 VSC 批 3 同名根档；MULTI-INSTANCE-COLLAB / SETTINGS-TOOL 纯新建）· 需求 10（全并入 VSC 批 4 / 批 5 同名根档；VERIFY-REDESIGN 落点经用户裁定 = 同名根档；PROJECT 按其档头自注对账合并）。
-  **断点续作事实**：前轮子代理（SSE 断流）落笔中途死亡，15 档部分落笔未经审计；本轮逐档全量审计后补完（五处悬空锚 + 一处超宽行 + 一处 V1 段引用 + 两处不并登记缺行 + 三处行数口径收正）并收口台账。三机检：域一悬空 **0** · 宽度 / 一致性新增违规 **0** · 台账 **0**。
-
-- 2026-09-15（**迁移批 · 尾部批 · 实核与转形态登记 · eng-designer**）：**本批 0 档实迁**——取材 5 档（需求侧 DESIGN-TOKEN-SETTLEMENT / ENG-TOKEN-BINDING / PORTABILITY / PROJECT / VERIFY-REDESIGN）在落笔窗口内被并轮 **VSC 批 5** 同名新建（磁盘现态 = 他线版本）⇒ 按「不抢」纪律全数跳过、本批产物回转（restore）。
-  §2.1 五行（第 17 / 24 / 32 / 34 / 44 行）+ §2.2 十行（第 4 / 10 / 11 / 18 / 19 / 21 / 22 / 27 / 28 / 37 行）判栏**保持「后续批」**，动作列按现状改写为「**并入既有**（同名根档已由 VSC 批 3 / 批 4 / 批 5 建）」；§2.2 第 37 行（VERIFY-REDESIGN）落点两读**待父侧裁定**。
-  §6 批 6a 补 ESCALATE（一致性收正——原缺分组）· 批 6b 剔 TESTING 印刷残留并注记全量转形态；§5 小计**不变**（49 / 15 仍闭合）；§8 行数重核。
-- 2026-09-15（**迁移批 · 第 6 批 · CLI 专有面（P2）· eng-designer**）：§2.1 五行（第 1 / 11 / 41 / 42 / 43 行）+ §2.2 四行（第 1 / 9 / 33 / 34 行）「后续批」→「**本批迁**」（逐行补现状实核依据 + 落点）；§3 迁移注意项标**已收口**（TUI-INPUT-BOX 二态混装）；§5 小计重算闭合（本批迁 40 → **49** · 后续批 24 → **15**）；§6 批 5 行标**已落**、标题 24 → **15 档**；§8 行数重核。
-- 2026-09-15（**S2 W14 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：§2.1 表第 18 / 19 行（HASHLINE-EDIT / INSERT-AFTER）VSC 对位坐标补迁核注——VSC 自持档
-  （`thincoder-vscode/src/tools/{hashline-edit.mjs, more-file.mjs}`）随 W14 删，现体 = 核 `thincoder-core/tools/file.mjs`；S2 W14 单元 = VSC 工具实现面迁核（批次档 §2）；机制条文零改。
-  **本批实迁 9 源档 ⇒ 11 产物档**（全落 `docs/cli/`）：设计 7（TUI 按读者面**拆三档** + TUI-INPUT-BOX + TUI-TOOL-OUTPUT + ACP-CLIENT + CRASH-REPORTS）· 需求 4（TUI / TUI-TOOL-OUTPUT / ACP-CLIENT / CRASH-REPORTS）。
-  **逐档要点**：TUI（1529 行超硬门）⇒ 拆 `TUI` / `TUI-COMMANDS` / `TUI-SESSION-VIEW`；TUI-INPUT-BOX 二态混装按「第 31 批已实装」收口为**单态现行契约**；CRASH-REPORTS 状态行漂移按现状收正；ACP-CLIENT 两处坐标按现状收正（question 可用性行载体 = `thincoder-cli/src/prompt-injections.mjs`；relay 文法模块 = `thincoder-core/agent/relay-prefix.mjs`）。
-  **层归属不对称登记**：TUI 设计侧 5 档（含既有的 TUI-INPUT-BOX / TUI-TOOL-OUTPUT）⇄ 需求侧 1 档——双侧档头互注。
-- 2026-09-15（**迁移批 · 第 5 批 · 并入既有 · eng-designer**）：§2.1 三行（第 3 / 25 / 27 行）+ §2.2 十行（第 2 / 3 / 5 / 13 / 17 / 23 / 25 / 29 / 31 / 35 行）「尚有未并 / 后续批」→「**本批迁**」（逐行补实核依据 + 落点）；
-  §4 对账两行更新；§5 小计重算闭合（本批迁 27 → **40** · 尚有未并 5 → **0** · 后续批 32 → **24**——并将上一版印刷值 4 / 33 按逐行实计收正为 5 / 32）；§6 批 4 行标**已落**、标题 33 → **24**；§8 行数重核。
-  **本批实迁 13 源档**：design 3（AGENT-LOOP 拆分面 + PROMPT-SYSTEM + POOL-CONFIG-UNIFIED ⇒ CONFIG）· req 10（MEMORY / AGENT-LOOP / PROMPT-SYSTEM / ADVISOR-CONVERGENCE（新建）/ ESCALATE / SEND-STALL-DISTILL / SUBAGENT-OBSERVE-SEND / TURN-CAP-CONTINUE / TOOL-OUTPUT-LIMITS（⇒ req/TOOLS §4.5）/ ASYNC-RESULT-CONTAINER）。
-
-- 2026-09-15（**迁移批 · 第 4 批 · 四个大档拆分 + 实迁** · eng-designer）：§2.1 四行（第 2 / 16 / 20 / 38 行）+ §2.2 两行（第 12 / 30 行）「后续批」→「**本批迁**」（ADVISOR-CONVERGENCE · ENGINEERING-MODE · LEDGER-SELF-CONTAINED · TESTING · req/ENGINEERING-MODE · req/TESTING——逐行补现状实核依据 + 落点）；§6 批 3 行标**已落**（档名补 req 两档）、标题档数 39 → **33**。
-  §5 小计重算闭合（本批迁 21 → **27** · 后续批 39 → **33**；设计 21 / 需求 6）；§5 口径行补第 4 批；§8 行数重核。
-  **本批实迁 6 档**（皆超 500 硬限 ⇒ 先拆后迁）——`design/ENGINEERING-MODE`（3030）⇒ `docs/core/design/` 四档（ENGINEERING-MODE · BATCH-RECORD · DOC-DISCIPLINE · LEDGER）；
-  `design/ADVISOR-CONVERGENCE`（1570）⇒ 两档（ADVISOR-CONVERGENCE · ADVISOR-GUARDS）；`design/LEDGER-SELF-CONTAINED`（1033）⇒ 一档；`design/TESTING`（995）⇒ 两档（TESTING · E2E-HARNESS——后者 **2026-09-15 已删除**）；
-  `req/ENGINEERING-MODE`（1003）⇒ 两档（ENGINEERING-MODE · ENGINEERING-MODE-MECHANISM）；`req/TESTING`（177）⇒ 一档。
-  产物 12 档**逐档 ≤500**（实测 191–380）；坐标全量改现状路径（检查器改指仓根 `scripts/` · 运行期模块改指 `thincoder-core/**` · 测试/入口改指 `thincoder-cli/**`）；一次性材料（逐批设计记录 / 受影响文件 as-of 快照 / 用例与 AC 编号集 / 状态行）逐档登记入各档「不并项与历史沿革」。
-- 2026-09-18（**失效表达清理批 · 本批直接执行 · 可 revert**——承用户 2026-09-18 裁定「修订式表达很害人，失效的表达一定要删掉」）：删除失效表达（不留划改残留）——档头 as-of 注「原记 50 + 37」句 · §2.1 第 37 行「原登记…作废」括注 · §6 批 6a / 6b 两行划改段 + 批 7 残留行；
-  §9.3 A21「原记『另 12 档』」句 · §9.4 台账腿「随单引擎作废」括注 + G4「原记『10 条』」句。历史沿革 = 本档既有历史段 + 批档 `docs/batches/2026-09-18-stale-expression-purge.md`。
-- 2026-09-15（**迁移批 · 第 3 批 · 机制小档 6 档实迁** · eng-designer）：§2.1 六行「后续批」→「**本批迁**」（AGENT-PARAMS · DESIGN-TOKEN-SETTLEMENT · ENG-TOKEN-BINDING · PROXY · TOOL-OUTPUT-LIMITS · VERIFY-REDESIGN——逐行补现状实核依据 + 落点）；§6 批 2 行标**已落**、标题档数 45 → 39。
-  §5 小计重算闭合（本批迁 15 → 21 · 后续批 45 → 39；设计 17 / 需求 4）；§5 口径行补第 3 批；§8 行数重核。
-  **本批实迁 6 档**（全落 `docs/core/design/`）：TOOL-OUTPUT-LIMITS · AGENT-PARAMS · VERIFY-REDESIGN · DESIGN-TOKEN-SETTLEMENT · ENG-TOKEN-BINDING · PROXY。
-  **按现状收正两处**（登记于各落点档 §8.1）：PROXY §TLS 安全语义（旧档与实装相反）+ PROXY §web 消费面（web 工具已改逐次调用参数）；ENG-TOKEN-BINDING §4/§5 口径（单值镜像已退役 / 宿主模块已拆）。
-- 2026-09-15（**迁移批 · 第 2 批 · 待核 9 档收口 + 实迁** · eng-designer）：§3 待核**清空**（原 9 档经用户裁定逐档定判并同批实迁——判与落点入 §2.1 / §2.2 对应行；裁定前两读法入批次档 §2）；§5 小计重算闭合（待核 9 → 0；本批迁 6 → 15）并补「本批迁」口径行；§6 批 5 备注改「前置已满足」（`docs/cli/` 已建 + 射程已扩）；§1 判栏取值改六类并标「待核已清空」；§8 行数收正。
-  **本批实迁 9 档**：`docs/core/design/` 的 ARCHITECTURE · PORTABILITY · STRUCTURE-DEBT · TWO-REPO-MERGE，`docs/cli/design/` 的 RELEASE，`docs/cli/requirements/` 的 FEATURES，`docs/core/requirements/` 的 PHILOSOPHY · RELEASE · TWO-REPO-MERGE。
-- 2026-09-15（**迁移批 · 二分 + 当场迁第一批 · eng-designer**）：建档——承 `DOC-SYSTEM.md` §11 拆分规划，把该档 §5.2 初分类表精化搬入本档并逐档补证据（`file:line`）；新增 §5 小计闭合 · §6 后续批分组；§3 待核 9 档（两种读法）；第一批已迁 6 档（编辑工具族——见 §2.1 第 5 / 13 / 14 / 18 / 19 / 47 行）。
-- 2026-09-20（**库存清账批 · v1 测试门词面收正 · eng-designer**——承 `docs/batches/2026-09-20-residual-sweep-batch.md` §2 · 台账 #128）：§9.3 A23 行词面收正（补入单入口 / 守卫随单入口可跑后销——v2 `slow` 纯别名）。**零新语义**。
-
-- 2026-10-02（**文档体系重组批（#813）· 设计轮 · eng-designer**——承 `docs/batches/2026-10-02-doc-structure-reorg.md` §1）：新增 **§11 桌面端设计档按域拆分 · 执行方案**（目标结构 14 档域清单 ∥ 需求分卷提案 ∥ 执行波次 ∥ 机检随动清单 ∥ 并发验证矩阵 ∥ 提示词随动（措辞双面逐字固化）∥ 验收 AC-1–AC-6 ∥ 用例表 ∥ 边界 ∥ open）；档头范围句补「并载后续迁移执行方案」（§10 ∥ §11——D3 计数与清单同改）。判据 ∥ 工序单源 = `docs/core/design/DOC-DISCIPLINE.md` §3.16（本档不复制——D2）。**零执行（设计轮）· 冻结面零触**。
-
-- 2026-10-02（**文档体系重组批（#813）· 修复轮（评审轮 1 发现 1–5 + 父补 1 处置）· eng-designer**——承 `docs/batches/2026-10-02-doc-structure-reorg.md` §3 轮次 1〔changes-required〕∕ §2 修复轮 1）：① F1 剪枝位置钉死——「剪枝 = 每域闭环收尾步」；并行面改「域档零交 ∥ 共享档剪枝段串行」（§11.2 ∕ §11.4 ∕ AC-2 ∕ §11.9 四处同拍；2b 划分同模型复核——四域同判；2c 去「保位回收」）；
-  ② F2 AC-3 回指改「§11.5 ①–③ + §11.1 档名查重行」；③ F3 §11.5 ② 笔权 = **coder 轮**（数据档 E 面——对齐 §3.9 附加口径 ②）；④ F4 AC-4 钉夹具（菜单批 ∥ 设置批 + `docSetKey` 复跑口径）；⑤ F5 §11.7 ① ∕ AC-5 改「节名对应」。**零机检门 · 冻结面零触**。
-
-- 2026-10-02（**文档体系重组批（#813）· 波 2a 补轮 · eng-designer**——承 `docs/batches/2026-10-02-doc-structure-reorg.md` §2 波 2a 补轮块）：§11.2 补**剪枝操作纪律**行（区间置换**降序** ∥ **内容锚**定位 ∥ 终态 **grep** 复核）。**零机检门 · 冻结面零触**。
-
-- 2026-10-02（**文档体系重组批（#813）· 修正轮 #40（父侧裁定 3 件）· eng-designer**——承 `docs/batches/2026-10-02-doc-structure-reorg.md` §1 ∕ §2 修正轮 #40）：§11.5 ② `lineCounts` 声明修改笔权 = **main 直写**（M1 专权——本批已落；对齐 `docs/core/design/DOC-DISCIPLINE.md` §3.9 附加口径 ② 收正；2026-10-02 双实证）。**零机检门 · 冻结面零触**。
-
-- 2026-10-02（**文档清账批 · 直落轮 · eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2 · 台账 #803）：§10.6 AC-7「`checkConfig` 五键**零改**」补 **as-of 2026-09-18** 标记（批代验收行——键数保留为批代值，不误读为现役计数；D3 句零改）。**零新语义**。
-
-- 2026-10-02（**文档清账轮 · 执行轮 1（core/design 前段）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：锚面 1 处 R1 改指（`heap-watch.mjs` 补 `thincoder-cli/` 前缀——§2.1 表第 11 行）。**零新语义**。

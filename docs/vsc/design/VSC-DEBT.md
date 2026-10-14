@@ -1,7 +1,6 @@
 # VSC 产品树残留债清零（VSC-DEBT）· 设计 — VSC 部分
 
 > 部分 = **vsc**（`docs/vsc/`）。板块 = **VSC 产品树残留债清零**（批 7）。
-> 任务书 = `docs/batches/2026-09-16-vsc-debt.md` §1（主 agent · 需求已确认）；批次任务面 = 同档 §2。
 > 需求侧回指 = `docs/vsc/requirements/PROJECT.md` §6（N-P1 / N-P2 / N-P3——本部分编号域；与 CLI 树 `PROMPT-SYSTEM.md` 的 `N-P1`–`N-P3` 同号不同域，全引处须带档限定）· `docs/vsc/requirements/WEBVIEW.md` §3（N-W7）。
 > 权威源（**本档不重述**——D2）：webview 消息族与协议表 = `docs/vsc/design/WEBVIEW-PROTOCOL.md`；测试入口 = `thincoder-vscode/test/run.mjs`（单入口——`slow` = 纯别名；测试门权威 = `docs/core/design/TESTING.md` §10）；文档体系判据 = `docs/core/design/DOC-SYSTEM.md`。
 > 建档：2026-09-16（批 7 设计轮）。坐标 = as-of 2026-09-16 实测（行数口径 = `wc -l`）。
@@ -32,7 +31,7 @@
 |---|---|---|---|---|
 | 1 | 新档 `WEBVIEW-PROTOCOL-AUDIT.md`（拟建名 · 已否决） | 表独立成档、体量宽裕 | 同话题两档 ⇒ 违 D2 单一权威源；协议演进时两处更新 | 否决 |
 | 2 | 并入 `docs/vsc/design/WEBVIEW-PROTOCOL.md` 新增节 | 该档已是消息族 + 协议表权威源（头注 §3 · §3.1 演进纪律 · §3.2 协议增量登记） | 档体量 +≈60 行（272 → ≈330） | **选定** |
-| 3 | 只记批次档 §5（一次性材料） | 施工记录天然带批次材料 | 长期可复核面缺失（协议读者看不到对表） | 否决 |
+| 3 | 只记施工记录（一次性材料） | 施工记录天然带批次材料 | 长期可复核面缺失（协议读者看不到对表） | 否决 |
 
 ### 2.3 D-2 机检形态
 
@@ -96,7 +95,7 @@
 - **删（态件——级联三档）**：`S._advisorBlock`——声明位 `webview/state.js:81`，复位位 `chat.js:185` / `test/activity-live-ux.test.mjs:48` / `test/async-visibility.test.mjs:319`；`_advisorScrollDirty`——`streaming.js:31` 声明 + `:44` / `:57-63` / `:190`（as-of 2026-09-29）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 - **删（渲染实现）**：`webview/streaming.js:215-235`（JSDoc + `advisorChunk`；§1 实测 `:221` 为函数行）（as-of 2026-09-29）。上列载体与三档级联（`state.js` / 两测试文件）全部入 §4 清单。
 - **保留判据（不动）**：共享渲染面（`.advisor-content` DOM 类 · `appendAdvisorChunk` / `buildAdvisorBlock`）**仅当**仍被非 advisor 路径（子代理 `subagentChunk`）使用 ⇒ 逐处 grep 判，保留则零改。
-- **连带处置**：若保留判据**不成立**（该渲染面亦 advisor 专属）⇒ 其直依测试（`test/activity-flow.test.mjs:110`/`:314`/`:316`/`:402` · `test/activity-live-ux.test.mjs:48`/`:70`）同批处置——① 层测试 = 开发期工具，**退役为常态**（处置行落批次档 §6），改写成业务场景须三条件全满足（业务可观察 + 集成未覆盖 + 可稳定驱动）。（迁移期引文）
+- **连带处置**：若保留判据**不成立**（该渲染面亦 advisor 专属）⇒ 其直依测试（`test/activity-flow.test.mjs:110`/`:314`/`:316`/`:402` · `test/activity-live-ux.test.mjs:48`/`:70`）同批处置——① 层测试 = 开发期工具，**退役为常态**，改写成业务场景须三条件全满足（业务可观察 + 集成未覆盖 + 可稳定驱动）。（迁移期引文）
 - **不改**：`advisor` **工具**链（核面，`thincoder-vscode/src/agent/execute-tools.mjs:348-349` · `thincoder-vscode/src/agent-tools/async-discard.mjs:98-104` advisor 池）——本批只清**回显面死码**，不动工具/池语义。 （迁移期引文——档已迁核）
 
 **判据（可机判）**：① 提取器复跑零未处置（`test/protocol-coverage.test.mjs` 绿——双向对账 + **第④列**处置枚举无空）② 被删标识符活代码面零命中（`grep -rn` 读数入 §5；射程 = §6 A6 注）③ `npm test` 绿 ④ `npm run doc:check` 零悬空。
@@ -236,7 +235,7 @@
 
 ## 10. 三方条目一致（硬规则）
 
-| 批次档 §2 条目 | 设计档验收回指 | 需求档条目 |
+| 本批条目 | 设计档验收回指 | 需求档条目 |
 |---|---|---|
 | D-1 | A1 / A2 / A3 | `PROJECT.md` §6 N-P1 · N-P2 |
 | D-2 | A4 / A5 / A6 | `WEBVIEW.md` §3 N-W7 |
@@ -246,9 +245,7 @@
 
 ## 12. 四档结构拆分（2026-09-18 批 · 越档面处理）
 
-> 任务书 = `docs/batches/2026-09-18-vsc-large-file-split.md` §1（父侧 · 需求已确认）；本批条目 = 该档 §1.2 条目①（N-P3 四档拆分）。
-> 读数口径 = `wc -l`（= 换行符数）。**本刻实测 as-of 2026-09-18 22:3x**——父侧给出值以本表为准（逐档复测已在案）。
-> 判据源 = `docs/vsc/requirements/PROJECT.md` §6 **N-P3**（产品树任一档 ≤500 行；越档 ⇒ 结构拆分并保持对外缝）。本批建议线 = **主档 ≤300**（批次档 §1.2）。
+> 判据源 = `docs/vsc/requirements/PROJECT.md` §6 **N-P3**（产品树任一档 ≤500 行；越档 ⇒ 结构拆分并保持对外缝）。本批建议线 = **主档 ≤300**。
 
 ### 12.1 触发与实测读数
 
@@ -263,7 +260,7 @@
 ⇒ 本档实为**四档中唯一贴线者**（499；下一次触碰即越 500）——实施次序中列为最后一步 + 首要回归对象（12.5）。
 
 **本批范围外的越档面（登记 · 不处理）**：`chat-panel.mjs` **441** · `settings.mjs` **409**（均 >300 咨询线、≤500 硬限；读数 = 2026-09-19 复测——init-block 批后 `wc -l`）；`suspension.mjs` 读数见下行「上行通道批读数收正」块（本批已触碰——读数归该块单源）。
-上述越档面（`chat-panel.mjs` / `suspension.mjs` / `settings.mjs` 三档）不在批次档 §1.2 范围内 ⇒ 本批不动，留后续批（触发 = 下次触碰；触线判据 = 块内**逐档触线（单源）**行）。
+上述越档面（`chat-panel.mjs` / `suspension.mjs` / `settings.mjs` 三档）不在本批范围内 ⇒ 本批不动，留后续批（触发 = 下次触碰；触线判据 = 块内**逐档触线（单源）**行）。
 
 **2026-09-22 pending-triage 批复测追加登记（父侧直接执行 · 可 revert）**：`thincoder-vscode/src/extension/chat-panel.mjs` **492**（余 8 行——#168② 三落点接线净增 6；>300 咨询线、≤500 硬限；拆分触发 = 下次实质触碰 ∨ 余量 ≤5）·
 `thincoder-vscode/test/session-boot.test.mjs` **490**（余 10 行——#171 面板级 ⑰ 用例新增；拆分触发 = 下次实质触碰 ∨ 余量 ≤5；拆分面 = 既有用例组族外提）。两档均「结构未变 · 本批不拆」（≤500 硬限在位）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
@@ -281,23 +278,23 @@
 `thincoder-vscode/src/extension/permission-gate.mjs` **109 → 117**（+8：门体改经核 `askPermission` 的 `io.ask` 缝；<300 咨询线）；
 `thincoder-vscode/test/files.mjs` **现势回填 120**（+3 = `vsc-stream-rules.test.mjs` / `scoped-rules.test.mjs` / `nested-token-relay.test.mjs` 登记）。
 **触发线未触（as-of 2026-09-20 复测）**：`agent.mjs` 494（线 >495）· `setup.mjs` 495（线 >497）；距 500 硬限 **6 / 5** 行。
-**逐档触线（单源）**：`agent.mjs` · `setup.mjs` · `run-stages.mjs` / `execute-tools.mjs`——**行数超线（拆分）复核触发**（源 = `docs/batches/2026-09-20-vsc-rules-retry-batch.md` §2.4 / §5.8；
+**逐档触线（单源）**：`agent.mjs` · `setup.mjs` · `run-stages.mjs` / `execute-tools.mjs`——**行数超线（拆分）复核触发**（源 = 本档 `:330` ∥ `:278-279` 读数块；
 **现行口径：软线 500 行 / 硬限 800 行**；四档现态 = `agent.mjs` 已归核（9 行）∥ `setup.mjs` 298 ∥ `run-stages.mjs` / `execute-tools.mjs` 已迁核——读数源 = 本档 `:330` ∥ `:278-279` 块）；未列档触发 = 触碰时复核（拆分候选按 §12.2 各档）——§12.1 各行「触发」口径以此为准（`:265` 同指）。
 本批新增用例文件（均 <300 咨询线）：`test/lifecycle-hooks.test.mjs` **264** · `test/dispatch-hooks.test.mjs` **217** · `test/permission-gate-seam.test.mjs` **102**。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 **测试文件越线登记（续）**：`thincoder-vscode/test/ledger.test.mjs` **324**（`wc -l`；>300 咨询线——本批 T-LQ 组追加后；≤500 硬限，无拆分义务）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
 **批后新档（2026-09-19 · init-block 批）**：`provider-probe-window.mjs` **122**——`settings.mjs` 探针窗口族外提产物（N-P3 体量拆分 · 缝 = re-export；≤300 咨询线，无拆分义务）。
 
-**测试文件越线登记（2026-09-19 · init-block 批后）**：`thincoder-vscode/test/session-boot.test.mjs` **440**（`wc -l`——>300 咨询线、≤500 硬限）；逐项登记，**非全量普查**（端面其余 >300 档 = 普查面，见批次档 §2）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
+**测试文件越线登记（2026-09-19 · init-block 批后）**：`thincoder-vscode/test/session-boot.test.mjs` **440**（`wc -l`——>300 咨询线、≤500 硬限）；逐项登记，**非全量普查**（端面其余 >300 档 = 普查面）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
 **主档越线登记（2026-09-21 · SIGNAL-LINES 批后 · 父侧小项收正 · 可 revert）**：`thincoder-vscode/webview/chat.js` **449**（`wc -l` 口径——>300 咨询线、≤500 硬限；本批净增 +4 = digest 标签两档取键 + `n > 0` 计数元素规则）；逐项登记，**非全量普查**。
 **主档越线登记（2026-09-21 · vsc-no-folder-guard 批后 · 父侧小项收正 · 可 revert）**：
 `thincoder-vscode/src/extension/panel-messages.mjs` **300 → ≈303** · `thincoder-vscode/src/extension/panel-session.mjs` **299 → ≈307**（均本批**首次**越 >300 咨询线、≤500 硬限；增量 = 无工作区守卫接线；无拆分义务，触发 = 下次实质触碰）；
-`thincoder-vscode/webview/chat.js` **449 → 451**（读数复测——存量越线，本批 +2）。逐项登记，**非全量普查**；结论载荷 = 批次档 `docs/batches/2026-09-21-vsc-no-folder-guard.md` §2 跨文件限段。
+`thincoder-vscode/webview/chat.js` **449 → 451**（读数复测——存量越线，本批 +2）。逐项登记，**非全量普查**。
 **实施后实测补记（2026-09-21 · #53）**：`panel-messages.mjs` **305**（304）· `panel-session.mjs` **313**（312）· `chat-panel.mjs` **487**（486——距 500 硬限 ≈13 行，无拆分义务在册）· `webview/chat.js` **452**（**451** ✓）· 新档 `workspace-guard.mjs` **59**（<300 ✓）
 ✗ `test/workspace-guard.test.mjs` **487**（<500 ✓，超设计估计不阻塞）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
-**#163 拆分后越线收正（2026-09-22 · structure-debt 批实施轮 · eng-designer——承批档 `docs/batches/2026-09-22-structure-debt.md` §2.4 / §5）**：
+**#163 拆分后越线收正（2026-09-22 · structure-debt 批实施轮 · eng-designer）**：
 `thincoder-vscode/webview/chat.js` **454 → 147**（`wc -l` 口径——**越线登记关闭**：现 ≤300 咨询线、≤500 硬限）；本批拆出两新档 = `webview/chat-messages.js` **234** · `webview/chat-status.js` **124**，**均 ≤300 咨询线 ⇒ 不入本登记**（无拆分义务）。逐项登记，**非全量普查**。
 
 **2026-09-25 file-tier-sweep 批（#91 / #254 / #301）读数刷新 + 新登记（设计轮实读 · `wc -l` 口径 · 拆分执行设计 = §13）**：
@@ -308,13 +305,13 @@
   `test/session-boot.test.mjs` **490**（余 10——触发未到）· `test/workspace-guard.test.mjs` **487** · `thincoder-vscode/src/extension/suspension.mjs` **447** · `thincoder-vscode/src/agent/run-stages.mjs` **421** ·（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
   `thincoder-vscode/src/agent/setup.mjs` **421** · `src/agent/execute-tools.mjs` **417** （迁移期引文——档已迁核） ·
   `src/extension/panel-messages.mjs` **357** · `src/extension/panel-session.mjs` **312**——均读数刷新（触发未到，零动作）。
-**CSS 类记录值（零拆分计划——引既有裁定「CSS 不入门」：N-P3 模块缝语义 + 评审 id=104 先例 + `2026-09-21-loading-screens` 评审「按既有裁定不升级、不重开」；依据句 = `docs/batches/2026-09-18-vsc-session-wiring.md:82`）**：`thincoder-vscode/webview/chat.css` **514** · `webview/controls.css` **658**。
+**CSS 类记录值（零拆分计划——引既有裁定「CSS 不入门」：N-P3 模块缝语义 + 评审 id=104 先例 + `2026-09-21-loading-screens` 评审「按既有裁定不升级、不重开」）**：`thincoder-vscode/webview/chat.css` **514** · `webview/controls.css` **658**。
 逐项登记，**非全量普查**（同款须知 = 上方块注）。
 
 **批后登记（2026-09-25 file-tier-sweep 批 · 实施轮实测 · `wc -l` 口径）**：`thincoder-vscode/src/extension/chat-panel.mjs` **497 → 426**（拆分 = §13.2；>300 咨询线、≤500 硬限——触发未到）· `thincoder-vscode/src/agent.mjs` **496 → 457**（拆分 = §13.4；触发 **>495**——未触）。
 `thincoder-vscode/src/extension/panel-settings-push.mjs` **119**（新档 · Settings 段外提 = §13.2）· `thincoder-vscode/src/agent/response-stages.mjs` **73**（新档 · 响应后处理段外提 = §13.4）——两新档均 ≤300 咨询线（无拆分义务）。 （迁移期引文——档已迁核）
 `thincoder-vscode/test/busy-injection-vsc.test.mjs` **546 → 330**（拆分 = §13.5；>300 咨询线、≤500 硬限——越线登记见下行）· `thincoder-vscode/test/busy-injection-vsc-webview.test.mjs` **249**（新档 · webview 引导族外提 = §13.5；≤300 咨询线，无拆分义务）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
-**CLI 面（同批拆分 · 登记载体 = 批档 §2——KD-26）**：`thincoder-cli/test/busy-injection.test.mjs` **474 → 209** · `thincoder-cli/test/busy-injection-render.test.mjs` **155**（新档）· `thincoder-cli/test/busy-injection-consume.test.mjs` **198**（新档）——三档均 ≤300 咨询线（无拆分义务）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
+**CLI 面（同批拆分 · 登记载体 = 本档 §12.1——KD-26）**：`thincoder-cli/test/busy-injection.test.mjs` **474 → 209** · `thincoder-cli/test/busy-injection-render.test.mjs` **155**（新档）· `thincoder-cli/test/busy-injection-consume.test.mjs` **198**（新档）——三档均 ≤300 咨询线（无拆分义务）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 **测试文件越线登记（续 · 2026-09-25 file-tier-sweep 批后）**：`thincoder-vscode/test/busy-injection-vsc.test.mjs` **330**（`wc -l`；>300 咨询线——本批拆分落地 546 → 330；≤500 硬限，无拆分义务）——结构不变〔本批拆分后定形：用例族 + 夹具自持〕· 不拆理由 = ≤500 硬限在位（300 为咨询线）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
 **测试文件越线登记（续 · 2026-09-27 env-config-purge 批后 · `wc -l` 口径）**：`thincoder-vscode/test/async-visibility.test.mjs` **452**（>300 咨询线——**首登**；≤500 硬限，无拆分义务）· `thincoder-vscode/test/activity-live-visibility.test.mjs` **399**（**首登**）（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
@@ -327,7 +324,7 @@
 `thincoder-vscode/src/extension/suspension.mjs` **447 ⇒ 483**（>300 咨询线、≤500 硬限——越线登记在册，本次为读数刷新；无拆分义务）·
 `thincoder-vscode/test/timer-wake.test.mjs` **396**（>300 咨询线——**首登**；≤500 硬限，无拆分义务；先例 = `thincoder-vscode/test/ledger.test.mjs` 324 首登）。逐项登记，**非全量普查**。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 
-**主 / 测试文件读数刷新（2026-09-29 · parity-b1-vsc-core 批后 · 实读 · `wc -l` 口径——= `split("\n").length − 1`）**：本批 = VSC ∕ CLI 收口核（大件）——VSC 五档退役、多档大幅收缩；本批受影响档逐档刷新（小计：23 档合计 **5344 → 2304**——批档 §2.0 split 口径；−57%）：
+**主 / 测试文件读数刷新（2026-09-29 · parity-b1-vsc-core 批后 · 实读 · `wc -l` 口径——= `split("\n").length − 1`）**：本批 = VSC ∕ CLI 收口核（大件）——VSC 五档退役、多档大幅收缩；本批受影响档逐档刷新（小计：23 档合计 **5344 → 2304**——−57%）：
 `thincoder-vscode/src/agent.mjs` **455 ⇒ 9**（前值 = 本批前实读 ∕ `wc -l`；上轮登记 457 ∕ as-of 2026-09-25。主循环归核；`ContinueError` 转口残面——**越线登记关闭**）· `thincoder-vscode/src/agent/setup.mjs` **427 ⇒ 298**（host 装配；触发线 **>497** 未触）·
 `src/agent/run-helpers.mjs` **268 ⇒ 88** · `thincoder-vscode/src/agent/setup-reminders.mjs` **141 ⇒ 41** · `src/agent/tool-table.mjs` **250 ⇒ 181**（基础集 + `vscSubagentFace` 装饰体）· `src/agent/turn-domains.mjs` **37 ⇒ 37**（零改 · 复测）· `src/agent/agent-state.mjs` **158 ⇒ 158** ·
 `thincoder-vscode/src/extension/suspension.mjs` **483 ⇒ 290**（取核装配 + 会话外壳 + W8 修单动态装载；**越线登记关闭**）· `src/extension/panel-turn-stages.mjs` **240 ⇒ 250** · `src/extension/panel-chat.mjs` **259 ⇒ 260** ·
@@ -355,7 +352,7 @@
 新档职责（一句话）：`panel-turn-loop.mjs` ≈157 行 = **回合执行循环面**（runAgent 续跑 / ContinueError / Ctrl+I 中断续跑 + 回合 controller 工厂）；
 `panel-turn-stages.mjs` ≈154 行 = **回合阶段函数面**（`panel-callbacks.mjs` 头注既立的「骨干—细节两层」细节层：provider/模型解析 · 收尾落盘 · 挂起接管）。
 
-**保留（不得迁出 · 硬约束）**：`runPanelChatImpl` 入口守卫段 112-177 —— 单元测试档用例 B（现载体 = `docs/batches/2026-09-29-residuals-round2.test.mjs`；单元测试树重建时回迁端侧单元测试档）直读本档源文本，断言
+**保留（不得迁出 · 硬约束）**：`runPanelChatImpl` 入口守卫段 112-177 —— 单元测试档用例 B（单元测试树重建时回迁端侧单元测试档）直读本档源文本，断言
 「`ensurePanelAgent(panel, turnSlot)` 之后在本档内出现 `ensureMemoryHandle()`」（句柄创建点同址）；该段迁出 ⇒ 既有结构机检红。
 另保留：行加载 + 回调装配段 236-310 · `runPanelChat` 包装 · `agentSlotMatches` / `ensurePanelAgent`。
 
@@ -466,7 +463,7 @@
 
 ### 12.4 零语义判据（命令级）
 
-1. `cd thincoder-vscode && npm test`（= `node test/run.mjs`，单元 + 集成清单）⇒ **exit 0**，用例计数 ≥ 基线（本晚 661+；实现轮先记录基线读数，再逐步对齐——批次档 §1.5 判据 1）。
+1. `cd thincoder-vscode && npm test`（= `node test/run.mjs`，单元 + 集成清单）⇒ **exit 0**，用例计数 ≥ 基线（本晚 661+；实现轮先记录基线读数，再逐步对齐）。
 2. `cd thincoder-vscode && npm run lint`（`scripts/check-syntax.mjs`）⇒ exit 0。
 3. **缝核**（逐条 grep，零改判据）：
    `grep -rn "panel-\(messages\|chat\|callbacks\|session\)\.mjs" thincoder-vscode/src thincoder-vscode/test --include=*.mjs`
@@ -536,7 +533,7 @@
 | KD-13 | `newTurnController` 随回合循环迁出（re-export 保缝） | 留主档 ⇒ 新档反向 import 主档（平白多一环）；且它与 `runTurnLoop` 的 controller 重建语义同族 |
 | KD-14 | `panel-turn-stages.mjs` 合并「准备 + 收尾」两面（不拆两档） | 拆两档 ⇒ 各 ≈60-80 行碎片档；两面同属「impl 阶段细节层」（`panel-callbacks.mjs` 头注既立手法） |
 | KD-15 | 收尾 `finally` 体**迁出**（非保留） | 保留 ⇒ 主档 ≈277（余量 23 行，下一批在 panel-chat 增行即逼近建议线）；迁出后主档 ≈240（余量 60） |
-| KD-16 | 本批**不动**范围外三越档（`chat-panel.mjs` / `suspension.mjs` / `settings.mjs`——读数与登记 = §12.1，D2 单源） | 越批次档 §1.2 范围 ⇒ 属"改需求面"；登记 §12.1，留后续批（触发条件同 N-P3） |
+| KD-16 | 本批**不动**范围外三越档（`chat-panel.mjs` / `suspension.mjs` / `settings.mjs`——读数与登记 = §12.1，D2 单源） | 越本批范围 ⇒ 属"改需求面"；登记 §12.1，留后续批（触发条件同 N-P3） |
 | KD-17 | 投递面两转口（`postSubagentStatus` / `postSubagentApproval`）随 relay 面入新档；原 `onSubagent` / `onSubagentApproval` 改委托 | 评审轮 1 #1 修正：`relayLiterals` 只扫**同档** ⇒ 字面量构造面必须同在持 RELAYS 行的档。否决备选：① 投递队列留主档（机检免动，但主档 ≈283、投递面与回调装配面职责混叠）② 主档留字面量副本（重复构造点 = 双源，违 D2） |
 | KD-18 | 段 B 的 `runPanelChat` 回调**注入**（`deps.runChat`），不登记环 | 评审轮 1 #3 修正。否决备选：登记 `panel-chat ⇄ panel-turn-stages` 环 + 顶层零跨环读取判据（可行但平白多一环；注入零语义且免一条环登记） |
 | KD-19 | 文档档（`.md`）行数**不承载**拆分 / 标注义务——本档读数只作过程记录 | 评审轮 1 #4 修正。依据 = 用户 2026-09-16 裁定 + `docs/core/design/DOC-DISCIPLINE.md` §3.7（文档行数规则废除）。否决备选：给本档补一行拆分规划（承批 7 旧软线句——规则已废，补即违用户裁定） |
@@ -547,10 +544,10 @@
 |---|---|---|---|
 | A10 | 四主档 + 六新档逐档 `wc -l` ≤500，四主档 ≤300 | §12.4 第 4 条读数命令（十档逐行输出） | `PROJECT.md` §6 N-P3 |
 | A11 | 对外缝零改（§12.3 表逐条） | §12.4 第 3 条 grep ⇒ 既有 import 行逐字不变 | N-P3（既有导出名 / 调用点零改） |
-| A12 | 零语义：`npm test` 全绿、计数不降 | `cd thincoder-vscode && npm test` ⇒ exit 0 | 批次档 §1.5 判据 1 |
+| A12 | 零语义：`npm test` 全绿、计数不降 | `cd thincoder-vscode && npm test` ⇒ exit 0 | §12.4 第 1 条 |
 | A13 | 协议两机检绿（提取集零变化 + RELAYS fail-closed 满足 + **1-hop 解析面成立**） | `node --test test/protocol-coverage.test.mjs test/protocol-coverage-reverse.test.mjs` ⇒ exit 0；**#1 闭合面四条**（§12.2.3 R-6）：① `--emit` 含 `subagent` / `subagentApproval` 且 host 非「无」 ② `grep -n 'file: "src/extension/' test/protocol-coverage.test.mjs` ⇒ 恰两行（`ledger-surface.mjs` · `panel-subagent-relay.mjs`）且无 `panel-callbacks.mjs`——同 §12.2.3 R-6③ 口径 ③ `WEBVIEW-PROTOCOL.md:403` 该行（`subagentApproval`）**处置列**仍 = `活`（消费位 `thincoder-vscode/webview/chat-messages.js:224`——表记 `:222`；T-6 `wrongDisp` 空 = `thincoder-vscode/test/protocol-coverage.test.mjs:343`） ④ `panel-turn-stages.mjs` 零 import 主档（§12.2.1 段 B B-3） | N-P3（保持对外缝） |
-| A14 | `doc-check` **按档归属零新增** | `node scripts/doc-check.mjs --root .` ⇒ 本批改动档（`docs/vsc/design/VSC-DEBT.md`）零新增悬空 ∕ 零新增超宽行；全档读数为过程记录（构成见 §12.4 第 5 条：13 = 11 + 他席在途 2） | 批次档 §1.5 判据 3 |
-| A15 | 行数读数逐档留档（四主档 + 六新档） | 实施轮读数表（批次档 §5） | 批次档 §1.5 判据 2 |
+| A14 | `doc-check` **按档归属零新增** | `node scripts/doc-check.mjs --root .` ⇒ 本批改动档（`docs/vsc/design/VSC-DEBT.md`）零新增悬空 ∕ 零新增超宽行；全档读数为过程记录（构成见 §12.4 第 5 条：13 = 11 + 他席在途 2） | §12.4 第 5 条 |
+| A15 | 行数读数逐档留档（四主档 + 六新档） | 实施轮读数表 | §12.4 第 4 条 |
 
 ### 12.9 用例表（正常 / 边界 / 错误 · 续 T-11）
 
@@ -562,7 +559,7 @@
 | T-15 | 边界 | 环 import（messages ↔ messages-settings ↔ session；session ↔ session-write） | 两模块顶层零跨环读取 ⇒ 加载即通过（测试绿） | A12 |
 | T-16 | 错误 | re-export 漏项（如 `saveLines` 未转口） | 消费档 import 失败 ⇒ `npm test` 红并点名该档 | A11 |
 | T-17 | 错误 | 新档含裸标识符 `postMessage(payload)` 而 RELAYS 未登记 | `protocol-coverage.test.mjs` 红（fail-closed 点名该档） | A13 |
-| T-18 | 错误 | `panel-chat.mjs` 入口守卫段误迁（`ensurePanelAgent` / `ensureMemoryHandle` 异址） | 单元测试档用例 B 红（“句柄创建点在 ensurePanelAgent 同址”——现载体 = `docs/batches/2026-09-29-residuals-round2.test.mjs`；单元测试树重建时回迁端侧单元测试档） | A12 / A13 |
+| T-18 | 错误 | `panel-chat.mjs` 入口守卫段误迁（`ensurePanelAgent` / `ensureMemoryHandle` 异址） | 单元测试档用例 B 红（“句柄创建点在 ensurePanelAgent 同址”；单元测试树重建时回迁端侧单元测试档） | A12 / A13 |
 
 ### 12.10 边界（本批不做）
 
@@ -570,22 +567,22 @@
 2. 不动四档之外的越档面（`chat-panel.mjs` · `suspension.mjs` · `settings.mjs`——读数与登记 = §12.1，D2 单源）。
 3. 不改需求档 `docs/vsc/requirements/PROJECT.md`（§5/§6 读数同步 = 父侧笔——本档给待同步读数）。
 4. 不新增测试文件（本批只给 `thincoder-vscode/test/protocol-coverage.test.mjs` 补一行 RELAYS 登记；`thincoder-vscode/test/files.mjs` 零改）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
-5. 不改 `_archive/**`、不改已收口批档（`docs/batches/2026-09-16-*.md` 等）。
+5. 不改 `_archive/**`、不改已收口批档。
 6. 不做"顺手优化"（不合并 / 不改名既有导出、不改注释语义、不清理既有死码）。
 
 ### 12.11 UI/交互决策落档（续 U-4）
 
 | # | 决策 | 用户可见变化 | 状态 |
 |---|---|---|---|
-| U-5 | 四档拆分 = 纯结构搬移（既有导出名与调用点不变） | 零可见变化 | 已定（批次档 §1.3） |
+| U-5 | 四档拆分 = 纯结构搬移（既有导出名与调用点不变） | 零可见变化 | 已定 |
 
 ### 12.12 三方条目一致（本批）
 
-| 批次档 §2 条目 | 设计档验收回指 | 需求档条目 |
+| 本批条目 | 设计档验收回指 | 需求档条目 |
 |---|---|---|
 | ① N-P3 四档拆分（六新档 · 保对外缝） | A10 / A11 / A12 / A13 / A14 / A15 | `PROJECT.md` §6 **N-P3** |
 
-同一来源 = 批次档 §1.2 条目①；无增项、无缺项。
+同一来源 = 本批条目①；无增项、无缺项。
 
 **上抛项（写域外 · 待父侧裁）**
 
@@ -595,7 +592,7 @@
 
 ### 12.13 评审轮 1 修正（8 项逐条 · 2026-09-18）
 
-> 依据 = 批次档 `docs/batches/2026-09-18-vsc-large-file-split.md` §3 轮次 1（🔴 1 · 🟡 3 · 🔵 4；VERDICT: changes-required）；`Suggestion` 列 = 评审建议，处置执行 = 本席。
+> 依据 = 本批评审轮次 1（🔴 1 · 🟡 3 · 🔵 4；VERDICT: changes-required）；`Suggestion` 列 = 评审建议，处置执行 = 本席。
 > 本轮**只改设计面**（不改实现面代码 ∕ 需求档 ∕ 已收口批档）；**零新语义** = 补搬运契约 + 收正读数 ∕ 判据口径。
 
 | # | 发现（严重级） | 处置 · 落点 |
@@ -613,7 +610,7 @@
 
 ### 12.14 评审轮 2 修正（3 项逐条 · 2026-09-18）
 
-> 依据 = 批次档 `docs/batches/2026-09-18-vsc-large-file-split.md` §3 轮次 2（🟡 3 · VERDICT: pass）；`Suggestion` 列 = 评审建议，处置执行 = 本席。
+> 依据 = 本批评审轮次 2（🟡 3 · VERDICT: pass）；`Suggestion` 列 = 评审建议，处置执行 = 本席。
 > 本轮**只收正格式 ∕ 机判模式 ∕ 判据口径**（不改实现面 ∕ 需求档 ∕ 已收口批档）；🔵 5 条按父侧裁「登记不改」——本轮未动。
 
 | # | 发现（严重级） | 处置 · 落点 |
@@ -624,7 +621,7 @@
 
 ## 13. 文件档位轮：设置面拆分与超限档拆分（2026-09-25 file-tier-sweep 批）
 
-> 任务书 = `docs/batches/2026-09-25-file-tier-sweep.md` §2（本批三条目 #91 / #254 / #301；本节 = VSC 半：设置面 ②③④ + 超限档）。
+> 本批三条目 #91 / #254 / #301；本节 = VSC 半：设置面 ②③④ + 超限档。
 > 行数口径 = `wc -l`（= `split("\n").length - 1`，同 §12 口径注）；读数 as-of 2026-09-25 设计轮实读。前情 = §12.1 本批追加块（读数刷新 + 新登记）；本节 = 拆分设计。
 
 ### 13.1 执行集合与总则
@@ -644,14 +641,14 @@
 | 设置推送链 | `:375-408`（`_pushStatus` :375-377 · `_pushSettingsLight` :385-396 · `_pushSettings` :398-408） | ≈34 | 同上 |
 | 会话访问器 | `:413-418`（`_agentSettingsSession`） | ≈6 | 同上 |
 
-**缝** = 类内薄委托：`ChatPanel` 保留同名方法（一行委托）；外档调用点逐字零改——`_pushSettingsLight` 11 处 · `_pushSettings` 7 处 · `_pushStatus` ≥4 处 · `_agentSettingsSession` 2 处（+ 档内自用 3 处）（点名清单 = 批档 §2「四·S1」）。`_pushSettings` 内对 `_pushMcpStatus` / `_pushIndexStatus` 经 panel 实例直呼（零注入 / 零环）。
+**缝** = 类内薄委托：`ChatPanel` 保留同名方法（一行委托）；外档调用点逐字零改——`_pushSettingsLight` 11 处 · `_pushSettings` 7 处 · `_pushStatus` ≥4 处 · `_agentSettingsSession` 2 处（+ 档内自用 3 处）。`_pushSettings` 内对 `_pushMcpStatus` / `_pushIndexStatus` 经 panel 实例直呼（零注入 / 零环）。
 **硬约束（留档 · 不得迁出）**：`_chat`（:433-480）· `resolveWebviewView`（:156-202）· 构造器两处 vscode 监听块（:84-144——`workspace-guard.test.mjs:475-487` 结构锁：含 `workspaceFolders` 的源档集合必须 = 现行四档）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 **允许的锚检查更新（恰一处）**：`test/settings-open-snapshots.test.mjs:163-185` 链集常量换位（`chat-panel.mjs` → `panel-settings-push.mjs`）。（已随 2026-09-28 测试树全清退场——档不在盘）（迁移期引文）
 **验收**：≤430 ∧ 新档 ≤300 ∧ 消费面文件零 diff ∧ VSC `npm test` 绿。
 
 ### 13.3 `settings.mjs` / `settings-tools.js` 计划重锚（`settings-tools.js` 拆档已落 ∥ `settings.mjs` 零执行）
 
-拆点区间按现读重锚（登记案原文 = `docs/batches/2026-09-18-vsc-settings-wiring.md` §2.3 拆分规划块——行号 as-of 09-18 为记录面；本节 = 现行单源）：
+拆点区间按现读重锚（登记案原文行号 as-of 09-18 为记录面；本节 = 现行单源）：
 
 | 档 | 现读数 | 拆点（现读区间 → 目标档 · 缝） | 触发（未到） |
 |---|---|---|---|
@@ -691,83 +688,20 @@
 
 | # | 判据 | 机检 |
 |---|---|---|
-| V13-1 | 行数：13.2 / 13.4 / 13.5 五档逐档达标（≤430 / ≤300 / ≤460 / ≤300 / ≤500 ∧ 新档 ≤500） | 批档 §2 AC-1 命令族（仓根跑） |
-| V13-2 | 缝零改：消费面文件 `git diff --stat` = 空 + 调用点数守恒 | 批档 §2 AC-2 |
-| V13-3 | 用例计数守恒：15 = 6 + 9 | 批档 §2 AC-3 |
-| V13-4 | `cd thincoder-vscode && npm test` ⇒ exit 0（含协议两机检） | 批档 §2 AC-4 |
-| V13-5 | 锚检查：允许更新恰一处（§13.2 链集常量）；其余锚零改（含 `workspace-guard` 结构锁未触 / W8 契约②判据闭包绿——现载体 = 单元测试档 `docs/batches/2026-09-29-residuals-round2.test.mjs`；单元测试树重建时回迁端侧单元测试档） | 批档 §2 AC-6 |
+| V13-1 | 行数：13.2 / 13.4 / 13.5 五档逐档达标（≤430 / ≤300 / ≤460 / ≤300 / ≤500 ∧ 新档 ≤500） | §13.6 命令族（仓根跑） |
+| V13-2 | 缝零改：消费面文件 `git diff --stat` = 空 + 调用点数守恒 | §12.4 第 3 条 grep |
+| V13-3 | 用例计数守恒：15 = 6 + 9 | `thincoder-vscode/test/files.mjs` 在册数 |
+| V13-4 | `cd thincoder-vscode && npm test` ⇒ exit 0（含协议两机检） | §12.4 第 1 条 |
+| V13-5 | 锚检查：允许更新恰一处（§13.2 链集常量）；其余锚零改（含 `workspace-guard` 结构锁未触 / W8 契约②判据闭包绿——现载体 = 单元测试档；单元测试树重建时回迁端侧单元测试档） | `node scripts/doc-check.mjs` |
 | V13-6 | `thincoder-vscode/test/files.mjs` 新档登记在盘 | grep 点名 |
 
-### 13.7 关键决策（本批 · 摘要——权威 = 批档 §2「七」）
+### 13.7 关键决策（本批 · 摘要）
 
-- KD-20 执行集合判定口径（越 500 ∨ 触发已到 ∨ 登记「下批执行」三类才执行）；KD-21 chat-panel 拆点扩为 Settings 段整段；KD-22 CSS 维持不入门；KD-23 测试文件「用例族 + 夹具自持」且用例号零改；KD-24 agent.mjs 拆分面与残余留档；KD-25 读数口径与「批内实测为最终值」；KD-26 CLI 登记落批档、不新造册。
+- KD-20 执行集合判定口径（越 500 ∨ 触发已到 ∨ 登记「下批执行」三类才执行）；KD-21 chat-panel 拆点扩为 Settings 段整段；KD-22 CSS 维持不入门；KD-23 测试文件「用例族 + 夹具自持」且用例号零改；KD-24 agent.mjs 拆分面与残余留档；KD-25 读数口径与「批内实测为最终值」；KD-26 CLI 登记落本档 §12.1、不新造册。
 
 ### 13.8 上抛（本节相关项）
 
 1. `chat.css` 514 / `controls.css` 658 —— 维持「CSS 不入门」（零拆分）；推翻须新裁定（裁定链见 §12.1 本批块引）。
-2. `thincoder-vscode/AGENTS.md:56` 模块地图行并入两新档名（产品文本面——已列批档 §2 受影响文件）。
+2. `thincoder-vscode/AGENTS.md:56` 模块地图行并入两新档名（产品文本面——已列本批受影响文件）。
 3. `WEBVIEW-PROTOCOL.md` §12 ② 列 chat-panel 面坐标随拆再漂（机检不校验坐标；命中在册债「§12/§13 全表 `--emit` 重出」）——本批不修、实施轮零触该档。
-
-## 11. 变更记录
-
-- 2026-09-16：建档（批 7 设计轮）——需求承载 + 选型对比（D-1/D-2/D-3 各节）+ 受影响文件清单（R24a）+ 关键决策 KD-1–KD-9 + 验收 A1–A9 + 用例 T-1–T-11 + 边界 + UI 决策（U-1–U-4，含 `open` 1 条）+ 三方一致表。
-
-- 2026-09-16（**批 7 · 评审轮 1 修正轮**）：按批次档 §3（轮次 1）落地——D-2 级联三档补入 §4（`state.js` / `activity-live-ux` / `async-visibility`；`activity.js` 行实核撤除——零改）+ 文档级联（`docs/vsc/design/WEBVIEW.md` `:44`/`:173`/`:174` · `thincoder-vscode/AGENTS.md:56`）+ A6 射程口径（活面三树 + `AGENTS.md`；`docs/**` 冻结参照豁免）。
-  同轮：协议档 §10 行数口径收正（273 → 272，`wc -l` 实核；`split` 式计数含末行空段）· 提取规则坐标收正（`panel-toolpanel.mjs:14` / `thincoder-vscode/src/extension/ledger-surface.mjs:58`）· 判据①扩读第④列 · D-3 档一逐段清单（迁出 ≈186 ≥ 154 硬需）· `files.mjs` 现行数 82 · 测量协议转义/单例守卫 · `N-P*`/`N-W7` 全引处加档限定。
-
-- 2026-09-18（**VSC 四档结构拆分批 · 设计轮**）：本档 §12 建档——任务书 = `docs/batches/2026-09-18-vsc-large-file-split.md` §1；越档四档本刻实测（`panel-chat.mjs` **499** · `panel-messages.mjs` **487** · `panel-callbacks.mjs` **385** · `panel-session.mjs` **355**）。
-  内容 = 逐档职责分面 ⇒ **六新档**方案 + 对外缝清单（§12.3）+ 零语义判据（命令级 · §12.4）+ 实施次序四步（§12.5）+ 受影响文件表（§12.6）+ 决策 KD-10–KD-16 + 验收 A10–A15 + 用例 T-12–T-18 + 边界 + U-5 + 三方一致表。
-  同轮发现：**F-1** 父侧给 `panel-chat.mjs` 读数 426 与实测 **499** 不符（差 73 · 疑与 `chat-panel.mjs` 425 混淆）——该档为四档中唯一贴线者（距硬限 1 行）；另登记范围外三越档（`chat-panel.mjs` 425 · `suspension.mjs` 397 · `settings.mjs` 384）。上抛 3 项见 §12.12。
-
-- 2026-09-18（**VSC 四档结构拆分批 · 评审轮 1 修正轮** · eng-designer——承批次档 §3 轮次 1 八项）：补 §12.2.1 两段搬运契约（段 A `done` 判别式 + 回传 ∕ 入参逐项 · 段 B 入参含 `distillSlot` + `runPanelChat` 注入项）；
-  §12.2.3 RELAYS 与 1-hop 解析面结构约定（R-1–R-6，含原 `panel-callbacks.mjs` 行判「死登记」收正）· A13 判据句覆盖该面 · T-14 按 A10 收正；
-  读数收正：本档 252 → 483（设计轮）→ **547**（本轮落笔后 `wc -l` 实测）· 机检档 384 · `newTurnController` 调用点 4 · 留档导出名 13；新增 KD-17–KD-19 + §12.13 修正记录。**零语义**：不改实现面 ∕ 需求档 ∕ 已收口批档。
-
-- 2026-09-18（**VSC 四档结构拆分批 · 评审轮 2 修正轮** · eng-designer——承批次档 §3 轮次 2 三条 🟡）：§12.2.3 **R-1** RELAYS 行格式收正（去 `thincoder-vscode/` 前缀与「（拟新增）」注记 ⇒ 与既有两行同形）+ 依据句；
-  **R-6③ ∕ A13②** 机判模式改 `grep -n 'file: "src/extension/'`（换位后恰两行——`ledger-surface.mjs` + `panel-subagent-relay.mjs`，无 `panel-callbacks.mjs`；两处同点对齐）；
-  **§12.4#5 ∕ A14** 判据改写为「**按档归属零新增**」+ 登记构成 **13 = 基线 11 + 他席在途 2 行**（`docs/vsc/design/WEBVIEW.md:105` / `:118` · 该档 mtime 22:45 已收正 ⇒ 本刻复跑 11）+ 行宽豁免表格行口径提示；新增 §12.14。**零新语义**：不改实现面 ∕ 需求档 ∕ 已收口批档 ∕ 🔵 五条（父侧裁「登记不改」）。
-- 2026-09-19（**init-block 批 · fix 轮 5** · eng-designer——承批次档 §6 第 9 项）：§12.1 三越档读数复测（`chat-panel.mjs` **441** · `suspension.mjs` **397** · `settings.mjs` **409**——2026-09-19 `wc -l`）+ **批后新档登记**（`provider-probe-window.mjs` **122**）；KD-16 / §12.10#2 的三档读数复述改 §12.1 指针（D2 单源）。**零新语义**。
-- 2026-09-19（**init-block 批 · fix 轮** · eng-designer——承批次档 §6）：§12.1 补**测试档越线登记**（`session-boot 用例档` **440** · `wc -l` 口径——>300 咨询线、≤500 硬限；逐项登记非全量普查）。**零新语义**。
-- 2026-09-20（**P2 机制层端差批 · 车道 3 设计档落笔轮 · eng-designer**——承 `docs/batches/2026-09-20-mechanism-parity-batch.md` §2.1 / §2.15 车道 3 行）：§12.1 增本批读数收正块
-  （`agent.mjs` 483 → 478 · `run-stages.mjs` 377 → 402 · `execute-tools.mjs` 393 → 407 · `setup.mjs` 481 → 489 · `permission-gate.mjs` 109 → 117 · `files.mjs` 116）+ **`agent.mjs` 拆分触发条件更新**（触发 = 净增越 490）
-  + 测试档越线续登记（`ledger.test.mjs` **324**）。**零新语义**。
-- 2026-09-20（**库存清账批 · v1 测试门词面收正 · eng-designer**——承 `docs/batches/2026-09-20-residual-sweep-batch.md` §2 · 台账 #128）：§1 D-1 行 · §2.1 两线分立段 · §3.1 标题与归册后句 · §6 A3 / A8 / A9 · §7 T-2 / T-3 收正为 v2 单入口词面（`slow` 纯别名）；
-  T-4（`slow-gate` 拦截面）随机制撤除**整行删**；权威源行收正（`thincoder-vscode/test/run.mjs` 单入口 + `TESTING.md` §10）。**零新语义**。
-- 2026-09-20（**卫生族批 · 台账 #140 · eng-designer**——承 `docs/batches/2026-09-20-hygiene-sweep-batch.md` §2）：§12.1 机制层端差批读数块按现盘刷新
-  （`agent.mjs` **494** · `run-stages.mjs` **403** · `execute-tools.mjs` **418** · `setup.mjs` **495** · `files.mjs` **120**）+ **触发线未触**注
-  + **逐档触线（单源）**句（源 = vsc-rules-retry 批 §2.4 / §5.8）+ 越档面触发句改指块内单源行。**零新语义**。
-- 2026-09-21（**vsc-no-folder-guard 批 · 父侧小项收正 · 可 revert**）：§12.1 主档越线登记补本批三档（`panel-messages.mjs` ≈303 · `panel-session.mjs` ≈307——首次越线；`webview/chat.js` 451——存量复测），结论载荷 = 批次档 §2 跨文件限段。**零新语义**。
-- 2026-09-22（**structure-debt 批 · 档面车道（#163 尾账）· eng-designer**——承 `docs/batches/2026-09-22-structure-debt.md` §2.4 / §5 + 验收 AC-4）：§12.1 增 **#163 拆分后越线收正块**（`webview/chat.js` **454 → 147** · 越线登记关闭；两新档 `chat-messages.js` **234** / `chat-status.js` **124** 均 ≤300 ⇒ 不入登记）。**零新语义**：不越档面 / 方案体 / 需求档。
-
-- 2026-09-25（**hygiene-ab 批 · 文档面实施轮 · eng-designer**——承 `docs/batches/2026-09-25-hygiene-ab.md` §2 · 台账 #234）：
-  §12.2.3 **R-6 ④** + §12.8 **A13 ③** 两处同修——检查对象锚 = **`subagentApproval`** 行（现读 `WEBVIEW-PROTOCOL.md:403`——② `panel-subagent-relay.mjs:217/:253` · ④ `活`）；
-  消费位 = `thincoder-vscode/webview/chat-messages.js:224`（表记 `:222`）；T-6 `wrongDisp` 归属 = `VSC protocol-coverage 用例档:343`（断言行）。**零语义**：判据对象 / 覆盖面零改——行号按现读收正。
-
-- 2026-09-25（**file-tier-sweep 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-file-tier-sweep.md` §2 · 台账 #91 / #254 / #301）：§12.1 追加**读数刷新 + 新登记块**（`chat-panel.mjs` 497 触发已到 · `agent.mjs` 496 触线已越 · `busy-injection-vsc.test.mjs` 546 越硬限——三档本批拆分执行；
-  settings / settings-tools 计划重锚；`ui.js` / `async-parity.test.mjs` 新登记；CSS 类维持不入门）
-  + **建档 §13**（设置面拆分与超限档拆分：拆点 / 新档 / 缝 / 搬运契约 / 验收 / 上抛）。
-  **零行为变化**（结构搬移设计）；判据 / 需求面零改。
-
-- 2026-09-25（**file-tier-sweep 批 · 评审轮 1 修正轮** · eng-designer——承 `docs/batches/2026-09-25-file-tier-sweep.md` §3 轮次 1 发现 8 / 9 / 10）：§13.2 调用点账目收正（`_agentSettingsSession` = 2 处外档 + 档内自用 3 处）；
-  §13.4 补 **import 面与环**句（import 面四档 + 三节点环 + §12.5 环安全判据 / 机判句）；§13.5 夹具范围收正 `:34-83` → `:34-81`（`settle` 归留守档——实测留守族消费）；§12.1 本批块 + §13 五处引用形式收正（`thincoder-vscode/` 前缀 / `（拟新增）` 标注——`doc-check` 锚面）。**契约面 / 拆点 / 验收零变**。
-
-- 2026-09-25（**file-tier-sweep 批 · 实施后收正轮** · eng-designer——承 `docs/batches/2026-09-25-file-tier-sweep.md` §5 代码评审 3 条〔父侧裁「接受并收正」〕）：§12.1 增**批后登记块**（九档批后读数 + 留守档 330 越线登记行〔结构不变 · 不拆理由〕）；
-  §13.4 触发句收正 **>450 → >495**（以 §12.1 单源行为准——交付读数 457 未触）。**零语义**：拆点 / 验收 / 需求面零改。
-
-- 2026-09-27（**env-config-purge 批 · 设计评审轮 1 修正轮 · eng-designer**——承 `docs/batches/2026-09-27-env-config-purge.md` §3 轮次 1 发现 5）：§12.1 追加**测试档越线登记块（续 · env-config-purge 批后）**——`VSC async-visibility 用例档` **452**（首登）
-  · `VSC activity-live-visibility 用例档` **399**（首登）· `VSC trace-store 用例档` **399 → ≈395**（本批触碰 · 读数刷新）——均 >300 咨询线、≤500 硬限（读数口径 = `wc -l`）。**零语义**（登记面）。
-- 2026-09-28（**账本可靠批 · 报告面收正轮 · eng-designer**）：§12.1 追加**主 / 测试档读数刷新块**（`panel-session.mjs` **312 ⇒ 322**——越线登记在册，读数刷新；`webview/chat-messages.js` **234 ⇒ 238**——≤300 ⇒ 不入登记）。**零语义**（登记面）。
-
-- 2026-09-28（**timer-wake 阶段 2 批 · VSC 收尾轮 · eng-designer**——承 `docs/batches/2026-09-28-timer-wake-phase2.md` §5.15 表外报出）：§12.1 追加**主 / 测试档读数刷新块**（`thincoder-vscode/src/agent/setup.mjs` 421 ⇒ **427**——触发线 >497 未触；`thincoder-vscode/src/extension/suspension.mjs` 447 ⇒ **483**——读数刷新）
-  + **测试档越线登记**（`VSC timer-wake 用例档` **396**——首登）。**零语义**（登记面）。
-
-- 2026-09-29（**parity-b1-vsc-core 批 · 收口轮 · eng-coder**——承 `docs/batches/2026-09-29-parity-b1-vsc-core.md` §2.9 ∕ §2.0 行数口径）：§12.1 追加**主 / 测试档读数刷新块（B1 收口核批后）**——本批受影响 23 档逐档刷新（小计 5344 ⇒ **2304**，−57%）
-  + 五档退役登记关闭（`context-injections.mjs` ∕ `execute-tools.mjs` ∕ `response-stages.mjs` ∕ `run-stages.mjs` ∕ `tool-gates.mjs`）+ **>300 首登一档**（`panel-turn-loop.mjs` 311）。**零语义**（读数与登记面）。
-
-- 2026-09-29（**residuals-round2 批 · 设计轮上抛处置轮 · eng-designer**——承批档 `docs/batches/2026-09-29-residuals-round2.md`〔父侧裁②〕）：§12.1 追加**越线拆分登记（补登）**——`panel-turn-loop.mjs` 311（首登见 B1 块）⇒ 触发式（未预拆）+ 候选线（循环外适配 ∕ 绑定族出档〔新档名实施批定〕）+ 消解窗口（该档下次结构性触碰的批）。**零语义**（登记面）。
-- 2026-09-29（**residuals-round2 批 · 文档面实施轮 · eng-designer**——承批档 `docs/batches/2026-09-29-residuals-round2.md` §2 #586）：三处引文改指（`:353 ∕ :559 ∕ :692`）——判官载体 = 批件 `docs/batches/2026-09-29-residuals-round2.test.mjs`（单测树重建时回迁端侧单测档）。**零新语义**。
-- 2026-10-02（**文档清账轮 · 执行轮 3（core/requirements + cli + vsc）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：宽面 1 行折行（72——语义零改）。**零新语义**。
-- 2026-10-07（**MCP 键值行式输入批 · 实施后回填轮（设计面）· eng-designer**——承批档 `docs/batches/2026-10-07-mcp-kv-input.md` §5 ∥ §2 追记⑧ · 台账 #1036）：§13.3 拆后两档实读回填（本档 **212** ∥ 新档 `settings-mcp.js` **273**）+ 收束句收正（拆档已落）+ 标题随正（`settings-tools.js` 已拆 ∥ `settings.mjs` 零执行）。**零新语义**（读数 ∥ 登记）。明细 = 批档 §2 追记⑧。
-
-- 2026-10-07（**添加入口弹窗统一批 · 实施后回填轮（设计面）· eng-designer**——承批档 `docs/batches/2026-10-07-add-dialog-unify.md` §5 ∥ §2 回填轮块 · 台账 #1054）：§13.3 拆档行读数随正（「新档 `settings-mcp.js` **273**」⇒ **126**——弹窗体再析出；本批再收 147——表内桩格 ∥ 收束句两处）。**零新语义**（读数 ∥ 登记）。明细 = 批档 §2 回填轮块。
 

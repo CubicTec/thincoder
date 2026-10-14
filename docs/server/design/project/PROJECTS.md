@@ -3,7 +3,7 @@
 > 板块 = server ∥ 本档 = project 域（团队项目与权限——git 源接入 ∥ 仓表/项目 ∥ 权限三档 ∥ 成员同步；2026-10-12 B2 批新立）；板总览 = `PROJECT.md`（文档地图 = §3）。
 > 需求单源 = `docs/server/requirements/PROJECT.md`（功能点 44 ∥ AC-44；13 条裁定逐条 = 台账 #1216）；本域回指 = `PROJECT.md` §7（AC-44 判据 = 本档 §9）。
 > 界面承载 = `webui/PROJECTS.md`（面档——页族/导航/入口单源）；端点表 = `gateway/API.md` §2.9（单源）；存储段 = `store/STORE.md` §2 v17（单源）；审计 = `accounts/ACCOUNTS.md` §2.1（`project_event` 行）。
-> 建档：2026-10-12（批 `docs/batches/2026-10-12-team-projects-permissions.md` 设计轮——B2 批；台账 #1216）。
+> 建档：2026-10-12（设计轮——B2 批；台账 #1216）。
 
 ## 1. 定位与形态
 
@@ -163,7 +163,7 @@
 
 ## 10. 用例表（单元测试档——输入/预期）
 
-**A 件 = `docs/batches/2026-10-12-team-projects-permissions.test.mjs`（服务端核心）**；**B 件 = `…-sync.test.mjs`**（同步/平台假件）；**C 件 = `…-ui.test.mjs`**（控制台）**；D 件 = `docs/batches/2026-10-13-gitee-namespace-kinds.test.mjs`**（本批——服务端：N24–N29 ∥ B4 ∥ E5）**；E 件 = `…-gitee-namespace-kinds-ui.test.mjs`**（控制台：U1/U2）。
+**A 件 = 服务端核心单元测试档**；**B 件 = 同步/平台假件单元测试档**；**C 件 = 控制台单元测试档**；**D 件 = 服务端单元测试档**（本批——服务端：N24–N29 ∥ B4 ∥ E5）**；E 件 = 控制台单元测试档**（U1/U2）。
 
 | # | 场景 | 输入 | 预期输出 |
 |---|---|---|---|
@@ -251,11 +251,3 @@
 - **挂载防护（接口位）**：本批零挂载面（实核——工作区/台账/记忆面均无 project 引用）；后续批（B3+）若立 project 引用面 ⇒ **同批扩删除防护**（有挂载 ⇒ 先拒 + 处置句——沿删源防护先例）；记于 §11。
 - **界面**：项目详情弹窗「删除项目」钮（`can.delete` 渲——admin 两页同面）+ 二次确认窗（后果句：成员表随删 ∥ 不可恢复；服务端 `confirm` 门同判——页面不是判据）。承载 = `webui/PROJECTS.md` §2.1/§2.2。
 - **幂等**：二次删 ⇒ 404（已删——零副作用）。
-
-## 变更记录
-
-- 2026-10-12（**team-projects-permissions 批（B2）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §1 · 台账 #1216；用户 2026-10-12 13:33 裁定收束 + 13:39 起批令；需求功能点 44 ∥ AC-44）：建档——定位与词表 ∥ KD-SV-115–123（域划分 ∥ 用户名键 ∥ 同步作用域 ∥ 事件进路 ∥ 凭据共享 ∥ 可见性口径 ∥ 分权矩阵 ∥ 结果/体检/防护 ∥ 页面承载）∥ 权限模型判据句八条 ∥ 四平台能力矩阵 + 角色映射表（四张）+ 客户端口径 ∥ 同步机制（三径/调度/算法/锁/体检/源生命周期/加仓两径）∥ 端点摘要（单源 = `gateway/API.md` §2.9）∥ 文件与行数预算 ∥ AC-44 ①–⑨ 对位 ∥ 用例 N1–N18/B1–B2/E1–E2 ∥ 边界 ∥ 上抛 R63–R70。**产品码零触（设计轮）。**
-- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3（评审 #277：8🟡+3🔵）∥ 用户 2026-10-12 授权两件（R63 乙案 ∥ R64 补面））：**增 §13（事件接收端——KD-SV-127）∥ §14（项目删除——KD-SV-128）** ∥ KD-SV-118 收正（接收端落 + `event` = 事件 + 定时对账——消死区）∥ KD-SV-119 收正（+ `credentialKeyPath` 单源）∥ §3 能力矩阵 + `delete` 列 + 判据句 9 ∥ §4 github/gitee 行 ∥ §5 三径/调度/锁/审计（trigger=`event` ∥ actor=`webhook`）/加仓载荷单源/跨形归一 ∥ §6 十四 ⇒ **十七端点** ∥ §8 行账随正（+ `webhooks.mjs`；`db.mjs` 维持判定指针；`audit.mjs` 实读 116）∥ §9 补 R63/R64 两行 + ②④⑦⑨ 行随正 ∥ §10 用例 N19–N23 ∥ B1/B3 ∥ E3/E4 ∥ §11 边界随正 ∥ §12 R63/R64 销项 + R70 链头收正。**产品码零触（设计轮）。**
-- 2026-10-12（**team-projects-permissions 批（B2）· 设计修订轮 2（fix）· eng-designer**——承批档 `docs/batches/2026-10-12-team-projects-permissions.md` §3 轮次 2（评审 #280 之 5））：§13 增「存储面与重启」句（锁/待跑旗 = 进程内态——单实例部署；重启清零——定时对账兜底）。**零新语义**（评审发现直接导出项）。
-- 2026-10-13（**gitee-namespace-kinds 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-13-gitee-namespace-kinds.md` §1 · 台账 #1365；用户 2026-10-13 18:47 报障 + 18:54 裁定「用户知道自己是个人/组织/企业，你选择器分一下」；需求功能点 44 ⑫ ∥ AC-44 ⑬）：增 KD-SV-151（范围三态 + 迁移口径 + 超时口径）；§4 平台矩阵/角色映射 gitee 行收正（企业两径已接线）+ 客户端口径 gitee 行改写（三态路由/成员行嵌套解析/不符报错）+ scope 条 + 超时条；§5 算法 2 随正；§8 五行行账（platform-client ∥ git-sources ∥ sync ∥ admin-routes ∥ db——v21）；§9 增 AC-44 ⑬ 行；§10 用例 N24–N29/B4/E5；§11 增不做面；§12 R69 升裁定收口（已办）。同源随动 = `store/STORE.md`（v21）∥ `gateway/API.md` §2.9 ∥ `webui/PROJECTS.md` §2.4/§3/§4 ∥ `design/PROJECT.md` §4/§6/§7。**产品码零触（设计轮）。**
-- 2026-10-13（**gitee-namespace-kinds 批 · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-13-gitee-namespace-kinds.md` §3 轮次 1 之 1/2/3/6）：§2 增**最近先例行**（KD-SV-151 侧——实现坐标 ∥ 设计节 ∥ 先例批；对齐 ∥ 偏离两条）∥ §8 域小计随正（**≈1475 ⇒ ≈1545**——本批四档 ≈+70；共享件 ⇒ **≈+109** 净——含 `db.mjs` v21 ≈+14）∥ §10 头注补本批 D/E 两档 + N25（改源清空两形）/E5（残留提交）各增一腿。**零新语义**（评审发现直接导出项）；产品码零触（设计轮）。

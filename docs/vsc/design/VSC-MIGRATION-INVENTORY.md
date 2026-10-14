@@ -255,11 +255,9 @@
 | 2 | `thincoder-vscode/docs/design/WEBVIEW.md` | 1867 | `docs/vsc/design/WEBVIEW-PROTOCOL.md` | 271 |
 | 3 | —（同源） | 1867 | `docs/vsc/design/WEBVIEW-INPUT.md` | 156 |
 
-**剔料（先剔一次性材料）**——逐处实核口径：**974 行**（口径 = 档头时点行 + 问题陈述 / 现场核实 / 方案选型 / 受影响文件 / 用例表 / 验收标准 / 边界 + §10.3 逐字 JS 施工形态 + §15 变更记录；逐处清单见批次档 §2）。
+**剔料（先剔一次性材料）**——逐处实核口径：**974 行**（口径 = 档头时点行 + 问题陈述 / 现场核实 / 方案选型 / 受影响文件 / 用例表 / 验收标准 / 边界 + §10.3 逐字 JS 施工形态 + §15 变更记录）。
 前批预估写 846 行——差额 = 口径不同（前批未计 §10 逐字 JS 代码块 27 行与各节头注 / 边界行），**以实核 974 为准**。
 **正文素材 = 893 行**（1867 − 974）；三档均低于 300 行软线。**切面取舍理由**（含否决备选）见 `docs/vsc/design/WEBVIEW.md §9`。
-
-**逐档并入 / 不并**：见各落点档的「不并项与历史沿革」节（逐项：旧档节 + 何故）——本表不重复（D2）。
 
 **连带更新**：`docs/vsc/requirements/WEBVIEW.md`（设计侧引用翻转为同层三档——原「`WEBVIEW（VSC 侧）` 未迁」登记销项）。
 
@@ -319,7 +317,7 @@ PROJECT 按父侧裁定（批次任务书）**拆分双落**；余 4 档纯新�
 **跳过（写明）**：`requirements/ADVISOR-CONVERGENCE.md`（57）——目标核层档已由并行 CLI 批建并提交（其 `:8` / §7 登记「VSC 端对位面不并入，触发 = VSC 轮」）⇒ 转 §8B-26，本批**零写入**该档。
 
 **PROJECT 切分规则（父侧裁定——逐档实核可判）**：跨产品契约（与 CLI 共享磁盘文件 / 协议 / 行为对齐）⇒ core 档；仅本端实现 / 界面 / 宿主面 ⇒ vsc 档。
-逐条归属 = 两产物档各自的「不并项与历史沿革」节。**无判不准项**（六行决策表 + 待决策七项 + 时序节逐条可判）。
+逐条归属 = 两产物档各自的条目表（现行写法）。**无判不准项**（六行决策表 + 待决策七项 + 时序节逐条可判）。
 
 **本档拆分**：主档 `VSC-MIGRATION.md`（560 行——越 500 硬限）按 §13 规划拆——台账面（§3 / §4 / §5 / §8 / §9 / §10 / §11 / §12 / §13 / §14 / §15）⇒ 本档；
 判据 / 方案选型 / 分批计划 / 待裁 / 变更记录留主档。拆分登记写进两档头注。
@@ -330,7 +328,7 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 
 ### 9.6 批 6（§8B 并入清单第一批 · 8 条）
 
-**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——他线在写）；**#18 / #25 随批前裁定销项**（D3 维持现状 / D2 VSC 专有面——§8B 本行）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项入各落点档「不并项」节；坐标漂移按现态改写；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
+**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——他线在写）；**#18 / #25 随批前裁定销项**（D3 维持现状 / D2 VSC 专有面——§8B 本行）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项登记；坐标漂移按现态改写；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
 
 | # | 源档（`thincoder-vscode/**`·一字未改） | 行 | 落点（core 档 · 并入） | 落点行（并入后） |
 |---|---|---|---|---|
@@ -342,7 +340,7 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 
 ### 9.7 批 7（§8B 并入清单第二批 · 8 条）
 
-**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——他线在写）；**#24 PHILOSOPHY 经实核销项零并入**（VSC 版 = core 档旧措辞子集）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项入各落点档「不并项」节；坐标按现状实核；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
+**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——他线在写）；**#24 PHILOSOPHY 经实核销项零并入**（VSC 版 = core 档旧措辞子集）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项登记；坐标按现状实核；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
 
 | # | 源档（`thincoder-vscode/**`·一字未改） | 行 | 落点（core 档 · 并入） | 落点行（并入后） |
 |---|---|---|---|---|
@@ -361,7 +359,7 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 
 ### 9.8 批 8（§8B 并入清单第三批 · 6 条）
 
-**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——并行实例在写，让先到者不抢）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项入各落点档「不并项」节；坐标按现状实核；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
+**取面判据**：§8B 逐条落笔时点实核目标 core 档现态（不照抄拟插节）；**目标含 PROVIDER 者本批跳过**（#4 / #7——并行实例在写，让先到者不抢）；源档**一字未改**。（仍从略：逐档处置 = 逐条实核后并入——(d) 类 / 批次材料逐项登记；坐标按现状实核；零 `T-` 形跨域用例号；并入后逐档 ≤500 ✓。）
 
 | # | 源档（`thincoder-vscode/**`·一字未改） | 行 | 落点（core 档 · 并入） | 落点行（并入后） |
 |---|---|---|---|---|
@@ -371,27 +369,27 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 | 20 | `thincoder-vscode/docs/_archive/requirements/SUBAGENT-OBSERVE-SEND.md` | 41 | `docs/core/requirements/AGENT-LOOP.md` §4.9（VSC 端对位与端差） | 187 |
 | 21 | `thincoder-vscode/docs/_archive/requirements/ASYNC-RESULT-CONTAINER.md` | 45 | 同上（§4.9 同节两块） | 187 |
 | 23 | `docs/requirements/{CHECKPOINT,CONSULTATION,CONTEXT-COMPACTION,MCP,SESSION,TOOLS,LOGGING}.md` | 49/46/46/46/52/47/37 | 七需求档各增 §4「VSC 端条目」节 | 97/86/84/100/118/190/84 |
-**批 9（终收 · §8B 清零）**：#4（`IMAGE-DOWNGRADE-VISION.md`）+ #7（`PROVIDER.md` VSC 面）并入 `docs/core/design/PROVIDER.md`（§6.18 图片输入与贴图降级链 + §6.19 VS Code 端接线）· 需求档补 §4.5——逐节详情 = 批次档 §2。
+**批 9（终收 · §8B 清零）**：#4（`IMAGE-DOWNGRADE-VISION.md`）+ #7（`PROVIDER.md` VSC 面）并入 `docs/core/design/PROVIDER.md`（§6.18 图片输入与贴图降级链 + §6.19 VS Code 端接线）· 需求档补 §4.5。
 ## 10. 受影响文件清单（R24a）
 
-> 逐批明细已完整承载于批次档 §2（D2——不重复）；本表 = 台账汇总行（档数用量 + 落点面）。批 5 后各行 = 审批式（汇总）。
+> 逐批明细已完整承载于本档 §10（D2——不重复）；本表 = 台账汇总行（档数用量 + 落点面）。批 5 后各行 = 审批式（汇总）。
 
-**批 1**（5 新建 + 2 实修 + 1 append）：`docs/vsc/{requirements/VSC-MIGRATION, design/VSC-MIGRATION, design/SETTINGS, design/PROJECT-SWITCHER, requirements/WEBVIEW}` 新建 · `scripts/{check-doc-width-core,doc-anchors-v5}.mjs` 实修（SCAN_DIRS / V5_SCAN_DIRS）· 批次档 §2 append——明细 = 批次档 §2。
+**批 1**（5 新建 + 2 实修 + 1 append）：`docs/vsc/{requirements/VSC-MIGRATION, design/VSC-MIGRATION, design/SETTINGS, design/PROJECT-SWITCHER, requirements/WEBVIEW}` 新建 · `scripts/{check-doc-width-core,doc-anchors-v5}.mjs` 实修（SCAN_DIRS / V5_SCAN_DIRS）。
 
-**批 2**（3 新建 + 2 实修 + 1 append）：`docs/vsc/design/{WEBVIEW,WEBVIEW-PROTOCOL,WEBVIEW-INPUT}.md` 新建 · `docs/vsc/requirements/WEBVIEW.md` + `docs/vsc/design/VSC-MIGRATION.md` 实修 · 批次档 §2 append——明细 = 批次档 §2。
+**批 2**（3 新建 + 2 实修 + 1 append）：`docs/vsc/design/{WEBVIEW,WEBVIEW-PROTOCOL,WEBVIEW-INPUT}.md` 新建 · `docs/vsc/requirements/WEBVIEW.md` + `docs/vsc/design/VSC-MIGRATION.md` 实修。
 
-**批 3**（6 新建 + 1 实修 + 1 append）：`docs/core/{design/{TURN-CAP-CONTINUE,SEND-STALL-DISTILL,ESCALATE}, requirements/{TURN-CAP-CONTINUE,SEND-STALL-DISTILL,ESCALATE}}.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修 · 批次档 §2 append——明细 = 批次档 §2。
+**批 3**（6 新建 + 1 实修 + 1 append）：`docs/core/{design/{TURN-CAP-CONTINUE,SEND-STALL-DISTILL,ESCALATE}, requirements/{TURN-CAP-CONTINUE,SEND-STALL-DISTILL,ESCALATE}}.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修。
 
-**批 4**（6 新建 + 1 实修 + 1 append）：`docs/core/{design/DOC-CODE-RECONCILE, requirements/{AGENT-PARAMS,NORMAL-MODE,MULTI-INSTANCE-COLLAB,SETTINGS-TOOL,STRUCTURE-DEBT}}.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修 · 批次档 §2 append——明细 = 批次档 §2。
+**批 4**（6 新建 + 1 实修 + 1 append）：`docs/core/{design/DOC-CODE-RECONCILE, requirements/{AGENT-PARAMS,NORMAL-MODE,MULTI-INSTANCE-COLLAB,SETTINGS-TOOL,STRUCTURE-DEBT}}.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修。
 
-**批 5**（7 新建 + 1 实修 + 1 append）：`docs/core/requirements/{DESIGN-TOKEN-SETTLEMENT,ENG-TOKEN-BINDING,PORTABILITY,VERIFY-REDESIGN,PROJECT}.md` + `docs/vsc/requirements/PROJECT.md` + `docs/vsc/design/VSC-MIGRATION-INVENTORY.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修（拆分收口）· 批次档 §2 append——明细见批次档 §2。
+**批 5**（7 新建 + 1 实修 + 1 append）：`docs/core/requirements/{DESIGN-TOKEN-SETTLEMENT,ENG-TOKEN-BINDING,PORTABILITY,VERIFY-REDESIGN,PROJECT}.md` + `docs/vsc/requirements/PROJECT.md` + `docs/vsc/design/VSC-MIGRATION-INVENTORY.md` 新建 · `docs/vsc/design/VSC-MIGRATION.md` 实修（拆分收口）。
 
 **待落（批 5 后边界外）——终收批已清零（2026-09-15）**：**§8B 并入清单 26 条已全数处置**（26 = 批 6·7·8 共 22 条并入 + 批 9 #4 / #7 并入 + 裁定销项 #18 / #25）· 待裁 D1–D3 已裁定（主档 §7.1）· 镜像面判据句补条（`DOC-SYSTEM` §5.1——`docs/core/**`）待父侧。
 
-**批 7（§8B 第二批 · 8 档并入）**：`docs/core/design/{SESSION 311→364, MEMORY 334→366, CONTEXT-COMPACTION 225→252, MCP 194→221, CHECKPOINT 185→212, CONSULTATION 235→257}.md` · `docs/core/requirements/{RELEASE 68→83, ADVISOR-CONVERGENCE 172→218}.md` 实修 + INVENTORY + 批次档 §2——明细 = 批次档 §2。
+**批 7（§8B 第二批 · 8 档并入）**：`docs/core/design/{SESSION 311→364, MEMORY 334→366, CONTEXT-COMPACTION 225→252, MCP 194→221, CHECKPOINT 185→212, CONSULTATION 235→257}.md` · `docs/core/requirements/{RELEASE 68→83, ADVISOR-CONVERGENCE 172→218}.md` 实修 + INVENTORY。
 
 **批 8（§8B 第三批 · 16 档并入）**：设计 8 档——AGENT-LOOP 472→491 · TOOLS 317→330 · 编辑族 116/105/96/97/93/88 → 123/114/101/103/98/93（各档 §6「VSC 端差异」块）；
-需求 8 档——AGENT-LOOP req 180→187 · 七板块 88/74/75/85/108/123/77 → 97/86/84/100/118/190/84（各档 §4「VSC 端条目」节；TOOLS req 含并行线 §4.7 TTY 面）。各落点均含决策 / 不并项 / 体量同步；+ INVENTORY + 批次档 §2——明细 = 批次档 §2。
+需求 8 档——AGENT-LOOP req 180→187 · 七板块 88/74/75/85/108/123/77 → 97/86/84/100/118/190/84（各档 §4「VSC 端条目」节；TOOLS req 含并行线 §4.7 TTY 面）。各落点均含决策 / 体量同步；+ INVENTORY。
 
 ## 11. 关键决策记录
 
@@ -416,7 +414,7 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 | **A-VM1** | 实点表逐层档数 + 行数在档；二分表四行 disjoint 加总 = 84 = 底本（§3 / §4.3 双向闭合） | F-M1 |
 | **A-VM2** | 二分表 84 行依据列逐行非空；「待核」条各含两种读法 + 依据 | F-M2 · N-M1 |
 | **A-VM3** | 落点档 ≥1 档实体在 `docs/vsc/**`，且源档字节零改（`git status` 无 `thincoder-vscode/**`） | F-M3 · N-M6 |
-| **A-VM4** | 各落点档含「不并项与历史沿革」节；无状态行 / 无逐批变更流水 | F-M4 |
+| **A-VM4** | 各落点档在位；无状态行 / 无逐批变更流水 | F-M4 |
 | **A-VM5** | 落点档内每条 `文件:行` 断言按现状实核（漂移处按现状改写并上报） | F-M5 |
 | **A-VM6** | `node scripts/doc-anchors.mjs` **根域悬空 = 0**；`SCAN_DIRS` / `V5_SCAN_DIRS` 含新目录且改后档数 > 改前 | F-M6 · N-M2 · N-M4 |
 | **A-VM7** | 新增档无 >300 字符单行（表格行豁免）；无 >500 行档 | N-M3 |
@@ -427,7 +425,7 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 | # | 验收标准（机器可验） | 回指 |
 |---|---|---|
 | **A-VM9** | 拆分产物三档在位且逐档 ≤500 行（实测 258 / 271 / 156）· 各档 ≤300 行软线 | F-M3 · N-M3 |
-| **A-VM10** | 三档「不并项与历史沿革」节在场（逐项：旧档节 + 何故）· 无状态行 / 无逐批流水 | F-M4 |
+| **A-VM10** | 三档无状态行 / 无逐批流水 | F-M4 |
 | **A-VM11** | 三档内每条 `文件:行` 断言按现状实核（源档漂移处按现态改写） | F-M5 |
 | **A-VM12** | 三机检原样读数：域一悬空 0 · 宽度新增违规 0 · 台账 0；`git status` ⊆ 声明的写域 | N-M2 · N-M3 · N-M5 |
 
@@ -437,14 +435,14 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 |---|---|---|
 | **A-VM13** | §4.1 / §4.2 逐档行的 **判** 与 **动作** 两列非空、取值在枚举内；复判修订逐条给依据（§4.4） | F-M7 · N-M1 |
 | **A-VM14** | §4.3 小计四栏 disjoint 加总 = **84** = 底本；且 **64 档子集闭合**（60 仍属统一面 + 2 → 历史 + 2 → 专有面） | F-M8 |
-| **A-VM15** | 批 3 新建 6 档在位、逐档 ≤500 行、含「不并项与历史沿革」节、无状态行 / 无逐批流水；坐标按现状实核（§9.3） | F-M3 · F-M4 · F-M5 |
+| **A-VM15** | 批 3 新建 6 档在位、逐档 ≤500 行、无状态行 / 无逐批流水；坐标按现状实核（§9.3） | F-M3 · F-M4 · F-M5 |
 | **A-VM16** | §8B 并入清单逐条含「内容 → 目标 core 档 → 拟插节 → 依据」四要素；且**当批对既有 `docs/core/**` 档零写入**（`git status` 实核） | F-M9 · N-M5 |
 
 ### 12.3 批 4（统一面纯新建第一批）验收标准
 
 | # | 验收标准（机器可验） | 回指 |
 |---|---|---|
-| **A-VM17** | 批 4 新建 6 档在位、逐档 ≤500 行（实测 206 / 70 / 73 / 77 / 71 / 70）· 各档含「不并项与历史沿革」节 · 无状态行 / 无逐批流水 · 坐标按现状实核 | F-M3 · F-M4 · F-M5 |
+| **A-VM17** | 批 4 新建 6 档在位、逐档 ≤500 行（实测 206 / 70 / 73 / 77 / 71 / 70）· 无状态行 / 无逐批流水 · 坐标按现状实核 | F-M3 · F-M4 · F-M5 |
 | **A-VM18** | §8A 逐档「判」非空 + **小计闭合**（批 4 时点：18 = 6 + 6 + 6）；§4 对应行同步为「已迁（批 4）」/「并入既有」 | F-M7 · F-M8 |
 | **A-VM19** | 既有 `docs/core/**` 档**零写入**（批 4 `git status` 实核）；`thincoder-vscode/**` 一字未改 | N-M5 · N-M6 |
 | **A-VM20** | 三机检：域一锚悬空 0 · 宽度新增违规 0 · 台账 0 | N-M2 · N-M3 |
@@ -453,21 +451,21 @@ settle 落盘块起点（advisor-async）旧档记 364 行 → 现状 363 行；
 
 | # | 验收标准（机器可验） | 回指 |
 |---|---|---|
-| **A-VM21** | 批 5 新建 6 档在位、逐档 ≤500 行（实测 74 / 73 / 77 / 65 / 83 / 72）· 各档含「不并项与历史沿革」节 · 无状态行 / 无逐批流水 · 坐标按现状实核（§9.5） | F-M3 · F-M4 · F-M5 |
+| **A-VM21** | 批 5 新建 6 档在位、逐档 ≤500 行（实测 74 / 73 / 77 / 65 / 83 / 72）· 无状态行 / 无逐批流水 · 坐标按现状实核（§9.5） | F-M3 · F-M4 · F-M5 |
 | **A-VM22** | §8A 小计闭合（批 5 收口：**18 = 6 + 7 + 4 + 1**）；§4.2 六行同步（ADVISOR-CONVERGENCE 转并入 / 四行「已迁（批 5）」/ PROJECT 拆分双落） | F-M7 · F-M8 |
 | **A-VM23** | ADVISOR-CONVERGENCE **跳过新建并写明**（§8B-26 登记）——未覆盖他线产物（`git status` 无该档改动） | F-M9 · N-M5 |
 | **A-VM24** | 拆分产物两档在位且**均 ≤500 行**（实测见 §13）；拆分登记写进两档头注 | F-M3 · N-M3 |
-| **A-VM25** | PROJECT 拆分逐条可判（切分规则 + 逐条归属落两产物档「不并项」节）；**无判不准硬塞** | F-M2 · N-M1 |
-| **A-VM26** | 三机检：域一锚悬空 0（本批 8 档贡献 0）· 宽度新增违规 0 · 台账 0；`git status` 本批 ⊆ 写域（新建 core 需求档 + `docs/vsc/**` + 批次档 §2） | N-M2 · N-M3 · N-M5 |
+| **A-VM25** | PROJECT 拆分逐条可判（切分规则 + 逐条归属落两产物档）；**无判不准硬塞** | F-M2 · N-M1 |
+| **A-VM26** | 三机检：域一锚悬空 0（本批 8 档贡献 0）· 宽度新增违规 0 · 台账 0；`git status` 本批 ⊆ 写域（新建 core 需求档 + `docs/vsc/**`） | N-M2 · N-M3 · N-M5 |
 
 ### 12.5 批 7（§8B 并入清单第二批）验收标准
 
 | # | 验收标准（机器可验） | 回指 |
 |---|---|---|
-| **A-VM27** | 批 7 并入 8 档逐档 ≤500 行（实测见 §10 批 7：364 / 366 / 252 / 221 / 212 / 257 / 83 / 218）· 各含「不并项与历史沿革」追加（(d) 类逐项登记） | F-M3 · F-M4 · N-M3 |
+| **A-VM27** | 批 7 并入 8 档逐档 ≤500 行（实测见 §10 批 7：364 / 366 / 252 / 221 / 212 / 257 / 83 / 218） | F-M3 · F-M4 · N-M3 |
 | **A-VM28** | 坐标按现状实核（本批实核 `thincoder-vscode/src/extension/panel-session.mjs:22,57` · `thincoder-vscode/src/extension/session-slot-write.mjs` · `thincoder-vscode/src/extension/history-window.mjs:22,106` · `thincoder-vscode/src/indexer.mjs:156,170`〔W8 已删——现体 = 核 `thincoder-core/memory/**`〕 · `thincoder-vscode/src/compact.mjs:31,115,323,367`——该档 **W6 已删**、现体 `thincoder-vscode/src/agent/run-stages.mjs` · `thincoder-vscode/src/extension/panel-callbacks.mjs:144-152` · `thincoder-vscode/src/agent/setup-reminders.mjs:145,163,194` · `thincoder-vscode/src/tools/git-ext.mjs:55`〔W5 已删——现体 = 核 `thincoder-core/tools/git-ext.mjs`〕 · `thincoder-vscode/src/tools/shell.mjs:139,148` · `thincoder-vscode/src/tools/git-checkpoint.mjs:31,46`〔W5 已删——现体 = 核 `thincoder-core/tools/git-checkpoint.mjs`〕 · `thincoder-vscode/src/agent-tools/consult.mjs:29,223`〔W12 已删——现体 = 核 `thincoder-core/agent-tools/consult.mjs`〕 · `thincoder-vscode/src/config-mcp.mjs:12,19,37,63` · `thincoder-vscode/src/extension/panel-mcp.mjs:8,28`） | F-M5 （迁移期引文） |
 | **A-VM29** | 零 `T-` 形跨域用例号（八档零字面跨域编号引）；PHILOSOPHY 销项零并入已核（VSC 版 = core 档子集） | F-M9 · F-M2 |
-| **A-VM30** | 三机检：域一锚悬空 0 · 宽度新增违规 0 · 台账 0；`git status` 本批 ⊆ 写域（8 目标 core 档 + INVENTORY + 批次档 §2 append） | N-M2 · N-M3 · N-M5 |
+| **A-VM30** | 三机检：域一锚悬空 0 · 宽度新增违规 0 · 台账 0；`git status` 本批 ⊆ 写域（8 目标 core 档 + INVENTORY） | N-M2 · N-M3 · N-M5 |
 
 ## 14. 用例表（正常 / 边界 / 错误）
 

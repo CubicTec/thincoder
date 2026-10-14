@@ -111,7 +111,7 @@ MCP（Model Context Protocol）客户端把外部 MCP server 的 `tools/list` �
   POSIX = **detached 新进程组 + 组杀**：正常相位 = 组 `SIGTERM` → 2s 组 `SIGKILL` 升级（组杀覆盖孙进程——原单进程 SIGTERM 只达直接子进程）；
   **退出相位**（升级 timer 不触发——`process.on("exit")` 无事件循环）⇒ 同步组 `SIGKILL` 直达——忽略 SIGTERM 的子进程亦必死。
   相位判定 = `transport-stdio.mjs` 加载期注册的 exit 钩子置的模块级标志（注册序恒早于宿主 cleanup）；
-  组杀 = `process.kill(-child.pid, sig)`（detached 组长 = 组 id，非组长负 pid 内核返 ESRCH——不误杀；内核级实证 + Node 文档负 pid 组杀语义见批档 §2）。
+  组杀 = `process.kill(-child.pid, sig)`（detached 组长 = 组 id，非组长负 pid 内核返 ESRCH——不误杀；内核级实证 + Node 文档负 pid 组杀语义）。
   **`detached` 副作用（已认账）**：终端 `SIGINT` / `SIGHUP` 不再直传 MCP 子进程（生命周期由 close 链负责）；父进程被 `SIGKILL` 等非正常终止时子进程孤儿化存留概率上升——处置 = 接受登记（对冲如需另批）。§7 D-MC19。
 - **WS**（`transport-ws.mjs`）：`isAlive` = `!closed && ws?.readyState === WebSocket.OPEN`；连接死亡经 `onDead` / `fireDead`；认证经 subprotocol；上层 signal abort 即刻作废 pending + 发 `notifications/cancelled`。
 - **活性判定汇总**：HTTP legacy SSE = `!closed && eventSource != null`（流断 → fireDead）；HTTP postOnly = `!closed && postOnly`（恒真至 close，无流可断）；WS = `!closed && readyState === OPEN`；stdio = 进程退出 → error / close。

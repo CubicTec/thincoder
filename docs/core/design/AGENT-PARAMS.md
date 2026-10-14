@@ -48,7 +48,7 @@ const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_T
 
 - 子代理轮次统一走 `agent.subagentTurns`，缺省回退 `DEFAULT_SUBAGENT_TURNS = 100`（`thincoder-core/agent/helpers.mjs:25`）。
 - 读取点（三处同形）：`thincoder-core/agent-tools/subagent-async.mjs:387` · `thincoder-core/agent-tools/subagent-actions.mjs:418` · `thincoder-core/agent-tools/escalate-async.mjs:218`。
-- 「30 硬帽」是 **VSC 端特有问题**，CLI 无（旧档语义说明，实体在 CLI 端无对应代码）。**VSC 端已移除**（批 6 并入——见 §6.3 行 5）。
+- 「30 硬帽」是 **VSC 端特有问题**，CLI 无（旧档语义说明，实体在 CLI 端无对应代码）。**VSC 端已移除**（见 §6.3 行 5）。
 
 ## 5. 参数总表（现行默认）
 

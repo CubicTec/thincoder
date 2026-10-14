@@ -330,10 +330,6 @@ main:has(.chat-thread) > section { display: flex; flex-direction: column; min-he
 .badge.warn { color: var(--warn); border-color: var(--warn); } /* 徽标·负责人 */
 .cell-hint { white-space: normal; margin: var(--sp-2) 0 0; } /* 表内就地人话行（PAT/结果列——长文案可折行） */
 
-/* ── 我的·工作区（views-me-sandbox.mjs——待批提示行：⑥ 色通道同 `.flash` 族；零新变量 ∥ 零新悬停规则）── */
-.pending-line { margin: 0 0 var(--sp-4); padding: var(--sp-4) var(--sp-5); background: var(--warn-fill); border: var(--bw) solid var(--warn-line); border-radius: var(--r-3); color: var(--warn-ink); }
-.pending-line:last-child { margin-bottom: 0; }
-
 /* ── 数据表页视口高壳（§2.6②——高度链声明单源：页头固定 ∥ 表区吃剩高；表尾行计数 = 表内 tfoot〔吸附表底〕；回退见下）────── */
 body.data-shell > .content { height: 100dvh; display: flex; flex-direction: column; } /* `>` 同因（核件消息泡类撞名——2026-10-12 走查实修） */
 body.data-shell main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -377,7 +373,6 @@ dialog.modal.terminal-modal[open] { display: flex; flex-direction: column; } /* 
 .terminal-status { margin: 0; color: var(--muted); font-size: var(--fs); }
 
 /* ── 我的·对话（views-me-chat.mjs ∥ views-me-chat-composer.mjs——`webui/CHAT.md` §2.2；member-face-chat 批）：
-   四轴类族沿管理面复用（`.chat-bar`/`.chat-select`/`.chat-thread`/`#toolbar`/`#status-line`/消息族/徽标族/待批行）；
    本面新增两枚（工作区读数段 ∥ 四相引导块）——零新变量 ∥ 零新悬停规则 ── */
 .chat-ws { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); color: var(--muted); } /* 会话条·工作区读数（名 ∥ 盒态 ∥ 在线态） */
 .chat-guide { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-4); padding: var(--sp-6); background: var(--panel); border: var(--bw) solid var(--border); border-radius: var(--r-3); } /* 首次进入四相引导块（本页零 `.card` 面） */

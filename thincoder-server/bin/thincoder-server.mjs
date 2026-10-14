@@ -3,8 +3,8 @@
  * thincoder-server.mjs — 服务入口（ops/OPS.md §4）：argv（`--config`）→ 配置加载/校验 → 开库/迁移 →
  * 首启引导（种子导入 ∥ 注册表构建——§1）→ **保留清理（用量 + 审计事件——启动一次 + 24h 周期——`metering/METERING.md` §1 ∥
  * `accounts/ACCOUNTS.md` §2.1）** → 路由注册（含系统面 ∥ 控制台数据面——`gateway/API.md` §2.3 ∥ §2.4）→ `node:http` 监听 → 就绪日志（含 `version`——§5.4(g)）；
- * **沙盒执行面装配（盒 ticker 30s ∥ DNS 闸 UDP 53——`sandbox/EXECUTION.md` §3 ∥ §6）**；SIGINT/SIGTERM ⇒
- * 优雅停机（清周期定时器（更新循环 ∥ 保留清理 ∥ 盒 ticker——§4 同法） ∥ DNS 闸解绑 ∥ 停收新连 ∥ 关库）；更新循环接线（自检/自升——§5.4(a)(c)：
+ * **沙盒执行面装配（盒 ticker 30s——`sandbox/EXECUTION.md` §3）**；SIGINT/SIGTERM ⇒
+ * 优雅停机（清周期定时器（更新循环 ∥ 保留清理 ∥ 盒 ticker——§4 同法） ∥ 停收新连 ∥ 关库）；更新循环接线（自检/自升——§5.4(a)(c)：
  * 自升成功亦走停机路径——`signal: "self-update"`）。
  *
  * 本档 = 装配面（配置 ∥ 库 ∥ 首启引导 ∥ 各域注册行 + 系统面 + 控制台数据面）——D1 骨架 + D2 账号/计量面 + D3 聊天链
@@ -27,7 +27,6 @@ import { registerOverviewRoutes } from "../src/gateway/overview.mjs"
 import { registerProxyAdminRoutes } from "../src/gateway/proxy-admin.mjs"
 import { registerSandboxRoutes } from "../src/sandbox/routes.mjs"
 import { createTerminalHub } from "../src/sandbox/terminal-routes.mjs"
-import { createDnsGate } from "../src/sandbox/dns-gate.mjs"
 import { createHostExec, TICK_INTERVAL_MS, tickBoxes } from "../src/sandbox/box.mjs"
 import { registerRegistryCredRoutes } from "../src/sandbox/registry-cred-routes.mjs"
 import { registerImageSourceRoutes } from "../src/sandbox/image-source-routes.mjs"
@@ -97,7 +96,6 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
   let pruneTimer = null
   let projectSync = null
   let terminalHub = null
-  let dnsGate = null
   let boxTicker = null
   let stopping = false
   /** 优雅停机：清周期定时器（更新循环 ∥ 保留清理同法——§4；自升成功亦走本路径）⇒ 停收新连 ⇒ 关库。 */
@@ -115,7 +113,6 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     }
     projectSync?.stop()
     terminalHub?.closeAll("server_stop") // 终端在飞会话全收口（升级 socket 不走 HTTP 层自动断——§3 停机行）
-    dnsGate?.stop() // UDP 53 解绑（`sandbox/EXECUTION.md` §6——持答随停丢弃，客户端重问即重判）
     closeMcpConnections({ log }) // MCP 面收口（§2.2——stdio 子进程（POSIX detached）不随父进程自然退出，须显式杀树；核件缺 ⇒ 零会话可关）
     log.info("shutdown", { signal })
     closeApp({ ...app, log }).then(() => {
@@ -181,10 +178,8 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     registerConfigAdminRoutes(routes, { db, configPath: configFile, log }) // 配置面（§2.4——文件面读写；生效 = 重启——KD-SV-56）
     registerProxyAdminRoutes(routes, { db, log }) // 代理连通测试（§2.4——真打 ∥ 自含形；零落库零计费——KD-SV-60）
     // 沙盒面（§2.5/§2.6——server-exec-sandbox 批）：控制台 ∥ 成员面 + runner 通道（无 runner ⇒ 仅沙盒功能面不可用——KD-SV-71）
-    // DNS 闸（sandbox/EXECUTION.md §6——server 进程内 UDP 53 应答器）：建盒网段登记 + 待批裁定回填（经路由族注入）；起停随 server 生命周期
-    const hostExec = createHostExec({ config }) // 节点主机命令面（DNS 放行前的同步补下发——SSH 逐条；与路由族各自实例同法）
-    dnsGate = createDnsGate({ db, config, log, execOf: (row) => hostExec.execOf(row) })
-    registerSandboxRoutes(routes, { db, config, log, deps: { dnsGate } })
+    const hostExec = createHostExec({ config }) // 节点主机命令面（SSH 逐条——盒 ticker 装配用）
+    registerSandboxRoutes(routes, { db, config, log })
     registerRegistryCredRoutes(routes, { db, config }) // 私有仓凭据四端点（gateway/API.md §2.5 凭据四行——底座可换增补；KD-SV-188）
     registerImageSourceRoutes(routes, { db }) // 镜像源族（gateway/API.md §2.5 镜像源七行——sandbox-image-sources 批）
     // 管理面 chat 出口自环取数（§16.2——管理会话出口 = 本进程网关链 loopback）：惰性读监听地址（listen 后才有值；
@@ -215,10 +210,8 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
     })
     log.info("ready", { host: config.host, port: config.port, db: config.db, routes: routes.size, version })
     // 盒 ticker（sandbox/EXECUTION.md §3——30s 节拍：空闲/墙钟停 + 周期快照；unref——不阻停机）
-    boxTicker = setInterval(() => void tickBoxes(db, { config, log, host: hostExec }).catch((e) => log.warn("box_tick_failed", { message: e?.message ?? String(e) })), TICK_INTERVAL_MS) // host 注入 = 临时集到点重算（§6 ④ 步）与停/快照链 host 侧件所需（缺它 ⇒ `execOf` 恒 null——生产未接线）
+    boxTicker = setInterval(() => void tickBoxes(db, { config, log, host: hostExec }).catch((e) => log.warn("box_tick_failed", { message: e?.message ?? String(e) })), TICK_INTERVAL_MS) // host 注入 = 盒链 host 侧件透传（现无消费点——保留既有口径）
     boxTicker.unref?.()
-    // DNS 闸启动（§6——UDP 53）：绑定失败 ⇒ error 事件如实落日志（不吞）；闸非强制点（强制点 = nft）⇒ 不阻服务
-    dnsGate.start().once("error", (e) => log.error("dns_gate_bind_failed", { port: dnsGate.port, code: e?.code ?? null, message: e?.message ?? String(e) }))
     updater = createUpdater({ config, log, version, onSelfUpdate: () => stop("self-update"), ...update })
     updater.start() // 启动即检一次 + 周期（档位 = config.autoUpdate——false ⇒ 零检查）
   } catch (e) {
@@ -231,7 +224,6 @@ export async function run(argv = process.argv.slice(2), log = createLogger(), { 
       clearInterval(boxTicker)
       boxTicker = null
     }
-    dnsGate?.stop() // UDP 53 解绑（已起者）——防启动中途失败后套接字句柄挂住进程
     try {
       db?.close()
     } catch {

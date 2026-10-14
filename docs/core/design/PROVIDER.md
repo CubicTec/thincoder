@@ -111,6 +111,7 @@ Provider 层把模型能力差异收敛到一张**规格表**（`MODEL_SPECS`）
 - **去重（单一实现）**：`parseRetryAfter` 唯一实现住 errors.mjs（retry.mjs 导入）；`sleepInterruptible` 唯一实现住 core.mjs；429 配额判定统一为 errors.mjs 双判版（删 retry.mjs 纯正则版——规则漂移消）。依赖单向（errors / retry 均独立、均 import rate；core 依赖 errors）。
 - **401 / 403 诊断**：Kimi 双平台提示（`sk-kimi-` 前缀 key 或 `api.kimi.com` 端点 → 说明 Moonshot 与 Kimi For Coding 两平台 key 不互通）+ 通用诊断回显 `[auth diag: baseURL=… key=… status=…]`（key 前 6 位掩码）。
 - **413 可操作化（D-PR32）**：请求体超限（HTTP 413——长会话图片累积的高频形态）⇒ 错误文本携带处置提示（`/compact` 压缩历史 ∥ 移除历史图片；图片累计预算机制见 §6.7）——从裸 HTTP 码变为可执行指引。
+- **400 图像语义 = 剥除自愈（非「立抛」）**：错误文本命中图像语义词表 ∧ 历史含 image part ⇒ 不就此收束——剥除历史图像 + 机读注记 + **重发一次**（触发 / 处置全文 = §6.26——本行不重述）；既有 `isNonRetryableError` 判据零改（自愈发生在错误已抛至 agent 层之后，由 agent 层承接）。
 - **超时语义（废弃绝对墙钟）**：**响应头阶段**用 `fetchTimeoutMs`（默认 600s，`agent.fetchTimeoutMs` 可配，`effectiveFetchTimeoutMs(provider)` 计算；四 transport 经 opts `_headerTimeoutMs` 携带）——**消费面 = 代理分支**（`proxyFetch` 两分支：https 目标 `tunnelHttps` ∥ http 目标 `tcpConnectProxy`+`streamHttpResponse`）；
   **直连面（无 `proxyUri`）无本仓头阶段超时**（纳入 = 设计轮面——在册）；**body 阶段**用读侧**空闲**超时 `READ_IDLE_MS = 120s`（有数据流动就永不超时，连续无新 chunk 才判死）；`AbortError` 透传（用户 Ctrl+I 取消，不吞）。
 - **abort / 超时来源标注**：超时 / 中止产生点的错误对象自带结构化 `abortInfo`（trigger / layer / detail）——词汇表与判定归 AGENT-LOOP 板（本档只指针）。
@@ -151,6 +152,7 @@ Provider 层把模型能力差异收敛到一张**规格表**（`MODEL_SPECS`）
 
 - **`stripImagesForTextModel(messages, spec)`**：非视觉模型发送前把残留 `image_url` 替换为文本占位符（防「视觉会话切到文本 provider 恢复」的存量毒化与非 raster 图 400）；历史本身不改。
 - **历史图片字节预算（D-PR32）**：发送前对消息副本做**累计驱逐**——全部 image part 字节和超 `IMAGE_HISTORY_BYTES_BUDGET` 时从**最老**图起替换为占位文本（`[image omitted — dropped to keep the request under the history image budget]`）；`read_image` 注入面（`agent/record-results.mjs`）对 `history` 本体同函数同预算（防历史无界膨胀——单图 15MB 上限不约束累积）。
+- **拒绝剥除（§6.26 消费面）**：`stripRejectedImages(messages)` 把全部 image part 换 `IMAGE_REJECTED_PLACEHOLDER`；与 `capHistoryImages` 共用同一替换核（后者增 `placeholder` 参——缺省 = 原占位**逐字零变**）。触发 / 处置 = §6.26。
 - **`normalizeToolPairing(messages)`**：严格 provider 要求 tool 消息紧跟其 owner assistant——发送前重排 tool 消息到 owner 之后、孤儿 tool 丢弃、缺失结果合成占位。与压缩的配对保护同语义（一个管源头一个管兜底）。
 - **`escapeMessages`（escape v5）**：`sanitizeLoneSurrogates`——孤立 UTF-16 高 / 低代理 → U+FFFD（全字段）；`escapeLiteralEscapes` 回归 v1 double 语义 + 奇数 run 修复；`sanitizeText` 总入口。**源头截断点** `safeSliceUTF16`（截断点落高代理时向前收一个码元）。
 - 净化只作用于**线上载荷**（历史不动，可逆）。

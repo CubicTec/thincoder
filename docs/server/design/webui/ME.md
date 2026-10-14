@@ -78,8 +78,8 @@
 |---|---|---|
 | `thincoder-server/public/views-auth.mjs`（已落盘） | **无 ⇒ 29**（实读 2026-10-06——#962 设计估 ≈30；登录；自 `views.mjs` 拆）**⇒ 31**（i18n 叠加 +2 = 文案键化 ∥ 登录卡切换行）；实读 31（2026-10-07——本批零动） | 登录视图 |
 | `thincoder-server/public/views-me.mjs`（已落盘） | **无 ⇒ 86 ⇒ 87 ⇒ ≈122 ⇒ 117**（实读——本 fix 轮复核 2026-10-06；#962 设计估 ≈150；key ∥ 用量 ∥ 账户设置三页；自 `views.mjs` 拆；i18n 叠加 +1 = 文案键化；二轮 +≈35 = key 行细节（最后使用/窗口用量） ∥ 端点过滤 ∥ 向量提示条）**⇒ ≈125（本批 +≈8 = 我的用量页壳化——key/账户两页零动）⇒ 实读 122 ⇒ ≈126**（配额批：配额行 = 覆盖计数 +≈4）**⇒ ≈211**（me-keys 批：key 页重做 +≈85 = 表六列 ∥ 双弹窗 ∥ 接入卡 ∥ 空态——本档 §2.1；实施实读为准）**⇒ 实读 194（2026-10-07——本设计轮复读；在册估 ≈211 高 17——实读收正）⇒ ≈279（本批：用量页图表化重写 +≈85；194+85≈279——未越 500 软线）⇒ **⇒ ≈355（member-face-chat 批 · 裁定修订轮：账户页「Git 凭据」卡 +≈60——本档 §2.3；以实施当刻实读为准）** | 我的三页 |
-| `thincoder-server/public/i18n-zh-me.mjs`（已落盘） | **≈69**（键 58 + 注释 2 + ≈9；`usage.*`/`me.*`）**⇒ 实读 68**（2026-10-09——结构轮落地后首读）**⇒ ≈82（沙盒余面批：`me.sandbox.*` +≈14 键——`webui/SANDBOX.md` §3）⇒ ≈137（member-face-chat 批 · 裁定修订轮：+≈48——`me.chat.*` ≈35 ＋ `me.gitCred.*` ≈13——本档 §2.3；零新档）**⇒ 实读 **89**（2026-10-14 现读；`me.sandbox.colDirty`/`dirtyYes`/`dirtyNo` 三键随 sandbox-exec-rebuild 批收口修复轮退役 −3 键/表——D 裁）** | 文案表·zh·我的面 |
-| `thincoder-server/public/i18n-en-me.mjs`（已落盘） | **≈70**（键 59 + 注释 2 + ≈9）**⇒ 实读 69**（2026-10-09——结构轮落地后首读）**⇒ ≈83（沙盒余面批：`me.sandbox.*` +≈14 键——`webui/SANDBOX.md` §3）⇒ ≈138（member-face-chat 批 · 裁定修订轮：+≈48——`me.chat.*` ≈35 ＋ `me.gitCred.*` ≈13——本档 §2.3；零新档）**⇒ 实读 **90**（2026-10-14 现读；三键退役同 zh 行）** | 文案表·en·我的面 |
+| `thincoder-server/public/i18n-zh-me.mjs`（已落盘） | **≈69**（键 58 + 注释 2 + ≈9；`usage.*`/`me.*`）**⇒ 实读 68**（2026-10-09——结构轮落地后首读）**⇒ ≈82（沙盒余面批：`me.sandbox.*` +≈14 键——`webui/SANDBOX.md` §3）⇒ ≈137（member-face-chat 批 · 裁定修订轮：+≈48——`me.chat.*` ≈35 ＋ `me.gitCred.*` ≈13——本档 §2.3；零新档）**⇒ 实读 **89**（2026-10-14 现读；`me.sandbox.colDirty`/`dirtyYes`/`dirtyNo` 三键随 sandbox-exec-rebuild 批收口修复轮退役 −3 键/表——D 裁）⇒ **87**（sandbox-egress-removal 批 · 清面轮：`me.sandbox` 待批两键退役 −2 键/表——2026-10-14；实读待实施轮回填）** | 文案表·zh·我的面 |
+| `thincoder-server/public/i18n-en-me.mjs`（已落盘） | **≈70**（键 59 + 注释 2 + ≈9）**⇒ 实读 69**（2026-10-09——结构轮落地后首读）**⇒ ≈83（沙盒余面批：`me.sandbox.*` +≈14 键——`webui/SANDBOX.md` §3）⇒ ≈138（member-face-chat 批 · 裁定修订轮：+≈48——`me.chat.*` ≈35 ＋ `me.gitCred.*` ≈13——本档 §2.3；零新档）**⇒ 实读 **90**（2026-10-14 现读；三键退役同 zh 行）⇒ **88**（待批两键退役同 zh 行——2026-10-14；实读待实施轮回填）** | 文案表·en·我的面 |
 
 **面小计**：≈491（本面档行现读和——估值面，实施实读为准；域合计 = 各面之和——不单列）。
 
@@ -120,6 +120,8 @@
 - 本面无独立上抛/余项。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：§3 两 i18n 行补待批两键退役注（−2 键/表 ⇒ 87 ∥ 88 估值，实读待实施轮回填）。同源随动 = `webui/SANDBOX.md`。**产品码零触（设计轮）。**
 
 - 2026-10-14（**sandbox-exec-rebuild 批 · 收口修复轮（设计面）· eng-designer**——承批档 `docs/batches/2026-10-13-sandbox-exec-rebuild.md` §6 D 裁）：§3 两 i18n 行补实读（**89 ∥ 90**）+ 三键退役注（`me.sandbox.colDirty`/`dirtyYes`/`dirtyNo`——成员表 dirty 列删，−3 键/表）。**产品码零触（设计轮）。**
 

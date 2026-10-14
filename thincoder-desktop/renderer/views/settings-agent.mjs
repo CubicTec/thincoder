@@ -178,7 +178,7 @@ function namedFieldNode(entry, field, section, handlers) {
 }
 
 /** agent 段体：**具名控件区**（二十键 · P15 —— 字段缺位亦在场〔空值控件，禁假造值〕；自持值面三型
- *  〔model ∕ effort ∕ guard〕不受读面类型门约束；字段在场而敏感 / 非标量 / slot 权威键（`slotAuthority`）⇒ 不落具名控件（零行））。 */
+ *  〔model ∕ effort ∕ guard〕不受读面类型门约束；字段在场而敏感 / 非标量 ⇒ 不落具名控件（零行））。 */
 export function agentBody(section, handlers) {
   const fields = listOf(section?.fields)
   const byPath = new Map()

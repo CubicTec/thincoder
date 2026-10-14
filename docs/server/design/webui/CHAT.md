@@ -126,7 +126,7 @@
 - **四轴 = 沿 §2.1 管理面口径**（同款核件消费：`md`/`highlight`/工具卡/流式/滚动/composer 全件 ∥ 同款帧读取（NDJSON 逐行）∥ 同款状态行段表与 notice 映射）——**本面差异清单**：
   ① **取数面** = `/api/me/chat/*`（`gateway/API.md` §2.11——双鉴权同判权；恒本人）；工作区写面 = `/api/me/sandbox/*` 扩四行（建/启停/销毁/拉仓）。
   ② **工作区维度**：新会话 ⇒ 选工作区（一枚 ⇒ 零选择；无 ⇒ 建引导）；会话条示工作区名 + 盒态读数（运行中 ∥ 已停 + 回收原因 ∥ 启动中）+ **在线态**（`agentOnline`）；**列表 = 盒内清单**（按本人工作区扇出——离线盒的会话不列，如实——KD-SV-152/203）。
-  ③ **盒态动作**：盒未运行/未连接 ⇒ 就地形「启动工作区」（`POST …/workspaces/:id/start`）+「拉取项目」（可见项目清单 ⇒ `POST …/pulls` ⇒ 四态人话；待批提示沿 `sandbox/SANDBOX.md` §8 文案——不得静默）。
+  ③ **盒态动作**：盒未运行/未连接 ⇒ 就地形「启动工作区」（`POST …/workspaces/:id/start`）+「拉取项目」（可见项目清单 ⇒ `POST …/pulls` ⇒ 四态人话）。
   ④ **无源钮收窄**：五枚 CSS 隐藏沿 §2.1 + **主机凭据钮不设**（管理面件——本面零凭据入口）；`workspaceRequired` ⇒ `false`（工作区 = 会话级已绑，非逐消息概念）。**模式旗三枚（计划/自动批准/工程模式）本面 v1 = 随五枚隐藏**（管理面理据 = 无人值守裁剪；本面理据 = 模式旗需会话级存储 + 回合装配透传（新机制）——未裁；**补齐 = 出案**——用户「跟 VSC 基本一致」射程内，收口轮实走可裁）。
   ⑤ **notice 映射** = `end.reason` 六值面（管理面五值 + `"box_lost"`——本面 +1——「工作区已断开…」）；盒自产扩展四值（`save_failed`/`busy`/`not_found`/`internal`）= 枚举外 ⇒ 服务端原文兜底（单源 = `agent/MEMBER-AGENT.md` §3.4）。
   ⑥ **思考档位面 = 开机**（核菜单 `selectReasoning` ⇒ `PATCH …/:id { reasoning }`；源 = `GET /api/me/chat/models` 行 `reasoning` 枚举 ∥ 未设 ⇒ 零字段——KD-SV-111 同口径会话级）。
@@ -251,6 +251,8 @@
   - **披露（不阻塞）**：成员页与管理页适配层同构自持（抽取 = 登记后续——两页单源 = 核件）；`end.reason` 六值面（管理面五值 + `box_lost`）为本面差异；盒自产扩展四值（`save_failed`/`busy`/`not_found`/`internal`）枚举外 ⇒ 原文兜底（单源 = `agent/MEMBER-AGENT.md` §3.4）；拉仓凭据经盒按次（`agent/MEMBER-AGENT.md` §3.6 披露句）。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：§2.2 差异清单 ③ 去待批提示句。同源随动 = `sandbox/SANDBOX.md`。**产品码零触（设计轮）。**
 
 - 2026-10-14（**console-walkthrough-light 批（控制台走查·轻通道轮）· 设计正式化（收尾链）· eng-designer**——承批档 `docs/batches/2026-10-14-console-walkthrough-light.md` §1 笔 2/笔 3 · 台账 #1431）：§2.2 差异清单增 ⑧（模型菜单行形 = 自 id 派生 `provider`/`group`——首斜杠口径）+ 四相句收正（③ 盒运行 + 零会话 ⇒ 建会话引导）+ 增零会话发送非静默句。同源随动 = `agent/MEMBER-AGENT.md` §3.6。**产品码零触（设计正式化；代码在先落）。**
 

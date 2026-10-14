@@ -207,12 +207,12 @@ test("② AC-14 键集：project 两部件键集相等 ∥ en 零 CJK ∥ 域界
     for (const key of ["nav.page.me.projects", "nav.page.admin.projects", "nav.page.admin.gitSources"]) assert.ok(key in table, `${lang} shell 在盘：${key}`)
   }
   for (const [table, lang] of [[zhSystem.ZH_SYSTEM, "zh"], [enSystem.EN_SYSTEM, "en"]]) {
-    assert.equal(Object.keys(table).length, 198, `${lang} system 键数 198（185〔2026-10-13〕+ 终端批 +2〔audit.sandboxKind.terminal_open/close〕+ 重做批 i18n 面 +10〔审计 kind 键〕+ B 审计 kind +1〔audit.placement_failed〕——2026-10-14 收口随正）`)
+    assert.equal(Object.keys(table).length, 192, `${lang} system 键数 192（185〔2026-10-13〕+ 终端批 +2〔audit.sandboxKind.terminal_open/close〕+ 重做批 i18n 面 +10〔审计 kind 键〕+ B 审计 kind +1〔audit.placement_failed〕——2026-10-14 收口随正 ⇒ 192（拆除批两键退场 ⊕ 同窗他批并计；父侧复读）`)
     assert.ok("audit.type.project_event" in table, `${lang} system 在盘：audit.type.project_event`)
   }
   // 门面并集（部件 ⊂ 门面；键数实读）
-  assert.equal(Object.keys(ZH).length, 1041, "zh 门面键数 1041（实读——975 链：+ 重做批 i18n 面 +10/表 ∥ 终端批 +14/表 ∥ B/D 修复轮 −2/表——2026-10-14 收口随正；全局同锚 = 守卫件 [1041, 1046]）")
-  assert.equal(Object.keys(EN).length, 1046, "en 门面键数 1046（实读——含 `.one` 变体；同链随正）")
+  assert.equal(Object.keys(ZH).length, 1126, "zh 门面键数 1126（实读——975 链 + 历批增额 ⇒ 2026-10-14 拆除批收口随正 1126／同窗他批并计；全局同锚 = 守卫件 [1126, 1131]）")
+  assert.equal(Object.keys(EN).length, 1131, "en 门面键数 1131（实读——含 `.one` 变体；同链随正）")
   for (const key of zhKeys) assert.ok(key in ZH && key in EN, `门面并集：${key}`)
   // 键引用闭合（三视图 + 审计面 `t` 字面量 ⊆ 两表——含 nav.mjs labelKey 面）
   for (const name of ["views-projects.mjs", "views-admin-projects.mjs", "views-git-sources.mjs", "views-audit.mjs"]) {

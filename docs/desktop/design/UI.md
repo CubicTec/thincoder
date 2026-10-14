@@ -427,7 +427,7 @@
 | `settings.css` | 16 ∥ 12px + 600；`lh:1` | 全 ⇒ `var(--fs)`；600 ⇒ 400；`lh` ⇒ `var(--lh)`；tracking 撤（随基线） |
 | `chat-composer.css` | （新增覆盖段） | 核件消费面 ⇒ 基线（覆盖层） |
 
-6. **判据（机检 ∥ 真机）**——① 源扫描用例（单元测试档 `docs/batches/2026-09-30-desktop-typography-unify.test.mjs`——平 node · 11 档 CSS + `index.html` 骨架源判据）；② 真机 computed 全栈扫描用例（`…-probe.mjs`——真 Electron · 亮 ∥ 暗；判据清单 = 批档 §2——`select` 本体行高豁免在册〔Blink 固定其 computed `normal`，CSS 不可达；读数 `selectExemption`〕）；
+6. **判据（机检 ∥ 真机）**——① 源扫描用例（单元测试档 `docs/batches/2026-09-30-desktop-typography-unify.test.mjs`——平 node · 12 档 CSS + `index.html` 骨架源判据）；② 真机 computed 全栈扫描用例（`…-probe.mjs`——真 Electron · 亮 ∥ 暗；判据清单 = 批档 §2——`select` 本体行高豁免在册〔Blink 固定其 computed `normal`，CSS 不可达；读数 `selectExemption`〕）；
    ③ 真机走查（逐面 + md 修饰 + 两模式——父侧闭合，D16 义务）；与 `docs/desktop/design/PROJECT.md` §6.1「排版统一批（验收）」同源。
 7. **边界**——功能 ∥ 布局零动；块外边距（含内边距）非本批射程——现值随轻通道轮四间距归一（单源 = `docs/desktop/design/CHAT.md` §2「本批注（流内竖向间距 · 2026-09-30）」）；markdown 语义保留（只动「自成体系」部分）；零通道 ∥ 零词键 ∥ 零 JS ∥ 核件零触；「终端风格」大改（#710）仍在搁置（本批 = 排版一刀）。
 
@@ -588,7 +588,7 @@
 | 10 | `thincoder-desktop/renderer/settings.css` | **294 ⇒ 294**（值改零增行——标题 ∥ 段标 ∥ 标记 ∥ 提示 ∥ 向导步 ∥ 信息行归基线；两处 600 ⇒ 400；tracking 归零；关闭字形 `line-height: 1` ⇒ `var(--lh)`） | 设置面 |
 | 11 | `thincoder-desktop/renderer/chat-composer.css` | **70 ⇒ ≈100**（**核件消费面覆盖段（新增）**——输入面板 ∥ 模型菜单 ∥ 搜索条 ∥ `auto-confirm` 同位族：特征度提升选择器 ⇒ 字号 ∥ 字重归基线（盒值 ∥ 描边零动）） | 核件消费面 |
 | 12 | `thincoder-desktop/renderer/index.html` | **55 ⇒ 55（零改）** | 骨架 |
-| 13 | 测试覆盖 | 单元测试档两档——源扫描用例 `docs/batches/2026-09-30-desktop-typography-unify.test.mjs`（已建成 · 278 行 · 平 node：11 档 CSS + `index.html` 骨架源判据）+ 真机 computed 扫描用例 `docs/batches/2026-09-30-desktop-typography-unify-probe.mjs`（已建成 · 389 行 · 真 Electron 全栈扫描）；随批留存 · 不进集成测试树（全清令）；真机走查 = 父侧闭合（D16 义务） | 全批 |
+| 13 | 测试覆盖 | 单元测试档两档——源扫描用例 `docs/batches/2026-09-30-desktop-typography-unify.test.mjs`（已建成 · 278 行 · 平 node：12 档 CSS + `index.html` 骨架源判据）+ 真机 computed 扫描用例 `docs/batches/2026-09-30-desktop-typography-unify-probe.mjs`（已建成 · 389 行 · 真 Electron 全栈扫描）；随批留存 · 不进集成测试树（全清令）；真机走查 = 父侧闭合（D16 义务） | 全批 |
 | 14 | 设计档 | `docs/desktop/design/PROJECT.md` §2 **KD-57**（未迁行）（决策）∥ §6.1 批注 ∥ §7 **T-DSK51** ∥ §10 **CV** · 本档（§1 本批注 + §4.2 本块 + 变更记录）· `docs/render-core/design/RENDER-CORE.md` §5 块 + 变更记录 | 全批 |
 
 **值列口径**（本块）：「现行」= as-of 2026-09-30 实读（内容行数口径）；「预期」= 设计估算（值改类档 = 净 ±0；新段档 = 估增）——实施批回填终值。
@@ -616,6 +616,8 @@
 | 17 | 设计档 | `docs/desktop/design/UI.md`（§1 状态栏行 + 裁定表 16 行 + 计数 + 本批注 + §4 本块）· `docs/desktop/design/SETTINGS.md`（§2.6 + §2.22 + §3 + §4/§5）· `docs/desktop/design/IPC.md`（§2 团队族行 + 白名单 + §3 行数面）· `docs/core/design/TEAM.md` §2.5/§2.6/§3/§4/§5/§6/§7 | 全批 |
 
 ## 变更记录
+- 2026-10-14（**微项收正轮（轻通道）· 父侧直接执行 · 可 revert**——承批档 `docs/batches/2026-10-14-micro-fix-sweep.md` §1 笔 4 ∥ 台账 #1182）：D29 档面旧记收正（**11 档 CSS ⇒ 12 档**——`:430` 判据句 ∥ `:591` 测试覆盖行；按执行面扫描实读 12 档，含零改 `skin.css`）。**零新语义**（计数收正——已成事实入档）。
+
 - 2026-10-14（**ssh-session 批 · 设计收口轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 桌面腿 ∥ 台账 #1436）：§1 提问呈现行清码判据句收正（**全族皆清**——审批 ∥ 提问 ∥ 凭据三族；SSH 会话批增凭据族）。**零新语义**（收口面齐平）。
 - 2026-10-14（**注入开关键批（#1420）· 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-14-injection-switches.md` §2 受影响表）：§4.1 `i18n-views.mjs` 行走读齐平（**416 ⇒ 422**——两键 × 两语（`settings.injectDocs` ∥ `settings.injectMemories`）；非结构性 ⇒ 续期）。**零新语义**（读数）。
 - 2026-10-11（**首启向导保存 ∥ 校验面收正批 · 实施后回填轮 · eng-designer**——承批档 `docs/batches/2026-10-11-desktop-wizard-save-clarity.md` §5 · 台账 #1277）：§4.1 `i18n.mjs` 行翻「实读（实施落盘）」（**441 ⇒ 450**；设计估 ≈450——吻合）。**零新语义**（读数）。明细 = 批档 §2 实施后回填块。

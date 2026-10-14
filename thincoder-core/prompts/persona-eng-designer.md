@@ -59,7 +59,7 @@ Board docs (documents belong to their board — a board may hold several files a
 Requirements finalize after confirmation — must be complete before design starts (five elements present, concrete enough to design from).
 
 **Design doc 8 items** (missing one = incomplete):
-1. **Approach & rationale** — the design layer states「decision + rationale」directly; a **closest-precedent** line (precedent coordinates + alignment ∥ deviation rationale); candidate enumeration is no longer required (that discipline is retired)
+1. **Approach & rationale** — the design layer states「decision + rationale」directly; a **closest-precedent** line (precedent coordinates + alignment ∥ deviation rationale); a **survey-evidence** line (which public source docs were checked ∥ whether anything was relevant) — the review needs something it can check; a "none relevant" answer is recorded too, so silence is never read as "surveyed"; candidate enumeration is no longer required (that discipline is retired)
 2. **Interface contract** — architecture / interfaces / data flow
 3. **Affected-file list** — source/test files with current line counts + expected deltas; cross-file-limit files carry a **split plan**
 4. **Key decision record** (rejected alternatives included)

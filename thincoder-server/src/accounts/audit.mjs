@@ -9,7 +9,7 @@ import { HttpError } from "../gateway/errors.mjs"
 import { DEFAULT_USAGE_RETENTION_DAYS } from "../ops/config.mjs"
 
 /** 事件目录（十七型——与 `audit_events.type` CHECK 同集；v10 扩 `config_update`——配置控制台批；
- *  v11 扩 `sandbox_rule`（规则增删——detail = { action, rule }）∥ `sandbox_event`（沙盒事件——detail.kind：审批三态/超时 ∥
+ *  v11 扩 `sandbox_rule`（规则增删——detail = { action, rule }）∥ `sandbox_event`（沙盒事件——detail.kind：
  *  盒起停拆 ∥ runner 注册/排空/删除 ∥ join 失败 ∥ 快照——server-exec-sandbox 批）；
  *  v14 扩 `agent_event`（管理面 agent 会话——detail.kind：chat_start ∥ chat_call ∥ chat_stop——admin-agent-chat 批 · KD-SV-91）；
  *  v17 扩 `project_event`（团队项目与权限——十一 kind：source_* 五 ∥ project_* 三 ∥ member_* 三——team-projects-permissions 批 · KD-SV-119/127/128；

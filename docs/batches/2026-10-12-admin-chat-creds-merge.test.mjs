@@ -548,7 +548,7 @@ test("i18n/档目随正：主机凭据档在场；两表键面同步（zh=en ∥
     assert.ok(ZH[`audit.sandboxKind.${kind}`] !== undefined && EN[`audit.sandboxKind.${kind}`] !== undefined, `kind 键在场：${kind}`)
   }
   const zhKindKeys = Object.keys(ZH).filter((key) => key.startsWith("audit.sandboxKind."))
-  assert.equal(zhKindKeys.length, 36, "kind 族（各批 kind 增额并计；2026-10-14 复读随正 36 ⇒ 拆除批退役 onboarding_* 五键后实读）")
+  assert.equal(zhKindKeys.length, 34, "kind 族（各批 kind 增额并计；2026-10-14 复读随正 36 ⇒ 拆除批退役 onboarding_* 五键后实读 36 ⇒ 沙盒出站闸拆除批退役 `egress_apply_failed`/`approval` 两键后实读 34——2026-10-14 父侧随正）")
 
   const file = join(ROOT, "thincoder-server/public/host-credential.mjs")
   assert.equal(existsSync(file), true, "新档在场：public/host-credential.mjs")

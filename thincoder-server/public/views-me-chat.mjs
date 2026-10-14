@@ -1,7 +1,7 @@
 /**
  * views-me-chat.mjs — 我的·对话（`webui/CHAT.md` §2.2——`#/me/chat`；机制全文 = `agent/MEMBER-AGENT.md`；member-face-chat 批——台账 #1215）：
  * **页四段** = 会话条 sticky 顶 ∥ 消息流文档流 ∥ 状态行 + 输入区 sticky 底——四轴沿 §2.1（同款核件消费 ∥ 同款帧读 ∥ 同款状态行段表 ∥ notice 五值 + `"box_lost"` 第六值；零 `.card` 面）。
- * **成员差异六条**：① 取数面 = `/api/me/chat/*` + `/api/me/sandbox/*`；② 工作区维度（会话条示工作区名 + 盒态 + `agentOnline`；新会话选工作区——一枚 ⇒ 零选择）；③ 盒态动作（就地启动 ∥ 拉仓四态人话；待批不得静默）；
+ * **成员差异六条**：① 取数面 = `/api/me/chat/*` + `/api/me/sandbox/*`；② 工作区维度（会话条示工作区名 + 盒态 + `agentOnline`；新会话选工作区——一枚 ⇒ 零选择）；③ 盒态动作（就地启动 ∥ 拉仓四态人话）；
  * ④ 无源钮收窄（五枚 CSS + 主机凭据钮不设）；⑤ notice 六值；⑥ 档位面（核菜单 ⇒ `PATCH …/:id { reasoning }`）。会话源 = 盒内（KD-SV-152）——盒离线 ⇒ 409（就启动引导，非静默）。
  *
  * 取数：列表/详情 = `GET …/sessions[/:id]`（读时读）∥ 发送 = `POST …/:id/messages`（体 = `{ content }`；**流式不走 `ctx.api`**——页面自持 `fetch` 逐行读 NDJSON）∥
@@ -15,7 +15,7 @@ import { createStreamRenderer } from "/rc/flow/stream.mjs"
 import { applyPin, createPinWatch, nearBottom } from "/rc/scroll.mjs"
 import { setStrings } from "/rc/i18n.mjs"
 import { createMeChatComposer } from "./views-me-chat-composer.mjs"
-import { boxStateClass, boxStateLabel, pendingHostOf, stopReasonLabel } from "./views-me-sandbox.mjs"
+import { boxStateClass, boxStateLabel, stopReasonLabel } from "./views-me-sandbox.mjs"
 import { ZH_CORE } from "./i18n-zh-core.mjs"
 import { EN_CORE } from "./i18n-en-core.mjs"
 import { argsText, messageNodes, parseFrame, resultText, splitLines } from "./views-me-chat-messages.mjs"
@@ -27,6 +27,12 @@ const PULL_STATE_KEYS = { queued: "me.chat.pullQueued", running: "me.chat.pullRu
 export function pullStateLabel(state) {
   const key = PULL_STATE_KEYS[state]
   return key === undefined ? null : t(key)
+}
+
+/** 拉取失败详情取文（服务端 detail = 对象 `{kind, message, dir}` ∥ 奇形直值；对象取 `message`，否则空串——设计句「服务端 detail 原文直呈」）。 */
+export function pullDetailText(detail) {
+  if (detail !== null && typeof detail === "object") return String(detail.message ?? "")
+  return String(detail ?? "")
 }
 
 let renderGeneration = 0 // 重渲代际（重渲 ⇒ 在途读流中止）
@@ -65,9 +71,6 @@ export async function renderMeChat(ctx, mount) {
   const pullBtn = h("button", { type: "button", class: "tiny", text: t("me.chat.pull"), onclick: () => openPullModal() })
   const rereadBtn = h("button", { type: "button", class: "tiny", text: t("me.chat.reread"), disabled: true, onclick: () => { if (activeId !== null) { composer.resetTurn(); void loadDetail(activeId) } } })
   mount.append(h("div", { class: "chat-bar" }, wsInfo, selector, newBtn, startBtn, pullBtn, rereadBtn))
-  // 待批提示（发起方可见——`sandbox/SANDBOX.md` §8；`pending` 在场 ⇒ 一行，裁定/超时 ⇒ 消失——不得静默）
-  const pendingLine = h("p", { class: "pending-line", hidden: true })
-  mount.append(pendingLine)
   // ② 消息流（文档流平铺——无卡无框；无会话时 = 四相引导块）∥ ③④ 输入区（核件全件消费）
   const threadBox = h("div", { class: "chat-thread" })
   mount.append(threadBox)
@@ -111,7 +114,7 @@ export async function renderMeChat(ctx, mount) {
     return ws.boxState !== "running" || activeRow()?.agentOnline === false
   }
 
-  /** 会话条重渲（工作区读数 ∥ 选择器（工作区名 · 模型 · 摘要 · 时间）∥ 四钮显隐与门 ∥ 待批行）。 */
+  /** 会话条重渲（工作区读数 ∥ 选择器（工作区名 · 模型 · 摘要 · 时间）∥ 四钮显隐与门）。 */
   function renderBar() {
     const ws = shownWorkspace()
     const row = activeRow()
@@ -136,9 +139,6 @@ export async function renderMeChat(ctx, mount) {
     startBtn.hidden = !needStart(); startBtn.disabled = startingId !== null
     pullBtn.hidden = ws === null
     composer.syncModel() // 当刻会话模型 ⇒ 核模型钮面字（显示面重派生——零槽写）
-    const host = ws === null ? null : pendingHostOf(ws)
-    pendingLine.hidden = host === null
-    if (host !== null) pendingLine.textContent = t("me.sandbox.pending", { host })
   }
 
   /** 选中会话（选择器随正 + 取详情——读时读；盒离线 ⇒ 就地人话，非静默）。 */
@@ -387,7 +387,7 @@ export async function renderMeChat(ctx, mount) {
     })
   }
   /** 拉仓弹窗（相③）：可见项目清单（`GET /api/projects?q=` 复用——含搜索）⇒ 提交 `POST …/pulls` ⇒ 状态轮询
-   *  （queued/running/done/failed 四态人话；失败含目录冲突/出站被拒分类——服务端 `detail` 原文直呈 + 重试 = 复提交）。 */
+   *  （queued/running/done/failed 四态人话；失败含目录冲突分类——服务端 `detail` 原文直呈 + 重试 = 复提交）。 */
   function openPullModal() {
     const ws = shownWorkspace()
     if (ws === null) return
@@ -424,7 +424,6 @@ export async function renderMeChat(ctx, mount) {
         const data = await ctx.api(`/api/me/sandbox/workspaces/${ws.id}/pulls`, { method: "POST", body: dir === "" ? { projectId: target.id } : { projectId: target.id, dir } })
         if (data?.pullId === undefined || data?.pullId === null) { submitBtn.disabled = false; showNote(note, t("me.chat.pullFailed")); return }
         showNote(note, t("me.chat.pullQueued"), false)
-        await loadWorkspaces() // 待批提示随动（出站挂起 ⇒ 一行可见——不得静默）
         void poll(data.pullId)
       } catch (error) { submitBtn.disabled = false; showNote(note, mapError(error)) }
     }
@@ -434,11 +433,10 @@ export async function renderMeChat(ctx, mount) {
         const data = await ctx.api(`/api/me/sandbox/workspaces/${ws.id}/pulls/${pullId}`)
         if (closed) return
         const state = String(data?.state ?? "")
-        const detailText = String(data?.detail ?? "")
+        const detailText = pullDetailText(data?.detail)
         if (state === "done") { modal.close(); ctx.flash(detailText === "" ? t("me.chat.pullDone") : `${t("me.chat.pullDone")}: ${detailText}`); return }
         if (state === "failed") { showNote(note, detailText === "" ? t("me.chat.pullFailed") : `${t("me.chat.pullFailed")}: ${detailText}`); submitBtn.disabled = false; return }
         showNote(note, pullStateLabel(state) ?? (detailText === "" ? state : detailText), false)
-        void loadWorkspaces() // 待批窗（≤60s）内一行可见——判定单源 = `sandbox/SANDBOX.md` §8
         timer = setTimeout(() => { timer = null; void poll(pullId) }, PULL_POLL_MS)
       } catch (error) { if (closed) return; ctx.fail(error); showNote(note, mapError(error)); submitBtn.disabled = false }
     }
@@ -478,7 +476,7 @@ export async function renderMeChat(ctx, mount) {
       threadBox.replaceChildren(failHint("me.chat.listFailed", () => { void reload() }))
     }
   }
-  /** 工作区读数（盒态 ∥ 回收原因 ∥ 待批——`GET /api/me/sandbox/workspaces`）∥ 重读全量（「重试」落点）。 */
+  /** 工作区读数（盒态 ∥ 回收原因——`GET /api/me/sandbox/workspaces`）∥ 重读全量（「重试」落点）。 */
   async function loadWorkspaces() {
     try {
       const data = await ctx.api("/api/me/sandbox/workspaces")

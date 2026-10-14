@@ -344,7 +344,7 @@ test("⑦ i18n：57 键逐键在场 ∥ 占位符对位 ∥ en 零 CJK ∥ 基�
   assert.equal(ZH["nav.page.admin.sandbox"], "沙盒", "nav 键（zh）")
   assert.equal(EN["nav.page.admin.sandbox"], "Sandbox", "nav 键（en）")
   // 键数终值（实读 2026-10-11：596 ∥ 601——历批 + 一键拉取 +3 ∥ console-chat-align 核件 +5 ∥ 退役四键 −4 ⇒ 598 ∥ 603（轻通道笔 2 +2）⇒ **599 ∥ 604**（轻通道笔 4 +1：卷说明）；**实读 959 ∥ 964 ⇒ 962 ∥ 967**（team-ledger 批 +67/表 ⇒ sandbox-container-actions 批 +3/表）⇒ **实读 970 ∥ 975**（gitee-namespace-kinds 批 +8/表）；键集零语义，拆分为文件面）
-  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [1102, 1107], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表 + sandbox-container-terminal 批 +14/表 + 重做批 i18n 面 +10/表 + B/D 修复轮 −2/表（`audit.placement_failed` +1 ∥ me.sandbox 退三）——2026-10-14 随正 ⇒ 1102 ∥ 1107（2026-10-14 拆除批：沙盒部 −23/表；同窗他批并计，收口复读））")
+  assert.deepEqual([Object.keys(ZH).length, Object.keys(EN).length], [1126, 1131], "键数终值（2026-10-11 批组 + 走查实修后 ∥ 走查实修④ kind +4 ∥ 轻通道笔 10 命令字段 +2 ∥ admin-agent-awareness 批 +3 ∥ team-projects-permissions 批 +158 ∥ 2026-10-13 在途批组 +18 + sandbox-outbound-member-face 批 +20/表 + team-ledger 批 +67/表 + sandbox-container-actions 批 +3/表 + gitee-namespace-kinds 批 +8/表 + sandbox-container-terminal 批 +14/表 + 重做批 i18n 面 +10/表 + B/D 修复轮 −2/表（`audit.placement_failed` +1 ∥ me.sandbox 退三）——2026-10-14 随正 ⇒ 1102 ∥ 1107（2026-10-14 拆除批：沙盒部 −23/表；同窗他批并计）⇒ 1126 ∥ 1131（拆除批收口随正——父侧复读））")
 })
 
 // ── ⑧ 静态面（档目 ∥ nav ∥ app 接线 ∥ 行数 ∥ 零外链 ∥ 键/类闭合）────────────────

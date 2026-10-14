@@ -1,26 +1,24 @@
 /**
- * box.mjs — 盒链（sandbox/EXECUTION.md §3/§4/§5/§6/§8 ∥ KD-SV-162…169）：
- * 建盒链（① 卷目录 → ② 配额 → ③ 闸就位复核 → ④ 镜像就位 → ⑤ 网络 → ⑥ 容器 → ⑦ 启动）∥
- * 启动确保链（①→②→⑤→⑥→⑦；容器缺 ⇒ 创建后再起，已在跑 ⇒ 幂等）∥ 六动作链（启动/停止/轮换/快照/恢复/销毁）∥
+ * box.mjs — 盒链（sandbox/EXECUTION.md §3/§4/§8 ∥ KD-SV-162…169）：
+ * 建盒链（① 卷目录 → ② 配额 → ④ 镜像就位 → ⑤ 网络 → ⑥ 容器 → ⑦ 启动）∥
+ * 启动确保链（①→②→⑤→④→⑥→⑦；容器缺 ⇒ 创建后再起，已在跑 ⇒ 幂等）∥ 六动作链（启动/停止/轮换/快照/恢复/销毁）∥
  * 三定时器（空闲 `last_active_at` ∥ 墙钟引擎 `StartedAt` ∥ 周期快照——tick 30s）∥ 放置（复用 `registry` 实时探活 ∥ 补放置）。
  *
- * 三腿（KD-SV-160）：Docker API 直调（`docker.mjs` 客户端）∥ SSH 主机侧（`hosts.execOnHost`——sudo 口令经 stdin）∥
- * 盒出向（`egress` 闸 ∥ `dns-gate` 域名闸）。**无队列**：动作 = 请求内幂等直调链，失败 ⇒ 停 + 行留 + 重试续链。
+ * 两腿：Docker API 直调（`docker.mjs` 客户端）∥ SSH 主机侧（`hosts.execOnHost`——sudo 口令经 stdin）。
+ * **无队列**：动作 = 请求内幂等直调链，失败 ⇒ 停 + 行留 + 重试续链。
  * 卷 = 主机路径绑定 `<workspaceRoot>/<ws-id>`（KD-SV-162——与卷族并存不代管）；配额 = 主机侧项目配额（`quota.mjs`——不可用 ⇒ 建盒停）。
  * 载荷参数集（N65 逐值机检）= `Image`（底座派生 tag ⇒ 自定义底座 ∥ `settings.image`）∥ `Env` 四键 ∥ `WorkingDir /workspace` ∥
  * 不覆写 `Cmd`（镜像 CMD——§8 壳起）∥ `Binds <path>:/workspace` ∥ `ReadonlyRootfs` ∥ `Tmpfs` ∥ `CapDrop ALL` ∥
- * `NetworkMode tc-ws-<id>` ∥ `Dns [server-ip]` ∥ `Memory`/`NanoCpus`/`PidsLimit`。
- * 注入口径（单元测试档假件）：`now` ∥ `fetchImpl`/`requestImpl`（Docker 传输）∥ `execImpl`（SSH spawn）∥ `host`（主机命令面全替）∥ `dnsGate` ∥ `actor`。
+ * `NetworkMode tc-ws-<id>` ∥ `Memory`/`NanoCpus`/`PidsLimit`。
+ * 注入口径（单元测试档假件）：`now` ∥ `fetchImpl`/`requestImpl`（Docker 传输）∥ `execImpl`（SSH spawn）∥ `host`（主机命令面全替）∥ `actor`。
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { gunzipSync, gzipSync } from "node:zlib"
 import { join } from "node:path"
-import { isIPv4 } from "node:net"
 import { recordAudit } from "../accounts/audit.mjs"
 import { dataDir } from "../store/credential-crypto.mjs"
 import { customBaseOf, ensureDerivedImage } from "./derive.mjs"
 import { clientForRunner } from "./docker.mjs"
-import { dispatchEgressAll, egressEnforced, ensureEgressApplied, markEgressFailed, tempSetsNeedRepush } from "./egress.mjs"
 import { execOnHost } from "./hosts.mjs"
 import { applyDiskQuota } from "./quota.mjs"
 import { authForImageRef } from "./registry-creds.mjs"
@@ -28,7 +26,7 @@ import { containerNameOf, getSettings, placeWorkspace, resolveLimits, sandboxPub
 import { SSH_COMMAND_TIMEOUT_S } from "./ssh.mjs"
 
 /** 建盒链步名（逐条可测——N65/B67）。 */
-export const BOX_CHAIN_STEPS = Object.freeze(["① 卷目录准备", "② 配额就位", "③ 闸就位复核", "④ 镜像就位", "⑤ 网络", "⑥ 容器", "⑦ 启动"])
+export const BOX_CHAIN_STEPS = Object.freeze(["① 卷目录准备", "② 配额就位", "④ 镜像就位", "⑤ 网络", "⑥ 容器", "⑦ 启动"])
 
 /** tick 周期（§3——30s）。 */
 export const TICK_INTERVAL_MS = 30_000
@@ -50,11 +48,6 @@ export class BoxStepError extends Error {
 
 // ── 命名/路径/设置 ──────────────────────────────────────────────────────────
 
-/** 桥名（闸锚 `tcws<id>`——§3 底座；`Options.com.docker.network.bridge.name`）。 */
-export function bridgeNameOf(workspaceId) {
-  return `tcws${Number(workspaceId)}`
-}
-
 /** 工作区网络名（引擎面——按工作区一网）。 */
 export function networkNameOf(workspaceId) {
   return `tc-ws-${Number(workspaceId)}`
@@ -72,12 +65,6 @@ export function boxSettings(db) {
   return getSettings(db)
 }
 
-/** 盒内 DNS（server 地址 IPv4 字面量——非 IPv4 ⇒ `null`（不猜；装配侧按 `config.host` 给）。 */
-export function dnsServerOf(config = {}) {
-  const host = typeof config.host === "string" ? config.host.trim() : ""
-  return /^\d{1,3}(\.\d{1,3}){3}$/.test(host) ? host : null
-}
-
 /** server 基址去 `/v1`（盒内 env `TC_SERVER_URL`——§3 参数集）。 */
 export function serverBaseOf(config = {}) {
   return sandboxPublicBase(config).replace(/\/v1$/, "")
@@ -85,7 +72,7 @@ export function serverBaseOf(config = {}) {
 
 // ── 主机命令面（SSH——逐条；sudo 口令经 stdin）────────────────────────────────
 
-/** 主机命令面：`call`（非零原样返回 ∥ 传输级失败抛）∥ `run`（非零 ⇒ 抛——盒链步用）∥ `execOf(row)`（`egress`/`quota` 收的形）。 */
+/** 主机命令面：`call`（非零原样返回 ∥ 传输级失败抛）∥ `run`（非零 ⇒ 抛——盒链步用）∥ `execOf(row)`（`quota` 收的形）。 */
 export function createHostExec({ config = {}, execImpl = null, now = Date.now } = {}) {
   const call = async (row, command, { stdin = null, timeoutS = SSH_COMMAND_TIMEOUT_S } = {}) => {
     const privileged = row?.sudo_cipher ? `sudo -S ${command}` : command // 提权口径：`sudo_cipher` 在 ⇒ `sudo -S `（口令经 stdin）
@@ -143,7 +130,6 @@ export function buildBoxPayload(db, workspace, { settings = null, config = {}, i
   const resolved = settings ?? boxSettings(db)
   const limits = resolveLimits(db, workspace, resolved)
   const volumePath = path ?? workspacePathOf(resolved, workspace.id)
-  const dns = egressEnforced(config) ? dnsServerOf(config) : null // 严格模式关 ⇒ 不注入闸 DNS（2026-10-14 用户裁——盒走 docker 缺省解析）
   const hostConfig = {
     Binds: [`${volumePath}:${WORKSPACE_MOUNT}`],
     ReadonlyRootfs: true, // 唯卷可写（§3）
@@ -154,7 +140,6 @@ export function buildBoxPayload(db, workspace, { settings = null, config = {}, i
     NanoCpus: Number(limits.cpus) * 1e9,
     PidsLimit: Number(limits.pids),
   }
-  if (dns !== null) hostConfig.Dns = [dns] // server 地址（盒 → 闸 DNS）；config.host 非 IPv4 ⇒ 不注入（不猜）
   return {
     Image: imageTag ?? customBaseOf(workspace) ?? resolved.image,
     Env: [
@@ -190,38 +175,19 @@ async function inspectNetworkOrNull(client, name) {
   }
 }
 
-/** 网络读数复核（桥名 = 闸锚；不符 ⇒ 停——KD-SV-131②）。 */
-function assertBridge(read, bridge) {
-  const got = read?.json?.Options?.["com.docker.network.bridge.name"] ?? null
-  if (got !== bridge) {
-    throw new BoxStepError("⑤ 网络", `桥名读回复核不符（期望 ${bridge} ∥ 实读 ${String(got)}）——停：锚不落 ⇒ 出站闸不生效`)
-  }
-}
-
-function subnetOf(read) {
-  return read?.json?.IPAM?.Config?.[0]?.Subnet ?? null
-}
-
-/** ⑤ 网络（幂等：409 ⇒ 读回采用；读回复核不符 ⇒ 停；网段登记入 DNS 闸）。 */
-async function stepNetwork(client, workspace, deps) {
+/** ⑤ 网络（幂等：409 ⇒ 读回采用）。 */
+async function stepNetwork(client, workspace) {
   const name = networkNameOf(workspace.id)
-  const bridge = bridgeNameOf(workspace.id)
   const existing = await inspectNetworkOrNull(client, name)
-  if (existing !== null) {
-    assertBridge(existing, bridge)
-    deps.dnsGate?.registerNetwork?.(workspace.id, subnetOf(existing))
-    return { created: false, subnet: subnetOf(existing) }
-  }
+  if (existing !== null) return { created: false }
   try {
-    await client.createNetwork({ Name: name, Driver: "bridge", Options: { "com.docker.network.bridge.name": bridge } })
+    await client.createNetwork({ Name: name, Driver: "bridge" })
   } catch (e) {
     if (e?.status !== 409) throw new BoxStepError("⑤ 网络", `网络创建失败：${e?.apiMessage ?? e?.message ?? e}`)
   }
-  const read = await inspectNetworkOrNull(client, name) // 409 ⇒ 读回采用；成功径 ⇒ 读回复核
+  const read = await inspectNetworkOrNull(client, name) // 409 ⇒ 读回采用；成功径 ⇒ 读回确认
   if (read === null) throw new BoxStepError("⑤ 网络", `网络创建后读回不到：${name}`)
-  assertBridge(read, bridge)
-  deps.dnsGate?.registerNetwork?.(workspace.id, subnetOf(read))
-  return { created: true, subnet: subnetOf(read) }
+  return { created: true }
 }
 
 /** ⑥ 容器（幂等：在场 ⇒ 采用；名冲突 409 ⇒ 读回采用；创建前先读 ⇒ 零重复建）。 */
@@ -306,47 +272,24 @@ async function stepVolume(host, runner, path) {
   await host.run(runner, `chown 1000:1000 ${path}`)
 }
 
-/** ③ 闸就位复核（fail-closed）——失败 ⇒ `egress_apply_failed` 审计（ACCOUNTS §2.1 写入点含本档）+ 未就位标记 + 抛。 */
-async function stepEgress(db, deps, runner, exec, reason) {
-  try {
-    return await ensureEgressApplied({ db, runner, exec, config: deps.config ?? {}, now: deps.now ?? Date.now, log: deps.log ?? null, reason, resolveImpl: deps.resolveImpl ?? null })
-  } catch (e) {
-    const at = (deps.now ?? Date.now)()
-    markEgressFailed(runner.id, { error: e, now: at })
-    auditBox(db, deps, { kind: "egress_apply_failed", target: runner.name, detail: { runnerId: runner.id, reason, message: String(e?.message ?? e).slice(0, 300) }, ts: at })
-    throw e
-  }
-}
-
 // ── 建盒链（①→⑦）───────────────────────────────────────────────────────────
 
-/** 链前置（§3——服务器地址（`config.host`）非 IPv4 字面量（域名 ∥ IPv6）⇒ 建盒/启动确保/轮换重建三链链首停 + 人话：
- *  零步执行（内置允许与盒 DNS 注入同源，双缺 ⇒ 盒静默断网）；不静默建盒/起盒——地址修正后重试照常。 */
-function assertServerAddress(config) {
-  const host = typeof config?.host === "string" ? config.host.trim() : ""
-  if (isIPv4(host)) return
-  throw new BoxStepError("链前置", `服务器地址（config.host）非 IPv4 字面量「${host === "" ? "(空)" : host}」——停：内置允许与盒 DNS 注入同源，双缺 ⇒ 盒静默断网（改 IPv4 后重试）`)
-}
-
 /**
- * 建盒全链（N65）：① 卷目录 → ② 配额 → ③ 闸就位复核（fail-closed）→ ④ 镜像就位（仅自定义底座）→ ⑤ 网络 → ⑥ 容器 → ⑦ 启动。
+ * 建盒全链（N65）：① 卷目录 → ② 配额 → ④ 镜像就位（仅自定义底座）→ ⑤ 网络 → ⑥ 容器 → ⑦ 启动。
  * 任一步失败 ⇒ 抛 `BoxStepError`（步名 + 人话）——**零半态**：已落步幂等可重试（行留）。
  */
 export async function createWorkspaceBox(db, workspace, runner, deps = {}) {
-  assertServerAddress(deps.config ?? {})
   const now = deps.now ?? Date.now
   const settings = deps.settings ?? boxSettings(db)
   const path = workspacePathOf(settings, workspace.id)
   const host = hostOf(deps)
   const client = clientOf(runner, deps)
-  const exec = host.execOf(runner)
   const limits = resolveLimits(db, workspace, settings)
 
   await step("① 卷目录准备", () => stepVolume(host, runner, path))
   await step("② 配额就位", () => stepQuota(db, deps, runner, workspace, host, path, limits))
-  await step("③ 闸就位复核", () => stepEgress(db, deps, runner, exec, "建盒前置"))
   const image = await step("④ 镜像就位", () => stepImage(db, workspace, runner, client, settings, deps))
-  await step("⑤ 网络", () => stepNetwork(client, workspace, deps))
+  await step("⑤ 网络", () => stepNetwork(client, workspace))
   const container = await step("⑥ 容器", () => stepContainer(client, workspace, buildBoxPayload(db, workspace, { settings, config: deps.config ?? {}, imageTag: image, path })))
   await step("⑦ 启动", () => client.startContainer(container.Id ?? containerNameOf(workspace.id)))
   db.prepare("UPDATE sandbox_workspaces SET stop_reason = NULL WHERE id = ?").run(workspace.id)
@@ -354,9 +297,8 @@ export async function createWorkspaceBox(db, workspace, runner, deps = {}) {
   return { workspaceId: workspace.id, runnerId: runner.id, path, image }
 }
 
-/** 启动确保链（①→②→⑤→⑥→⑦；容器缺 ⇒ 创建后再起 ∥ 已在跑 ⇒ 幂等返回）。 */
+/** 启动确保链（①→②→⑤→④→⑥→⑦；容器缺 ⇒ 创建后再起 ∥ 已在跑 ⇒ 幂等返回）。 */
 export async function startWorkspaceBox(db, workspace, runner, deps = {}) {
-  assertServerAddress(deps.config ?? {})
   const now = deps.now ?? Date.now
   const settings = deps.settings ?? boxSettings(db)
   const path = workspacePathOf(settings, workspace.id)
@@ -372,8 +314,7 @@ export async function startWorkspaceBox(db, workspace, runner, deps = {}) {
   }
   await step("① 卷目录准备", () => stepVolume(host, runner, path))
   await step("② 配额就位", () => stepQuota(db, deps, runner, workspace, host, path, limits))
-  await step("③ 闸就位复核", () => stepEgress(db, deps, runner, host.execOf(runner), "启动前置"))
-  await step("⑤ 网络", () => stepNetwork(client, workspace, deps))
+  await step("⑤ 网络", () => stepNetwork(client, workspace))
   // 建盒径的 ④（缓存命中零构建）——`base_image` 在场时容器须用派生 tag（`settings.image` = 供体）
   const image = await step("④ 镜像就位", () => stepImage(db, workspace, runner, client, settings, deps))
   const container = await step("⑥ 容器", () => stepContainer(client, workspace, buildBoxPayload(db, workspace, { settings, config: deps.config ?? {}, imageTag: image, path })))
@@ -404,7 +345,6 @@ export async function stopWorkspaceBox(db, workspace, runner, deps = {}, { reaso
 
 /** 轮换重建（删容器 → ①→② → ④(缓存) → ⑥ → ⑦；网络既有 ⇒ 不复建）。 */
 export async function rotateWorkspaceBox(db, workspace, runner, deps = {}) {
-  assertServerAddress(deps.config ?? {})
   const now = deps.now ?? Date.now
   const settings = deps.settings ?? boxSettings(db)
   const path = workspacePathOf(settings, workspace.id)
@@ -417,7 +357,6 @@ export async function rotateWorkspaceBox(db, workspace, runner, deps = {}) {
   if (hit !== null) await client.deleteContainer(hit.Id, { force: true }) // 删容器 = 卷零触（卷 = 主机路径）
   await step("① 卷目录准备", () => stepVolume(host, runner, path))
   await step("② 配额就位", () => stepQuota(db, deps, runner, workspace, host, path, limits))
-  await step("③ 闸就位复核", () => stepEgress(db, deps, runner, host.execOf(runner), "轮换前置"))
   const image = await step("④ 镜像就位", () => stepImage(db, workspace, runner, client, settings, deps))
   const container = await step("⑥ 容器", () => stepContainer(client, workspace, buildBoxPayload(db, workspace, { settings, config: deps.config ?? {}, imageTag: image, path })))
   await step("⑦ 启动", () => client.startContainer(container.Id ?? name))
@@ -542,7 +481,7 @@ export async function restoreWorkspace(db, workspace, runner, checkpoint, deps =
   return { restored: true, mechanism, checkpointId: checkpoint.id }
 }
 
-/** 销毁（① 停 ② 删容器 ③ 删网络 ④ 卷目录清理 ⑤ 行删：快照行 + blob ∥ 待批行）。`deleteVolume` = 路由显式确认项。 */
+/** 销毁（① 停 ② 删容器 ③ 删网络 ④ 卷目录清理 ⑤ 行删：快照行 + blob）。`deleteVolume` = 路由显式确认项。 */
 export async function destroyWorkspaceBox(db, workspace, runner, deps = {}, { deleteVolume = true } = {}) {
   const now = deps.now ?? Date.now
   const settings = deps.settings ?? boxSettings(db)
@@ -574,7 +513,6 @@ export async function destroyWorkspaceBox(db, workspace, runner, deps = {}, { de
     }
   }
   db.prepare("DELETE FROM sandbox_checkpoints WHERE workspace_id = ?").run(workspace.id)
-  db.prepare("DELETE FROM sandbox_pending WHERE workspace_id = ?").run(workspace.id)
   db.prepare("DELETE FROM sandbox_workspaces WHERE id = ?").run(workspace.id)
   auditBox(db, deps, { kind: "workspace_destroy", target: workspace.name, detail: { workspaceId: workspace.id, runnerId: runner?.id ?? null, volumeDeleted: deleteVolume, snapshots: snapshots.length }, ts: now() })
   auditBox(db, deps, { kind: "box_destroy", target: workspace.name, detail: { workspaceId: workspace.id, runnerId: runner?.id ?? null, volumeDeleted: deleteVolume }, ts: now() })
@@ -593,16 +531,11 @@ export function lastActiveAtOf(db, workspace) {
   return values.length === 0 ? null : Math.max(...values)
 }
 
-/** tick 一轮：临时集到点重算 ⇒ 逐绑定工作区读盒态 ⇒ 空闲停 ∥ 墙钟停 ∥ 周期快照（盒不在 ⇒ 零动；逐节点失败不吞——记读数）。 */
+/** tick 一轮：逐绑定工作区读盒态 ⇒ 空闲停 ∥ 墙钟停 ∥ 周期快照（盒不在 ⇒ 零动；逐节点失败不吞——记读数）。 */
 export async function tickBoxes(db, deps = {}) {
   const now = (deps.now ?? Date.now)()
   const settings = deps.settings ?? boxSettings(db)
   const out = { checked: 0, skipped: 0, stopped: [], snapshotted: [], failed: [] }
-  // ④ 临时集到点 ⇒ 重算（§6——盒零重建）
-  const execOf = typeof deps.execOf === "function" ? deps.execOf : (typeof deps.host?.execOf === "function" ? (row) => deps.host.execOf(row) : null)
-  if (execOf !== null && tempSetsNeedRepush(db, now)) {
-    out.egress = await dispatchEgressAll({ db, config: deps.config ?? {}, now: () => now, log: deps.log ?? null, reason: "临时集到点", execOf, resolveImpl: deps.resolveImpl ?? null })
-  }
   const rows = db.prepare("SELECT * FROM sandbox_workspaces WHERE runner_id IS NOT NULL ORDER BY id").all()
   const clients = new Map()
   for (const workspace of rows) {

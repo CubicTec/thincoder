@@ -1,20 +1,18 @@
 /**
  * 2026-10-13-sandbox-outbound-member-face-ui.test.mjs — thincoder-server 批内单测件（我的·工作区——sandbox-outbound-member-face 批（UI 面）；
- * 名随批档 · 住 `docs/batches/` · 不入仓套件 · 随批留存）。判据源 = `webui/SANDBOX.md` §2.2/§4（成员面）∥ `sandbox/SANDBOX.md` §8（提示判定单源）
+ * 名随批档 · 住 `docs/batches/` · 不入仓套件 · 随批留存）。判据源 = `webui/SANDBOX.md` §2.2/§4（成员面）
  * ∥ 批档 §2 条目 ③④。
  * 运行（自 `thincoder/` 仓根）：`node --test docs/batches/2026-10-13-sandbox-outbound-member-face-ui.test.mjs`
  *
- * 射程（腿 ↔ 验收轴对照在括号）：
+ * 射程（腿 ↔ 验收轴对照在括号；2026-10-14 随正——待批列 ∥ 提示行 ∥ 10s 轮询随 sandbox-egress-removal 批退场）：
  *   ① 页在册/接线（`renderMeSandbox` 导出 ∥ `PAGES` 行 + import ∥ `SHELL_PAGES` 零改——非壳页）（④ 页落定 ∥ 脚手架）
- *   ② 逐列渲染（五列表头 + 行逐值：名 ∥ 盒状态（运行中/已停 + 回收原因三值 + 枚举外原值兜底）∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批）
+ *   ② 逐列渲染（四列表头 + 行逐值：名 ∥ 盒状态（运行中/已停 + 回收原因三值 + 枚举外原值兜底）∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句））
  *   ③ 空态 ∥ 恒本人过滤（仅打成员端点 ∥ 渲染 = 响应逐行——零越界取数）∥ 零写控件（写面随 #1216 ②）
  *   ④ 读败面（503 `sandbox_unavailable` ∥ 404 数据面缺位 ⇒ 页内提示 ∥ 余码 ⇒ `loadFailed` ∥ `fail` 收口）
- *   ⑤ 待批提示行（`pending` 在场 ⇒ 行在（逐 host 一条）∥ 裁定/超时后 ⇒ 行消——不残留；零 pending ⇒ 容器隐）
- *   ⑥ 10s 轮询（`PENDING_POLL_MS` = 10000 ∥ 在场 ⇒ 恰一枚排程 ∥ 放行一轮 ⇒ 重读一次 ∥ 清空 ⇒ 零新排 + 提示消失 ∥ 离页/重渲自停）
- *   ⑦ i18n 两表逐键同步（`me.sandbox.*` 16 键 + shell `nav.page.me.sandbox` 1 键 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK）
- *   ⑧ IA 计数（我的 6——ledger 末位 ∥ 路由解析 ∥ `labelKey` 两表在盘）∥ 静态面（行数/行宽 ∥ 零外链 ∥ 代码段零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合）
+ *   ⑤ i18n 两表逐键同步（`me.sandbox.*` 14 键 + shell `nav.page.me.sandbox` 1 键 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK）
+ *   ⑥ IA 计数（我的 7——ledger 末位 ∥ 路由解析 ∥ `labelKey` 两表在盘）∥ 静态面（行数/行宽 ∥ 零外链 ∥ 代码段零 CJK ∥ `t` 字面量闭合 ∥ 类名双向闭合）
  *
- * 桩说明：`dom.mjs` 顶层触 `document`（先桩后 import）；本档零外部网络 ∥ 零真库（stub ctx 路由表）；定时器 = 捕获式桩（零悬挂）。
+ * 桩说明：`dom.mjs` 顶层触 `document`（先桩后 import）；本档零外部网络 ∥ 零真库（stub ctx 路由表）；本档无定时器面（轮询随摘除批退场）。
  */
 import test from "node:test"
 import assert from "node:assert/strict"
@@ -36,11 +34,11 @@ const [{ ZH }, { EN }, PAGE, NAV] = await Promise.all([load("i18n-zh.mjs"), load
 const VIEW_SRC = readPublic("views-me-sandbox.mjs")
 const CSS = readPublic("style.css")
 
-/** 本批键（16 me + 1 shell——两表逐键同步；§2.2 ∥ `webui/SANDBOX.md` §3 键族登记本批条；`dirty` 三键退场随 D 裁 2026-10-14）。 */
+/** 本批键（14 me + 1 shell——两表逐键同步；§2.2 ∥ `webui/SANDBOX.md` §3 键族登记本批条；`dirty` 三键退场随 D 裁 2026-10-14 ∥ `colPending`/`pending` 退场随 sandbox-egress-removal 批 2026-10-14）。 */
 const NEW_ME_KEYS = [
   "me.sandbox.title", "me.sandbox.colName", "me.sandbox.colState", "me.sandbox.colCheckpoints", "me.sandbox.colRunner",
-  "me.sandbox.colPending", "me.sandbox.stateRunning", "me.sandbox.stateStopped", "me.sandbox.stopIdle", "me.sandbox.stopWallclock",
-  "me.sandbox.stopManual", "me.sandbox.pending", "me.sandbox.empty", "me.sandbox.unbound", "me.sandbox.unavailable",
+  "me.sandbox.stateRunning", "me.sandbox.stateStopped", "me.sandbox.stopIdle", "me.sandbox.stopWallclock",
+  "me.sandbox.stopManual", "me.sandbox.empty", "me.sandbox.unbound", "me.sandbox.unavailable",
   "me.sandbox.loadFailed",
 ]
 const NEW_SHELL_KEY = "nav.page.me.sandbox"
@@ -96,7 +94,6 @@ function fFindAll(root, pred, out = []) {
   return out
 }
 const textOf = (node) => (typeof node === "string" ? node : [node?.textContent ?? "", ...(node?.children ?? []).map(textOf)].filter(Boolean).join(" "))
-const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 /** 表格近似（`dom.mjs table()` 同形：`.table-wrap > table > thead/tbody`；cell 支持节点数组）。 */
 const fTable = (headers, rows) => fH("div", { class: "table-wrap" },
@@ -126,46 +123,31 @@ function fCtx(routes = {}) {
 }
 
 /** 工作区夹具（`gateway/API.md` §2.7 行形——行增 `runnerName`）。 */
-const fWs = (over = {}) => ({ id: 1, name: "box-a", runnerName: "node-1", boxState: "running", checkpointCount: 3, pending: null, ...over })
-
-/** 10s 轮询定时器捕获（只记录不执行——零悬挂定时器 ∥ 零实等；`restore()` 还原）。 */
-function capturePollTimers() {
-  const realSetTimeout = globalThis.setTimeout
-  const timers = []
-  const callbacks = []
-  globalThis.setTimeout = (fn, ms, ...rest) => {
-    if (ms === PAGE.PENDING_POLL_MS) { timers.push(ms); callbacks.push(fn); return -1 }
-    return realSetTimeout(fn, ms, ...rest)
-  }
-  return { timers, callbacks, restore: () => { globalThis.setTimeout = realSetTimeout } }
-}
+const fWs = (over = {}) => ({ id: 1, name: "box-a", runnerName: "node-1", boxState: "running", checkpointCount: 3, ...over })
 
 const rowsOf = (mount) => fFindAll(mount, (node) => node.tag === "tr").filter((row) => fFindAll(row, (cell) => cell.tag === "td").length > 0)
 const cellsOf = (row) => fFindAll(row, (cell) => cell.tag === "td").map((cell) => textOf(cell))
-const pendingLineOf = (mount) => fFindAll(mount, (node) => node.className === "pending-line")
 
 // ── ① 页在册/接线 ────────────────────────────────────────────────────────────
 
 test("① 页在册：`renderMeSandbox` 导出 ∥ `PAGES` 行 + import ∥ `SHELL_PAGES` 零改（非壳页）∥ 纯函数导出面", () => {
   assert.equal(typeof PAGE.renderMeSandbox, "function", "页函数导出")
-  for (const name of ["boxStateLabel", "boxStateClass", "stopReasonLabel", "pendingHostOf", "pendingHosts"]) assert.equal(typeof PAGE[name], "function", `纯函数导出：${name}`)
+  for (const name of ["boxStateLabel", "boxStateClass", "stopReasonLabel"]) assert.equal(typeof PAGE[name], "function", `纯函数导出：${name}`)
   const appSrc = readPublic("app.mjs")
   assert.ok(appSrc.includes('import { renderMeSandbox } from "./views-me-sandbox.mjs"'), "app 导入面")
   assert.ok(appSrc.includes('"/me/sandbox": renderMeSandbox,'), "PAGES 行")
   const shell = appSrc.match(/const SHELL_PAGES = new Set\(\[([^\]]*)\]\)/)[1]
   assert.deepEqual([...shell.matchAll(/"([^"]+)"/g)].map((match) => match[1]),
     ["/admin/members", "/admin/providers", "/admin/models", "/admin/audit", "/me/usage"], "壳页五路径零改（成员页非壳——不扩钉表五页）")
-  assert.deepEqual([PAGE.PENDING_POLL_MS], [10000], "轮询间隔 = 10s（§2.2）")
 })
 
 // ── ② 逐列渲染（六列 + 态/原因映射 + 枚举外兜底）──────────────────────────────────
 
-test("② 逐列渲染：五列表头 ∥ 盒状态两态 + 回收原因三值 + 枚举外原值兜底 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）∥ 待批", async () => {
-  const poll = capturePollTimers()
+test("② 逐列渲染：四列表头 ∥ 盒状态两态 + 回收原因三值 + 枚举外原值兜底 ∥ 快照数 ∥ 所属 runner（未绑定 ⇒ 表句）", async () => {
   try {
     globalThis.document = stubDocument()
     const rows = [
-      fWs({ id: 1, name: "box-a", boxState: "running", checkpointCount: 3, runnerName: "node-1", pending: { host: "pypi.org", since: 1700000000000 } }),
+      fWs({ id: 1, name: "box-a", boxState: "running", checkpointCount: 3, runnerName: "node-1" }),
       fWs({ id: 2, name: "box-b", boxState: "stopped", stopReason: "idle_ttl", checkpointCount: 0, runnerName: null }),
       fWs({ id: 3, name: "box-c", boxState: "stopped", stopReason: "wallclock_ttl", checkpointCount: 12, runnerName: "node-2" }),
       fWs({ id: 4, name: "box-d", boxState: "stopped", stopReason: "manual", checkpointCount: 1, runnerName: "" }),
@@ -176,7 +158,7 @@ test("② 逐列渲染：五列表头 ∥ 盒状态两态 + 回收原因三值 +
     const mount = makeNode("section")
     await PAGE.renderMeSandbox(ctx, mount)
     assert.deepEqual(fFindAll(mount, (node) => node.tag === "th").map((cell) => cell.textContent),
-      [ZH["me.sandbox.colName"], ZH["me.sandbox.colState"], ZH["me.sandbox.colCheckpoints"], ZH["me.sandbox.colRunner"], ZH["me.sandbox.colPending"]], "五列表头（名 ∥ 盒状态 ∥ 快照数 ∥ 所属 runner ∥ 待批）")
+      [ZH["me.sandbox.colName"], ZH["me.sandbox.colState"], ZH["me.sandbox.colCheckpoints"], ZH["me.sandbox.colRunner"]], "四列表头（名 ∥ 盒状态 ∥ 快照数 ∥ 所属 runner）")
     const body = rowsOf(mount)
     assert.equal(body.length, 6, "响应逐行渲染")
     const [first, second, third, fourth, fifth, sixth] = body.map(cellsOf)
@@ -186,21 +168,15 @@ test("② 逐列渲染：五列表头 ∥ 盒状态两态 + 回收原因三值 +
     assert.equal(second[3], ZH["me.sandbox.unbound"], "未绑定（`runnerName` null ⇒ 表句）")
     assert.equal(fourth[3], ZH["me.sandbox.unbound"], "`runnerName` 空串 ⇒ 同表句")
     assert.equal(fifth[1], "weird", "盒状态枚举外 ⇒ 原值兜底（不假造）")
-    assert.deepEqual([sixth[2], sixth[4]], ["—", "—"], "缺位字段（`checkpointCount`/`pending`）⇒ 中性占位（不代断言业务值）")
-    assert.equal(first[4], "pypi.org", "待批列 = pending.host")
-    assert.equal(second[4], "—", "零 pending ⇒ 占位「—」")
-    // 纯函数面（枚举外兜底 ∥ 类映射 ∥ pending 提取）
+    assert.equal(sixth[2], "—", "缺位字段（`checkpointCount`）⇒ 中性占位（不代断言业务值）")
+    // 纯函数面（枚举外兜底 ∥ 类映射）
     assert.deepEqual([PAGE.boxStateLabel("running"), PAGE.boxStateLabel("stopped"), PAGE.boxStateLabel("weird"), PAGE.boxStateLabel(null)],
       [ZH["me.sandbox.stateRunning"], ZH["me.sandbox.stateStopped"], "weird", "—"], "态文案（枚举外/空 ⇒ 原值/占位）")
     assert.deepEqual([PAGE.boxStateClass("running"), PAGE.boxStateClass("stopped"), PAGE.boxStateClass("weird")], ["badge ok", "badge off", "badge"], "态徽标类（零新颜色变量）")
     assert.deepEqual([PAGE.stopReasonLabel("idle_ttl"), PAGE.stopReasonLabel("wallclock_ttl"), PAGE.stopReasonLabel("manual"), PAGE.stopReasonLabel("future")],
       [ZH["me.sandbox.stopIdle"], ZH["me.sandbox.stopWallclock"], ZH["me.sandbox.stopManual"], "future"], "回收原因文案（枚举外原值兜底）")
-    assert.deepEqual(PAGE.pendingHosts([{ pending: { host: "a" } }, { pending: null }, {}, { pending: { host: "" } }]), ["a"], "pending host 提取（零/空 ⇒ 略）")
-    assert.deepEqual([PAGE.pendingHostOf({ pending: { host: "a" } }), PAGE.pendingHostOf({ pending: { host: "" } }), PAGE.pendingHostOf({})],
-      ["a", null, null], "待批 host 单判据（提示行 ∥ 待批列共用——空/缺 ⇒ null）")
     assert.deepEqual(calls.map(([method, path]) => `${method} ${path}`), ["GET /api/me/sandbox/workspaces"], "读面 = 成员端点单打")
-    assert.deepEqual(poll.timers, [10000], "行内 pending 在场 ⇒ 恰一枚 10s 排程（提示期间轮询）")
-  } finally { poll.restore(); delete globalThis.document }
+  } finally { delete globalThis.document }
 })
 
 // ── ③ 空态 ∥ 恒本人过滤 ∥ 零写控件 ──────────────────────────────────────────────
@@ -213,7 +189,6 @@ test("③ 空态 ∥ 恒本人过滤（响应逐行——零越界取数）∥ �
     await PAGE.renderMeSandbox(empty.ctx, emptyMount)
     assert.ok(textOf(emptyMount).includes(ZH["me.sandbox.empty"]), "空态句在册")
     assert.equal(rowsOf(emptyMount).length, 0, "空态 ⇒ 零数据行")
-    assert.deepEqual(pendingLineOf(emptyMount), [], "空态 ⇒ 提示行缺位")
     // 恒本人过滤 = 服务端属性：页零成员参数、零跨成员取数（仅一个成员端点，渲染 = 响应逐行）
     const list = fCtx({ "GET /api/me/sandbox/workspaces": () => ({ workspaces: [fWs({ id: 9, name: "mine" })] }) })
     const mount = makeNode("section")
@@ -243,76 +218,14 @@ test("④ 读败面：503 `sandbox_unavailable` ⇒ 页内提示 ∥ 404 数据�
       await PAGE.renderMeSandbox(ctx, mount)
       assert.ok(textOf(mount).includes(expected), `${label}：${expected}`)
       assert.equal(rowsOf(mount).length, 0, `${label}：零数据行（不假造）`)
-      assert.deepEqual(pendingLineOf(mount), [], `${label}：提示行缺位（不残留）`)
       assert.equal(calls.filter(([tag]) => tag === "fail").length, 1, `${label}：fail 收口一次`)
     }
   } finally { delete globalThis.document }
 })
 
-// ── ⑤ 待批提示行（出现/消失——判定单源 = `sandbox/SANDBOX.md` §8）───────────────────
+// ── ⑤ i18n 两表逐键同步（me 14 键 + shell 1 键）──────────────────────────────────
 
-test("⑤ 待批提示行：`pending` 在场 ⇒ 行在（逐 host 一条、原文取值）∥ 零 pending ⇒ 容器隐 ∥ 裁定/超时后 ⇒ 行消（不残留）", async () => {
-  const poll = capturePollTimers()
-  try {
-    globalThis.document = stubDocument()
-    const data = { workspaces: [fWs({ id: 1, pending: { host: "pypi.org", since: 1 } }), fWs({ id: 2, name: "box-b", pending: { host: "crates.io", since: 2 } })] }
-    const { ctx } = fCtx({ "GET /api/me/sandbox/workspaces": () => data })
-    const mount = makeNode("section")
-    await PAGE.renderMeSandbox(ctx, mount)
-    assert.deepEqual(pendingLineOf(mount).map((line) => line.textContent),
-      [ZH["me.sandbox.pending"].replace("{host}", "pypi.org"), ZH["me.sandbox.pending"].replace("{host}", "crates.io")], "逐 host 一条（原文取值——占位替换逐值）")
-    assert.equal(fFindAll(mount, (node) => node.className === "pending-line")[0].parent.hidden, false, "在场 ⇒ 提示容器可见")
-    // 裁定/超时 ⇒ 数据面 pending 清空 ⇒ 提示行消失（不残留——重渲 = 新挂载点，同 app 路由口径）
-    const cleared = fCtx({ "GET /api/me/sandbox/workspaces": () => ({ workspaces: [fWs({ id: 1, pending: null })] }) })
-    const clearedMount = makeNode("section")
-    await PAGE.renderMeSandbox(cleared.ctx, clearedMount)
-    assert.deepEqual(pendingLineOf(clearedMount), [], "清空 ⇒ 行消")
-    const hiddenBox = fFindAll(clearedMount, (node) => node.tag === "div" && node.hidden === true)
-    assert.ok(hiddenBox.length >= 1, "零 pending ⇒ 提示容器隐")
-  } finally { poll.restore(); delete globalThis.document }
-})
-
-// ── ⑥ 10s 轮询（在场才排 ∥ 放行一轮重读 ∥ 清空停排 ∥ 离页自停）────────────────────────
-
-test("⑥ 10s 轮询：在场 ⇒ 恰一枚 10s 排程 ∥ 放行一轮 ⇒ 重读一次 ∥ 清空 ⇒ 零新排 ∥ 离页/重渲自停（挂载点断开卫直测）", async () => {
-  const poll = capturePollTimers()
-  try {
-    globalThis.document = stubDocument()
-    const timers = poll.timers
-    const pendingTimers = poll.callbacks
-    let data = { workspaces: [fWs({ id: 1, pending: { host: "pypi.org", since: 1 } })] }
-    const { ctx, calls } = fCtx({ "GET /api/me/sandbox/workspaces": () => data })
-    const mount = makeNode("section")
-    await PAGE.renderMeSandbox(ctx, mount)
-    assert.deepEqual(timers, [10000], "待批在场 ⇒ 恰一枚 10s 排程")
-    // 放行一轮：数据面仍 pending ⇒ 重读一次 + 续排一枚
-    pendingTimers[0]()
-    await tick()
-    assert.equal(calls.filter(([, path]) => path === "/api/me/sandbox/workspaces").length, 2, "放行一轮 ⇒ 重读一次")
-    assert.deepEqual(timers, [10000, 10000], "仍 pending ⇒ 续排一枚（单链）")
-    // 裁定/超时：清空 ⇒ 提示消失 + 零新排
-    data = { workspaces: [fWs({ id: 1, pending: null })] }
-    pendingTimers[1]()
-    await tick()
-    assert.equal(calls.filter(([, path]) => path === "/api/me/sandbox/workspaces").length, 3, "清空轮仍读一次")
-    assert.deepEqual(timers, [10000, 10000], "清空 ⇒ 零新排（定待批停）")
-    assert.deepEqual(pendingLineOf(mount), [], "清空 ⇒ 提示行消失")
-    // 离页/重渲 ⇒ 停机（挂载点断开卫 + 渲染代际）：stale 渲染自己 pending 在场 ⇒ 自有一枚排程，断开后放行 **它** ⇒ 零重读
-    const stale = fCtx({ "GET /api/me/sandbox/workspaces": () => ({ workspaces: [fWs({ id: 2, name: "box-b", pending: { host: "example.org", since: 3 } })] }) })
-    const staleMount = makeNode("section")
-    await PAGE.renderMeSandbox(stale.ctx, staleMount)
-    assert.deepEqual(timers, [10000, 10000, 10000], "stale 渲染（持 pending）⇒ 另排一枚（单链）")
-    const staleReads = stale.calls.filter(([, path]) => path === "/api/me/sandbox/workspaces").length
-    staleMount.isConnected = false
-    pendingTimers.at(-1)() // stale 渲染自己的续排回调
-    await tick()
-    assert.equal(stale.calls.filter(([, path]) => path === "/api/me/sandbox/workspaces").length, staleReads, "挂载点断开 ⇒ 轮询自停")
-  } finally { poll.restore(); delete globalThis.document }
-})
-
-// ── ⑦ i18n 两表逐键同步（me 16 键 + shell 1 键）──────────────────────────────────
-
-test("⑦ i18n：`me.sandbox.*` 16 键 + `nav.page.me.sandbox` 1 键逐键在场 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK", async () => {
+test("⑤ i18n：`me.sandbox.*` 14 键 + `nav.page.me.sandbox` 1 键逐键在场 ∥ 键集相等 ∥ 占位符对位 ∥ en 零 CJK", async () => {
   const [zhMe, enMe, zhShell, enShell] = await Promise.all([load("i18n-zh-me.mjs"), load("i18n-en-me.mjs"), load("i18n-zh-shell.mjs"), load("i18n-en-shell.mjs")])
   const zhKeys = Object.keys(zhMe.ZH_ME), enKeys = Object.keys(enMe.EN_ME)
   // 键集相等（自称名族在 shell；`.one` 变体族 = en 独有——沿既有口径排除）
@@ -327,9 +240,7 @@ test("⑦ i18n：`me.sandbox.*` 16 键 + `nav.page.me.sandbox` 1 键逐键在场
     assert.equal(placeholders(zhMe.ZH_ME[key]), placeholders(enMe.EN_ME[key]), `占位符不对位：${key}`)
     assert.equal(CJK.test(enMe.EN_ME[key]), false, `en 值含 CJK：${key}`)
   }
-  assert.equal(NEW_ME_KEYS.length, 16, "本批 me 键数（dirty 三键退场随 D 裁）")
-  assert.equal(placeholders(zhMe.ZH_ME["me.sandbox.pending"]), "host", "提示行占位符 `{host}`（判定单源 = `sandbox/SANDBOX.md` §8——文案取值逐字）")
-  assert.equal(zhMe.ZH_ME["me.sandbox.pending"], "等待管理员批准：{host}（首次访问新域名——通常 ≤60s）", "提示行文案逐字（单源处取值；本档不复制改判）")
+  assert.equal(NEW_ME_KEYS.length, 14, "本批 me 键数（dirty 三键退场随 D 裁 ∥ colPending/pending 退场随摘除批）")
   for (const [lang, table] of [["zh", zhShell.ZH_SHELL], ["en", enShell.EN_SHELL]]) {
     assert.ok(typeof table[NEW_SHELL_KEY] === "string" && table[NEW_SHELL_KEY].trim() !== "", `${lang} shell 表缺键：${NEW_SHELL_KEY}`)
     assert.equal(CJK.test(table[NEW_SHELL_KEY] ?? "") && lang === "en", false, `${lang} 值零 CJK 口径（zh 除外）`)
@@ -343,11 +254,11 @@ test("⑦ i18n：`me.sandbox.*` 16 键 + `nav.page.me.sandbox` 1 键逐键在场
   }
 })
 
-// ── ⑧ IA 计数 ∥ 静态面 ─────────────────────────────────────────────────────────
+// ── ⑥ IA 计数 ∥ 静态面 ─────────────────────────────────────────────────────────
 
-test("⑧ IA：我的 6（`#/me/ledger` 末位）∥ 路由解析 ∥ `labelKey` 两表在盘 ∥ 静态面（行数/行宽 ∥ 零外链 ∥ 代码段零 CJK ∥ 类名双向闭合）", () => {
+test("⑥ IA：我的 7（`#/me/ledger` 末位）∥ 路由解析 ∥ `labelKey` 两表在盘 ∥ 静态面（行数/行宽 ∥ 零外链 ∥ 代码段零 CJK ∥ 类名双向闭合）", () => {
   const me = NAV.NAV_GROUPS.find((group) => group.key === "me")
-  assert.deepEqual(me.items.map((item) => item.path), ["/me/keys", "/me/usage", "/me/account", "/me/projects", "/me/sandbox", "/me/ledger"], "我的 6——ledger 末位（2026-10-13 team-ledger 批随正）")
+  assert.deepEqual(me.items.map((item) => item.path), ["/me/chat", "/me/keys", "/me/usage", "/me/account", "/me/projects", "/me/sandbox", "/me/ledger"], "我的 7——ledger 末位（2026-10-13 team-ledger 批随正 ∥ 2026-10-14 chat 批随正）")
   assert.deepEqual(me.items.at(-1), { key: "ledger", labelKey: "nav.page.me.ledger", path: "/me/ledger" }, "末位项（ledger——labelKey 单源；2026-10-13 team-ledger 批随正）")
   for (const item of me.items) assert.ok(item.labelKey in ZH && item.labelKey in EN, `labelKey 两表在盘：${item.labelKey}`)
   assert.deepEqual(NAV.resolveRoute("/me/sandbox", "user"), { path: "/me/sandbox" }, "user 可达（非 admin 面）")
@@ -365,8 +276,7 @@ test("⑧ IA：我的 6（`#/me/ledger` 末位）∥ 路由解析 ∥ `labelKey`
     for (const literal of window.matchAll(/["'`]([^"'`]*)["'`]/g)) for (const token of literal[1].split(/\s+/)) if (token) used.add(token)
   }
   for (const token of used) assert.ok(cssClasses.has(token), `档面类无样式规则：${token}`)
-  for (const token of ["badge", "ok", "off", "warn", "hint", "pending-line"]) assert.ok(cssClasses.has(token), `本批类在盘：${token}`)
-  assert.ok(used.has("pending-line"), "本批新类被页消费：pending-line")
+  for (const token of ["badge", "ok", "off", "warn", "hint"]) assert.ok(cssClasses.has(token), `本批类在盘：${token}`)
   // AC-19 canon 不破（零新变量 ∥ 零新悬停规则——本批 CSS 增量零变量/零 hover）
   const cssClean = stripComments(CSS)
   assert.equal([...cssClean.match(/:root\s*\{[^}]*\}/)[0].matchAll(/(--[\w-]+)\s*:/g)].length, 76, ":root 76（本批零新变量——后续批增量后现值；2026-10-14 随正）")

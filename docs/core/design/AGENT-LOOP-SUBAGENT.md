@@ -284,7 +284,7 @@
 | F1 | `batchDoc` 参数门 | **继承**（缺参 / 路径不可读 → 机械拒；判据只到「参数在 + 路径可读」，内容由执行者拒收兜底） |
 | F2 | 任务书强制字段（目标与理由 / 轮次 initial\|fix / 已知事实 / 设计要点与禁止范围 / 验收标准 / 交付报告格式） | **新增结构化 spawn 参数 `round`**（enum；必带集合 = eng-coder/eng-designer，explore/advisor 豁免——勘察与评审不带实现轮次语义）；`validateTaskBookFields(args)` 六强制字段 + round 枚举校验 |
 | F5 | 角色 enum 校验 | 工程模式 enum = **explore / eng-designer / eng-coder**（advisor 不入——评审走 advisor 工具通道，不入 spawn 通道；`plan` 不入——工程模式无 plan 角色，normal 模式 `plan`/`coder` 不删） |
-| F6 | files 声明语义 | `files` = 预期触碰面（内容产物：源/测试/设计档）；**不列工程工具面（`scripts/**`）**、不列过程档（台账/CHANGELOG）；目录声明已被 `normalizeFileList` 拒（继承） |
+| F6 | files 声明语义 | `files` = 预期触碰面（内容产物：源/测试/设计档）；**不列工程工具面（`scripts/*`——层级锚定：仅仓根与直接子层——目录名在深层不携带 face 信息）**、不列过程档（台账/CHANGELOG）；目录声明已被 `normalizeFileList` 拒（继承） |
 
 **落点**：全部新增门禁逻辑统一落 `thincoder-core/agent-tools/spawn-gates.mjs`（`validateTaskBookFields` / `rejectEngineeringFilePaths`）——`buildSpawnChild` / `normalizeFileList` 只加 import 调用（装配点增量 ≤10 行；as-of 2026-09-17 实测 `subagent-spawn.mjs` 484 行——**as-of 读数 · 本批不追值**（统一归实现轮；登记见 §6.27.12.7 尾注④）。
 
@@ -294,7 +294,7 @@
 |---|---|
 | AC-M5-1 | 缺 `batchDoc` 或路径不可读 → 拒 |
 | AC-M5-2 | 任务书缺任一强制字段 → 拒（缺「轮次」→ 期望拒） |
-| AC-M5-5 | `files` 声明目录 / `scripts/**` / 过程档 → 拒 |
+| AC-M5-5 | `files` 声明目录 / `scripts/*`（层级锚定：仅仓根与直接子层） / 过程档 → 拒 |
 | AC-M5-6 | 角色 enum 非法 → 拒（工程模式 enum = explore/eng-designer/eng-coder） |
 
 **边界（本增量不做）**：不做实现（eng-coder 职责）；不做 token 签发（M6）；不重写调度器本体（继承 v1）；不判断「任务大小」（零裁量——工程模式下所有请求走全流程）。
@@ -1041,3 +1041,5 @@ a missing field is a dispatch defect and the spawn is refused.
 - 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · eng-coder**——承 `docs/batches/2026-10-10-vsc-consistency.md` §2（`1047-3`）· 台账 #1047）：§6.25 边界句随正——「不收敛 VSC 侧同机制重复实现」子句删（对象已退场：副本随收编批删除；余边界句不动）。**零新语义**。
 
 - 2026-10-14（**design-token-recovery 批 · 实施轮 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §2 · 台账 #1384）：§6.7.2 `design-slots` 行随本批收正——参数列 = `designId?` ∥ `reveal?`（必携 designId）；返回列随 reveal / 回收行；原「父侧 · 工程模式 · 只读」括注迁入阻塞列。**零新语义**（槽位面语义单源 = `DESIGN-TOKEN-SETTLEMENT.md` §10——本档不重述）。
+
+- 2026-10-15（**files-gate-scripts-depth 批 · 收尾链设计形式化轮 · eng-designer**——承批档 `docs/batches/2026-10-14-files-gate-scripts-depth.md` §1 · 台账 #1449）：§6.22 F6 行 ∥ AC-M5-5 行措辞**层级化**——工程工具面拦截 = `scripts/*` 仅仓根与直接子层（目录名在深层不携带 face 信息）；同口径 = `spawn-gates.mjs:89-94` 头注。**零机制改动**（谓词已落——本档只对齐措辞）。

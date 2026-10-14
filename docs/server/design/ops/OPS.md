@@ -243,15 +243,15 @@ services:
 
 ### 5.10 沙盒 runner（执行面——接入与运维；server-exec-sandbox 批 · 台账 #1224）
 
-- **形态** = 远程 Docker API 节点：控制面直调 Docker API ∥ **主机侧两件**（出站闸 nft ∥ 卷的磁盘限额）= SSH 进主机执行 ∥ 集群化 = 用 Docker 自己的集群 ∥ 机器上不驻留我们的进程——用户 2026-10-10 19:52–19:56 定；**机制全文 = `sandbox/EXECUTION.md`**（sandbox-exec-rebuild 批）。
+- **形态** = 远程 Docker API 节点：控制面直调 Docker API ∥ **主机侧一件**（卷的磁盘限额——出站闸随 sandbox-egress-removal 批退场，2026-10-14）= SSH 进主机执行 ∥ 集群化 = 用 Docker 自己的集群 ∥ 机器上不驻留我们的进程——用户 2026-10-10 19:52–19:56 定；**机制全文 = `sandbox/EXECUTION.md`**（sandbox-exec-rebuild 批）。
 - **节点前置（最小切片——runner-admin-console 批）**：节点机 Docker 引擎须**监听 TCP**（`dockerd -H fd:// -H tcp://0.0.0.0:2375` systemd override）∥ server 机 → 节点 `:2375` 网络可达（安全组/防火墙面）；
   **TLS 档可选**（`sandbox/SANDBOX.md` §3 连接方式块——本增补 #2：缺省明文不变 ∥ `https://` 地址 + 客户端证书三件 = 可选档；明文 2375 = 无鉴权 root 等价口——缺省限内网，不可信网内 ⇒ 开 TLS 档）；控制台容器面 = 建/启/停/删（机制 = `sandbox/SANDBOX.md` §3）。
 - **派生前置（底座可换增补——`sandbox/EXECUTION.md` §8）**：标准镜像（`settings.image`）须在节点镜像店在场（缺 ⇒ 派生停 + 人话）；底座镜像来源 = 既有拉取面（镜像源族/一键拉取；`.6` Hub 不可达现实 ⇒ 经源或 `save|load` 搬运——`docs/TEST-ENV-ECS.md` §7 坑 8）；节点侧构建零额外前置（Docker API `POST /build` 原生）；构建资源面 = CPU/磁盘瞬时占用（薄层——秒级；如实告知）。
-  **主机侧三件前提（sandbox-exec-rebuild 批）**：nft 可用（无 ⇒ iptables 备） ∥ 工作区根目录可写（`workspaceRoot`——缺省 `/var/lib/thincoder/workspaces`） ∥ 文件系统支持项目配额（xfs ∥ ext4——皆不可 ⇒ loopback 备 ∥ 再不可 ⇒ 建盒停 + 人话——`sandbox/EXECUTION.md` §4）。
+  **主机侧两件前提（sandbox-exec-rebuild 批）**：工作区根目录可写（`workspaceRoot`——缺省 `/var/lib/thincoder/workspaces`） ∥ 文件系统支持项目配额（xfs ∥ ext4——皆不可 ⇒ loopback 备 ∥ 再不可 ⇒ 建盒停 + 人话——`sandbox/EXECUTION.md` §4）。
 - **接入** = 控制台「添加节点」（填 Docker API 地址——连通自检；失败逐句人话 + 审计行）∥ 删除节点（有容器 ⇒ 二选一「保留 ∥ 连删」；有承载工作区 ⇒ 二次确认）；**装机/主机运维 = 管理面 chat 内动作**（`exec`/`docker`/`runners` + 主机表凭据——2026-10-14 任务式（托管接入）退场；机制全文 = `sandbox/SANDBOX.md` §3 接入面 ∥ `agent/ADMIN-AGENT.md` §12）。
 - **主机 SSH 前提**：server 宿主/容器须有 `sshpass` 与 `openssh-client`（密码认证面——主机 `exec`/chat 装机用）；缺 ⇒ 报因「宿主缺 `sshpass`——密码认证不可用」；容器路 = 镜像已含（§6 Dockerfile 行）。
-- **网络面**：盒流量在节点本机、出站经本机闸（不占 server 侧带宽——KD-SV-63 动机）。**细形（sandbox-exec-rebuild 批定形——`sandbox/EXECUTION.md` §5/§6）**：节点侧入向 = `:2375`（Docker API——仅 server 机可达）∥ `:22`（SSH——仅 server 机可达）。
-  server 侧入向新增 = **DNS 闸 UDP 53**（仅节点网络可达——盒 `resolv.conf` 指向 server；`tcws*` 网段外源码忽略）；盒出站强制 = 节点本机 nft 表 `thincoder_egress`（`iifname "tcws*"` 锚——默认全拒；全量重算幂等下发）；凭据面 = 主机表行（SSH——KD-SV-133）＋ Docker API 连接面（缺省明文/内网 ∥ **TLS 档可选**——本增补 #2；`sandbox/SANDBOX.md` §3 连接方式块）。
+- **网络面**：盒流量在节点本机（不占 server 侧带宽——KD-SV-63 动机）。**细形（sandbox-exec-rebuild 批定形——`sandbox/EXECUTION.md` §5/§6）**：节点侧入向 = `:2375`（Docker API——仅 server 机可达）∥ `:22`（SSH——仅 server 机可达）。
+  server 侧入向零新增（DNS 闸面随出站闸退场删——2026-10-14）；凭据面 = 主机表行（SSH——KD-SV-133）＋ Docker API 连接面（缺省明文/内网 ∥ **TLS 档可选**——本增补 #2；`sandbox/SANDBOX.md` §3 连接方式块）。
 - **连接面 TLS 档（本增补 #2——可选）**：节点 dockerd 侧启用 TLS（`--tlsverify` ∥ 服务端证书/密钥 ∥ CA——材料 = 用户自备；在机）；**客户端三件（CA/客户端证书/客户端私钥）经控制台「连接方式」录入**（私钥 AES-256-GCM 落库、零回显——`sandbox/SANDBOX.md` §3）；切档/编辑 = **自检为门**（当刻可达才落库——失败零变）；明文缺省路径零行为变化；真机步骤（节点侧配置 + 自签材料）随 `docs/TEST-ENV-ECS.md` 随正件（父侧/实施轮）。
 
 ### 5.11 MCP 服务器（管理面——server-mcp 批 · 台账 #1379）
@@ -363,6 +363,8 @@ first-release-completeness 面回填（2026-10-06——批 `docs/batches/2026-10
 - 沙盒 runner 面不做（server-exec-sandbox 批）：盒镜像内容治理（镜像 = 部署面）∥ 入站/端口转发 ∥ IPv6——全文 = `sandbox/SANDBOX.md` §15。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：§5.10 主机侧两件 ⇒ 一件（去出站闸）+ 三件前提 ⇒ 两件（去 nft）+ 网络面句去闸（server 侧入向零新增）。同源随动 = `sandbox/SANDBOX.md` ∥ `sandbox/EXECUTION.md`。**产品码零触（设计轮）。**
 
 - 2026-10-14（**sandbox-onboarding-removal 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §1 · 台账 #1383；用户裁「撤」——任务式装机（托管接入）退场）：§5.10 接入句收正（托管接入 ⇒ 装机/主机运维 = 管理面 chat 内动作——`exec`/`docker`/`runners` + 主机表凭据）∥ 「托管接入部署前提」行改「主机 SSH 前提」（`sshpass`/`openssh-client`——主机 `exec` 用；S2 先检句随退场删）。同源随动 = `sandbox/SANDBOX.md` ∥ `agent/ADMIN-AGENT.md`。**产品码零触（设计轮）。**
 

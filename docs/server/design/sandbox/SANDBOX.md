@@ -9,8 +9,8 @@
 ## 1. 形态与两平面
 
 - **一句话**：沙盒 = 容器强制的代码执行隔离件——**盒**（每工作区一个容器）跑在**执行面（runner）**的机器上，由**控制面（server）**编排治理；**server 本机不跑盒**。
-- **控制面**（本档）= server 的 sandbox 域：节点登记 ∥ 编排 ∥ 出站规则单源 ∥ 待批队列 ∥ 每工作区凭据 ∥ 审计 ∥ 控制台。
-- **执行面 = runner（远程 Docker API 节点）**：控制面**直调 Docker API** 建/起/停/拆盒；**主机侧强制走 SSH**（出站闸 ∥ 磁盘限额）；**机器上不驻留我们的进程**；集群化 = **用 Docker 自己的集群**（Swarm）；**盒级超时/快照 = 控制端（server）定时器**（节点存活 = 读时探活——§14 KD-SV-80）——用户 2026-10-10 19:52–19:56 定；**机制全文 = `sandbox/EXECUTION.md`**（三腿 ∥ 三证 ∥ 直调动作链 ∥ 主机侧件 ∥ DNS 闸）。
+- **控制面**（本档）= server 的 sandbox 域：节点登记 ∥ 编排 ∥ 每工作区凭据 ∥ 审计 ∥ 控制台（出站规则/待批队列两件随 sandbox-egress-removal 批退场——2026-10-14）。
+- **执行面 = runner（远程 Docker API 节点）**：控制面**直调 Docker API** 建/起/停/拆盒；**主机侧强制走 SSH**（磁盘限额）；**机器上不驻留我们的进程**；集群化 = **用 Docker 自己的集群**（Swarm）；**盒级超时/快照 = 控制端（server）定时器**（节点存活 = 读时探活——§14 KD-SV-80）——用户 2026-10-10 19:52–19:56 定；**机制全文 = `sandbox/EXECUTION.md`**（三腿 ∥ 三证 ∥ 直调动作链 ∥ 主机侧件）。
 - **为什么分离**：单机把盒与 server 放一起 ⇒ 一台机器被盒压死即全死（用户 14:00 原话）；分离后盒的资源耗尽只影响所在节点，server 常驻面不受累。
 - **容器唯一形态**（用户 13:43「容器是必须，不要考虑什么退路」）：**无可用节点 ⇒ 仅沙盒功能面不可用**（控制台明示——不降级）。
 - **server 启动与运行零依赖沙盒/runner**（用户 14:24 裁定——原话「thincoder server启动应该是不依赖沙盒的，runner应该也只是相关功能不可用。」）：不因缺可用节点 ∥ 沙盒未配置而拒启或降级；缺 ⇒ **仅沙盒功能面不可用**（503 `sandbox_unavailable` + 控制台明示）；网关 ∥ 记账 ∥ 控制台其余页 ∥ 客户面零影响。
@@ -26,20 +26,19 @@
 |---|---|---|
 | `sandbox_runners` | 登记的节点（= **主机表**——admin-chat-creds-merge 批扩展：行 = 一台主机，SSH 凭据随之；列面/机制 = §3 主机凭据块） | id ∥ name ∥ address（Docker API 地址——**SSH 目标 = 其 host 部分**）∥ status（active/disabled）∥ runtime_json（连通自检读数）∥ created_at ∥ **v18 新增**：ssh_port ∥ ssh_user ∥ auth_kind（key/password）∥ secret_cipher ∥ sudo_cipher ∥ credential_state（none/sealed/revoked——**密列零回显**）∥ credential_updated_at ∥ **v22 增（本增补 #2）**：tls_ca ∥ tls_cert ∥ tls_key_cipher（AES-256-GCM——**密列零回显**）∥ tls_updated_at（连接材料——**仅 TLS 档**；不变量 `https` ⇔ 三件齐——§3 连接方式块） |
 | `sandbox_workspaces` | 工作区登记 | id ∥ name ∥ owner_member_id ∥ key_id ∥ key_plain ∥ runner_id（绑定节点）∥ limits_json（每工作区覆写——下条）∥ created_at ∥ `stop_reason`（停因注记——v22 增：idle_ttl/wallclock_ttl/manual；NULL = 未停；引擎态恒读时读） ∥ `base_image`（底座绑定——v22 增（修订轮增补）：NULL = 标准镜像 `settings.image`；非空 = 归一引用（`名:标签`）；生效 = 下次建盒/重建——§3 底座可换块） |
-| `sandbox_rules` | 出站规则（单源） | id ∥ kind（cidr/domain）∥ action（allow/deny）∥ target ∥ port ∥ protocol ∥ priority ∥ note ∥ source（default/admin/approval）∥ created_at ∥ created_by |
-| `sandbox_pending` | 待批记录（史） | id ∥ runner_id ∥ workspace_id ∥ host ∥ hits ∥ first_seen_at ∥ last_seen_at ∥ status ∥ resolved_at |
+| `sandbox_rules` | 出站规则（**已退场——2026-10-14**；表在库留史——零写入零读面） | id ∥ kind（cidr/domain）∥ action（allow/deny）∥ target ∥ port ∥ protocol ∥ priority ∥ note ∥ source（default/admin/approval）∥ created_at ∥ created_by |
+| `sandbox_pending` | 待批记录（**已退场——2026-10-14**；表在库留史——零写入零读面） | id ∥ runner_id ∥ workspace_id ∥ host ∥ hits ∥ first_seen_at ∥ last_seen_at ∥ status ∥ resolved_at |
 | `sandbox_checkpoints` | WIP 快照登记 | id ∥ workspace_id ∥ created_at ∥ size ∥ blob_path ∥ note |
-| `sandbox_settings` | 设置（键值——全局默认） | k ∥ v——**键全集与值形 = `gateway/API.md` §2.5（单源）**；「默认单」**不在本表**（= `sandbox_rules` 种子行——§4） |
+| `sandbox_settings` | 设置（键值——全局默认） | k ∥ v——**键全集与值形 = `gateway/API.md` §2.5（单源）** |
 | `sandbox_onboarding` | 托管接入任务 + 凭据（v13——**停机留史**，2026-10-14） | id ∥ host ∥ ssh_port ∥ ssh_user ∥ auth_kind ∥ secret_cipher ∥ sudo_cipher ∥ credential_mode ∥ credential_state ∥ name ∥ model ∥ status ∥ step ∥ steps_json ∥ runner_id ∥ created_by ∥ created_at ∥ finished_at（DDL 全文 = `store/STORE.md` §2 v13 段；**停机留史**——2026-10-14 托管接入退场：零写入 ∥ 零读面；历史数据不删） |
 | `image_sources` | 远程镜像源清单（控制台维护——**server 全局**，非按节点） | id ∥ name ∥ address（名 ∥ 址**各自唯一**）∥ created_at ∥ created_by（DDL 全文 = `store/STORE.md` §2 v15 段） |
 | `registry_credentials` | 私有仓凭据（**server 全局**——按注册表主机；底座可换增补） | id ∥ host（注册表主机——归一（小写；Hub 别名归 `docker.io`）∥ **唯一**）∥ username ∥ secret_cipher（AES-256-GCM——复用 `credential-crypto.mjs`；**密列零回显**）∥ created_at ∥ created_by（DDL 全文 = `store/STORE.md` §2 v22 段） |
 
-- **审计**：`audit_events.type` CHECK 重建（v11——沿 v10 表重建先例 `db.mjs:171-192`）——**十型 ⇒ 十二型**（+ `sandbox_rule`（规则增删——detail.action + 规则原文）
-  ∥ `sandbox_event`（审批三态/超时 ∥ 盒起停拆 ∥ 节点添加/删除（含连通自检失败行） ∥ 快照——detail.kind）；型面单源 = `accounts/audit.mjs`（已落盘 109 行））。
+- **审计**：`audit_events.type` CHECK 重建（v11——沿 v10 表重建先例 `db.mjs:171-192`）——**十型 ⇒ 十二型**（+ `sandbox_rule`（规则增删——detail.action + 规则原文；**写入面随出站闸退场**——2026-10-14）
+  ∥ `sandbox_event`（盒起停拆 ∥ 节点添加/删除（含连通自检失败行） ∥ 快照——detail.kind）；型面单源 = `accounts/audit.mjs`（已落盘 109 行））。
   **镜像源增补（sandbox-image-sources 批）**：`sandbox_event` 增三 kind（`image_source_add` ∥ `image_source_update` ∥ `image_source_delete`——detail 键集 = `accounts/ACCOUNTS.md` §2.1；kind 非枚举——CHECK 零动）。
   **主机凭据增补（本批）**：`sandbox_event` 增两 kind（`host_credential_set` ∥ `host_credential_revoke`——detail 键集 = `accounts/ACCOUNTS.md` §2.1；kind 非枚举——CHECK 零动）。
   **连接方式增补（本批 · 增补 #2）**：`sandbox_event` 增一 kind（`runner_connection`——连接方式变更（设/改/关 TLS——含材料清零）；detail 键集 = `accounts/ACCOUNTS.md` §2.1；kind 非枚举——CHECK 零动）∥ `runner_add` detail 增 `tls` 布尔键。
-- **修订号（rulesRev）**：规则/设置变更 ⇒ 全局单调 +1。
 - **明文落库**：`sandbox_workspaces.key_plain`（工作区 key 明文——盒每次重建须再注入；先例 = provider key 明文（KD-SV-19）；披露 = §10-D2）。
 - **每工作区资源档（覆写）**：`sandbox_workspaces.limits_json`（JSON 对象——键 = `cpus` ∥ `memMb` ∥ `pids` ∥ `diskMb` ∥ `idleTtlMinutes` ∥ `wallclockTtlHours`；缺键 = 随全局默认）；写端点 = PATCH（§9 ∥ `gateway/API.md` §2.5）；**取值序 = 全局默认（`sandbox_settings`）⇒ 逐键叠加工作区覆写（覆写优先）**。
   解析结果 = 建盒/重建时的容器参数（控制面直调 Docker API——§1）；生效 = 下次建盒/重建（运行中盒零触——容器旗不可热改）。
@@ -49,7 +48,7 @@
 
 ## 3. 节点与容器（最小切片——runner-admin-console 批）
 
-> **本批射程（用户 2026-10-10 19:59 令）**：① 添加节点（登记一台 Docker API 节点）② 创建容器 ③ 启动 ∥ 停止容器 ④ 删除节点（+ 容器删除——提议④）。**其余全部不做**（一行带过：出站闸 ∥ 磁盘限额 ∥ 探针 ∥ 心跳/放置 ∥ Swarm ∥ 快照 ∥ 待批 ∥ 镜像管理 ∥ 工作区↔容器映射 ∥ 卷删除 ∥ 限额/端口/网络 ∥ TLS——§15）。
+> **本批射程（用户 2026-10-10 19:59 令）**：① 添加节点（登记一台 Docker API 节点）② 创建容器 ③ 启动 ∥ 停止容器 ④ 删除节点（+ 容器删除——提议④）。**其余全部不做**（一行带过：出站闸 ∥ 待批（两件随后退场——2026-10-14） ∥ 磁盘限额 ∥ 探针 ∥ 心跳/放置 ∥ Swarm ∥ 快照 ∥ 镜像管理 ∥ 工作区↔容器映射 ∥ 卷删除 ∥ 限额/端口/网络 ∥ TLS——§15）。
 > **连线口径**：地址 = `[http://|https://]<host>:<port>`（登记输入归一：**按档补 scheme**——明文档（缺省）缺协议补 `http://`、缺端口补 `2375`；TLS 档（本增补 #2）缺协议补 `https://`、缺端口补 `2376`；**显式 scheme 与档相抵 ⇒ 400**——§3 连接方式块）；
 > **调用恒带版本前缀**（**前缀形 = `v<协商版本>`**——如协商 `1.44` ⇒ 路径 `/v1.44/…`；2026-10-11 真机核：`/1.44/…` = 404 ∥ `/v1.44/…` = 200）；登记时协商 = `max(1.44, MinAPIVersion)`，须 ≤ `ApiVersion`，否则拒登记——提议⑤；**引导步 = 先取无前缀版本读数、再定前缀**——见下）；读类超时 3s ∥ 动作类 15s（常量；测试可注入 `fetchImpl`）。
 > **读时探活（非心跳）**：运行面/列表读数 = 请求内现打（并发；无后台定时器 ∥ 无心跳机制——§14 KD-SV-80）。
@@ -61,7 +60,7 @@
   **节点侧前置**：节点机 Docker 引擎须监听 TCP（测试机 = `dockerd -H fd:// -H tcp://0.0.0.0:2375` systemd override；前置步已落文——`docs/TEST-ENV-ECS.md` §7「节点接线链」，2026-10-10）；**TLS 档可选（本增补 #2——§3 连接方式块：缺省明文不变；`https://` 地址才走 TLS；证书 = 用户自备）**。
 - **运行面读数**（`GET /api/admin/sandbox/overview`）：每节点现打 `GET <base>/v<ver>/info`（3s ∥ 并发）⇒ 行 = `{ id, name, address, status, online, version, containers: { total, running } ∥ null, selfCheck, createdAt }`（`online=false` ⇒ `version`/`containers` = `null`——离线读数不外推）。
   `status = available ⇔ 至少一个节点在线`（无节点 ⇒ unavailable「无节点注册」；全离线 ⇒ unavailable「节点全部不可达」）；**节点面（添加/删除）恒可用**（不随门禁）。
-  写门（`requireSandboxAvailable`——需节点的写路径（工作区创建/动作；规则 ∥ 设置 ∥ 待批裁定不设门）= 静态判据（存在 `active` 节点）；本批零改——实时门统一随重做批）。
+  写门（`requireSandboxAvailable`——需节点的写路径（工作区创建/动作；设置不设门）= 静态判据（存在 `active` 节点）；本批零改——实时门统一随重做批）。
 - **创建容器**（`POST …/runners/:id/containers`——提议②）：入参 `{ name, image, volume?, command? }`（名 = Docker 容器名形；镜像 = 控制台预填设置 `image` 值（现缺省 `thincoder-sandbox:1`）；卷 = Docker 卷名，空 = 不挂；
   **命令 = 启动命令（轻通道笔 10——用户 2026-10-12 11:51 裁「甲，应该有个默认，但是可覆盖」）**：缺省/`null` ⇒ 待命命令 ∥ 字符串 ⇒ 空格切分参数（不解析引号——本字段非壳）∥ 显式空串 ⇒ 400（空命令容器一亮即退））。
   ⇒ `POST <base>/v<ver>/containers/create?name=<名>`（体 = `{ Image, Cmd: ["sleep", "infinity"], HostConfig: { Binds: ["<卷>:/workspace"] } }`——**待命命令恒携**
@@ -294,37 +293,10 @@
   - **审计**：`runner_add` detail 增 `tls` 布尔 ∥ 连接变更 = 一枚 `runner_connection`（detail = kind + runnerId + address + tls 布尔——零秘密）；切换自检失败沿 `runner_selfcheck_failed`（detail 增 runnerId）。
   - **边界（增补 #2 不做）**：材料轮换/续期机制 ∥ 材料查看/导出（只进不出）∥ 节点侧 TLS 服务端配置（在机）。
 
-## 4. 出站规则（单源在本档）
+## 4. 出站规则与待批队列（已退场——2026-10-14）
 
-- **两类同表**（需求块）：① **CIDR 规则**（网络层——安全组同形：`allow ∥ deny` × `CIDR` × 端口/协议；零域名依赖）；② **域名规则**（应用层）。**各自可单独使用**（只用 CIDR ∥ 两者并用）。
-- **默认全拒**：无允许条目 ⇒ 全拒。
-- **默认禁单**：`127.0.0.0/8` ∥ `169.254.0.0/16` = **内置恒拒**（非行——不可改；已裁 U2）∥ RFC1918（`10.0.0.0/8` ∥ `172.16.0.0/12` ∥ `192.168.0.0/16`） ∥ 服务器网段 ∥ 节点自身网段（登记时自动带入）= **种子 deny 行**（`source='default'`——可改可删）。**内网/固定 IP 后端 = 显式加 allow 条目**（零域名依赖——需求块原句；显式 allow 可开种子 deny——§10 U2）。
-- **默认单**（开箱可用——**单源 = `sandbox_rules` 种子行**（`source='default'`——可改可删；初始化点 = v11 迁移段一次性写入——不复活）——已裁 U3 = 五条起步）：`registry.npmjs.org` ∥ `github.com` ∥ `*.githubusercontent.com` ∥ `gitee.com` ∥ `*.gitee.com`——装依赖/拉仓无需任何批准。
-- **预授权条目（来源 = 项目登记——member-face-chat 批 · 裁定修订轮；台账 #1215）**：登记仓/源 ⇒ 其域名**自动入出站 allow**（`sandbox_rules` 行 `source='project'`——同「默认单」的带入口径）：
-  - 首次带入（域名不在）⇒ 行入 + `rulesRev` +1 + 审计一行 `sandbox_rule`（detail 携 `autoImport` + `origin:"project"`）；重复登记 ⇒ 零重行零审计；
-  - **机器可读可撤**（= 普通规则行——控制台可改可删，删 ⇒ 即生效；规则面零新种类）；
-  - **拉仓与日常 `git fetch/push` 直通**（零人工待批）∥ **非拉仓裸出站仍走待批**（§6 不变）；
-  - 理由 = 用户判据（2026-10-13）：「被加为项目成员/仓被登记 = 放行已完成——重复放行 = 冤枉路」。
-- **两闸次序**（域名路径——需求块）：域名命中 ⇒ 解析（取全地址）⇒ **每个解析 IP 仍过 CIDR 闸**（否则「白名单域名 + 内网解析」即绕过）。
-- **冲突序**：**显式 deny 恒先于 allow**（同一目标两者皆中 ⇒ 拒）；**种子 deny（`source='default'`）≺ 显式 allow**（显式 allow 可开 RFC1918/服务器网段——U2 裁定）；`priority` = 同动作内排序（可读性 + 未来扩展）。
-- **强制面（本批——台账 #1248；真机 P2/P3 两 FAIL 的修复）**：求值分三层——**L1 门级不变量**（`127.0.0.0/8` ∥ `169.254.0.0/16`——回环 ∥ 链路本地/云元数据：非行、不可改、不可被任何规则/设置/待批绕过）∥ **L2 默认禁单**（RFC1918 三段 ∥ 服务器自身网段 ∥ 节点自身网段——种子 deny 行：可改可删、可被显式 allow 开——**U2-A 不变**）∥ **L3 用户规则**（显式 deny ≺ 显式 allow ≺ 种子 allow ≺ 默认拒——上条冲突序）。
-  三层之外另有一类**内置允许**（**生命线**：盒 → server 网关地址:端口（§7 网络路径）；系统注入 ∥ 非用户规则 ∥ 不可被 L2/L3 覆盖）；**总序 = L1（命中即拒） ≻ 零地址闸（`host` 在场而 `ips` 空 ⇒ 拒——无条件 fail-closed，不得被内置允许放行） ≻ 内置允许（命中即放） ≻ L2 ≻ L3**。
-  「强制」的七条定义（真机读数即此面漏出：P2「盒内 curl 宿主 22 口 EXIT=0」∥ P3「`169.254.169.254` 可达」——读数在案 = 批档 `docs/batches/2026-10-10-server-exec-sandbox.md` §6）：
-  ① **门位绑定**：闸 = 主机侧网络层（nft 优先 ∥ iptables 备——全量重算幂等，KD-SV-76）**全协议/全端口**——不是只挡 HTTP/代理面（P2 的 22 口 = 该条证据；**两方向 = `forward` ∥ `input` 两条基线链**——盒 → 宿主自身方向经 `input` 入盒链，机制 = `sandbox/EXECUTION.md` §5）；
-  ② **双径同判**：域名径（命中 allow ⇒ 解析 ⇒ 每个解析 IP 仍过 CIDR 闸）与直连 IP 径**同判同序**（求值 = `evaluateEgress` 单源）；
-  ③ **解析零地址 ⇒ 拒**（fail-closed）：`host` 在场而 `ips` 空 ⇒ 拒——不得以「未解析」放行（本批补 `evaluateEgress` 此句）；
-  ④ **命中 L1 ⇒ 即时拒**：零挂起、零待批行（不可批准面——挂起窗只服务 L2/L3 新域；§6）；
-  ⑤ **节点自身网段 = 登记时幂等自动带入**（`ensureSegmentDeny`——**调用点 = `routes.mjs` 节点登记 handler**；服务器自身网段 ∥ 节点地址所属 /24；重复登记零重行；旧「join 时带入」随执行面重定而断，实读零调用方）；
-  **带入行口径**：首次带入（该段不在）⇒ 行入（`source='default'`）+ `rulesRev` +1 + 审计一行 `sandbox_rule`（detail 明写「自动带入」+ 段值逐值）∥ 重复登记（段已在）⇒ 零重行 ∥ `rulesRev` 零动 ∥ 零审计行；
-  **「建盒/重建前复核在场」= ⑥ 的从属动作**（闸就位检查）——落地 = `sandbox/EXECUTION.md` §5（sandbox-exec-rebuild 批——生命周期动作前置复核）；
-  ⑥ **闸 = 盒的生命周期前置**：闸未就位（规则未下发 ∥ 下发失败）⇒ **不建盒、不起盒**（控制台明示原因）——「强制」= 前置，不是告警；
-  ⑦ **落地范围**：②③ 与 ⑤ 前半（登记时幂等自动带入）的控制面求值与带入接线 = sandbox-outbound-member-face 批已实施（可机检）；**①④⑥ 与 ⑤ 后半（建盒/重建前复核）的主机侧实施（闸本体/下发器）= sandbox-exec-rebuild 批落定**（`sandbox/EXECUTION.md` §5）；P2/P3 真机复证 = 该批收口面（§16 R73③）。
-  **段值推导（明写——真机逐值验收面）**：节点段 = 登记地址 host 的 /24；服务器段 = **server 对外地址**的 /24——取值点单源 = 盒 env `OPENAI_BASE_URL` 所用地址（现实现 = `config.host`/`config.port` 组成——`registry.mjs:484`/`:490`）；
-  `config.host` 为通配地址（`0.0.0.0`）∥ 非 IPv4 字面 ⇒ **该项零行 + 登记读数如实标（不猜、不静默）**——部署侧以显式地址配置 ⇒ 正常取段；**服务器地址非 IPv4 字面 ⇒ 盒链停**（盒 DNS 注入与内置允许双缺——建盒/起盒拒 + 人话；`sandbox/EXECUTION.md` §3 链前置）。
-- **通配**（仅域名规则）：单层左通配 `*.example.com`（恰一级子域）；**禁**裸 `*` ∥ TLD 级（`*.com`）∥ 双通配 ∥ IP 段通配；写面校验（非法 ⇒ 400）；控制台通配条目带醒目标记；审计行记原文。
-- **生效**：增删 ⇒ `rulesRev` +1 ⇒ **即生效 ∥ 不重建盒**（需求块）；下发与应用机制 = `sandbox/EXECUTION.md` §5（全量重算幂等 ∥ `nft -f` 单事务 ∥ 外部手改的漂移窗 = 下次下发收正）。
-- **审计**：每次增删一行 `sandbox_rule`（type 单源 = §2）。
-- **谁能改**：v1 = admin（会话 `requireAdmin`）；#1216② 权限面落地时在**同一守卫点**换判据（接口已留——§9）。
+- **本块退场**（sandbox-egress-removal 批——用户 2026-10-14 20:32 裁「整套摘除」）：出站规则（两类同表 ∥ 两闸 ∥ 默认单 ∥ 预授权条目〔登记即放行——该件从未落成，直接删净〕）与待批队列（三态 ∥ 60s ∥ 三次建议）**整块退场**——设计面词面删净；产品面摘除随实施轮（全形 = `sandbox/EXECUTION.md`）；如后续重启该面 ⇒ **单列提议新开批**（不复活本块）。
+- **退场后留面**：`sandbox_rules`/`sandbox_pending` 两表 = **在库留史**（零写入 ∥ 零读面——§2）；探针表 egress 五腿删（余腿 = §11）。
 
 ## 5. 工作区生命周期与节点绑定
 
@@ -338,18 +310,6 @@
 - **卷**：主机路径 `<workspaceRoot>/<ws-id>`（绑定挂载——§2 ∥ KD-SV-162）；磁盘配额 = 项目配额优先 ∥ loopback 备（SSH——`sandbox/EXECUTION.md` §4）。
 - **成员面接线（member-face-chat 批——2026-10-13；机制全文 = `agent/MEMBER-AGENT.md` §3.5）**：工作区生命周期动作对成员开（创建/启停/销毁——§8 成员面）；盒起停 ⇒ 成员面会话在线态随动（壳随容器起——起盒 ⇒ 连挂 `hello`；停盒 ⇒ 在途回合掉线收尾）；**会话真源在盒内**（核原生槽文件——题一裁定；盒卷内 `.thincoder` 随卷随快照 ⇒ 停盒/重启会话在场、换机随快照回（截至快照时点）、销毁随卷去——如实）。
 
-## 6. 待批队列（首次新域——需求块）
-
-- **现状（2026-10-14——缺省关）**：本队列**机制在册、现阶段未启用**——总开关缺省 off（判据 = `config.sandbox.egressEnforce === true`；缺省 false）：盒不注入闸 DNS ∥ 零下发（不推规则、不动节点既有表）⇒ **零挂起零待批**（无闸 DNS 流量——不产生 pending 行）；机制全文 = `sandbox/EXECUTION.md` §5/§6。
-  **启用（严格模式）= 功能齐后的后续轮**（用户 2026-10-14：「安全性问题押后，等跑通以后再说，别套着枷锁跳舞」）。
-- 盒访问未在白名单的域名 ⇒ **挂起该连接**（缺省 60s）∥ 登记 pending（同 host 去重 + hits++）⇒ 控制台「工作区 X 想访问 Y」。
-- **L1 命中（内置恒拒）⇒ 即时拒**：**零挂起、零待批行**（不可批准面——§4 强制面 ④）；挂起窗只服务 L2/L3 的新域；三态裁定与超时句不变。
-- **预授权条目域零挂起**（member-face-chat 批 · 裁定修订轮）：`source='project'` 行命中 ⇒ 放行（非待批面——同白名单命中）；**非拉仓裸出站仍挂起**（本队列不变）。
-- 三态（控制台一键）：**批准一次**（放行当次；再访问再批）∥ **批准并记住**（写域名规则——source=approval——即生效）∥ **拒绝**；超时（缺省 60s）⇒ 拒。
-- **三次批准同一域**（approve-once 计数——由 `sandbox_pending` 史派生）⇒ 控制台出「建议入默认单」行（一键采纳 = 并入默认单种子）。
-- 挂起保持直至裁定到达或超时。
-- 审计：`sandbox_event`（kind=approval——三态 + timeout + host + workspace）。
-- **机制面（sandbox-exec-rebuild 批——本批）**：挂起 = **DNS 闸持答**（server 进程内 UDP 53 应答器——盒 `resolv.conf` 指向 server，建盒时注入；§7 网络路径）；放行前置 = 该域解析 IP 先入节点闸集（即生效 ∥ 不重建盒）；L1/显式 deny 域 ⇒ 零挂起零待批行；非盒源查询 ⇒ 忽略。机制全文 = `sandbox/EXECUTION.md` §6。
 
 ## 7. 盒内凭据（每工作区）
 
@@ -357,12 +317,12 @@
 - **归属**：owner_member_id（工作区负责人）——模型用量/配额走**既有成员三级配额链**（零新配额机制）；记账按 key 归因（`usage.key_id` 存量列）⇒ 控制台按工作区可查。
 - **吊销/轮换**：工作区销毁 ∥ 控制台「轮换」⇒ 吊销旧 key（`revokeKey`）+ 签发新 + **拆容器重建**（**卷保留**——新 key 于重建时注入 env；容器 env 运行期不可变 ⇒ 无「不重建即生效」路径）；重建前旧 key 已失效（401）。
 - **盒内形态**：容器 env 注入——`OPENAI_BASE_URL=http://<server>:<port>/v1` ∥ `OPENAI_API_KEY=<workspace key>`（+ TC_* 别名随实施）；**盒内零服务器密钥**（真 provider key 绝不入盒——网关代持）。
-- **网络路径**：盒 → server 网关地址:端口 = **内置允许**（不算用户规则——模型调用生命线）；server 其余面 = 会话门禁（盒内无会话）+ 登录防爆破门在（读法披露 = §10-D3）。
+- **网络路径**：盒 → server 网关地址:端口（模型调用生命线——直连；出站闸面随 sandbox-egress-removal 批退场删——2026-10-14）；server 其余面 = 会话门禁（盒内无会话）+ 登录防爆破门在（读法披露 = §10-D3）。
 
 ## 8. 控制台面
 
 - **落点（已裁 U4）**：server webui 新管理页「沙盒」`#/admin/sandbox`；**非壳页**（卡多——沿看板页先例，不扩「钉表五页」）。
-- 卡面（**六面**——必交面（用户 14:08 行）：运行面 ∥ 工作区 ∥ 出站规则 ∥ 待批队列 ∥ 资源与 TTL ∥ 审计可查）：
+- 卡面（**四面**——必交面（用户 14:08 行）：运行面 ∥ 工作区 ∥ 资源与 TTL ∥ 审计可查；③ 出站规则 ∥ ④ 待批队列两面随 sandbox-egress-removal 批退场——2026-10-14）：
   - **运行面**（本批落定——§3）：可用性门（无节点 ∥ 全离线 ⇒ unavailable + 原因；节点面恒可用）∥ 节点表（名 ∥ 地址 ∥ 在线态 ∥ 版本 ∥ 容器（运行/总） ∥ 操作：展开容器 ∥ 删除）∥
     写入口 = **添加节点**（名 + Docker API 地址——连通自检；失败逐句人话 + 审计行）∥ **删除节点**（有容器 ⇒ 二选一「保留 ∥ 连删」；有承载工作区 ⇒ 二次确认）∥ **容器区**（节点行展开：列表（名/镜像/状态）+ 创建（名/镜像/卷三件）+ 启动/停止/重启/删除 + 详情（挂载/端口/环境/命令/用量——弹窗）∥ 日志（弹窗）∥ 强杀（详情窗内危险钮）——§3（本批补齐）∥
     **终端**（容器行第七钮——真 pty 会话窗：门 = 运行中；窗内 = 终端面 + 状态行（连接中/已连接 `cols×rows`/已断开/退出码）+ 重连钮（新会话）；同容器窗单例；`webui/TERMINAL.md` ∥ §3 容器终端块））∥
@@ -372,28 +332,25 @@
     **底座卡 + 私有仓凭据卡**（本增补——标签②「镜像与镜像源」：底座卡 = 说明行（缺省 = 标准镜像；自定义 ⇒ 派生） + 工作区表（工作区 ∥ 底座（「标准」∥ 引用） ∥ 操作：「设底座」弹窗（镜像引用输入 + 「恢复标准」）∥「构建」钮（derive——在飞态「构建中……（可能持续数分钟）」；未绑节点 ⇒ 禁用 + 一句人话））；
     凭据卡 = 注册表表（主机 ∥ 用户名 ∥ 更新时间 ∥ 操作：改/删）+「添加凭据」钮（弹窗：注册表主机 ∥ 用户名 ∥ 口令/令牌——**密文零回显**；源表式副作用）——机制 = §3 底座可换块；UI 定形 = `webui/SANDBOX.md` §2.1①）；
   - **工作区**（列表：名/负责人/绑定 runner/盒状态/快照/操作：启动/停止/销毁/轮换 key/快照恢复（快照列表读面）；**动作 = 直调链**（幂等语义 ∥ 「待人放」态明示 ∥ 销毁确认门携盒态/快照读数——机制 = `sandbox/EXECUTION.md` §3）；写入口 = **每工作区覆写**（资源 + TTL：`cpus`/`memMb`/`pids`/`diskMb`/空闲 TTL/墙钟 TTL——行内编辑；生效 = 下次建盒/重建））；
-  - **出站规则**（安全组式表：方向（恒出站）∥ 协议 ∥ 端口 ∥ 目标 ∥ 动作 ∥ 优先级 ∥ 备注；增删行内；默认单 = `source=default` 种子行（可改可删））；
-  - **待批队列**（实时表 + 三钮 + 「建议入默认单」行；写入口 = 待批超时）；
   - **资源与 TTL**（全局默认：limits（cpus/mem/pids） ∥ 磁盘配额默认 ∥ 空闲 TTL ∥ 墙钟 TTL ∥ 快照周期/保留数 ∥ 镜像名；读数：各节点磁盘余量 ∥ 盒资源占用）；
   - **审计可查**（`sandbox_rule` ∥ `sandbox_event` 过滤视图——数据面 = 审计页同源 + 本卡快捷入口）。
-- **每配置项有界面写入口**（必交面判据——用户 14:08）：`sandbox_settings` 逐键 ↔ 卡面对照——`cpus`/`memMb`/`pids`/`diskMb`/`idleTtlMinutes`/`wallclockTtlHours`/`checkpointEveryMinutes`/`checkpointKeep`/`image`/`tmpfsMb` ⇒ 资源与 TTL ∥ `pendingTimeoutSeconds` ⇒ 待批队列。
+- **每配置项有界面写入口**（必交面判据——用户 14:08）：`sandbox_settings` 逐键 ↔ 卡面对照——`cpus`/`memMb`/`pids`/`diskMb`/`idleTtlMinutes`/`wallclockTtlHours`/`checkpointEveryMinutes`/`checkpointKeep`/`image`/`tmpfsMb` ⇒ 资源与 TTL。
   **`memberWorkspaceLimit`（正整数——每成员工作区上限，缺省 3）⇒ 资源与 TTL（成员面行；member-face-chat 批）**。
-  默认单 = 出站规则卡内 `source=default` 行（**非设置键**）；**每工作区覆写**（资源 + TTL）⇒ 工作区行；规则条目 ⇒ 出站规则行内增删。**零配置项以「编辑配置文件」收场**（部署拓扑项不涉本设置面）。
+  **每工作区覆写**（资源 + TTL）⇒ 工作区行。**零配置项以「编辑配置文件」收场**（部署拓扑项不涉本设置面）。
   **v22 增两键（本批）：`maxBoxesPerRunner`（正整——单节点盒数上限，缺省 8；放置与防吃光）⇒ 资源与 TTL ∥ `workspaceRoot`（节点侧工作区根路径，缺省 `/var/lib/thincoder/workspaces`）⇒ 资源与 TTL（容器重建/停盒态需明示重启生效）。**
   **底座可换增补（本批·修订轮）**：**底座绑定（每工作区）⇒ 底座卡（行级写入口——§3 底座可换块）∥ 私有仓凭据 ⇒ 凭据卡**（两卡均标签②；成员面零涉）。
 - 判权：v1 = `requireAdmin`（会话）；#1216② 到位后换同点（§9）。
 - 明示义务：无可用节点 ⇒ disabled + 原因；节点探活失败 ⇒ 红；工作区无保护（非 git/快照失败）⇒ 标。
-- **成员面（本人自助——用户 14:56 裁；需求 §5 沙盒块成员面行；本批落读面——台账 #1233/#1234）**：成员自己的资源须有本人面——首个兑现 = **工作区读面**（`webui/SANDBOX.md` §2.2；信号 = `gateway/API.md` §2.7——恒本人过滤）：盒状态（运行 ∥ 已停 + 回收原因）∥ 快照数 ∥ **所属 runner**（行增 `runnerName`——未绑定 ⇒ `null`，端侧呈「未绑定」）∥ 待批。
+- **成员面（本人自助——用户 14:56 裁；需求 §5 沙盒块成员面行；本批落读面——台账 #1233/#1234）**：成员自己的资源须有本人面——首个兑现 = **工作区读面**（`webui/SANDBOX.md` §2.2；信号 = `gateway/API.md` §2.7——恒本人过滤）：盒状态（运行 ∥ 已停 + 回收原因）∥ 快照数 ∥ **所属 runner**（行增 `runnerName`——未绑定 ⇒ `null`，端侧呈「未绑定」）。
   **成员会话面接线（member-face-chat 批——本批出案）**：会话面（`#/me/chat`——`webui/CHAT.md` §2.2）以工作区为宿主；盒未运行/未连接 ⇒ 就地启动动作；停盒 ⇒ 在途回合掉线收尾（notice + `box_lost`）——机制 = `agent/MEMBER-AGENT.md` §3.4/§3.5。
-  **待批发起方提示（本批——台账 #1233①；父侧 2026-10-13 裁定）**：`pending` 在场 ⇒ **一行可见提示**「等待管理员批准：<host>（首次访问新域名——通常 ≤60s）」（不得静默——≤60s 窗内可见；裁定 ∥ 超时 ⇒ 提示自动消失，不残留）。
-  **判据单源 = 本档**（文案 ∥ 出现/消失条件 ∥ 零静默）；落点 = 控制台成员页 `#/me/sandbox`（`webui/SANDBOX.md` §2.2）；**三端（CLI ∥ VSC ∥ 桌面）今日无沙盒/工作区面**（实读——三端文档零沙盒条目；成员面会话面 = #1215 未启设计）⇒ 三端落点**登记为随 #1215 成员会话面**（届时按本判据落；本批不发明新面——父侧 2026-10-13 裁定）。
+  **三端（CLI ∥ VSC ∥ 桌面）今日无沙盒/工作区面**（实读——三端文档零沙盒条目）⇒ 三端落点**登记为随 #1215 成员会话面**（本批不发明新面——父侧 2026-10-13 裁定）。
   **#1215 成员会话面设计轮（2026-10-13）处理 = 单列提议：不在成员面会话批**（`agent/MEMBER-AGENT.md` §9 R75——待裁）。
   **成员写面**（member-face-chat 批——本批开）：创建 ∥ 启动 ∥ 停止 ∥ 销毁（确认门）+ 拉仓——判权 = 本人 + 上限（`memberWorkspaceLimit` 缺省 3）；**不另开管理面**（动作承载 = 对话页就地 + 工作区页动作列 + 会话内 agent 工具）；轮换/快照恢复仍在管理面（登记）。机制 = `agent/MEMBER-AGENT.md` §3.7。
   **成员 git 凭据面（member-face-chat 批——题三补）**：落点 = **我的·账户页**（`webui/ME.md` §3——不进沙盒页）；机制 = `agent/MEMBER-AGENT.md` §3.6/KD-SV-204。
 
 ## 9. 端点与判权（表在 API.md——单源）
 
-- 控制台面 = `/api/admin/sandbox/*`（§8 六面对应）；成员面 = `/api/me/sandbox/*`（§8 成员面）。
+- 控制台面 = `/api/admin/sandbox/*`（§8 四面对应）；成员面 = `/api/me/sandbox/*`（§8 成员面）。
 - 表 = `gateway/API.md` §2.5（控制台面）∥ §2.7（成员面）；错误形 = §3 全码 + **一码新增** `sandbox_unavailable`（503——无可用节点）；节点/容器面（本批——§3）：引擎失败 ⇒ 502 `upstream_error`（消息 = 逐句人话 + 引擎原文）∥ 容器/节点不存在 ⇒ 404 ∥ 形非法/重名/镜像缺/名占用 ⇒ 400（零新码）；判权 = `requireAdmin`（`thincoder-server/src/accounts/session.mjs`）∥ 成员面 = 会话（本人过滤——§8 成员面）。
   镜像源面（sandbox-image-sources 批）＝ `gateway/API.md` §2.5 镜像源七行——判权 `requireAdmin`；零新码（400/404）；目录/标签读数 = 自含状态形（`{ ok, error: { kind, message } }`——沿 `/api/admin/proxy/test` 先例）；零涉沙盒可用性门（源面与节点无关）；
   一键拉取（sandbox-image-quick-pull 批）= 纯前端复用镜像族拉取端点（`/runners/:id/images/pull`——§3）——零新端点；拉取认源（sandbox-pull-by-source 批）= 纯前端（拉取窗选源组装引用——组装在窗内；拉取仍走既有端点）——零新端点。
@@ -412,7 +369,7 @@
 
 ## 10. 已裁决策与读法披露
 
-**已裁（2026-10-10 14:23 用户「都按建议」——逐条 = 原设计建议）：**
+**已裁（2026-10-10 14:23 用户「都按建议」——逐条 = 原设计建议）：**（**U2/U3 之 egress 面随 sandbox-egress-removal 批退场——2026-10-14（块内 = 历史记录）**）
 
 | # | 已裁项 | 候选 | 裁定 | 影响 |
 |---|---|---|---|---|
@@ -422,13 +379,13 @@
 | U4 | 控制台落点 | A server webui 新管理页 ∥ B 并入系统页 ∥ C 三端 | A（一页一职责——沙盒面自持） | webui 页数链 + 实施面 |
 | U5 | WIP 快照默认 | A 周期 15 分钟 + 拆前 ∥ B 仅拆前 ∥ C 无（仅卷保留） | A（最小保护） | 节点负载/带宽 |
 
-- U2 读法注：需求块「默认禁单…内网/固定 IP 后端 = 显式加 CIDR 允许条目」与「deny 恒先于 allow」并置——本裁定取「默认 = 种子（可改）；**显式 deny 恒先**；种子 deny ≺ 显式 allow（相对序——§4）」。
+- U2 读法注（**历史——egress 面随 sandbox-egress-removal 批退场，2026-10-14**）：需求块「默认禁单…内网/固定 IP 后端 = 显式加 CIDR 允许条目」与「deny 恒先于 allow」并置——本裁定取「默认 = 种子（可改）；**显式 deny 恒先**；种子 deny ≺ 显式 allow（相对序——§4）」。
 
 **读法披露（用户未异议——不阻塞·按设计实施）：**
 
 - **D1（tmpfs 例外）**：需求块「唯一可写挂载 = 工作区卷」——设计与工具链刚需并置：`/tmp` = tmpfs（内存背书 ∥ 容积封顶 ∥ 非持久）为唯一例外（node/npm 必需）；无持久宿主面写入（盒参数集全文 = §14 KD-SV-73）。
 - **D2（key_plain 明文）**：工作区 key 明文落控制面库（§2——盒重建须再注入；先例 KD-SV-19）；键面 = 工作区作用域可吊销——泄露面收于该工作区。
-- **D3（盒可达 server 整端口）**：内置允许 = server 网关地址:端口（盒可达该端口全部路径）；控制台/管理面靠会话门禁（盒内无会话）；如需收窄到 /v1 路径级 ⇒ 翻案点（另设专用监听）。
+- **D3（盒可达 server 整端口）**：盒 → server 网关地址:端口 = 直连（出站闸面随退场删——2026-10-14；盒可达该端口全部路径）；控制台/管理面靠会话门禁（盒内无会话）；如需收窄到 /v1 路径级 ⇒ 翻案点（另设专用监听）。
 - **D4（复用 key 的残余面）**：工作区 key 作为 `api_keys` 行天然可打 `/api/client/*`（logout/me——自身读面）；收窄（scope 列）= 另轮。
 
 ## 11. 验收判据（需求块 → 设计判据）
@@ -438,15 +395,13 @@
 | 容器唯一 ∥ 无退路 | 无可用节点 ⇒ status = unavailable + 控制台明示 | 单元测试档 + 收口轮 |
 | 威胁模型五面 | 红队探针用例集（判据表随重做批重建——需求 AC-36 ⑦） | 收口轮 |
 | 每工作区一盒 ∥ read-only ∥ 唯一可写挂载 ∥ 盒内零密钥 | §14 KD-SV-73 盒参数集 + §7 凭据面 | 单元测试档 + 收口轮 |
-| 出站两类同表 ∥ 默认全拒 ∥ 两闸 ∥ 显式 deny 先 ∥ 通配 ∥ 即生效 ∥ 审计 ∥ **强制面**（L1 门级不变量即拒 ∥ 内置允许生命线 ≻ L2/L3 ∥ 解析零地址 ⇒ 拒 ∥ 双径同判 ∥ 网段带入幂等 + `rulesRev`/审计口径） | rules 校验/求值单元测试 + 审计行落库断言；用例链 = §12（N64 ∥ B66） | 单元测试档 + 收口轮 |
-| 待批队列（三态 ∥ 60s ∥ 三次建议） | 队列单元测试 | 单元测试档 + 收口轮 |
 | 资源上限 ∥ 墙钟 TTL ∥ 空闲拆 ∥ 每工作区覆写 | TTL 单元测试 + 覆写单元测试（PATCH ⇒ 建盒载荷逐值——N45） | 单元测试档 + 收口轮 |
 | 非目标（0day ∥ 侧信道） | §1 明写不做 | —— |
 | 验收 = 红队探针用例集 + 正常开发链 | 探针用例集（重做批重建）+ 正常开发链用例 | 收口轮 |
 | 落地序（先于 #1215）∥ 与 CI 共用执行面 | §14 KD-SV-72 + §15 边界（CI 实现不在本批） | 设计在档 |
 | 14:00 裁定（两平面分离 ∥ 无节点不可用 ∥ CI 共用） | §1 ∥ §14 KD-SV-63/71/72 | 设计在档 |
-| 管理与配置界面 = 必交面（用户 14:08——六面 + 每项配置有界面写入口） | §8 六面在册（含运行面节点接入：添加/删除 ∥ 连通自检 ∥ 失败审计行）∥ 每配置项有 UI 写入口（`sandbox_settings` 逐键对照表 + 每工作区覆写——§8）∥ 控制台机检口径 = `webui/WEBUI.md` §6 沙盒行（单源——含 `#/admin/sandbox` 路由 ∥ nav 管理项 ∥ 档目链 ∥ i18n `admin.sandbox.*` 两表同步；容器面补齐/镜像族行 = 本批随正） | 单元测试档 + 收口轮（浏览器实走） |
-| 成员面 = 本人自助（用户 14:56——AC-36 ⑧） | §8 成员面（`#/me/sandbox` 本人工作区读 + 待批发起方提示）∥ 信号 = `gateway/API.md` §2.7 | 单元测试档 + 收口轮（浏览器实走） |
+| 管理与配置界面 = 必交面（用户 14:08——四面 + 每项配置有界面写入口；出站规则/待批队列两面随 sandbox-egress-removal 批退场——2026-10-14） | §8 四面在册（含运行面节点接入：添加/删除 ∥ 连通自检 ∥ 失败审计行）∥ 每配置项有 UI 写入口（`sandbox_settings` 逐键对照表 + 每工作区覆写——§8）∥ 控制台机检口径 = `webui/WEBUI.md` §6 沙盒行（单源——含 `#/admin/sandbox` 路由 ∥ nav 管理项 ∥ 档目链 ∥ i18n `admin.sandbox.*` 两表同步；容器面补齐/镜像族行 = 本批随正） | 单元测试档 + 收口轮（浏览器实走） |
+| 成员面 = 本人自助（用户 14:56——AC-36 ⑧） | §8 成员面（`#/me/sandbox` 本人工作区读）∥ 信号 = `gateway/API.md` §2.7 | 单元测试档 + 收口轮（浏览器实走） |
 | **最小切片**（runner-admin-console 批——台账 #1252；用户 19:59 四件） | ① 添加节点（自检读数落库逐值 ∥ 失败 ⇒ 502 + 零落库 + 审计行）② 建容器（引擎请求体逐值 ∥ 列表可见）③ 启/停（幂等：304 ⇒ 成功）④ 删节点（保留 ∥ 连删二选一 ∥ 连删失败 ⇒ 行保留）；判据全文 = §3 ∥ §12（N40 ∥ N46–N48 ∥ B41–B43 ∥ E34–E36）；**真机跑**（收口轮——`10.0.0.6`，Docker 29.1.3 ∥ 盒镜像在机）：添节点 ⇒ 在列（online + 版本）；建容器 ⇒ `docker ps -a` 见 `Created` ⇒ 启动 ⇒ `docker ps` 见 `Up` ⇒ 停止 ⇒ `Exited` ⇒ 删 ⇒ 无；删节点「保留」⇒ 容器留机 ∥「连删」⇒ 容器净 + 节点消 | 单元测试档 + 收口轮（真机） |
 | **容器面补齐 + 镜像族**（本批——sandbox-docker-admin；台账 #1265；用户 04:36/04:39 两族同批） | 容器五件：详情读数逐值（挂载/端口/环境/命令）∥ 日志（tail 有界 + 非 TTY 帧解复用——零帧头残渣）∥ 重启/强杀（引擎调用逐条 + 审计两 kind）∥ 用量（cpuPercent/内存/磁盘逐值；一次采样口径）；镜像三件：列表逐值 ∥ 拉取（`fromImage`/`tag` 逐值 ∥ 缺省 `latest` ∥ 失败两形 ⇒ 400）∥ 删除（`force` 0/1 逐值 ∥ 409 ⇒ 400 人话）；判据全文 = §3（本批块）∥ §12（N53–N56 ∥ B47–B51 ∥ E39–E42）∥ `gateway/API.md` §2.5 新八行 ∥ `webui/SANDBOX.md` §2.1① ∥ §6 沙盒行（本批随正）；审计 kind 面 = `accounts/ACCOUNTS.md` §2.1（型面计数零增）；**真机**（收口轮——10.0.0.6：真容器详/日志/重启/强杀/用量 ∥ 真镜像列/删；拉取视源可达性如实报） | 单元测试档 + 收口轮（真机） |
 | **镜像源族**（本批——sandbox-image-sources；台账 #1274；用户 09:17 四点 ①②③ + 09:19 预选） | 源清单 CRUD（增/删/改/列——形校验拒非法 ∥ 名/址各自唯一 ∥ 每动作一审计行 ∥ 预选七条在册且表单只回填名/址）∥ 源目录可达（v2 目录/标签逐值 ∥ Hub 面标签 + 裸名补 `library/` ∥ 匿名 Bearer 逐跳命中（挑战解析 → 换 token → 复读） ∥ 读绪五分类如实呈（`timeout`/`unreachable`/`auth_required`/`unsupported`/`bad_response`））∥ 过滤生效（本地镜像表 ∥ 仓库列表 ∥ 标签列表——无匹配 ⇒ 空态句）；判据全文 = §3（本批块）∥ §12（N57–N59 ∥ B52–B56 ∥ E43–E45）∥ `gateway/API.md` §2.5 镜像源七行 ∥ `webui/SANDBOX.md` §2.1① + §6 沙盒行（本批随正） ∥ `store/STORE.md` §2 v15 段/§3 v15；**收口轮** = 浏览器实走（增/改/删源 + 源目录读取（自建 registry ∥ 公网源按可达性如实）+ 两处过滤） | 单元测试档 + 收口轮（浏览器实走） |
@@ -459,32 +414,26 @@
 | **容器终端 v1**（sandbox-container-terminal 批——台账 #1374；用户 2026-10-13 21:11/21:13/21:17 三句；功能点 51 ∥ AC-51——已入册 2026-10-13） | ① 入口/门（容器行第七钮「终端」——门 = 运行中；非运行禁用）∥ ② 会话链三步逐值（读容器（运行态 ∥ locale 判据）⇒ 建 exec（`Attach*` 三旗 ∥ `Tty` ∥ `Env` 两键 ∥ `Cmd` 常量）⇒ 升级 start（`101` + 裸双工））∥ ③ 帧协议（二进制 = pty 字节双向 ∥ 文本 = JSON 控制）∥ ④ 心跳（30s ping / 60s 判死——两向）∥ ⑤ 收口三件 + 幂等（停机全收口 `server_stop`）∥ ⑥ 判权/同源门先于 101 + in-band 四码 + 协议错 1002 ∥ ⑦ 审计两 kind（pty 内容零留痕）∥ ⑧ 尺寸（就绪前挂起 ∥ 就绪后施加 ∥ 越界忽略）∥ ⑨ 前端核（`webui/TERMINAL.md` §2/§4——`vim`/`top`/中文达效）；判据全文 = §3 容器终端块 ∥ §12（N83–N85 ∥ B79–B81 ∥ E61–E63）∥ §14 KD-SV-175…180；**真机**（收口轮——ECS `.6`：非运行门 + 直连拒 + 关窗后零残留） | 单元测试档 + 收口轮（浏览器实走 + 真机） |
 | **连接面 TLS 档**（本增补 #2——用户 2026-10-13 22:43 裁「让用户可选」；功能点 53 ∥ AC-53——拟入册（主 agent 笔——§16 R74①）） | ① 形态（地址 scheme 单源：`http`=明文缺省 ∥ `https`=TLS；裸 host 按档补 scheme/端口 2375·2376；显式相抵 ⇒ 400）∥ ② 材料（三件自备 ∥ 私钥加密落库 ∥ **零回显/零回填**（响应键面扫描）∥ 不变量 `https` ⇔ 三件齐）∥ ③ 传输（`node:https` 适配件——`ca`/`cert`/`key` 逐值入选项；`fetchImpl` 缝内插；**明文路径零行为变化**——归一/自检/落库/传输逐值同现状）∥ ④ 写面两端点（添加体扩 ∥ `PUT …/connection` 全列覆写——**先自检后落库，失败 ⇒ 库零变**；关 TLS = 原子）∥ ⑤ 生效面全谱（自检/读数/容器/镜像/卷/终端/盒链/chat `docker`）∥ ⑥ 审计（`runner_add` + `tls` 键 ∥ `runner_connection` 一枚——零秘密）；判据全文 = §3 连接方式块 ∥ `sandbox/EXECUTION.md` §2.1/§13（N73 ∥ B76）∥ §15 KD-SV-192…195 ∥ `gateway/API.md` §2.5 ∥ `webui/SANDBOX.md` §2.1①/§4；**真机**（收口轮——ECS `.6`：节点侧 dockerd TLS 配置（`docs/TEST-ENV-ECS.md` 随正件）⇒ 自签材料 ⇒ 切档 ⇒ 自检过 ⇒ 全谱可用 ∥ 切回明文 ⇒ 材料清零） | 单元测试档 + 收口轮（浏览器实走 + 真机） |
 
-**红队探针套件（P1–P14）——判据表（本批复核重建；台账 #1249）**
+**红队探针套件（余腿 P1 ∥ P5–P10 ∥ P13 ∥ P14）——判据表（本批复核重建；台账 #1249；P2–P4 ∥ P11/P12 五腿随出站闸退场删——2026-10-14，编号留空档）**
 
-- **现状**：判据表随执行面重定删除（runner-admin-console 批）；sandbox-outbound-member-face 批复核后重建（判据在册）；**探针执行器 = sandbox-exec-rebuild 批落**（`thincoder-server/deploy/sandbox-probe.mjs`（拟新增）——机制全文 = `sandbox/EXECUTION.md` §10）。
+- **现状**：判据表随执行面重定删除（runner-admin-console 批）；sandbox-outbound-member-face 批复核后重建（判据在册）；**探针执行器 = sandbox-exec-rebuild 批落**（`thincoder-server/deploy/sandbox-probe.mjs`（已落）——机制全文 = `sandbox/EXECUTION.md` §10；egress 五腿随退场删——2026-10-14）。
 - **跑法**：真机 `docs/TEST-ENV-ECS.md`（server `.5` ∥ runner `.6`）；全过 ⇒ EXIT 0；有 FAIL ⇒ EXIT 1；**SKIP 单列**（无机/无前置 ⇒ 如实 skip，不假报）。
 - **判据表**（判据 = 复核后口径；真机读数 = 2026-10-10 在案）：
 
 | # | 判据（复核后） | 2026-10-10 真机 | 本批处置 |
 |---|---|---|---|
 | P1 | **宿主真实账号**（宿主 `/etc/passwd` 中 **UID ∈ [1000, 65533]**——人类用户窗）零命中盒内 `/etc/passwd`；**不判面 = 窗外的标准系统账号**（UID < 1000 ∥ `nobody` 类 ≥ 65534；显式标准账号集兜底） | FAIL（`nobody` 命中） | **判据收窄**——收窄后重跑（执行器 = 本批——`sandbox/EXECUTION.md` §10） |
-| P2 | 盒内对**宿主 22 口** ⇒ 拒 | FAIL（EXIT=0） | **已修**【§4 强制面 ①–⑥；主机侧 = `sandbox/EXECUTION.md` §5——**盒 → 宿主方向 = `input` 链腿**；本批复证】 |
-| P3 | 盒内对 `169.254.169.254` ⇒ **恒拒**（即时——零挂起） | FAIL（可达） | **已修**【L1 不变量；主机侧 = `sandbox/EXECUTION.md` §5——本批复证】 |
-| P4 | 非白名单出站 ⇒ 拒 | PASS | 保持 |
 | P5 | fork 炸弹 ⇒ 被杀 | PASS | 保持 |
 | P6 | 根只读（写 `/` ⇒ 拒） | PASS | 保持 |
 | P7 | 填盘 ⇒ ENOSPC | PASS | 保持 |
 | P8 | **注入面正向在场**（`OPENAI_BASE_URL` = 网关 ∥ `OPENAI_API_KEY` = `sk-tc-…` 工作区 key 形态）+ **秘密零命中**（真 provider key 形态扫描 ∥ 未注入的敏感键名 `*_KEY`∥`*_TOKEN`∥`*_SECRET`∥`*_PASSWORD` 零命中）；**基础镜像固有 env 不判**（`NODE_VERSION` ∥ `YARN_VERSION` ∥ `PATH` ∥ `HOSTNAME`…） | FAIL（`NODE_VERSION` ∥ `YARN_VERSION` 命中旧白名单外判据） | **判据收窄**——收窄后重跑 |
 | P9 | 跨盒：他盒卷路径 ⇒ ENOENT ∥ 他盒容器 IP ⇒ 不可达 | SKIP | 前置 = **第二盒**（同节点第二工作区）——执行器已备（本批——`--node` 径自建） |
 | P10 | 正常开发链（装依赖 ∥ 拉仓 ∥ 跑测试）通过 | SKIP | 前置 = **`--repo`**（可克隆仓地址）；执行器已备（本批） |
-| P11 | 规则增删 ⇒ **即生效 ∥ 不重建盒** | SKIP | 前置 = **`--target`**（下发目标）；执行器已备（本批） |
-| P12 | 新域 ⇒ 挂起 ≤60s ⇒ 待批拒态成立 | PASS | 保持；**补半支** = L1 目标即时拒、零待批行（DNS 闸机制 = `sandbox/EXECUTION.md` §6——本批） |
 | P13 | 吊销 ⇒ 旧 key 即断（401）∥ 新 key 可用 | PASS（旧半支） | 保持（新 key 半支 = 卷保留重建——§7） |
 | P14 | 服务端读数面（无可用节点 ⇒ 503 `sandbox_unavailable` + 控制台明示） | SKIP | 前置 = **执行面读数面——sandbox-exec-rebuild 批已落**（实时写门 + 探活；`sandbox/EXECUTION.md` §7——本批可跑） |
 
 - **口径纪律**：判据**不判基础镜像自带项**（P1/P8 收窄的共性——镜像自身形态不属盒的隔离能力）；秘密面走**结构形**（形态扫描 + 注入面正向断言——真值不下行，沿 R25/P8 结构判据先例）。
-- **与 ① 的关系**：P2/P3 判据不变（应拒 ∥ 恒拒）——修复在机制面（§4 强制面）；**真机复证 = sandbox-exec-rebuild 批收口面**（§16 R73③④）。
-- **闭环边界（明写——防收口误记）**：**#1248（P2/P3）∥ #1249（P1/P8 重跑）的闭环批次 = sandbox-exec-rebuild 批**（真机复证随其收口——执行器已备）；sandbox-outbound-member-face 批验收 = 控制面腿（求值/带入/判据在册——可机检）。
+- **闭环边界（明写——防收口误记）**：#1248（P2/P3）随出站闸退场关闭（2026-10-14——腿已删，复证面随消）；#1249（P1/P8 重跑）闭环批次 = sandbox-exec-rebuild 批（余腿——`sandbox/EXECUTION.md` §10）；sandbox-outbound-member-face 批控制面腿（求值/带入）同批退场。
 
 ## 12. 用例（本域）
 
@@ -492,13 +441,8 @@
 |---|---|---|---|---|
 | N40 | 正常 | 控制面 | 添加节点：名 + Docker API 地址（假 Docker `GET v<ver>/version` 在案）⇒ 连通自检 | `sandbox_runners` 行（name/address/status=active；`runtime_json` = 自检读数逐值 ∥ 协商版本在场）；运行面在列（online=true ∥ 版本）；审计 `sandbox_event`（kind=`runner_add`） |
 | N41 | 正常 | 控制面 | 建工作区（负责人）⇒ 建盒 | key 签发（`api_keys` 行名 `sandbox:<ws>`）+ 绑定节点 + 建盒/启动（控制面直调 Docker API——§1） |
-| N42 | 正常 | 控制面 | 规则增删各一（`sandbox_rules`） | `rulesRev` +1；**即生效 ∥ 不重建盒**（需求块）；审计 `sandbox_rule` 两行 |
-| N43 | 正常 | 控制面 | 待批三态各一次（once ∥ remember ∥ deny） | 挂起 ≤60s；once = 当次放行再访问再挂；remember = 规则入表（source=approval）即生效；审计 `sandbox_event` |
 | N45 | 正常 | 控制面 | 建工作区携 `limits`（cpus/memMb）⇒ PATCH 覆写 `cpus` ⇒ 触发重建 | 行 `limits_json` 回读逐值；create/重建 payload 逐值 = 覆写 ∪ 全局默认（未覆写键）；运行中盒零触（仅重建生效） |
 | B35 | 边界 | 控制面 | 无可用节点 | 沙盒面 disabled + 原因文本；写动作读数 503 `sandbox_unavailable`（不降级） |
-| B36 | 边界 | 控制面 | 域名规则校验：`*.example.com` ∥ `*` ∥ `*.com` ∥ `a.*.com` ∥ IP 段通配 | 首者收；余者 400（写面）——控制台通配条目带醒目标记 |
-| B37 | 边界 | 控制面 | 同 host：allow 规则 + deny 规则并存 | 拒（显式 deny 恒先）；priority 只排同动作内 |
-| B38 | 边界 | 控制面 | 同一域三次 approve-once | 控制台出「建议入默认单」行；采纳 ⇒ 并入默认单种子 |
 | B39 | 边界 | 执行面 | 盒空闲 30 分钟 ∥ 墙钟 24h | 停盒（`stop_reason` = idle_ttl/wallclock_ttl；停止不拍快照）；卷留；下次使用重建（重克隆 + 快照恢复）——机制 = `sandbox/EXECUTION.md` §3/§13（N69） |
 | B40 | 边界 | 执行面 | 快照越单份上限（`diskMb` 配额——假流大件） | 中止 + 不落行 + 审计告警（如实——机制 = `sandbox/EXECUTION.md` §3/B69） |
 | E29 | 错误 | 控制面 | `user` ∥ 无会话打 `/api/admin/sandbox/*` | 403 ∥ 401 |
@@ -563,8 +507,6 @@
 | B78 | 边界 | 控制面 | `exec` 长输出/挂起（假件：stdout 20k 字 ∥ 超时） | 结果文本按既有口径截断 ≤4000（审计 `truncated=true`）∥ 超时 ⇒ `{ ok:false, message }`（人话）——回合照常收尾 |
 | E59 | 错误 | 控制面 | `PUT` 凭据形非法（缺 `sshUser` ∥ `auth.kind` 表外 ∥ `secret` 空 ∥ `sshPort` 越界 0/70000） | 400（逐形人话）；**库零变**（回读逐列） |
 | E60 | 错误 | 控制面 | `exec` 主机未在册 ∥ `user` ∥ 无会话打凭据两端点 | 工具级错误（沿 `docker` 绑定语义）∥ 403 ∥ 401 |
-| N64 | 正常 | 控制面 | 强制面求值序（纯求值——假件/直调）：① 目标 ∈ `127.0.0.0/8` ∥ `169.254.0.0/16` ② 目标 = server 网关地址:端口（同时落 RFC1918 ∥ 服务器段种子 deny） ③ 目标 ∈ RFC1918 种子 deny ∧ 同目标显式 allow 行在场 | ① 拒（L1——即时判 ∥ 零挂起 ∥ 零待批行） ② **放**（内置允许 ≻ L2/L3——生命线不断） ③ 放（种子 deny ≺ 显式 allow——U2-A 保持） |
-| B66 | 边界 | 控制面 | 强制面带入与解析三支：① 首次登记（目标段不在） ② 重复登记（段已在） ③ `host` 在场而 `ips` 空 | ① 种子 deny 行入（`source='default'` ∥ 段值逐值）+ `rulesRev` +1 + 审计一行（自动带入标） ② 零重行 ∥ `rulesRev` 零动 ∥ 零审计 ③ 拒（fail-closed——不得以「未解析」放行） |
 | N83 | 正常 | 控制台 | 终端会话全链（假 Docker 升级件 + 真库）：升级握手 ⇒ 读容器 ⇒ 建 exec ⇒ 升级 start ⇒ 键入 ⇒ 引擎回显 | 握手响应 `Sec-WebSocket-Accept` 逐字 ∥ 建 exec 体逐值（`AttachStdin/AttachStdout/AttachStderr` = true ∥ `Tty` = true ∥ `Env` = `TERM=xterm-256color` +（容器无 locale 时）`LANG=C.UTF-8` ∥ `Cmd` = 常量三件）∥ start 体 = `{ Detach: false, Tty: true }` ∥ 上行二进制帧 ⇒ 引擎侧收到同字节 ∥ 引擎字节 ⇒ 下行二进制帧同字节 ∥ 首帧 `resize` 就绪后一次发出（`h`/`w` 逐值）∥ 引擎流结束 ⇒ 下行 `{"t":"exit","code":<inspect ExitCode>}` ⇒ WS close 1000 ∥ 审计两行（`terminal_open` 键集五 ∥ `terminal_close` 键集五、`reason='exec_exit'`、`durationMs` 在场） |
 | N84 | 正常 | 控制台 | 就绪协作：`ready` 帧（`cols`/`rows` = 当刻施加值）∥ 客户端 `{"t":"ping"}` ⇒ `{"t":"pong"}` ∥ 客户端 `resize` 变更 ⇒ 引擎 `resize?h&w` 逐值再发 | `ready` 在首帧 resize 之后（挂起施加）∥ `pong` 即时 ∥ 二次 resize 逐值（`h` = rows ∥ `w` = cols——引擎参数序在案） |
 | N85 | 正常 | 控制台 | 会话表与停机：两会话并存（同容器）⇒ 服务端停机 | 两会话各自独立 execId/审计对；停机 ⇒ 两会话全收口（`reason='server_stop'`）+ 会话表清空（零悬挂） |
@@ -575,7 +517,7 @@
 | E62 | 错误 | 控制台 | 升级请求：无 cookie ∥ `user` 会话 ∥ 异源 `Origin` ∥ 未知升级路径 ∥ 节点不存在 | 401 ∥ 403 ∥ 403 ∥ 404（socket 保持 HTTP 语义后断开）∥ 404——**全在 101 之前**（零 `Sec-WebSocket-Accept`） |
 | E63 | 错误 | 控制台 | WS 协议错（假客户端）：未掩码帧 ∥ 非法 opcode ∥ 帧超 1 MiB ∥ 文本帧非 UTF-8 | 收口（close 1002）+ 审计 `terminal_close`（`reason='error'`）+ 会话表清空；服务端不崩（畸形流零残留） |
 
-**执行面用例（sandbox-exec-rebuild 批——本批）= `sandbox/EXECUTION.md` §13**（N65–N70 ∥ B67–B73 ∥ E50–E55——本档不复制；用例链引用：B39 ⇒ N69 ∥ E33 ⇒ B67/P7）。
+**执行面用例（sandbox-exec-rebuild 批——本批）= `sandbox/EXECUTION.md` §13**（N65/N66/N69/N70 ∥ B67–B70 ∥ E50–E55——本档不复制；用例链引用：B39 ⇒ N69 ∥ E33 ⇒ B67/P7）。
 
 ## 13. 本域文件与行数预算（控制面）
 
@@ -592,38 +534,33 @@
 | `thincoder-server/src/sandbox/registry-client.mjs`（已落盘 **225**——2026-10-11 sandbox-image-sources 落地后现读（在册 ≈230——低于估 5）） | ≈**230**（设计估——v2 `_catalog`/`tags/list` ∥ Hub 公共 API ∥ 匿名 Bearer 挑战 ∥ 有界/`Link` 截断 ∥ 五分类错误映射；`fetchImpl` 注入 = 供测试用）**⇒ 实读 225**；本批（sandbox-image-quick-pull）±0 | 远端源客户端（§3） |
 | `thincoder-server/src/sandbox/image-source-routes.mjs`（已落盘 **150**——2026-10-11 sandbox-image-sources 落地后现读（在册 ≈170——低于估 20）） | ≈**170**（设计估——七端点：列/预选/增/改/删/目录/标签 ∥ 校验与错误映射 ∥ 头注）**⇒ 实读 150**；本批（sandbox-image-quick-pull）±0 | 镜像源端点（§9） |
 | `thincoder-server/src/sandbox/ssh.mjs`（已落——托管接入增补） | **实读 221**（2026-10-13 现读；设计估 ≈180——SSH 传输：spawn openssh（key `-i` ∥ `sshpass -e`） ∥ keyfile/known_hosts 落数据目录 ∥ 指纹 TOFU ∥ 超时/输出截断；`execImpl` 注入 = 供测试用） | 主机执行传输（§3） |
-| `thincoder-server/src/sandbox/rules.mjs`（已落） | **实读 498**（2026-10-13 现读；split 口径 499——口径差 ±1；设计估 ≈230 偏小）；**sandbox-exec-rebuild 批零触**（egress/DNS 闸 = 读面消费 `evaluateEgress`/`HARD_DENY_CIDRS`/待批三件——零改）⇒ 拆案留待下一触碰批（台账 #1352 在案） | 规则/待批/修订号（§4/§6） |
 | `thincoder-server/src/sandbox/credentials.mjs`（已落） | **实读 31**（2026-10-13 现读；设计估 ≈80 偏大） | 工作区 key（§7） |
 | `thincoder-server/src/store/db.mjs`（现读 **688**——2026-10-13 现读） | **sandbox-exec-rebuild 批（本批）：拆案实施**——迁移段外提 `src/store/migrations.mjs`（拟新增；**命名 = `migrations.mjs` 单源**——本节旧称 `schema.mjs` 收正）⇒ `db.mjs` ≈**300**（开库/PRAGMA/语句封装/版本引用）+ `migrations.mjs` ≈**470**（v2–v22 段链 + v22 收正段——纯搬移零语义；**本增补 +≈40**：`base_image` 列 ∥ `registry_credentials` 建表；**本增补 #2 +≈10**：连接材料四列 `ALTER`）⇒ ≈**480**；触发 = 实读越 700 线（688 + v22 段 ≈20 ⇒ ≈708） | v11–v13 ∥ v15 ∥ v18 ∥ **v22 段（§2）** |
 | `thincoder-server/src/accounts/audit.mjs`（已落盘 109） | **±0**（sandbox-image-sources 批——三 kind 走 `sandbox_event`，非枚举）；本批（sandbox-image-quick-pull）±0（拉取走既有 `image_pull` 行——零新 kind）；sandbox-volumes 批 ±0（`volume_delete` 走既有 `sandbox_event`——kind 非枚举，CHECK 零动） | 十三型（§2） |
 | `thincoder-server/src/gateway/errors.mjs`（已落盘 64——2026-10-10 现读） | **±0**（runner-admin-console 批——零新码） | `sandbox_unavailable`（§9） |
 | `thincoder-server/src/sandbox/docker-exec.mjs`（拟新增——本批） | ≈**230**（设计估——Docker exec 升级传输：建 exec ∥ 升级 start（`Connection: Upgrade` + `Upgrade: tcp`——`node:http` 劫持）∥ resize ∥ inspect ∥ 收口（`\x04` + destroy）；超时档同族（读类 3s ∥ 动作类 15s）） | 容器终端会话链（§3 容器终端块） |
 | `thincoder-server/src/sandbox/terminal-routes.mjs`（拟新增——本批） | ≈**300**（设计估——升级路一枚：路径匹配 ∥ 判权/同源门（101 前）∥ 会话桥（字节双向 ∥ 控制帧 ∥ 心跳 ∥ 收口幂等）∥ 会话表（停机全收口）∥ 审计两 kind） | 容器终端升级路（§9 ∥ §3） |
-| `thincoder-server/bin/thincoder-server.mjs`（现读 **214**——2026-10-13 现读） | **sandbox-exec-rebuild 批（本批）+≈12**（ticker ∥ DNS 闸装配 ∥ 工作区面路由注册；**本增补 +≈3**：registry-cred 路由注册）⇒ ≈**229** ∥ **sandbox-container-terminal 批 +≈9**（hub 装配 ∥ `upgrade` 传参 ∥ 停机收口）⇒ ≈**238** | import + 注册行 + 装配 |
-| `thincoder-server/src/sandbox/box.mjs`（拟新增——本批） | ≈**315**（≈280 + **本增补 +≈35**：镜像就位步 ∥ 参数集底键解析） | 盒生命周期动作链 ∥ 建盒参数集 ∥ 放置/补放置 ∥ 卷目录准备 ∥ 定时器（空闲/墙钟/周期快照——`sandbox/EXECUTION.md` §3） |
+| `thincoder-server/bin/thincoder-server.mjs`（现读 **214**——2026-10-13 现读） | **sandbox-exec-rebuild 批（本批）+≈12**（ticker ∥ 工作区面路由注册——DNS 闸装配件随出站闸退场删，2026-10-14；**本增补 +≈3**：registry-cred 路由注册）⇒ ≈**229** ∥ **sandbox-container-terminal 批 +≈9**（hub 装配 ∥ `upgrade` 传参 ∥ 停机收口）⇒ ≈**238** | import + 注册行 + 装配 |
+| `thincoder-server/src/sandbox/box.mjs`（已落——sandbox-exec-rebuild 批；实读 **667**〔2026-10-14 收口〕） | **本批（sandbox-egress-removal）：净删 ≤100**（闸步 ∥ DNS 注入 ∥ 桥名锚与复核 ∥ 网段登记 ∥ 临时集 ∥ 链前置）⇒ ≈**567** | 盒生命周期动作链 ∥ 建盒参数集 ∥ 放置/补放置 ∥ 卷目录准备 ∥ 定时器（空闲/墙钟/周期快照——`sandbox/EXECUTION.md` §3） |
 | `thincoder-server/src/sandbox/quota.mjs`（拟新增——本批） | ≈**120** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 读回核——§4） |
-| `thincoder-server/src/sandbox/egress.mjs`（拟新增——本批） | ≈**220** | 规则文本生成 ∥ 下发（nft/iptables）∥ 就位检查 ∥ apply 状态（§5） |
-| `thincoder-server/src/sandbox/dns-gate.mjs`（拟新增——本批） | ≈**220** | DNS 应答器 ∥ 归属判 ∥ 待批持答/裁定回填 ∥ 临时集（§6） |
 | `thincoder-server/src/sandbox/workspace-routes.mjs`（拟新增——本批） | ≈**280**（≈190 + **本增补 +≈90**：`baseImage` 键 ∥ derive 端点 ∥ 列表行字段） | 工作区面四路由 + 快照列表（自 `routes.mjs` 拆出——拆案首选执行） |
 | `thincoder-server/src/store/migrations.mjs`（拟新增——本批） | ≈**470**（≈430 + **本增补 +≈40**） | 迁移段链（v2–v22——自 `db.mjs` 外提，纯搬移零语义；含 v22 收正段） |
-| `thincoder-server/deploy/sandbox-probe.mjs`（拟新增——本批） | ≈**320** | 探针执行器（P1–P14 ∥ 一次性容器径 ∥ PASS/FAIL/SKIP/退出码——§10） |
-| **小计** | **≈+1172 ⇒ 本批 ≈+316**（runner-admin-console 批：routes +≈133 ∥ registry −≈22 ∥ docker 新 ≈170 ∥ db +≈35；errors ∥ bin ±0）**⇒ 增补 ≈+640**（托管接入：ssh 新 ≈180 ∥ onboarding 新 ≈300 ∥ onboarding-routes 新 ≈130 ∥ routes ±≈5 ∥ db +≈25；agent 域另计——`agent/ADMIN-AGENT.md` §6）**⇒ 本批 ≈+438**（sandbox-docker-admin：container-routes +≈162 ∥ image-routes 新 ≈130 ∥ docker +≈143 ∥ routes ±≈3；webui 面 = `webui/WEBUI.md` §5）**⇒ 本批 ≈+604**（sandbox-image-sources：image-sources 新 ≈170 ∥ registry-client 新 ≈230 ∥ image-source-routes 新 ≈170 ∥ db +≈32 ∥ bin +≈2——webui 面 = `webui/WEBUI.md` §5）**⇒ 实读（sandbox-image-sources 落地后——#1275 回填）：三新档 132 ∥ 225 ∥ 150 ∥ `db.mjs` 476 ∥ `bin` 191**（可核部 ≈+527——对估 ≈+604 差 = 估值差）；**本批（admin-chat-creds-merge）：≈+278**（分项和——`hosts.mjs` 新 ≈140 ∥ `registry.mjs` +≈25 ∥ `onboarding.mjs` +≈27 ∥ `routes.mjs` +≈14 ∥ `db.mjs` +≈72——webui 面 = `webui/WEBUI.md` §5；agent 面 = `agent/ADMIN-AGENT.md` §6）；**本批（sandbox-image-quick-pull）：服务端 ±0**（纯前端面——零新端点 ∥ `src/**` 零触；webui 面 = `webui/WEBUI.md` §5）；**本批（sandbox-pull-by-source）：服务端 ±0**（纯前端面——零新端点；`src/**` 唯一笔 = `image-sources.mjs` 头注句随 KD-SV-96 收正——±0 行；webui 面 = `webui/WEBUI.md` §5）；**本批（sandbox-volumes）：≈+120**（volume-routes 新 ≈110 ∥ docker +≈8 ∥ routes +2 ∥ 余 ±0——webui 面 = `webui/WEBUI.md` §5）**⇒ 本批（sandbox-outbound-member-face）：≈+48**（`rules.mjs` +≈36 ∥ `routes.mjs` +≈12 ∥ `registry.mjs` ±0——webui 面 = `webui/WEBUI.md` §5）**⇒ 本批（sandbox-exec-rebuild）≈+1180**（分项和——新五档 ≈280+120+220+220+190 = 1030 ∥ `registry.mjs` 564 ⇒ ≈380 ∥ `routes.mjs` 477 ⇒ ≈340 ∥ `docker.mjs` 333 ⇒ ≈430（本增补再 +≈60 ⇒ ≈490）∥ `db.mjs` 拆案：≈300 + `migrations.mjs`（拟新增）≈430（净 +≈42；本增补再 +≈40 ⇒ ≈470）∥ `deploy/sandbox-probe.mjs`（拟新增）≈320 ∥ `bin` ≈226（本增补再 +≈3 ⇒ ≈229）；盒镜像 Dockerfile +≈13 归 member-face 批账；批内件两件 ≈620 ∥ ≈330——本增补分项和另计 ≈+686）**⇒ 本批（sandbox-container-terminal）≈+530**（`docker-exec.mjs`（拟新增）≈230 ∥ `terminal-routes.mjs`（拟新增）≈300；`bin` +≈9 入其行 ∥ `gateway` 面（`ws.mjs` 新 ≈260 ∥ `server.mjs` +≈12）= `gateway/API.md` §4；webui 面 = `webui/WEBUI.md` §5；批内件两件 ≈420 ∥ ≈380）**⇒ 本批（sandbox-onboarding-removal）：−≈479**（`onboarding.mjs` 373 删 ∥ `onboarding-routes.mjs` 102 删 ∥ `routes.mjs` −≈4——两档行随之删；agent 域面 = `agent/ADMIN-AGENT.md` §6） | —— |
+| `thincoder-server/deploy/sandbox-probe.mjs`（已落——实读 **679**〔2026-10-14 收口〕） | **本批（sandbox-egress-removal）：五腿删 ≈−150**（P2–P4 ∥ P11/P12）⇒ ≈**530** | 探针执行器（余腿 ∥ 一次性容器径 ∥ PASS/FAIL/SKIP/退出码——§10） |
+| **小计** | **≈+1172 ⇒ 本批 ≈+316**（runner-admin-console 批：routes +≈133 ∥ registry −≈22 ∥ docker 新 ≈170 ∥ db +≈35；errors ∥ bin ±0）**⇒ 增补 ≈+640**（托管接入：ssh 新 ≈180 ∥ onboarding 新 ≈300 ∥ onboarding-routes 新 ≈130 ∥ routes ±≈5 ∥ db +≈25；agent 域另计——`agent/ADMIN-AGENT.md` §6）**⇒ 本批 ≈+438**（sandbox-docker-admin：container-routes +≈162 ∥ image-routes 新 ≈130 ∥ docker +≈143 ∥ routes ±≈3；webui 面 = `webui/WEBUI.md` §5）**⇒ 本批 ≈+604**（sandbox-image-sources：image-sources 新 ≈170 ∥ registry-client 新 ≈230 ∥ image-source-routes 新 ≈170 ∥ db +≈32 ∥ bin +≈2——webui 面 = `webui/WEBUI.md` §5）**⇒ 实读（sandbox-image-sources 落地后——#1275 回填）：三新档 132 ∥ 225 ∥ 150 ∥ `db.mjs` 476 ∥ `bin` 191**（可核部 ≈+527——对估 ≈+604 差 = 估值差）；**本批（admin-chat-creds-merge）：≈+278**（分项和——`hosts.mjs` 新 ≈140 ∥ `registry.mjs` +≈25 ∥ `onboarding.mjs` +≈27 ∥ `routes.mjs` +≈14 ∥ `db.mjs` +≈72——webui 面 = `webui/WEBUI.md` §5；agent 面 = `agent/ADMIN-AGENT.md` §6）；**本批（sandbox-image-quick-pull）：服务端 ±0**（纯前端面——零新端点 ∥ `src/**` 零触；webui 面 = `webui/WEBUI.md` §5）；**本批（sandbox-pull-by-source）：服务端 ±0**（纯前端面——零新端点；`src/**` 唯一笔 = `image-sources.mjs` 头注句随 KD-SV-96 收正——±0 行；webui 面 = `webui/WEBUI.md` §5）；**本批（sandbox-volumes）：≈+120**（volume-routes 新 ≈110 ∥ docker +≈8 ∥ routes +2 ∥ 余 ±0——webui 面 = `webui/WEBUI.md` §5）**⇒ 本批（sandbox-outbound-member-face）：≈+48**（`rules.mjs` +≈36 ∥ `routes.mjs` +≈12 ∥ `registry.mjs` ±0——webui 面 = `webui/WEBUI.md` §5）**⇒ 本批（sandbox-exec-rebuild）≈+1180**（分项和——新五档 ≈280+120+220+220+190 = 1030 ∥ `registry.mjs` 564 ⇒ ≈380 ∥ `routes.mjs` 477 ⇒ ≈340 ∥ `docker.mjs` 333 ⇒ ≈430（本增补再 +≈60 ⇒ ≈490）∥ `db.mjs` 拆案：≈300 + `migrations.mjs`（拟新增）≈430（净 +≈42；本增补再 +≈40 ⇒ ≈470）∥ `deploy/sandbox-probe.mjs`（拟新增）≈320 ∥ `bin` ≈226（本增补再 +≈3 ⇒ ≈229）；盒镜像 Dockerfile +≈13 归 member-face 批账；批内件两件 ≈620 ∥ ≈330——本增补分项和另计 ≈+686）**⇒ 本批（sandbox-container-terminal）≈+530**（`docker-exec.mjs`（拟新增）≈230 ∥ `terminal-routes.mjs`（拟新增）≈300；`bin` +≈9 入其行 ∥ `gateway` 面（`ws.mjs` 新 ≈260 ∥ `server.mjs` +≈12）= `gateway/API.md` §4；webui 面 = `webui/WEBUI.md` §5；批内件两件 ≈420 ∥ ≈380）**⇒ 本批（sandbox-onboarding-removal）：−≈479**（`onboarding.mjs` 373 删 ∥ `onboarding-routes.mjs` 102 删 ∥ `routes.mjs` −≈4——两档行随之删；agent 域面 = `agent/ADMIN-AGENT.md` §6）**⇒ 本批（sandbox-egress-removal）：−≈1475**（egress 面退场——`rules.mjs` 498–499 行删 ∥ 执行面档侧同批分项〔全形 = `sandbox/EXECUTION.md` §14 小计〕；逐件以实施轮实读为准） | —— |
 
 - `routes.mjs` 拆分预案（**首选已执行**——容器面拆 `container-routes.mjs`（已落盘 **313**）；**本批（sandbox-exec-rebuild）第二项首选执行 = 工作区面拆 `workspace-routes.mjs`**（工作区四路由 + 视图函数 ≈190；拆后 ≈340））：
-  **触发点 = 越 500 软线**；次选候选（落域内、端点路径零变）：规则/待批/设置三面独立成档（≈120）。
-- `rules.mjs` 贴线（2026-10-13 现读 **498–499**）：距 500 软线 **1–2 行**——**member-face-chat 批 · 裁定修订轮触碰**（`ensureProjectAllow` 带入缝 +≈20 ⇒ ≈518 ⇒ **越线**）；结构决策 = 拆案（规则/待批/修订号三面独立成档）——实施批先行裁决（台账 #1352 转触发中）。
+  **触发点 = 越 500 软线**；次选候选（落域内、端点路径零变）= 设置面独立成档。
 - `registry.mjs` 拆分预案（2026-10-13 本批现读 **564**）：**随本批销**——拆案对象 = 队列/心跳死件，本批删净（净 −≈184 ⇒ ≈380）。
 - `docker.mjs` 拆分预案（2026-10-13 本增补 #2 投影 ≈515）：**2026-10-14 收口实读 423（内容行 422）——未越 500 软线，拆案撤回**（后续批增量越线再议——沿 sandbox-docker-admin 批拆档先例）。
-- `rules.mjs`/`credentials.mjs` 等「拟新增」标记已收正在态（2026-10-13 清账轮——六行：hosts ∥ volume-routes ∥ ssh ∥ onboarding-routes ∥ rules ∥ credentials）；执行面预算随重做批重建；webui 预算 = `webui/WEBUI.md` §5；单元测试档预算 = 批档 §2；板账 = `docs/server/design/PROJECT.md` §6。
+- `rules.mjs`/`credentials.mjs` 等「拟新增」标记已收正在态（2026-10-13 清账轮——六行：hosts ∥ volume-routes ∥ ssh ∥ onboarding-routes ∥ rules（随退场删——2026-10-14） ∥ credentials）；执行面预算随重做批重建；webui 预算 = `webui/WEBUI.md` §5；单元测试档预算 = 批档 §2；板账 = `docs/server/design/PROJECT.md` §6。
 - **本批（member-face-chat——成员写面 + 上限；2026-10-13）**：`routes.mjs`（实读 **476** ⇒ ≈**520**——成员写面四路由 + 上限校验；**越 500 软线 ⇒ 拆案（已在案）执行 = 工作区面独立成档**（工作区四路由 + 视图函数 ≈150——首选））
   ∥ `registry.mjs`（实读 564——越软线既有；本批 +≈20——上限设置读/创建校验；拆案随重做批） ∥ `deploy/sandbox/member-shell/**`（新 ≈730——**档账入 `agent/MEMBER-AGENT.md` §5，本域不重计**）。
-- **本批裁定修订轮加笔（member-face-chat——登记即放行；2026-10-13）**：`rules.mjs`（现读 **498–499** ⇒ ≈**518**——`ensureProjectAllow` 带入缝 +≈20——**越 500 软线 ⇒ 拆案触发**（台账 #1352 转「触发中」——拆案对象 = 规则/待批/修订号三面独立成档；实施批先行裁决）） ∥ 源登记 handler 接线 = project 域 `admin-routes.mjs` 一行（域外行账 = `project/PROJECTS.md` §13）。
-- **本批（sandbox-outbound-member-face——台账 #1248/#1249/#1233/#1234）**：控制面 = `rules.mjs`（实读 **439** ⇒ **498–499**——实测 +59–60〔内容行 498 ∥ split 499〕；设计估 ≈475——**贴线**：距 500 软线 1–2 行，越线前处置在案〔台账 #1352〕）∥ `routes.mjs`（实读 **472** ⇒ **476**——实测 +4；设计估 ≈484）∥ `registry.mjs`（实读 **564**——越 500 软线，拆分预案在册）±0；
-  前端 = `views-me-sandbox.mjs`（已落——本批）≈**140** ⇒ **实读 124**（实测——低于估 16；成员页：表六列 ∥ 提示行 ∥ 10s 轮询）∥ `app.mjs` ⇒ **实读 204**（本批 +2 = import ∥ 路由行）∥ `nav.mjs` ⇒ **实读 102**（本批 +1 = 我的组增项）；
+- **本批（sandbox-outbound-member-face——台账 #1248/#1249/#1233/#1234）**：控制面（egress 面随退场——`rules.mjs` 段 = 退场前记录，2026-10-14） = `rules.mjs`（实读 **498–499**；**随 sandbox-egress-removal 批退场**）∥ `routes.mjs`（实读 **472** ⇒ **476**——实测 +4；设计估 ≈484）∥ `registry.mjs`（实读 **564**——越 500 软线，拆分预案在册）±0；
+  前端 = `views-me-sandbox.mjs`（已落——本批）≈**140** ⇒ **实读 124**（实测——低于估 16；成员页：待批两件——列 ∥ 提示行/轮询——随退场删，2026-10-14）∥ `app.mjs` ⇒ **实读 204**（本批 +2 = import ∥ 路由行）∥ `nav.mjs` ⇒ **实读 102**（本批 +1 = 我的组增项）；
   i18n = `i18n-zh-me.mjs` ⇒ **实读 89** ∥ `i18n-en-me.mjs` ⇒ **实读 90**（本批 +19 键/表——`me.sandbox.*`）∥ `i18n-zh-shell.mjs` ⇒ **实读 79** ∥ `i18n-en-shell.mjs` ⇒ **实读 77**（本批 +1 键/表——`nav.page.me.sandbox`）；`style.css` +≈4（提示行/状态标）；
-  **本批单元测试档两件**（`docs/batches/2026-10-13-sandbox-outbound-member-face.test.mjs` 估 ≈**300** ⇒ **实读 379**；求值序/强制面 ∥ 网段带入幂等 ∥ 成员端点逐值 ∥ `docs/batches/2026-10-13-sandbox-outbound-member-face-ui.test.mjs` 估 ≈**220** ⇒ **实读 374**；成员页渲染 ∥ 提示/轮询 ∥ i18n 键集 ∥ nav 计数）。
+  **本批单元测试档两件**（`docs/batches/2026-10-13-sandbox-outbound-member-face.test.mjs` 估 ≈**300** ⇒ **实读 379**（求值序/强制面 ∥ 网段带入幂等两腿随退场删——2026-10-14） ∥ 成员端点逐值 ∥ `docs/batches/2026-10-13-sandbox-outbound-member-face-ui.test.mjs` 估 ≈**220** ⇒ **实读 374**；成员页渲染 ∥ 提示/轮询 ∥ i18n 键集 ∥ nav 计数）。
 - **本批单元测试档（sandbox-exec-rebuild——入 server 链）**：`docs/batches/2026-10-13-sandbox-exec-rebuild.test.mjs`（服务面——估 ≈**620**：盒动作链逐条（假 Docker/假 SSH）∥ 参数集逐值 ∥ 放置/定时器 ∥ 实时门 ∥ v22 迁移（含删表）∥ `migrations.mjs` 拆案读判 ∥ #1351 事务）∥
-  `docs/batches/2026-10-13-sandbox-exec-rebuild-egress.test.mjs`（执行面件——估 ≈**330**：规则文本位次 ∥ 下发幂等/单事务 ∥ DNS 闸三径（放行/拒/待批持答）∥ 解析过滤 ∥ 临时集回收）。
+  `docs/batches/2026-10-13-sandbox-exec-rebuild-egress.test.mjs`（执行面件——估 ≈**330**：规则文本位次 ∥ 下发幂等/单事务 ∥ DNS 闸三径（放行/拒/待批持答）∥ 解析过滤 ∥ 临时集回收）——**该件随出站闸退场删（2026-10-14）**。
 - **本增补单元测试档（sandbox-exec-rebuild 批 · 修订轮——底座可换；入 server 链）**：`docs/batches/2026-10-13-sandbox-exec-rebuild-base.test.mjs`（服务面——估 ≈**320**：派生 tag/Id 内容寻址 ∥ Dockerfile 逐行 ∥ 镜像就位四步（假 Docker——缓存/拉取/构建三径）∥ 凭据 CRUD/加密/`X-Registry-Auth` 组装 ∥ `baseImage` PATCH ∥ 建盒链 ④ 两腿（**缺省零新增调用**））∥
   `docs/batches/2026-10-13-sandbox-exec-rebuild-base-ui.test.mjs`（前端面——估 ≈**220**：两卡渲染 ∥ 设置底座/凭据弹窗 ∥ 构建在飞态 ∥ i18n 键集 ∥ 档目）。
 - **本增补服务端件（sandbox-exec-rebuild 批 · 修订轮——底座可换）**：`derive.mjs`（拟新增）≈200 ∥ `registry-creds.mjs`（拟新增）≈130 ∥ `registry-cred-routes.mjs`（拟新增）≈110 ∥ `image-routes.mjs`（实读 **132** ⇒ ≈**150**——拉取凭据注入 + 审计 `auth` 键）∥
@@ -652,14 +589,11 @@
 |---|---|---|---|
 | KD-SV-63 | **两平面分离**：server = 控制面（登记/编排/治理），盒只跑在 runner 节点（远程 Docker API 节点——可多台；集群化 = 用 Docker 自己的集群——§1） | 用户 14:00 裁定（单点被压死即全死）；控制面常驻质量与盒资源耗尽解耦 | 同机跑盒（否——单点故障 + 资源争用） |
 | KD-SV-67 | **未提交保护 = 卷保留 ∥ WIP 快照 ∥ 销毁显式确认**（拆盒/停盒永不删卷；快照触发 = 控制端定时器——§1；销毁 = 管理员显式确认） | 工作区状态 = git 仓（可重建），节点本地卷 = 缓存；快照兜住未提交面（需求「停（卷∥快照留存）」——§5 工作区生命周期行） | 卷迁移（跨机传输机制重——否）；无保护（违「别被测试代码打崩」精神——否） |
-| KD-SV-68 | **出站 = 两类同表两闸**（CIDR（网络层）+ 域名（应用层），解析后 IP 二查；显式 deny 恒先（种子 deny ≺ 显式 allow——U2）；增删即生效） | 需求块两闸次序与两类同表的直接落地；强制面 = 主机侧走 SSH（§1） | 纯代理（CIDR 直连场景失真——否）；纯网络层（域名不可行——需求块已裁——否） |
-| KD-SV-69 | **待批队列 = 三态 + 60s + 三次建议**（需求块：新域挂起 ⇒ 控制台批准一次/记住/拒绝；超时拒；三次批准 ⇒ 建议入默认单） | 需求块 + 行业形（Claude Code 同形） | 一律硬拒（体验差——需求块已否）；自动放行（安全面破——否） |
 | KD-SV-70 | **每工作区凭据 = `api_keys` 行**（名 `sandbox:<ws>`；归属负责人；明文存控制面） | 复用客户面 token 面（需求块原句）；校验/记账/配额全链零改；明文 = 盒重建再注入所需（先例 KD-SV-19） | 新 key 族（第二校验面——否）；每次重建新签发（行累积 + 链路抖动——否） |
 | KD-SV-71 | **可用性门 = 无可用节点 ⇒ 仅沙盒功能面不可用**（不降级）；**server 启动与运行零依赖沙盒/runner**（用户 14:24——网关 ∥ 记账 ∥ 控制台其余页 ∥ 客户面零影响） | 用户 13:43「不要考虑什么退路」的延续（限于沙盒面）+ 用户 14:24 裁定（server 零依赖） | 降级为直跑进程（否——违容器唯一形态）；server 因缺节点拒启或整站降级（否——违用户 14:24） |
 | KD-SV-72 | **执行面共用**（runner 与 CI——用户 14:00 裁定⑦）：CI 与沙盒共用同一执行节点面；接口/形态随重做批定形 | 「跑不受信的仓」本质同——一套节点面 | 另建 CI 专用节点族（节点面翻倍——否） |
 | KD-SV-73 | **盒参数集** = read-only 根 + 唯一卷 + tmpfs 例外 + cap-drop + 非 root + 每工作区网络 | 需求块「每工作区一盒 + `--read-only` + 唯一可写挂载」的逐项落地；每工作区网络 = 跨工作区隔离（威胁模型面） | 共享网络（跨工作区可达——否）；特权盒（提权面——否） |
 | KD-SV-74 | **磁盘配额 = 项目配额优先 ∥ loopback 备选**（主机侧——SSH 执行；用户 19:52 定） | 项目配额（xfs pquota ∥ ext4 prjquota）零额外设备；loopback 全平台可落但耗 loop 设备 | 无配额（需求块明列——否）；容内自填盘监控（用户态不可靠——否） |
-| KD-SV-76 | **网络层闸 = nft 优先 ∥ iptables 备 + 全量重算幂等**（主机侧——SSH 执行；用户 19:52 定） | 主机异构；全量重算避免增量残渣与漂移 | 纯 iptables（旧栈机器兼容但表达弱——备选）；增量改链（残渣风险——否） |
 | KD-SV-79 | **容器态不落库**（runner-admin-console 批）：Docker 引擎即真源——读时读（`containers/json`）∥ 动作直调（create/start/stop/DELETE）；控制面零镜像 ∥ 零同步机制 | 双源必漂移（外部 `docker` 命令 ∥ 机器重启 ∥ 别的工具都在改容器）；同步/对账机制 = 白增面（最小切片不取） | 落库镜像表 + 对账（同步机制/陈旧窗口——否）；心跳式上报（用户 19:52 口径已排除——机器上不驻留进程 ∥ 无心跳） |
 | KD-SV-80 | **节点存活 = 读时探活（非心跳）**：运行面/读数 = 请求内现打 `GET …/info`（3s ∥ 并发）∥ 动作 = 现打现报；无后台定时器 ∥ 无心跳落库 | 用户 19:52 口径（无自驻进程）；探活只服务展示与当下动作，无独立可用性状态可陈 | 心跳上报（通道已废——否）；常驻探针进程（用户口径排除——否） |
 | KD-SV-81 | **Docker API 版本 = 登记时协商 + 调用恒带前缀**：`ver = max(1.44, MinAPIVersion)`，须 ≤ `ApiVersion`（否则拒登记）；版本存 `runtime_json`；**引导步 = 先取无前缀版本读数、再定前缀**（§3 自检）；**前缀形 = `v<ver>`**（如 `/v1.44/…`——2026-10-11 真机核：`/1.44/…` 404 ∥ `/v1.44/…` 200） | 官方文档明示无版本前缀调用已废弃（将移除）；协商 = 老 daemon（min < 1.44）与新 daemon（min ≥ 1.44，如 Docker 29）两头都接得住 | 裸无前缀（官方废弃面——否）；固定档不协商（未来 daemon 抬底即坏——否） |
@@ -682,12 +616,10 @@
 | KD-SV-135 | **装机/主机运维 = 管理面 chat 内动作（终局已达成——2026-10-14）**：`exec`/`docker`/`runners` 工具 + 主机表凭据承接装机能力——零新机制、零新端点；**任务式 run 面已退场**（用户 2026-10-14 裁「撤」：弹窗 ∥ 四端点 ∥ 服务件 ∥ 任务面工具 ∥ 单元测试档删净——sandbox-onboarding-removal 批）；`sandbox_onboarding` 表 = **停机留史**（数据不删；零写入 ∥ 零读面）；`agent/ADMIN-AGENT.md` §13 R71⑥（run 出口改道）撤回注不变 | 「将来合并进 chat」= 用户 2026-10-12 方向已裁 ⇒ 终局执行（原三步路线：步 0/1 已备；步 2/3 合并为一次退场批——每步独立评审纪律沿旧）；工具面已备 ⇒ 退场零新机制；表留史 = 历史数据不删 | 分步续走（用户裁撤 ⇒ 终局执行——否）· 删表（数据留史——否）· run 改道（白做——R71⑥ 撤回） |
 | KD-SV-105 | **卷区 = 节点行展开（容器区之后）——归属标签①「运行面」**；表 = 名 ∥ 创建时间 ∥ 操作（删除）；驱动透传不入列 ∥ 用量不做（引擎列表不携——`?size=1` 两版实读零 `UsageData`） | 卷 = 节点资源（与容器区同读上下文、建容器弹窗同层）；分标签归位（console-tabs-component 批） = 标签①——载体 = 节点展开（与归位块相容） | 独立卷卡 + 节点选单（多一层选择面 ∥ 离容器区远——否）；第三标签/标签②（标签划分 = 用户已定两标签；镜像标签名不含卷——否）；跨节点卷聚合表（引擎无跨节点单读——逐节点读聚合 = 伪面——否）；「驱动」列/用量列（恒值噪声 ∥ 引擎不携——否） |
 
-| KD-SV-136 | **出站强制面 = 三层求值 + 门级不变量**（sandbox-outbound-member-face 批——台账 #1248）：L1 门级不变量（`127/8` ∥ `169.254/16`——非行/不可改/不可绕）∥ L2 默认禁单（RFC1918 ∥ 服务器段 ∥ 节点段——种子行，可被显式 allow 开）∥ L3 用户规则（＋**内置允许**——生命线：盒 → server 网关；系统注入 ∥ 位次 ≻ L2/L3）；**总序 = L1 ≻ 零地址闸 ≻ 内置允许 ≻ L2 ≻ L3**；「强制」= 门位绑定（全协议/全端口）∥ 双径同判 ∥ 解析零地址 ⇒ 拒（零地址闸——无条件 fail-closed，不得被内置允许放行）∥ L1 命中即拒零挂起 ∥ 节点网段登记幂等带入 ∥ 闸为盒前置（fail-closed）——控制面本批落 ∥ 主机侧随重做批 | 真机 P2/P3 两 FAIL（宿主 22 口 EXIT=0 ∥ 云元数据可达）证明「只靠白名单行」= 名义强制；需求 §5「默认全拒 + 禁单」要的是真拒 | 只告警不阻断（名义强制——P2/P3 即此形，否）· **把 RFC1918 升为恒拒**（改 U2-A：用户 2026-10-10 14:23 裁「RFC1918 可被显式 allow 开」——本批不动该裁，否）· 域名径不解析即放行（fail-open 空档，否） |
-| KD-SV-137 | **探针判据口径 = 结构判据优先**（本批——台账 #1249）：P1 收窄 = 宿主真实账号（UID ∈ [1000, 65533] 窗）零命中盒内 passwd（窗外的标准系统账号不判）∥ P8 收窄 = 注入面正向在场 + 秘密零命中（基础镜像固有 env 不判）；SKIP 四项前置登记（P9 第二盒 ∥ P10 `--repo` ∥ P11 `--target` ∥ P14 执行面读数面） | P1/P8 两 FAIL 均为基础镜像自带项（`nobody` ∥ `NODE_VERSION`/`YARN_VERSION`）= 判据假红；白名单全量比对必漂（R25 已预判「镜像固有面不列则恒 FAIL」） | 白名单全量比对（必漂——两 FAIL 即证，否）· 放宽容差/忽略命中（真泄漏同形不可判，否）· 删两条判据（账号面/秘密面失覆盖，否） |
-| KD-SV-138 | **成员面工作区读面 = 控制台成员页（`#/me/sandbox`）**（本批——台账 #1234）：行 = 名 ∥ 盒状态（运行/已停 + 回收原因）∥ 快照数 ∥ 所属 runner（`runnerName`）∥ 待批；恒本人过滤（`owner_member_id`）；零写控件（读面批）；**写面 = member-face-chat 批开**（创建 ∥ 启停 ∥ 销毁 + 拉仓——KD-SV-156（出案）；轮换/快照恢复仍管理面） | 需求 §5:426–428（成员侧 = 控制台成员页）+ #1234「读面随沙盒批落」；数据面大半既有（本批补 `runnerName`） | 三端另立面（面不存在——实读零命中；不发明，否）· 复用 admin 工作区面（含他人资源——判权面错，否） |
-| KD-SV-139 | **待批发起方提示 = 一行可见 + 判据单源本档**（本批——台账 #1233①；父侧 2026-10-13 裁定）：文案「等待管理员批准：<host>（首次访问新域名——通常 ≤60s）」∥ 出现 = `pending` 在场 ∥ 消失 = 裁定/超时；落点 = 控制台成员页；三端登记随 #1215 | #1233①（挂起 ≤60s 零反馈 = 体验缺陷）+ 需求 §5:426；与 admin 三钮为同一事件两端 | 三端本批新面（无面可落——父侧裁定登记随 #1215，否）· 只在 admin 待批卡可见（发起方本人看不到——即原缺陷，否） |
+| KD-SV-137 | **探针判据口径 = 结构判据优先**（台账 #1249）：P1 收窄 = 宿主真实账号（UID ∈ [1000, 65533] 窗）零命中盒内 passwd（窗外的标准系统账号不判）∥ P8 收窄 = 注入面正向在场 + 秘密零命中（基础镜像固有 env 不判）；SKIP 三项前置登记（P9 第二盒 ∥ P10 `--repo` ∥ P14 执行面读数面） | P1/P8 两 FAIL 均为基础镜像自带项（`nobody` ∥ `NODE_VERSION`/`YARN_VERSION`）= 判据假红；白名单全量比对必漂（R25 已预判「镜像固有面不列则恒 FAIL」） | 白名单全量比对（必漂——两 FAIL 即证，否）· 放宽容差/忽略命中（真泄漏同形不可判，否）· 删两条判据（账号面/秘密面失覆盖，否） |
+| KD-SV-138 | **成员面工作区读面 = 控制台成员页（`#/me/sandbox`）**（台账 #1234）：行 = 名 ∥ 盒状态（运行/已停 + 回收原因）∥ 快照数 ∥ 所属 runner（`runnerName`）；恒本人过滤（`owner_member_id`）；零写控件（读面批）；**写面 = member-face-chat 批开**（创建 ∥ 启停 ∥ 销毁 + 拉仓——KD-SV-156（出案）；轮换/快照恢复仍管理面） | 需求 §5:426–428（成员侧 = 控制台成员页）+ #1234「读面随沙盒批落」；数据面大半既有（本批补 `runnerName`） | 三端另立面（面不存在——实读零命中；不发明，否）· 复用 admin 工作区面（含他人资源——判权面错，否） |
 
-| KD-SV-140…159 | ⇒ 未用段号（域内现有 1–139）；新段自 **KD-SV-160** 起启用。 | —— | —— |
+| KD-SV-140…159 | ⇒ 空档段号（68 ∥ 69 ∥ 76 ∥ 136 ∥ 139 五段随 sandbox-egress-removal 批退场——编号留空档，2026-10-14）；未用段 140–159 保留；新段自 **KD-SV-160** 起启用。 | —— | —— |
 | KD-SV-160…174 | ⇒ `sandbox/EXECUTION.md` §15（执行面——15 条：三腿/三证 ∥ 队列退场 ∥ 卷形式 ∥ 配额 ∥ 闸本体 ∥ DNS 闸 ∥ 实时门 ∥ 幂等链 ∥ 快照 ∥ 空闲信号 ∥ 运行时通道 ∥ 放置 ∥ 探针执行器 ∥ 迁移拆案 ∥ #1351；本域不复制） | —— | —— |
 | KD-SV-175…180 | **容器终端 v1（sandbox-container-terminal 批——台账 #1374；用户 2026-10-13 21:11/21:13/21:17 三句）——全形 = §3 容器终端块**：KD-SV-175 会话链 = 升级连接（`node:http` 劫持——`fetch` 面不可达流式 stdin，实测）∥ KD-SV-176 帧协议 = 二进制 pty 字节 ∥ 文本 JSON 控制 ∥ KD-SV-177 心跳 = 服务端 30s WS ping / 客户端 30s 文本 ping、60s 判死 ∥ KD-SV-178 断线收口 = `\x04` + 关流（不追捕前台进程 ∥ 无会话持久化）∥ KD-SV-179 会话环境 = `TERM` 恒注 + `LANG` 条件注入 ∥ shell = `bash` 优选 `sh` 兜底 ∥ KD-SV-180 审计两 kind + `requireAdmin` + 同源门 | —— | —— |
 | KD-SV-184…191 | ⇒ `sandbox/EXECUTION.md` §15（**底座可换**——8 条：绑定形 ∥ 派生构建 ∥ 缓存/重建 ∥ 前提（乙——Node 随包带） ∥ 凭据 ∥ 镜像就位步 ∥ 控制台面 ∥ 审计；本域不复制） | —— | —— |
@@ -708,9 +640,9 @@
 - **入站/端口转发** ∥ **盒间通信**（每工作区独立网络——跨工作区互不可达）。
 - **IPv6**（v1 只 IPv4——docker IPv6 关为前置）。
 - **项目权限面**（#1216②——接口已留：§4/§9 同守卫点）∥ **多租户** ∥ **per-workspace 独立额度池**（复用成员配额——如需另议）。
-- **成员面余项（不做——本批）**：成员写面之**轮换/快照恢复**（仍管理面；创建 ∥ 启停 ∥ 销毁 + 拉仓 = member-face-chat 批开——KD-SV-156（出案））∥ **三端沙盒/工作区面**（不发明——判据在册，落点登记随 #1215 成员会话面）∥ 探针执行器 ∥ 主机侧闸本体/下发器（**均已落——sandbox-exec-rebuild 批**：`sandbox/EXECUTION.md` §10/§5；控制面求值/带入接线 = sandbox-outbound-member-face 批落——§4 强制面 ⑦）。
-  **#1248/#1249 真机复证闭环 = sandbox-exec-rebuild 批收口面**（§11 闭环边界——执行器 `deploy/sandbox-probe.mjs`（拟新增）已备）。写面 = member-face-chat 批开（`agent/MEMBER-AGENT.md` §3.7）；读面 + 待批提示 = §8 成员面。
-- **最小切片余项（收口——sandbox-exec-rebuild 批）**：**已落** = 出站闸（本体 + 下发）∥ 磁盘限额 ∥ 探针（判据 + 执行器）∥ 放置 ∥ WIP 快照 ∥ 待批队列（机制）∥ 工作区↔容器映射（盒）∥ 资源限额（cpus/mem/pids/磁盘）。**未落（登记）** = Swarm 集群 ∥ 端口映射/网络面 ∥ 节点禁用/排空。**TLS 档已落（本增补 #2——§3 连接方式块；§3 提议① 以节点级可选档兑现）。**
+- **成员面余项（不做——本批）**：成员写面之**轮换/快照恢复**（仍管理面；创建 ∥ 启停 ∥ 销毁 + 拉仓 = member-face-chat 批开——KD-SV-156（出案））∥ **三端沙盒/工作区面**（不发明——判据在册，落点登记随 #1215 成员会话面）∥ 探针执行器（余腿——`sandbox/EXECUTION.md` §10）∥ 主机侧件（磁盘限额——已落）；**出站闸本体/下发器 ∥ 控制面求值/带入接线随 sandbox-egress-removal 批退场删（2026-10-14）**。
+  **#1248/#1249 真机复证**：随出站闸退场关闭（2026-10-14——#1248 腿删；#1249 余腿闭环 = sandbox-exec-rebuild 批收口面——§11 闭环边界；执行器 `deploy/sandbox-probe.mjs`（已落））。写面 = member-face-chat 批开（`agent/MEMBER-AGENT.md` §3.7）；读面 = §8 成员面。
+- **最小切片余项（收口——sandbox-exec-rebuild 批）**：**已落** = 磁盘限额 ∥ 探针（判据 + 执行器——余腿）∥ 放置 ∥ WIP 快照 ∥ 工作区↔容器映射（盒）∥ 资源限额（cpus/mem/pids/磁盘）；**退场** = 出站闸 ∥ 待批队列（sandbox-egress-removal 批——2026-10-14）。**未落（登记）** = Swarm 集群 ∥ 端口映射/网络面 ∥ 节点禁用/排空。**TLS 档已落（本增补 #2——§3 连接方式块；§3 提议① 以节点级可选档兑现）。**
 - **主机凭据/`exec` 余项（不做——§3 主机凭据块）**：凭据轮换/过期（TTL）∥ 一主机多凭据（一主机一枚）∥ 跳板机/代理链 ∥ 批量凭据导入 ∥ `exec` 交互式会话（PTY）∥ 文件传输（scp/sftp）∥ 后台任务（异步 `exec`）∥ 脚本/编排 DSL（逐条命令 = 最小面）∥ 凭据使用方 = 本 server（他端接入另议）。
 - **终端余项（不做——§3 容器终端块）**：会话持久化/重放（tmux 语义——断开即结束，窗口重连 = 新会话）∥ 鼠标协议 ∥ 图片协议 ∥ 文件传输 ∥ 自选命令（命令 = 服务端常量——`bash` 优选 `sh` 兜底）∥ 会话数上限（无上限——内部自用）∥ 前台进程追捕（Docker exec 无 kill 面——如实披露）∥ 终端内搜索/字号缩放 ∥ **主机 `exec`（SSH）交互式 PTY——仍不做**（属主机凭据余项句——与本批容器面无关，勿混记）。
 - **连接面 TLS 余项（增补 #2 不做——§3 连接方式块）**：材料轮换/续期机制（改材料 = 编辑面全列覆写）∥ 材料查看/导出（**只进不出**——三件零回显零回填）∥ 节点侧 TLS 服务端配置（dockerd `--tlsverify` 等——在机；我方面只做客户端）∥ 配对/信任链管理（材料 = 用户自备）∥ 按节点代理链。
@@ -731,15 +663,17 @@
 | R72 | **admin-chat-creds-merge 批（本批）——需求档回笔 + 冻结域随正清单 + 随正件 + 披露**：① 需求档回笔（主 agent 笔——**已闭合**：2026-10-12 父侧落笔——`docs/server/requirements/PROJECT.md` 功能点 47 ∥ AC-47 在册（§2 增功能点 + §5 合并方向 + AC-36 ⑨/⑩ 随拍——该档变更记录在册）） ∥ ② **冻结域随正（已办——2026-10-12 fix 轮落定；各档变更记录在册）**：`store/STORE.md`（§2 v18 段：七列 `ALTER` ∥ `sandbox_onboarding` CHECK 重建 + `'moved'` ∥ 回填移交；§1 版本 16 ⇒ 19；§3 迁移链 v18 行；§4 db 预算）∥ `gateway/API.md`（§2.5：行形增 `ssh` 元数据 ∥ 增 `PUT`/`DELETE …/runners/:id/credential` 两端点 ∥ 托管接入行形补第四态）∥ `accounts/ACCOUNTS.md`（§2.1 `sandbox_event` 增两 kind：`host_credential_set`/`host_credential_revoke`——kind 非枚举 ⇒ 零 CHECK 改）∥ ③ 随正件（父侧/实施轮——**以当刻盘面实读为准**；现读 = 2026-10-12）：门禁件数断言件七件 + `thincoder-server/package.json`（**58 ⇒ 59**——本批单元测试档入链；行数 ±0——注释/断言消息就地收正，沿注⑮口径）∥ 档目断言件（`2026-10-08-server-public-structure.test.mjs`：**+1 名——`host-credential.mjs`**（与板档档目 +1 对齐）；现读 **167** 行 ⇒ 净变 ≤±20）∥ `2026-10-10-runner-admin-console-ui.test.mjs`（views-sandbox 拆分随正；现读 **529** 行 ⇒ 净变 ≤±20）∥ `2026-10-11-admin-agent-chat*.test.mjs`（工具面计数七 ⇒ 八 ∥ 能力段对位句；现读三档 = **719 ∥ 395 ∥ 395** 行 ⇒ 净变 ≤±20）∥ i18n 键组（逐键 = `webui/SANDBOX.md` §2.1① §3 ∥ `webui/CHAT.md` §2.1 §3）——两 i18n 沙盒表 +≈12 键/表（现读 **214 ∥ 214** 行 ⇒ 净变 ≤±20）∥ 两 i18n admin 表 +3 键/表（现读 **171 ∥ 175** 行 ⇒ 净变 ≤±10）∥ 两 i18n system 表 +2 键/表（`audit.sandboxKind.*` 26 ⇒ 28；现读 **205 ∥ 205** 行 ⇒ 净变 ≤±6）∥ ④ 披露（不阻塞）：凭据常驻至撤销（无 TTL——自加项①）∥ `'moved'` = CHECK 重建（v18 含表重建一步）∥ `exec` 无 PTY/无文件传输/无异步（余项行）∥ 行 `address` 解析作 SSH 主机（异址部署不可达——如实报）∥ 凭据明文零回显（响应键面扫描在用例）∥ ⑤ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（两处录入 ⇒ chat `exec` ⇒ 撤销 ⇒ 拒）+ 真机（ECS `.6`：录真凭据 ⇒ `exec` 读数 ⇒ 撤销） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 | R59 | **sandbox-volumes 批（本批）——披露 + 同步项 + 需求档回笔 + 部署收尾**：① 披露（不阻塞）：**在用卷拒删 = 引擎行为**（我方不预检——引擎错误原文如实携；零自动清理）∥ 删卷不可逆（确认窗 + 后果句——卷内数据一并消失）∥ 「新建卷（手输）」= 名字进既有 `Binds` 径——**建卷成功与否归引擎**（首用即建：真机实读 = 容器创建即建；引擎拒 ⇒ 创建失败如实报）∥ 列表面字段 = 引擎如实（驱动恒 `local` 不入列；用量引擎不携——不做）∥ ② 同步项（**已办**——2026-10-11 console-tabs-component 批设计定稿轮随卷区落位同步，本项销；状态以 `webui/SANDBOX.md` 现句为准）：`webui/SANDBOX.md` §2.1① 分标签归位块半句与容器区句现为「（展开 ⇒ 容器区 + 卷区）」——展开体 = 容器区 + 卷区 ∥ ③ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（建容器选卷/手输两用例 ∥ 卷表列/删 ∥ 确认窗取消零调用）+ **真机（ECS `.6`）：在用卷拒删如实呈（`test-data` 类场景——409 ⇒ 400 人话）** ∥ ④ 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` AC-36 ⑥ 分期链止于「⇒ 拉取认源（sandbox-pull-by-source 批）」——**缺本批「① 续四：卷族（sandbox-volumes 批）」一步**；同档 §5「① 续」不做清单仍载「卷删除（另批——判据 = `sandbox/SANDBOX.md` §15）」——本批已交付（判据改指 §11——沿同行「已落」形）；**写法/计数 = 主 agent 定** | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
-| R73 | **sandbox-outbound-member-face 批（本批）——需求档回笔 + 随正件 + 披露 + 真机验收面**：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 成员面 ① 行补「所属 runner」字段（现句 = 运行中 ∥ 已停 ∥ 被回收 ∥ dirty ∥ 快照）；§5 出站行补「强制面」句（门级不变量 ∥ 全协议 ∥ 双径同判 ∥ 解析零地址拒 ∥ 命中即拒零挂起 ∥ 网段带入 ∥ 闸为盒前置）；AC-36 ⑦ 探针句补「判据收窄 + SKIP 前置」（写法/计数 = 主 agent 定）∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准；逐件现读 = 2026-10-13）：`webui/WEBUI.md` §1 档目链 + 静态面清单（+`views-me-sandbox.mjs`——`:16`/`:173` 翻「本批新建」）∥ §6 AC-12 行（我的 5）∥ `design/PROJECT.md` 板账；**档目断言件** = `docs/batches/2026-10-08-server-public-structure.test.mjs`（现读 **167** 行 ⇒ 净变 ≤±20——+1 名）∥ **键集指纹/键数随正件**（本批 +≈16 键/表）：`…-server-public-structure`（① 指纹/键数——当刻复读——已随正 **959 ∥ 964**，2026-10-13）∥ `…-runner-admin-console-ui`（⑦ 键数终值；现读 **529** 行）∥ `…-admin-agent-chat-ui`（⑧ 键数终值；现读 **397** 行）∥ `…-team-projects-permissions-ui`（shell 键数 59 ⇒ 60；现读 **551** 行）——逐件净变 ≤±20（复读值复锚）；**门禁件数断言件/`package.json` 链项 = 作废**（用户 2026-10-12 裁「门禁链撤除——批内件不入发布门」；不增链、不碰旧断言件）∥ ③ 披露（不阻塞）：探针执行器随执行面重做批（本批只落判据面；P1/P8 收窄后须重跑方「绿」）∥ 主机侧闸本体随重做批 ⇒ **P2/P3 真机复证 = 重做批收口面**（本批控制面修复可机检）；**#1248/#1249 闭环批次 = 执行面重做批——本批验收 = 控制面腿，收口轮不得按本批读数记「已修」**∥ 三端沙盒面不存在（判据在册；落点登记随 #1215）∥ 成员读面无写控件 ∥ ④ 真机验收面（收口轮 · ECS `.5`/`.6`）：登记节点 ⇒ 种子 deny 行逐值（RFC1918 ∥ 节点 /24 ∥ 服务器段）∥ 盒内打 `169.254.169.254` ∥ 宿主 22 口 ⇒ 拒（待重做批后） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+| R73 | **sandbox-outbound-member-face 批（本批）——需求档回笔 + 随正件 + 披露 + 真机验收面**（**⚠ egress 面退场——2026-10-14（sandbox-egress-removal 批）：本行 ① 出站行句 ∥ ③ 披露之 P2/P3 条 ∥ ④ 真机验收面之 egress 腿随退场废止——余项按退场后口径**）：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 成员面 ① 行补「所属 runner」字段（现句 = 运行中 ∥ 已停 ∥ 被回收 ∥ dirty ∥ 快照）；§5 出站行补「强制面」句（门级不变量 ∥ 全协议 ∥ 双径同判 ∥ 解析零地址拒 ∥ 命中即拒零挂起 ∥ 网段带入 ∥ 闸为盒前置）；AC-36 ⑦ 探针句补「判据收窄 + SKIP 前置」（写法/计数 = 主 agent 定）∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准；逐件现读 = 2026-10-13）：`webui/WEBUI.md` §1 档目链 + 静态面清单（+`views-me-sandbox.mjs`——`:16`/`:173` 翻「本批新建」）∥ §6 AC-12 行（我的 5）∥ `design/PROJECT.md` 板账；**档目断言件** = `docs/batches/2026-10-08-server-public-structure.test.mjs`（现读 **167** 行 ⇒ 净变 ≤±20——+1 名）∥ **键集指纹/键数随正件**（本批 +≈16 键/表）：`…-server-public-structure`（① 指纹/键数——当刻复读——已随正 **959 ∥ 964**，2026-10-13）∥ `…-runner-admin-console-ui`（⑦ 键数终值；现读 **529** 行）∥ `…-admin-agent-chat-ui`（⑧ 键数终值；现读 **397** 行）∥ `…-team-projects-permissions-ui`（shell 键数 59 ⇒ 60；现读 **551** 行）——逐件净变 ≤±20（复读值复锚）；**门禁件数断言件/`package.json` 链项 = 作废**（用户 2026-10-12 裁「门禁链撤除——批内件不入发布门」；不增链、不碰旧断言件）∥ ③ 披露（不阻塞）：探针执行器随执行面重做批（本批只落判据面；P1/P8 收窄后须重跑方「绿」）∥ 主机侧闸本体随重做批 ⇒ **P2/P3 真机复证 = 重做批收口面**（本批控制面修复可机检）；**#1248/#1249 闭环批次 = 执行面重做批——本批验收 = 控制面腿，收口轮不得按本批读数记「已修」**∥ 三端沙盒面不存在（判据在册；落点登记随 #1215）∥ 成员读面无写控件 ∥ ④ 真机验收面（收口轮 · ECS `.5`/`.6`）：登记节点 ⇒ 种子 deny 行逐值（RFC1918 ∥ 节点 /24 ∥ 服务器段）∥ 盒内打 `169.254.169.254` ∥ 宿主 22 口 ⇒ 拒（待重做批后） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
-| R74 | **sandbox-exec-rebuild 批（本批）——需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 沙盒块——「执行通道 = exec 指令面（非 root ∥ 超时 10 分钟 ∥ 输出截断 1 MiB）」句与 19:52 口径相抵（本批执行面 = Docker API 直调 + 盒内壳自持；`exec` 指令面无对应实现面）⇒ 请收正；「控制链（runner 长轮询/心跳/指令队列）」史句现状 = 已废（如仍在活面请随正）；「保护降级两边界」（非 git 跳过 ∥ >200 MiB 跳过）随快照形式收正（非 git 同覆盖；单份上限 = `diskMb` 配额——EXECUTION §3）；新设置键两枚（`maxBoxesPerRunner` ∥ `workspaceRoot`）宜在资源行登记；**「底座可换」入册**（用户 2026-10-13 21:32 范围增补——建议功能点 52 ∥ AC-52（承 AC-51 顺序）；判据全文 = `sandbox/EXECUTION.md` §8 底座可换块 ∥ §13 用例 ∥ 本档 §3 块）；写法/计数 = 主 agent 定 ∥ ② 随正件（父侧/实施轮，以当刻盘面实读为准）：`docs/TEST-ENV-ECS.md`（节点前置 = dockerd 监听 TCP + 工作区根目录 + **派生前置 = 标准镜像件位契约（`/opt/thincoder/app`——member-face 批落地）就绪 + 底座镜像来源**——沿 R52②）∥ `docs/README.md`/`design/PROJECT.md` 档目（sandbox 域 1 档 ⇒ 2 档——EXECUTION.md）∥ 旧单元测试档引用 `sandbox_tasks`/队列者随实施随正 ∥ **档目/键集断言件随正**（`2026-10-08-server-public-structure.test.mjs`：+1 名——`views-sandbox-base.mjs` ∥ i18n 键集指纹——以实施当刻盘面复读为准）∥ ③ 披露（不阻塞）：nft 漂移窗 ∥ DNS 闸 UDP 只 ∥ 快照全量存档（配额内）∥ 定时器 30s 粒度 ∥ 探针 SKIP 如实登记（零假报）∥ **底座可换五件**（派生真机可用依赖标准镜像件位契约落地——member-face 批；落地前机检不受阻 ∥ 底座 tag 移动 ⇒ 节点本地旧像被采用（追新 = 重拉后派生）∥ 派生同步请求（最坏 ≈20 分钟 = 拉取 10 + 构建 10；超时后引擎侧可能仍在跑——重试幂等）∥ 逐节点各自派生（tag 内容寻址保证同源）∥ 凭据只及拉取注入——目录/标签读取仍匿名）∥ ④ 真机收口（父侧执行）：ECS `.5`/`.6` 复跑探针套件 + 建盒/快照/恢复全链实走 + **底座可换全链**（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起——前置 = 标准镜像件位契约就绪）∥ **增补 #2（连接面 TLS 档——用户 2026-10-13 22:43 范围增补「让用户可选」）：① 需求档回笔（主 agent 笔——建议功能点 53 ∥ AC-53，承 AC-52 顺序；判据全文 = `sandbox/SANDBOX.md` §3 连接方式块 ∥ §11；写法/计数 = 主 agent 定）∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准）：`docs/batches/2026-10-10-runner-admin-console.test.mjs`（E34 语义随正（https 400 因 = 档相抵/缺三件——不再为「scheme 拒」）+ **列面断言 +四列**）∥ `docs/batches/2026-10-10-runner-admin-console-ui.test.mjs`（添加弹窗体增 `connection` ∥ 行钮 +1 ∥ 键集 +≈16）∥ `docs/batches/2026-10-08-server-public-structure.test.mjs`（档目 +2 名——`docker-tls.mjs` ∥ `views-sandbox-connection.mjs`；键集指纹随正）∥ `docs/TEST-ENV-ECS.md`（节点侧 dockerd TLS 配置步骤 + 证书自备句）∥ ③ 披露（不阻塞）：材料只进不出（三件零回显／零回填；换材料 = 全列覆写）∥ 切换/编辑须当刻可达（自检为门——离线节点改不动，如实报）∥ 客户端证书认证 = 节点 dockerd 侧配置（在机；我方面只做客户端）∥ 缺省明文保持（零行为变化——用户「很喜欢现在这种方式」）∥ ④ 真机收口（父侧执行）：ECS `.6` 节点 dockerd TLS 就位 ⇒ 自签三件 ⇒ 控制台切档 ⇒ 自检过 ⇒ 全谱可用（读数/容器/镜像/终端）⇒ 切回明文（材料清零） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+| R74 | **sandbox-exec-rebuild 批（本批）——需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 沙盒块——「执行通道 = exec 指令面（非 root ∥ 超时 10 分钟 ∥ 输出截断 1 MiB）」句与 19:52 口径相抵（本批执行面 = Docker API 直调 + 盒内壳自持；`exec` 指令面无对应实现面）⇒ 请收正；「控制链（runner 长轮询/心跳/指令队列）」史句现状 = 已废（如仍在活面请随正）；「保护降级两边界」（非 git 跳过 ∥ >200 MiB 跳过）随快照形式收正（非 git 同覆盖；单份上限 = `diskMb` 配额——EXECUTION §3）；新设置键两枚（`maxBoxesPerRunner` ∥ `workspaceRoot`）宜在资源行登记；**「底座可换」入册**（用户 2026-10-13 21:32 范围增补——建议功能点 52 ∥ AC-52（承 AC-51 顺序）；判据全文 = `sandbox/EXECUTION.md` §8 底座可换块 ∥ §13 用例 ∥ 本档 §3 块）；写法/计数 = 主 agent 定 ∥ ② 随正件（父侧/实施轮，以当刻盘面实读为准）：`docs/TEST-ENV-ECS.md`（节点前置 = dockerd 监听 TCP + 工作区根目录 + **派生前置 = 标准镜像件位契约（`/opt/thincoder/app`——member-face 批落地）就绪 + 底座镜像来源**——沿 R52②）∥ `docs/README.md`/`design/PROJECT.md` 档目（sandbox 域 1 档 ⇒ 2 档——EXECUTION.md）∥ 旧单元测试档引用 `sandbox_tasks`/队列者随实施随正 ∥ **档目/键集断言件随正**（`2026-10-08-server-public-structure.test.mjs`：+1 名——`views-sandbox-base.mjs` ∥ i18n 键集指纹——以实施当刻盘面复读为准）∥ ③ 披露（不阻塞）：nft 漂移窗 ∥ DNS 闸 UDP 只 ∥ 快照全量存档（配额内）∥ 定时器 30s 粒度 ∥ 探针 SKIP 如实登记（零假报）∥ **底座可换五件**（派生真机可用依赖标准镜像件位契约落地——member-face 批；落地前机检不受阻 ∥ 底座 tag 移动 ⇒ 节点本地旧像被采用（追新 = 重拉后派生）∥ 派生同步请求（最坏 ≈20 分钟 = 拉取 10 + 构建 10；超时后引擎侧可能仍在跑——重试幂等）∥ 逐节点各自派生（tag 内容寻址保证同源）∥ 凭据只及拉取注入——目录/标签读取仍匿名）∥ ④ 真机收口（父侧执行）：ECS `.5`/`.6` 复跑探针套件（余腿） + 建盒/快照/恢复全链实走 + **底座可换全链**（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起——前置 = 标准镜像件位契约就绪）∥ **增补 #2（连接面 TLS 档——用户 2026-10-13 22:43 范围增补「让用户可选」）：① 需求档回笔（主 agent 笔——建议功能点 53 ∥ AC-53，承 AC-52 顺序；判据全文 = `sandbox/SANDBOX.md` §3 连接方式块 ∥ §11；写法/计数 = 主 agent 定）∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准）：`docs/batches/2026-10-10-runner-admin-console.test.mjs`（E34 语义随正（https 400 因 = 档相抵/缺三件——不再为「scheme 拒」）+ **列面断言 +四列**）∥ `docs/batches/2026-10-10-runner-admin-console-ui.test.mjs`（添加弹窗体增 `connection` ∥ 行钮 +1 ∥ 键集 +≈16）∥ `docs/batches/2026-10-08-server-public-structure.test.mjs`（档目 +2 名——`docker-tls.mjs` ∥ `views-sandbox-connection.mjs`；键集指纹随正）∥ `docs/TEST-ENV-ECS.md`（节点侧 dockerd TLS 配置步骤 + 证书自备句）∥ ③ 披露（不阻塞）：材料只进不出（三件零回显／零回填；换材料 = 全列覆写）∥ 切换/编辑须当刻可达（自检为门——离线节点改不动，如实报）∥ 客户端证书认证 = 节点 dockerd 侧配置（在机；我方面只做客户端）∥ 缺省明文保持（零行为变化——用户「很喜欢现在这种方式」）∥ ④ 真机收口（父侧执行）：ECS `.6` 节点 dockerd TLS 就位 ⇒ 自签三件 ⇒ 控制台切档 ⇒ 自检过 ⇒ 全谱可用（读数/容器/镜像/终端）⇒ 切回明文（材料清零） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
 | R85 | **sandbox-container-terminal 批（本批）——需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔——**已落** 2026-10-13：`docs/server/requirements/PROJECT.md` 增**功能点 51 ∥ AC-51**（承 AC-50 顺序；该档变更记录在册）——原缺行：终端能力此前无需求面，本批设计轮实读后入册）；判据全文 = `sandbox/SANDBOX.md` §11 终端行 ∥ §12（N83–N85 ∥ B79–B81 ∥ E61–E63） ∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准）：`docs/batches/2026-10-08-server-public-structure.test.mjs`（档目断言 **+6 名**——`terminal-core.mjs` ∥ `terminal-vt.mjs`（实拆） ∥ `terminal-codec.mjs`（实拆） ∥ `terminal-render.mjs` ∥ `terminal-link.mjs` ∥ `views-sandbox-terminal.mjs` ∥ 键集/键数指纹**已随正**——当刻实读 1033 ∥ 1038）∥ 同族指纹件（i18n 键数）随实施当刻复读 ∥ ③ 披露（不阻塞）：**前台进程不追捕**（断开时在跑的程序可能续存至自身退出——Docker exec 无情 kill 面；容器一次性沙盒兜底）∥ **pty 内容零留痕**（终端字节不落库不落日志——审计只记「谁何时进了哪台容器」）∥ 会话无持久化（重连 = 新会话）∥ 会话数无上限（内部自用）∥ `LANG` 条件注入（容器自带 locale 时零覆盖）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（容器行开终端 ⇒ `vim`/`top` ⇒ 中文输入 ⇒ 关窗收口 ⇒ 审计两行在册）+ 真机（ECS `.6`：非运行容器门 + 直连拒；关窗后 `docker exec` 进程零残留） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
 
 | R87 | **sandbox-onboarding-removal 批（本批）——需求档回笔 + 随正件 + 披露 + 部署收尾**：① 需求档回笔（主 agent 笔——**文本已拟**：批档 §2 附稿——§5「接入两径」块改写为终态（手工登记 + 管理面 chat 承接；删「执行者」条与三态句）∥ AC-36 ⑨ 收正（⑩ 删）∥ §5 管理面用途行去「托管接入（装机）」∥ 功能点 47④ 合并方向句收正「已达成」；写法/计数 = 主 agent 定）∥ ② **删码清单（服务件——归并一处）＋随正件（父侧/实施轮——以当刻盘面实读为准；现读 = 2026-10-14 fix 轮实读）**：**删（已办——2026-10-14 实施轮）= 服务件两档（`onboarding` ∥ `onboarding-routes`）整档删（354 ⇒ 0 ∥ 103 ⇒ 0） ∥ `thincoder-server/src/sandbox/routes.mjs`（413 ⇒ 409——托管接入四端点注册段删）**；随正件 = `docs/batches/2026-10-10-runner-admin-console-agent.test.mjs`（**整档删**——任务面五工具/托管接入全链用例；现读 **637** ⇒ 净变 −637）∥ `…-runner-admin-console.test.mjs`（**复扫 = 档内零 onboarding/任务面引用 ⇒ 净变 ±0**——表/列面断言留；现读 **491**）∥ `…-runner-admin-console-ui.test.mjs`（⑤ 弹窗 ∥ ⑥ 任务区用例删 + 首读断言改；现读 **527** ⇒ 净变 ≤±40）∥ `…-console-tabs-component.test.mjs`（任务区/两钮/首读断言逐处；现读 **493** ⇒ 净变 ≤±20）∥ `2026-10-12-team-projects-permissions.test.mjs`（`onboarding.mjs` 导入与用途删；现读 **693** ⇒ 净变 ≤±20）∥ `2026-10-12-admin-chat-creds-merge.test.mjs`（N81 用例删——移交机制随件退场；CHECK/回填两用例留；现读 **606** ⇒ 净变 ≤±20）∥ 键集/键数指纹件（`2026-10-08-server-public-structure.test.mjs` 等——键删后复读为准；现读 **169** ⇒ 净变 ≤±20）∥ `2026-10-06-server-gateway.test.mjs`（表在场断言**留**——表存续；现读 **496** ⇒ 净变 ±0）∥ ③ 披露（不阻塞）：**历史 `running` 残留行 = 永久静止**（重启恢复面消失——零改写）∥ 历史审计行五 kind 以原值可读（label 面已收——原值兜底）∥ 表零写入零读面（历史经库直读）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（运行面/任务区零残留 ∥ 添加/删除节点照常） | 披露（上抛——如无异议按设计实施） | 评审/用户复核 |
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §1/§2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：**清面（本档）**——§4（出站规则：两类同表/两闸/默认单/预授权条目〔登记即放行〕/强制面/通配/生效）与 §6（待批队列）两节删净（段号留空档；§4 ⇒ 退场承接句）∥ §1 两平面句去闸词 ∥ §2 `sandbox_rules`/`sandbox_pending` 两表行注「已退场·表在库留史」+ `rulesRev` 行删 + 审计注随正 ∥ §3 射程行与写门句随正 ∥ §7 网络路径句随正 ∥ §8 六面 ⇒ 四面（③④ 两卡删）+ `pendingTimeoutSeconds`/默认单写入口句去 + 成员面待批两腿删 ∥ §9 面句随正 ∥ §11 出站/待批两判据行删 + 探针表 P2–P4 ∥ P11/P12 五腿删（编号留空档）+ 闭环句收窄 ∥ §12 七用例删（N42/N43 ∥ B36–B38 ∥ N64 ∥ B66）+ 执行面用例指针随正 ∥ §13 `rules`/`egress`/`dns-gate` 三行删 + probe 行收窄 + 小计 ≈−1475 ∥ §14 KD-SV-68/69/76/136/139 删（编号留空档）、KD-SV-137/138 收窄 ∥ §15 四处随正 ∥ §16 R73/R74 加退场收正标。同源随动 = `sandbox/EXECUTION.md`（已落） ∥ `store/STORE.md` ∥ `gateway/API.md` ∥ `accounts/ACCOUNTS.md` ∥ `ops/OPS.md` ∥ `webui/WEBUI.md` ∥ `webui/SANDBOX.md` ∥ `webui/ME.md` ∥ `webui/CHAT.md` ∥ `agent/ADMIN-AGENT.md` ∥ `agent/MEMBER-AGENT.md` ∥ `mcp/MCP.md` ∥ `design/PROJECT.md`。**产品码零触（设计轮）。**
 
 - 2026-10-14（**sandbox-egress-off 轻通道轮 · 收尾链设计回笔 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-off.md` §1；用户 2026-10-14 裁「安全性问题押后，等跑通以后再说，别套着枷锁跳舞」）：§6 增**现状（缺省关）**句（机制在册、现阶段未启用——盒不注入闸 DNS ∥ 零下发 ⇒ 零挂起零待批；启用 = 功能齐后的后续轮）∥ §16 R87② 删码句随正为终态（已办——死指针删；本域悬空归零）。**产品码零触（设计轮）。**
 

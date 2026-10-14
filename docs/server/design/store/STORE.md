@@ -247,7 +247,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 - 语义与写入点 = `accounts/ACCOUNTS.md` §2.1（写入面 = `src/gateway/config-admin.mjs`（已落盘 · 实读 **182** 行）——写盘成功后一条；失败 ⇒ warn，不反噬已落盘事实）；消费 = 审计页类型下拉/文案（`webui/READINGS.md` §2.1④——型面现状 = 十三型，v14 段）。
 - 圈界：重建净零新表/新列——判据 = 行拷贝逐值（含 id 连续）+ 两索引在场。
 
-### v11 增段（沙盒七表 + 审计 CHECK 再扩——sandbox 域；server-exec-sandbox 批）
+### v11 增段（沙盒七表 + 审计 CHECK 再扩——sandbox 域；server-exec-sandbox 批；**`sandbox_rules`/`sandbox_pending` 两表随 sandbox-egress-removal 批退场——表在库留史，零写入零读面，2026-10-14**）
 
 ```sql
 -- ① 沙盒七表（对象模型 = `sandbox/SANDBOX.md` §2——单源）
@@ -294,6 +294,7 @@ CREATE TABLE IF NOT EXISTS sandbox_pending (
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open','approved_once','approved_remember','denied','timeout')),
   resolved_at INTEGER
 );
+-- 注：`sandbox_rules`/`sandbox_pending` 两表随 sandbox-egress-removal 批退场（2026-10-14）：表在库留史，零写入 ∥ 零读面；无删表迁移（历史数据不删）。
 CREATE TABLE IF NOT EXISTS sandbox_tasks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   runner_id INTEGER NOT NULL,
@@ -314,24 +315,21 @@ CREATE TABLE IF NOT EXISTS sandbox_checkpoints (
   note TEXT NOT NULL DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS sandbox_settings (
-  k TEXT PRIMARY KEY,                         -- 全局默认——键全集与值形 = `gateway/API.md` §2.5（单源）；「默认单」非本表（= sandbox_rules 种子行）
+  k TEXT PRIMARY KEY,                         -- 全局默认——键全集与值形 = `gateway/API.md` §2.5（单源）
   v TEXT NOT NULL                             -- JSON 文本（数字 ∥ 字符串统一 JSON 编码）
 );
 
 -- ② 审计 CHECK 再扩（十型 ⇒ 十二型——表重建，步序与 v10 同构）
--- + 'sandbox_rule'（规则增删——detail = { action, rule }）∥ + 'sandbox_event'（审批三态/超时 ∥ 盒起停拆 ∥ 节点添加/删除（含连通自检失败行） ∥ 快照——detail = { kind, ... }）
+-- + 'sandbox_rule'（规则增删——detail = { action, rule }；写入面随 sandbox-egress-removal 批退场——2026-10-14）∥ + 'sandbox_event'（盒起停拆 ∥ 节点添加/删除（含连通自检失败行） ∥ 快照——detail = { kind, ... }）
 -- 重建步（建新表（十二型 CHECK） ∥ 拷贝 ∥ DROP ∥ RENAME ∥ 两索引重建——SQL 形同 v10 段，逐字替换型清单）。
--- ③ 种子（初始化点 = 本段一次性写入；可改可删——不复活）
---   sandbox_rules 八行（source='default'）：deny（cidr）= 10.0.0.0/8 ∥ 172.16.0.0/12 ∥ 192.168.0.0/16；
---   allow（domain）= registry.npmjs.org ∥ github.com ∥ *.githubusercontent.com ∥ gitee.com ∥ *.gitee.com；
---   恒拒（127.0.0.0/8 ∥ 169.254.0.0/16）= 内置（非行——不入种子）；动态项（服务器网段 ∥ 节点自身网段）登记时自动带入。
+-- ③ 种子（初始化点 = 本段一次性写入；可改可删——不复活）——**本种子面随 sandbox-egress-removal 批退场（2026-10-14）：零写入；历史行不动**。
 ```
 
 - 语义/对象模型 = `sandbox/SANDBOX.md` §2/§3–§7（单源）；端点 = `gateway/API.md` §2.5/§2.7。
 - 圈界：`sandbox_settings` = 键值设置面（全局默认——键全集/值形 = `gateway/API.md` §2.5）；`sandbox_*` 与 `members`/`api_keys` 的引用 = `owner_member_id` ∥ `key_id`（沿 `api_keys` 先例）；`sandbox_pending`/`sandbox_checkpoints` 无 FK（历史/瞬态面自足——沿 `audit_events` 口径）。
 
 - 表归属：`members` ∥ `api_keys` ∥ `sessions` ∥ `audit_events` = accounts 域（`accounts/ACCOUNTS.md`）；`usage` ∥ `usage_daily` ∥ `quota_counters` = metering 域（`metering/METERING.md`）；`providers` = gateway 域（provider 管理面 ∥ v4 模型设置——`gateway/API.md` §2.2）；
-  `sandbox_runners` ∥ `sandbox_workspaces` ∥ `sandbox_rules` ∥ `sandbox_pending` ∥ `sandbox_checkpoints` ∥ `sandbox_settings` ∥ **`registry_credentials`（本增补）** = sandbox 域（v22 后**七表**——`sandbox/SANDBOX.md` §2 对象模型单源；`sandbox_tasks` 随队列退场——v22 段删表）；结构单源 = 本档。
+  `sandbox_runners` ∥ `sandbox_workspaces` ∥ `sandbox_rules` ∥ `sandbox_pending` ∥ `sandbox_checkpoints` ∥ `sandbox_settings` ∥ **`registry_credentials`（本增补）** = sandbox 域（v22 后**七表**——其中两表已退场（2026-10-14——注见 v11 段）；`sandbox/SANDBOX.md` §2 对象模型单源；`sandbox_tasks` 随队列退场——v22 段删表）；结构单源 = 本档。
 
 ### v12 增段（`sandbox_runners` 表重建——sandbox 域；runner-admin-console 批）
 
@@ -709,6 +707,8 @@ CREATE TABLE IF NOT EXISTS mcp_servers (
 - 归档/导出面不做（清理 = 保留窗删除式——`metering/METERING.md` §1；备份 = 部署侧面——`ops/OPS.md` §5.5）；多实例共享存储 = 触发项（`EVOLUTION.md` §2）；结构升级只走迁移链（不做手工脚本面）。
 
 ## 变更记录
+
+- 2026-10-14（**sandbox-egress-removal 批 · 清面轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-egress-removal.md` §2 文档随正清单；用户 2026-10-14 20:32 裁「整套摘除」）：§2 v11 段两表注「随退场·表在库留史」+ `sandbox_settings` 注去「默认单」+ 审计注释随正 + 种子块注退场 ∥ 表归属行注两表退场。同源随动 = `sandbox/SANDBOX.md`。**产品码零触（设计轮）。**
 
 - 2026-10-14（**sandbox-onboarding-removal 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-sandbox-onboarding-removal.md` §1 · 台账 #1383；用户裁「撤」）：§1 版本链 v13 条注「停机留史」∥ §2 v13 段标题 + 背景行注「停机留史（数据不删 ∥ 零写入零读面）」+ 机制指针收正 ∥ 加密密钥披露指针收正（§14 KD-SV-84）。既落段零改写（v13/v18 段体 = as-of 历史；迁移链不可回填——零动）。**产品码零触（设计轮）。**
 

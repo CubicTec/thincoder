@@ -87,18 +87,20 @@ const MANIFEST_BASENAME = "project-manifest.json"
 
 /**
  * F6 files 声明面拦截谓词（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：
- * scripts/**（工程工具面不入域——内容产物 only）与过程档（父侧职责）→ 收集全部违规
- * 后抛合并错误（fail-closed——错误即工具结果 JSON——无排队残留）。目录声明不在本
- * 谓词（normalizeFileList 循环内先行拒——错误序不变）。调用点 = normalizeFileList
- * （subagent-scheduler.mjs——本谓词在循环后跑——目录错误先于过程档错误）。
+ * scripts/*（工程工具面不入域——**层级锚定：仅仓根与直接子层**——目录名在深层不携带
+ * face 信息（2026-10-14 收正：#1449——`deployment/<x>/scripts/*` 类交付物放行）——内容
+ * 产物 only）与过程档（父侧职责）→ 收集全部违规后抛合并错误（fail-closed——错误即工具
+ * 结果 JSON——无排队残留）。目录声明不在本谓词（normalizeFileList 循环内先行拒——错误
+ * 序不变）。调用点 = normalizeFileList（subagent-scheduler.mjs——本谓词在循环后跑——
+ * 目录错误先于过程档错误）。
  */
 export function rejectEngineeringFilePaths(files) {
   const violations = []
   for (const f of Array.isArray(files) ? files : []) {
     const segs = String(f).replace(/\\/g, "/").split("/").filter((s) => s)
     const base = (segs[segs.length - 1] ?? "").toLowerCase()
-    if (segs.some((s) => s.toLowerCase() === "scripts")) {
-      violations.push(`engineering-tools face path ${f} must not be listed in files — scripts/** is the engineering-tools face, not a content product (applies to every session, not engineering-mode-scoped; files carries source/test/design-doc paths only)`)
+    if (segs.slice(0, 2).some((s) => s.toLowerCase() === "scripts")) {
+      violations.push(`engineering-tools face path ${f} must not be listed in files — scripts/* at the repo root or a direct child package is the engineering-tools face, not a content product (applies to every session, not engineering-mode-scoped; files carries source/test/design-doc paths only)`)
     } else if (PROCESS_BASENAMES.has(base)) {
       violations.push(`Parent-side maintained file ${f} must not be listed in files — reconciliation is the parent's duty; use the design-doc path if you need to edit a design doc`)
     } else if (base === MANIFEST_BASENAME) {

@@ -1,16 +1,9 @@
 /**
  * 2026-10-13-sandbox-outbound-member-face.test.mjs — thincoder-server 批内单测件（`sandbox-outbound-member-face` 批 · 服务面：
- * 出站强制面求值/带入接线 ∥ 成员端点 `runnerName`；名随批档 · 住 `docs/batches/` · 不入仓套件 · 随批留存）。
+ * 成员端点 `runnerName`（闸面九腿随 sandbox-egress-removal 批整套摘除删——2026-10-14 随正）；名随批档 · 住 `docs/batches/` · 不入仓套件 · 随批留存）。
  * 运行（自 `thincoder/` 仓根）：`node --test docs/batches/2026-10-13-sandbox-outbound-member-face.test.mjs`
  *
- * 射程（判据源 = 批档 §2 + `docs/server/design/sandbox/SANDBOX.md` §4 强制面 ∥ §12 N64 ∥ B66 ∥ §14 KD-SV-136）：
- *   B66③ 零地址拒（`host` 在场而 `ips` 空 ⇒ `unresolved`——fail-closed）；直连 IP 径空目标 = `no_target`（既有义）∥ 双径同判（域名径 ∥ 直连 IP 径同判同序）
- *   ∥ N64① L1 命中即拒（`hard_deny`——显式 allow 在场仍拒；与 L2/L3 拒可辨 = 不可批准面；零副作用）
- *   ∥ N64② 内置允许 ≻ L2/L3（生命线不断——种子 deny ∥ 显式 deny 皆不可覆盖；端口逐值）
- *   ∥ N64③ 种子 deny ≺ 显式 allow（U2-A 保持）∥ 段值推导（host /24 ∥ 通配/非 IPv4 ⇒ null）
- *   ∥ B66① 首见带入（行入 + `rulesRev` +1 + 审计一行「自动带入」+ 段值逐值）∥ B66② 重复登记（零重行零动零审计）
- *   ∥ B66③-侧 段值推导落面（`host` /24 ∥ 通配/非 IPv4 ⇒ `null`——零行 + 登记读数如实标；§4 段值推导行）∥ 成员行 `runnerName`（绑定 ⇒ 名 ∥ 未绑定 ⇒ null）
- *   ∥ 恒本人过滤（他人工作区零出现）。
+ * 射程（判据源 = 批档 §2）：成员端点 `runnerName`（绑定 ⇒ 节点名 ∥ 未绑定 ⇒ null）∥ 恒本人过滤（他人工作区零出现）。
  * 假引擎 = 真 HTTP 假 Docker（真 fetch 链）；链路 = 进程内网关 + 账号面 + 沙盒面。
  */
 import test from "node:test"
@@ -30,7 +23,6 @@ const CONFIG = await load("thincoder-server/src/ops/config.mjs")
 const SERVER = await load("thincoder-server/src/gateway/server.mjs")
 const SANDBOX = await load("thincoder-server/src/sandbox/routes.mjs")
 const DOCKER = await load("thincoder-server/src/sandbox/docker.mjs")
-const RULES = await load("thincoder-server/src/sandbox/rules.mjs")
 const MEMBERS = await load("thincoder-server/src/accounts/members.mjs")
 const ACCOUNT_ROUTES = await load("thincoder-server/src/accounts/routes.mjs")
 const SESSION = await load("thincoder-server/src/accounts/session.mjs")
@@ -39,9 +31,6 @@ const PASSWORD = "password-123"
 const TEMP = mkdtempSync(join(tmpdir(), "tc-outbound-"))
 const SERVER_HOST = "10.0.0.5" // 服务器段取值点 = 盒 env `OPENAI_BASE_URL` 地址（`sandboxPublicBase`——config.host/port）
 const SERVER_PORT = 3000
-
-/** 求值速记（rules = 库内全量规则——含 v11 种子行：RFC1918 三条 deny ∥ 默认单五条 allow）。 */
-const evaluate = (db, query) => RULES.evaluateEgress(RULES.listRules(db), query)
 
 // ── 假 Docker 引擎（真 HTTP——真 fetch 链；自检两读在案）────────────────────────
 
@@ -284,196 +273,6 @@ async function createWorkspace(app, name, username) {
   return res.json.workspace
 }
 
-// ── 求值腿（零地址 ∥ 双径同判 ∥ N64①②③）──────────────────────────────────────
-
-test("B66③ 零地址拒（fail-closed）：`host` 在场而 `ips` 空 ⇒ 拒（域名 allow 命中亦不放行）∥ 直连 IP 径空目标 = `no_target`", () => {
-  const db = DB.openDatabase(":memory:")
-  try {
-    const unresolved = evaluate(db, { host: "github.com", ips: [], port: 443, protocol: "tcp" })
-    assert.deepEqual([unresolved.action, unresolved.reason], ["deny", "unresolved"], "解析零地址 ⇒ 拒（不得以「未解析」放行——即便该域在默认单）")
-    assert.equal(unresolved.rule, null, "零地址拒无规则对象（未解析不放行 = 门级语义）")
-
-    const empty = evaluate(db, { ips: [] })
-    assert.deepEqual([empty.action, empty.reason], ["deny", "no_target"], "直连 IP 径空目标 = 既有 `no_target`（两义分立）")
-  } finally {
-    db.close()
-  }
-})
-
-test("N64① L1 命中即拒：两径同判 ∥ 显式 allow 在场仍拒（不可批准面——与 L2/L3 拒可辨）∥ 零副作用", () => {
-  const db = DB.openDatabase(":memory:")
-  try {
-    // 两面铺显式 allow（域名 ∥ 直连 IP）+ 表内铺同段行——L1 仍不可绕（非行）
-    RULES.createRule(db, { kind: "domain", action: "allow", target: "metadata.example.com" })
-    RULES.createRule(db, { kind: "cidr", action: "allow", target: "169.254.169.254/32" })
-    RULES.createRule(db, { kind: "cidr", action: "allow", target: "127.0.0.1/32" })
-    RULES.ensureSegmentDeny(db, "169.254.169.0/24")
-
-    const viaDomain = evaluate(db, { host: "metadata.example.com", ips: ["169.254.169.254"], port: 80, protocol: "tcp" })
-    const viaIp = evaluate(db, { ips: ["169.254.169.254"], port: 80, protocol: "tcp" })
-    assert.deepEqual([viaDomain.action, viaDomain.reason], ["deny", "hard_deny"], "域名径：解析 IP 落 169.254/16 ⇒ L1 即拒（allow 条目不可绕）")
-    assert.deepEqual([viaIp.action, viaIp.reason, viaIp.ip], ["deny", "hard_deny", "169.254.169.254"], "直连 IP 径：同判同序")
-    assert.equal(viaDomain.rule, null, "L1 = 门级（非行）——表内行不参与")
-
-    const loop = evaluate(db, { ips: ["127.0.0.1"], port: 22, protocol: "tcp" })
-    assert.deepEqual([loop.action, loop.reason], ["deny", "hard_deny"], "127/8 = L1（回环）")
-
-    // 即时拒 = 与 L2 拒（`ip_deny`）可辨的独立理由码（挂起窗只服务 L2/L3 新域——§6）
-    const l2 = evaluate(db, { ips: ["10.0.0.9"], port: 80, protocol: "tcp" })
-    assert.deepEqual([l2.action, l2.reason], ["deny", "ip_deny"], "对照：L2 种子 deny 命中 = `ip_deny`（可批准面）")
-    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_pending").get().n, 0, "求值零副作用——零待批行（L1 不挂起）")
-  } finally {
-    db.close()
-  }
-})
-
-test("N64② 内置允许 ≻ L2/L3：网关地址:端口命中即放（生命线不断）∥ 显式 deny 亦不可覆盖 ∥ 端口逐值", () => {
-  const db = DB.openDatabase(":memory:")
-  try {
-    RULES.ensureSegmentDeny(db, "10.0.0.0/24") // 服务器段种子 deny（登记带入形）
-    RULES.createRule(db, { kind: "cidr", action: "deny", target: "10.0.0.5/32" }) // L3 显式 deny 同目标（最严档）
-    const gateway = [{ kind: "cidr", target: "10.0.0.5/32", port: SERVER_PORT }]
-
-    const bare = evaluate(db, { ips: ["10.0.0.5"], port: SERVER_PORT, protocol: "tcp" })
-    assert.deepEqual([bare.action, bare.reason], ["deny", "ip_deny"], "基线：无内置允许 ⇒ 种子 deny/显式 deny 命中（生命线会断）")
-
-    const lifeline = evaluate(db, { ips: ["10.0.0.5"], port: SERVER_PORT, protocol: "tcp", builtinAllow: gateway })
-    assert.deepEqual([lifeline.action, lifeline.reason, lifeline.rule], ["allow", "builtin_allow", null], "内置允许在场 ⇒ 放（≻ L2 种子 deny ∥ ≻ L3 显式 deny）")
-
-    const byName = evaluate(db, { host: "server.internal", ips: ["10.0.0.5"], port: SERVER_PORT, builtinAllow: [{ kind: "domain", target: "server.internal", port: SERVER_PORT }] })
-    assert.deepEqual([byName.action, byName.reason], ["allow", "builtin_allow"], "域名形网关：域名径同判（双径同判）")
-
-    const otherPort = evaluate(db, { ips: ["10.0.0.5"], port: 22, protocol: "tcp", builtinAllow: gateway })
-    assert.deepEqual([otherPort.action, otherPort.reason], ["deny", "ip_deny"], "端口不符 ⇒ 非生命线（:端口 逐值——宿主 22 口即 P2 形态）")
-
-    const wrongHost = evaluate(db, { ips: ["10.0.0.6"], port: SERVER_PORT, protocol: "tcp", builtinAllow: gateway })
-    assert.deepEqual([wrongHost.action, wrongHost.reason], ["deny", "ip_deny"], "地址不符 ⇒ 非生命线")
-  } finally {
-    db.close()
-  }
-})
-
-test("N64③ 种子 deny ≺ 显式 allow（U2-A 保持）：显式 allow 开 RFC1918 单点 ∥ 同段余址照拒", () => {
-  const db = DB.openDatabase(":memory:")
-  try {
-    const before = evaluate(db, { ips: ["10.0.0.7"], port: 8080, protocol: "tcp" })
-    assert.deepEqual([before.action, before.reason], ["deny", "ip_deny"], "种子 deny：RFC1918 默认拒")
-    const allow = RULES.createRule(db, { kind: "cidr", action: "allow", target: "10.0.0.7/32" })
-    const after = evaluate(db, { ips: ["10.0.0.7"], port: 8080, protocol: "tcp" })
-    assert.deepEqual([after.action, after.reason], ["allow", "ip_allow"], "显式 allow 可开种子 deny（U2——内网后端可用）")
-    const neighbor = evaluate(db, { ips: ["10.0.0.8"], port: 8080, protocol: "tcp" })
-    assert.deepEqual([neighbor.action, neighbor.reason], ["deny", "ip_deny"], "同段余址不随开（种子行按目标判）")
-    RULES.deleteRule(db, allow.rule.id, {})
-    const reopened = evaluate(db, { ips: ["10.0.0.7"], port: 8080, protocol: "tcp" })
-    assert.deepEqual([reopened.action, reopened.reason], ["deny", "ip_deny"], "撤显式 allow ⇒ 回落种子 deny（U2-A 两端逐值）")
-  } finally {
-    db.close()
-  }
-})
-
-test("双径同判（L2）：域名命中 allow ⇒ 解析 IP 仍过 CIDR 闸 ∥ 与直连 IP 径同判同序（白名单域名 + 内网解析不绕过）", () => {
-  const db = DB.openDatabase(":memory:")
-  try {
-    RULES.createRule(db, { kind: "domain", action: "allow", target: "intranet.example.com" })
-    const viaDomain = evaluate(db, { host: "intranet.example.com", ips: ["10.0.0.9"], port: 8443, protocol: "tcp" })
-    const viaIp = evaluate(db, { ips: ["10.0.0.9"], port: 8443, protocol: "tcp" })
-    assert.deepEqual([viaDomain.action, viaDomain.reason], ["deny", "ip_deny"], "域名径：域名 allow 命中 ⇒ 解析 IP 仍过闸（种子 deny ⇒ 拒）")
-    assert.deepEqual([viaIp.action, viaIp.reason], ["deny", "ip_deny"], "直连 IP 径：同判同序（同一理由码）")
-  } finally {
-    db.close()
-  }
-})
-
-test("段值推导（`segmentCidrOf`）：登记地址/URL ⇒ host 所属 /24（归一形）∥ 通配/非 IPv4/空 ⇒ null（零行 + 如实标）", () => {
-  for (const ok of ["10.0.0.6", "10.0.0.6:2375", "http://10.0.0.6:2375", "http://10.0.0.5:3000/v1", "192.168.1.200"]) {
-    assert.equal(RULES.segmentCidrOf(ok), ok.startsWith("192.168") ? "192.168.1.0/24" : "10.0.0.0/24", `收并取段：${ok}`)
-  }
-  for (const bad of ["0.0.0.0", "0.0.0.0:3000", "http://0.0.0.0:3000/v1", "server.internal:2375", "localhost", "", null, 42, "[::1]:80"]) {
-    assert.equal(RULES.segmentCidrOf(bad), null, `不可推导 ⇒ null（零行 + 读数如实标）：${String(bad)}`)
-  }
-})
-
-// ── 带入腿（B66①②③——节点登记 handler 接线）──────────────────────────────────
-
-test("B66① 首次登记带入：节点段 ∥ 服务器段各行入（`source='default'`）∥ `rulesRev` +2 ∥ 审计两行「自动带入」+ 段值逐值", async () => {
-  const engine = await startFakeDocker()
-  const app = await startApp()
-  try {
-    const before = await app.rulesState()
-    await addRunner(app, "node-a", engine.base)
-    const after = await app.rulesState()
-    assert.equal(after.rulesRev, before.rulesRev + 2, "两段首见 ⇒ `rulesRev` +2")
-
-    const imported = after.rules.filter((rule) => rule.createdBy === "auto")
-    const byTarget = Object.fromEntries(imported.map((rule) => [rule.target, rule]))
-    assert.deepEqual(Object.keys(byTarget).sort(), ["10.0.0.0/24", "127.0.0.0/24"], "段值逐值（服务器段 = `OPENAI_BASE_URL` host /24 ∥ 节点段 = 登记地址 host /24）")
-    for (const [target, rule] of Object.entries(byTarget)) {
-      assert.deepEqual([rule.kind, rule.action, rule.source, rule.port, rule.protocol], ["cidr", "deny", "default", null, null], `${target}：种子 deny 行（可改可删）`)
-    }
-
-    const rulesAudits = app.auditRows("sandbox_rule")
-    assert.equal(rulesAudits.length, 2, "审计恰两行（各段一行）")
-    const details = rulesAudits.map((row) => JSON.parse(row.detail))
-    assert.deepEqual(details.map((item) => [item.segment, item.autoImport]).sort(), [["10.0.0.0/24", "自动带入"], ["127.0.0.0/24", "自动带入"]], "detail：段值逐值 + 明写「自动带入」")
-    assert.deepEqual(details.map((item) => item.rule.target).sort(), ["10.0.0.0/24", "127.0.0.0/24"], "规则原文同携")
-
-    const add = JSON.parse(app.audits("runner_add").at(-1).detail)
-    assert.deepEqual([add.runnerId, add.address], [1, engine.base], "登记审计既有两键保持")
-    assert.deepEqual(
-      add.segments.map((item) => [item.kind, item.cidr, item.state]),
-      [["runner", "127.0.0.0/24", "imported"], ["server", "10.0.0.0/24", "imported"]],
-      "登记读数：逐项如实（kind ∥ 段值 ∥ 状态）",
-    )
-  } finally {
-    await app.close()
-    await engine.close()
-  }
-})
-
-test("B66② 重复登记（段已在）：零重行 ∥ `rulesRev` 零动 ∥ 零审计（读数 = `present`）", async () => {
-  const engineA = await startFakeDocker()
-  const engineB = await startFakeDocker()
-  const app = await startApp()
-  try {
-    await addRunner(app, "node-a", engineA.base)
-    const mid = await app.rulesState()
-    const ids = mid.rules.map((rule) => rule.id)
-    const auditCount = app.auditRows("sandbox_rule").length
-    await addRunner(app, "node-b", engineB.base) // 同 host ⇒ 同 /24（节点段已在）；服务器段同源（已在）
-    const after = await app.rulesState()
-    assert.equal(after.rulesRev, mid.rulesRev, "`rulesRev` 零动")
-    assert.deepEqual(after.rules.map((rule) => rule.id), ids, "零重行（规则 id 集不变）")
-    assert.equal(app.auditRows("sandbox_rule").length, auditCount, "零审计行")
-    const add = JSON.parse(app.audits("runner_add").at(-1).detail)
-    assert.deepEqual(add.segments.map((item) => item.state), ["present", "present"], "登记读数如实：段已在（零重行零动零审计）")
-  } finally {
-    await app.close()
-    await engineA.close()
-    await engineB.close()
-  }
-})
-
-test("段值推导（§4 行——配置通配 `0.0.0.0`）：服务器段零行 + 登记读数如实标（`underivable`——不猜、不静默）", async () => {
-  const engine = await startFakeDocker()
-  const app = await startApp({ host: "0.0.0.0" })
-  try {
-    const before = await app.rulesState()
-    await addRunner(app, "node-w", engine.base)
-    const after = await app.rulesState()
-    assert.equal(after.rules.some((rule) => rule.target === "0.0.0.0/24"), false, "通配 ⇒ 该项零行")
-    assert.equal(after.rulesRev, before.rulesRev + 1, "仅节点段一行 ⇒ `rulesRev` +1")
-    const add = JSON.parse(app.audits("runner_add").at(-1).detail)
-    const server = add.segments.find((item) => item.kind === "server")
-    assert.deepEqual([server.address, server.cidr, server.state], [`http://0.0.0.0:${SERVER_PORT}/v1`, null, "underivable"], "服务器段如实标（不静默）")
-    const runner = add.segments.find((item) => item.kind === "runner")
-    assert.deepEqual([runner.cidr, runner.state], ["127.0.0.0/24", "imported"], "仅不可推导项零行（节点段照常代入）")
-    assert.equal(app.auditRows("sandbox_rule").length, 1, "审计一行（仅节点段）")
-  } finally {
-    await app.close()
-    await engine.close()
-  }
-})
-
 // ── 成员面腿（`runnerName` 两支 ∥ 恒本人过滤）──────────────────────────────────
 
 test("成员行 `runnerName`：绑定 ⇒ 节点名 ∥ 未绑定 ⇒ null ∥ 恒本人过滤（他人工作区零出现）", async () => {
@@ -497,9 +296,8 @@ test("成员行 `runnerName`：绑定 ⇒ 节点名 ∥ 未绑定 ⇒ null ∥ �
     assert.equal(bob.status, 200, `成员面读数失败：${bob.text}`)
     assert.deepEqual(bob.json.workspaces.map((row) => row.name), ["bob-ws"], "恒本人过滤：carol 的工作区零出现")
     const row = bob.json.workspaces[0]
-    assert.deepEqual(Object.keys(row).sort(), ["boxState", "checkpointCount", "id", "name", "pending", "runnerName", "stopReason"], "行形逐键（§2.7——`dirty` 键退场随 D 裁 2026-10-14）")
+    assert.deepEqual(Object.keys(row).sort(), ["boxState", "checkpointCount", "id", "name", "runnerName", "stopReason"], "行形逐键（§2.7——`dirty` 键退场随 D 裁 2026-10-14）")
     assert.equal(row.runnerName, "node-b", "弃置续跑 ⇒ 重绑在线节点（绑定 ⇒ 节点名）")
-    assert.equal(row.pending, null, "无待批 ⇒ null")
 
     // 未绑定支：node-b 满员（maxBoxesPerRunner = 1）⇒ 创建无候选 ⇒ 留未绑 ⇒ null
     const ws2 = await createWorkspace(app, "carol-ws", "carol")

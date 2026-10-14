@@ -138,7 +138,7 @@ export function registerMemberRoutes(routes, { db, config = {}, log = null, rela
   if (!db) throw new Error("registerMemberRoutes：缺少 db")
   if (!relay) throw new Error("registerMemberRoutes：缺少 relay（createMemberRelay 产物）")
   const pulls = createPullRegistry({ relay, db, log, now })
-  const boxDeps = { db, config, log, now, fetchImpl, requestImpl, dnsGate: deps.dnsGate ?? null, ...deps }
+  const boxDeps = { db, config, log, now, fetchImpl, requestImpl, ...deps }
 
   // ── ① 模型清单（开放清单 + 档位桥同源——§2.11；零 provider 内部细节）──────────────────
   routes.add("GET", "/api/me/chat/models", async (req, res) => {

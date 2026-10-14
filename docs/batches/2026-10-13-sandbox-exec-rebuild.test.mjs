@@ -4,12 +4,13 @@
  * 运行（自 `thincoder/` 仓根）：`node --test docs/batches/2026-10-13-sandbox-exec-rebuild.test.mjs`
  *
  * 射程（判据源 = 批档 §2 + `docs/server/design/sandbox/EXECUTION.md` §12–§13；腿 ↔ 用例在括号）：
- *   N65（建盒全链——假 Docker + 假 SSH 逐条命中 + 参数集逐值 + 网桥读回复核）∥ N66（六动作链：启/停/轮换/快照/恢复/销毁）
+ *   N65（建盒全链——假 Docker + 假 SSH 逐条命中 + 参数集逐值 + 网络读回）∥ N66（六动作链：启/停/轮换/快照/恢复/销毁）
  *   ∥ N69（三定时器：空闲 `last_active_at` ∥ 墙钟引擎 `StartedAt` ∥ 周期快照）∥ N70（放置 + 补放置）
  *   ∥ B67（配额不可用 ⇒ 零建盒 + `quota_apply_failed`）∥ B68（未绑 ⇒ 503 两因分列 ∥ 满员无候选）∥ B69（快照越 `diskMb` ⇒ 中止零行 ∥ 容器不在 ⇒ 跳过）
  *   ∥ B70（恢复两径：`archive put` 成 ∥ 拒 ⇒ SSH `tar xzf -` 备径）∥ E50（引擎不可达 ⇒ 502 人话 + 零半态）∥ E51（主机失败 ⇒ 步名 + 人话）
- *   ∥ B77（链前置：`config.host` 非 IPv4 字面量 ⇒ 建盒/启动确保/轮换重建三链链首停——零步执行）∥ B-裁（补放置建盒失败 ⇒ `placement_failed` 审计 + 行留——收口修复轮）
- *   ∥ E52（#1351 登记带入单事务——注入带入面炸 ⇒ 零残留）∥ E54（v21 库升 v22：存量保形 + 表消 + 幂等）∥ 拆案读判（工作区面在册 ∥ `routes.mjs` 零残留）。
+ *   ∥ B-裁（补放置建盒失败 ⇒ `placement_failed` 审计 + 行留——收口修复轮）
+ *   ∥ E52b（登记成事径：登记行 + 审计行同拍）∥ E54（v21 库升 v22：存量保形 + 表消 + 幂等）∥ 拆案读判（工作区面在册 ∥ `routes.mjs` 零残留）。
+ *   2026-10-14 随正（sandbox-egress-removal 批）：③ 步 ∥ 载荷 `Dns` ∥ 闸面 nft/桥名锚 ∥ 链前置（B77 腿）∥ 登记带入面（原 E52 腿）∥ `sandbox_rules` fixture ∥ `sandbox_pending` 销毁断言——闸亡随删，逐处见内注。
  * 假件口径：Docker = 注入 `clientForRunner`（盒链）∥ 真 `fetchImpl` 假件（放置探活——走真 `docker.mjs` 客户端）；SSH = 注入 `deps.host`（逐条记录 command/stdin）。
  */
 import test from "node:test"
@@ -32,7 +33,7 @@ const DOCKER = await load("thincoder-server/src/sandbox/docker.mjs")
 
 const NOW = 1_770_000_000_000 // 固定时钟（可注入面）
 const TEMP = mkdtempSync(join(tmpdir(), "tc-exec-rebuild-"))
-const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db"), sandbox: { egressEnforce: true } } // 严格模式开——本档测机制面；缺省关见档尾用例（用户 2026-10-14 裁）
+const CONFIG = { host: "10.0.0.5", port: 3000, db: join(TEMP, "gateway.db") }
 
 // ── 库种子（成员/节点/工作区——列面 = v22）────────────────────────────────────
 
@@ -51,7 +52,6 @@ function seedDb({ settings = {} } = {}) {
   for (const [key, value] of Object.entries(settings)) {
     db.prepare("INSERT INTO sandbox_settings (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").run(key, JSON.stringify(value))
   }
-  db.prepare("DELETE FROM sandbox_rules WHERE kind = 'domain'").run() // 盒链测试不涉域名解析（域面 = `-egress` 件——零真 DNS 外呼）
   return { db, admin, runner, workspace }
 }
 
@@ -77,12 +77,6 @@ function quotaStdout(command, workspaceId, diskMb = 4096) {
   if (command.includes("findmnt")) return "/ xfs rw,pquota\n"
   if (command.includes("bsize=")) return "bsize=4096\n"
   if (command.includes("report -p -b -n")) return `${100000 + workspaceId} 0 0 ${(diskMb * 1024 * 1024) / 4096} 0 [------]\n`
-  return ""
-}
-
-/** 闸下发缺省读数（nft 在场——`nft -f -` 收体）。 */
-function egressStdout(command) {
-  if (command === "sh -c 'command -v nft'") return "/usr/sbin/nft\n" // 探针命令随正（egress 修复轮 2026-10-14：sh -c 包裹——sudo 安全）
   return ""
 }
 
@@ -115,7 +109,7 @@ function fakeClient({ containers = [], network = null, archive = Buffer.from("ta
     },
     createNetwork: async (body) => {
       guard("createNetwork")
-      state.network = { Name: body.Name, Options: body.Options, IPAM: { Config: [{ Subnet: "172.31.9.0/24" }] } }
+      state.network = { Name: body.Name, IPAM: { Config: [{ Subnet: "172.31.9.0/24" }] } }
       calls.push({ op: "createNetwork", body })
       return { json: { Id: "net-1" } }
     },
@@ -247,9 +241,9 @@ function paramsOf(template, values = []) {
 
 // ── N65：建盒全链（逐条命中 + 参数集逐值）────────────────────────────────────
 
-test("N65 建盒全链：①卷目录→②配额→③闸复核→④镜像(缺省跳过)→⑤网络→⑥容器→⑦启动；参数集逐值", async () => {
+test("N65 建盒全链：①卷目录→②配额→④镜像(缺省跳过)→⑤网络→⑥容器→⑦启动；参数集逐值", async () => {
   const { db, admin, runner, workspace } = seedDb()
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({ network: null })
   const result = await BOX.createWorkspaceBox(db, workspace, runner, { ...boxDeps({ db, client, host }), actor: { name: admin.name, id: admin.id } })
 
@@ -259,14 +253,10 @@ test("N65 建盒全链：①卷目录→②配额→③闸复核→④镜像(缺
   const quotaCommands = host.calls.map((item) => item.command).filter((command) => /findmnt|xfs_quota|xfs_info/.test(command))
   assert.ok(quotaCommands.some((command) => command.includes(`project -s -p /var/lib/thincoder/workspaces/1 100001`)), `xfs 项目绑定未命中：${quotaCommands.join(" ∥ ")}`)
   assert.ok(quotaCommands.some((command) => command.includes("limit -p bhard=4096m 100001")), "xfs 限额未命中")
-  // ③ 闸就位复核（nft 面——全量定义经 stdin 落表）
-  const nftDrop = host.calls.find((item) => item.command === "nft -f -")
-  assert.ok(nftDrop && typeof nftDrop.stdin === "string" && nftDrop.stdin.includes("table inet thincoder_egress"), "闸下发未命中（nft 全量定义）")
-  assert.match(nftDrop.stdin, /iifname "tcws\*" jump tcws_egress/)
-  // ⑤ 网络（载荷：桥名 = 闸锚 tcws<id>；读回复核）
+  // ⑤ 网络（载荷：Name ∥ Driver——零 Options；幂等预检 + 读回）
   const networkCall = client.calls.find((item) => item.op === "createNetwork")
   assert.equal(networkCall.body.Name, "tc-ws-1")
-  assert.equal(networkCall.body.Options["com.docker.network.bridge.name"], "tcws1")
+  assert.equal(networkCall.body.Options, undefined, "零 Options（闸锚退场）")
   assert.ok(client.calls.some((item) => item.op === "inspectNetwork"), "网络读回复核未命中")
   // ⑥ 容器（参数集逐值——N65）
   const created = client.calls.find((item) => item.op === "createContainer")
@@ -286,7 +276,7 @@ test("N65 建盒全链：①卷目录→②配额→③闸复核→④镜像(缺
   assert.deepEqual(body.HostConfig.Tmpfs, { "/tmp": "size=256m" })
   assert.deepEqual(body.HostConfig.CapDrop, ["ALL"])
   assert.equal(body.HostConfig.NetworkMode, "tc-ws-1")
-  assert.deepEqual(body.HostConfig.Dns, ["10.0.0.5"])
+  assert.equal(body.HostConfig.Dns, undefined, "零 Dns 注入（闸退场）")
   assert.equal(body.HostConfig.Memory, 4096 * 1024 * 1024)
   assert.equal(body.HostConfig.NanoCpus, 2e9)
   assert.equal(body.HostConfig.PidsLimit, 512)
@@ -302,7 +292,7 @@ test("N65b 自定义底座：④ 镜像就位走派生（缺底座 ⇒ 拉取 �
   const { db, runner, workspace } = seedDb()
   db.prepare("UPDATE sandbox_workspaces SET base_image = 'ghcr.io/acme/base:1' WHERE id = ?").run(workspace.id)
   const base = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(workspace.id)
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({})
   const built = []
   const notFound = (ref) => new DOCKER.DockerError("api", `No such image: ${ref}`, { status: 404, apiMessage: `No such image: ${ref}` })
@@ -349,9 +339,9 @@ test("B67 配额不可用 ⇒ 建盒停（零容器零网络 + `quota_apply_fail
 
 // ── N66：六动作链 ───────────────────────────────────────────────────────────
 
-test("N66 启动链：容器缺 ⇒ ①→②→⑤→⑥→⑦（创建后再起）；已在跑 ⇒ 幂等 noop", async () => {
+test("N66 启动链：容器缺 ⇒ ①→②→⑤→④→⑥→⑦（创建后再起）；已在跑 ⇒ 幂等 noop", async () => {
   const { db, runner, workspace } = seedDb()
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({})
   const first = await BOX.startWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host }))
   assert.equal(first.noop, false)
@@ -364,7 +354,7 @@ test("N66 启动链：容器缺 ⇒ ①→②→⑤→⑥→⑦（创建后再�
 
 test("N66b 停止：停容器 + `stop_reason` 注记；未建 ⇒ 无操作（卷零触）", async () => {
   const { db, runner, workspace } = seedDb()
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({ containers: [{ Id: "c9", Names: ["/tc-ws-1"], State: "running" }] })
   const result = await BOX.stopWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host }), { reason: "manual" })
   assert.equal(result.stopped, true)
@@ -377,8 +367,8 @@ test("N66c 轮换重建：删容器 → ①→②→④→⑥→⑦（新 key �
   const { db, runner, workspace } = seedDb()
   db.prepare("UPDATE sandbox_workspaces SET key_plain = 'sk-tc-newkey' WHERE id = ?").run(workspace.id)
   const updated = db.prepare("SELECT * FROM sandbox_workspaces WHERE id = ?").get(workspace.id)
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
-  const client = fakeClient({ containers: [{ Id: "c1", Names: ["/tc-ws-1"], State: "running" }], network: { Name: "tc-ws-1", Options: { "com.docker.network.bridge.name": "tcws1" }, IPAM: { Config: [{ Subnet: "172.31.9.0/24" }] } } })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
+  const client = fakeClient({ containers: [{ Id: "c1", Names: ["/tc-ws-1"], State: "running" }], network: { Name: "tc-ws-1", IPAM: { Config: [{ Subnet: "172.31.9.0/24" }] } } })
   const result = await BOX.rotateWorkspaceBox(db, updated, runner, boxDeps({ db, client, host }))
   assert.equal(result.rotated, true)
   assert.equal(client.calls[0].op, "deleteContainer", "轮换未先删容器")
@@ -428,12 +418,11 @@ test("N66e 恢复两径：`archive put` 成 ∥ 拒 ⇒ SSH `tar xzf -` 备径�
   }
 })
 
-test("N66f 销毁：停 ∥ 删容器 ∥ 删网络 ∥ 卷清理 ∥ 行删（含快照行 + 待批行）", async () => {
+test("N66f 销毁：停 ∥ 删容器 ∥ 删网络 ∥ 卷清理 ∥ 行删（含快照行）", async () => {
   const { db, runner, workspace } = seedDb()
   const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({ containers: [{ Id: "c1", Names: ["/tc-ws-1"], State: "running" }], network: { Name: "tc-ws-1", Options: { "com.docker.network.bridge.name": "tcws1" } } })
   await BOX.snapshotWorkspace(db, workspace, runner, boxDeps({ db, client, host }))
-  db.prepare("INSERT INTO sandbox_pending (runner_id, workspace_id, host, hits, first_seen_at, last_seen_at, status) VALUES (?, ?, 'x.com', 1, ?, ?, 'open')").run(runner.id, workspace.id, NOW, NOW)
   const result = await BOX.destroyWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host }), { deleteVolume: true })
   assert.equal(result.destroyed, true)
   assert.equal(client.calls.filter((item) => item.op === "deleteContainer").length, 1)
@@ -441,7 +430,6 @@ test("N66f 销毁：停 ∥ 删容器 ∥ 删网络 ∥ 卷清理 ∥ 行删（�
   assert.ok(host.calls.some((item) => item.command.includes("rm -rf /var/lib/thincoder/workspaces/1")), "卷目录清理未命中")
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_workspaces").get().n, 0)
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_checkpoints").get().n, 0)
-  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_pending").get().n, 0)
   const audit = db.prepare("SELECT detail FROM audit_events WHERE detail LIKE '%workspace_destroy%'").get()
   assert.ok(audit, "`workspace_destroy` 审计未落")
 })
@@ -521,7 +509,7 @@ test("N70 放置：在线 active 取最少绑定者（并列 ⇒ id 小）；满
   const picked = await BOX.selectRunnerForWorkspace(db, deps)
   assert.equal(picked.name, "node-a") // node-a（0 绑）∥ node-b（0 绑）⇒ 并列取 id 小
   const { placePendingWorkspaces } = BOX
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({})
   const out = await placePendingWorkspaces(db, { ...deps, host, clientForRunner: () => client })
   assert.deepEqual(out.placed, [workspace.id])
@@ -595,7 +583,7 @@ test("B68b 绑定节点门（§7）：绑定节点离线 ⇒ 503（非 502——
 
 test("E50 引擎不可达 ⇒ 502 人话 + 零半态（链不续跑）", async () => {
   const { db, admin, runner, workspace } = seedDb()
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) })
   const client = fakeClient({ failOn: (op) => (op === "containers" ? "connect ECONNREFUSED 10.0.0.9:2375" : false) })
   const routes = makeRoutes()
   const { token } = SESSION.createSession(db, admin.id) // 会话用真钟（`resolveSession` 无 now 注入面——固定钟会造出「过期会话」）
@@ -628,62 +616,7 @@ test("E51 主机命令失败 ⇒ 步名 + 人话（零容器）", async () => {
   assert.equal(client.calls.length, 0, "卷目录失败仍触了引擎面")
 })
 
-test("B77 链前置（fail-closed）：`config.host` 非 IPv4 字面量（域名 ∥ IPv6）⇒ 建盒/启动确保/轮换重建三链链首停（零步执行）", async () => {
-  const { db, runner, workspace } = seedDb()
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, workspace.id) + egressStdout(command) })
-  const client = fakeClient({})
-  for (const [label, badHost] of [["域名", "sandbox.example.com"], ["IPv6", "fd00::5"]]) {
-    for (const [chain, run] of [
-      ["建盒", () => BOX.createWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host, config: { ...CONFIG, host: badHost } }))],
-      ["启动确保", () => BOX.startWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host, config: { ...CONFIG, host: badHost } }))],
-      ["轮换重建", () => BOX.rotateWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host, config: { ...CONFIG, host: badHost } }))],
-    ]) {
-      await assert.rejects(run, (e) => {
-        assert.equal(e.step, "链前置", `${label}·${chain}：步名`)
-        assert.match(e.message, /非 IPv4 字面量/, `${label}·${chain}：人话`)
-        assert.match(e.message, /静默断网/, `${label}·${chain}：处置句`)
-        return true
-      })
-    }
-  }
-  assert.equal(host.calls.length, 0, "零 SSH 调用（零步执行）")
-  assert.equal(client.calls.length, 0, "零 Docker 调用（零步执行）")
-  assert.equal(db.prepare("SELECT runner_id FROM sandbox_workspaces WHERE id = ?").get(workspace.id).runner_id, runner.id, "行保留（绑定未动）")
-  // 地址修正后重试照常
-  const retry = await BOX.createWorkspaceBox(db, workspace, runner, boxDeps({ db, client, host }))
-  assert.equal(retry.workspaceId, workspace.id, "改 IPv4 后重试照常")
-  assert.ok(client.calls.some((item) => item.op === "createContainer"), "修正后建盒链照跑")
-})
-
-// ── E52：#1351 登记带入单事务（注入带入面炸 ⇒ 零残留）────────────────────────
-
-test("E52 #1351：带入行 ∥ 登记行 ∥ 审计行 = 单事务（带入面炸 ⇒ 全回滚零残留）", async () => {
-  const { db, admin } = seedDb()
-  const routes = makeRoutes()
-  const { token } = SESSION.createSession(db, admin.id) // 会话用真钟（`resolveSession` 无 now 注入面——固定钟会造出「过期会话」）
-  const bomb = () => {
-    throw new Error("带入面炸（假件）")
-  }
-  SANDBOX.registerSandboxRoutes(routes, { db, config: CONFIG, now: () => NOW, fetchImpl: probeFetch([{ address: "http://10.0.0.20:2375" }]), deps: { importSegmentDenies: bomb } })
-  const handler = routes.handlers.get("POST /api/admin/sandbox/runners")
-  const before = db.prepare("SELECT COUNT(*) AS n FROM sandbox_runners").get().n
-  const auditsBefore = db.prepare("SELECT COUNT(*) AS n FROM audit_events").get().n
-  await assert.rejects(
-    () => handler({ headers: { cookie: `tc_session=${token}` }, on(event, cb) {
-      if (event === "data") cb(Buffer.from(JSON.stringify({ name: "node-x", address: "10.0.0.20:2375" })))
-      if (event === "end") cb()
-      return this
-    }, off() { return this }, readableEnded: false, resume() {} },
-      makeRes().res,
-      { params: {} }),
-    /带入面炸|invalid_request_error/,
-  )
-  // 自检要真打自检面 ⇒ 用可探活的假 fetch（未命中 ⇒ 502；此处断言「零残留」两条：行面 ∥ 审计面）
-  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_runners").get().n, before, "登记行未回滚")
-  assert.equal(db.prepare("SELECT COUNT(*) AS n FROM audit_events").get().n, auditsBefore, "审计行未回滚")
-})
-
-test("E52b #1351 成事径：带入行 + 登记行 + 审计行三同拍（commit 后逐项在）", async () => {
+test("E52b 登记成事径：登记行 + 审计行两同拍（commit 后逐项在）", async () => {
   const { db, admin } = seedDb()
   const routes = makeRoutes()
   const { token } = SESSION.createSession(db, admin.id) // 会话用真钟（`resolveSession` 无 now 注入面——固定钟会造出「过期会话」）
@@ -816,7 +749,7 @@ test("工作区面：创建（放置 + key 签发 + 建盒链）∥ 销毁确认
   const rows = db.prepare("SELECT * FROM sandbox_runners ORDER BY id").all()
   const routes = makeRoutes()
   const { token } = SESSION.createSession(db, admin.id) // 会话用真钟（`resolveSession` 无 now 注入面——固定钟会造出「过期会话」）
-  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, 2) + egressStdout(command) })
+  const host = fakeHost({ stdoutOf: (command) => quotaStdout(command, 2) })
   const client = fakeClient({})
   SANDBOX.registerSandboxRoutes(routes, { db, config: CONFIG, now: () => NOW, fetchImpl: probeFetch(rows), deps: { host, clientForRunner: () => client } })
   const create = routes.handlers.get("POST /api/admin/sandbox/workspaces")
@@ -846,11 +779,11 @@ test("工作区面：创建（放置 + key 签发 + 建盒链）∥ 销毁确认
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sandbox_workspaces WHERE id = ?").get(out.payload.workspace.id).n, 1, "确认门未拦住销毁")
 })
 
-test("开关缺省关：建盒载荷零闸 DNS 注入（用户 2026-10-14 裁——现阶段不设默认全禁）", async () => {
+test("闸退场：建盒载荷零 DNS 注入（`egressEnforce` 键随闸撤——两形皆零）", async () => {
   const { db, workspace } = seedDb()
   const off = BOX.buildBoxPayload(db, workspace, { config: { host: "10.0.0.5" } })
-  assert.equal(off.HostConfig.Dns, undefined, "缺省不应注入闸 DNS")
-  const on = BOX.buildBoxPayload(db, workspace, { config: { host: "10.0.0.5", sandbox: { egressEnforce: true } } })
-  assert.deepEqual(on.HostConfig.Dns, ["10.0.0.5"], "严格模式开仍注入")
+  assert.equal(off.HostConfig.Dns, undefined, "零 Dns 注入（闸退场）")
+  const legacy = BOX.buildBoxPayload(db, workspace, { config: { host: "10.0.0.5", sandbox: { egressEnforce: true } } })
+  assert.equal(legacy.HostConfig.Dns, undefined, "旧键在场（未知键无害）亦零注入")
   db.close()
 })

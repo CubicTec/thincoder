@@ -55,6 +55,13 @@ export async function renderMcp(ctx, mount) {
   await load()
 }
 
+/** 探活成读数（2026-10-14 走查轮）：有工具名 ⇒ 具名形；无名（零工具 ∥ 缺字段）⇒ 计数形（零回归——旧读数形逐字保留）。 */
+function probeReadoutText(result) {
+  const names = Array.isArray(result.tools) ? result.tools.filter((n) => typeof n === "string" && n !== "") : []
+  if (names.length === 0) return t("admin.mcp.probeOk", { toolCount: result.toolCount, latencyMs: result.latencyMs })
+  return t("admin.mcp.probeOkNamed", { toolCount: result.toolCount, tools: names.join(", "), latencyMs: result.latencyMs })
+}
+
 /** 清单表（五列——名称 ∥ 传输 ∥ 目标 ∥ 启用 ∥ 操作（探活/改/删）+ 行内探活读数行；行 = [数据行, 读数行] 成对入 `<tbody>`）。 */
 function mcpTable(ctx, servers, { reload }) {
   const { h } = ctx
@@ -71,7 +78,7 @@ function mcpTable(ctx, servers, { reload }) {
       readout.textContent = t("admin.mcp.probeRunning")
       try {
         const result = await ctx.api("/api/admin/mcp/probe", { method: "POST", body: { id: row.id } }) // 行内径 = 体 `{ id }`（零副作用——不进会话 ∥ 不动库）
-        if (result.ok === true) readout.textContent = t("admin.mcp.probeOk", { toolCount: result.toolCount, latencyMs: result.latencyMs })
+        if (result.ok === true) readout.textContent = probeReadoutText(result)
         else { readout.className = "hint error"; readout.textContent = t("admin.mcp.probeFail", { error: result.error ?? "" }) }
       } catch (error) {
         readout.className = "hint error"
@@ -200,7 +207,7 @@ export function openMcpForm(ctx, { server = null, reload = () => {} }) {
     showNote(note, t("admin.mcp.probeRunning"), false)
     try {
       const result = await ctx.api("/api/admin/mcp/probe", { method: "POST", body })
-      if (result.ok === true) showNote(note, t("admin.mcp.probeOk", { toolCount: result.toolCount, latencyMs: result.latencyMs }), false)
+      if (result.ok === true) showNote(note, probeReadoutText(result), false)
       else showNote(note, t("admin.mcp.probeFail", { error: result.error ?? "" }))
     } catch (error) {
       showNote(note, t("admin.mcp.probeFail", { error: mapError(error) }))

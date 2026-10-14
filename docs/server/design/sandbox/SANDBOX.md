@@ -262,7 +262,7 @@
 - **凭据入口 = 结构化弹窗（表单——唯一入口；KD-SV-134）**：两挂载点、**同一弹窗件、同一端点**——① 沙盒页·运行面节点行动作（权威管理面）② 对话页顶栏钮（会话内录入）；对话页**不列第二张主机表**（agent 可读 `runners.list` 行形）。
   **聊天文本不是凭据通道**（秘密零入消息行 ∥ 模型上下文 ∥ 回放——既有掩蔽纪律 KD-SV-114 同精神）；请求录入路径 = 弹窗（简报纪律句同拍——`agent/ADMIN-AGENT.md` §11）。
   **与 §16.3 sk 面分工**：主机 SSH 凭据 = 用户提供的机器秘密（表单入 ∥ 密文存 ∥ 永不回显）；管理会话 sk = 服务端自持、登录自动签发（`agent/ADMIN-AGENT.md` §16.3——无人工入口、不经本弹窗）——两面互不引用。
-- **复用单源**：传输 = `sandbox/ssh.mjs`（`createSshExecutor`）；加解密 = `thincoder-server/src/store/credential-crypto.mjs`（已落——2026-10-13 复核在盘；**单源，绝不并存两份**）；
+- **复用单源**：传输 = `thincoder-server/src/sandbox/ssh.mjs`（`createSshExecutor`）；加解密 = `thincoder-server/src/store/credential-crypto.mjs`（已落——2026-10-13 复核在盘；**单源，绝不并存两份**）；
   绑定解析 = `sandbox/registry.mjs` `runnerByRef`（自 `agent/chat-tools.mjs` `resolveNode` 抽出——`docker`/`exec` 两工具同用）。
 - **历史遗留（`sandbox_onboarding` 停机留史——2026-10-14）**：run 行 → 主机行的凭据移交机制（`keep` 移交 ∥ `burn` 零化）已随任务式退场删除；存量行语义照旧可读（`sealed` ∥ `burned` ∥ `revoked` ∥ `moved`——`'moved'` = 「曾移交」字面；此后真伪以主机行 `credential_state` 为准——主机行撤销后 run 行不复写）；
   v18 回填（存量 `keep` ∧ 成功行按 id 序移交——同 runner 多行后者胜；未接收行新列 NULL/`'none'`）已落库为史——零改写。

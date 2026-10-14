@@ -63,7 +63,7 @@ export function handleTeamAskKeys(str, key, ctx) {
   const { state, teamAskSubmit, teamAskCancel } = ctx
   if (state.teamAsk == null) return false
   if (key.name === "escape") { teamAskCancel(); return true }
-  if (key.name === "return") {
+  if (key.name === "return" || key.name === "enter" || str === "\r") {
     Promise.resolve(teamAskSubmit()).catch((e) => ctx.pushLine(`[error] ${e?.message ?? e}`, C.error))
     return true
   }

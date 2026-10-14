@@ -42,7 +42,8 @@ const EFFORT_DEFAULT_PREFIXES = [
 ]
 
 function effortDefaultFor(model) {
-  const m = (model ?? "").toLowerCase()
+  // 非串 model（外端脏载 ∕ 手工档）归一等价空串——与核 `lookupSpec` 同法（#638 查表全性；#1177 收口——清账轮 3 轻通道笔）
+  const m = (typeof model === "string" ? model : "").toLowerCase()
   const scan = (s) => {
     let best = null
     for (const [prefix, value] of EFFORT_DEFAULT_PREFIXES) {

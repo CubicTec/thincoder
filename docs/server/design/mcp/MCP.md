@@ -172,7 +172,7 @@
 | `thincoder-server/public/app.mjs`（已落盘） | 实读 **206** ⇒ ≈**209**（+1 import + 1 `PAGES` 行） | 入口/路由分派 |
 
 - **小计 ≈ +946**（新增五档 ≈900 ∥ 存量改 ≈+46）；**单元测试档 1 档**（`docs/batches/2026-10-13-server-mcp.test.mjs`——≈420 行；**不入任何门**）。
-- **server-mcp-admin-tools 批（设计轮——2026-10-14；台账 #1425）另计 ≈+190**：`thincoder-server/src/mcp/admin-tools.mjs` 实读 **223**（落地收正 2026-10-14）∥ `agent/chat.mjs` 净 **+4**（实读 737——微触；拆档评估 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；零新端点 ∥ 零迁移；
+- **server-mcp-admin-tools 批（设计轮——2026-10-14；台账 #1425）另计 ≈+190**：`thincoder-server/src/mcp/admin-tools.mjs` 实读 **223**（落地收正 2026-10-14）∥ `thincoder-server/src/agent/chat.mjs` 净 **+4**（实读 737——微触；拆档评估 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；零新端点 ∥ 零迁移；
   **单元测试档 1 档**（`docs/batches/2026-10-14-server-mcp-admin-tools.test.mjs`——实读 **423** 行（落地收正 2026-10-14）；**不入任何门**）。
 - >500 软线复核：三新服务端档实读 **339 ∥ 196 ∥ 137**（落地收正 2026-10-14——>500 软线均未越）；`views-mcp.mjs` ≈320（预案在案——§上表）；`chat.mjs` 实读 **733**（split 计行；as-of 2026-10-14——**拆档线 720 已越**；台账 #1405；server-mcp-admin-tools 批微触 **+4**（实读 737——落地收正 2026-10-14）；处置 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；
   `migrations.mjs` 实读 711 ⇒ ≈731（>500 软线越线；距 800 硬限余 ≈69——拆案 = sandbox-exec-rebuild 批已落产物，本批只 +v24 段 ≈20）。

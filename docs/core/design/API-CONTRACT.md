@@ -703,7 +703,7 @@
 | `ROUND_VALUES` | `thincoder-core/agent-tools/spawn-gates.mjs:29` | `const` |
 | `ENG_TASK_BOOK_MIN` | `thincoder-core/agent-tools/spawn-gates.mjs:35` | `const` |
 | `validateTaskBookFields` | `thincoder-core/agent-tools/spawn-gates.mjs:49` | `fn` |
-| `rejectEngineeringFilePaths` | `thincoder-core/agent-tools/spawn-gates.mjs:95` | `fn` |
+| `rejectEngineeringFilePaths` | `thincoder-core/agent-tools/spawn-gates.mjs:97` | `fn` |
 | `SSH_SESSION_MAX` | `thincoder-core/agent-tools/ssh-session.mjs:36` | `const` |
 | `SSH_IDLE_MS` | `thincoder-core/agent-tools/ssh-session.mjs:38` | `const` |
 | `_setSshIdleMsForTest` | `thincoder-core/agent-tools/ssh-session.mjs:47` | `fn` |
@@ -817,8 +817,8 @@
 | `gitAuthor` | `thincoder-core/agent/assemble.mjs:37` | `fn` |
 | `validateProvider` | `thincoder-core/agent/assemble.mjs:45` | `fn` |
 | `assembleAgent` | `thincoder-core/agent/assemble.mjs:63` | `fn` |
-| `streamOutputAllowed` | `thincoder-core/agent/chat-call.mjs:11` | `fn` |
-| `callModelTurn` | `thincoder-core/agent/chat-call.mjs:15` | `fn` |
+| `streamOutputAllowed` | `thincoder-core/agent/chat-call.mjs:12` | `fn` |
+| `callModelTurn` | `thincoder-core/agent/chat-call.mjs:16` | `fn` |
 | `TURN_CAP_MARK` | `thincoder-core/agent/child-marks.mjs:19` | `const` |
 | `STOPPED_MARK` | `thincoder-core/agent/child-marks.mjs:24` | `const` |
 | `handleCompletion` | `thincoder-core/agent/completion.mjs:30` | `fn` |
@@ -884,6 +884,8 @@
 | `TIMER_TURN_DOMAIN` | `thincoder-core/agent/helpers.mjs:471` | `const` |
 | `DIGEST_ACCOUNT_DOMAIN` | `thincoder-core/agent/helpers.mjs:479` | `const` |
 | `injectEngineeringReminder` | `thincoder-core/agent/helpers.mjs:485` | `fn` |
+| `clearImageFailStreak` | `thincoder-core/agent/image-heal.mjs:35` | `fn` |
+| `healImageRejection` | `thincoder-core/agent/image-heal.mjs:43` | `fn` |
 | `lightRoundOpen` | `thincoder-core/agent/light-round.mjs:31` | `fn` |
 | `LIVE_HEARTBEAT_MS` | `thincoder-core/agent/live-beat.mjs:20` | `const` |
 | `createLiveBeat` | `thincoder-core/agent/live-beat.mjs:30` | `fn` |
@@ -1515,11 +1517,13 @@
 | `stripImagesForTextModel, normalizeToolPairing` | `thincoder-core/provider/core.mjs:341` | `named` |
 | `parseRetryAfter` | `thincoder-core/provider/errors.mjs:14` | `fn` |
 | `isNonRetryableError` | `thincoder-core/provider/errors.mjs:32` | `fn` |
-| `betaBaseURL` | `thincoder-core/provider/errors.mjs:56` | `fn` |
-| `compileStreamRules` | `thincoder-core/provider/errors.mjs:66` | `fn` |
-| `ProviderError` | `thincoder-core/provider/errors.mjs:83` | `class` |
-| `assertProviderModel` | `thincoder-core/provider/errors.mjs:99` | `fn` |
-| `classifyResponsesErrorCode` | `thincoder-core/provider/errors.mjs:112` | `fn` |
+| `IMAGE_REJECTION_RE` | `thincoder-core/provider/errors.mjs:57` | `const` |
+| `looksLikeImageRejection` | `thincoder-core/provider/errors.mjs:60` | `fn` |
+| `betaBaseURL` | `thincoder-core/provider/errors.mjs:64` | `fn` |
+| `compileStreamRules` | `thincoder-core/provider/errors.mjs:74` | `fn` |
+| `ProviderError` | `thincoder-core/provider/errors.mjs:91` | `class` |
+| `assertProviderModel` | `thincoder-core/provider/errors.mjs:107` | `fn` |
+| `classifyResponsesErrorCode` | `thincoder-core/provider/errors.mjs:120` | `fn` |
 | `normalizeTools` | `thincoder-core/provider/google.mjs:24` | `fn` |
 | `convertMessages` | `thincoder-core/provider/google.mjs:40` | `fn` |
 | `chat` | `thincoder-core/provider/google.mjs:78` | `fn` |
@@ -1535,9 +1539,11 @@
 | `_resetAdmissionForTest` | `thincoder-core/provider/list-models.mjs:151` | `fn` |
 | `probeChannelModels` | `thincoder-core/provider/list-models.mjs:156` | `fn` |
 | `IMAGE_HISTORY_BYTES_BUDGET` | `thincoder-core/provider/normalize.mjs:14` | `const` |
-| `capHistoryImages` | `thincoder-core/provider/normalize.mjs:35` | `fn` |
-| `stripImagesForTextModel` | `thincoder-core/provider/normalize.mjs:70` | `fn` |
-| `normalizeToolPairing` | `thincoder-core/provider/normalize.mjs:102` | `fn` |
+| `IMAGE_REJECTED_PLACEHOLDER` | `thincoder-core/provider/normalize.mjs:20` | `const` |
+| `capHistoryImages` | `thincoder-core/provider/normalize.mjs:55` | `fn` |
+| `stripRejectedImages` | `thincoder-core/provider/normalize.mjs:86` | `fn` |
+| `stripImagesForTextModel` | `thincoder-core/provider/normalize.mjs:100` | `fn` |
+| `normalizeToolPairing` | `thincoder-core/provider/normalize.mjs:132` | `fn` |
 | `RETRYABLE_STATUS` | `thincoder-core/provider/rate.mjs:8` | `const` |
 | `MAX_RETRIES` | `thincoder-core/provider/rate.mjs:9` | `const` |
 | `MAX_CONTINUATIONS` | `thincoder-core/provider/rate.mjs:10` | `const` |
@@ -2978,7 +2984,8 @@
 | `messageNodes` | `thincoder-server/public/views-me-chat-messages.mjs:71` | `fn` |
 | `PULL_POLL_MS` | `thincoder-server/public/views-me-chat.mjs:24` | `const` |
 | `pullStateLabel` | `thincoder-server/public/views-me-chat.mjs:27` | `fn` |
-| `renderMeChat` | `thincoder-server/public/views-me-chat.mjs:38` | `fn` |
+| `pullDetailText` | `thincoder-server/public/views-me-chat.mjs:33` | `fn` |
+| `renderMeChat` | `thincoder-server/public/views-me-chat.mjs:44` | `fn` |
 | `boxStateLabel` | `thincoder-server/public/views-me-sandbox.mjs:19` | `fn` |
 | `boxStateClass` | `thincoder-server/public/views-me-sandbox.mjs:25` | `fn` |
 | `stopReasonLabel` | `thincoder-server/public/views-me-sandbox.mjs:32` | `fn` |

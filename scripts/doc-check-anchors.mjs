@@ -39,8 +39,9 @@ const isLineage = (l) => /(?:已经|已|现已)并入/.test(l) && /（(?:见|参
  *  `在` / `见␣` 已删（2026-09-18 判据面批：高频词无宿主指向语义——185 条悬空全由这两词触发）。 */
 const DEF_PREDICATES = ["定义于", "定义在", "声明于", "声明在", "生成点", "定义处", "唯一权威", "导出", "位于", "定义见", "实现见", "详见", "见其"];
 
-/** 占位类：仅当 basename 形态命中（与候选一致、非判定依据）。 */
-const PLACEHOLDERS = new Set(["placeholder", "yourfile", "your-file", "example", "your-module", "your-directory", "stub"]);
+/** 占位类：仅当 basename 形态命中（与候选一致、非判定依据）。
+ *  `x` / `b` = 单字母示意名（`docs/batches/x.md` / `a/b.mjs` 族——doc 抽取示例专用；2026-10-15 清账轮 3 扩面——#1407①：示意名误报 21 条，父侧直接执行 · 可 revert）。 */
+const PLACEHOLDERS = new Set(["placeholder", "yourfile", "your-file", "example", "your-module", "your-directory", "stub", "x", "b"]);
 
 const EXTS = "mjs|cjs|js|json|md|css|html|svg|yml|yaml|sh|ps1";
 // 右界守卫转义须单层（源串 "(?![\\w])" ⇒ 正则源 (?!\w)）；双转义 ⇒ 「字面反斜杠 / 字面 w」二字符类、守卫失效

@@ -34,7 +34,7 @@
 | `trustProxy` | 否 | 反代场景客户端 IP 口径：`false`（缺省——IP = 连接对端地址） ∥ `true`（读 `X-Real-IP` 头——反代须 set 形覆盖客户端伪造；前提 = 服务端口仅反代可达）；登录防爆破 IP 维消费（`accounts/ACCOUNTS.md` §2） |
 | `proxy` | 否 | 上游出口代理（形 = `{ "uri": "http://host:port" }`——代理目标本体，非门槛）：在场时仅**逐渠 `proxy: true`** 的 provider 上游请求（chat 转发 ∥ 模型发现）经此代理（逐渠独立——无全局闸）；缺省/缺位 = 零代理；非对象形态（数组 ∥ 数字）∥ `uri` 非法（非字符串 ∥ 空串 ∥ 非 URL ∥ scheme 非 `http:`——仅 `http:` 收）⇒ 拒启（fail-closed）；启动 warn 两条（触发/文案 = `gateway/API.md` §6 KD-SV-55）——① 明文 `http:` uri（密钥外发提示）∥ ② 任一条目旗 `true` 而 `uri` 缺位（直连——旗未生效）；改动生效 = 重启（配置文件不热载——§10 在案）；机制全文 = `gateway/API.md` §6 KD-SV-55 |
 | `usageRetentionDays` | 否 | 保留窗（天；**用量（含 `usage_daily`/`quota_counters` 两派生表）与审计事件同窗**——单一旋钮）：正整数 ∥ `null`（不限——保留全量）；缺省 `90`；非正整数 ∥ 非法值 ⇒ 拒启（机制 = `metering/METERING.md` §1 ∥ `accounts/ACCOUNTS.md` §2.1） |
-| `alert` | 否 | 告警 webhook（可靠性批——机制全文 = §5.11）：形 = `{ "webhookUrl": "http(s)://…" }`；出场非对象 ∥ `webhookUrl` 非法（非字符串 ∥ 空 ∥ 非 URL ∥ scheme 非 http(s)）⇒ 拒启（fail-closed）；缺省/缺位 = 告警投递禁用（服务照常）；投递 = JSON POST（超时 5s ∥ 失败仅日志 ∥ 去抖 10 分钟窗）；生效 = 重启（配置文件不热载——§10 在案）；控制台写面 = 「服务配置」卡告警行（`alertWebhookUrl`——`""` ⇒ 删段） |
+| `alert` | 否 | 告警 webhook（可靠性批——暂缓，机制未落）：形 = `{ "webhookUrl": "http(s)://…" }`；出场非对象 ∥ `webhookUrl` 非法（非字符串 ∥ 空 ∥ 非 URL ∥ scheme 非 http(s)）⇒ 拒启（fail-closed）；缺省/缺位 = 告警投递禁用（服务照常）；投递 = JSON POST（超时 5s ∥ 失败仅日志 ∥ 去抖 10 分钟窗）；生效 = 重启（配置文件不热载——§10 在案）；控制台写面 = 「服务配置」卡告警行（`alertWebhookUrl`——`""` ⇒ 删段） |
 | `bootstrap` | 否 | 首启引导凭据（`username` ∥ `password`——支持 `env:`）；仅零 admin 时消费（§2——幂等） |
 | `providers[]` | 否 | **首启种子**（一次性导入——矩阵见下；此后控制台管理——`gateway/API.md` §2.2）。**两种条目形**：预设形（`preset` = 预设名——缺省字段展开，见下）∥ 手写形（`name` ∥ `baseURL` ∥ `models` 自备）。两形共有字段：`name`（预设形可省——缺省 = 预设名） ∥ `baseURL`（OpenAI 兼容根——预设形可省） ∥ `apiKey`（可空——空则不发 Authorization 头；支持 `env:` 引用——载入不解析，引用保形） ∥ `models`（开放清单——预设形可省；**条目两形**：字符串 = 上游模型名（无别名）∥ 对象 `{ name, alias }`（配别名——对外标识 = alias）；无别名时对外标识 = `provider/model`；2026-10-09 alias 批——KD-SV-59；控制台编辑位 = 服务模型页「别名」组——`webui/ADMIN.md` §2.1③） ∥ `proxy`（布尔——true = 该渠上游请求经代理；缺省/非真 = 直连——机制 = `gateway/API.md` §6 KD-SV-55） |
 | `embedding` | 否 | 嵌入引擎（旁路进程——内网）接入段：`baseURL` ∥ `model` ∥ `apiKey`（选填——本地引擎常无鉴权）。**缺位 ∥ `null` = 禁用态**（服务照常起 + 启动警告一条——`/v1/embeddings` ⇒ 404 `model_not_found` 消息明示未配置；控制台向量卡「未配置」态可创建——见下「配置写面」）；**在场 ⇒ 严格校验**（`baseURL` 须 http(s) ∥ `model` 非空串——非法 ⇒ 拒启）；机制全文 = §8 KD-SV-57 |
@@ -98,10 +98,10 @@ node src/ops/cli.mjs --config <配置档> <命令>
 ## 4. 启动/停机与日志
 
 - 启动 = `thincoder-server/bin/thincoder-server.mjs`（已落盘）：argv（`--config`）→ 配置加载/校验 → 首启引导 → 开库/迁移（`store/STORE.md` §3）→ **保留清理（用量 + 审计事件：启动一次 + 24h 周期——`metering/METERING.md` §1 ∥ `accounts/ACCOUNTS.md` §2.1）** →
-  **provider 运行时引导（种子导入 ∥ 注册表构建——§1）** → **告警 watchdog（60s 周期——§5.11；webhook 缺省 ⇒ 零行为）** → `node:http` 监听 → 就绪日志（`ready` 行含 `version` 字段——§5.4(g)）。
+  **provider 运行时引导（种子导入 ∥ 注册表构建——§1）** → **告警 watchdog（60s 周期——可靠性批暂缓，未落；webhook 缺省 ⇒ 零行为）** → `node:http` 监听 → 就绪日志（`ready` 行含 `version` 字段——§5.4(g)）。
 - 停机 = SIGINT/SIGTERM ⇒ 优雅收尾（停收新连 ∥ 清周期定时器（更新循环 ∥ 保留清理 ∥ watchdog 同法） ∥ 关闭库）。
 - 日志 = `thincoder-server/src/ops/log.mjs`（已落盘）：单行 JSON 到 stdout（逐请求一行 + 启动/引导/错误事件）；采集/落盘 = 部署面（§5——裸机 journald ∥ 容器 docker logs）。
-- 启动失败（catch 段）⇒ `startup_failed` 日志 + 告警尽力投递（`alert.webhookUrl` 在案时——§5.11；投递失败仅 warn——进程退出码 1 不变）。
+- 启动失败（catch 段）⇒ `startup_failed` 日志 + 告警尽力投递（`alert.webhookUrl` 在案时——可靠性批暂缓，未落；投递失败仅 warn——进程退出码 1 不变）。
 - **入口判据（bin 垫片形——#1113）**：主入口判定 = `argv[1]` 经 `realpathSync` 解析后与 `import.meta.url` 比对——npm 全局装（POSIX）= bin 符号链接形：`argv[1]` 为符号链接路径而 `import.meta.url` 为真身路径，不解析 ⇒ 判据恒假 ⇒ **静默退出 0**（`run` 从不执行）；路径不可解析 ⇒ 抛（显式报错——不静默）；模块被 import（非主入口）⇒ `run` 不自动执行（供测试导入）。判据行最终形（`:12` 邻增 import ∥ `:176`）：
 
 ```js
@@ -157,7 +157,7 @@ services:
 - 裸机日志 = stdout 单行 JSON 由 journald 收（`journalctl -u thincoder-server`）；安放 = 拷 unit 到 `/etc/systemd/system/` → `daemon-reload` → `systemctl enable --now thincoder-server`。
 - **容器路 = restart 策略**（无 systemd 依赖）：`restart: unless-stopped`；日志 = `docker logs`；**收敛链 = 容器重起重跑壳引导**（自升成功 ⇒ 应用退出 ⇒ docker 重起 ⇒ converge 按 `TC_SERVER_VERSION` 收敛——§5.4）。
 - **重起拾新版链（两路同律）**：进程退出（退出码 0 亦然）⇒ 守护重起 ⇒ 入口读到的 = 前缀内实际安装版本。
-- **崩溃循环遏制**（可靠性批——口径说明）：systemd 默认起爆窗（10s 内 5 次起爆 ⇒ 停止重试；`systemctl status` 可见）∥ docker restart = 指数退避；进程起不来期间可见面 = journald/docker logs（`startup_failed` 告警为尽力投递——§5.11）。
+- **崩溃循环遏制**（可靠性批——口径说明）：systemd 默认起爆窗（10s 内 5 次起爆 ⇒ 停止重试；`systemctl status` 可见）∥ docker restart = 指数退避；进程起不来期间可见面 = journald/docker logs（`startup_failed` 告警为尽力投递——可靠性批暂缓，未落）。
 
 ### 5.3 配置（两路同）
 
@@ -197,7 +197,7 @@ services:
   ② **快照自检**（本批新）：只读开快照 ⇒ `PRAGMA integrity_check` = `ok` ∧ `user_version` 可读 ∧ 关键表可查（`members` ∥ `api_keys` ∥ `usage`）——任一不过 ⇒ 退出 1（坏快照留盘——排障）→
   ③ **WAL 检查点**（本批新）：对源库 `PRAGMA wal_checkpoint(TRUNCATE)`——成功 ⇒ WAL 复位（限额兜底）；busy ⇒ warn 续行（快照已得——不判失败）。
 - 退出码：0 = 快照生成且自检过（stdout 一行 = 产物路径——可管道消费）∥ 1 = 失败（stderr 说明 + 告警投递，见下）。
-- **失败告警**（本批新——§5.11 同渠）：快照生成失败 ∥ 自检不过 ⇒ `alert.webhookUrl` 在案时 POST `{ source:"thincoder-server/backup", event:"backup_failed", … }`（本档自含海报——零 App 依赖；投递失败仅 stderr 一行——不反噬退出码）；成功不投递（零噪声）。
+- **失败告警**（本批新——原定 §5.11 同渠；可靠性批暂缓，未落）：快照生成失败 ∥ 自检不过 ⇒ `alert.webhookUrl` 在案时 POST `{ source:"thincoder-server/backup", event:"backup_failed", … }`（本档自含海报——零 App 依赖；投递失败仅 stderr 一行——不反噬退出码）；成功不投递（零噪声）。
 - **RPO/RTO 声明**（口径 = 机制推导 + 实测回填，非拍数）：
   - RPO（进程崩溃）= **0**——WAL 提交即持久，重起自恢复；**掉电** = 丢最后若干提交（`synchronous=NORMAL`——计量档位在册，`store/db.mjs:322`）；
   - RPO（整机/介质丢失）= **最新快照龄**——定时器样例每日 ⇒ **≤24h**（调频 = 改 `OnCalendar`；频次越高 RPO 越小、盘占用越高）；

@@ -180,12 +180,14 @@
 **F-SL1 回收读口扩展（reveal——2026-10-14 · 批档 `docs/batches/2026-10-14-design-token-recovery.md` · 台账 #1384）**：
 
 - **背景**：令牌一直落盘（D1——槽文件 = 权威台账），缺的只是读口——令牌随上下文压缩 / 重启从父侧窗口丢失后，此前只能考古会话档案（实证 ≈10 分钟）。本扩展 = **只读取回面**：按槽取回令牌，零授权语义变更。
-- **参数面**：`designId`（可选——过滤到单槽；精确匹配；未知 ⇒ 拒 + 列在场 id）∥ `reveal`（可选 boolean；仅 `true` 揭值）。**`reveal:true` 必须携 `designId`**（一次一槽——不吐批量凭据、不做全量 dump）；两参皆缺 = 现行清点面**逐字零变**；`reveal` 非 boolean ⇒ 拒（fail-closed——同 `consume-design` 对 `expired` 的严格判定先例）。
+- **最相近先例**：F-SL1 清点面（:172–178）+ `consume-design` 选择器严格判定（`thincoder-core/agent-tools/design-slots.mjs:185`——`expired !== true` 即拒）；先例批 = `docs/batches/2026-10-07-ledger-tool.md`；对齐 = 同读源（`unionSlots` 并集）∥ 同 fail-closed 形；偏差 = ① 新揭值概念（清点面零凭据外吐）② 掩蔽规则（只揭活槽——清点面仅列状态）③ 单槽限（必携 `designId`——不吐批量凭据）。
+- **参数面**：`designId`（可选——过滤到单槽；trim 后精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）∥ `reveal`（可选 boolean；仅 `true` 揭值）。**`reveal:true` 必须携 `designId`**（一次一槽——不吐批量凭据、不做全量 dump）；两参皆缺 = 现行清点面**逐字零变**；`reveal:null` 视同缺省（沿 `consume-design` 选择器先例——零揭值）；其余非 boolean ⇒ 拒（fail-closed——同 `consume-design` 对 `expired` 的严格判定先例）。
 - **输出形**：`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；`reveal:true` 且槽活 ⇒ 槽行尾追加 `designToken=<全串>` + 回收行（「`designId` + `designToken` 原样入 eng-coder spawn——门禁严格相等校验」）。
-- **掩蔽口径**：只揭**活槽**（格式合法 ∧ 未过期）——过期 / 畸形槽 ⇒ `designToken=—`（如实注因，不揭值：两态在任何门禁都过不了，揭值零收益）；`designId` 非凭据（门禁拒文即照列 designId 清单），**token 值才是凭据**。
+- **掩蔽口径**：只揭**活槽**（格式合法 ∧ 未过期）——过期 / 畸形槽 ⇒ `designToken=—`（如实注因，不揭值：两态在任何门禁都过不了，揭值零收益）；**口面「活」判据 = 格式合法 ∧ 未过期——与列表 `status` 判据（`tokenExpired` 单源）不同：畸形槽列表记 `live`、口面照掩蔽（同一调用可现 `status=live` + `designToken=—`）**；`designId` 非凭据（门禁拒文即照列 designId 清单），**token 值才是凭据**。
 - **日志互作（核清在案——读口结果不得经日志面二次泄露）**：工具结果前 200 字符经 `agent/dispatch-run.mjs` 的 `tool:done` 事件 `head` 字段落盘；`log.mjs` `SECRET_FORM` 现有三形均不匹配 `uuid:epoch` 值形（**实证缺口**）。
   处置 = **`thincoder-core/log.mjs` `SECRET_FORM` 增 token 值形**（`[0-9a-f]{8}-…-[0-9a-f]{12}:\d{10,16}`——与 `batch.mjs` 凭据第三形同判据），内容级「截断到形态前」（宁可丢信息不漏密钥）；字段名黑名单（`designToken` / `token`）与 `batch.mjs` 写入剥离面**零改**。实施 = 本批实施轮。
 - **边界**：零写（不 reconcile 回写、不落盘——`unionSlots` 同源）；不改 spawn 门显式令牌语义（见下「自动解析取舍」）；不动 TTL / 消费机制；端面（VSC / 桌面）零改（只读动作级分类已覆盖）；跨重启可用（并集视图含槽文件）。
+- **边界注（揭示源 ↔ spawn 门分叉——登记备查、非阻断）**：揭示源 = 槽为准（`unionSlots`），spawn 门 = 内存优先、miss 回读槽（§3 D2——`thincoder-core/agent-tools/subagent-spawn.mjs:104`）——同 id 两载体分叉时（低可达——常态同步）揭示值可能被门「严格相等」校验拒；本批不改两侧判序。
 
 **回收程序（用法——运行态；值不落文档、不贴用户面）**：
 
@@ -223,8 +225,8 @@ U-SL1 清点全列（live/expired 双态 + 龄序）∥ U-SL2 批列派生（run
 U-SL5 多选择器 / 空清单 ⇒ 拒 ∥ U-SL6 落盘失败 ⇒ 整体回滚（持久化注入错）∥ U-SL7 消费后同 id spawn 机械拒（不复活——槽文件已删）∥ U-SL8 多槽隔离（消费 A 不动 B）∥ U-SL9 工程模式门外拒。
 
 **回收读口用例（本批增补——单元测试档 `docs/batches/2026-10-14-design-token-recovery.test.mjs`）**：
-U-SL10 `reveal` 活槽 ⇒ 全串 token ∥ U-SL11 `reveal` 缺 `designId` / 非 boolean ⇒ 拒 ∥ U-SL12 过期 / 畸形槽 ⇒ 掩蔽（值零出现）∥ U-SL13 未知 `designId` ⇒ 拒 + 在场 id 列。
-U-SL14 缺省两态（无参 ∥ `designId` 过滤）零揭值（默认面回归）∥ U-SL15 日志面（`logEvent` + 测试缝）：含 token 值形串 ⇒ 落盘零 token 值。
+U-SL10 `reveal` 活槽 ⇒ 全串 token ∥ U-SL11 `reveal` 缺 `designId` / 非 boolean（`null` 视同缺省）⇒ 拒 ∥ U-SL12 过期 / 畸形槽 ⇒ 掩蔽（值零出现）∥ U-SL13 未知 `designId` ⇒ 拒 + 在场 id 列。
+U-SL14 缺省三态（无参 ∥ `designId` 过滤 ∥ `designId:''` 空串视同缺省）零揭值（默认面回归）∥ U-SL15 日志面（`logEvent` + 测试缝）：含 token 值形串 ⇒ 落盘零 token 值。
 
 **关键决策**：
 
@@ -236,7 +238,9 @@ U-SL14 缺省两态（无参 ∥ `designId` 过滤）零揭值（默认面回归
 | KD-SL4 | 消费 = 单 persist / 整体回滚 | 逐枚落盘（半消费态）∥ 失败静默（盘留旧账） |
 | KD-SL5 | 回收读口 = **F-SL1 扩展**（`designId` 过滤 + `reveal` 单槽揭值；掩蔽 = 只揭活槽） | 新 action ∥ 新工具（动作 / 工具计数纪律——同 KD-SL1）∥ 全量 dump（凭据批量外扩——无用法）∥ spawn 门自动解析（凭证语义退化——「自动解析取舍」句） |
 
-**编号注记**：本批验收以批内编号承载（U-SL*；对应批档 §2 条目⑤）；需求侧候补 = `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md` F-D6 邻位补 F-SL 行（主 agent 笔）。
+**编号注记（按批分述）**：
+- 2026-10-07 批（`docs/batches/2026-10-07-ledger-tool.md`）——U-SL1–U-SL9；对应面 = 该批 §2 验收对照 ⑤；需求侧 = `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md:27-28`（F-SL1 / F-SL2）+ `:94` 变更行。
+- 2026-10-14 批（`docs/batches/2026-10-14-design-token-recovery.md`）——U-SL10–U-SL15；对应面 = 该批 §2 受影响文件表测试行（该批 §2 验收对照 ⑤ = doc-check——非编号面）；需求侧 = **F-SL3 已落**（reveal 面——需求档 `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md:29` + 变更行 `:95`；主 agent 笔——2026-10-14 父侧直接执行）。
 
 ## 变更记录
 
@@ -244,6 +248,10 @@ U-SL14 缺省两态（无参 ∥ `designId` 过滤）零揭值（默认面回归
 **本批（会话锚解析修复（多档并存支持） · 2026-10-02）落点表** = `docs/batches/2026-10-02-manifest-resolution-fix.md` §2（唯一承载面——一次性批次材料）。
 **本批（代码笔通路 · 2026-10-09）落点表** = `docs/batches/2026-10-09-light-channel-code-path.md` §2（唯一承载面——一次性批次材料）。
 **本批（design-token-recovery · 2026-10-14）落点表** = `docs/batches/2026-10-14-design-token-recovery.md` §2（唯一承载面——一次性批次材料）。
+
+- 2026-10-14（**design-token-recovery 批 · 实施后收口面 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §5 决策表 #1）：§10 参数面补 `reveal:null` 视同缺省半句（沿 `consume-design` 选择器先例）+ 用例面 U-SL11 同句随正。**零新语义**（实现裁口的字面对齐）。
+
+- 2026-10-14（**design-token-recovery 批 · 设计评审修正轮 1（发现 1–9）· eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §3 轮次 1）：§10 回收读口块补「最相近先例」行 + 参数面 / 掩蔽口径判据收正 + 边界注；编号注记按批分述重锚 + 用例面 U-SL14 空串腿。**零新语义**（口径收正 ∥ 补行；发现 10 = 口径声明不动）。
 
 - 2026-10-14（**design-token-recovery 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` · 台账 #1384）：§10 增 **F-SL1 回收读口扩展**（`designId` 过滤 + `reveal` 单槽揭值；掩蔽 = 只揭活槽）+ **回收程序** + **自动解析取舍句**（designId-only spawn 不做）；日志互作 = `log.mjs` `SECRET_FORM` 增 token 值形（实施 = 本批实施轮）；§10 标题随动。**签发链行为零改**（mint / settle / TTL / persist / spawn 门零动）。
 

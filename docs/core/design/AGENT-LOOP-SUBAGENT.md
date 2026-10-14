@@ -50,7 +50,7 @@
 | cancel | id（必填——防误全停） | `{ id, status: "cancelled" }` | 立即（定向 abort） |
 | panel | `{ view?, freeze? }`（互斥） | 镜像快照 / 冻结回收确认 | 同步 |
 | consume-design | designId? ∥ designIds? ∥ expired? ∥ olderThanDays?（选择器恰一） | 消费回执（逐枚 ∥ 批量——逐枚行 + 计数） | 同步（父侧 · 工程模式——语义 = `DESIGN-TOKEN-SETTLEMENT.md` §5 / §10） |
-| design-slots | 无（父侧 · 工程模式 · 只读） | 槽位清单（designId ∥ live/expired ∥ 时龄 ∥ 批——龄升序）+ 计数尾行 | 同步（只读） |
+| design-slots | designId? ∥ reveal?（必携 designId） | 槽位清单（designId ∥ live/expired ∥ 时龄 ∥ 批——龄升序）+ 计数尾行；`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；`reveal:true` 且槽活 ⇒ 槽行尾追加 `designToken=<全串>` + 回收行（两值原样入 eng-coder spawn）；过期 / 畸形 ⇒ `designToken=—` | 同步（父侧 · 工程模式 · 只读） |
 
 **depth 可用性（本表 = 锚 `§6.7.2` 的规则住所）**：`status` 与 `observe` / `send` / `escalate` / `cancel` / `panel freeze` **同为 depth 0 专有**——子代（`depth>0`）调用 ⇒ 显式拒（子代无自有异步池）；**`consume-design` / `design-slots` 同属父侧（depth-0）面**（受限变体拒绝清单在案）；
 `spawn` **例外**（depth>0 合法——子代 spawn 恒同步）。拒收文案族与返回形（JSON `status:"error"` 对象形）= §6.25 ①/A1b。
@@ -1039,3 +1039,5 @@ a missing field is a dispatch defect and the spawn is refused.
 - 2026-10-09（**普通模式工作管理统一批（normal-work-management）· 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-09-normal-work-management.md` §3 轮次 1 发现 9 · 台账 #1111）：上条来源指针收正——`§2` ⇒ **`§2.2`**（精确形——机制来源 = §2.2 行为 deltas「随带效果」行）。**零新语义**（指针形态收正）。
 
 - 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · eng-coder**——承 `docs/batches/2026-10-10-vsc-consistency.md` §2（`1047-3`）· 台账 #1047）：§6.25 边界句随正——「不收敛 VSC 侧同机制重复实现」子句删（对象已退场：副本随收编批删除；余边界句不动）。**零新语义**。
+
+- 2026-10-14（**design-token-recovery 批 · 实施轮 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §2 · 台账 #1384）：§6.7.2 `design-slots` 行随本批收正——参数列 = `designId?` ∥ `reveal?`（必携 designId）；返回列随 reveal / 回收行；原「父侧 · 工程模式 · 只读」括注迁入阻塞列。**零新语义**（槽位面语义单源 = `DESIGN-TOKEN-SETTLEMENT.md` §10——本档不重述）。

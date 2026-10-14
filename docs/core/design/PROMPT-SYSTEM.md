@@ -18,7 +18,7 @@
 | **中文设计档（供人读・非运行期——与运行期档同源）** | `thincoder-cli/docs/design/prompts/*.md`（15 档——已位移 `docs/core/design/prompts/*.md`〔现 16 档〕；实核空） | `thincoder-vscode/docs/design/prompts/*.md`（15 档——已位移；实核空） |
 | 槽位加载面 | `src/prompt-overlays.mjs`（**S2 删**——CLI 已随 U15 落地〔实核档不存在〕/ VSC 已随 `2026-09-15-vsc-core-wiring` W2 落地〔实核档不存在〕；删后装配面 = 核内单点 `thincoder-core/prompt-overlays.mjs`） | 同名（同路径对） |
 
-**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（50 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
+**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（51 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
 
 **核内只有运行期面** ✓——`thincoder-core/prompts/`（16）+ `thincoder-core/tool-docs/`（50）；**中文设计档永进核** ✗（归属**文档面**：现落 `docs/core/design/prompts/`——16 档，2026-09-15 批 1 位移落位；两产品侧副本实核空——其改名 / 移动只在文档面）。
 
@@ -155,6 +155,7 @@
 **本批（多仓操作机制·提示词面 · 2026-10-02）落点表** = `docs/batches/2026-10-02-multi-repo-mechanism.md` §2（唯一承载面——一次性批次材料）。
 **本批（提示词面收正批 · 2026-10-02）落点表** = `docs/batches/2026-10-02-prompt-face-rectification.md` §2（唯一承载面——一次性批次材料）。
 **本批（公共仓读取批 · 2026-10-02）落点表** = `docs/batches/2026-10-02-public-repo-read.md` §2（唯一承载面——一次性批次材料）。
+**本批（提示词/记忆注入开关 · 2026-10-14）落点表** = `docs/batches/2026-10-14-injection-switches.md` §2（唯一承载面——一次性批次材料）。
 
 ## 6. 机制面（自 CLI 产品档并入 · 2026-09-15 · 批 5）
 
@@ -162,7 +163,7 @@
 
 - **提示词 = 产品代码**（FR1 口径不变）；**内容权 = 主 agent**（逐字文本由它定——它就是设计的一部分）；**落笔按面分述**——**中文审核面 = eng-designer 笔**（随设计轮直落）· **英文运行面 = eng-coder 落笔**（落笔走正常链：设计评审 → 用户批准 → 实施轮；起草分工 = eng-designer 起草逐字 → 主 agent 确认 → eng-coder 机械落笔）。
 - **沿革注（落笔轮次）**：本档旧句「提示词实体落笔 = 本批实施轮」∥「账内先例 = 落笔归实现轮」（各批变更记录 ∥ §6.9 ∥ §6.16 等处在册）= 前规史实；现行 = §6.1 面分述。
-- **双面**：**中文审核面** = `docs/core/design/prompts/`（16 档——供用户审核；内容权威与设计维护面）∥ **英文运行面** = `thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（50 档工具描述）——核内唯一副本（承 F8）。 **面名等价**：§1 ∥ §2.2「中文设计档（面）」∥ 各处「中文正本」（权威源义——D-PS1）——均指本面。
+- **双面**：**中文审核面** = `docs/core/design/prompts/`（16 档——供用户审核；内容权威与设计维护面）∥ **英文运行面** = `thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（51 档工具描述）——核内唯一副本（承 F8）。 **面名等价**：§1 ∥ §2.2「中文设计档（面）」∥ 各处「中文正本」（权威源义——D-PS1）——均指本面。
 - **公共层（`common.md`）节级结构** → 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3（**逐节大纲**：每节管什么；正文在两面 common 档）——**本档不复制**（D2）。
 - **行为纪律面的落点形态**：**既有节内增列**（不新增节 ⇒ 零 `##` 块计数连带）；应用实例 = 破坏性命令红线落 `common.md` §10 尾部（→ §7 D-PS5）· 「不可裁决」自止点落 `common.md` §8「上行通道」节内（→ §6.7 · §7 D-PS7）·
   **台账治理纪律落 `persona-engineering.md`「派发与收尾纪律」节内**（→ §6.8 · §7 D-PS9）· **派单尺寸与任务书形态纪律落 `persona-engineering.md`「实施委托结构化」节内**（→ §6.9 · §7 D-PS10）· **测试层级知识落两模式纪律档**（`discipline-engineering.md`「测试纪律」节内 ∥ `discipline-normal.md`「测试与交付」节内——→ §6.10 · §7 D-PS11 ∥ D-PS13）·
@@ -185,7 +186,8 @@
 - 装配 = **整文件拼接**（`thincoder-core/prompt-overlays.mjs` 槽位表驱动；common 恒第二位、**主链七场景**全部注入）——**零段落级解析**：增 / 删节不影响装配代码（增删节类变更 = 零运行时代码改动的充分条件）。
   **槽位模型**（与 `prompt-overlays.mjs` 头注同轴）：persona → common → discipline → **[4] 子代理层**（`subagent-base.md`——eng-coder / eng-designer / explore / coder / plan 五场景行末装配）；**AGENTS.md / skills = 槽位外尾块**（无编号——装配于槽链之后的既有尾部逻辑）。
 - 槽位装配矩阵（**九场景——主链 7 + 特殊模块 2**）与降级链（缺文件 ⇒ 槽空缺 + 警告，**不 fallback**）→ 详述 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6（装配逻辑——四槽固定序 + 矩阵 + 降级链）（本档不复制——D2）。
-- **装配之后的运行期追加面**：项目指令块（不分 depth）与 skills 尾块（depth-0）——`thincoder-core/agent/setup.mjs:238-246`；以及**派单固块**（spawn 级固定机制性指令，如批次档路径行 / 审计模板；拼接位 = 槽位装配之后、项目指令之前）——字段 `child._spawnSystemBlock`、拼接点 `thincoder-core/agent/setup.mjs:231` 之后；**机制单源 = `AGENT-LOOP-SUBAGENT.md` §6.26，本档不复制**。
+- **装配之后的运行期追加面**：项目指令块（不分 depth）与 skills 尾块（depth-0）——`thincoder-core/agent/setup.mjs:265-268` ∥ `:269-278`（as-of 2026-10-14 实读）；
+  以及**派单固块**（spawn 级固定机制性指令，如批次档路径行 / 审计模板；拼接位 = 槽位装配之后、项目指令之前）——字段 `child._spawnSystemBlock`、拼接点 `thincoder-core/agent/setup.mjs:231` 之后；**机制单源 = `AGENT-LOOP-SUBAGENT.md` §6.26，本档不复制**。
 
 ### 6.3 端特有段与多实现面纪律
 
@@ -209,7 +211,7 @@
 
 ### 6.5 现状坐标（as-of 2026-09-15 实核）
 
-- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（50 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
+- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（51 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
 - 中文正本 = `docs/core/design/prompts/*.md`（16 档——2026-09-15 批 1 位移落位）。
 - **端侧装配面（S2 接线落地读数）**：CLI = `thincoder-cli/bin/thincoder.mjs` 入口首步 `configurePromptInjections(CLI 表)` + `thincoder-cli/src/prompt-injections.mjs`（随 U2 落）；
   VSC = `thincoder-vscode/extension.mjs` `activate()` 首步 `configurePromptInjections(VSC 表)` + `thincoder-vscode/src/prompt-injections.mjs`（随 W2 落）；工具描述装载根两产品同指核 `loadToolDoc`（CORE-UNIFICATION §2.13.2 / §2.13.8）。
@@ -318,17 +320,17 @@
 
 ### 6.11 工具描述面：外置统一与预算（2026-09-29 批 · #15）
 
-**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（50 档），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
+**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（51 档），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
 
 **预算表（唯一权威处——本表；邻位只挂指针行 · D2）**：
 
-| 项 | 读数（as-of 2026-10-07 复测实读；首测 = 2026-09-29） |
+| 项 | 读数（as-of 2026-10-14 复测实读；首测 = 2026-09-29） |
 |---|---|
 | 基线 | 103,529 字符（口径 = 逐档 `JSON.stringify({description, parameters})` 字符和——与机检同式） |
-| 当前 | **101,813** 字符（= **0.983 × 基线**；首测 = 95,973 / 0.927——复测 = 现树全量实读，含 09-29 以来全部在位改动） |
+| 当前 | **124,207** 字符（= **1.20 × 基线**；首测 = 95,973 / 0.927——复测 = 现树全量实读，含 09-29 以来全部在位改动） |
 | 目标 | ≤ 0.75 × 基线——**未达 · 报告态**（三杠杆——参数回声去重 ∥ 装饰 / 重复句 ∥ top 档六要素重写——用尽；依「准比短重要 · 信息完整优先于字数」不硬削，读数上抛父侧裁） |
-| 单档帽 | ≤ 8,000 字符——唯一超限 = `subagent` **14,239**（首测 = 12,134；契约事实保真下限；逐档由在册——批档 `docs/batches/2026-09-29-tools-carryover.md` §5.7 · 报告态） |
-| top5 | `subagent` **14,239** ∥ `git` 7,894 ∥ `edit` 5,411 ∥ `batch` 5,090 ∥ `advisor` **4,143** |
+| 单档帽 | ≤ 8,000 字符——超限 = `subagent` **15,808**（首测 = 12,134；契约事实保真下限；由在册——批档 `docs/batches/2026-09-29-tools-carryover.md` §5.7 · 报告态）∥ `browser` **11,959**（由未在册——上抛父侧） |
+| top5 | `subagent` **15,808** ∥ `browser` **11,959** ∥ `git` 7,894 ∥ `batch` **5,421** ∥ `edit` 5,411 |
 | 机检 | `node scripts/tool-schema-size.mjs`（报告态 v1——只读读数，不入闸；复测 = 同式读数对读数） |
 
 **复测注记（2026-10-05 · 轻通道轮「模型可见面笔」收口面——承评审 #41 发现 3）**：读数对 = 95,973（0.927）→ **99,928**（0.965）；`subagent` 段配对 = 12,134（首测）→ 12,963（复测），其中本批笔① +8 行 = 12,738（#938 收口面读数 as-of）→ 12,963 区间（**+225**——含同档收口面单行修 `:25` 括注）；归因明细 = 批档 `docs/batches/2026-10-05-model-face-pens.md` §2。
@@ -337,6 +339,10 @@
 
 **复测注记（2026-10-07 · 批 ledger-tool 收口面）**：读数对 = 100,349（0.969）→ **101,813**（**0.983**——+1,464）；本批笔 = `tool-docs/subagent.md`（九动作头 + `design-slots` 条 + `consume-design` 选择器句 ⇒ `subagent` 12,963 ⇒ **14,239**，+1,276）+ `ledger.md` 三句随动（+小）∥ tool-docs 48 档 · 63,553 字符；
   分面 = builtin 50,290 ∥ builtin(gated) 1,372 ∥ meta 40,691 ∥ instance 9,460；归因明细 = 批档 `docs/batches/2026-10-07-ledger-tool.md` §5。**目标 ≤0.75 未达**（比值较上测升 0.014——本批为功能面必增；报告态上抛父侧裁既定不变）。
+
+**复测注记（2026-10-14 · 批 design-token-recovery 收口面）**：读数对 = 101,813（0.983）→ **124,207**（**1.20**——+22,394）；本批笔 = `tool-docs/subagent.md`（+reveal 句）∥ `subagent.mjs` 参数面（+`reveal` / `designId` 描述）⇒ `subagent` 14,239 ⇒ **15,808**；
+  其余增量 = 上测以来他批在位（`browser`（11,959）等——逐档不归本批）；分面 = builtin 63,099 ∥ builtin(gated) 1,372 ∥ meta 47,623 ∥ instance 12,113 ∥ tool-docs 51 档 · 77,377 字符；
+  两档 persona-engineering 行数连带 = CN ∥ EN 207 ⇒ **208**（wc-l；本批 +1 条——提示词面，非本表射程）；归因明细 = 批档 `docs/batches/2026-10-14-design-token-recovery.md` §5。`browser` 11,959 超单档 8,000 且无在册由——上抛父侧。**目标 ≤0.75 未达**（报告态既定不变）。
 
 **边界**：表为读数与目标面——零机械门（预算不入闸）；描述逐字文本 = 主 agent 内容权；动态装配装饰面不在本表射程。
 
@@ -592,6 +598,39 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **边界**：零机械门 · 台账工具 / 代码零触（query/close/evidence 能力已足——三条 = 纯纪律）· §6.20 五条正文逐字不动（本批 = 增补 v2）· 其余纪律零触 · 零新术语（锚点复核 / 族行 / 指针化上限均为平名直述；`转下一触点` / `升小批候选` = 受控简写）· 需求档零笔（U 项 = 父侧）。
 
+### 6.24 注入开关（提示词 ∥ 记忆自动注入两枚全局开关）（2026-10-14 批 · 台账 #1420）
+
+**来源**：用户 2026-10-14 09:56 提出（迁移项目「旧文档干扰行为」应急阀）+ 12:15「办」点火 + 两裁定（原话「文档和记忆分开开关，做成全局控制就行」）+ 12:14 追加（原话「几个客户端都要能在配置界面上配置，同时也开放工具给agent让agent也能自己控制开关」）；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6；批档 = `docs/batches/2026-10-14-injection-switches.md`。
+
+**键面（口径单源 = 核 `config.json`）**：`agent.injectDocs` ∥ `agent.injectMemories`——布尔，默认 `true`（DEFAULTS.agent 声明）；判据 `!== false`（只有显式 `false` 阻断；缺省 = 现行为零变；同族先例 = `agent.timerWake`——`thincoder-core/config.mjs`）。
+
+**阻断点（三处——判点均逐 run 现读 `agent.config`）**：
+
+| # | 注入块 | 判点落位（核 `thincoder-core/agent/setup.mjs`） | 开关 |
+|---|---|---|---|
+| ① | 项目指令文件块（`~/.thincoder/AGENTS.md` 低优 + 项目根 `AGENTS.md` / `project_rules.md`） | `:265-268`（`loadProjectInstructions` 调用 + 拼接同址——helper 本体零改；§6.2「运行期追加面」同读数） | `agent.injectDocs` |
+| ② | 相关文档块（自动检索 + 注入） | `:113-148` | `agent.injectDocs` |
+| ③ | 相关记忆块（自动检索 + 注入） | `:149-159` | `agent.injectMemories` |
+
+关 = **检索调用不执行 + 注入不发生**（不止吞注入）；三块既有执行条件（depth 门 ∥ `resume` 段等）零动。
+
+**读键时机与热应用**：判点皆在 `prepareRun`（每次提示词组装）现读 `agent.config` ⇒ 写入落到活 `agent.config` 即**本会话下一次组装生效**：`settings` 工具 = 直写内存即热（工具热应用链零改）∥ CLI `/config` = `reloadConfig` 换新 `agent.config`（同即热）∥ 端壳设置界面腿 = 各端既有配置刷新语义（VSC `hydrateRun` 每轮重读 ⇒ 下一条消息；桌面 = 下次 agent 装配）——零新机制。
+
+**先例 ∥ 偏离 ∥ 桌面腿证据（as-of 2026-10-14 实读）**：
+
+- **先例批** = timer-wake 阶段 2（`docs/batches/2026-09-28-timer-wake-phase2.md` §5.15——VSC `agent.config.agent` 白名单整建漏键 ⇒ `agent.timerWake` 在 `config.json` 关不掉；三处穿透（默认种 ∥ raw 读 ∥ `agentFields`）补齐后真链闭合）——本批 VSC 行同址预登记三处（逐文件落点 = 批档 §2）。
+- **桌面腿对照实读（无白名单）** = 写链 `settings:agent`（`thincoder-desktop/src/main/settings.mjs:255-297`——值校验 + `writeConfigAtomic`）落 `config.json`；
+  读链 = 装配全量直传（`thincoder-core/agent/assemble.mjs:65` `loadConfig()` ⇒ `:106` `createAgent({ config })`；键经 `thincoder-core/config.mjs:329` 合并面直通 `agent.config`）⇒ 键必达核判点，桌面无需三处补。
+- **偏离（知会）** = UI 腿生效时点 ≠ 会话内即热（VSC = 下一条消息 ∥ 桌面 = 下次装配——装配表同键复用 `thincoder-desktop/src/main/agent-host.mjs:198-199`）；需求③热应用仅绑 `settings` 工具面（工具直写活 config = 即热）；UI 腿同热 = 需 config-watch 活重载链（新机制），本批不做。
+
+**不变式（工程模式不吃这两面）**：两开关只断自动注入三块——槽位装配（`assemblePrompt`）∥ 工程模式提醒 ∥ 批档 / 台账机制零触 ⇒ 关不破工程流程；子代理 config 继承父（`thincoder-core/agent-tools/subagent-spawn.mjs:300-302`）⇒ 子代理装配同受开关。
+
+**端面登记（多实现面 · 语义单源 = 本节）**：核机制面（本节）∥ 三客户端配置界面（CLI `/config` ∥ VSC 设置页 Agent 卡 ∥ 桌面设置 Agent 段——逐文件落点 = 批档 §2）∥ `settings` 工具面（DEFAULTS 派生——可见可写 + 布尔类型护栏自动跟随、实现面零改码；同族面 = `CONFIG.md` §6.2「派生消费面」）。
+
+**机检**：批内件 `docs/batches/2026-10-14-injection-switches.test.mjs`（U1–U11：核面三块开关 ∥ 热应用 ∥ `settings` 工具写入面 ∥ 子代理装配 ∥ 工程不变式 ∥ 三端面）；`scripts/doc-check.mjs` 本批域零新增红。
+
+**边界**：不改检索机制本体（`doc_search` / `memory search` 按需工具零影响）· 不删数据 · 工程模式装配链零触 · 不扩到项目级粒度（全局 = 用户裁）· 其余自动注入块不在开关面（`.cursor/rules` 尾块 `thincoder-core/agent/setup.mjs:276-277` ∥ 仓库大纲 `thincoder-core/agent/setup.mjs:99-108` ∥ skills 清单 ∥ git / env / peer / time 提醒——需求口径 = 上表三块）· 零新机制（落点 = 既有配置面 + 既有读点）。
+
 ## 7. 并入的关键决策记录（含否决备选）
 
 | # | 决策 | 理由 / 否决备选 |
@@ -629,6 +668,8 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 | D-PS31 | **清账轮三条 = 落 `persona-engineering.md` 两节内**（「派发与收尾纪律」：锚点复核新 bullet ∥ 「台账」节：族行 ∥ evidence 指针化上限新 bullet ×2）——**CN 正本 = 设计轮直落 ∥ EN 运行面 = 实施轮按 M9**；既有节内增列 ⇒ 零 `##` 块计数连带；不新造机制（工具面零改） | 三条均主 agent 行为纪律（池面锚维护 ∥ 行组织 ∥ 行形态 = 台账写权与行使面）⇒ 人格层（同 §6.8 / §6.20 / FR30 判例）；生命周期表受 FR30 五行锁定 ⇒ 三条不入事件表（锚点复核 trigger = 清账轮；族行 / 上限 = 行面形态）。否决「落 `discipline-engineering.md`」（子代理亦读 ⇒ 误导——台账写权仅主 agent）·「落公共层」（非两模式逐句协作基础）·「新增节」（零收益 + 块计数连带）·「锚点复核并入生命周期表」（破 FR30 五行） |
 | D-PS32 | **evidence 指针化上限定形 = 软上限 ≈ 300 字 + 例外形**（细节尚无落点——未建档 ∥ 待裁 ∥ 所指档不可达 ⇒ 允许内嵌摘要；落点一出现即收窄） | 判由：① 300 = 本仓「一行」的既有量级（行宽闸值同数——「台账 = 一眼能扫的账」以「一行」为直觉单位）；② 拦的就是千字级细节堆存（实证 #1250 ∥ #1208 ∥ #1354 皆千字上下）——软上限取其约三分之一量级，良形行（症状 + 坐标 + 指针）留足空间；③ 软性 = 无机械闸（台账住用户数据区、非文档机检面）——执行 = 写形纪律（登记时）+ 清账轮收窄信号（超限行 = 收窄小件）。否决「硬闸 / 字数机检」（非文档面、无载体；违「零机械门」）·「无例外」（待裁 / 未建档行须自带上下文——否则用户无法当场裁）·「值取更低」（良形行被误判——软上限用途 = 收窄信号，非收紧良形） |
 | D-PS33 | **族行与「单行 = 单结算单元」= 同轴互补**（拆 = 不相干项不绑；并 = 同一工作对象不分家）；族行成立条件 = **成员同批同轮收口**；族行 ≠ 主题伞（主题同、收口不同轮 = 注记关系不并）；不设成员数硬上限（成员清单 = 标题面，过长即信号——另裁或收窄） | 两条易被读成互斥（一拆一并）——同轴句显式化防误读；「同一工作对象」承「入库查重」既有定形（#1157 批同义句）；闭合条件 = 可判（同批收口 = 核销时点同拍）；近例 = 越线拆案族五行归一行（#1269 ∥ #1297 ∥ #1309 ∥ #1313 ∥ #1352）。否决「并入单行单结条改写」（该条 = 结算单元判据 ∥ 族行 = 行的聚合判据——分条） |
+| D-PS34 | **注入开关键面 = `agent.injectDocs` ∥ `agent.injectMemories`**（平表、动词式；默认 `true` 显式声明于 DEFAULTS；判据 `!== false`） | 平表开关族先例（`verifyGuard` ∥ `timerWake` ∥ `autoThink`）；DEFAULTS 声明 = 缺省零变 + settings 类型护栏 / list 面自动派生（加键流程 = DEFAULTS 一处——`SETTINGS-TOOL.md` §2.6）。否决「嵌套 `agent.injection.*`」（多一层寻址 + 各端 UI / 工具落点加层）·「名词式键名 `docInjection`」（与族形不一）·「判据 `=== true`」（缺省态被误判为关）·「不声明 DEFAULTS」（无校验 + 键面缺失） |
+| D-PS35 | **阻断点 = `setup.mjs` 调用侧三判（`loadProjectInstructions` helper 签名零改）；关 = 检索调用不执行（不止吞注入）；热应用 = 逐 run 现读既有 `agent.config`（零新机制）** | helper = 公开导出面 ⇒ 调用侧判点最小爆炸半径；关 = 零无谓 embedding / DB 开销；逐 run 现读 ⇒ `settings` 工具写入即热、端壳 UI 腿 = 各端既有刷新语义（生效时点见本节「先例 ∥ 偏离」块）。否决「helper 内读 config」（动公开导出面语义）·「只吞注入不省检索」（零收益）·「加 config-watch 活 config 重载」（新机制——需求边界外）·「判据缓存副本」（翻转不生效） |
 
 ## 8. 不并项与历史沿革
 
@@ -731,6 +772,16 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 **边界（本节不做）**：不做提示词内容权（内容 = 主 agent 内容权 + coder 落笔）；不手改落地档（生成物）；不新增机检门。
 
 ## 变更记录
+
+- 2026-10-14（**design-token-recovery 批 · 收口面 · 父侧直接执行 · 可 revert**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §5 上抛 ∥ #190 复测读数）：`:21` ∥ `:166` ∥ `:214` 三处工具描述计数「50 档」⇒「**51 档**」（现盘实读——`thincoder-core/tool-docs/*.md` 51 档）；§6.11 复测读数（`:327–345`）由同批 #190 轮落。**零新语义**（计数收正）。
+
+- 2026-10-14（**批 design-token-recovery · 收口面读数随动 · eng-designer**——承批档 `docs/batches/2026-10-14-design-token-recovery.md` §2 受影表行 ∥ 台账 #1384）：§6.11 预算表复测刷新（读数对 = 101,813 → **124,207** / **1.20**；`subagent` 14,239 → **15,808**；超限 + `browser` **11,959**〔由未在册——上抛父侧〕）+ §6.11 机制行档数随正（50 ⇒ **51**）+ 复测注记行 + 两档 persona-engineering 行数连带（207 ⇒ **208**）。**零新语义**（读数刷新 ∥ 计数收正）。
+
+- 2026-10-14（**注入开关批 · 设计评审修正轮 1（发现 1–8）· eng-designer**——承批档 `docs/batches/2026-10-14-injection-switches.md` §3 轮次 1 · 台账 #1420）：§6.24 增「先例 ∥ 偏离 ∥ 桌面腿证据」块 + ① 行坐标关系句 + 机检行 U1–U11（用例增补 = 批档 §2 修正轮块）；
+  §6.2 运行期追加面坐标收正（as-of 2026-10-14）；§7 增 **D-PS34 ∥ D-PS35**；§5 批次落点指针表续登本批行。**零机制语义变**（评审发现逐号落位）。
+
+- 2026-10-14（**注入开关批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-14-injection-switches.md` §1 · 台账 #1420）：新增 **§6.24 注入开关（提示词 ∥ 记忆自动注入两枚全局开关）**——
+  （来源 ∥ 键面 `agent.injectDocs` ∥ `agent.injectMemories` ∥ 阻断点三处 ∥ 读键时机与热应用 ∥ 工程模式不变式 ∥ 端面登记（三端设置界面 + `settings` 工具面）∥ 机检 ∥ 边界）；提示词实体面零触（机制落核 `thincoder-core` + 端壳设置面）；逐文件实施落点与用例清单 = 批档 §2。
 
 - 2026-10-08（**批 manifest-agent-tool · 设计评审轮 1 修正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-08-manifest-agent-tool.md` §3 轮次 1 发现 3）：§6.15 来源模型句尾「不造新工具 ∥ 不加机械门」补 **declared-sources 维护面限定 + 例外句**（例外 = `manifest` 工具——需求 `docs/core/requirements/ENGINEERING-MODE-V2-SPEC-MANIFEST.md` ②.7；机制 = `docs/core/design/MANIFEST.md` §2.10）。**零新机制**（口径限定 + 例外登记；提示词实体面零触）。
 

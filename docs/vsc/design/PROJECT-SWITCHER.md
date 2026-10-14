@@ -63,11 +63,15 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 
 **记录读写**（`thincoder-vscode/src/extension/session-io.mjs:256-267`）：键 = workspaceState `thincoder.projectFolder`（fsPath 串）；读写宽容（缺 ∥ 抛 ⇒ 空串 ∥ 零写——沿 `loadModelPrefs` / `saveModelPrefs` 先例）。
 
-**写点**（成功切换后单点 = `rememberProjectFolder`——`panel-project.mjs:47`）：picker 径 ∥ `setProject`-fsPath 径（两路同点 = `applyProjectSwitch` `:71`）∥ 跟随自动切换（`chat-panel.mjs:115`）；拒径（busy ∥ 非成员）= 零写。**记录 = 最后一次成功切换的锚——非活锚**（工作区兜底回落径（`chat-panel.mjs:156-164`）改活锚而不写记录——两义分立）。
+**写点**（记录写出 = `rememberProjectFolder` 单件——`panel-project.mjs:47`）：picker 径 ∥ `setProject`-fsPath 径（两路同点 = `applyProjectSwitch` `:71`）∥ 跟随自动切换（`chat-panel.mjs:115`）；拒径（busy ∥ 非成员）= 零写。
+**同根弹拍径（第四写径——本批 car3 · #1193① 已落）**：picker 早退径（选中 = 锚根）⇒ **视同显式选定**——直写记 ∥ 设 override（不经 `applyProjectSwitch`；落点 = `panel-project.mjs:128-131`）。
+**记录 = 最后一次成功切换的锚——非活锚**（工作区兜底回落径（`chat-panel.mjs:156-164`）改活锚而不写记录——两义分立）。
 
-**恢复点**（`ChatPanel` 构造内 · 订阅块之前——`chat-panel.mjs:92-96`；先于一切 `_cwd()` 消费）：多根 ∧ 无活 override ∧ 记录 ∈ folders ⇒ `setProjectFolder(记录)`（`panel-project.mjs:150`）；失效记录忽略（成员校验拒）⇒ 零动作。
+**恢复点**（`ChatPanel` 构造内 · 订阅块之前——`chat-panel.mjs:92-96`；先于一切 `_cwd()` 消费）：多根 ∧ 无活 override ∧ 记录 ∈ folders ⇒ `setProjectFolder(记录)`（`panel-project.mjs:153`）；失效记录忽略（成员校验拒）⇒ 零动作。
 
-**首开弹拍**（`resolveWebviewView`——`chat-panel.mjs:182-185`）：门四 = 多根 ∧ `!hasProjectOverride()` ∧ 未弹过 ∧ `!turnBusy()`——全过 ⇒ 弹一次（复用 `pickProject`——`panel-project.mjs:164`）；「未弹过」= workspaceState `thincoder.projectPickOffered`（弹即写，结果无关；ESC 后不再主动弹）；频度 = 每工作区恰一次。
+**首开弹拍**（`resolveWebviewView`——`chat-panel.mjs:182-185`）：门四 = 多根 ∧ `!hasProjectOverride()` ∧ 未弹过 ∧ `!turnBusy()`——全过 ⇒ 弹一次（复用 `pickProject`——`panel-project.mjs:167`）；「未弹过」= workspaceState `thincoder.projectPickOffered`（弹即写，结果无关；ESC 后不再主动弹）；频度 = 每工作区恰一次。
+
+**坐标随动（本批 car3 · #1193）**：`panel-project.mjs:128` 早退径实施 +3 行（`:128-131`）⇒ 本节两处面板坐标顺移（恢复点 `:150` ⇒ **`:153`** ∥ 弹拍复用 `:164` ⇒ **`:167`**——已按盘实读收正）。
 
 **未选定标记**（`projectInfo` 载荷增 `chosen` = `hasProjectOverride()`——`panel-messages.mjs:48-50`）：`session-bar.js:158-165`——`chosen` 缺 ∥ false ⇒ 钮文本 `📁 {name} · {t("project.notChosen")}`（title 同携；zh `未选定` ∥ en `not chosen`——`locales/{zh,en}.json:278`）；已选定 ∥ 单根 ⇒ 零变。
 
@@ -151,13 +155,3 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 | U-P7 | 一键动作 = 内置命令 `vscode.openFolder`（无参 ⇒ 原生文件夹选择框；同窗口 ⇒ VS Code 自动重载窗口——**未验**，见 §4.1） | 已定（§4.1） |
 | U-P8 | 提示频度 = 主动提示每空窗**恰一次**；被动提示**每次被挡动作一次**（不重复轰炸 / 不静默吞） | 已定（§4.1） |
 | U-P9 | 守卫态 Send 按钮**保持可见**（点击即提示）——与 C-14「running 期隐藏」分道：守卫态 = 用户可自解态，保留可发现入口 | 已定（§4.1） |
-
-## 变更记录
-
-- 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · eng-coder**——承 `docs/batches/2026-10-10-vsc-consistency.md` §2（`1101-6`）· 台账 #1101）：§2 `:30` 句随正（「不跨窗口持久化」⇒ 跨重启记忆——指向 §3.1）；新增 **§3.1 锚记忆与未选定面**（记录读写 ∥ 写点 ∥ 恢复点 ∥ 首开弹拍 ∥ 未选定标记 + 边界句「记录 = 最后一次成功切换的锚——非活锚」）。**零新语义**（= 已落行为的档面收正）。
-
-- 2026-09-22（**structure-debt 批 · 档面车道（#163 尾账）· eng-designer**——承 `docs/batches/2026-09-22-structure-debt.md` §2.4）：§3 切换流程表 `case "project"` 消息路由行改指新档（`webview/chat.js` → **`webview/chat-messages.js`**，坐标 `:202` → **`:134`**——#163 拆分后消息分发循环迁出）。**零语义**：机制 / 守卫面 / 提示面零变。
-
-- 2026-09-21（**无工作区守卫批 · 评审轮 1 修正轮 · eng-designer**——承批次档 §3 轮次 1 发现 2 / 6 / 8 / 11）：§2 守卫句口径收窄（「任何工作入口」→「守卫面八处」）；§4 删修订式括注；§4.1 派生面补 `atComplete` 链判定（只读 / 零落盘 / 不入守卫面）+ 恢复面补**第三支路**（非空 → 非空——override 失效校验逐字保留）+ `vscode.openFolder` 行为句标**未验**（提示面 / 恢复面 / U-P7 同标）+ 提示面补键表登记指向（§6.3）。**守卫八处 / 消息面零变**。
-- 2026-09-21（**无工作区守卫批**）：§2 补守卫指针；§4「无工作区：…行为不变」收正；新增 §4.1（判据单源 / 守卫面八处 / 提示面逐字 / 恢复面 / 零写入判据 / 边界 / 被否形）；§6 补 U-P6–U-P9。
-- 2026-09-15（**B 式迁移轮 · VSC 第 1 批**）：建档——`thincoder-vscode/docs/design/PROJECT-SWITCHER.md` 内容重建入基准层（旧档一字未改、原地作参照历史）；状态行 / 测试节 / 变更流水入 §5 不并项；坐标改写为仓根相对现状路径（补 `panel-project.mjs` 五函数与 `package.json` 锚行）。

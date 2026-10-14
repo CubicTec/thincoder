@@ -51,7 +51,7 @@
 | AC-M1-6 | 情境行注入（#28）：`phase` 逐回合注入模型上下文（幂等 / 单活体 / 压缩自愈 / 门控；**2026-09-18 #34 批补：值变检测 = mtime 门控重读（③b）——AC-N7 / N7b / N7c / N7d 在册**） | 判据逐条 = 设计 `docs/core/design/MANIFEST.md` §3.1 AC-N1–AC-N6、AC-N3b、**AC-N7–AC-N7d** |
 | AC-M1-7 | `docRoot` 值形态：单串、数组、`null` 都要通过；`null` 解析为空且不被默认顶回；空串、空数组、混合数组拒绝。 | 设计 `docs/core/design/MANIFEST.md` §3.1 AC-7–AC-13、AC-39 |
 | AC-M1-8 | 二道防线（M5 spawn 门）：工程模式子代理 `files` 声明含 `PROJECT-MANIFEST.json`（任意层 / 任意大小写）→ 拒（专用文案） | 声明该路径 → 期望拒 |
-| AC-M1-9 | 项目声明三族键（`codePaths` / `index.*Extensions` / `advisor.*`）：形态非法 ⇒ 档非法（fail-closed）+ 消费面逐族回默认 + 可见；退役档（`.thincoder/conventions.json`）在场 ⇒ 零生效 + 一行告警（零并存） | 判据逐条 = 设计 `docs/core/design/MANIFEST.md` §3.1 AC-31–AC-34 ∕ §3.2 T56–T58；来源 = 批 `docs/batches/2026-09-27-conventions-retire.md` §2 |
+| AC-M1-9 | 项目声明三族键（`codePaths` / `index.*Extensions` / `advisor.*`）：形态非法 ⇒ 档非法（fail-closed）+ 消费面逐族回默认 + 可见；退役档（`.thincoder/conventions.json`）在场 ⇒ 零生效 + 一行告警（零并存） | 判据逐条 = 设计 `docs/core/design/MANIFEST.md` §3.1 AC-31–AC-34 ∕ §3.2 T56–T58；来源 = 2026-09-27 用户裁定（`conventions.json` 退役并入） |
 | AC-M1-10 | agent 工具面·读写往返（全键）：对样例项目读（含校验态）→ 各键族逐键写 → 回读逐键相等；缺档 ⇒ 建档 → 回读 `ok` | 工具调用往返 → 逐键 diff |
 | AC-M1-11 | agent 工具面·fail-closed：非法值写 ⇒ 拒（报明）+ 盘零变；缺档读 ⇒ 报明（不砖死） | 构造非法/缺档 → 期望拒/报明 ∧ 文件逐字节未变 |
 | AC-M1-12 | agent 工具面·权限面：子代理工具面不可达（未装配 + 写门拒）；主 agent 写 ⇒ 放行 | 子代理实调 → 拒；主 agent 实调 → 过 |
@@ -84,13 +84,3 @@
 ## 需求依据
 
 v2 §5.1（manifest）· §6（文档体系四层 + 目录约定 + 声明面覆盖）· §9（情境旋钮）· 架构设计 §2.3 E1 / E2 / E5。
-
-## 变更记录
-
-- 2026-09-21（**manifest 解析模型收正** · 主 agent——用户 11:00–11:19 六连裁定 ✗ 承台账 #188）：②.2 改写（按用点解析 + 发现规则带优先级）· ②.3 改写（缺档按用点处置 ✗ 不砖死 ✗ 重动作经确认）· 新增 §⑥（作用三身份 / 它不是什么 / 解析模型 / 发现 / 建档 / 不砖死 / 两端同形）。
-- 2026-09-21（**git 非前提收正** · 主 agent——用户 11:25 Q1「用户没有使用 git 会怎样？」）：发现规则补「**锚自身带档 ⇒ 锚**」（manifest = 项目标记）✗ 建档面 = **建 manifest（轻动作 ✗ 任意目录可成项目）**✗ `git init` 降为**可选增强**（经确认 ✗ 非入场券）✗ 三身份句改「每个项目一份」。
-- 2026-09-21（**嵌套归属形** · 主 agent——用户 11:29「cwd 根与其下目录都出现 manifest 时以哪个为准？」）：新增**归属形**——最近祖先优先（子优于根 ✗ 嵌套合法 ✗ 各自其主 ✗ 不跨兄弟）✗ ②.2 同步。
-- 2026-09-27（**声明三族并入 schema 收正** · 主 agent——规格档笔权）：②.1 schema 计数「五键 ⇒ **八键**」+ 末三键（`codePaths` / `index` / `advisor`——项目声明三族，自 `.thincoder/conventions.json` 退役并入）；⑥ 「现五键 ⇒ 现八键」。来源 = 用户 2026-09-27 19:39 裁定 + 批 `docs/batches/2026-09-27-conventions-retire.md`。
-- 2026-09-27（**声明三族 AC 补锚** · 主 agent——规格档笔权）：④ 增 **AC-M1-9**（三族键形态 fail-closed + 退役档零并存）——回指设计 AC-31–AC-34 / T56–T58；来源 = 批设计评审 #103 发现 4（协调项）。
-- 2026-10-05（引擎面缺口批 · 需求侧同步）：②.6 值域增加 `null`（本面无）；AC-M1-7 补 `null` 一格。来源 = 批 `docs/batches/2026-10-05-engine-face-gaps.md`；台账 #944。
-- 2026-10-08（**agent 工具面增补** · 主 agent——用户 15:47「project-manifest在内核中有管理代码，但是没有开放工具给agent」+ 15:52「我实际是需要project-manifest的各节点都能被agent读写」✗ 承台账 #1098）：② 增第 7 条（读/建/写全键族 + 目标面 + 权限面）；③ 增边界三句；④ 增 AC-M1-10–12；⑤ 增工具面上下游。

@@ -155,7 +155,3 @@
 ## 6. 上抛/余项
 
 - 本面无独立上抛/余项。
-
-## 变更记录
-
-- 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：本档自 `webui/WEBUI.md` §2.4 及三表归位行逐字迁入（零语义）；文内 § 引用改指（§2.4①–④→本档 §2.1①–④ ∥ §2.5§2.6→`webui/STYLE.md` §2.1/§2.2 ∥ §2.7→`webui/SYSTEM.md` §2.2 ∥ §2.2→`webui/I18N.md` §2.1 等）；AC 行内档目链去重 ⇒ 单源句（`webui/WEBUI.md` §1）；原址保位 stub 在 `webui/WEBUI.md`。**产品码零触。**

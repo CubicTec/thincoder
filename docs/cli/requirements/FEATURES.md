@@ -204,17 +204,3 @@
 | 各能力的机制设计 | 工具契约 / 注册 / 调度细节 | 各板块设计档（`docs/core/design/TOOLS.md` 等）——本档只清点（D2） |
 | 工具描述文本 | 模型可见描述 | **产品代码**——落点 `thincoder-core/tool-docs/**` |
 | VSC 侧同名档 | `thincoder-vscode/docs/requirements/FEATURES.md` | VSC 轮（`docs/vsc/`）——本档只收 CLI 面 |
-
-## 变更记录
-
-- 2026-09-15（**迁移批 · 第 6 批收口同步 · eng-designer**）：§3 N8 的崩溃取证指针按**同批迁移结果**改指（`thincoder-cli/docs/design/CRASH-REPORTS.md`「未迁」→ `docs/cli/design/CRASH-REPORTS.md`——该档已由第 6 批迁入基准层）。纯指针收正、零语义。
-- 2026-09-15（**B 式迁移轮 · 第 2 批**）：建档——`thincoder-cli/docs/requirements/FEATURES.md` 内容重建入基准层（旧档一字未改、原地作参照历史）。
-  ① 落点 = `docs/cli/requirements/`（P2：含 CLI 专有的终端界面 / slash 命令面）；② 清点面按**现行登记面**实核收正（补列现行能力、`escalate` 并入 `subagent` 动作、slash 命令表按实核重排、工具/命令坐标改现状路径）；
-  ③ 新增 §3 非功能性需求（安全与护栏——旧档「安全与护栏」节升为 NFR 面）、§4 不并项与历史沿革、§5 体量。
-- 2026-09-16（**批 5 · DOC-CONTRACT-RECONCILE** · eng-designer）：新增 **§2.13 对外文档契约面（README ↔ 实装）**（用户故事 US-DOC1–4 + 范围边界 + 三条单向判定规则 + 落点坐标）；§3 增 **N9** 行（口径 = 对外文本面无机检门、守护 = 同批改动 + 人巡）；§5 体量收正。
-  对账执行明细 = `docs/core/design/DOC-CODE-RECONCILE.md` §5.1；层 0 判据句 = `docs/core/requirements/_archive/ENGINEERING-MODE-MECHANISM.md` §1.20。
-
-- 2026-10-05（**引擎工具面缺口批 · 需求侧同步 · 主 agent**）：§2.1 `delete` 行补「或空目录（非空拒绝，不递归）」。来源 = 批 `docs/batches/2026-10-05-engine-tools-gaps.md` §2（delete 空目录臂设计）；台账 #943。
-- 2026-10-07（**批 ledger-tool · 需求侧同步 · 主 agent 笔**——承批档上抛②）：§2.7 `subagent` 行动作清单补 `design-slots`（槽位清点只读——与 `consume-design` 并列）。批档 = `docs/batches/2026-10-07-ledger-tool.md`（台账 #998 / #927）。
-- 2026-10-08（**盘根门 ∥ 索引排除批 · 需求侧立案 · 主 agent**）：§3 增 **N10 盘根启动门**。批档 = `docs/batches/2026-10-08-diskroot-gate-index-excludes.md`（台账 #1080）；配对需求 = `docs/core/requirements/MEMORY.md` §4.11（F-S9）。
-- 2026-10-10（**登录面补全批 · 需求侧同步 · 主 agent 笔**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §5 上抛①，台账 #1212）：§2.9 命令清点 **27 ⇒ 28**（补 `/team`——登记面 `thincoder-cli/src/tui/slash-commands.mjs:54`，组 = System）；System 行同拍。零新语义（对盘收正）。

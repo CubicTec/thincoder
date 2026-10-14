@@ -86,9 +86,3 @@ hunk 按**上下文 / 删除行定位，非行号**——但上下文必须与�
 | 描述面正文（参数描述全文） | 模型可见文本 | **提示词面 = 产品代码**——落点 `thincoder-core/tool-docs/apply_patch.md` |
 | delete 工具语义 | 删除面契约 | 非编辑工具——归 `docs/core/design/TOOLS.md` §6.7 逐工具契约 |
 | VSC 档（`thincoder-vscode/docs/design/APPLY-PATCH.md`）的批次材料 / 变更记录 | 一次性材料 + 历史流水 | VSC 差异面已并 §6.1（VSC 端差异块）；批次档承载 |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 1 批**）：建档——`thincoder-cli/docs/design/APPLY-PATCH.md` 内容重建入基准层（旧档一字未改、原地作参照历史）；坐标改写为现状路径（`thincoder-core/tools/patch.mjs` · VSC `more-file.mjs`）；批次材料 / 状态行 / 变更流水不并（§8）。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：§6.1 增 **VSC 端差异块**（同机制 / EOL 同口径 / 无编辑器路径分支）；§8.2 登记 VSC 源档批次材料。
-- 2026-09-15（**S2 W14 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：双端行 + §6.1「VSC 对位实现」行 + VSC 端差异块补迁核注（VSC 自持档已删——现体 = 核 `thincoder-core/tools/patch.mjs`）；机制条文零改。

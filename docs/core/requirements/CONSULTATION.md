@@ -79,10 +79,3 @@ VSC 侧对应面住 `thincoder-core/advisor.mjs` + `src/advisor/*`（拆 `provid
 | 「状态：已实现」行 | 状态标记 | 时点状态——归批次档 / 台账 |
 | 「本档为需求权威；设计+测试见来源档」指句 | 指向旧设计档的关系注 | 设计面关系由本档首部互指行承载（`docs/core/design/CONSULTATION.md`） |
 | VSC 仓档（`requirements/CONSULTATION.md`）的「变更记录」与对位档头 | 一次性材料 + 历史流水 | VSC 独有条目 / 端差面已并 §4.4（2026-09-15 批 8）；批次档承载 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/requirements/CORE-UNIFICATION.md` 拆分（来源：§2 F11 / F6 / F12 回指）+ 设计档 `CONSULTATION.md`（§2.1–§2.4 · §3.1 A24 派生）；**无新增需求**。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：新增 §4 **需求条目**（一句话 / 行为 / 范围边界——自 `thincoder-cli/docs/requirements/CONSULTATION.md` 逐节比对后并入需求正文；**编号与文本承旧档**）+ §5 **不并项与历史沿革**；**本档新增需求 0**（纯回填）；首部加需求条目面指针一行。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：新增 §4.4 **VSC 端条目**（F-S7 面板可见性 / N-S1 预算 + 端差登记——自 `thincoder-vscode/docs/requirements/CONSULTATION.md` 并入；语义同源不重并）；§5 登记 VSC 档批次材料；**本档新增需求 0**（纯回填）。
-- 2026-09-25（**end-diff-registry 批 · 需求层二态化轮 · eng-designer**——承 `docs/batches/2026-09-25-end-diff-registry.md` §2 上抛①〔父侧明示委托本轮落〕 · 台账 #339①）：§4.4 端差（呈现面 + 配置入口）补**已裁保留**状态词 + 类判据句；裁定行落地。**零新语义**。

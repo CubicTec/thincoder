@@ -3,7 +3,6 @@
 **面**：web 快筛工具（`thincoder-desktop/tools/web-quickcheck/`）——本档是该面的单源设计。
 **权威面**：真 Electron（走查 + E2E）——**web 快筛不作验收判据** ∥ 不替代走查 ∥ 不入集成测试树 ∥ 不作交付依据（裁定 = §1 · 纪律句 = §3.4 · 边界 = §7）。
 **上位单源**：`docs/core/design/TESTING.md`（测试纪律 / 承载选型 / 单入口门禁——本档**引用不重述**，D2）；关系档 = `docs/desktop/design/E2E-TESTING.md`（Electron E2E 基建——本档只采其判据形与产物根，零改其面）。
-**本批**：`docs/batches/2026-09-30-web-quickcheck.md`（§1 条目 · §2 批条目）；台账 = #434。
 
 ## 1. 方案与理由
 
@@ -123,7 +122,6 @@ stub 表（回执逐形 = 实读锚）：
 | `thincoder-desktop/tools/web-quickcheck/host-shim.mjs`（已落） | 0 | **44**（实读 2026-10-10——2026-10-02 记 42；父侧扩表 +2：`theme:state` ∥ `team:status`） | host shim（§3.2） |
 | `thincoder-desktop/tools/web-quickcheck/run.mjs`（已落） | 0 | **191**（实读 2026-10-02） | 快筛冒烟（§3.3） |
 | `thincoder-desktop/package.json` | **23**（实读 2026-10-01——内容行数口径） | 24（+1 行——`quickcheck` script） | `devDependencies` 零改（`playwright-core` 在册复用；`dependencies` 零改） |
-| `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行——单元测试档） | 0 | **137**（实读 2026-10-02） | 服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚用例；随批留存 · 不进集成测试树 |
 | `docs/desktop/design/WEB-QUICKCHECK.md` | 0 | 本档 | 设计单源 |
 | `docs/desktop/design/PROJECT.md` | 1891 | §4.1 三行（已落——实读回填）+ 值列随动（`package.json` 23 ⇒ 24）· §4.2 本批块 · §5 script 行 · 变更记录 | 已落（设计轮） |
 | `docs/desktop/design/SHELL.md` | 238 | §1 树一行 + `package.json` 行随动 + 变更记录 | 已落（设计轮） |
@@ -142,7 +140,6 @@ stub 表（回执逐形 = 实读锚）：
 | ③ 一条真浏览器冒烟 | §3.3 + `run.mjs` | `npm run quickcheck` exit 0（本机 `msedge`）+ 步 9 截图存在 + PNG magic；错误径（WQ-4）= 不存在通道名 ⇒ 非零退出 + stderr 含该通道名 |
 | ④ 权威面关系判据 | §1 裁定 + §3.4 纪律句 | 本批 diff 零触 `test/`（运行期产物根 `test/artifacts/` 除外——冒烟截图落点，已 gitignore） ∥ `src/` ∥ `renderer/`（触碰面 = `tools/` ∥ `package.json` ∥ `docs/`）；集成测试树 `npm test` 面零改 |
 
-**三链同源**：台账 #434（承载 = tech_todo；本批无需求档条目——如需需求档笔 = §8 上抛 U3）↔ 批档 `docs/batches/2026-09-30-web-quickcheck.md` §2 条目 ↔ 本表。
 
 ## 6. 用例表
 
@@ -187,23 +184,15 @@ stub 表（回执逐形 = 实读锚）：
 
 ### 9.2 现有文件改动 · 批块（本域 · 迁自 `PROJECT.md` §4.2——逐字）
 
-**本批（web 快筛 · 设计轮 · 2026-10-01 · 台账 #434 · 批 `docs/batches/2026-09-30-web-quickcheck.md`）行「现行 ⇒ 预期」**（实读 2026-10-01——内容行数口径；机制 ∕ 判据单源 = 批档 §2 ∥ `docs/desktop/design/WEB-QUICKCHECK.md`；**设计轮——产品码零触**）：
+**本批（web 快筛 · 设计轮 · 2026-10-01 · 台账 #434）行「现行 ⇒ 预期」**（实读 2026-10-01——内容行数口径；机制 ∕ 判据单源 = `docs/desktop/design/WEB-QUICKCHECK.md`；**设计轮——产品码零触**）：
 
 | # | 档 | 现行 ⇒ 预期 | 面 |
 |---|---|---|---|
 | 1 | `thincoder-desktop/package.json` | **23 ⇒ 24**（scripts +`quickcheck` 一条（`node tools/web-quickcheck/run.mjs`）；devDeps 零改——`playwright-core` 在册复用） | 脚本面 |
 | 2 | `thincoder-desktop/tools/web-quickcheck/`（已落 · 新目录） | 0 ⇒ **379**（= 144 + 44 + 191——实读 2026-10-10）（`serve.mjs` ∥ `host-shim.mjs` ∥ `run.mjs`——逐档行 = `docs/desktop/design/PROJECT.md` §4.1） | 工具面 |
-| 3 | 单元测试档 | `docs/batches/2026-09-30-web-quickcheck.test.mjs`（已建成 · 137 行 · 实读 2026-10-02——服务路由 ∥ 门 ∥ shim 契约 ∥ 注入锚；随批留存 · 不进集成测试树） | 全批 |
 | 4 | 设计档 | `docs/desktop/design/WEB-QUICKCHECK.md`（新档——本批主交付）· `docs/desktop/design/PROJECT.md` §4.1 三行 + 值列随动 ∥ §4.2 本块 ∥ §5 script 行 ∥ 变更记录 · `docs/desktop/design/SHELL.md` §1 树一行 + 变更记录 · `docs/README.md`（地图 6 ⇒ 7） | 全批 |
 
 零触面：产品码全域（`thincoder-desktop/src/**` ∥ `thincoder-desktop/renderer/**`——宿主注入形已是缝，零加缝）∥ 集成测试树（`thincoder-desktop/test/**`——单入口 ∥ 清单零登记）
 ∥ `thincoder-desktop/src/main/protocol.mjs`（供给语义权威——镜像不改）∥ `thincoder-desktop/.gitignore`（产物根沿用）∥ E2E-TESTING.md（#433 面——状态随动 = 设计档 §8 上抛 U1）
 ∥ `thincoder-core` ∥ `thincoder-render-core` ∥ 三端测试。
 
-## 变更记录
-
-- 2026-10-01 建档：web 快筛设计（静态服务 + host shim + 真浏览器冒烟 · 九段；权威面 = Electron 裁定；KD-W1–W7；与 #433 复用 ∥ 边界在册）。
-- 2026-10-01（修复轮 · 评审轮次 1 · 发现 3/4/5）：WQ-4 机检形定形（不存在通道名 ⇒ 非零退出 + stderr 含通道名——§5③ ∥ §6 同拍）；§3.2「7 通道来源」改逐通道对应 + 装配链注（`mount-settings` → `mount-info`）；§5④ ∥ §7-4 零触句补「运行期产物根 `test/artifacts/` 除外」；`app.mjs` 调用点坐标实读收正 `:218 ⇒ :219`。
-- 2026-10-01（**复核扫面收正批（M7 派生）· 文档簇落地轮 · eng-designer**——承 `docs/batches/2026-10-01-audit-remediation.md` §2 · 台账 #769）：stub 表两行退场（`ledger:read` ∥ `batch:status`——复读面删）+ 通道计数 **7 ⇒ 5** 四处同拍（KD-W4 ∥ §3.2 表引 ∥ 来源注 ∥ §6 验收面）+ 装配链注届盘实读收正（`thincoder-desktop/renderer/app.mjs:213` ∥ `mount-settings.mjs:158`）。明细 = 批档 §2。
-- 2026-10-02（**文档体系重组批（DOC-MIGRATION）· 2c 前置步 · 文件账分片轮（切片 3 · 余量收尾）· eng-designer**——承批档 `docs/batches/2026-10-02-doc-structure-reorg.md` §2 · 台账 #813）：**§9 新立**（文件账）——§9.1 本域族行 **3** 行（`serve.mjs` ∥ `host-shim.mjs` ∥ `run.mjs`——自 `docs/desktop/design/PROJECT.md` §4.1 逐字迁入）＋ §9.2 批块 **1 块**（web 快筛——迁自 §4.2）。**零新语义**（迁移 ∥ 指针）。
-- 2026-10-10（**login-entry-completion 批 · 设计评审轮 2 修正（fix 轮 · 范围外残项）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 2 · 台账 #1229–#1232）：§3.2 两处 `team:status` 消费档随本批改制收正（**`mount-settings-team.mjs` ⇒ `mount-team.mjs`**——段/面板读面；`mount-settings-team.mjs` 净删）。**零新语义**（残值收正）。明细 = 批档 §2 fix 轮补记。

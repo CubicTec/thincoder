@@ -61,11 +61,3 @@ verify 是**语言无关、框架无关、项目无关**的通用编程 agent �
 | 旧档面 | 内容 | 何故不并（去向 / 触发） |
 |---|---|---|
 | CLI 侧同名需求档（`thincoder-cli/docs/requirements/VERIFY-REDESIGN.md`） | CLI 产品需求正文 | **已并入（2026-09-15 CLI 尾部真批）**——零实质缺口，(d) 类入 §5.1；落点经用户裁定（并入本档，不并入 TOOLS.md） |
-
-## 变更记录
-
-- 2026-09-15（**CLI 尾部真批 · 并入既有 · eng-designer**）：`thincoder-cli/docs/requirements/VERIFY-REDESIGN.md` 逐节对账——**零实质缺口**
-  （总体段逐字已在 §1 · 四条用户故事 ⇒ F1–F3 · 非功能三条 ⇒ N1–N3），零新增正文；**落点裁定落地**（并入本档——原「并入 TOOLS.md」登记作废）；
-  (d) 类（状态行 / 来源注）入 §5.1。旧档原地一字不改。
-- 2026-09-15（**B 式迁移轮 · VSC 批 5**）：建档——`thincoder-vscode/docs/requirements/VERIFY-REDESIGN.md` 内容重建入基准层
-  （旧档一字未改、原地作参照历史）；实现坐标改仓根相对路径并实核（`verify.mjs` 311 行）；旧树设计指针入 §5.1。

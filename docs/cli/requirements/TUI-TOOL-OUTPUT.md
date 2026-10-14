@@ -52,9 +52,3 @@ TUI 的工具输出统一为**行间区块**：每次工具执行在对话区产
 | 区块渲染契约 / 生命周期 / 共享守卫 / 输出上限常量 | 机制实现面 | `docs/cli/design/TUI-TOOL-OUTPUT.md`（本档只留需求陈述——D2） |
 | 落盘阈值权威 | 超长结果落盘常量 | `docs/core/design/TOOL-OUTPUT-LIMITS.md`（CLI 与核共享面） |
 | VSC 侧对位 | 工具卡（webview 卡片） | VSC 轮（`docs/vsc/**`）——**非同机制**（无镜像档） |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 6 批**）：建档——`thincoder-cli/docs/requirements/TUI-TOOL-OUTPUT.md` 内容重建入基准层（旧档一字未改、原地作参照历史）。
-  ① 落点 = `docs/cli/requirements/`（P2）；② FR1–FR4 / NFR1–NFR2 原样承接（需求语义零改）；
-  ③ 补 §4 范围边界（面板区废除）、§5 不并项与历史沿革、§6 体量；④ 实现坐标挂设计档指针（D2）。

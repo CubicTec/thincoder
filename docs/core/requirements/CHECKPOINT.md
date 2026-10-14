@@ -90,11 +90,3 @@
 | 「来源：2026-09-10 自 `../design/CHECKPOINT.md` 抽取」注 | 拆分来源指针 | 时点材料——需求已归位到本档 |
 | 「状态：已实现（两端存储统一）」行 | 状态标记 | 时点状态——归批次档 / 台账 |
 | VSC 仓档（`requirements/CHECKPOINT.md`）的「变更记录」与对位档头 | 一次性材料 + 历史流水 | VSC 端差/坐标面已并 §4.4（2026-09-15 批 8）；批次档承载 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/requirements/CORE-UNIFICATION.md` 拆分（来源：§2 F11 / F6 / F3 回指）+ 设计档 `CHECKPOINT.md`（§2.1 #48 / #49 · §2.2 #167 派生）；**无新增需求**。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：新增 §4 **需求条目**（四层闭环 / 范围与接受风险 / NF1–NF7——自 `thincoder-cli/docs/requirements/CHECKPOINT.md` 逐节比对后并入需求正文；**编号与文本承旧档**）+ §5 **不并项与历史沿革**；**本档新增需求 0**（纯回填）；首部加需求条目面指针一行。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：新增 §4.4 **VSC 端条目**（共享存储 / 非 git cwd 变体已载注 + 坐标 + 测试缺口——自 `thincoder-vscode/docs/requirements/CHECKPOINT.md` 并入；语义同源不重并）；§5 登记 VSC 档批次材料；**本档新增需求 0**（纯回填）。
-- 2026-09-15（**S2 W5 接线 · VSC 端** · eng-coder 实施轮）：§1 基线句标记「迁移前基线」（两端已迁核——CLI U5 / VSC W5）+ §4.4 VSC 端坐标收正——`src/tools/checkpoint.mjs` / `git-checkpoint.mjs` / `git-ext.mjs` 随 W5 删档（迁移期引文——旧档已删），改引核子路径；**本档新增需求 0**（纯坐标收正）。
-- 2026-09-25（**end-diff-registry 批 · 需求层二态化轮 · eng-designer**——承 `docs/batches/2026-09-25-end-diff-registry.md` §2 上抛①〔父侧明示委托本轮落〕 · 台账 #339①）：§4.4 「VSC 端差 = ①②」改述为**端共享面（非端差）**（共享存储 / 非 git 变体 = 同源事实）；裁定行落地。**零新语义**。

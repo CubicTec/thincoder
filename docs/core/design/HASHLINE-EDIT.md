@@ -89,9 +89,3 @@ D1–D3（edit 自获 `line:` 与模糊匹配）后，hashline_edit 的差异面
 | 描述面正文（参数说明 / 反模式） | 模型可见文本 | **提示词面 = 产品代码**——落点 `thincoder-core/tool-docs/hashline_edit.md` |
 | 旧档「阶段 2」所引 `EDIT-TOOLS-REVIEW.md` | 批次评估档 | 一次性批次材料——已归档 CLI 树 `_archive/`（参照历史） |
 | VSC 档（`thincoder-vscode/docs/design/HASHLINE-EDIT.md`）的批次材料 / 变更记录 | 一次性材料 + 历史流水 | VSC 差异面已并 §6.1（VSC 端差异块）；批次档承载 |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 1 批**）：建档——`thincoder-cli/docs/design/HASHLINE-EDIT.md` 内容重建入基准层（旧档一字未改、原地作参照历史）；坐标改写为现状路径；批次材料 / 状态行 / 变更流水不并（§8）。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：§6.1 增 **VSC 端差异块**（BOM 处理 / 编辑器路径分支 / 500 硬帽拆分史）；§8.2 登记 VSC 源档批次材料。
-- 2026-09-15（**S2 W14 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：双端行 + §6.1「VSC 对位实现」行补迁核注（VSC 自持档已删——现体 = 核 `thincoder-core/tools/file.mjs`；编辑器路径经写路径缝注入）；机制条文零改。

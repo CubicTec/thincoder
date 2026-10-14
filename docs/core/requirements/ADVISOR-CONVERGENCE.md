@@ -1,7 +1,7 @@
 # 评审收敛（ADVISOR-CONVERGENCE）· 需求
 
 > 板块 = **评审收敛**——advisor「审查 → 修复 → 复审」循环的收敛保证（轮次衰减 / 会话隔离 / 证据校验 / 边缘守卫 / 失败路径结论化）。
-> 本档 = 该机制的**需求层权威**（F1 · F4–F17 · F27–F35 判定句 + N1–N11 · N19–N22；编号缺位（F2 / F3）= 已撤项，见变更记录）。
+> 本档 = 该机制的**需求层权威**（F1 · F4–F17 · F27–F35 判定句 + N1–N11 · N19–N22；编号缺位（F2 / F3）= 已撤项）。
 > 设计侧 = `docs/core/design/ADVISOR-CONVERGENCE.md`（轮次衰减 / 会话隔离 / citations / 收敛状态 / 失败路径结论）+ `docs/core/design/ADVISOR-GUARDS.md`（边缘守卫族：判定族 / 凭证链 / 引文候选链 / 预算 / 冻结窗口）。
 > 相邻需求档 = `docs/core/requirements/CONSULTATION.md`（会诊 · 飞刀——互补）· `docs/core/requirements/ENGINEERING-MODE-V2.md`（工程模式整体需求——NFR2 收敛性）。
 > 建档：2026-09-15（**B 式迁移轮 · CLI 批 5**——`thincoder-cli/docs/requirements/ADVISOR-CONVERGENCE.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。

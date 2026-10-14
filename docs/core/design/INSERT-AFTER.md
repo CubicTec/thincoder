@@ -93,9 +93,3 @@ VSC 端 `thincoder-vscode/src/tools/more-file.mjs:12`（`insert_after`；W14 已
 |---|---|---|
 | 描述面正文 | 模型可见文本 | **提示词面 = 产品代码**——落点 `thincoder-core/tool-docs/insert_after.md` |
 | VSC 侧 dirty 相关叙述 | 端差细节 | **已并入（2026-09-15 批 8）**——§6.3 + §4（结构性端差登记）；VSC 源档留参照历史 |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 1 批**）：建档——`thincoder-cli/docs/design/INSERT-AFTER.md` 内容重建入基准层（旧档一字未改、原地作参照历史）；dirty 记账面坐标按现状收正（`write-path.mjs`）；批次材料 / 状态行 / 变更流水不并（§8）。
-- 2026-09-15（**B 式迁移轮 · VSC 第 8 批 · 并入 · eng-designer**）：§6 增 **6.3 VSC 端差异**（无 dirty 护栏 / 编辑器分支 / 内嵌描述）；§8.2「触发 = VSC 轮」行销项。
-- 2026-09-15（**S2 W14 落地 · eng-coder**——承 `docs/batches/2026-09-15-vsc-core-wiring.md` §2 W14）：双端行 + §6.1「VSC 对位实现」行 + §6.3 补迁核注（VSC 自持档已删——现体 = 核 `thincoder-core/tools/file.mjs`；dirty 护栏随核单源生效）；机制条文零改。

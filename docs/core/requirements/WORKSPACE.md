@@ -55,8 +55,3 @@ VSC 侧同名面住 `src/extension/**`。
 |---|---|---|
 | `thincoder-cli/docs/requirements/MULTI-INSTANCE-COLLAB.md`（同伴 / 域面）· `thincoder-cli/docs/design/LEDGER-SELF-CONTAINED.md`（台账面） | 工作区约定面需求级约束（散布） | 非本板同名档——本批参照面不含 ⇒ **越段登记**（见 §4 末） |
 | —（本档无同名旧档） | 无变更记录 / 无移出清单 | 无需登记 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/requirements/CORE-UNIFICATION.md` 拆分（来源：§2 F11 / F6 回指）+ 设计档 `WORKSPACE.md`（§2.1 #71–#73 · §2.2 #170–#174 派生）；**无新增需求**。
-- 2026-09-14（**B 轮并入 · 第 3 批**）：§4 需求条目 = **同名旧档缺**（`thincoder-cli/docs/{design,requirements}/WORKSPACE.md` 均不存在）⇒ 无并入内容（不虚构）；§5 登记工作区约定面需求级约束散布于邻面档（越段发现）；首部加需求条目面指针一行。

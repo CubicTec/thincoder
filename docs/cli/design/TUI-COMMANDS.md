@@ -212,7 +212,6 @@
 | 旧档 §12.7 / §13.5 受影响文件表 · §12.8 / §13.6 用例表 · §12.9 / §13.7 验收标准 · §12.10 / §13.8 边界 | 批次执行 / 验收 / 边界材料 | 一次性——用例宿主 = `CLI tui-selection-surfaces 用例档` 等；边界语义已入 §3 |
 | 旧档 §13.1 问题陈述（根因：漏 `await` → `entries.filter` 抛错；39 处调用点清点） | 批次勘察材料 | 结论已落为 §5.2 契约；勘察行号为时点证据 |
 | 旧档 §9 交互层与命令层的部分叙述（`/submodel` `/shell` 的决策理由段落） | 与现行正文重复的决策叙述 | 结论已入 §5.3；逐条理由不再复述 |
-| 旧档变更记录中本面相关行 | 逐批流水 | 历史叙述——本档自有变更记录 |
 
 ### 6.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
 
@@ -224,43 +223,3 @@
 | MCP 字段表单机制 | 表单循环 / token / 探活 | `docs/core/design/MCP.md` §5 / §8 |
 | 配置落盘机制 | 原子写 / mtime 门控 / 并发冲突 | `docs/core/design/CONFIG.md`（本档只留入口与纪律） |
 | VSC 侧对位面 | webview 无 picker / wizard 面 | 登记「无镜像面」；VSC 轮 |
-
-## 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（issue 修复批·五 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round5.md` §2（唯一承载面——一次性批次材料）。
-**本批（CLI ∥ VSC 会话选定写回 · 2026-10-04）落点表** = `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §2（唯一承载面——一次性批次材料）。
-**本批（流尾台账行组退役 · 2026-10-04）落点表** = `docs/batches/2026-10-04-stream-ledger-lines-retire.md` §2（唯一承载面——一次性批次材料）。
-**本批（login-entry-completion · 2026-10-10）落点表** = `docs/batches/2026-10-10-login-entry-completion.md` §2（唯一承载面——一次性批次材料）。
-
-- 2026-10-14（**ssh-session 批 · 设计收口轮 · eng-designer**——承批档 `docs/batches/2026-10-14-ssh-session.md` §5 CLI 腿）：§5.5 问句载体行补**第四支 = SSH 凭据窗**（面体 `secret-prompt.mjs` ∥ 键面序 2c——TUI.md §4 同拍）。**零产品码**。
-- 2026-10-10（**login-entry-completion 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §1 · 台账 #1229 ∥ #1230；用户 14:33–14:49 裁定链）：新增 **§3.1 首启向导两路**（F19——route 屏三行 ∥ 同屏换取 ∥ 已填保真 ∥ 以后再说 ∥ 可机判）∥ **§5.5 `/team` 命令族**（三子命令 ∥ 活校验 ∥ 掩码 ∥ 边界）∥ §1 模块地图两行（`cmd-team.mjs` 入册 ∥ `ask-steps.mjs` 新行 ∥ wizard 行随正）。语义单源 = `docs/core/design/TEAM.md` §2 ∥ §2.6。
-- 2026-10-10（**login-entry-completion 批 · 设计评审轮 1 修正（fix 轮 · 发现 4）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 1 · 台账 #1229–#1230）：§3.1 ∥ §5.5 补同名冲突 `notice` 就地提示落点（结果行位——逐字同句；一次性事件）。**零新语义**（评审发现的直接导出项）。
-- 2026-10-10（**login-entry-completion 批 · 交互细节补（父侧轻通道笔 · 可 revert）**——承 #150 设计缺口上抛：CLI 首启向导「← 换一种方式」的键盘激活未点名）：§3.1 该行补**键盘激活**口径——provider 步 = 行作列表**末行**（↑↓ 选中 + Enter）；团队三问步 = **↑ 聚焦该行 + Enter**（输入框 Enter=提交 ∥ Esc=取消 语义零改）；行文本**须含可见提示**。**零新语义**（键位 ∥ 提示文案级；被否 = 专属键 ∥ 仅显示不可激活——后者等于给用户一个谎）。
-- 2026-10-10（**login-entry-completion 批 · 设计档回填轮（fix · 三端交卷后）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §5（#150 CLI 交卷）· 台账 #1242）：§1 `ask-steps.mjs` 行 ∥ §5.5 登记行去「（拟新增）」标记（两档已落——登录面补全批增）。**零新语义**（标记随实读收正）。
-
-- 2026-10-09（**provider-default-model-purge 批 · 实施期收正（fix 轮）· eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §5 舱2（上抛④）· 台账 #1122）：§4 示例行收正——渠级模型段退场（L1 渠行显示回退 = `baseURL` 同全域口径；`model-picker.mjs` `buildProviderEntries` 模型段只随会话槽值）；**零新语义**（示例随正）。
-
-- 2026-10-04（**#905 §1 表归属收正 · 主 agent 直接执行 · 可 revert**——承 #883 修复轮 #10 号外观察 ∥ 台账 #905）：§1 命令层表——`model-picker.mjs` 行「+ `/model` Add / Remove / key 流程」归属收正（该流族自 2026-09-29 结构拆分迁出）+ 增 `provider-admin.mjs` 行（渠道管理流族 + `cascadeRemoveProvider`）。**零新语义**（结构快照对盘）。
-- 2026-10-04（**CLI ∥ VSC 会话选定写回批 · 修正轮（评审轮次 1 · 发现 2）· eng-designer**——承批档 `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §3 轮次 1 · 台账 #883）：§5.4 入口册两坐标对盘收正（`thincoder-cli/src/tui/provider-admin.mjs:88` ∥ `:113`；调用点 `model-picker.mjs:77`）+ §1 `model-picker.mjs` 行括注收正（拉取失败 ⇒ 该渠道不可用——无预设回退）。**零新语义**（坐标与描述对盘）。
-
-- 2026-10-04（**issue 修复批·五 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round5.md` §1 · 台账 #863）：§5.3 增 **`/undo` 条**（快照双上界 + oversize 态 + 死副本清除）。实现 = 本批实施轮。
-
-- 2026-10-04（**CLI ∥ VSC 会话选定写回批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §2 · 台账 #883）：§5.3 增 **`/model` 条**（会话选定写回——判据句 6；写面单点 ∥ 等值/回声零写 ∥ 失败不反扑；端差 = 不设写后探）。实现 = 本批实施轮。
-
-- 2026-09-28（**文档回填与卫生轮**（台账 #516 · #377 面）· eng-designer）：档头对位行「2026-09-25 本批」改指名（**misc-four 批**）——消同日多批「本批」两义。**零新语义**。
-
-- 2026-09-25（**misc-four 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 · 台账 #185）：档头对位行裸读法收正——补 A9 三件（结构性不对称 / 证据 / 裁定）。**零新机制**。
-
-- 2026-09-19（**CLI 端删除二次确认批（台账 #96）· 设计轮 · eng-designer**）：新增 **§5.4 删除类入口显式确认门**——判据句（不可复得 ⇒ 一次显式确认）·
-  确认件单源 `confirmDelete`（形态 = 既有二次确认 picker，先例 `cmd-clear.mjs:6-9` / `cmd-new.mjs:30-33`）· 入口册 4 行（渠道删除 / MCP 删除 ×2 路 / 冷 GC 已覆盖）·
-  独立「删 key」入口实核 = 不存在 · 判据域边界三条 · 机检面。§1 模块地图 `pickers.mjs` 行同批登记确认件。其余各节零改。
-
-- 2026-09-17（**zero-block 批 · 微 fix 轮 · eng-designer**）：变更记录 2026-09-15 条①内**悬空节号收正**——原引节号在 canonical 界面核心档无此节，收正为「§8 不并项与历史沿革」（拆分沿革登记现住 §8）；批档 `docs/batches/2026-09-17-subagent-zero-block.md` §2 出批发现 ⑥ 收口。
-- 2026-10-04（**流尾台账行组退役批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-stream-ledger-lines-retire.md` §2 · 台账 #913）：§1 命令层表 `ledger-surface.mjs` 行职责按实收正（台账状态位胶水——行推线面退役随动）。**零新语义**。明细 = 批档 §2。
-
-- 2026-09-15（**B 式迁移轮 · 第 6 批**）：建档——`thincoder-cli/docs/design/TUI.md` 的 §9（交互层与命令层）/ §12（选择面收口）/
-  §13（输入面小修 B1）三面内容重建入本档（旧档一字未改、原地作参照历史）。
-  ① 落点 = `docs/cli/design/TUI-COMMANDS.md`（P2 板块内的**读者面拆分档**——由 `docs/cli/design/TUI.md` §8 拆分沿革登记）；
-  ② 模块地图按**现文件结构**重建（cmd-* 族逐档入表——旧档为「其余单命令小件」汇总行）；行数列不并；
-  ③ §12 / §13 的机制结论并入 §3 / §4 / §5.2，批次材料入 §6.1；④ 坐标全量改**现状路径**并实核；⑤ 命令清点不复制（挂 `docs/cli/requirements/FEATURES.md` §2.9 指针——D2）。

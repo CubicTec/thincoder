@@ -67,9 +67,3 @@
 | `thincoder-cli/docs/requirements/AGENT-LOOP.md` §15 轨迹节 | 轨迹面需求级约束（含默认 OFF） | **已并入**（试点批入本层 `docs/core/requirements/AGENT-LOOP.md` §4.6——第 3 批核验在案；本板以 §4 指回承载——不重复，D2） |
 | 同上 · §15 子代理族条目（F-O1–F-O3 · N-O2 / N-O4 子代理面） | 子代理内存上界 | 属 AGENT-LOOP 板——非轨面貌 |
 | —（本档无同名旧档） | 无变更记录 / 无移出清单 | 无需登记 |
-
-## 变更记录
-
-- 2026-09-13：建档——自 `docs/core/requirements/CORE-UNIFICATION.md` 拆分（来源：§2 F11 / F6 / F12 回指）+ 设计档 `TRACES.md`（§2.1 #116 · §3.1 A21 · §4.1 第 10 行 派生）；**无新增需求**。
-- 2026-09-14（**B 轮并入 · 第 2 批**）：§4 需求条目 = **旧档缺**（`thincoder-cli/docs/requirements/TRACES.md` 不存在）⇒ 无并入内容（不虚构）；§5 登记轨迹面需求住旧 AGENT-LOOP 需求档（越段发现）；首部加需求条目面指针一行。
-- 2026-09-14（**B 轮并入 · 第 3 批补源**）：§4 需求条目面 = 自 `thincoder-cli/docs/requirements/AGENT-LOOP.md` §15 轨迹节核验并入（同名旧档仍缺——扩参照面来源；**正文已在案**：试点批入 `docs/core/requirements/AGENT-LOOP.md` §4.6——按 D2 指回不重复）；§5 行态收口；首部指针一行收正。

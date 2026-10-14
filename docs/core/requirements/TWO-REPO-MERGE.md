@@ -72,10 +72,3 @@ ThinCoder 曾以**两个独立 git 仓**分头维护：CLI 仓与 VSC 扩展仓�
 | 目录布局 / 历史合并 / 机检单仓化 / 提示词承载等机制面 | 机制设计与实现坐标 | 设计档 `docs/core/design/TWO-REPO-MERGE.md`（本批同批迁入） |
 | 批次实施流水与回滚点 | 一次性施工材料 | `docs/batches/`（项目级时序日志） |
 | VSC 侧同名档 | `thincoder-vscode/docs/requirements/TWO-REPO-MERGE.md` | VSC 轮（`docs/core/requirements/` 并入——P1 统一面） |
-
-## 变更记录
-
-- 2026-09-15（**B 式迁移轮 · 第 2 批**）：建档——`thincoder-cli/docs/requirements/TWO-REPO-MERGE.md` 内容重建入基准层（旧档一字未改、原地作参照历史）。
-  ① F1–F7 / N1–N6 编号与语义**零改动**（收窄注记原样保留）；② 坐标改现状路径（`docs/core/design/prompts/` · 仓根 `scripts/mirror-divergence.mjs` · 未迁档按 CLI 树形态） （迁移期引文——工具已退役）；
-  ③ **N1 旁注坐标收正**：CLI 产品目录由 `<ws>/thincoder/thincoder` 收正为 **`<ws>/thincoder/thincoder-cli`**（与设计档目标布局和现状实核一致）；
-  ④ §4 条款住址与 phase 2 边界改现状路径；⑤ 新增 §5 不并项与历史沿革、§6 体量。

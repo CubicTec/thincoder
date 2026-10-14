@@ -96,8 +96,3 @@
 ## 6. 上抛/余项
 
 - 本面无独立上抛/余项。
-
-## 变更记录
-
-- 2026-10-11（**server-doc-split 批 · 域内拆分（迁移）· eng-designer**——承批档 `docs/batches/2026-10-11-server-doc-split.md` §2）：本档自 `webui/WEBUI.md` §2.1 ∥ §2.7 及三表归位行逐字迁入（零语义）；文内 § 引用改指（§2.7→§2.2 ∥ §2.3①⑤→`webui/READINGS.md` §2.1①⑤ 等）；AC 行内档目链去重 ⇒ 单源句（`webui/WEBUI.md` §1）；全局键数链删（设计口径——机检断言承载）；AC-15 行三拆之 ① 片段入本档；§2.13#10 两处改形（`:711`/`:714` 引冻结段行名 ⇒ 「历史段·原 §6 代理回迁批行（迁移前）」）；原址保位 stub 在 `webui/WEBUI.md`。**产品码零触。**
-- 2026-10-12（**admin-agent-awareness 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-12-admin-agent-awareness.md` §1 · 台账 #1310）：§3 i18n 两档行数链补实读（**201 ∥ 201**——前批估值链未回填）+ 本批增量（≈204 ∥ ≈204——审计 agent 行三键）+ 增本批**键族登记**条（`audit.agentOk`/`agentFail`/`agentTruncated`）+ §4 AC-28 机检口径行 `views-audit.mjs` 枚举补 agent 行模板；同源随动 = `webui/READINGS.md` §2.1④/§3 ∥ `accounts/ACCOUNTS.md` §2.1 ∥ `agent/ADMIN-AGENT.md` §14.4。**产品码零触（设计轮）。**

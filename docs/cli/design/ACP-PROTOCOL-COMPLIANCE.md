@@ -1,7 +1,7 @@
 # ACP 协议面合规收正（ACP-PROTOCOL-COMPLIANCE）· CLI 面 · 设计
 
 > 论域 = `thincoder-cli/src/acp/**` 与 ACP v1 schema 的逐字段对位收正——本批 4 条（#870 ∥ #871 ∥ #872 ∥ #873 实施；#862 = 拆批裁定，见 §6）。
-> 承批档 = `docs/batches/2026-10-04-issue-fix-round2.md` §1（5 条清单 + 证据锚）；条目源 = 2026-10-03 分诊（gitee/GitHub → 台账 #862 ∥ #870 ∥ #871 ∥ #872 ∥ #873）。
+> 条目源 = 2026-10-03 分诊（gitee/GitHub → 台账 #862 ∥ #870 ∥ #871 ∥ #872 ∥ #873）。
 > 配对长期档 = `docs/cli/design/ACP-CLIENT.md`（通道机制单源——本批收正的目标文本见 §5，实施轮同拍落）；配对需求档 = `docs/cli/requirements/ACP-CLIENT.md`（F8 / R-A5——合规核对见 §1.3）。
 > 规范基准 = 官方 schema v1（本设计轮复取 as-of 2026-10-04——SHA256 与 2026-09-18 记值逐字同 ⇒ 字段级结论同 as-of 有效；摘录见 §4）。
 > 建档：2026-10-04（issue 修复批·二 · 设计轮 · eng-designer）。
@@ -207,7 +207,7 @@
 
 ### 4.1 复取与复核
 
-- 来源 = `agentclientprotocol/agent-client-protocol` · `main` 分支 · `schema/v1` 目录的 v1 schema（`gh-proxy.com` 镜像，命令同 `docs/batches/2026-09-18-acp-external-drivers.md` §2.8）。
+- 来源 = `agentclientprotocol/agent-client-protocol` · `main` 分支 · `schema/v1` 目录的 v1 schema（`gh-proxy.com` 镜像，命令同 2026-09-18 acp-external-drivers 批 §2.8）。
 - **本批复取（2026-10-04）：247168 字节 · SHA256 `3c17bd6385d90cf672d8a661fddc359d73422cf8b8ce6865213d25cfd4c0eca7` · 170 `$defs`**——与 2026-09-18 记值**逐字相同** ⇒ 字段级结论同 as-of 有效（16 日零漂移）。
 - 复核方式：按上行命令复取 → sha256 逐字比对；不一致 ⇒ 字段面按新 as-of 重核后再实施。
 
@@ -275,7 +275,6 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 | `docs/cli/design/ACP-CLIENT.md` | 655 | +~15 | ~670 | §5 表十处 + 变更记录（随动——实施轮） |
 | `docs/cli/design/ACP-PROTOCOL-COMPLIANCE.md` | 本档 | — | — | 本批设计（已落） |
 | `docs/core/design/API-CONTRACT.md` | 2961 | 重生成 | — | `node scripts/api-contract.mjs --write` |
-| `docs/batches/2026-10-04-issue-fix-round2.test.mjs` | 新 | ~290 | ≤300 | 单元测试档（§10；拟新增） |
 | `docs/cli/requirements/ACP-CLIENT.md` | 151 | 补笔 | — | R-A5.4 补述 + 新判定句——**主 agent 笔**（§1.3） |
 
 ## 8. 关键决策记录（含被否）
@@ -308,7 +307,7 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 
 ## 10. 用例表（单元测试档——先红后绿）
 
-宿主 = `docs/batches/2026-10-04-issue-fix-round2.test.mjs`（已落；自 `thincoder/` 仓根跑 `node --test`；不入集成测试树）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 单元测试档同法）。
+宿主 = 单元测试档（2026-10-04 issue 修复批·二；已落；自 `thincoder/` 仓根跑 `node --test`；不入集成测试树）。夹具 = 临时 cwd 沙箱（`_setSessionsDirForTest` 邻位缝 + USERPROFILE/HOME 隔离——先例 = 单元测试档同法）。
 
 | # | 类 | 输入 | 期望 |
 |---|---|---|---|
@@ -358,13 +357,3 @@ SessionUpdate — oneOf 判别键 sessionUpdate（含 current_mode_update / conf
 6. 边界登记（§11 各项）随收口入台账（父侧）。
 7. **修正轮实施令（交付登记 号 1 ∥ 号 2 收正——本档定形）**：① `session/new` 同键处置（§2.4——处置点 = `sessions.set` 直前；认领释放随 `sessions.set`/`committed` 之后）；② `session/list` `updatedAt` 值域钳（§2.2）；单元测试档随补 T5 超域用例 + T12 delete→new 用例（先红后绿）。
 
-## 变更记录
-
-**2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：
-**本批（issue 修复批·二 · 2026-10-04）落点表** = `docs/batches/2026-10-04-issue-fix-round2.md` §2（唯一承载面——一次性批次材料）。
-
-- 2026-10-08（**代码长度上限 500/800 口径更换批 · 实施轮 · eng-coder**——承 `docs/batches/2026-10-08-code-limit-500-800.md` §2 · 台账 #1072）：§7「拆分评审」块删（丙——两档现读 ≤500，义务前提消失；含 `bridge.mjs` 同注）；§7 表两处 ≤300 预算格 = 闭合批叙述面（B 史实保留 ⇒ 零动）。**零协议语义**（文档面 · 可 revert）。
-
-- 2026-10-04（**issue 修复批·二 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-issue-fix-round2.md` §1 · 台账 #870 ∥ #871 ∥ #872 ∥ #873）：建档——① 复验 5/5 在档（§1.2）；② 四条收正目标形（usage_update ∥ list updatedAt ∥ configOptions 全形 ∥ 会话 id = 持久槽号 + 两通知字段）+ resource_link 基线支持（新档拟新增）；③ schema 复取复核（SHA 逐字同 2026-09-18）；④ ACP-CLIENT.md 同拍落点表；⑤ #862 拆批裁定 + 后续批 scope 草案。
-- 2026-10-04（**fix 轮 · 设计评审 #66 号 1–5 收正 · eng-designer**）：§1.2 行锚收正（`acp.mjs:101,108`）∥ §2.2 判据改发射值往返恒等 ∥ §2.4 增「替换点钉定（拒载安全）」+ §10 T12 拒载腿 ∥ §7 增拆分评审（本批不拆 + 后续拆分点；`bridge.mjs` 同注）∥ §11 增 thinking 语义登记。号 6 = 判据降级限制声明（保持）。
-- 2026-10-04（**fix 轮 · 交付登记四条（#75）收正 · eng-designer**——父侧裁定：① ② 就地修 ∥ ③ 记录接受 ∥ ④ 逐条登记）：§2.2 增**值域钳**（非法 ∥ 超域 ⇒ 键缺席 = null 语义）∥ §2.4 增 new 途处置点钉定 + 认领释放位次 ∥ §2.5 增两形行为（裸盘符 ∥ 非 URL 形带片段）∥ §11 增三登记行 ∥ §3.2 / §9 / §10 / §12 随动。

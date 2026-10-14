@@ -2,7 +2,7 @@
 
 > 板块 = **TUI 输入框**（主输入框 / question 自由文本态 / Ctrl+I 注入框的按键与状态契约）。
 > 配对需求档 = `docs/cli/requirements/TUI.md`（F11 / N8 等输入面条目住该档——本板块不单起需求档）。
-> 对位档 = `docs/vsc/design/WEBVIEW-INPUT.md`（VSC webview 输入面——语义同源、各端独立实现；端差已消解——历史见变更记录 misc-four 行）。
+> 对位档 = `docs/vsc/design/WEBVIEW-INPUT.md`（VSC webview 输入面——语义同源、各端独立实现；端差已消解）。
 > **本档是输入框的唯一行为契约：任何对输入框 / 键处理的修改，先读这里，改完更新这里。**
 > 建档：2026-09-15（**B 式迁移轮 · 第 6 批**——`thincoder-cli/docs/design/TUI-INPUT-BOX.md` 内容重建；
 > 旧档**二态混装**（当前态 + 第 31 批目标态）已按「第 31 批设计已实现」收口为单态现行契约——见 §9.1）。
@@ -14,10 +14,11 @@
 1. `state.input` 是字符数组（`string[]`）；`state.cursor` 是整数，恒满足 `0 <= cursor <= input.length`。
 2. `state.history` 是已提交文本的字符串数组；`historyIndex === -1` 表示不在历史导航中。
 3. `submit()`：清空 input/cursor → `history.push(text)` → `historyIndex = -1` → `scroll = 0`。
-4. **模式栈互斥**，优先级从高到低：`permission → question → search → interruptPrompt → picker 栈 / wizard → 正常输入`。
+4. **模式栈互斥**，优先级从高到低：`permission → question → search → interruptPrompt → picker 栈 / wizard → 凭据窗（`secretPrompt`）→ 正常输入`。
    每个模式处理自己的键后必须 `return`。picker 打开期间 Ctrl+I 不受阻——processing 时照常打开注入框
    （Ctrl+I 创建与 interruptPrompt 模态分支先于 picker 分支——Esc 关框后 picker 原样保留），非 processing 时零动作；
    picker 其余按键由 picker 独占消费。
+   **搜索面让位（显示面 · 2026-10-15 · 台账 #1437）**：掩码三面在场 ⇒ 输入框显示面归掩码面（框题 ∥ 内容）；其余搜索态照旧——规则本体（判据 ∥ 消费点 ∥ 先例坐标） = `docs/cli/design/TUI.md` §4「掩码守卫」（本档不重述——D2）。
 5. `layoutInput(chars, cursor, width)` 是纯函数：`(chars, cursor, width) → { lines, cursorLine, cursorCol, lineStarts }`，
    遇 `\n` 强制换行；`lineStarts[k]` = 第 k 个可视行行首下标；行 k 区间 = `[lineStarts[k], lineStarts[k+1])`（含行尾 `\n`）；
    末项哨兵 = `chars.length`（上界、不指向行）——竖移定位用；cursor 落 `\n` 时属前行行尾。
@@ -312,7 +313,6 @@ F13 attention 判据不破（queued 反馈零注意力色对——`docs/cli/desi
 | 旧档 §9.5 受影响文件表 | as-of 2026-09-11 行数与增量快照 | 时点快照（实装后已漂移）——现行档位以实测为准 |
 | 旧档 §9.6 用例表（T-A1–T-A11）· §9.7 验收标准（AC-E1-1–AC-E1-10） | 批次验收材料 | 验收已完成——不变量已入正文；用例宿主 = `CLI arrow-editing 用例档` |
 | 旧档 §9.8 边界 + 档头「设计已落档、实现待批准」状态行 | 批次边界与在途状态 | 批次语境——实现已落地，边界语义已入 §1–§8 |
-| 旧档 §变更记录 | 逐批流水（2026-08-03/04 多行键 / 09-02 挂起态归属 / 09-03·04 question 光标 / 09-07 格式债 / 09-11 第 31 批及修正·刷新轮） | 历史叙述——本档自有变更记录 |
 
 ### 9.2 不并项登记（跨板块 / 一次性材料——**不并**，逐项登记）
 
@@ -321,71 +321,3 @@ F13 attention 判据不破（queued 反馈零注意力色对——`docs/cli/desi
 | 挂起决策 / 队列机制的正文 | 挂起状态机、settle 时序、池管理 | `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8——本档只落输入框侧行为（§4） |
 | question 工具协议面 | 提问工具契约、CUSTOM 哨兵定义 | `docs/core/design/TOOLS.md`（question 行）+ `docs/cli/design/TUI-COMMANDS.md` |
 | 输入层状态机的宿主实现细节 | `key-handler` 族 / `key-modes` 内部结构 | 实现面——落点 `thincoder-cli/src/tui/key-handler.mjs` + 五族 `key-handler-{ctrlc,modals,scroll,busy,edit}.mjs` · `key-modes.mjs`（本档只留行为契约） |
-
-## 变更记录
-
-- 2026-09-29（**批 parity-b2-queued · 实施收正轮 · eng-coder**——承 `docs/batches/2026-09-29-parity-b2-queued.md` §2 ∕ §2.10 · 台账 #566）：送达链路块合并计划句「`thincoder-cli/src/tui/queued-merge.mjs`（实读 68）」⇒ 核单源（转口）形 + 届盘实读 **12**（内容行计）。**零新语义**（核件 `thincoder-core/queued.mjs` 单源；CLI 经转口档）。
-
-- 2026-09-25（**misc-four 批 · 设计评审修正轮 2（发现 #16）· eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §3 轮次 2）：档头对位行「差异登记见 §9.2」悬空指针改述为「端差已消解——历史见变更记录 misc-four 行」（§9.2 该登记行已随本批设计轮删除）。**语义零改**。
-
-- 2026-09-25（**file-tier-sweep 批 · 评审轮 1 修正轮** · eng-designer——承 `docs/batches/2026-09-25-file-tier-sweep.md` §3 轮次 1 发现 4）：§6 档位表 `busy-injection.test.mjs` 行随 S4 拆分收正——按族三档宿主 + 逐例映射指向批档 §2「四·S4」。**判据表 / 执行序 / 契约面零变**。
-
-- 2026-09-25（**misc-four 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-25-misc-four.md` §2 · 台账 #185）：§9.2「VSC 端方向键编辑差异」**登记行删除**——
-  实核 = 端差已消解（VSC ↑/↓ 五态判定与 CLI 同形：`thincoder-vscode/webview/input.js:92-110` ∥ `thincoder-cli/src/tui/key-handler-scroll.mjs:39-82`；VSC 面契约 = `docs/vsc/design/WEBVIEW-INPUT.md` §2）。无效登记不留规范面（历史见本行）。
-
-- 2026-09-15（**B 式迁移轮 · 第 6 批**）：建档——`thincoder-cli/docs/design/TUI-INPUT-BOX.md` 内容重建入基准层（旧档一字未改、原地作参照历史）。
-  ① **二态混装收口**（台账 §3 注意项）：旧档「当前态 + 第 31 批目标态」按「设计已实现」折算为**单态现行契约**——目标态并入 §3 / §8；
-  ② 坐标全量改**现状路径**并实核；③ 旧档批次材料（选型 / 受影响文件 / 用例 / AC / 决策记录 / 变更流水）入 §9.1 / §9.2（不并）；
-  ④ 补 §10 体量节；⑤ 配对需求档指向 `docs/cli/requirements/TUI.md`（本板块不单起需求档——登记见该档 §1 注）。
-
-- 2026-09-21（**端差纪律收正批（end-diff-doctrine）· 设计轮** · eng-designer——承 `docs/batches/2026-09-21-end-diff-doctrine.md` §1 裁定 + 需求层例外句（F7-3 / N4））：§9.2「VSC 端方向键编辑差异」行收正——去「互不追赶」作保留依据的读法（补端差默认 = 消 / 保留三件齐备（A9）/ 实现形态限定）；
-  **语义源 = 需求层已定稿例外句——设计层落点、零新增口径**。
-
-- 2026-09-21（**端差纪律收正批（end-diff-doctrine）· 设计评审修正轮（轮 1）** · eng-designer——承 `docs/batches/2026-09-21-end-diff-doctrine.md` §3 发现 #2 / #4）：§9.2「VSC 端方向键编辑差异」行补**登记面语义**（登记面 = 记录已裁的保留项，✗ 非未决兜底）+ **状态词**（待裁——A9 三件未齐；消解路径 / 到期见行内）；
-  **零新语义（评审发现逐号落位）**。
-
-- 2026-09-21（**busy-injection 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-21-busy-injection.md` §1）：新增 **§4.1 busy 期输入注入**（F16）——
-  busy（processing 含 digest）非挂起非模态期 Enter 提交入 `pendingInput` 单槽（放行判据六条 · 二次提交 = 拒绝 + 提示 · 消费回执行）；
-  送达链路零改声明（回合尾 drain + driver 消费两条既有链路取数谓词零改）；VSC 对称修面（queuedUserMessage）回指 `WEBVIEW-INPUT.md` §1 C-B2-6。Ctrl+I 两语义并存零触碰。
-
-- 2026-09-21（**busy-injection 批 · 设计评审轮 1 修正** · eng-designer——承 `docs/batches/2026-09-21-busy-injection.md` §3 发现 1/2/3/5/8
-  · 语义源 = 父侧裁定（C-B2-6 ∪ CLI 条件 3））：§4.1 VSC 对位段收正——queue = 普通回合 busy（`running && !_suspended`）/
-  reject = 挂起会话内 busy 仍拒发 + toast / 纯挂起等待零改（判别式与 C-B2-6 三面同构），槽名收正 `panel._busyQueued`，
-  去 F16 伪引改述实句；射程句收窄（取数谓词零改 + 消费回执两处新增 dim 行）；§2 Enter 行补 §4.1 指针。判据表 / 执行序 / 边界段零变。
-
-- 2026-09-21（**busy-injection 批 · 设计评审轮 2 修正** · eng-designer——承 `docs/batches/2026-09-21-busy-injection.md` §3 轮次 2 发现 1 / 2
-  · 语义源 = 已落地实现 + 测试锁（旧 D-S5 入队已废））：§4 Enter 条目收正至真实触达窗——删「含 digest 运行中」限定与「digest 运行中排队续发」句，
-  补 busy（含 digest）期先经门禁吞、本分支不触达（触达窗 = 挂起空闲 / 释放窗口）；§3「处理中」行去无限定「提交吞…不变」（提交面分流指针 = §4.1）。
-  判据表 / 执行序 / VSC 段零变。
-
-- 2026-09-22（**busy-injection 批 · 实施悬空裁定轮（fix round）· eng-designer**——承批档 §5 决策透明表 #5 / #6 + 父侧裁定）：§4.1 VSC 对位段补两行——**二次提交守卫**（未消费排队 ≥1 ⇒ 不出泡 / 不清框 / 提示；判据源 = host 推送 `busyQueued`）与**携贴图送达降级对位**（同 idle 面判决函数）；细则回指 C-B2-6 ①⑥。
-  判据表 / 执行序 / 消费回执 / 送达零改声明零变。
-
-- 2026-09-22（**busy-extend 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-22-busy-extend.md` §1（E1 / E2））：§4.1 **扩面**——
-  **吞面收敛四**（模态 / 斜杠 / 空 / 槽满）：判据表去「挂起两态」条（六条 → 五条 · 条件重编号）、执行序补挂起面入槽后 `state._suspWake?.()`、
-  送达链路补「挂起会话内 busy 入槽 ⇒ driver 步骤 1 输入优先消费」并收正 `thincoder-cli/src/tui/suspension-drive.mjs:242-245` 模型句；
-  VSC 对位段收正为「busy 即排队面（`running`）+ 单槽载体两态」，细则单源回指 `WEBVIEW-INPUT.md` §1 C-B2-6。§4 Enter / 斜杠两条 busy 句同步收正（去「先经门禁吞」口径）。
-
-- 2026-09-22（**busy-extend 批 · 设计评审轮 1 修正** · eng-designer——承 `docs/batches/2026-09-22-busy-extend.md` §3 轮次 1 发现 #8 / #9 / #12）：
-  §4.1 执行序槽满句钉提示形态（= `TUI.md` §7.5 表第 1 行逐字 `已排队 1 条消息`）+ 先例坐标收正（`key-handler.mjs:440-444`）；
-  挂起面唤醒句补证据行（`thincoder-cli/src/tui/suspension-drive.mjs:122` / `:137` / `:279`）+ 批档 §2 用例面「挂起内入槽」格期望注；§6 用例宿主范围收正（T-F16-1…9）。**判据表 / 语义零变**。 （机检豁免——用例退场登记）
-
-- 2026-09-22（**busy-extend 批 · 设计评审轮 2 修正** · eng-designer——承 `docs/batches/2026-09-22-busy-extend.md` §3 轮次 2 发现 #3 / #7）：
-  §4 Enter 条容器名收正（「`state.pendingInput` 队列」→ **单槽（至多一条——见 §4.1）**）；§9.2「挂起决策 / 队列机制的正文」去向行的节号收正
-  （`docs/core/design/AGENT-LOOP.md` §9 → **`docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8**）。**判据表 / 语义零变**。
-
-- 2026-09-22（**structure-debt 批 · 档面车道（#226 / #159 尾账）· eng-designer**——承 `docs/batches/2026-09-22-structure-debt.md` §2.1 / §2.2 / §2.6 档面行 + 父侧派单）：
-  §4 / §4.1 执行序与先例坐标改指新档（busy 门禁 → `key-handler-busy.mjs`；挂起态槽满先例 `:440-444` → `key-handler-edit.mjs:60-64`；submit 拒分支 → `thincoder-cli/src/tui/turn-face.mjs:21-25`）；
-  §5.2 两处 key-handler 指称改指 `key-handler-edit.mjs`；§4.1 边界 Ctrl+I 坐标 `:176-183` → **`:81-88`**；§6 相关模块表按新档清单收正（补五族 + `tui-state.mjs` / `input-face.mjs` 行，`index.mjs` 行收窄为装配序列）。**零语义**：判据表 / 键语义零变。
-
-- 2026-09-24（**queue-visible 批 · 需求裁定升级轮（多槽 + 合并消费）· eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1.10）：§4.1 全面重写为**多槽 + 合并消费**——判据条件 5 改**容量（8）**；吞面四末位改**队满（第 9 条）**；执行序满队提示改条数阈（`已排队 8 条消息`）；
-  「二次提交」段改「再提交与满队」；送达链路段改**合并计划**（`planQueuedInput` / 常量 / 截批）——旧「取数谓词零改」随裁定解除；回执 / 呈现 / 边界 / VSC 对位同步。
-
-- 2026-09-24（**queue-visible 批 · fix 轮（步边界 pickup）· eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1.11 / §1.12 / §1.13 · 用户 03:06 收正）：§4.1 增**步边界 pickup** 支——送达链路「三支入口」→ **四支**（⓪ 用户回合在飞 ⇒ 核循环头投递回调取批（主））；
-  消费回执三处（步边界 / 回合尾 / driver）；「排队期呈现与消费转正」段与档头送达链路句同步。**判据表 / 吞面四 / 执行序 / 边界（含 Ctrl+I 零触）/ 槽宽零变**。
-
-- 2026-09-24（**queue-visible 批 · 设计轮 · eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §1）：§4.1 执行序入槽步补**恢复跟随两行**（F4——`state.scroll = 0` / `state._followTail = true`，submit 同款；两条入槽路径同款）；
-  新增「**排队期呈现与消费转正**」段（待发送块回指 `TUI.md` §7.5 + 消费单帧切换声明 + 中止残余边界）；VSC 对位段细则范围 ①–⑥ → **①–⑦** 并补待发送标记同源句；档头反馈面枚举补「排队块」。
-  **判据表 / 执行序其余步 / 送达零改声明 / 边界 / 槽宽零变**。
-
-- 2026-09-24（**queue-visible 批 · 设计评审修正轮 1 · eng-designer**——承 `docs/batches/2026-09-24-busy-queue-visible.md` §3 轮次 1 发现 #2）：§2 Enter 行 + §4 Enter 条 + §6 模块地图 `key-handler-busy.mjs` 行三处**单槽 → 队列（容量 8）**口径收正（§4 与 §4.1 同口径）。**判据表 / 执行序 / 送达链路 / 边界零变**。

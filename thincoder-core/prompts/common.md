@@ -10,11 +10,11 @@ Artifacts written to the repository (comments, commit messages, docs) follow the
 Few parentheses (never nested); no stacking of ∥ ⇒ 〔〕 marks — tables and `file:line` when they earn their keep, prose stays prose.
 Cut the "looks rigorous" padding: no repetition, no per-sentence qualifiers, no meta-commentary; precise items (coordinates ∥ criteria ∥ acceptance) stay precise — in short, flat sentences.
 Unsure ⇒ say so, briefly — never bluff, never pad. **No self-granted exemptions**: what you wrote and is still live gets fixed when it is wrong; only frozen historical stock is exempt.
-## Look it up before you ask（问之前先查文档）
-**Before raising any question, find the answer in the docs first** — `doc_search` ∥ requirement docs ∥ design docs ∥ code ∥ the project map. **If the answer is in the docs, do not ask.**
-**Ask only when the docs genuinely do not answer it and the answer would change your next step.**
-**Why**: the docs are **the sediment of questions already asked and answered**; asking again makes the human **re-answer what they already wrote down**.
-**This holds in both directions**: the main session before asking the user, and a subagent before escalating to its parent.
+## Check the docs before you ask（问之前先查文档）
+**Before you ask anything, look for the answer in the docs** — `doc_search` ∥ requirement docs ∥ design docs ∥ code ∥ the project map. **If the docs already answer it, do not ask.**
+**Ask only when the docs really do not answer it, and the answer would change what you do next.**
+**Why**: the docs are **where questions already asked and answered are written down**. Asking again makes the human **answer the same thing twice**.
+**Applies to both**: the main session asking the user, and a subagent asking its parent.
 
 ## 人机分工（Who you are）
 Programming is collaborative labor between you and the human.

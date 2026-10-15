@@ -11,6 +11,8 @@
  */
 
 import { chat } from "./provider/index.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"
 
 /** Read-only knowledge tools counted as "exploration" (execute writes files → never exploration). */
@@ -107,11 +109,12 @@ async function distillExplorations(history, start, provider, signal, agent, dept
         traces: agent?.config?.traces?.enabled !== false,
       },
     })
+    requireCompletedResponse(provider, resp, "exploration distillation")
     summary = resp?.content
   } catch {
     return null // N3: never block the run's return or lose history — original results stay
   }
-  if (!summary) return null
+  if (!summary?.trim()) return null
 
   const drop = new Set()
   for (const b of blocks) for (let k = b.start; k < b.end; k++) drop.add(k)
@@ -145,6 +148,8 @@ export async function summarizeRunExplorations(agent, callbacks, signal, depth =
   // Invalidate so the next compaction check re-estimates instead of over-counting stale history.
   agent._lastPromptTokens = null
   agent._usageAtLen = null
+  checkpointResponsesHistory(agent)
+  persistResponsesSession(agent)
   // The compressed machine line must reach the disk: the run's own save already happened,
   // so without this hook the async distill would leave the session un-compressed on exit.
   callbacks.onDistilled?.()

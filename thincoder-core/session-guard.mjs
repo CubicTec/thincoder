@@ -1,3 +1,4 @@
+import { moveResponsesSession } from "./responses-session.mjs"
 /**
  * session-guard.mjs — F2 轮转守卫（2026-08-31 会诊 F2 🔴；2026-09-08 DESIGN-TOKEN-
  * SETTLEMENT D1 自 session-slots.mjs 提取——session-slots 再越 500 行硬限，本守卫约 41
@@ -25,6 +26,7 @@ import { sessionEnd } from "./session-slots.mjs"
 
 /** 轮转时随迁记录存储（.bak 路径联动）——本会话活动绑定面跳过（防拔掉活动存储）。 */
 function moveSidecar(src, dst, agent) {
+  moveResponsesSession(src, dst, agent)
   const dir = src + RECORD_DIR_SUFFIX
   if (agent?._recordStore?.dir === dir) return // 本会话活动绑定面——原地保留（SESSION.md §6.12①）
   try {

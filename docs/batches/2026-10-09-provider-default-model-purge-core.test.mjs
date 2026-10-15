@@ -5,7 +5,7 @@
  *
  * 覆盖 = 批档 §2.1 A1 ∥ A2 核侧面（+ 父侧裁定件①②③ ∥ #20 路由件④⑤）：
  *  A1 归一「一律删」——含 `model` 档经 `loadConfig` ∥ `resolveProviders` ⇒ 条目无 `model` 键；
- *     预设表 25 键逐条 `"model" in p === false`；`presetToEntry` 产物无 `model` 键；
+ *     预设表 27 键逐条 `"model" in p === false`；`presetToEntry` 产物无 `model` 键；
  *  A2 `resolveChildProvider`——首冒号分割（`a:b:c` ⇒ provider=`a` ∥ model=`b:c`，不截断）；
  *     裸渠名 ⇒ 拒（文案逐字）；空 mname ⇒ 拒；null ∥ 空串 ∥ `default` 分支保留；裸模型名换型保留；
  *  件①（父侧裁——config-io ∥ provider-flows）——custom 添加不携 model（必填判 ∥ 落键双退）；
@@ -94,9 +94,9 @@ test("A1 归一「一律删」：含 `model` 档（串 ∥ 空串 ∥ 非串）�
   })
 })
 
-test("A1 预设表：25 键逐条 `\"model\" in p === false`；presetToEntry 产物无 `model` 键", () => {
+test("A1 预设表：27 键逐条 `\"model\" in p === false`；presetToEntry 产物无 `model` 键", () => {
   const names = Object.keys(presets.PROVIDER_PRESETS)
-  assert.equal(names.length, 25, "全表 25 条")
+  assert.equal(names.length, 27, "全表 27 条")
   for (const name of names) {
     assert.equal("model" in presets.PROVIDER_PRESETS[name], false, `预置 ${name} 无 model 键`)
     const entry = presets.presetToEntry(name)
@@ -164,7 +164,7 @@ test("件① config-io：custom 添加不携 model（必填判 ∥ 落键双退�
 test("件① provider-flows：customFieldsError 两拒因（baseURL ∥ format——model 步退场）", () => {
   assert.equal(flows.customFieldsError({ baseURL: "https://x.example.com/v1" }), null, "无 model 亦过")
   assert.equal(flows.customFieldsError({}), "Base URL is required")
-  assert.equal(flows.customFieldsError({ baseURL: "u", format: "bogus" }), "Unknown API format: bogus (expected openai/anthropic/google)")
+  assert.equal(flows.customFieldsError({ baseURL: "u", format: "bogus" }), "Unknown API format: bogus (expected openai/anthropic/google/responses)")
 })
 
 test("件① addProviderFlow 自定径：零 model 问句 ∥ 落条无 model ∥ 预设 detail = baseURL ∥ 准入探恰一次", async () => {

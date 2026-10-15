@@ -38,9 +38,9 @@ import { join } from "node:path"
 /** 单行长度硬上限（NF-L2） */
 export const MAX_LINE = 512
 /** 字段名精确黑名单（NF-L3/§2.4——2026-09-03 评审 refinement #7：与 §2.4 词表一致含 token） */
-const BLACKLIST_FIELDS = new Set(["apikey", "designtoken", "password", "secret", "token", "authorization", "proxyuri", "proxy"])
+const BLACKLIST_FIELDS = new Set(["apikey", "designtoken", "password", "secret", "token", "authorization", "proxyuri", "proxy", "access_token", "refresh_token", "id_token", "accesstoken", "refreshtoken", "idtoken", "code_verifier", "codeverifier", "id_token_hint", "cookie"])
 /** 内容密钥形态扫描（大小写不敏感）——命中即截断到形态前（含 token 值形 `uuid:epoch`——同 batch.mjs 凭据第三形判据） */
-const SECRET_FORM = /(\bsk-[A-Za-z0-9_-]{6,}|\bBearer\s+[A-Za-z0-9._~+/=-]{6,}|\b(?:api[_-]?key|key|token|secret|password|pwd|passwd)\s*[=:]\s*['"]?[A-Za-z0-9._~+/=-]{6,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:\d{10,16})/i
+const SECRET_FORM = /(\bsk-[A-Za-z0-9_-]{6,}|\bBearer\s+[A-Za-z0-9._~+/=-]{6,}|\b(?:api[_-]?key|key|(?:access[_-]?|refresh[_-]?|id[_-]?)?token(?:[_-]?hint)?|code[_-]?verifier|code|secret|password|pwd|passwd)\s*[=:]\s*['"]?[A-Za-z0-9._~+/=-]{6,}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:\d{10,16})/i
 /** 字符串字段长度兜底：head ≤300 / err ≤200 / 其余 ≤120 */
 const FIELD_CAPS = { head: 300, err: 200 }
 

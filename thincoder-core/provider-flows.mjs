@@ -30,7 +30,7 @@ import { addProviderEntry, loadRaw, removeProviderEntry, resolveProviders, setPr
 import { admissionOf, channelUnavailableMessage, classifyProbeFailure, probeChannelModels } from "./provider/list-models.mjs"
 
 /** 自定形协议域（闭集三协议 —— VSC 同档 `FORMATS` 逐字；端侧形判 ∕ 表单选项集同值域）。 */
-export const FORMATS = Object.freeze(["openai", "anthropic", "google"])
+export const FORMATS = Object.freeze(["openai", "anthropic", "google", "responses"])
 
 /** UI 壳缝校验（缺 ∕ 形违 ⇒ 抛 —— fail-loud：宿主未接线不得静默扮成零动作）。 */
 function requireUi(ui) {
@@ -85,6 +85,7 @@ export function probeTargetOf(entry) {
     baseURL: entry?.baseURL,
     apiKey: typeof entry?.apiKey === "string" ? entry.apiKey.trim() : "",
     format: entry?.format,
+    ...(entry?.auth ? { auth: { ...entry.auth } } : {}),
     proxyUri,
     ...(entry?.headers && typeof entry.headers === "object" && !Array.isArray(entry.headers) ? { headers: entry.headers } : {}),
   }
@@ -187,6 +188,11 @@ export async function addProviderFlow(ui, refresh, deps = {}) {
   // Preset: entry auto-filled from PROVIDER_PRESETS, then ask for a key
   const err = addProviderEntry({ preset: sel.name })
   if (err) { host.error(err); return }
+  if (PROVIDER_PRESETS[sel.name]?.auth?.type === "chatgpt_oauth") {
+    await refresh?.()
+    host.info("ChatGPT provider added. Open its Account controls to enable experimental plan usage and sign in.")
+    return
+  }
   const key = await host.input({ prompt: `API key for ${sel.name} (leave empty to skip)`, password: true })
   if (key?.trim()) {
     const kerr = setProviderKey(sel.name, key.trim())

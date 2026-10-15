@@ -1,3 +1,4 @@
+import { runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from "../responses-session.mjs"
 /**
  * agent/turn-loop.mjs — runAgent 回合环（2026-09-29 P2 三拆：agent.mjs runAgent 段 2 ∕ 3 ∕ 5 ∕ 6
  * verbatim 迁入——循环局部 ∕ `_ctxBasis` ∕ drainChildUpstream ∕ for 循环本体 ∕ 零落盘结账 +
@@ -127,6 +128,13 @@ export async function runTurnLoop(agent, {
       systemPrompt, toolSchemas, streamOutput, callbacks, signal, streamRuleFired, autoTurn, depth, turn,
     })
 
+    // Responses partial output is displayable evidence, never a successful agent turn.
+    if (response.terminalStatus && response.terminalStatus !== "completed" && !response.interrupted) {
+      if (response.content) pushReal(agent, { role: "assistant", content: `${response.content}\n[Incomplete response: ${response.terminalStatus}]` })
+      callbacks.onTurnEnd?.(agent, turn)
+      throw response.error ?? new Error(response.errorDetail ?? `Responses ended with ${response.terminalStatus}`)
+    }
+
     // §6.31.5 落痕（消化账务批 · 2026-10-05 · 台账 #930 ∥ #939 收正）：本 run 内**逐轮追加**——
     // 每模型轮返回即写（会话态）；首轮签收不为收口轮覆盖（见账取件读累积痕）。
     // 落父字段（抗 `history` 整体替换——`context.mjs` `applyCompression`）；非会话零动作。
@@ -214,7 +222,8 @@ export async function runTurnLoop(agent, {
 
     pushReal(agent, assistantToolCallMessage(response, specForModel(agent.provider.model)))
 
-    const results = await executeToolCalls(agent, toolByName, response.toolCalls, callbacks, depth, signal)
+    const results = await runResponsesToolTransaction(agent, response.toolCalls,
+      () => executeToolCalls(agent, toolByName, response.toolCalls, callbacks, depth, signal))
 
     // Ctrl+I interrupt during tool execution: skip committing partial results — inject
     // the interrupt and retry (placeholder results keep strict providers pairable).
@@ -247,6 +256,7 @@ export async function runTurnLoop(agent, {
       for (const tc of response.toolCalls) {
         agent.history.push({ role: "tool", tool_call_id: tc.id, content: "[Tool execution interrupted — results discarded]" })
       }
+      acknowledgeResponsesToolTransaction(agent)
       agent.history.push({
         role: "user",
         content: `[User interrupt: ${signal.reason.message}]`,
@@ -261,6 +271,7 @@ export async function runTurnLoop(agent, {
 
     // Commit tool results (pairing, multimodal deferral, mutation accounting, reindex)
     await recordToolResults(agent, toolByName, results)
+    acknowledgeResponsesToolTransaction(agent)
 
     injectPostTurn(agent, results, recentCallSigs, callbacks, turn, { suspDriven })
   }

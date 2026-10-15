@@ -26,6 +26,8 @@ export const PROVIDER_PRESETS = {
   mimoplan: { baseURL: "https://token-plan-cn.xiaomimimo.com/v1", thinking: { type: "enabled" }, maxTokens: 131072, desc: "MiMo Token Plan (小米套餐 — tp- keys; 与按量付费 sk- 密钥不通用)" },
   minimax:  { baseURL: "https://api.minimaxi.com/v1", thinking: { type: "adaptive" }, maxTokens: 128000, chatPath: "/text/chatcompletion_v2", desc: "MiniMax" },
   openai:   { baseURL: "https://api.openai.com/v1", desc: "OpenAI" },
+  "openai-responses": { baseURL: "https://api.openai.com/v1", format: "responses", auth: { type: "api_key" }, stateful: false, desc: "OpenAI Responses (API billing)" },
+  "openai-chatgpt": { baseURL: "https://api.openai.com/v1", format: "responses", auth: { type: "chatgpt_oauth", enabled: false }, builtinTools: false, stateful: false, desc: "Sign in with ChatGPT (experimental, local clients)" },
   claude:   { baseURL: "https://api.anthropic.com/v1", format: "anthropic", maxTokens: 8192, desc: "Claude (Anthropic)" },
   gemini:   { baseURL: "https://generativelanguage.googleapis.com/v1beta", format: "google", maxTokens: 8192, desc: "Gemini (Google)" },
   // Gemini OpenAI 兼容端点（Google 官方——2026-10-09 server 预设批 · 台账 #1128）：与 `gemini`（原生
@@ -62,5 +64,5 @@ export function presetToEntry(name) {
   const preset = PROVIDER_PRESETS[name]
   if (!preset) return null
   const { desc: _, ...entry } = preset
-  return { name, ...entry }
+  return { name, ...entry, ...(entry.auth ? { auth: { ...entry.auth } } : {}) }
 }

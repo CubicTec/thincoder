@@ -1,3 +1,4 @@
+import { ensureResponsesSession, prepareResponsesContext, stageResponsesReplay } from "../responses-session.mjs"
 /**
  * agent/chat-call.mjs — 单回合模型调用（2026-09-29 P2 三拆：agent.mjs runAgent 段 4 逐字迁入 +
  * `streamOutputAllowed` 定义随迁——agent.mjs re-export 保 import 面）。
@@ -15,6 +16,7 @@ export function streamOutputAllowed(depth, role, streamOutput = false) {
 export async function callModelTurn(agent, {
   systemPrompt, toolSchemas, streamOutput, callbacks, signal, streamRuleFired, autoTurn, depth, turn,
 }) {
+  await ensureResponsesSession(agent, depth)
   const messages = [{ role: "system", content: systemPrompt }, ...agent.history]
   let response
 
@@ -24,8 +26,10 @@ export async function callModelTurn(agent, {
     await classifyAndApply(agent, turn).catch(() => {})
   }
 
-  try {      response = await chat(agent.provider, {
+  try {
+    response = await chat(agent.provider, {
       messages, tools: toolSchemas,
+      responsesContext: prepareResponsesContext(agent, messages),
       // §2.5 #78 并入（VSC onToken 三态门）：depth 0 恒通；consult 子代理豁免（其输出进
       // 会诊面板）；escalate 等经 opts.streamOutput 显式选择进入；其余子代理不流式。
       onToken: streamOutputAllowed(depth, agent._role, streamOutput) ? callbacks.onToken : null,
@@ -64,5 +68,6 @@ export async function callModelTurn(agent, {
     throw e
   }
 
+  stageResponsesReplay(agent, response, systemPrompt)
   return response
 }

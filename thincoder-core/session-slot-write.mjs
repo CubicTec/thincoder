@@ -1,3 +1,4 @@
+import { moveResponsesSession } from "./responses-session.mjs"
 /**
  * session-slot-write.mjs — 会话槽「元数据开关」写面（Parnas 边界：开关写决策组——
  * autoApprove / planMode / engineering / advisor guard / 会话级偏好三键
@@ -79,6 +80,7 @@ function rotateIfForeign(p, slot, data) {
     if (!(diskIsNewer || diskForeign || (diskStart && diskStart !== myStart) || diskLonger)) return null
     const bak = `${p}.bak-${Date.now()}`
     renameSync(p, bak)
+    moveResponsesSession(p, bak)
     console.error(`[session] slot ${slot} holds ${diskIsNewer ? `a newer-version file (v${disk.version})` : diskForeign ? `a foreign-cwd file (${disk.cwd})` : diskLonger ? `a longer record (${disk.history.length} > ${data.history.length} messages — concurrent append)` : `another session (start ${diskStart}, ours ${myStart})`} — preserved as ${bak}`)
     return bak
   } catch (e) {

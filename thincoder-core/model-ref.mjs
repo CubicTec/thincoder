@@ -1,3 +1,4 @@
+import { hasProviderCredentials, isChatGptProvider } from "./provider/auth-config.mjs"
 /**
  * model-ref.mjs — composite model reference parser (MODEL-MERGE-SESSION; v2 2026-09-10).
  * A model is an explicit "provider:model" composite — config.defaultModel (top level,
@@ -78,7 +79,7 @@ export function defaultModelReason(providers, defaultModel) {
 
 /** 「持 key」判据（#841——`providers[].apiKey` trim 后非空；env 变量不是密钥源，config.mjs 档头同判）。 */
 export function hasKey(entry) {
-  return typeof entry?.apiKey === "string" && entry.apiKey.trim() !== ""
+  return hasProviderCredentials(entry)
 }
 
 /** 渠道模型面单值（#841 模型面——VSC `resolveDefaultModel` 转口面 · 纯函数）：
@@ -117,6 +118,14 @@ export function resolveProviderPlan({ providers, defaultModel, slot } = {}) {
   const list = Array.isArray(providers) ? providers : []
   const slotName = typeof slot?.provider === "string" && slot.provider ? slot.provider : null
   const slotModel = typeof slot?.model === "string" && slot.model ? slot.model : null
+
+  // An explicit subscription choice must never silently become API-billed usage.
+  const requested = slotName ? list.find((p) => p?.name === slotName) : parseModelRef(defaultModel, list).provider
+  if (isChatGptProvider(requested) && !hasKey(requested)) {
+    return { state: "invalid", source: slotName ? "slot" : "defaultModel", channel: requested.name,
+      model: slotModel ?? resolveChannelModel(requested, defaultModel), provider: { ...requested, model: slotModel ?? resolveChannelModel(requested, defaultModel) },
+      reason: "ChatGPT account is disabled or not selected — sign in explicitly; API billing fallback is disabled" }
+  }
 
   // ── 渠道面回退序（三步）──
   let entry = null

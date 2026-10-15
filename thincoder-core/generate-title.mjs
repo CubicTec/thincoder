@@ -8,6 +8,8 @@
  * 定制头（`provider.headers`）与代理路径（`proxyUri`）为 CLI 侧口径，三格式共用。
  */
 
+import { chat } from "./provider/index.mjs"
+import { isChatGptProvider } from "./provider/auth-config.mjs"
 import { proxyFetch } from "./proxy.mjs"
 import { resolveProviderSecrets } from "./env-ref.mjs"
 // D7（2026-09-21 块标题行对齐批——标题链单源）：首条真实 user 消息谓词收核单源
@@ -37,7 +39,19 @@ export async function generateTitle(userContent, provider) {
     ? userContent.find((p) => p.type === "text")?.text || ""
     : userContent
   if (typeof userText !== "string" || userText.length < 10) return null
+  // Subscription titles are local: no hidden plan-consuming request or Chat Completions bypass.
+  if (isChatGptProvider(provider)) return userText.trim().replace(/\s+/g, " ").slice(0, 40) || null
   if (!provider?.apiKey || !provider?.baseURL || !provider?.model) return null
+  if (provider.format === "responses") {
+    try {
+      const response = await chat({ ...provider, builtinTools: false, stateful: false }, {
+        messages: [{ role: "system", content: "Generate a concise title (max 40 chars, no quotes). Reply ONLY with the title." },
+          { role: "user", content: userText.slice(0, 200) }],
+        signal: AbortSignal.timeout(10000), purpose: "title", logCtx: { stage: "title" },
+      })
+      return response.terminalStatus === "completed" ? response.content?.trim().slice(0, 40) || null : null
+    } catch { return null }
+  }
 
   // #363③：禁思考形（三格式支共用）——off 取形与可宣称性引核单源：`thinkOffPath` 假
   // （thinkAlwaysOn 族）或 `thinkOffShape` 为 `null`（effort 族——`null` 形是核载荷门的

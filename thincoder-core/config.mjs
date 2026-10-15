@@ -1,3 +1,4 @@
+import { normalizeProviderAuth } from "./provider/auth-config.mjs"
 /**
  * config.mjs — configuration loading and saving
  * Model-merge schema v2 (2026-09-10 MODEL-SELECTION; 2026-10-09 清除批：渠道单值模型退场):
@@ -290,6 +291,8 @@ export function normalizeTeamSection(value) {
  *  else (null, arrays, nested objects) is dropped so it can never reach a fetch call.
  *  Authorization is built-in and cannot be overridden from headers (core.mjs spreads first). */
 function sanitizeProviderHeaders(p) {
+  // OAuth rejects every custom header at the gateway; do not silently erase invalid config.
+  if (p.auth?.type === "chatgpt_oauth") return p
   if (p.headers == null || typeof p.headers !== "object" || Array.isArray(p.headers)) { delete p.headers; return p }
   const clean = {}
   for (const [k, v] of Object.entries(p.headers)) {
@@ -328,7 +331,7 @@ export function loadConfig() {
     ...config,
     defaultModel: typeof config.defaultModel === "string" && config.defaultModel.trim() ? config.defaultModel : null,
     providers: Array.isArray(config.providers)
-      ? config.providers.map((p) => sanitizeProviderHeaders({ ...p }))
+      ? config.providers.map((p) => sanitizeProviderHeaders({ ...p, ...(p.auth !== undefined ? { auth: normalizeProviderAuth(p.auth) } : {}) }))
       : [],
     agent: { ...DEFAULTS.agent, ...config.agent },
     memory: { ...DEFAULTS.memory, ...config.memory },

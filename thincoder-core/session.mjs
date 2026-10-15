@@ -1,3 +1,4 @@
+import { attachResponsesSession, persistResponsesSession, checkpointResponsesHistory } from "./responses-session.mjs"
 /**
  * session.mjs — session persistence (slot-based model)
  * Each project (keyed by cwd hash) keeps unlimited session slots.
@@ -182,6 +183,13 @@ export function saveSession(agent, opts = {}) {
   // 绑定态 → 流式投影（段原文拼接——VSC 兼容面逐字同形）；未绑定 → 既有全量物化写
   if (agent._recordStore) saveProjectedSlot(agent, p, fields, contextHistory)
   else writeSessionFile(p, { ...fields, history: legacyHistory(agent), contextHistory })
+  if (agent.provider?.format === "responses" && !agent._responsesStatePath) {
+    const current = agent._responsesState
+    attachResponsesSession(agent, p)
+    if (current && !agent._responsesStateUnsupported) agent._responsesState = current
+  }
+  checkpointResponsesHistory(agent)
+  persistResponsesSession(agent)
   // 记录我们刚写的 mtime——下次保存跳过解析（缓存 = `{p, mtimeMs}` 按路径命中：#386）+
   // 摘要 `ts` 地板入参（#503：保存面**写后取** mtime——同族先例 session-slot-verify.mjs:99）。
   let wroteMtimeMs

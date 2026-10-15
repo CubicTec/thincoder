@@ -13,6 +13,9 @@
  * `signal` 短路）。HTTP 非 2xx / 网络失败**抛出**（调用方决定降级——与现实现同）；
  * 解析保持防御性（字段缺失即跳过该项）。候选不过滤非对话模型（embedding 等——§16.6 #14）。
  */
+import { resolveProviderAuth } from "./auth-context.mjs"
+import { assertProviderAuthConfig, isChatGptProvider } from "./auth-config.mjs"
+import { responsesError } from "./errors.mjs"
 import { proxyFetch } from "../proxy.mjs"
 import { resolveProviderSecrets } from "../env-ref.mjs"
 
@@ -26,6 +29,7 @@ const ANTHROPIC_VERSION = "2023-06-01"
 async function fetchJson(provider, url, headers, signal) {
   const opts = {
     headers,
+    ...(isChatGptProvider(provider) ? { redirect: "error" } : {}),
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(LIST_TIMEOUT_MS)]) : AbortSignal.timeout(LIST_TIMEOUT_MS),
     _headerTimeoutMs: LIST_TIMEOUT_MS,
     _bodyIdleMs: LIST_TIMEOUT_MS,
@@ -33,6 +37,10 @@ async function fetchJson(provider, url, headers, signal) {
   const response = await (provider.proxyUri ? proxyFetch(url, opts, provider.proxyUri) : fetch(url, opts))
   if (!response.ok) {
     const text = await response.text().catch(() => "")
+    if (isChatGptProvider(provider)) {
+      let detail; try { detail = JSON.parse(text) } catch { detail = { error: { message: "Model catalog request failed" } } }
+      throw responsesError(provider, detail, { status: response.status, requestId: response.headers.get("x-request-id"), stage: "catalog" })
+    }
     const e = new Error(`GET /models failed ${response.status}: ${text.slice(0, 200)}`)
     e.status = response.status // 展示面可判「不可用」
     throw e
@@ -95,7 +103,7 @@ async function listGoogle(provider, signal) {
 }
 
 /** List available model IDs from the provider's /models endpoint (format 分派——M1)。 */
-export async function listModels(provider, { signal } = {}) {
+export async function listLegacyModels(provider, { signal } = {}) {
   // #57（provider-config-family 批）：清单拉取入口凭据值位解析（CONFIG.md §6.3）——三 format 分支共享。
   provider = resolveProviderSecrets(provider)
   const base = String(provider?.baseURL ?? "").replace(/\/+$/, "")
@@ -106,6 +114,28 @@ export async function listModels(provider, { signal } = {}) {
       : await listOpenai(provider, signal)
   // §2.5 #115 并入（VSC 排序）：返回前本端排序——UI 确定性。
   return ids.filter((id) => typeof id === "string" && id).sort()
+}
+
+/** Rich account-specific catalog. No cache: switching profiles cannot reuse another account's results. */
+export async function listModelCatalog(provider, { signal } = {}) {
+  assertProviderAuthConfig(provider)
+  if (!isChatGptProvider(provider)) return (await listLegacyModels(provider, { signal })).map((id) => ({ id, slug: id, displayName: id }))
+  const auth = await resolveProviderAuth(provider, { signal, path: "/models", method: "GET", purpose: "catalog" })
+  try {
+    const data = await fetchJson(provider, auth.url, auth.headers, auth.signal)
+    if (!Array.isArray(data?.models)) throw new Error("ChatGPT model catalog is malformed: expected models array")
+    if (data.models.some((m) => !m || typeof m.slug !== "string" || !m.slug || typeof m.display_name !== "string" || typeof m.visibility !== "string")) {
+      throw new Error("ChatGPT model catalog contains an invalid model record")
+    }
+    return data.models.filter((m) => m.visibility === "list").map((m) => ({
+      id: m.slug, slug: m.slug, displayName: m.display_name, visibility: m.visibility,
+    }))
+  } finally { auth.release() }
+}
+
+/** Compatibility facade: SIWC preserves server order; existing providers retain sorted IDs. */
+export async function listModels(provider, options = {}) {
+  return (await listModelCatalog(provider, options)).map((m) => m.id)
 }
 
 /** 渠道准入失败消息（§2.5 #115 / VSC M8 并入——逐字长句 = 消息本体；状态标签由 UI 层组合）。

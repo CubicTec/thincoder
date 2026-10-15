@@ -1,3 +1,4 @@
+import { unlinkResponsesSession } from "./responses-session.mjs"
 /**
  * session-slots.mjs — slot / manifest 管理（2026-08-31 advisor round1 🔴 拆分：
  * session.mjs 曾超 500 行硬限；slot 所有权、认领、清单与核心读写分离，session.mjs
@@ -226,6 +227,7 @@ export function deleteSlot(cwd, slot, { end = sessionEnd() } = {}) {
   delete m.slots[n]
   delete m.slotSessions?.[n] // orphan session-id entries bloat the manifest forever
   try { unlinkSync(slotPath(cwd, n)) } catch { /* missing file is fine */ }
+  unlinkResponsesSession(slotPath(cwd, n))
   unlinkRecordStore(slotPath(cwd, n)) // §6.14 生命周期联动：删槽连带删除记录存储（sidecar）
   if (m.active === n) delete m.active
   // setActive: true —— 显式表达"删到 active 时 active 置空"的意图（saveManifest 默认

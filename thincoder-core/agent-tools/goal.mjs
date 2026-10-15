@@ -1,5 +1,6 @@
 // F-CC4（CONTEXT-COMPACTION.md §6.16.5）：goal 任一状态变更 ⇒ 方向转换轻推（本档只调用；文案/去重单源 = agent-tools/context.mjs）
 import { pushContextNudge } from "./context.mjs"
+import { requireCompletedResponse } from "../provider/errors.mjs"
 import { DESC } from "../tools/shared.mjs"
 
 /**
@@ -85,6 +86,7 @@ Has this goal been achieved? Answer ONLY "YES" or "NO" followed by a one-sentenc
               traces: agent.config?.traces?.enabled !== false,
             },
           })
+          requireCompletedResponse(agent.provider, judgeRes, "goal verification")
           const verdict = (judgeRes.content ?? "").trim()
           if (verdict.toUpperCase().startsWith("NO")) {
             return `Goal NOT complete (judge says NO): ${verdict.slice(2).trim()}\n\nContinue working or report blocked if this is a true impasse.`
@@ -93,7 +95,10 @@ Has this goal been achieved? Answer ONLY "YES" or "NO" followed by a one-sentenc
             return `Goal completion unverified — judge response ambiguous: "${verdict.slice(0, 200)}". Re-check your criteria and try again with clear evidence.`
           }
         } catch {
-          // Judge unavailable — allow completion but note it
+          if (agent.provider?.format === "responses") {
+            return "Goal completion unverified — the judge request did not complete. The goal remains active; verify the criteria and retry or report the blocker."
+          }
+          // Preserve the existing fallback for other provider protocols.
         }
       }
 

@@ -9,6 +9,8 @@
  * 并按 0.75 一次性预算提示 + 结构化超时尾收尾；守卫与限额函数在 compaction.mjs。
  */
 import { chat } from "../provider/core.mjs"
+import { requireCompletedResponse } from "../provider/errors.mjs"
+import { createAdvisorResponsesContext } from "./responses-context.mjs"
 import { providerSpec, assistantToolCallMessage } from "../config.mjs"
 import { toOpenAISchema } from "../tools/index.mjs"
 import { truncateAdvisorResult } from "./truncate.mjs"
@@ -65,6 +67,7 @@ export { advisorToolsFor, advisorToolsFor as _advisorToolsFor }
 async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, cwd, toolsOverride = null, reviewType = "code", batchDoc = null, pinned = null, seams = {}) {
   const now = seams.now ?? Date.now
   const chatCall = seams.chat ?? chat
+  const replay = createAdvisorResponsesContext(provider)
   // ④ 端差注入点（CORE-UNIFICATION §2.5 #109「进度行按端注入」）：工具进度行的参数摘要
   // 是**展示面**（单源 = 核 `tool-args.mjs` `describeToolArgs`（B7 1a）；CLI 取核件转口，VSC = 卡片头），不进核。
   // 未注入 ⇒ 不发进度行（核内零端名分支——契约 5 / 10）。端在装配层传入自己的格式化器。
@@ -134,6 +137,7 @@ async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, c
     // 压缩协作（迁出 compaction.mjs `compactContextIfNeeded`）：超限尾 ⇒ 收尾
     const contextTail = compactContextIfNeeded(messages, budget, pinned, onText)
     if (contextTail) return renderTimeline(timeline, contextTail)
+    const responsesContext = replay.prepare(messages, onText)
     
     // LLM generation silence: the reasoning phase produces no SSE bytes for
     // seconds to tens of seconds (server-side prefill on large contexts, per
@@ -153,8 +157,9 @@ async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, c
       : AbortSignal.timeout(remaining)
     let response
     try {
-      response = await chatCall(provider, {
+      response = await chatCall(replay.provider, {
         messages,
+        responsesContext: responsesContext ?? undefined,
         tools: toolSchemas,
         signal: callSignal,
         onToken: (t) => { if (String(t ?? "").trim()) { reviewTextProduced = true; silentRounds = 0; roundHadText = true } onText(t) },
@@ -190,6 +195,8 @@ async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, c
       return renderTimeline(timeline, timeoutTail(timeoutMs, turns, toolCallCount, reviewTextProduced))
     }
 
+    requireCompletedResponse(provider, response, "advisor review", { allowToolCalls: true })
+
     // No tool calls — this is the final review text. The final answer was
     // already streamed into the timeline via onText; fall back to
     // response.content only if nothing was recorded.
@@ -205,6 +212,7 @@ async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, c
     // after the first tool call, returns only at the final answer" symptom.
     // Mirrors the main agent's push (agent.mjs).
     messages.push(assistantToolCallMessage(response, providerSpec(provider)))
+    replay.record(response, messages)
 
     // B1: the SAME LLM reply's multiple read-only
     // tool calls run in PARALLEL (Promise.all) — results are backfilled in

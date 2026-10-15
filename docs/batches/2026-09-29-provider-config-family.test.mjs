@@ -7,7 +7,7 @@
  *   node --test .thincoder/tmp/2026-09-29-provider-config-family.test.mjs
  *   node --test docs/batches/2026-09-29-provider-config-family.test.mjs   （转正后同跑）
  *
- * 覆盖 = 批档 §2.2.4 用例表：H-1..H-3（预设面——2026-10-09 清除批随正：行形零 `model` ∥ 全表 25 条逐条无 `model` 键；原 `specMatch` 漂移白名单判据对象随渠道单值模型退场删除）∥
+ * 覆盖 = 批档 §2.2.4 用例表：H-1..H-3（预设面——2026-10-09 清除批随正：行形零 `model` ∥ 全表 27 条逐条无 `model` 键；原 `specMatch` 漂移白名单判据对象随渠道单值模型退场删除）∥
  * E-1..E-9（解析面 + 遮蔽零改 + 点集静态断言）+ 评审 #9 标题径行为例（设值 ⇒ Authorization 真值；
  * 未设 ⇒ 零请求 + 标题 null）+ 五族读点补齐（embedding ∕ websearch——E-1/E-4 同判据延伸）。
  * H-4（无 key 实拉不可达）= 非机检——批档 §5 记「待验（无 key）」。
@@ -42,9 +42,9 @@ const chatOk = (content) => new Response(
 
 // ─── #176 预设面（H-1..H-3） ───
 
-test("H-1/H-2 预设面：huawei 行形（最小两字段）+ 25 键 + 既有 21 键零改（抽样逐字段）", () => {
+test("H-1/H-2 预设面：huawei 行形（最小两字段）+ 27 键 + 既有 21 键零改（抽样逐字段）", () => {
   const names = Object.keys(presets.PROVIDER_PRESETS)
-  assert.equal(names.length, 25, "预设总数 = 25（2026-10-04 opencode-go-preset 批后；2026-10-09 server 预设批 +gemini-openai）")
+  assert.equal(names.length, 27, "预设总数 = 27（2026-10-15 增加两个显式 OpenAI Responses 入口）")
   assert.deepEqual(names.slice(names.indexOf("tokenhub"), names.indexOf("tokenhub") + 2), ["tokenhub", "huawei"], "插位 = tokenhub 后（国内云厂商组尾）")
   // 行形：presetToEntry ⇒ { name, baseURL }（desc 剥离；零 model——2026-10-09 清除批；无 thinking ∕ reasoningEffort ∕ maxTokens 键）
   assert.deepEqual(presets.presetToEntry("huawei"), {
@@ -56,7 +56,7 @@ test("H-1/H-2 预设面：huawei 行形（最小两字段）+ 25 键 + 既有 21
   assert.equal(raw.desc, "Huawei Cloud ModelArts Studio (华为云 MaaS)")
   // 既有 21 键零改：全键名 + 抽样逐字段 deepEqual（含 thinking ∕ effort ∕ maxTokens ∕ format ∕ chatPath 形态位）
   const OLD21 = ["deepseek", "kimi", "kimi-code", "glm", "glm-code", "qwen", "qwenplan", "mimo", "mimoplan", "minimax", "openai", "claude", "gemini", "grok", "mistral", "volcengine", "hunyuan", "tokenhub", "siliconflow", "openrouter", "groq"]
-  assert.deepEqual([...names].sort(), [...OLD21, "huawei", "opencode-go", "opencode-go-anthropic", "gemini-openai"].sort(), "键集 = 21 旧键 + huawei + 两 opencode-go 键 + gemini-openai（零增删）")
+  assert.deepEqual([...names].sort(), [...OLD21, "huawei", "opencode-go", "opencode-go-anthropic", "gemini-openai", "openai-responses", "openai-chatgpt"].sort(), "键集 = 21 旧键 + huawei + 两 opencode-go 键 + gemini-openai + 两个 OpenAI Responses 入口")
   const SAMPLE = {
     deepseek: { baseURL: "https://api.deepseek.com", thinking: { type: "enabled" }, reasoningEffort: "max", maxTokens: 384_000, desc: "DeepSeek" },
     "kimi-code": { baseURL: "https://api.kimi.com/coding/v1", thinking: null, reasoningEffort: "max", maxTokens: 131072, desc: "Kimi For Coding (platform.kimi.com — sk-kimi- keys; NOT interchangeable with Moonshot)" },
@@ -70,7 +70,7 @@ test("H-1/H-2 预设面：huawei 行形（最小两字段）+ 25 键 + 既有 21
   for (const [name, expect] of Object.entries(SAMPLE)) assert.deepEqual(presets.PROVIDER_PRESETS[name], expect, `预设 ${name} 零改`)
 })
 
-test("H-3 护栏（2026-10-09 清除批随正）：全表 25 条逐条无 `model` 键（原 specMatch 漂移白名单判据对象随渠道单值模型退场删除）", () => {
+test("H-3 护栏（2026-10-09 清除批随正）：全表 27 条逐条无 `model` 键（原 specMatch 漂移白名单判据对象随渠道单值模型退场删除）", () => {
   for (const [name, p] of Object.entries(presets.PROVIDER_PRESETS)) {
     assert.equal("model" in p, false, `${name} 无 model 键`)
   }
@@ -241,7 +241,7 @@ test("E-8 遮蔽零改：引用串住敏感值位 ⇒ MASKED（headers 族同）
   assert.equal(gotH, `providers.0.headers.X-Secret = ${settings.MASKED} (string)`, "headers 族遮罩不变")
 })
 
-test("E-9 静态：解析函数使用点集 = 六处（排除叶档定义 ∕ 内部复用）——防漏接 ∕ 防扩面", () => {
+test("E-9 静态：解析函数使用点集 = 七处（排除叶档定义 ∕ 内部复用）——防漏接 ∕ 防扩面", () => {
   const TREES = ["thincoder-core", "thincoder-cli/src", "thincoder-cli/bin", "thincoder-vscode/src", "thincoder-desktop/src"]
   const FUNCS = /resolveEnvRefs|resolveEnvRefMap|resolveProviderSecrets|resolveMcpServerSecrets/
   const hits = []
@@ -262,10 +262,11 @@ test("E-9 静态：解析函数使用点集 = 六处（排除叶档定义 ∕ �
     "thincoder-core/embedding.mjs",
     "thincoder-core/generate-title.mjs",
     "thincoder-core/mcp.mjs",
+    "thincoder-core/provider/auth-context.mjs",
     "thincoder-core/provider/core.mjs",
     "thincoder-core/provider/list-models.mjs",
     "thincoder-core/tools/web.mjs",
-  ], "六处消费点（防漏接 ∕ 防扩面）")
+  ], "七处消费点（防漏接 ∕ 防扩面）")
   const USE = {
     "thincoder-core/provider/core.mjs": "resolveProviderSecrets",
     "thincoder-core/provider/list-models.mjs": "resolveProviderSecrets",

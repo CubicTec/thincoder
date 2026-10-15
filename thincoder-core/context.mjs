@@ -12,6 +12,8 @@
  */
 
 import { chat } from "./provider/index.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"
 import { contextUsage, estimateTokens, keepTailSize, splitHistory, tailBudgetTokens } from "./token-window.mjs"
 import { COMPACTION_PLACEHOLDER, withPlaceholderPrefix } from "./context-echo.mjs"
@@ -147,6 +149,8 @@ function applyCompression(agent, headEnd, tailStart, note) {
       content: "[System reminder: plan mode is active. Explore the codebase read-only, design your solution, then call plan with action='exit' to present it for user approval.]",
     })
   }
+  checkpointResponsesHistory(agent)
+  persistResponsesSession(agent)
 }
 
 /**
@@ -213,6 +217,8 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
       traces: agent.config?.traces?.enabled !== false,
     },
   })
+
+  requireCompletedResponse(agent.provider, summary, "compaction")
 
   // Blank-summary guard (§6.14 退化面 3): a blank summary would land in applyCompression as
   // "middle dropped + empty note" and still count as success — throw into the failure chain instead.

@@ -15,6 +15,8 @@
  *   4. Set agent.provider.reasoningEffort before the real chat() call
  */
 import { chat } from "./provider/core.mjs"
+import { requireCompletedResponse } from "./provider/errors.mjs"
+import { isChatGptProvider } from "./provider/auth-config.mjs"
 import { specForModel } from "./config.mjs"
 // #860（AGENT-LOOP.md §6.1 ∥ §7 D-AL26）：off 形族的单一实现源（写面取形 + 有效 off 路径判据）
 import { thinkOffPath, thinkOffShape } from "./think-off.mjs"
@@ -91,7 +93,7 @@ export async function classifyAndApply(agent, turn) {
   try {
     // #860：关思考形（族别 off 形）+ 小预算 32（原 10 token 被思考吃光）+ reasoningEffort 清空
     //（防父档外溢；effort 族 off 形由载荷门补发 reasoning_effort:"none"）。
-    const classifierProvider = { ...agent.provider, maxTokens: 32, thinking: thinkOffShape(spec), reasoningEffort: null }
+    const classifierProvider = { ...agent.provider, ...(!isChatGptProvider(agent.provider) ? { maxTokens: 32 } : {}), thinking: thinkOffShape(spec), reasoningEffort: null }
     const response = await chat(classifierProvider, {
       messages: [
         { role: "system", content: CLASSIFY_PROMPT },
@@ -114,6 +116,7 @@ export async function classifyAndApply(agent, turn) {
         kind: "autothink",
       },
     })
+    requireCompletedResponse(agent.provider, response, "difficulty classification")
     const word = (response.content ?? "").trim().toLowerCase()
     if (word.startsWith("low")) level = "low"
     else if (word.startsWith("medium") || word.startsWith("med")) level = "medium"

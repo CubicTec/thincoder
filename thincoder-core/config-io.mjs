@@ -199,6 +199,8 @@ export function cascadeRemoveProvider(raw, name) {
 
 /** 写一个渠道的 key（整 providers[] 重写）。冲突 → CONFIG_CONFLICT_HINT；成功 null。 */
 export function setProviderKey(name, key) {
+  const entry = loadRaw().providers?.find((p) => p?.name === name)
+  if (entry?.auth?.type === "chatgpt_oauth") return "Use Sign in with ChatGPT for this provider; API keys are not accepted"
   const r = persistRaw((raw) => {
     raw.providers = Array.isArray(raw.providers) ? raw.providers : []
     const entry = raw.providers.find((p) => p?.name === name)
@@ -216,7 +218,7 @@ export function removeProviderKeyFromConfig(name) {
   return conflictError(r)
 }
 
-const FORMATS = ["openai", "anthropic", "google"]
+const FORMATS = ["openai", "anthropic", "google", "responses"]
 
 /** 新增渠道。payload: { preset?: name, custom?: { name, baseURL, format }, key?, proxy? }
  *  `proxy === true` ⇒ 同批落 `proxy: true`（缺 ∥ 非真 ⇒ 零键——与行面 `handleSetProviderProxy` 同判据）。
@@ -256,6 +258,7 @@ export function addProviderEntry({ preset, custom, key, proxy } = {}) {
   // #1062（PROVIDER.md §6.23）：落条与置钥合为**一次**写——单写原子（不被两段写撕开 ⇒ 半状态
   // 不可达）；F5b 冲突 ⇒ 提示串且零落盘（条目 ∥ 钥俱不落）。
   const k = (key || "").trim()
+  if (k && entry.auth?.type === "chatgpt_oauth") return "ChatGPT OAuth and API keys cannot be combined"
   const r = persistRaw((raw) => {
     (raw.providers ??= []).push(entry)
     if (k) entry.apiKey = k

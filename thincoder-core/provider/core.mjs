@@ -1,3 +1,6 @@
+import { validateResponsesConfig } from "./capabilities.mjs"
+import { assertProviderAuthConfig, isChatGptProvider, normalizeProviderAuth } from "./auth-config.mjs"
+import { recordProviderInference } from "./auth-context.mjs"
 /**
  * provider/core.mjs — LLM call core
  * chat / createProvider / requestWithRetry
@@ -42,11 +45,20 @@ export async function sleepInterruptible(ms, signal) {
 /** Create a validated provider config object from raw config */
 export function createProvider(config) {
   if (!config?.baseURL) throw new Error("provider config: baseURL is required — configure providers in ~/.thincoder/config.json")
-  if (!config?.apiKey) throw new Error("provider config: apiKey is required — configure it in ~/.thincoder/config.json")
+  assertProviderAuthConfig(config)
+  validateResponsesConfig(config)
+  if (!isChatGptProvider(config) && !config?.apiKey) throw new Error("provider config: apiKey is required — configure it in ~/.thincoder/config.json")
   if (!config?.model) throw new Error("provider config: model is required — configure in ~/.thincoder/config.json")
   return {
     baseURL: config.baseURL.replace(/\/+$/, ""),
     apiKey: config.apiKey,
+    name: config.name,
+    ...(config.auth ? { auth: normalizeProviderAuth(config.auth) } : {}),
+    headers: config.headers,
+    stateful: config.stateful,
+    store: config.store,
+    builtinTools: config.builtinTools,
+    fetchTimeoutMs: config.fetchTimeoutMs,
     model: config.model,
     maxTokens: config.maxTokens,
     temperature: config.temperature,
@@ -88,6 +100,7 @@ export async function chat(provider, opts = {}) {
   logEvent("llm:start", { provider: pname, model: provider?.model ?? "", stage: logCtx.stage, turn: logCtx.turn, auto: logCtx.auto === true, child: logCtx.child })
   try {
     const result = await chatImpl(provider, opts)
+    recordProviderInference(provider, result)
     logEvent("llm:done", {
       provider: pname, model: provider?.model ?? "",
       ms: Date.now() - t0,
@@ -101,6 +114,7 @@ export async function chat(provider, opts = {}) {
     recordChatTrace(provider, opts, result, null)
     return result
   } catch (e) {
+    recordProviderInference(provider, e)
     logEvent("llm:error", {
       provider: pname, model: provider?.model ?? "",
       ms: Date.now() - t0,
@@ -115,24 +129,25 @@ export async function chat(provider, opts = {}) {
 }
 
 /** chat 本体（LOG(LLM) 事件包装之外——见上方 chat 包装器）。 */
-async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWait, signal, streamRules, firedPatterns, toolChoice, parallelToolCalls, logCtx }) {
+async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWait, signal, streamRules, firedPatterns, toolChoice, parallelToolCalls, logCtx, responsesContext, purpose }) {
   // #57（provider-config-family 批）：凭据值位 `${env:VAR}` 消费侧解析——单源 `../env-ref.mjs`
   // （CONFIG.md §6.3）。格式分派之前：四 transport ∕ 续写 ∕ advisor ∕ 子代理 ∕ 压缩同享；
   // 未设 ∕ 空串 ∕ 畸形 ⇒ 此处抛错（点名变量，无回退）。
+  assertProviderAuthConfig(provider)
   provider = resolveProviderSecrets(provider)
   // #1063（PROVIDER.md §6.23）：缺钥前置守卫——trim 空 ⇒ 可读错误 + **零请求**（先于 rateGate ∥
   // 全部 fetch）。单点覆盖四 transport（openai ∥ anthropic ∥ google ∥ responses）与续写 ∕ advisor ∕
   // 子代理 ∕ consult 全链；四档凭据位不各自加守卫（避判据增殖）。
   const apiKey = typeof provider?.apiKey === "string" ? provider.apiKey.trim() : ""
-  if (!apiKey) throw new Error(`API key missing for provider "${provider?.name ?? provider?.model ?? "unknown"}" — configure it in Settings (Providers) or ~/.thincoder/config.json`)
+  if (!isChatGptProvider(provider) && !apiKey) throw new Error(`API key missing for provider "${provider?.name ?? provider?.model ?? "unknown"}" — configure it in Settings (Providers) or ~/.thincoder/config.json`)
   // Sanitize BEFORE format dispatch — image poisoning bricks anthropic/google sessions
   // the same way it bricks OpenAI-format ones (all raster-only).
   // providerSpec: spec with the provider-level context override (PROVIDER.md §6.15) — the
   // window/clamping logic below reads the overridden value where it matters.
   const spec = providerSpec(provider)
-  messages = stripImagesForTextModel(messages, spec)
+  if (!isChatGptProvider(provider)) messages = stripImagesForTextModel(messages, spec)
   // #853 D-PR32：历史图片累计字节预算——发送前对消息副本累计驱逐（最老先弃；history 本体零触）。
-  messages = capHistoryImages(messages)
+  if (!isChatGptProvider(provider)) messages = capHistoryImages(messages)
   // SESSION.md §6.9 T-S3: local-only message fields (ts/transient) never reach the wire.
   // Stripped BEFORE format dispatch — anthropic/responses transports pass whole message
   // objects through verbatim (only the OpenAI path ran escapeMessages). Copy-on-write:
@@ -164,12 +179,11 @@ async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWai
     // 2026-08-31：Responses API transport（PROVIDER.md §6.13）——双轨链在 transport 内部
     // 自行管理（provider._responsesChain），agent 层零改动。
     // round3 #3：配对归一化必须在此分派前（压缩/中断遗留的孤儿 tool 消息发向严格服务端会 400）
-    messages = normalizeToolPairing(messages)
+    if (!responsesContext && !isChatGptProvider(provider)) messages = normalizeToolPairing(messages)
     const { chat: responsesChat } = await import("./responses.mjs")
     return responsesChat(provider, {
-      messages,
-      tools,
-      onToken, onReasoning, onWait, signal, toolChoice,
+      messages, tools, onToken, onReasoning, onWait, signal, toolChoice, parallelToolCalls,
+      responsesContext, purpose: purpose ?? logCtx?.kind ?? logCtx?.stage ?? "main",
     })
   }
 

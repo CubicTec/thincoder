@@ -1,3 +1,4 @@
+import { attachResponsesSession, resetResponsesSession } from "./responses-session.mjs"
 /**
  * session-lifecycle.mjs — 会话生命周期面（init-block 批 · F-MI7 拆分——`session.mjs` 500 行
  * 硬限；各函数语义原样外提，SESSION.md §6.10 D-2 / §6.12 / §6.11 注记随迁）：
@@ -112,6 +113,7 @@ export function applySession(agent, data, opts = {}) {
   const machineMerged = mergeAdjacentAssistantEchoes(machine)
   // 绑定态（opts.slot 在场）：人读线 = 记录存储尾窗（下方绑定块填充）——不复制全量 JSON 数组
   agent._fullHistory = opts.slot != null ? [] : [...full]
+  resetResponsesSession(agent)
   agent.history = [...machineMerged]
   agent.title = data.title ?? ""
   agent.tasks = data.tasks ?? []
@@ -157,6 +159,7 @@ export function applySession(agent, data, opts = {}) {
       baseHistory: full,
     })
     agent._fullHistory = store.tail(RECORD_WINDOW_MESSAGES)
+    attachResponsesSession(agent, slotPath(agent.cwd, opts.slot))
   } else {
     unbindRecordStore(agent)
   }
@@ -295,6 +298,7 @@ export async function newSession(cwd, opts = {}) {
  *  旧标题写进新槽（实锤 .19/.3 双副本）；注入标志不清则 /new 后新会话永不注入
  *  OS/cwd reminder（2026-09-01 会诊 glm 🟡）。autoApprove 是用户偏好，跨会话保留（有意）。 */
 export function resetSessionState(agent) {
+  resetResponsesSession(agent)
   agent._fullHistory = []
   agent.history = []
   agent.title = ""

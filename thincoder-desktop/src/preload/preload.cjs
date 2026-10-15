@@ -52,7 +52,7 @@ const CHANNELS = Object.freeze([
   "theme:state",
   "panel:state",
   "team:status", "team:login", "team:logout", "team:verify",
-  "secret:respond",
+  "secret:respond", "auth:action",
 ])
 /** 出站订阅白名单（序同桥面表；名面与主侧 `webContents.send` 用名同；**二十五条** = 回调映射十四条（含 **R4 增 `ev:statusText` ∕ `ev:compress`**——桥 `onWait` ∕ `onCompressStart` ∕ `onCompress` ∕ `onCompressFail` 映射；**SSH 会话批增 `ev:secret`**——桥 `onSecretInput` 映射，凭据门）+ 宿主自产十一条（`ev:usage` / `ev:error` / `ev:susp` / `ev:digest` / `ev:ledger` [`ev:timer` —— timer-wake 阶段 2 增] / [`ev:queue` —— 「回合中插入」批增] / [`ev:flags` —— R1 输入面板移植增：工具驱动翻转 ∕ 写回执后] / [`ev:goal` —— **R5 增**：goal 工具结果时点采样] / [`ev:config` —— **R8 增**：config 写盘感知——宿主 watch onChange 出站，渲染面设置面复读] / [`ev:menu` —— **D36 增**：菜单动作（主→渲染单向；六动作闭集——#817 收正（五 ⇒ 六：+`openSettings`）；纯信号）]）—— 非回调映射；计数族权威数 / 三档同值收正 = 在册登记（`docs/desktop/design/PROJECT.md` §10 BE 行），事件映射段 = `docs/desktop/design/IPC.md` §1）。 */
 const EVENT_CHANNELS = Object.freeze([

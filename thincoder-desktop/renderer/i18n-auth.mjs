@@ -1,0 +1,40 @@
+export const AUTH_DICT = {
+  "en": {
+    "auth.source": "ChatGPT plan",
+    "auth.experimental": "Enable experimental ChatGPT plan access",
+    "auth.signedOut": "Not signed in",
+    "auth.authorized": "Plan use authorized",
+    "auth.notAuthorized": "Plan use not authorized",
+    "auth.verified": "Last inference completed",
+    "auth.unverified": "Inference not verified",
+    "auth.failed": "Last inference failed",
+    "auth.incomplete": "Last inference incomplete",
+    "auth.limits": "No API key. Temperature and output-token limits are unavailable. Auxiliary requests use the same plan.",
+    "auth.login": "Sign in with ChatGPT",
+    "auth.addAccount": "Add account",
+    "auth.cancel": "Cancel sign-in",
+    "auth.select": "Select account",
+    "auth.logout": "Sign out",
+    "auth.manage": "Manage usage",
+    "auth.revocationUnknown": "Signed out locally; remote revocation was not confirmed."
+  },
+  "zh": {
+    "auth.source": "ChatGPT 计划",
+    "auth.experimental": "启用实验性 ChatGPT 计划访问",
+    "auth.signedOut": "尚未登录",
+    "auth.authorized": "计划使用已获授权",
+    "auth.notAuthorized": "计划使用未获授权",
+    "auth.verified": "最近推理已完成",
+    "auth.unverified": "推理尚未验证",
+    "auth.failed": "最近推理失败",
+    "auth.incomplete": "最近推理未完成",
+    "auth.limits": "无需 API Key。不支持温度及输出 token 上限。辅助请求使用同一计划用量。",
+    "auth.login": "使用 ChatGPT 登录",
+    "auth.addAccount": "添加账户",
+    "auth.cancel": "取消登录",
+    "auth.select": "选择账户",
+    "auth.logout": "退出登录",
+    "auth.manage": "管理用量",
+    "auth.revocationUnknown": "本地已退出；远端撤销未确认。"
+  }
+}

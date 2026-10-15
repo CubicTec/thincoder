@@ -1,3 +1,4 @@
+import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs"
 /**
  * settings.mjs — 主侧设置族处理体：`config:write`（仅语言面）/ `model:list`（逐模型档位投影）/
  * **`model:catalog`（全渠扇出候选面 —— 模型菜单全渠扇出批 · 2026-09-29）** /
@@ -27,7 +28,7 @@
 import { loadConfig } from "@thincoder/core/config.mjs"
 import { _configPath, resolveProviders, writeConfigAtomic } from "@thincoder/core/config-io.mjs"
 import { SUPPORTED_LOCALES, normalizeLocale, projectDictionary } from "@thincoder/core/i18n.mjs"
-import { channelUnavailableMessage, probeChannelModels } from "@thincoder/core/provider/list-models.mjs"
+import { channelUnavailableMessage, probeChannelModels, listModelCatalog } from "@thincoder/core/provider/list-models.mjs"
 import { probeTargetOf } from "@thincoder/core/provider-flows.mjs"
 import { specForModel } from "@thincoder/core/model-specs.mjs"
 import { thinkOffPath, applyAdvisorEffort } from "@thincoder/core/think-off.mjs"
@@ -101,7 +102,15 @@ const modelEntry = (id) => {
 /** 渠条目持密钥判据（全渠扇出前的**渠滤**单点）—— 对位 VSC `isProviderConfigured` 的 `resolveKey` 口径
  *  （`presets.mjs:97-99`：key **非空白**）；纯空白 key 边缘档与 `provider:list` 行面 `hasKey`（`length > 0`）
  *  不同判 —— 本批渠滤以 VSC 对位为准。 */
-const hasKeyOf = (entry) => typeof entry?.apiKey === "string" && entry.apiKey.trim() !== ""
+const hasKeyOf = hasProviderCredentials
+
+async function probeCatalog(provider) {
+  if (provider.auth?.type !== "chatgpt_oauth") return probeChannelModels(provider.name, probeTargetOf(provider))
+  try {
+    const catalog = await listModelCatalog(probeTargetOf(provider))
+    return { ok: true, models: catalog.map((m) => m.id), labels: Object.fromEntries(catalog.map((m) => [m.id, m.displayName])) }
+  } catch (error) { return { ok: false, error: error.message } }
+}
 
 /**
  * `model:catalog`（无载荷）⇒ `{ ok:true, models:[{ provider, id, effortEnum, thinkOff }], unavailable:[{ provider, reason }] }`
@@ -115,7 +124,7 @@ const hasKeyOf = (entry) => typeof entry?.apiKey === "string" && entry.apiKey.tr
 export async function modelCatalog() {
   const configured = resolveProviders().providers.filter((p) => hasKeyOf(p))
   const settled = await Promise.allSettled(
-    configured.map((entry) => probeChannelModels(entry.name, probeTargetOf(entry))),
+    configured.map((entry) => probeCatalog(entry)),
   )
   const models = []
   const unavailable = []
@@ -124,12 +133,14 @@ export async function modelCatalog() {
     // 探针语义 = 绝不抛出（核单源）；rejected 只可能来自注入缝 —— 仍落诊断项，不假成功。
     const result = outcome.status === "fulfilled" ? outcome.value : { ok: false, error: channelUnavailableMessage(outcome.reason) }
     if (result?.ok === true) {
-      for (const id of Array.isArray(result.models) ? result.models : []) models.push({ provider: entry.name, ...modelEntry(id) })
+      for (const id of Array.isArray(result.models) ? result.models : []) models.push({ provider: entry.name, ...modelEntry(id), label: result.labels?.[id] || id })
     } else {
-      unavailable.push({ provider: entry.name, reason: result?.error })
+      unavailable.push({ provider: entry.name, reason: result?.error, retryable: entry.auth?.type !== "chatgpt_oauth" })
     }
   })
-  return { ok: true, models, unavailable }
+  // The composer retries the whole catalog. Do not repeatedly probe subscription
+  // accounts because an unrelated API-key provider failed; explicit refresh remains.
+  return { ok: true, models, unavailable, automaticRetry: !configured.some((p) => p.auth?.type === "chatgpt_oauth") }
 }
 
 /**
@@ -146,9 +157,9 @@ export async function modelList(payload) {
   if (!provider) {
     return { ok: false, models: [], reason: channelUnavailableMessage(new Error(`provider not found: ${name}`)) }
   }
-  const probe = await probeChannelModels(name, probeTargetOf(provider))
+  const probe = await probeCatalog(provider)
   if (probe.ok !== true) return { ok: false, models: [], reason: probe.error }
-  return { ok: true, models: (Array.isArray(probe.models) ? probe.models : []).map((id) => modelEntry(id)) }
+  return { ok: true, models: (Array.isArray(probe.models) ? probe.models : []).map((id) => ({ ...modelEntry(id), label: probe.labels?.[id] || id })) }
 }
 
 /** **S11**：advisor 推理档写键（三态写语义经核 `applyAdvisorEffort`——本档只做 spec 解引用）。 */

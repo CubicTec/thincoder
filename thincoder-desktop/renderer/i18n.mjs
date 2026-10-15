@@ -139,6 +139,7 @@
  * 零落盘 · 零 `node:` / 零裸包（渲染面静态闭包判据）。
  */
 import { COMPOSER_DICT } from "./i18n-composer.mjs"
+import { AUTH_DICT } from "./i18n-auth.mjs"
 import { SETTINGS_DICT } from "./i18n-settings.mjs"
 import { VIEWS_DICT } from "./i18n-views.mjs"
 
@@ -233,6 +234,7 @@ export const HOST_DICT = Object.freeze({
     "question.cancel": "Cancel",
     // 「i18n 拆分批」设置面词族第四档（单源 = `renderer/i18n-settings.mjs` —— 合并式两语展开，键序原位）
     ...SETTINGS_DICT.en,
+    ...AUTH_DICT.en,
     // ── 首启向导（批 9：`views/onboarding.mjs`）──
     "wizard.title": "Initial setup",
     "wizard.dismiss": "Close setup",
@@ -341,6 +343,7 @@ export const HOST_DICT = Object.freeze({
     "question.cancel": "取消",
     // 「i18n 拆分批」设置面词族第四档（单源 = `renderer/i18n-settings.mjs` —— 合并式两语展开，键序原位）
     ...SETTINGS_DICT.zh,
+    ...AUTH_DICT.zh,
     // ── 首启向导（批 9：`views/onboarding.mjs`）──
     "wizard.title": "初始设置",
     "wizard.dismiss": "关闭向导",

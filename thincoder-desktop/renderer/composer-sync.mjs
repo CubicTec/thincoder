@@ -121,7 +121,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     }
     const id = typeof row?.id === "string" ? row.id : ""
     if (id === "") return null
-    return { id, label: id, provider, group: provider, reasoning: levels }
+    return { id, label: row.label || id, provider, group: provider, reasoning: levels }
   }
 
   /** 现值供给（核件 `models` 推送的 `prefs` 件）：端会话元 `{ provider, model, effort }` ⇒ 核件形 `{ model, provider,
@@ -257,7 +257,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     const counts = { models: rows.length, unavailable: unavailable.length }
     const improved = lastCounts === null || counts.unavailable < lastCounts.unavailable || counts.models > lastCounts.models
     lastCounts = counts
-    return { rows, unavailable, counts, improved, empty: counts.models === 0 && counts.unavailable === 0 }
+    return { rows, unavailable, counts, improved, automaticRetry: receipt.automaticRetry !== false, empty: counts.models === 0 && counts.unavailable === 0 }
   }
 
   /** 取数一轮（单飞 + 尾随一轮；`chain` = 重探链轮次 —— 链内轮次不终止自身链）：
@@ -286,7 +286,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     if (!landed.empty && (chain ? landed.improved : true)) pushModels(landed.rows) // #6 零推送（两键皆空）
     store.set(setModelCandidates(store.get(), landed.rows, landed.unavailable))
     if (trailing) { trailing = false; void fetchCatalog() } // 尾随一轮（链 ∕ 非链同拍）
-    else if (!chain && landed.unavailable.length > 0) startRetryChain() // #4
+    else if (!chain && landed.automaticRetry && landed.unavailable.length > 0) startRetryChain() // #4
     return landed
   }
 
@@ -303,7 +303,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
         rounds += 1
         const landed = await fetchCatalog({ chain: true })
         if (landed === null) return // 取数失败 ∕ 单飞让位 ⇒ 链止
-        if (landed.unavailable.length === 0) return // 已无失败渠 ⇒ 链止
+        if (!landed.automaticRetry || landed.unavailable.length === 0) return // 已无失败渠 / 授权要求显式重试 ⇒ 链止
       }
     })().finally(() => {
       if (retryChain === chain) { retryChain = null; retryChainToken = null }

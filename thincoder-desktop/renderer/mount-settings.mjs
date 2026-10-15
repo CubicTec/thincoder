@@ -255,6 +255,7 @@ export function attachSettings(host, deps = {}) {
    *  「采用」接线随注入 —— 单一实现 = 出口族 `onUseModel`（同一引用，零第二实现））。 */
   const { handlers: wizardHandlers } = createWizard({
     store, ask, report, clearReport, loadModels: reads.loadModels,
+    openSettings: () => exits.openSettings(),
     submitChannel: exits.handlers.onSubmit, verifyChannel: exits.handlers.onVerify,
     useModel: exits.handlers.onUseModel,
     loadProviders: reads.loadProviders, // 登录面补全批：团队路登录成 ⇒ 派生条目复读（`loadProviders` —— 同一实现）

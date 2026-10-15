@@ -112,7 +112,15 @@ export function createWizard(deps = {}) {
       console.error("[renderer] wizard save&continue skipped: form unavailable")
       return
     }
-    const key = String(new FormData(form).get("key") ?? "")
+    const data = new FormData(form)
+    const subscription = data.get("preset") === "openai-chatgpt"
+    const key = String(data.get("key") ?? "")
+    if (subscription) {
+      if (await submitChannel(event) !== true) return
+      store.set(dismissWizard(store.get()))
+      deps.openSettings?.()
+      return
+    }
     if (key === "") {
       enterModelStep()
       return
@@ -214,6 +222,7 @@ export function createWizard(deps = {}) {
    *  `onUseModel` = B③ 模型步采用接线（注入即落 —— 同一引用；缺 ⇒ 零键）；
    *  `onGuardBack` = 完成护栏「去保存渠道」（#1277 · KD-79 ③）。 */
   const handlers = {
+    onPresetChange: (selectedPreset) => store.set(patchSettings(store.get(), { wizard: { ...wizardOf(store.get()), selectedPreset } })),
     onSubmit: (event) => void submitAndContinue(event), // 步 1 前向唯一径（②③ 合并 —— 写盘 + 前进同钮）
     onVerify: (name) => void verifyChannel(name),
     onPickDir: () => void pickDir(),

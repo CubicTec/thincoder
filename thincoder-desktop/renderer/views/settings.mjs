@@ -88,7 +88,7 @@ export const REASON_WORD = Object.freeze({
 const SCOPE_WORD = Object.freeze(Object.fromEntries(SECTIONS.map((s) => [s.name, s.word])))
 
 /** 自定形协议域（闭集三协议 —— 与主侧形判同域）。 */
-export const FORMATS = Object.freeze(["openai", "anthropic", "google"])
+export const FORMATS = Object.freeze(["openai", "responses", "anthropic", "google"])
 
 /** 语言控件**目标语**（当前语 ⇒ 另一语 —— 两键闭集，零字形字面）：点按后落语 = `target`。 */
 const LANG_TARGET = Object.freeze({ en: "zh", zh: "en" })
@@ -168,7 +168,7 @@ export function settingsModel(state) {
     providers: {
       state: stateOf(settings.providers),
       presets: listOf(settings.providers?.presets).filter((p) => p && typeof p.name === "string"),
-      rows: listOf(settings.providers?.providers).filter((p) => p && typeof p.name === "string"),
+      rows: listOf(settings.providers?.providers).filter((p) => p && typeof p.name === "string").map((p) => ({ ...p, authBusy: settings.providers?.authBusy?.[p.name] === true, authNotice: settings.providers?.authNotice?.[p.name] || p.authNotice })),
       verify: settings.verify !== null && typeof settings.verify === "object" ? settings.verify : null,
       edit: str(settings.providers?.edit), probe: objOf(settings.providers?.probe), draft: objOf(settings.providers?.draft),
       // KD-75 ③：类型选择现值（形状唯一源）——预设名 ∥ `"custom"`；缺 / 空 ⇒ `"preset"`（缺省态 = 预设形首项）。
@@ -181,7 +181,7 @@ export function settingsModel(state) {
       provider: typeof settings.model?.provider === "string" ? settings.model.provider : null,
       current: typeof settings.model?.current === "string" ? settings.model.current : null,
       // #842：行保持带渠形（全渠扇出面 `{ provider, id }` 行穿透至视图——行自带渠；串行 / 无渠行 ⇒ `provider: null`）。
-      models: listOf(settings.model?.models).map((row) => ({ id: modelIdOf(row), provider: str(row?.provider) })).filter((row) => row.id !== null),
+      models: listOf(settings.model?.models).map((row) => ({ id: modelIdOf(row), provider: str(row?.provider), label: str(row?.label) })).filter((row) => row.id !== null),
     },
     agent: {
       state: stateOf(settings.agent),

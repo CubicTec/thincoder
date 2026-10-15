@@ -230,7 +230,7 @@ test("D4 主面写/探面：providerSave 携 proxy 落条 ∥ providerModels 目
   try {
     // ① 缝射程自证（**先于任何写** —— 只读）：tmp 哨兵 + 桌面主面读面 ⇒ 必见哨兵；不见 ⇒ 即拒（零误写真配置）
     writeFileSync(cfgPath, JSON.stringify({ providers: [{ name: "tc-seam-probe", baseURL: "https://p.example.com/v1", model: "m-p" }] }))
-    const probeNames = main.providerList().providers.map((p) => p.name)
+    const probeNames = (await main.providerList()).providers.map((p) => p.name)
     assert.deepEqual(probeNames, ["tc-seam-probe"], "测试缝射程自证：桌面主面读面 = tmp 配置（先于任何写）")
     // ② providerSave：勾选 ⇒ 条目落旗；缺 ∥ 非真 ⇒ 零键（判据单源 = 核 addProviderEntry）
     writeFileSync(cfgPath, JSON.stringify({}))

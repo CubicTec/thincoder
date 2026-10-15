@@ -61,6 +61,7 @@ export function wizardModel(state) {
     active: settings.configured === false && wizard?.dismissed !== true,
     step,
     presets: face.providers.presets,
+    selectedPreset: wizard?.selectedPreset ?? "preset",
     model: face.model,
     team: face.team,
     verify: face.providers.verify,
@@ -162,7 +163,7 @@ function teamRouteBody(model, handlers) {
  *  〔无 active 写路 ⇒ 死控——件 ∥ 参双净删；等价路径 = 模型段「采用」〕）+ 校验控件 + 校验明细行（#1278）。 */
 function channelBody(model, handlers) {
   const form = channelFormTree({
-    shape: "preset",
+    shape: model.selectedPreset,
     presets: model.presets,
     submitKey: "wizard.saveAndNext", // ②③ 合并（KD-79）：词键 = 既有注入位 `form.submitKey`
     submitClass: "wizard-save", // ① 提级（KD-79）：唯一写盘钮 = 强调形（弹窗径缺省类零变）

@@ -12,6 +12,7 @@
  *   跨档引用面 = 两档表位处 `export { … }` 列。
  * - `channels` 读数口径 = 本次运行**实际分发集合**（顺序去重 —— 批档 §2.11 收正⑦）。
  */
+import { authActionChannel } from "./auth.mjs"
 import { ipcMain } from "electron"
 import {
   CHANNELS, ipcStats,
@@ -87,6 +88,7 @@ const HANDLERS = Object.freeze({
   "team:logout": teamLogoutChannel,
   "team:verify": teamVerifyChannel,
   "secret:respond": secretRespond,
+  "auth:action": authActionChannel,
 })
 
 /** 按白名单逐项注册（白名单项无处理体 ⇒ 抛——装配期即知，不静默）。 */

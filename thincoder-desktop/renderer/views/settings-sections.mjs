@@ -81,7 +81,7 @@ function modelRowNode(row, model, handlers) {
   return {
     tag: "div",
     props: { class: "settings-row", "data-model": id, "data-current": current ? "" : undefined },
-    children: [{ tag: "span", props: { class: "settings-row-name" }, children: [own === null ? id : `${own} · ${id}`] }, {
+    children: [{ tag: "span", props: { class: "settings-row-name" }, children: [own === null ? (row.label || id) : `${own} · ${row.label || id}`] }, {
       tag: "button",
       props: wire({
         class: "settings-row-action",

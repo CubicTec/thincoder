@@ -122,7 +122,11 @@ function submodelOptions(section, current) {
   const provider = str(section?.provider)
   const ids = listOf(section?.models).map((row) => row?.id).filter((id) => typeof id === "string" && id !== "")
   const values = provider === null ? [] : ids.map((id) => `${provider}:${id}`)
-  return selectOptions(values, current, t("settings.inherit"))
+  const labels = new Map(listOf(section?.models).map((row) => [`${provider}:${row.id}`, row.label]))
+  return selectOptions(values, current, t("settings.inherit")).map((option) => {
+    const label = labels.get(option.props.value)
+    return label ? { ...option, children: [`${provider}:${label}`] } : option
+  })
 }
 
 /** advisor 推理档选项（S11）：占位 `—`（值 `""` = 中性 ⇒ 删两记）+ `none`（关思考 ⇒ 族别 off 形）

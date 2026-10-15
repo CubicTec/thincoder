@@ -87,7 +87,7 @@ function providerOptions(providers, value, placeholder) {
 /** 模型选项集：候选行 `{ id }` 逐项 + 占位项；**现值恒在场**（表外现值 ⇒ 自成一选项 —— 不吞 · 零改写）。 */
 function modelOptions(rows, value, placeholder) {
   const ids = listOf(rows).map((row) => row.id)
-  const options = ids.map((id) => ({ tag: "option", props: id === value ? { value: id, selected: true } : { value: id }, children: [id] }))
+  const options = listOf(rows).map(({ id, label }) => ({ tag: "option", props: id === value ? { value: id, selected: true } : { value: id }, children: [label || id] }))
   const current = typeof value === "string" && value !== "" ? value : null
   if (current !== null && !ids.includes(current)) {
     options.unshift({ tag: "option", props: { value: current, selected: true }, children: [current] })

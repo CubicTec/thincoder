@@ -23,6 +23,7 @@
  * `providerAdd` 支消费）。
  * 纪律：零 DOM（描述符树）；文案一律经 `t()`；零 `node:` ∕ 零裸包 ∕ 零 `store.mjs` import；零新词键（除轮六 2 键：`okShort` ∥ `failShort`——同域内增；三端对齐批 1 键：`addProvider`——同域内增）。
  */
+import { authRowNode } from "./settings-auth.mjs"
 import { t } from "../i18n.mjs"
 import { wire } from "./chat-tool.mjs"
 
@@ -31,7 +32,7 @@ const listOf = (value) => (Array.isArray(value) ? value : [])
 
 /** 键面回显：已配 ⇒ 遮罩值（主侧出口直传，**明文零下发**）；未配 ⇒ 无密钥词。 */
 function keyFaceNode(row) {
-  const word = row.hasKey === true ? String(row.maskedKey ?? "") : t("settings.providers.noKey")
+  const word = row.authType === "chatgpt_oauth" ? t("auth.source") : row.hasKey === true ? String(row.maskedKey ?? "") : t("settings.providers.noKey")
   return { tag: "span", props: { class: "settings-key", "data-key": row.hasKey === true ? "masked" : "none" }, children: [word] }
 }
 
@@ -112,6 +113,7 @@ function proxyNode(row, handlers) {
  *  **#615②**：编辑态输入以 `deps.keyDraft`（`{ name, value }` —— 本行名对上才回填）为种子 —— 失败径重挂不丢键入。
  *  **#652**：编辑态输入携 `[data-draft]`（无 `id` ⇒ 标记取值作显式键 = 行名）＋作用域 `key:<名>`（写成功径失效声明自读件取值）。 */
 function keyControls(row, handlers, editing, deps) {
+  if (row.authType === "chatgpt_oauth") return []
   if (editing) {
     const draft = deps?.keyDraft ?? null
     const seed = draft !== null && draft.name === row.name && typeof draft.value === "string" ? draft.value : undefined
@@ -165,6 +167,7 @@ function providerRowNode(row, handlers, deps, verify = null) {
       },
       subRowNode(row, handlers, editing),
       reasonNode(row),
+      row.authType === "chatgpt_oauth" ? authRowNode(row, handlers) : null,
       verifyState === null || editing ? null : verifyNode(verify, deps),
     ],
   }

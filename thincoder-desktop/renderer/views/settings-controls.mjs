@@ -111,6 +111,7 @@ export function channelFormTree(form, handlers = {}) {
   }
   const selectProps = { class: "settings-field", id: "preset", name: "preset", "data-draft": "" }
   if (onShape !== null) selectProps.onChange = (event) => onShape(event?.target?.value)
+  else if (typeof handlers.onPresetChange === "function") selectProps.onChange = (event) => handlers.onPresetChange(event?.target?.value)
   children.push({ tag: "select", props: selectProps, children: options })
 
   // ② 预设信息行（仅预设形 ∥ 有选中项内容）：`baseURL`（缺段不落空分隔符；`model` 段随 2026-10-09 清除批退场）。
@@ -133,7 +134,8 @@ export function channelFormTree(form, handlers = {}) {
   }
 
   // ④ API Key（词值随 #1035「API Key」形）；⑤ 走 proxy（拨杆形 —— D37；词 ∥ title 同键复用）。
-  children.push(...fieldPair("key", "password", "settings.providers.keyLabel", seed("key")))
+  if (selected?.authType !== "chatgpt_oauth") children.push(...fieldPair("key", "password", "settings.providers.keyLabel", seed("key")))
+  else children.push({ tag: "div", children: [t("auth.limits")] })
   children.push({
     tag: "label",
     props: { class: "settings-field-label", title: t("settings.proxyRowTitle") },

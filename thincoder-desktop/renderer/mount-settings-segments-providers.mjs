@@ -22,6 +22,7 @@
  * （未落盘输入不丢）；探不通**零阻断保存**。
  * 纪律：零 `node:` / 零裸包 · 逐通道回执形单源 = IPC.md §2。
  */
+import { t } from "./i18n.mjs"
 import { confirmSecretDelete } from "./settings-confirm.mjs"
 
 /** 列表切片：缺 / 非数组 ⇒ 空表（零节点 —— 禁假数据）。 */
@@ -146,8 +147,26 @@ export function createProviderExits(deps = {}) {
    *  写后重绘（已填输入经第二闸复填 —— 草稿作用域单骨 `add:provider` 跨形恒同）；表外 ∥ 空 ⇒ `"preset"`（不猜）。 */
   const setAddShape = (value) => setProvidersSlice({ addShape: typeof value === "string" && value !== "" ? value : "preset" })
 
+  async function authAction(name, action, extra = {}) {
+    const held = store.get().settings?.providers ?? {}
+    if (["login", "loginNew"].includes(action) && held.authBusy?.[name]) return
+    if (["login", "loginNew"].includes(action)) setProvidersSlice({ authBusy: { ...held.authBusy, [name]: true } })
+    try {
+      const receipt = await ask("auth:action", { name, action, ...extra })
+      const current = store.get().settings?.providers ?? {}
+      const notice = receipt.ok !== true ? reasonOf(receipt) : receipt.remoteRevoked === false ? t("auth.revocationUnknown") : ""
+      setProvidersSlice({ authNotice: { ...current.authNotice, [name]: notice } })
+      await loadProviders()
+      if (receipt.ok === true) onProvidersChanged?.()
+    } finally {
+      const current = store.get().settings?.providers ?? {}
+      if (["login", "loginNew"].includes(action)) setProvidersSlice({ authBusy: { ...current.authBusy, [name]: false } })
+    }
+  }
+
   /** 出口族表（锚名逐字 = 视图 `data-action` 同域）。 */
   const handlers = {
+    onAuthAction: (name, action, extra) => void authAction(name, action, extra),
     onProviderKeyEdit: (name) => openKeyEdit(name),
     onProviderKeyCancel: () => cancelKeyEdit(),
     onProviderKeySave: (name) => void saveProviderKey(name),

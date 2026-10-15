@@ -37,6 +37,7 @@ import {
 import { customFieldsError, probeAdmission, probeTargetOf } from "@thincoder/core/provider-flows.mjs"
 import { admissionOf, probeChannelModels } from "@thincoder/core/provider/list-models.mjs"
 import { proxyFetch } from "@thincoder/core/proxy.mjs"
+import { getAuthClient } from "@thincoder/core/auth/client.mjs"
 import { maskKey } from "./settings.mjs"
 // provider 态投影（#841 —— `provider:save` 设置写回执携 `providerState`：三回执族载荷单源，零第二实现）。
 import { providerStateOf } from "./session-slots.mjs"
@@ -69,6 +70,7 @@ function presetChoices() {
     name,
     desc: preset.desc,
     baseURL: preset.baseURL,
+    authType: preset.auth?.type,
   }))
 }
 
@@ -86,9 +88,14 @@ function presetChoices() {
  * （`isHiddenDerived`）——登录态（有 key）照常在场；判据单源 = 核 `team.mjs` 条目形。
  * 畸形档不吞：核 `loadRaw` 抛 ⇒ 本档零 catch ⇒ invoke 拒绝直传。
  */
-export function providerList() {
+export async function providerList() {
   const { providers, activeProvider } = resolveProviders()
   const defaultModel = loadConfig()?.defaultModel
+  const auth = new Map()
+  for (const p of providers.filter((p) => p.auth?.type === "chatgpt_oauth")) {
+    try { auth.set(p.name, { authStatus: await getAuthClient().status(p.name), authProfiles: await getAuthClient().list() }) }
+    catch (e) { auth.set(p.name, { authStatus: { enabled: p.auth.enabled === true, state: "temporarily_unavailable" }, authNotice: e.message }) }
+  }
   return {
     ok: true,
     presets: presetChoices(),
@@ -103,6 +110,7 @@ export function providerList() {
         shape: PROVIDER_PRESETS[p.name] ? "preset" : "custom",
         baseURL: p.baseURL ?? "",
         hasKey,
+        ...(p.auth?.type === "chatgpt_oauth" ? { authType: "chatgpt_oauth", ...auth.get(p.name) } : {}),
         maskedKey: hasKey ? maskKey(`providers.${p.name}.apiKey`, p.apiKey) : null,
         active: p.name === activeProvider,
         proxy: p.proxy === true, // S5：渠级代理位投影
@@ -126,7 +134,7 @@ export function providerList() {
 export function probeAfterWrite(name) {
   void (async () => {
     const provider = resolveProviders().providers.find((p) => p.name === name)
-    if (!provider) return
+    if (!provider || provider.auth?.type === "chatgpt_oauth") return
     const probe = await probeAdmission(name, provider) // 探 + 失败分档 + 落账单源 = 核流程族（内部全捕获，绝不抛）
     // S3（#673）：宿主忙 = 端侧证据 ⇒ 覆盖落账分类为 `hostBusy`（核零宿主观测——`SETTINGS.md` §2.12 同判）。
     if (probe.ok !== true) overrideAdmissionIfHostBusy(name, probe.error)
@@ -150,7 +158,7 @@ export function providerSave(payload) {
   const name = String(payload?.name ?? "").trim()
   const shape = payload?.shape
   if (!name || !SHAPES.includes(shape)) return { ok: false, reason: "invalid-shape" }
-  const key = typeof payload?.key === "string" && payload.key ? payload.key : undefined
+  const key = PROVIDER_PRESETS[name]?.auth?.type === "chatgpt_oauth" ? undefined : typeof payload?.key === "string" && payload.key ? payload.key : undefined
   // KD-75 ④：走 proxy 旗随载荷（仅真值落键 —— 判据单源 = 核 `addProviderEntry` `proxy === true`）。
   const proxy = payload?.proxy === true
   let err

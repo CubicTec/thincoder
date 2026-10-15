@@ -2,11 +2,12 @@
  * agent-tools/context.mjs — `context` 工具（CONTEXT-COMPACTION.md §6.16 · context-tool 批 2026-09-21）。
  * 单一工具三操作（用户定形 F-CC5）：`stats`（感知 F-CC1）· `prune`（噪声清理 F-CC3）· `compact`（主动压缩 F-CC2，携 focus + 自动附任务/目标 + 可回查锚——裁令 A/D）。
  * 描述外置（tool-docs/context.md——#15 统一面：文本单点 = tool-docs，DESC 加载）；装配面 = 登记册 `agent-tools.mjs`（#83）+ `agent/family-tools.mjs` 的 depth-0 段（`depthOnly`）——两端自动同表；**depth>0 不给**（§6.16.6）。
- * 本档同时是**注记文案 / 轻推行 / 回执文案的单源**（核与 VSC 的 run-stages 消费点经动态 import 取用——零新增静态边）。
- * 机械面：`stats` 不新增第三口径（阈值取本回合判定值；百分比走 `historyPercent` 与状态行同式）；`prune` = 合格集（`token-window.mjs` 单源）+「原位换内容」应用面（`context.mjs`）；`compact` **当次零执行**（只登记 `agent._pendingCompact`，由下一安全点消费——§6.16.2）。
+ * 本档是压缩注记 / 轻推行 / 压缩回执的单源；prune 回执与延迟应用单源 = `context-prune.mjs`。
+ * 机械面：`stats` 复用本回合阈值与 `historyPercent`；`prune` 复用 `token-window.mjs` 合格集，非 Responses 即时原位换内容，Responses 排队到工具结果全部确认后的下一边界；`compact` 只登记 `agent._pendingCompact`，由下一安全点消费（§6.16.2）。
  */
-import { contextUsage, estimateTokens, collectStaleToolOutputs, historyPercent, PRUNE_MIN_TOKENS } from "../token-window.mjs"
-import { pruneStaleToolOutputs, COMPRESS_FAILURE_LIMIT } from "../context.mjs"
+import { contextUsage, estimateTokens, collectStaleToolOutputs, historyPercent } from "../token-window.mjs"
+import { COMPRESS_FAILURE_LIMIT } from "../context.mjs"
+import { requestContextPrune } from "../context-prune.mjs"
 import { slotPath } from "../session-slots.mjs"
 // #15 描述外置：描述文本单点 = tool-docs/context.md（DESC 单解析面，缺档抛错语义不变）
 import { DESC } from "../tools/shared.mjs"
@@ -87,17 +88,6 @@ function statsReport(agent) {
   ].join("\n")
 }
 
-/** prune 回执（§6.16.3：计数 + 扫过候选 / 保护尾内保留 / 门槛下跳过 + 记录面零改）。 */
-function pruneReceipt(agent) {
-  const r = pruneStaleToolOutputs(agent)
-  const scan = `(scanned ${r.candidates} tool result(s): ${r.tailKept} inside the protected tail, ${r.belowMin} below the ${PRUNE_MIN_TOKENS}-token floor)`
-  if (r.pruned === 0) {
-    return `Nothing to prune — no stale tool output matched ${scan}. The context and the session record are unchanged.`
-  }
-  return `Pruned ${r.pruned} stale tool output(s) ≈${r.freed} tokens freed ${scan}. ` +
-    `Tool pairing is intact and the session record is unchanged — the full text is still on disk; re-run a tool if you need its output again.`
-}
-
 /**
  * 可回查锚（父侧裁令 A · §6.16.7 两分支逐字）：回执尾段给出「压掉的可一步取回」的坐标与调用形。
  * 取回面 = `read_history` 既有 `path=`（**不新建通道**）；未绑定槽（会话首次保存前 / VSC 端面板槽
@@ -141,7 +131,7 @@ export const contextTool = {
     const agent = ctx.agent
     const action = args?.action
     if (action === "stats") return statsReport(agent)
-    if (action === "prune") return pruneReceipt(agent)
+    if (action === "prune") return requestContextPrune(agent)
     if (action === "compact") {
       const focus = typeof args?.focus === "string" ? args.focus.trim() : ""
       // fail-closed（§6.16.1 参数面）：schema 层 `focus` 非 required ⇒ 运行期判——不排队、零副作用

@@ -517,6 +517,10 @@ const focusBlock = (focus, anchor) =>
 
 **6.16.3 prune 语义（F-CC3）**
 
+Responses provider 的 prune 由 context-prune.mjs 排队；当前工具事务全部结果确认后，在下一安全点应用一次并报告结果。
+executing / results_ready / 恢复未决期间，压缩、蒸馏、缩短及裁剪均不改写历史。其他 provider 仍即时 prune。
+原生 journal 检查点随安全改写更新，完整函数配对在请求发送前复核；见 [ChatGPT/Responses 设计](OPENAI-CHATGPT.md)。
+
 - **合格对象**（三条件合取，单源实现 = 核 `token-window.mjs` `collectStaleToolOutputs(history, provider)`）：① `role === "tool"`；
   ② **保护尾之外**（`i < split.headEnd…tailStart` 边界内——**复用 `splitHistory` 的同一 `tailStart`**：即「压缩会摘要掉的那段」，不新增第二处切割判据）；
   ③ 估算 ≥ **`PRUNE_MIN_TOKENS = 200`**——**常量与合格集同住 `token-window.mjs`**（该档导出、`context.mjs` 单向取用 ⇒ **零回指**；低于门槛的替换是净增 token——stub 本身有长度）。

@@ -6,6 +6,8 @@
  * 跨档被引的原私有面（`shrinkOversized`）补 `export` 关键字。
  */
 import { collectStaleToolOutputs } from "./token-window.mjs"
+import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
 
 /** prune stub 逐字（§6.16.3）：只给「已清理 + 原长度 + 重跑路径」——prune 是**删**不是摘要，不声称可复原。 */
 const pruneStub = (chars) => `[pruned: stale tool output dropped (${chars} chars) — re-run the tool if you need it again.]`
@@ -17,6 +19,7 @@ const pruneStub = (chars) => `[pruned: stale tool output dropped (${chars} chars
  * @returns {{pruned:number, freed:number, candidates:number, tailKept:number, belowMin:number}}
  */
 export function pruneStaleToolOutputs(agent) {
+  assertResponsesHistoryBoundary(agent, "Tool-output pruning")
   const history = agent.history
   const stale = collectStaleToolOutputs(history, agent.provider)
   const counts = {
@@ -35,6 +38,8 @@ export function pruneStaleToolOutputs(agent) {
   }
   agent._lastPromptTokens = null
   agent._usageAtLen = null
+  checkpointResponsesHistory(agent)
+  persistResponsesSession(agent)
   return counts
 }
 
@@ -50,6 +55,7 @@ const OVERSIZE_CONTENT_LIMIT = 8_000
  * Only called after compressIfNeeded determines threshold is exceeded. Returns whether any message was truncated.
  */
 export function shrinkOversized(agent, limit = OVERSIZE_CONTENT_LIMIT) {
+  assertResponsesHistoryBoundary(agent, "Oversized context shrinking")
   let shrunk = false
   // Copy-on-write: build a NEW array and replace only truncated entries. pushReal stores the SAME
   // message object in both `agent.history` (machine line) and `agent._fullHistory` (human/persistence
@@ -76,6 +82,8 @@ export function shrinkOversized(agent, limit = OVERSIZE_CONTENT_LIMIT) {
     // Same as compaction: measured token baseline is invalidated by the changed history, fall back to estimation until next response
     agent._lastPromptTokens = null
     agent._usageAtLen = null
+    checkpointResponsesHistory(agent)
+    persistResponsesSession(agent)
   }
   return shrunk
 }

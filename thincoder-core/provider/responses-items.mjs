@@ -79,7 +79,7 @@ export function replayableItem(item, provider) {
 
 export function requestItems(provider, messages, mapping, context) {
   const all = messagesToItems(messages, provider, mapping)
-  if (!context) return all
+  if (!context) { assertFunctionPairs(all.items, provider); return all }
   if (context.schemaVersion !== 1 || context.profileBinding !== responsesProfileBinding(provider) || context.modelBinding !== provider.model) {
     throw invalid(provider, "Responses replay binding changed; explicitly rebuild context from visible history before switching account or model", "responsesContext")
   }
@@ -89,8 +89,26 @@ export function requestItems(provider, messages, mapping, context) {
   if (!Array.isArray(context.orderedReplayableItems) || !Number.isInteger(context.messageCount) || context.messageCount < 0 || context.messageCount > messages.length) {
     throw invalid(provider, "Responses replay checkpoint is invalid; rebuild context explicitly", "responsesContext")
   }
-  return { instructions: all.instructions, items: [
+  const items = [
     ...context.orderedReplayableItems.map((i) => replayableItem(i, provider)),
     ...messagesToItems(messages.slice(context.messageCount), provider, mapping).items,
-  ] }
+  ]
+  assertFunctionPairs(items, provider)
+  return { instructions: all.instructions, items }
+}
+
+/** Validate the assembled full replay before stateful transport can select its output suffix. */
+function assertFunctionPairs(items, provider) {
+  const seen = new Set(), pending = new Set()
+  for (const item of items) {
+    if (item.type !== "function_call" && item.type !== "function_call_output") continue
+    if (typeof item.call_id !== "string" || !item.call_id) throw invalid(provider, "Function replay is missing call_id; rebuild complete tool exchanges")
+    if (item.type === "function_call") {
+      if (seen.has(item.call_id)) throw invalid(provider, "Duplicate function call in Responses replay; rebuild complete tool exchanges")
+      seen.add(item.call_id); pending.add(item.call_id)
+    } else if (!pending.delete(item.call_id)) {
+      throw invalid(provider, "Orphaned or duplicate function output in Responses replay; rebuild complete tool exchanges")
+    }
+  }
+  if (pending.size) throw invalid(provider, "Responses replay has unfinished function calls; record every tool output before continuing")
 }

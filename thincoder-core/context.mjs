@@ -13,6 +13,7 @@
 
 import { chat } from "./provider/index.mjs"
 import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"
 import { contextUsage, estimateTokens, keepTailSize, splitHistory, tailBudgetTokens } from "./token-window.mjs"
@@ -74,6 +75,7 @@ function anchorText(agent) {
 
 /** Replace middle with a note, then re-inject task/plan state (shared by LLM summary and truncation fallback) */
 function applyCompression(agent, headEnd, tailStart, note) {
+  assertResponsesHistoryBoundary(agent, "Compaction")
   // _fullHistory already holds every real message (written at the source via pushReal),
   // so compaction only shrinks the machine line — nothing to preserve here.
   // head is normally empty (KEEP_HEAD = 0) — the summary note becomes the first message,
@@ -167,6 +169,7 @@ function applyCompression(agent, headEnd, tailStart, note) {
  *   模型主动压缩面（§6.16.2）：`force` **只跳过** `tokens <= threshold` 早退，其余全同；`focus` 追加在摘要指令尾段。
  */
 export async function compressIfNeeded(agent, threshold, callbacks, extras = {}, signal) {
+  assertResponsesHistoryBoundary(agent, "Compaction")
   const history = agent.history
   // 单源（§6.16.4）：total / overhead 与 stats 面同一函数（既有内联式改调 contextUsage，判定语义零改）
   const usage = contextUsage(agent, extras)
@@ -243,6 +246,7 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
  * Drops the middle so the task can continue. Returns whether truncation happened.
  */
 export function compressFallback(agent) {
+  assertResponsesHistoryBoundary(agent, "Deterministic compaction")
   const keepTail = keepTailSize(agent.provider, agent.history.length)
   const split = splitHistory(agent.history, keepTail, tailBudgetTokens(agent.provider))
   if (!split) return false

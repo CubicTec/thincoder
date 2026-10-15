@@ -8,6 +8,8 @@
  */
 
 import { compressIfNeeded, compressFallback, COMPRESS_FAILURE_LIMIT } from "../context.mjs"
+import { RESPONSES_HISTORY_BOUNDARY_ERROR } from "../responses-history-guard.mjs"
+import { applyPendingContextPrune } from "../context-prune.mjs"
 import { ensureAutoReminder, injectEngineeringReminder, ContinueError, snapshotGuard } from "./helpers.mjs"
 import { pushManifestStateReminder } from "./setup-reminders.mjs"
 import { cleanupConsultSessions } from "../agent-tools/consult.mjs"
@@ -78,6 +80,7 @@ export function injectResponseReminders(agent, response) {
  * 模型主动压缩（`context` 工具）由本点消费（§6.16.2——取用即清槽；no-op 与失败各落一行注记）。
  */
 export async function runCompactionCheck(agent, ctx) {
+  applyPendingContextPrune(agent)
   const { threshold, callbacks, compactionOverhead, signal, recentCallSigs } = ctx
   // F-CC2（CONTEXT-COMPACTION.md §6.16.2）：模型主动压缩（`context` 工具）在**本安全点**消费——
   // 取用即清槽（失败不重放；重发由模型再调）；`force` 只跳过阈值早退（模型判定优先于阈值），
@@ -106,6 +109,7 @@ export async function runCompactionCheck(agent, ctx) {
       ensureAutoReminder(agent)
     }
   } catch (compressError) {
+    if (compressError?.code === RESPONSES_HISTORY_BOUNDARY_ERROR) throw compressError
     // AbortError must not be swallowed: user cancellation must propagate
     if (compressError?.name === "AbortError" || signal?.aborted) throw compressError
     agent._compressFailures = (agent._compressFailures ?? 0) + 1

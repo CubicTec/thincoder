@@ -1,7 +1,8 @@
 /** Auxiliary state must not commit partially streamed Responses output. All network is fake. */
 import test from "node:test"
 import assert from "node:assert/strict"
-import { compressIfNeeded } from "../context.mjs"
+import { compressIfNeeded, compressFallback } from "../context.mjs"
+import { pruneStaleToolOutputs, shrinkOversized } from "../context-degrade.mjs"
 import { summarizeRunExplorations } from "../explore-distill.mjs"
 import { requireCompletedResponse } from "../provider/errors.mjs"
 
@@ -243,4 +244,67 @@ test("history rewrites checkpoint durable tool history only after successful aux
       assert.notEqual(after.toolHistoryCheckpoint.digest, JSON.parse(before).toolHistoryCheckpoint.digest)
     }
   } finally { globalThis.fetch = fetch; rmSync(directory, { recursive: true, force: true }) }
+})
+
+test("unresolved Responses boundaries block summary, fallback, shrinking, pruning and run-stage bookkeeping before fetch", async () => {
+  const { runCompactionCheck } = await import("../agent/run-stages.mjs")
+  const fetch = globalThis.fetch; let requests = 0
+  globalThis.fetch = async () => { requests++; return fakeResponse(completed) }
+  const error = { code: "responses_history_boundary_unresolved" }
+  try {
+    for (const blocked of [
+      { _responsesState: { pendingToolTransaction: { status: "executing" } } },
+      { _responsesState: { pendingToolTransaction: { status: "results_ready" } } },
+      { _responsesRecoveryRequired: true }, { _responsesStateUnsupported: true },
+    ]) {
+      for (const operation of ["summary", "distill", "fallback", "shrink", "prune", "stage"]) {
+        const agent = Object.assign(agentFor(operation === "distill" ? explorationHistory() : longHistory()), structuredClone(blocked))
+        agent._pendingCompact = { focus: "retain evidence" }; agent._compressFailures = 2
+        const reference = agent.history; const before = structuredClone(agent)
+        if (operation === "summary") await assert.rejects(() => compressIfNeeded(agent, 1, {}, { force: true }), error)
+        if (operation === "distill") await assert.rejects(() => summarizeRunExplorations(agent, {}), error)
+        if (operation === "fallback") assert.throws(() => compressFallback(agent), error)
+        if (operation === "shrink") assert.throws(() => shrinkOversized(agent), error)
+        if (operation === "prune") assert.throws(() => pruneStaleToolOutputs(agent), error)
+        if (operation === "stage") await assert.rejects(() => runCompactionCheck(agent, { threshold: 1, callbacks: {}, compactionOverhead: {}, recentCallSigs: [] }), error)
+        assert.equal(agent.history, reference); assert.deepEqual(agent, before)
+      }
+    }
+    assert.equal(requests, 0)
+  } finally { globalThis.fetch = fetch }
+})
+
+test("a transaction beginning during an auxiliary request blocks the subsequent history rewrite", async () => {
+  const fetch = globalThis.fetch
+  try {
+    for (const kind of ["summary", "distill"]) {
+      const agent = agentFor(kind === "summary" ? longHistory() : explorationHistory())
+      const reference = agent.history, before = structuredClone(agent.history)
+      globalThis.fetch = async () => {
+        agent._responsesState = { pendingToolTransaction: { status: "executing" } }
+        return fakeResponse(completed, "COMPLETE SUMMARY")
+      }
+      const operation = kind === "summary" ? () => compressIfNeeded(agent, 1, {}, { force: true }) : () => summarizeRunExplorations(agent, {})
+      await assert.rejects(operation, { code: "responses_history_boundary_unresolved" })
+      assert.equal(agent.history, reference); assert.deepEqual(agent.history, before)
+      assert.equal(agent._lastPromptTokens, 1234); assert.equal(agent._lastCompressInfo, undefined)
+    }
+  } finally { globalThis.fetch = fetch }
+})
+
+test("completed Responses tool boundaries permit summary, distillation and deterministic rewrites", async () => {
+  const fetch = globalThis.fetch; let requests = 0
+  globalThis.fetch = async () => { requests++; return fakeResponse(completed, "COMPLETE SUMMARY") }
+  const ready = (history) => Object.assign(agentFor(history), { _responsesState: { schemaVersion: 1, transactions: [], pendingToolTransaction: null } })
+  try {
+    assert.equal(await compressIfNeeded(ready(longHistory()), 1, {}, { force: true }), true)
+    const distill = ready(explorationHistory())
+    await summarizeRunExplorations(distill, {})
+    assert.ok(distill.history.some((m) => m.content.startsWith("[Exploration summary]")))
+    assert.equal(compressFallback(ready(longHistory())), true)
+    assert.equal(shrinkOversized(ready([{ role: "user", content: "x".repeat(9000) }])), true)
+    const prune = ready([{ role: "tool", tool_call_id: "old", content: "x".repeat(12000) }, ...longHistory()])
+    assert.equal(pruneStaleToolOutputs(prune).pruned, 1)
+    assert.equal(requests, 2)
+  } finally { globalThis.fetch = fetch }
 })

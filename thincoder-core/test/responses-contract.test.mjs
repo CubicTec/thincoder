@@ -80,6 +80,22 @@ test("Native replay retains opaque reasoning, namespace, phase and exact orderin
   for (const change of [{ profileBinding: "other" }, { modelBinding: "other" }, { messageCount: 999 }, { schemaVersion: 2 }]) assert.throws(() => buildBody(plan, history, localTools, { responsesContext: { ...context, ...change } }), /context|replay/i)
 })
 
+test("request replay rejects orphaned, duplicate and incomplete tool exchanges before sending", () => {
+  const invocation = { role: "assistant", content: "", tool_calls: [{ id: "call_1", function: { name: "read_file", arguments: "{}" } }] }
+  const output = { role: "tool", tool_call_id: "call_1", content: "data" }
+  for (const provider of [plan, api]) {
+    for (const invalid of [[output], [invocation], [output, invocation], [invocation, output, output], [invocation, invocation, output]]) {
+      assert.throws(() => buildBody(provider, [...user, ...invalid], localTools), { code: "invalid_responses_context" })
+    }
+    assert.equal(buildBody(provider, [...user, invocation, output], localTools).body.input.length, 3)
+  }
+  const context = { schemaVersion: 1, profileBinding: plan.auth.credentialRef, modelBinding: plan.model, messageCount: 1,
+    orderedReplayableItems: [{ type: "function_call_output", call_id: "call_1", output: "orphan" }] }
+  assert.throws(() => buildBody(plan, user, localTools, { responsesContext: context }), /Orphaned/)
+  context.orderedReplayableItems = [reasoning, call]
+  assert.equal(buildBody(plan, [...user, output], localTools, { responsesContext: context }).body.input.at(-1).type, "function_call_output")
+})
+
 test("SSE handles CRLF, LF, byte-split UTF-8, multiline data, comments and terminal tail", async () => {
   const raw = `: keepalive\r\n\r\nevent: response.output_text.delta\r\ndata: {"type":"response.output_text.delta",\r\ndata: "delta":"Hello 世界"}\r\n\r\n${frame(completed([assistant])).trimEnd()}`
   const bytes = Buffer.from(raw)

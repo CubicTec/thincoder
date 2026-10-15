@@ -1,15 +1,13 @@
-/**
- * provider/responses-request.mjs — Responses **请求构造面**出档（2026-09-29 structure-split-2 · 台账 #620）：自
- * `provider/responses.mjs` 全量迁出〔原 `:22-245`〕——host 白名单判定（`isStatefulHost` ∕ `isStoreRequiredHost` ∕
- * `isNonStatefulHost`）· `chainKey` · `builtinToolsFor` · `toItems` / `toTools` / `normalizeUsage` · `buildBody`；
- * **结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；切点 ∕ 缝单源 = 批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-B）。
- *
- * 缝 = 同名再出口：宿主 `provider/responses.mjs` 转口 `buildBody` / `isStoreRequiredHost` / `builtinToolsFor` 三名
- * 既有导出（消费者 import 面零改）；`normalizeUsage` 被宿主 `parseStream` 消费 ⇒ 随迁导出（宿主 import）。
- * 零环：本档不引宿主（方向单行）；档外依赖 = `../config.mjs`（`specForModel` ∥ `isBailianHost`）。
- * 链语义（双轨 ∕ 白名单 ∕ store 必开 ∥ 链重置）详述见宿主档头；本档 = 请求侧构造 ∥ 链状态机决策。
+/** Responses request codec and stateful compatibility policy.
+ * SIWC policy comes from authentication, never merely the destination hostname.
+ * Native replay lives in explicit request context; ordinary history remains the UI source.
+ * Existing API-key host chain behavior is retained behind narrow recovery rules.
  */
+import { createHash } from "node:crypto"
 import { specForModel, isBailianHost } from "../config.mjs"
+import { isChatGPTProvider, validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
+import { buildResponsesTools, encodeToolChoice } from "./responses-tools.mjs"
+import { requestItems } from "./responses-items.mjs"
 
 /** 白名单：已实证 previous_response_id 的官方端（2026-08-31 真机验证：
  *  百炼 store:true 全链路 ✅；GLM（open.bigmodel.cn/api/v1）store:true 全链路 ✅）。 */
@@ -46,13 +44,9 @@ function isNonStatefulHost(baseURL) {
 
 /** 链 key：system 部分 + 最后一条 user 消息（turn 内不变、跨 turn 变、压缩后变）。 */
 function chainKey(messages) {
-  let sig = "s:"
-  let lastUser = ""
-  for (const m of messages ?? []) {
-    if (m.role === "system") sig += (typeof m.content === "string" ? m.content : "") + "\u0001"
-    else if (m.role === "user") lastUser = typeof m.content === "string" ? m.content : ""
-  }
-  return sig + "\u0002u:" + lastUser
+  const instructions = (messages ?? []).filter((m) => m.role === "system" || m.role === "developer")
+  const lastUser = (messages ?? []).findLast((m) => m.role === "user")
+  return createHash("sha256").update(JSON.stringify({ instructions, lastUser })).digest("hex")
 }
 
 /** 内置工具声明（2026-08-31 用户拍板"内置工具还是要用"，一期 web_search）。
@@ -70,80 +64,13 @@ export function builtinToolsFor(baseURL, providerBuiltin) {
   return []
 }
 
-/** OpenAI Chat 消息 → Responses input items。system 提升为 instructions（不进 input）。
- *  内置工具结果（web_search_call 本地化 tool 消息）→ 原样 web_search_call item 回传。 */
-function toItems(messages, { instructions } = {}) {
-  const items = []
-  for (const m of messages ?? []) {
-    if (m.role === "system") continue
-    if (typeof m.tool_call_id === "string" && m.tool_call_id.startsWith("web_search_call_") && typeof m.content === "string") {
-      // 内置工具结果本地化消息 → 原样回传（DeepSeek 官方：web_search_call 原样回传即可，
-      // 服务端自动恢复搜索结果）。id 用 content 里的原始服务端 id（msg_xxx），前缀只是本地锚点。
-      let query = ""
-      let srcs = []
-      let wsId = m.tool_call_id.slice("web_search_call_".length)
-      try {
-        const parsed = JSON.parse(m.content)
-        query = parsed.query ?? ""
-        srcs = parsed.sources ?? []
-        if (parsed.id) wsId = parsed.id
-      } catch { /* content 非 JSON（纯展示）→ query 缺省 */ }
-      items.push({ type: "web_search_call", id: wsId, status: "completed", action: { query, type: "search", sources: srcs } })
-      continue
-    }
-    if (m.role === "user") {
-      const content = m.content
-      if (Array.isArray(content)) {
-        items.push({
-          role: "user",
-          content: content
-            .map((p) => (p?.type === "image_url"
-              ? { type: "input_image", image_url: p.image_url?.url }
-              : p?.type === "text" || typeof p === "string"
-                ? { type: "input_text", text: typeof p === "string" ? p : p.text }
-                : null))
-            .filter(Boolean),
-        })
-      } else {
-        items.push({ role: "user", content: [{ type: "input_text", text: String(content ?? "") }] })
-      }
-    } else if (m.role === "assistant") {
-      const tcList = m.tool_calls ?? []
-      items.push({ role: "assistant", content: [{ type: "output_text", text: String(m.content ?? "") }] })
-      for (const tc of tcList) {
-        items.push({
-          type: "function_call",
-          call_id: tc.id ?? "",
-          name: tc.function?.name ?? "",
-          arguments: tc.function?.arguments ?? "{}",
-        })
-      }
-    } else if (m.role === "tool" || m.role === "function") {
-      items.push({
-        type: "function_call_output",
-        call_id: m.tool_call_id ?? m.name ?? "",
-        output: typeof m.content === "string" ? m.content : JSON.stringify(m.content ?? ""),
-      })
-    }
-  }
-  return { items, instructions: instructions ?? (messages ?? []).find((m) => m.role === "system")?.content ?? "" }
-}
-
-/** OpenAI 工具 schema → Responses 扁平 tools。 */
-function toTools(tools) {
-  return (tools ?? []).map((t) => ({
-    type: "function",
-    name: t.function?.name ?? t.name,
-    description: t.function?.description ?? t.description,
-    parameters: t.function?.parameters ?? t.parameters ?? { type: "object", properties: {} },
-  }))
-}
-
 /** Responses usage → 内部 cache 字段形状。 */
 export function normalizeUsage(usage) {
   if (!usage) return null
   return {
+    ...structuredClone(usage),
     prompt_tokens: usage.input_tokens ?? 0,
+    reasoning_tokens: usage.output_tokens_details?.reasoning_tokens ?? 0,
     completion_tokens: usage.output_tokens ?? 0,
     total_tokens: usage.total_tokens ?? (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
     prompt_cache_hit_tokens: usage.input_tokens_details?.cached_tokens ?? 0,
@@ -156,16 +83,19 @@ export function normalizeUsage(usage) {
  * @returns {{ body, previousResponseId, warnings, newChain: {id,key}|null }}
  */
 export function buildBody(provider, messages, tools, opts = {}) {
-  const { instructions: extracted, items } = toItems(messages)
-  const toolsFlat = tools?.length ? toTools(tools) : undefined
+  validateResponsesConfig(provider, opts)
+  const siwc = isChatGPTProvider(provider)
+  const toolMapping = buildResponsesTools(provider, tools)
+  const { instructions: extracted, items } = requestItems(provider, messages, toolMapping, opts.responsesContext)
+  const toolsFlat = toolMapping.tools.length ? toolMapping.tools : undefined
   const spec = specForModel(provider.model)
   const warnings = []
-  const wantStateful = provider.stateful !== false && opts.stateful !== false
+  const wantStateful = !siwc && provider.stateful !== false && opts.stateful !== false
   const hostStateful = isStatefulHost(provider.baseURL)
   const hostNonStateful = isNonStatefulHost(provider.baseURL)
 
   let chain = provider._responsesChain ?? null
-  const key = chainKey(messages)
+  const key = `${provider.model}\u0000${chainKey(messages)}`
 
   if (!wantStateful) {
     chain = null // stateful:false 显式覆盖：残留链（同 session 开过）必须作废
@@ -201,7 +131,7 @@ export function buildBody(provider, messages, tools, opts = {}) {
     ...(provider.maxTokens != null ? { max_output_tokens: provider.maxTokens } : {}),
   }
   // 内置工具声明追加（2026-08-31 用户拍板）：web_search 与本地 function 工具共存
-  const builtin = builtinToolsFor(provider.baseURL, provider.builtinTools)
+  const builtin = siwc ? [] : builtinToolsFor(provider.baseURL, provider.builtinTools)
   if (builtin.length) body.tools = [...(toolsFlat ?? []), ...builtin]
   if (provider.temperature != null) {
     let t = provider.temperature
@@ -212,7 +142,9 @@ export function buildBody(provider, messages, tools, opts = {}) {
     body.temperature = t
   }
   if (provider.reasoningEffort) body.reasoning = { effort: provider.reasoningEffort }
-  if (opts.toolChoice !== undefined) body.tool_choice = opts.toolChoice
+  if (opts.toolChoice !== undefined) body.tool_choice = encodeToolChoice(opts.toolChoice, toolMapping, provider)
+  if (opts.parallelToolCalls !== undefined) body.parallel_tool_calls = opts.parallelToolCalls
+  if (siwc || new URL(provider.baseURL).hostname === "api.openai.com") body.include = ["reasoning.encrypted_content"]
 
   // 链模式：turn 内增量 = 上一链轮未发送的 function_call_output（工具结果）。
   // 注意：assistant 的 function_call item 与服务端链输出重复（服务端自动含上轮 output），
@@ -235,5 +167,6 @@ export function buildBody(provider, messages, tools, opts = {}) {
     ? { ...chain, key, outputSent: outputs.length }
     : (wantStateful && (hostStateful || opts.forceStateful) ? { id: null, key, outputSent: outputs.length } : null)
 
-  return { body, previousResponseId, warnings, newChain }
+  validateResponsesBody(provider, body)
+  return { body, previousResponseId, warnings, newChain, toolMapping, fullInput: items }
 }

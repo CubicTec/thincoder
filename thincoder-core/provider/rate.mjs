@@ -39,7 +39,9 @@ const rateWindows = new Map() // key → { tokens: [{ts, n}], requests: [ts] }
 function rateKey(provider) {
   // Normalize: /beta and /v1 are treated as the same account's rate-limit window (DeepSeek prefix continuation switches to /beta endpoint)
   const base = provider.baseURL.replace(/\/beta$/, "/v1")
-  return `${base}|${provider.apiKey ?? ""}`
+  return provider.auth?.type === "chatgpt_oauth"
+    ? `${base}|chatgpt:${provider.auth.credentialRef ?? ""}`
+    : `${base}|${provider.apiKey ?? ""}`
 }
 
 /** Rough estimate of text token count.

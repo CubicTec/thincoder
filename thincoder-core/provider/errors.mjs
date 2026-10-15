@@ -81,9 +81,13 @@ export function compileStreamRules(rules) {
  * instead of a wire-time serde 400 or a bare message without context.
  */
 export class ProviderError extends Error {
-  constructor(provider, message) {
-    super(`provider "${provider?.name ?? provider?.model ?? "unknown"}": ${message}`)
+  constructor(provider, message, detail = {}) {
+    super(`provider "${provider?.name ?? provider?.model ?? "unknown"}": ${redactProviderDetail(String(message))}`)
     this.name = "ProviderError"
+    for (const key of ["status", "code", "param", "requestId", "stage", "retryClass", "terminalStatus", "retryable", "errorKind"]) {
+      if (detail[key] !== undefined) this[key] = redactProviderDetail(detail[key])
+    }
+    if (detail.redactedDetail !== undefined) this.redactedDetail = redactProviderDetail(detail.redactedDetail)
   }
 }
 
@@ -111,6 +115,20 @@ export function assertProviderModel(provider) {
  */
 export function classifyResponsesErrorCode(code) {
   switch (code) {
+    case "subscription_sharing_usage_limit_exceeded":
+      return { kind: "quota", retryable: false, hint: "ChatGPT plan app usage limit reached; check ChatGPT Settings → Usage" }
+    case "subscription_sharing_unsupported_capability":
+      return { kind: "invalid_request", retryable: false, hint: "Remove the unsupported parameter or capability" }
+    case "subscription_sharing_user_not_eligible":
+    case "subscription_sharing_route_not_supported":
+    case "chatpass_v2_scope_not_authorized":
+    case "chatpass_v2_invalid_authorization_context":
+      return { kind: "permission", retryable: false, hint: null }
+    case "subscription_sharing_invalid_user":
+      return { kind: "authentication", retryable: false, hint: null }
+    case "subscription_sharing_usage_unavailable":
+    case "subscription_sharing_user_unavailable":
+      return { kind: "server", retryable: true, hint: null }
     case "context_length_exceeded":
       return { kind: "context_overflow", retryable: false, hint: "上下文超限——/compact 压缩历史后重试" }
     case "insufficient_quota":
@@ -123,4 +141,55 @@ export function classifyResponsesErrorCode(code) {
     default:
       return null
   }
+}
+
+/** Keep diagnostics useful without propagating credentials from upstream error echoes. */
+export function redactProviderDetail(value, depth = 0) {
+  if (depth > 5) return "[truncated]"
+  if (typeof value === "string") return value.slice(0, 8192)
+    .replace(/Bearer\s+[^\s"'<>]+/gi, "Bearer [redacted]")
+    .replace(/([?&](?:code|id_token_hint|state)=)[^&\s"\']+/gi, "$1[redacted]")
+    .replace(/\bsk-[A-Za-z0-9_-]+/g, "[redacted]")
+    .replace(/\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[redacted]")
+    .replace(/((?:access_token|refresh_token|id_token|code_verifier|client_secret|authorization|cookie|api[_-]?key)["']?\s*[:=]\s*["']?)[^\s"'&,}]+/gi, "$1[redacted]")
+  if (Array.isArray(value)) return value.slice(0, 30).map((v) => redactProviderDetail(v, depth + 1))
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).slice(0, 40).map(([k, v]) => [k,
+    /^(?:access_token|refresh_token|id_token|code|code_verifier|client_secret|authorization|cookie|api[_-]?key)$/i.test(k) && k !== "code"
+      ? "[redacted]" : redactProviderDetail(v, depth + 1),
+  ]))
+  return value
+}
+
+/** HTTP and SSE use the same structured diagnostics; diagnostic detail is never a code. */
+export function responsesError(provider, payload, { status, requestId, stage = "admission", terminalStatus } = {}) {
+  let parsed = payload
+  if (typeof payload === "string") { try { parsed = JSON.parse(payload) } catch { parsed = { detail: payload } } }
+  const raw = parsed?.error ?? parsed ?? {}
+  const code = typeof raw.code === "string" ? raw.code : undefined
+  const cls = classifyResponsesErrorCode(code)
+  const message = raw.message ?? raw.detail ?? parsed?.detail ?? `Responses request failed${status ? ` (${status})` : ""}`
+  const unavailable = ["subscription_sharing_usage_unavailable", "subscription_sharing_user_unavailable"].includes(code)
+  const planStop = code?.startsWith("subscription_sharing_") || code?.startsWith("chatpass_v2_")
+  const retryable = stage === "admission" && (unavailable || (!planStop && (status === 503 || status === 429)))
+    && !isNonRetryableError(status, typeof payload === "string" ? payload : JSON.stringify(parsed))
+  return new ProviderError(provider, `${typeof message === "string" ? message : JSON.stringify(message)}${cls?.hint ? `（${cls.hint}）` : ""}`, {
+    status, code, param: raw.param, requestId, stage, terminalStatus,
+    errorKind: cls?.kind, retryable,
+    retryClass: retryable ? "bounded_backoff" : stage === "transport" ? "manual_retry" : "never",
+    redactedDetail: parsed,
+  })
+}
+
+/** Auxiliary consumers may commit derived state only from a completed, usable response.
+ * Main conversation display intentionally does not call this: partial text stays visible. */
+export function requireCompletedResponse(provider, response, purpose = "auxiliary", { allowToolCalls = false } = {}) {
+  const incomplete = !response || response.partial || response.interrupted || response.error
+    || (provider?.format === "responses" && response.terminalStatus !== "completed")
+    || (!allowToolCalls && response.toolCalls?.length)
+  if (!incomplete) return response
+  if (response?.error instanceof Error) throw response.error
+  throw new ProviderError(provider, `${purpose} did not produce a completed response; derived state was not changed`, {
+    code: "incomplete_auxiliary_response", stage: purpose, terminalStatus: response?.terminalStatus ?? "incomplete",
+    retryClass: "manual_retry", retryable: false,
+  })
 }

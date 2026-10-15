@@ -1,3 +1,4 @@
+import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs"
 import { isAbsolute, join } from "node:path"
 import { loadConfig, configPath } from "@thincoder/core/config.mjs"
 import { createMemory } from "@thincoder/core/memory.mjs"
@@ -36,7 +37,7 @@ export async function distillCommand(args, exitSoon) {
 
   const config = loadConfig()
   let provider = config.provider
-  if (!provider.apiKey) {
+  if (!hasProviderCredentials(provider)) {
     if (!process.stdin.isTTY) {
       console.error(noKeyMessage())
       return 1

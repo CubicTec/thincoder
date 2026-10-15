@@ -5,6 +5,7 @@
  */
 
 import { chat } from "@thincoder/core/provider/index.mjs"
+import { requireCompletedResponse } from "@thincoder/core/provider/errors.mjs"
 import { loadConfig } from "@thincoder/core/config.mjs"
 import { put, putMarkdown } from "@thincoder/core/memory.mjs"
 import { commitAndPush } from "@thincoder/core/git/gitmem.mjs"
@@ -65,6 +66,7 @@ export async function extractCandidates(provider, transcript, opts = {}) {
     // 元数据 + traces 开关透传（关=不落盘必须全覆盖——不再静默越过开关）
     logCtx: { stage: "distill", kind: "distill", traces },
   })
+  requireCompletedResponse(provider, res, "memory distillation")
   // Balanced-bracket extraction: find the first '[' and track depth through nested
   // brackets (tags arrays, nested objects, etc.) until the matching ']'.
   // Non-greedy regex (/\[[\s\S]*?\]/) stops at the FIRST ']', which is wrong when

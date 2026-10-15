@@ -232,13 +232,14 @@ export function showStartup(ctx) {
   // Startup screen
   // 2026-09-02 Q1（SESSION.md §6.8 D-S2）：provider 可为 null（无效 provider 被清空后用户 Esc 取消重选）
   // —— 可选链守卫；`!apiKey` 触发既有 wizard（其 provider 菜单列出已存在 providers，可选中恢复，F3）
-  if (!agent.provider?.apiKey) {
+  if (!agent.provider?.apiKey && !agent.providers?.some((p) => p.auth?.type === "chatgpt_oauth")) {
     pushLabel(`Welcome to ThinCoder!`, ansi.bold + C.tool)
     pushLine("No API key configured yet — entering initial setup (Esc to skip anytime)", C.text)
     startWizard()
   } else {
     pushLine(`Welcome to ThinCoder. Provider: ${agent.activeProvider} / ${agent.provider?.model ?? "(none)"}`, C.dim)
   }
+  if (agent.providers?.some((p) => p.auth?.type === "chatgpt_oauth")) pushLine("ChatGPT plan accounts: /auth status · /auth login --enable · /model to choose a model", C.dim)
   pushLine(`Tools: ${agent.tools.map((t) => t.name).join(", ")}`, C.dim)
 
   // R25（F-R25c）：上次运行异常终止提示——bin 入口扫描 crash-reports（24h 窗）经

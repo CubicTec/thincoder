@@ -11,7 +11,7 @@
  *
  * 缓存时钟可注入（`_catalogHooks.now`——先例 thincoder-core/provider/rate.mjs `_rateHooks`）：测试假时钟确定性断言 T6 不依赖壁钟。
  */
-import { listModels } from "@thincoder/core/provider/list-models.mjs"
+import { listModels, listModelCatalog } from "@thincoder/core/provider/list-models.mjs"
 
 /** 会话级缓存 TTL（§16.4 a2：连续操作不重复付网络；60s 新鲜窗口）。 */
 const CACHE_TTL_MS = 60_000
@@ -21,12 +21,14 @@ export const _catalogHooks = { now: () => Date.now() }
 
 /** 会话内缓存：key = name + baseURL（同渠道不同端点各自成条）；value = { models, at }。 */
 const _cache = new Map()
+const _labels = new Map()
+export function modelDisplayName(provider, id) { return _labels.get(`${cacheKey(provider)}\0${id}`) || id }
 
 /** 测试缝：清空会话缓存（跨用例隔离——生产无调用点）。 */
-export function _clearModelCatalogCache() { _cache.clear() }
+export function _clearModelCatalogCache() { _cache.clear(); _labels.clear() }
 
 function cacheKey(providerConfig) {
-  return `${providerConfig?.name ?? ""}\u0000${providerConfig?.baseURL ?? ""}`
+  return `${providerConfig?.name ?? ""}\u0000${providerConfig?.baseURL ?? ""}\u0000${providerConfig?.auth?.credentialRef ?? ""}`
 }
 
 /**
@@ -37,6 +39,11 @@ function cacheKey(providerConfig) {
  */
 export async function getProviderModels(providerConfig, { signal, fresh = false } = {}) {
   const key = cacheKey(providerConfig)
+  if (providerConfig?.auth?.type === "chatgpt_oauth") {
+    const catalog = await listModelCatalog(providerConfig, { signal })
+    for (const row of catalog) _labels.set(`${key}\0${row.id}`, row.displayName || row.id)
+    return catalog.map((row) => row.id)
+  }
   if (!fresh) {
     const hit = _cache.get(key)
     if (hit && _catalogHooks.now() - hit.at < CACHE_TTL_MS) return hit.models

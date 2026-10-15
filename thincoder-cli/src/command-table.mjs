@@ -172,6 +172,13 @@ export async function runCommandTable(command, args, ctx) {
       break
     }
 
+    case "auth": {
+      const { authCommand } = await import("./cli/auth-command.mjs")
+      const code = await authCommand(args)
+      if (code) exitSoon(code)
+      break
+    }
+
     case "team": {
       // 团队登录命令族（B1 批 · `docs/core/design/TEAM.md` §2）：login ∥ logout ∥ status——机制单源 = 核
       // `@thincoder/core/team.mjs`（本档只分发；退出码 0 成 ∥ 1 败——先例 = memory ∥ distill 薄命令族）。

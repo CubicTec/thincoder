@@ -29,6 +29,7 @@ export function printCompletion(shell) {
         audit)   COMPREPLY=( $(compgen -W "--root" -- "$cur") ) ;;
         list)    COMPREPLY=( $(compgen -W "--json --full --family --cwd" -- "$cur") ) ;;
       esac ;;
+    auth) COMPREPLY=( $(compgen -W "add enable disable login status list select logout cancel --enable --new" -- "$cur") ) ;;
     team) case "$prev" in
         team)  COMPREPLY=( $(compgen -W "login logout status" -- "$cur") ) ;;
         login) COMPREPLY=( $(compgen -W "--server --user" -- "$cur") ) ;;
@@ -36,7 +37,7 @@ export function printCompletion(shell) {
     distill) COMPREPLY=( $(compgen -W "--yes --layer=" -- "$cur") ) ;;
     completion) COMPREPLY=( $(compgen -W "bash zsh fish" -- "$cur") ) ;;
     *)
-      COMPREPLY=( $(compgen -W "tui chat acp memory sync reindex distill upgrade completion session ledger team -v --version -h --help" -- "$cur") ) ;;
+      COMPREPLY=( $(compgen -W "tui chat acp memory sync reindex distill upgrade completion session ledger team auth -v --version -h --help" -- "$cur") ) ;;
   esac
 }
 complete -F _thincoder thincoder
@@ -65,6 +66,7 @@ _thincoder() {
         'completion[Generate shell completion script]' \\
         'session[Session dir GC: session gc --dry-run|--confirm]' \\
         'ledger[Ledger variants: migrate / audit / list]' \\
+        'auth[ChatGPT plan accounts]' \\
         'team[Team login: login / logout / status]'
       ;;
     args)
@@ -80,6 +82,7 @@ _thincoder() {
             migrate) _arguments '--dry-run[Report only]' '--confirm[Apply migration]' '--from:Source key:' ;;
             list)    _arguments '--json[Single-segment JSON output]' '--full[Include evidence]' '--family[Family scope]' '--cwd:Project anchor:' ;;
             audit)   _arguments '--root:Scan root dir:' ;; esac ;;
+        auth) _values 'auth action' add enable disable login status list select logout cancel ;;
         team) case "$words[2]" in
             login) _arguments '--server:Team server URL:' '--user:Team user name:' ;; esac ;;
         distill) _arguments '--yes[Skip confirmation]' '--layer=[Layer filter]' ;;
@@ -105,6 +108,8 @@ complete -c thincoder -a completion -d 'Shell completion'
 complete -c thincoder -a session -d 'Session dir GC (session gc --dry-run|--confirm)'
 complete -c thincoder -a ledger -d 'Ledger variants: migrate / audit / list'
 complete -c thincoder -a acp -d 'Agent Client Protocol server for IDEs'
+complete -c thincoder -a auth -d 'ChatGPT plan accounts'
+complete -c thincoder -n '__fish_seen_subcommand_from auth' -a 'add enable disable login status list select logout cancel'
 complete -c thincoder -a team     -d 'Team login: login / logout / status'
 
 # Flags

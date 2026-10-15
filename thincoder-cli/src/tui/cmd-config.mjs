@@ -1,5 +1,5 @@
 import { ansi, C } from "./ansi.mjs"
-import { probeChannelModels, dedupeModels } from "./model-catalog.mjs"
+import { probeChannelModels, dedupeModels, modelDisplayName } from "./model-catalog.mjs"
 import { probeTargetOf } from "@thincoder/core/provider-flows.mjs"
 /** Merge an embedding-key save into the raw config, backfilling baseURL/model from defaults.
  *  Keeps existing custom values (Ollama/local embedding); defaults are the single source
@@ -320,9 +320,11 @@ export async function handleConfigCommand(ctx, args = []) {
         continue
       }
       if (r.list.length === 0) { pushLine(`${c.provider}: /models 未返回任何模型`, C.error); continue }
+      const provider = agent.providers.find((p) => p.name === c.provider)
+      const models = provider?.auth?.type === "chatgpt_oauth" ? r.list : dedupeModels(r.list)
       const me = await showPicker(`${c.provider} models`, [
         { type: "header", text: "选为 config.defaultModel（新会话起点——当前会话槽不受影响）" },
-        ...dedupeModels(r.list).map((m) => ({ type: "item", text: m, action: "model", model: m })),
+        ...models.map((m) => ({ type: "item", text: modelDisplayName(provider, m), action: "model", model: m })),
       ])
       if (!me) continue // Esc → 回默认模型菜单
       try {

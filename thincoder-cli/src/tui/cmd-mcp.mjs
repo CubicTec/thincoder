@@ -162,6 +162,7 @@ export async function handleMcpCommand(ctx, args = []) {
     pushLine("[mcp] Generating config from description...", C.dim)
     try {
       const { chat } = await import("@thincoder/core/provider/index.mjs")
+      const { requireCompletedResponse } = await import("@thincoder/core/provider/errors.mjs")
       const res = await chat(agent.provider, {
         messages: [{
           role: "user",
@@ -191,6 +192,7 @@ Return ONLY the JSON object:`,
           traces: agent?.config?.traces?.enabled !== false,
         },
       })
+      requireCompletedResponse(agent.provider, res, "MCP configuration")
       const jsonMatch = (res.content ?? "").match(/\{[\s\S]*\}/)
       if (!jsonMatch) { pushLine("[mcp] AI response not valid JSON", C.error); return }
       const srv = JSON.parse(jsonMatch[0])

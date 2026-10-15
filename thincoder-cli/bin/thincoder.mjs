@@ -148,6 +148,7 @@ Usage:
                             Read-only ledger export as single-segment JSON (--full adds evidence; --family exports the discovered family)
   thincoder upgrade         Update to the latest version from npm
   thincoder completion <sh>  Generate shell completion script (bash / zsh / fish)
+  thincoder auth add | enable | disable | login [--enable] [--new] | status | list | select <profileId> | logout
   thincoder team login [--server <url>] [--user <name>]  Log in to a team server (password prompt — hidden echo)
   thincoder team logout | status                         Log out (revoke the team token) / show login state
   thincoder -v, --version   Print version

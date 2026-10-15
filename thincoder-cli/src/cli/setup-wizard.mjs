@@ -1,3 +1,4 @@
+import { authCommand } from "./auth-command.mjs"
 import { createInterface } from "node:readline"
 import { configPath, writeConfigAtomic, PROVIDER_PRESETS } from "@thincoder/core/config.mjs"
 import { resolveProviders } from "@thincoder/core/config-io.mjs"
@@ -50,6 +51,14 @@ export async function setupWizard() {
       console.error("Invalid choice — cancelled")
       return null
     }
+    if (presetFields?.auth?.type === "chatgpt_oauth") {
+      if (!resolveProviders().providers.some((p) => p.name === name) && await authCommand(["add"]) !== 0) return null
+      console.error("ChatGPT provider configured. No API key is needed; plan access requires explicit opt-in.")
+      const enable = (await ask("Enable experimental access and sign in with ChatGPT [y/N]: ")).trim().toLowerCase()
+      if (enable === "y" || enable === "yes") await authCommand(["login", "--enable"])
+      console.error("Use thincoder tui and /model to discover and choose an authorized model.")
+      return null
+    }
     // 2026-10-09 清除批：渠道条目不携模型——模型问句 = **默认模型**（顶层 `defaultModel`）的显式选定
     // （答值不落渠道条目；运行时随下方返回对象携出）。零静默回落 ∥ 零预设播种。
     const model = (await ask("Model (this becomes your default model — e.g. gpt-4o): ")).trim()
@@ -91,7 +100,7 @@ export async function setupWizard() {
       const providers = raw.providers?.length ? raw.providers : []
       const existing = providers.find((p) => p.name === name)
       const rec = { name, baseURL, apiKey } // 2026-10-09 清除批：渠道条目不携 `model`
-      for (const k of ["format", "thinking", "reasoningEffort", "maxTokens", "chatPath"]) {
+      for (const k of ["format", "thinking", "reasoningEffort", "maxTokens", "chatPath", "auth", "stateful", "builtinTools"]) {
         if (presetFields?.[k] !== undefined) rec[k] = presetFields[k]
       }
       if (useProxy) rec.proxy = true // #1049 补步：答 Yes ⇒ 随本落盘一次写（No ∥ 缺省 ⇒ 零键零写）

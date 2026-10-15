@@ -65,12 +65,13 @@ export function createProviderAdmin(ctx) {
       if (!baseURL) return
       const format = await showPicker("API format", [
         { type: "item", text: "openai", name: "openai" },
+        { type: "item", text: "responses", name: "responses" },
         { type: "item", text: "anthropic", name: "anthropic" },
         { type: "item", text: "google", name: "google" },
       ])
       if (!format) return // Esc/取消 → 中止流程
       const cfg = { name, baseURL } // 2026-10-09 清除批：渠道条目不携 `model`（表单不设 model 输入件）
-      if (format.name === "anthropic" || format.name === "google") cfg.format = format.name
+      if (["anthropic", "google", "responses"].includes(format.name)) cfg.format = format.name
       else if (format.name !== "openai") return // 防御：未知格式（理论不可达——picker 枚举）
       await persistRaw((raw) => { raw.providers ??= []; raw.providers.push(cfg) }) // D-F5a 先盘后存
       agent.providers.push(cfg)
@@ -100,8 +101,13 @@ export function createProviderAdmin(ctx) {
     if (preset.maxTokens) cfg.maxTokens = preset.maxTokens
     if (preset.chatPath) cfg.chatPath = preset.chatPath
     if (preset.format) cfg.format = preset.format
+    for (const k of ["auth", "stateful", "builtinTools"]) if (preset[k] !== undefined) cfg[k] = structuredClone(preset[k])
     await persistRaw((raw) => { raw.providers ??= []; raw.providers.push(cfg) }) // D-F5a 先盘后存
     agent.providers.push(cfg)
+    if (cfg.auth?.type === "chatgpt_oauth") {
+      pushLine("ChatGPT provider added (experimental access disabled). Use /auth login --enable to opt in and sign in, then /model to choose a model.", C.tool)
+      return
+    }
     const key = await askQuestion(`Enter API key for ${se.name} (skip if none):`)
     if (key) await setProviderKey(se.name, key, { probe: false }) // 探统一在流尾（M9——精确一次）
     // #1027 走 proxy 问句（key 后、流尾探针前——写同一键 providers[].proxy；No/Esc ⇒ 零键零写）
@@ -148,7 +154,7 @@ export function createProviderAdmin(ctx) {
   async function setKeyFlow() {
     const se = await showPicker("Configure API Key", [
       { type: "header", text: "Select provider" },
-      ...agent.providers.filter((p) => !isDerivedProviderHidden(p)).map((p) => ({ type: "item", text: `${p.name} ${p.apiKey ? `(has key: ${maskKey(p.apiKey)})` : "(no key)"}`, name: p.name })),
+      ...agent.providers.filter((p) => !isDerivedProviderHidden(p) && p.auth?.type !== "chatgpt_oauth").map((p) => ({ type: "item", text: `${p.name} ${p.apiKey ? `(has key: ${maskKey(p.apiKey)})` : "(no key)"}`, name: p.name })),
     ])
     if (!se) return
     const key = await askQuestion(`Enter API key for ${se.name}:`)
@@ -161,6 +167,7 @@ export function createProviderAdmin(ctx) {
   async function setProviderKey(name, key, { probe = true } = {}) {
     const target = agent.providers.find((p) => p.name === name)
     if (!target) return
+    if (target.auth?.type === "chatgpt_oauth") throw new Error("Use /auth login for ChatGPT plan access; API keys are not supported on this provider")
     await persistRaw((raw) => {
       raw.providers ??= []
       const t = raw.providers.find((p) => p?.name === name)

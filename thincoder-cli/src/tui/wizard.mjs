@@ -26,7 +26,7 @@ import { FAILURE_TEXT } from "../cli/team-command.mjs"
 /** 首屏三行（TUI-COMMANDS.md §3.1——文案逐字：① ∥ ② 说明 = 团队卡 ∥ 本地卡同句；③ 零说明行）。 */
 const WIZARD_ROUTES = Object.freeze([
   Object.freeze({ kind: "route-team", label: "登录团队服务器", desc: "用团队发的账号登录——模型由服务器提供，不用自己填 key" }),
-  Object.freeze({ kind: "route-local", label: "配置本地 provider", desc: "自己填 API key，不依赖团队服务器" }),
+  Object.freeze({ kind: "route-local", label: "配置本地 provider", desc: "API Key 或 ChatGPT 计划，不依赖团队服务器" }),
   Object.freeze({ kind: "route-later", label: "以后再说", desc: null }),
 ])
 
@@ -46,7 +46,7 @@ export function createWizard(ctx) {
   function wizardProviderItems() {
     const items = []
     for (const p of agent.providers) {
-      items.push({ kind: "existing", name: p.name, baseURL: p.baseURL, label: `${p.name} (added${p.apiKey ? "" : ", no key"})` })
+      items.push({ kind: "existing", name: p.name, baseURL: p.baseURL, auth: p.auth, format: p.format, stateful: p.stateful, builtinTools: p.builtinTools, label: `${p.name} (added${p.auth?.type === "chatgpt_oauth" ? ", ChatGPT plan" : p.apiKey ? "" : ", no key"})` })
     }
     for (const [name, p] of Object.entries(PRESETS)) {
       if (!agent.providers.some((x) => x.name === name)) {
@@ -55,7 +55,7 @@ export function createWizard(ctx) {
           // 预设自身声明的扩展字段随 preset 直达落盘（code review 🟡——与 pickers preset 路径同构；
           // claude/gemini 缺 format、deepseek/glm 缺 thinking/maxTokens 会静默错配）；不新增提问步。
           format: p.format, thinking: p.thinking, reasoningEffort: p.reasoningEffort,
-          maxTokens: p.maxTokens, chatPath: p.chatPath,
+          maxTokens: p.maxTokens, chatPath: p.chatPath, auth: p.auth, stateful: p.stateful, builtinTools: p.builtinTools,
         })
       }
     }
@@ -81,9 +81,9 @@ export function createWizard(ctx) {
     // picker 路径两入口一致；默认 openai）。空输入 = openai 直过（Enter 即默认——同 D-C1 index=0）；
     // Esc 在该步沿用 wizard 既有“Esc 随时跳过”语义（取消整个向导——无半配置落盘）。
     format: {
-      prompt: "API format [openai/anthropic/google] (Enter = openai default)",
+      prompt: "API format [openai/responses/anthropic/google] (Enter = openai default)",
       // 大小写不敏感（旧手输口径——输入统一 toLowerCase 后落盘）；空输入 = openai 默认
-      validate: (v) => !v || /^(openai|anthropic|google)$/i.test(v) || "API format must be one of: openai, anthropic, google",
+      validate: (v) => !v || /^(openai|responses|anthropic|google)$/i.test(v) || "API format must be one of: openai, responses, anthropic, google",
     },
     key: {
       prompt: "Enter API key",
@@ -172,8 +172,16 @@ export function createWizard(ctx) {
       // 2026-10-09 清除批：渠道条目不携模型——fields 只收 name/baseURL + 预设扩展字段
       w.fields = { name: item.name, baseURL: item.baseURL }
       // preset 直达：其余扩展字段照旧（随 fields 落盘）
-      for (const k of ["format", "thinking", "reasoningEffort", "maxTokens", "chatPath"]) {
-        if (item[k]) w.fields[k] = item[k]
+      for (const k of ["format", "thinking", "reasoningEffort", "maxTokens", "chatPath", "auth", "stateful", "builtinTools"]) {
+        if (item[k] !== undefined) w.fields[k] = structuredClone(item[k])
+      }
+      if (w.fields.auth?.type === "chatgpt_oauth") {
+        const record = { ...w.fields }
+        state.wizard = null
+        void persistRaw((raw) => { raw.providers ??= []; const existing = raw.providers.find((p) => p.name === record.name); if (!existing) raw.providers.push(record) })
+          .then(() => { if (!agent.providers.some((p) => p.name === record.name)) agent.providers.push(record); pushLine("ChatGPT configured. Use /auth login --enable to opt in, then /model to choose a model.", C.tool); render() })
+          .catch((e) => pushLine(`[auth] ${e.message}`, C.error))
+        return
       }
       w.step = "key"
     }

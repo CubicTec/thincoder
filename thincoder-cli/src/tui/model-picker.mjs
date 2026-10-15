@@ -19,7 +19,7 @@ import { sliceByWidth } from "./render.mjs"
 import { providerSpec, specMatch } from "@thincoder/core/config.mjs"
 import { saveSession, loadSlotFile } from "@thincoder/core/session.mjs"
 import { carryoverDefaultModel } from "./config-helpers.mjs"
-import { getProviderModels, modelListFailureText, dedupeModels } from "./model-catalog.mjs"
+import { getProviderModels, modelListFailureText, dedupeModels, modelDisplayName } from "./model-catalog.mjs"
 import { createProviderAdmin, isDerivedProviderHidden } from "./provider-admin.mjs"
 
 /** createModelPicker(ctx) → { openModelPicker, selectModel, setProviderKey, setContextFlow, pickModelForSlot } */
@@ -39,11 +39,6 @@ export function createModelPicker(ctx) {
   function fmtContextK(tokens) {
     if (tokens >= 1_000_000) return `${Math.round(tokens / 1_048_576)}M`
     return `${Math.round(tokens / 1024)}K`
-  }
-
-  /** Get API key for a provider (config.json only — env vars are not a key source) */
-  function getApiKey(providerConfig) {
-    return providerConfig.apiKey
   }
 
   /** 异步更新 entries 后的选中项恢复（selKey 命中则回原位，否则钳位）。 */
@@ -121,7 +116,7 @@ export function createModelPicker(ctx) {
       // （(ctx …) / ← session）同簇（先例 = provider-admin.mjs setKeyFlow / wizard 的 (added, no key)）：
       // 警示不再位于最先牺牲段。note 收窄为 baseURL（补充信息——超宽随行右截断可接受）。
       const sessionNote = active ? " ← session" : ""
-      const keyStatus = p.apiKey ? "" : " (no key)"
+      const keyStatus = p.auth?.type === "chatgpt_oauth" ? " (ChatGPT plan; /auth status)" : p.apiKey ? "" : " (no key)"
       const unavailable = p._unavailable ? " (不可用)" : ""
       const ctxTag = ` (ctx ${fmtContextK(providerSpec(p).context)})`
       entries.push({
@@ -185,9 +180,9 @@ export function createModelPicker(ctx) {
       const itemRows = entries.filter((e) => e.type === "item" && !e.placeholder)
       selKey = itemRows[state.picker.index] ? entryKey(itemRows[state.picker.index]) : null
       const listed = new Set(itemRows.map((e) => e.model).filter(Boolean))
-      const rows = dedupeModels(models).filter((m) => !listed.has(m))
+      const rows = (providerConfig.auth?.type === "chatgpt_oauth" ? models : dedupeModels(models)).filter((m) => !listed.has(m))
       fillAvailableModels(entries, rows.map((m) => ({
-        type: "item", text: m, action: "switch", provider: providerName, model: m,
+        type: "item", text: modelDisplayName(providerConfig, m), action: "switch", provider: providerName, model: m,
       })), "(no models)")
     } catch (error) {
       if (state.picker?.entries !== entries) return
@@ -257,7 +252,7 @@ export function createModelPicker(ctx) {
         : `Model: ${item.provider}:${item.model} — spec not found in MODEL_SPECS — default 128K ctx / 32K out; set context in /config to override`,
       matched ? C.tool : C.error,
     )
-    if (!agent.provider.apiKey) {
+    if (!agent.provider.apiKey && agent.provider.auth?.type !== "chatgpt_oauth") {
       const selKey = await askQuestion(`Enter API key for ${item.provider} (leave empty to skip):`)
       if (selKey) await admin.setProviderKey(item.provider, selKey)
     }
@@ -292,19 +287,15 @@ export function createModelPicker(ctx) {
   /** Slot 面 fetch：模型直接并入可选行（旧 pickModelForSlot 语义——自由面；槽位面零改——
    *  仅随 M1 获得三 format 支持 + 占位行（同会话面：0 item 的 picker 不会打开））。 */
   async function fetchSlotModels(providerName, providerConfig, entries) {
-    const { listModels } = await import("@thincoder/core/provider/index.mjs")
     let selKey = null
     try {
-      const models = await listModels(
-        { baseURL: providerConfig.baseURL, apiKey: getApiKey(providerConfig) ?? "", format: providerConfig.format },
-        { signal: AbortSignal.timeout(10000) }
-      )
+      const models = await getProviderModels(providerConfig, { signal: AbortSignal.timeout(10000) })
       if (state.picker?.entries !== entries) return
       const itemRows = entries.filter((e) => e.type === "item" && !e.placeholder)
       selKey = itemRows[state.picker.index] ? entryKey(itemRows[state.picker.index]) : null
-      const deduped = dedupeModels(models).filter((m) => !itemRows.some((en) => en.model === m))
+      const deduped = (providerConfig.auth?.type === "chatgpt_oauth" ? models : dedupeModels(models)).filter((m) => !itemRows.some((en) => en.model === m))
       fillAvailableModels(entries, deduped.map((m) => ({
-        type: "item", text: m, action: "switch", provider: providerName, model: m,
+        type: "item", text: modelDisplayName(providerConfig, m), action: "switch", provider: providerName, model: m,
       })), "(no models)")
     } catch (error) {
       if (state.picker?.entries !== entries) return

@@ -1,3 +1,5 @@
+import { getProviderModels, modelDisplayName } from "./model-catalog.mjs"
+import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs"
 /** /advisor command: configure review model/thinking and toggle the review guard.
  *  Interactive loop UX — stays in menu after each action, Esc to exit.
  *  ctx: { agent, showPicker, pushLine, pushLabel, persistRaw } */
@@ -214,12 +216,11 @@ function getEffectiveModel(agent, cfg) {
 }
 
 async function fetchAdvisorModels(agent) {
-  const { listModels } = await import("@thincoder/core/provider/index.mjs")
   const result = new Map()
   await Promise.all((agent.providers || []).map(async (p) => {
     try {
       // format 透传（M1 分派依据——claude/gemini 走 anthropic/google 拉取分支）
-      const models = await listModels({ baseURL: p.baseURL, apiKey: p.apiKey ?? "", format: p.format }, { signal: AbortSignal.timeout(10000) })
+      const models = await getProviderModels(p, { signal: AbortSignal.timeout(10000) })
       result.set(p.name, { models, error: null })
     } catch (err) {
       result.set(p.name, { models: [], error: err.message.slice(0, 40) })
@@ -234,7 +235,7 @@ function buildModelEntries(agent, cfg, cache) {
 
   for (const p of agent.providers || []) {
     const cached = cache.get(p.name)
-    const hasKey = !!p.apiKey
+    const hasKey = hasProviderCredentials(p)
     const noteParts = [p.baseURL]
     if (!hasKey) noteParts.push("(no key)")
     if (agent.activeProvider === p.name) noteParts.push("← active")
@@ -246,7 +247,7 @@ function buildModelEntries(agent, cfg, cache) {
     if (cached?.models) {
       for (const m of cached.models) {
         const isSelected = cfg.provider === p.name && cfg.model === m
-        entries.push({ type: "item", text: `${isSelected ? "● " : "  "}${m}`, action: "switch", provider: p.name, model: m })
+        entries.push({ type: "item", text: `${isSelected ? "● " : "  "}${modelDisplayName(p, m)}`, action: "switch", provider: p.name, model: m })
       }
     }
   }

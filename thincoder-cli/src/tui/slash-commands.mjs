@@ -36,6 +36,7 @@ import { handleUpgradeCommand } from "./cmd-upgrade.mjs"
 import { handleFoldCommand } from "./cmd-fold.mjs"
 import { handleUndoCommand } from "./cmd-undo.mjs"
 import { handleEngCommand } from "./cmd-eng.mjs"
+import { handleAuthCommand } from "./cmd-auth.mjs"
 import { handleTeamCommand } from "./cmd-team.mjs" // 团队登录（登录面补全批——/team login ∥ logout ∥ status）
 
 export const SLASH_COMMANDS = [
@@ -51,6 +52,7 @@ export const SLASH_COMMANDS = [
   { name: "/think", group: "Agent", desc: "thinking mode & reasoning effort" },
   { name: "/upgrade", group: "System", desc: "check for updates & upgrade" },
   { name: "/config", group: "System", desc: "agent config (embedding, proxy, turns, threshold, consult pool)" },
+  { name: "/auth", group: "System", desc: "ChatGPT plan add / enable / login / status / list / select / logout / cancel" },
   { name: "/team", group: "System", desc: "team login / logout / status" },
   { name: "/new", group: "Session", desc: "new session (old one archived to slot)" },
   { name: "/session", group: "Session", desc: "list/switch archived sessions" },
@@ -95,6 +97,7 @@ export const HANDLERS = {
   "/shell": handleShellCommand,
   "/config": handleConfigCommand,
   "/team": handleTeamCommand,
+  "/auth": handleAuthCommand,
   "/copy": handleCopyCommand,
   "/upgrade": handleUpgradeCommand,
   "/fold": handleFoldCommand,
@@ -161,6 +164,7 @@ export function createSlashCommands(ctx) {
         return match(levels)
       }
     }
+    if (cmd === "/auth" && argIndex === 0) return match(["add", "enable", "disable", "login", "status", "list", "select", "logout", "cancel"])
     if (cmd === "/config" && argIndex === 0) return match(["embedkey"])
     if (cmd === "/goal" && argIndex === 0) return match(["set", "cancel"])
     if (cmd === "/fold" && argIndex === 0) return match(["on", "off"])

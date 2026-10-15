@@ -100,7 +100,7 @@ export async function chat(provider, opts = {}) {
   logEvent("llm:start", { provider: pname, model: provider?.model ?? "", stage: logCtx.stage, turn: logCtx.turn, auto: logCtx.auto === true, child: logCtx.child })
   try {
     const result = await chatImpl(provider, opts)
-    recordProviderInference(provider, result)
+    await recordProviderInference(provider, result)
     logEvent("llm:done", {
       provider: pname, model: provider?.model ?? "",
       ms: Date.now() - t0,
@@ -114,7 +114,7 @@ export async function chat(provider, opts = {}) {
     recordChatTrace(provider, opts, result, null)
     return result
   } catch (e) {
-    recordProviderInference(provider, e)
+    await recordProviderInference(provider, e)
     logEvent("llm:error", {
       provider: pname, model: provider?.model ?? "",
       ms: Date.now() - t0,

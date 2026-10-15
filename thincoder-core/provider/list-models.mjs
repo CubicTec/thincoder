@@ -13,7 +13,7 @@
  * `signal` 短路）。HTTP 非 2xx / 网络失败**抛出**（调用方决定降级——与现实现同）；
  * 解析保持防御性（字段缺失即跳过该项）。候选不过滤非对话模型（embedding 等——§16.6 #14）。
  */
-import { resolveProviderAuth } from "./auth-context.mjs"
+import { resolveProviderAuth, recordProviderInference } from "./auth-context.mjs"
 import { assertProviderAuthConfig, isChatGptProvider } from "./auth-config.mjs"
 import { responsesError } from "./errors.mjs"
 import { proxyFetch } from "../proxy.mjs"
@@ -130,6 +130,9 @@ export async function listModelCatalog(provider, { signal } = {}) {
     return data.models.filter((m) => m.visibility === "list").map((m) => ({
       id: m.slug, slug: m.slug, displayName: m.display_name, visibility: m.visibility,
     }))
+  } catch (error) {
+    if (error.code === "subscription_sharing_usage_limit_exceeded") await recordProviderInference(provider, error)
+    throw error
   } finally { auth.release() }
 }
 

@@ -9,6 +9,7 @@ import { tokenSet, refreshDue } from './tokens.mjs'
 import { authError, abortError, checkSignal } from './errors.mjs'
 
 const cleanLabel = value => String(value || 'ChatGPT account').replace(/[\x00-\x1f\x7f]/g, '').slice(0, 120)
+const usageLimitError = () => authError('subscription_sharing_usage_limit_exceeded', 'ChatGPT plan usage is paused. Check ChatGPT Settings → Usage, then explicitly resume or select the account.', { state: 'usage_limited' })
 const absent = () => authError('chatgpt_signed_out', 'Sign in to the selected ChatGPT account first.', { state: 'signed_out' })
 
 function assertCredentialBinding(profile, credentials) {
@@ -62,7 +63,7 @@ export class AuthService extends EventEmitter {
         await this.store.writeCredential(profileId, credentials)
         const record = {
           profileId, ...binding, label: existing?.label || `${cleanLabel(identity.email || identity.name)} (${profileId.slice(-6)})`,
-          state: hasPlanScope(credentials.scopes) ? 'ready' : 'signed_in_without_plan_scope', paused: false, sessionId: credentials.sessionId,
+          state: hasPlanScope(credentials.scopes) ? 'ready' : 'signed_in_without_plan_scope', paused: false, usageLimited: false, sessionId: credentials.sessionId,
         }
         profiles.profiles = [...profiles.profiles.filter(p => p.profileId !== profileId), record]
         this.cancelProfile(profiles.activeProfileId)
@@ -89,12 +90,13 @@ export class AuthService extends EventEmitter {
     let bound = false
     try { assertCredentialBinding(profile, credentials); bound = true } catch { /* public status never exposes credential diagnostics */ }
     let state = !credentials ? 'signed_out' : hasPlanScope(credentials.scopes) ? 'ready' : 'signed_in_without_plan_scope'
-    if (credentials && this.states.has(id)) state = this.states.get(id)
+    if (credentials && this.states.has(id) && this.states.get(id) !== 'usage_limited') state = this.states.get(id)
+    if (bound && profile.usageLimited) state = 'usage_limited'
     if (profile.state === 'reauth_required' || (credentials && !bound)) state = 'reauth_required'
     if (credentials?.refreshPending && state !== 'refreshing') state = 'reauth_required'
     if (authorizing) state = 'authorizing'
     return { profileId: id, label: profile.label, email: profile.email, clientId: profile.clientId, state,
-      planAuthorized: bound && hasPlanScope(credentials.scopes), paused: profile.paused === true, active: profiles.activeProfileId === id,
+      planAuthorized: bound && hasPlanScope(credentials.scopes), paused: profile.paused === true, usageLimited: profile.usageLimited === true, active: profiles.activeProfileId === id,
       lastInference: this.outcomes.get(id)?.lastInference || null }
   }
 
@@ -115,13 +117,17 @@ export class AuthService extends EventEmitter {
       const profiles = await this.store.readProfiles()
       const profile = profiles.profiles.find(p => p.profileId === profileId)
       if (!profile || !await this.store.readCredential(profileId) || profile.state === 'signed_out') throw absent()
-      if (profiles.activeProfileId !== profileId) {
+      const changed = profiles.activeProfileId !== profileId || profile.usageLimited === true
+      profile.usageLimited = false
+      delete profile.usageLimitedAt
+      if (changed) {
         this.cancelProfile(profiles.activeProfileId)
         profiles.activeProfileId = profileId
         profiles.activation = (profiles.activation || 0) + 1
         await this.store.write('profiles.json', profiles)
       }
     })
+    if (this.states.get(profileId) === 'usage_limited') this.states.delete(profileId)
     this.emit('profileChanged', { profileId })
     return this.getStatus(profileId)
   }
@@ -147,8 +153,29 @@ export class AuthService extends EventEmitter {
       const profile = profiles.profiles.find(p => p.profileId === profileId)
       if (!profile) throw absent()
       profile.paused = false
+      profile.usageLimited = false
+      delete profile.usageLimitedAt
       await this.store.write('profiles.json', profiles)
     })
+    if (this.states.get(profileId) === 'usage_limited') this.states.delete(profileId)
+    this.emit('profileChanged', { profileId })
+    return this.getStatus(profileId)
+  }
+
+  async recordUsageLimit(profileId) {
+    this.cancelProfile(profileId)
+    await this.store.withLock('profiles', async () => {
+      const profiles = await this.store.readProfiles()
+      const profile = profiles.profiles.find(p => p.profileId === profileId)
+      if (!profile) throw absent()
+      if (!profile.usageLimited && profiles.activeProfileId === profileId) profiles.activation = (profiles.activation || 0) + 1
+      profile.usageLimited = true
+      profile.usageLimitedAt = new Date(this.now()).toISOString()
+      await this.store.write('profiles.json', profiles)
+    })
+    this.cancelProfile(profileId)
+    this.states.set(profileId, 'usage_limited')
+    this.emit('profileChanged', { profileId })
     return this.getStatus(profileId)
   }
 
@@ -171,6 +198,7 @@ export class AuthService extends EventEmitter {
       if (profile?.state === 'reauth_required') throw authError('reauth_required', 'Sign in to this ChatGPT account again.', { state: 'reauth_required' })
       if (!credentials || !profile || profile.state === 'signed_out') throw absent()
       if (profile.paused) throw authError('profile_paused', 'ChatGPT plan access is disabled for this saved account.')
+      if (profile.usageLimited) throw usageLimitError()
       assertCredentialBinding(profile, credentials)
       if (credentials.refreshPending) {
         await this.markReauthRequired(profileId)
@@ -217,6 +245,7 @@ export class AuthService extends EventEmitter {
     if (!profile || profile.state === 'signed_out') throw absent()
     if (profile.state === 'reauth_required') throw authError('reauth_required', 'Sign in to this ChatGPT account again.', { state: 'reauth_required' })
     if (profile.paused) throw authError('profile_paused', 'ChatGPT plan access is disabled for this saved account.')
+    if (profile.usageLimited) throw usageLimitError()
     if (profiles.activeProfileId !== id) throw authError('profile_not_active', 'Select this saved ChatGPT account before starting a request.', { state: 'signed_out' })
     const controller = new AbortController()
     const combined = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal
@@ -234,7 +263,7 @@ export class AuthService extends EventEmitter {
     const verifyBinding = async () => {
       const latest = await this.store.readProfiles()
       const current = latest.profiles.find(p => p.profileId === id)
-      if (latest.activation !== profiles.activation || latest.activeProfileId !== id || !current || ['signed_out', 'reauth_required'].includes(current.state) || current.paused || current.sessionId !== profile.sessionId) throw abortError()
+      if (latest.activation !== profiles.activation || latest.activeProfileId !== id || !current || ['signed_out', 'reauth_required'].includes(current.state) || current.paused || current.usageLimited || current.sessionId !== profile.sessionId) throw abortError()
     }
     const watcher = setInterval(async () => {
       if (checking || released) return
@@ -267,8 +296,9 @@ export class AuthService extends EventEmitter {
 
   /** Record only sanitized outcome metadata; never prompts, bodies, headers or credentials. */
   recordOutcome(profileId, { state, lastInference } = {}) {
-    if (['ready', 'usage_limited', 'reauth_required', 'temporarily_unavailable'].includes(state)) this.states.set(profileId, state)
+    if (['ready', 'reauth_required', 'temporarily_unavailable'].includes(state)) this.states.set(profileId, state)
     if (lastInference === 'completed') this.outcomes.set(profileId, { lastInference: { status: 'completed', at: new Date(this.now()).toISOString() } })
+    if (state === 'usage_limited') return this.recordUsageLimit(profileId)
   }
 
   async logout(profileId) {

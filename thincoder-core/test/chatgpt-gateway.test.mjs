@@ -196,3 +196,37 @@ test("OAuth diagnostic keys and callback parameters are redacted", () => {
   for (const key of ["access_token", "refresh_token", "id_token", "code_verifier", "id_token_hint", "cookie"]) assert.equal(redactSecret(key, "synthetic-sensitive-value"), "[REDACTED]")
   assert.ok(!redactSecret("error", "callback?code=synthetic-sensitive-value").includes("synthetic-sensitive-value"))
 })
+
+
+test("usage-limit admission awaits shared pause and catalog uses the same gate", async () => {
+  let pauses = 0
+  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+    if (pauses) throw Object.assign(new Error("Usage paused"), { code: "subscription_sharing_usage_limit_exceeded" })
+    return { profileId, signal, accessToken: "synthetic-test-token", release() {} }
+  }, async recordUsageLimit(profileId) {
+    await Promise.resolve()
+    assert.equal(profileId, "profile-a"); pauses++
+  } })
+  globalThis.fetch = async () => new Response(JSON.stringify({ error: { code: "subscription_sharing_usage_limit_exceeded", message: "Limit" } }), { status: 429 })
+  await assert.rejects(listModels(provider()), { code: "subscription_sharing_usage_limit_exceeded" })
+  assert.equal(pauses, 1)
+  await assert.rejects(chat(provider(), { messages: [{ role: "user", content: "hi" }] }), /paused/)
+  assert.equal(pauses, 2) // the shared service is authoritative, including admission failures
+})
+
+
+test("failed shared usage pause remains locally blocked without leaking storage errors", async () => {
+  let acquisitions = 0
+  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+    acquisitions++
+    return { profileId, signal, accessToken: "synthetic-test-token", release() {} }
+  }, async recordUsageLimit() { throw new Error("sensitive-storage-diagnostic") } })
+  globalThis.fetch = async () => new Response(JSON.stringify({ error: { code: "subscription_sharing_usage_limit_exceeded", message: "Limit" } }), { status: 429 })
+  await assert.rejects(chat(provider(), { messages: [{ role: "user", content: "hi" }] }), error => {
+    assert.equal(error.code, "subscription_sharing_usage_limit_exceeded")
+    assert.match(error.message, /shared pause could not be saved/)
+    assert.ok(!error.message.includes("sensitive-storage-diagnostic")); return true
+  })
+  await assert.rejects(chat(provider(), { messages: [{ role: "user", content: "hi" }] }), /paused/)
+  assert.equal(acquisitions, 1)
+})

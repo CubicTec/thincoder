@@ -10,7 +10,7 @@ const text = (value) => typeof value === "string" ? value : null
 export function publicAuthStatus(value, inference = null) {
   return {
     profileId: text(value?.profileId), label: text(value?.label),
-    state: inference?.status === "usage_limited" ? "usage_limited" : text(value?.state) ?? "signed_out", planAuthorized: value?.planAuthorized === true,
+    state: inference?.status === "usage_limited" && inference.sharedPauseSaved !== true ? "usage_limited" : text(value?.state) ?? "signed_out", planAuthorized: value?.planAuthorized === true,
     lastInference: inference && ["completed", "failed", "incomplete"].includes(inference.status)
       ? { status: inference.status, at: inference.at, model: text(inference.model) } : null,
   }

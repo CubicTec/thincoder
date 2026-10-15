@@ -168,3 +168,9 @@
 - 2026-09-14（层级口径轮 · eng-designer）：首部层级定位收正——本层 = **基准层**（项目级唯一权威层）；产品 `docs/**` = **迁移期保留的参照历史记录**（保留 ≠ 维护——D-C14）；§2 迁移政策（逐档随批迁）不变。
 - 2026-09-14（**提示词正本位移 · 迁移批第 1 批**）：提示词正本 15 档 `git mv design/prompts/` → **`core/design/prompts/`**（落点判据 = `core/design/DOC-SYSTEM.md` §5.1 P1 统一面 · §4 去向表）；首部层级定位的路径指针同批改指（`:3`）；三机检 exit 0 · 零悬空锚。
 - 2026-09-14（**板块档位移 · 迁移批第 2 批**）：根层 17 设计 + 17 需求板块档 `git mv` 入 **`core/design/` · `core/requirements/`**（落点判据 = `core/design/DOC-SYSTEM.md` §4 去向表 · §5.1 P1 统一面）；§1 表 / §3 待迁清单 / §4 登记与本节记录路径同批改指新址；`docs/` 根自此 = 流程面（台账 / 批次档 / 地图）+ `core/`。三机检 exit 0 · 零悬空锚。
+
+## OpenAI ChatGPT 计划接入（2026-10-15）
+
+- core / provider 需求：[OPENAI-CHATGPT](core/requirements/OPENAI-CHATGPT.md)
+- core / provider 设计：[OPENAI-CHATGPT](core/design/OPENAI-CHATGPT.md)
+- 实施与验收：[2026-10-15-openai-chatgpt](batches/2026-10-15-openai-chatgpt.md)

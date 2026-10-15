@@ -753,3 +753,9 @@ consultAdd：开 = `openSettingsModal("consultAdd")`（`resetFacets` 复位 `mod
 - 2026-10-10（**login-entry-completion 批 · 设计评审轮 1 修正（fix 轮 · 发现 1 ∥ 2 ∥ 3 ∥ 9 ∥ 11）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 1 · 台账 #1229–#1232）：§2.22 项 2（候选 = `loadModels` 链 ∥ `fieldPair` 入导出面 ∥ 同名冲突提示落点）+ 项 4（零会话例外指针）+ 项 7 ∥ 项 8（通道 +1——`team:verify`；白名单 **51 ⇒ 52**）+ §3.2 本批块两行（`thincoder-desktop/renderer/views/settings.mjs` ∥ `thincoder-desktop/renderer/views/settings-sections.mjs`）+ §5 **T-DSK66** 零会话例外腿。**零新语义**（评审发现的直接导出项）。
 - 2026-10-10（**login-entry-completion 批 · 设计评审轮 2 修正（fix 轮 · 发现 1 ∥ 4）· eng-designer**——承批档 `docs/batches/2026-10-10-login-entry-completion.md` §3 轮次 2 · 台账 #1229–#1232）：§2.22 项 8 边界补**样式落点句**（`settings.css`——路由屏两卡 ∥ 就地面板两族）+ **§3.2 本批块 +`settings.css` 行**（**306 ⇒ ≈340**——越 300 咨询线在册 ∥ ≤500 ✓）+ §5 **T-DSK65** 面随本批改制（卡内登/退退场 ⇒ 段面板 ∥ 管理面；保 config 写面断言）。**零新语义**（评审发现的直接导出项）。明细 = 批档 §2 fix 轮补记。
 - 2026-10-10（**login-entry-completion 批 · 交互细节补（父侧轻通道笔 · 可 revert）**——承 #149 上抛「同名冲突提示 vs 登成即进步 2」两口径相抵）：§2.22 项 2 补——**成功径同拍进步 ⇒ 该提示并入步 2 载面**（步 2 头行渲染同一 `team.notice`，消费即清）——防「就绪替换表单区」把提示压成一帧（不可见即静默）。零新语义（提示位置/时段级裁决）。
+
+
+## ChatGPT 账户入口（实验性，2026-10-15）
+
+账户登录、取消、切换、退出及显式启用复用 [核心认证 adapter](../../core/design/OPENAI-CHATGPT.md)；只向展示层提供白名单元数据。
+设置和首次配置界面提供 ChatGPT plan 入口；浏览器与 token 只在宿主侧处理，不进入 renderer/webview。

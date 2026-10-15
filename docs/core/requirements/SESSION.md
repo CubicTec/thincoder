@@ -214,3 +214,9 @@ N-S3 CLI 写出的槽文件 `history` 数组与旧实现同构（version 2 + his
 - 2026-10-01（**#726 U2 父侧笔〔可 revert〕**——承批档 `docs/batches/2026-09-30-cross-end-digest-recovery.md` §七 U2）：§4.5⑤ 补注——「端面事实」加**写缝 = `pushRecord` 注入面**（`thincoder-core/context.mjs`——`pushReal` 双胞）∥ 承载 = 端面 ∥ 单源 = §4.4 F-S7；§4.4 边界句 ∥ N-S3 **逐字复核保持成立**（零改）。**零新语义**（需求侧补注）。
 - 2026-10-02（**文档清账轮 · 执行轮 3（core/requirements + cli + vsc）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：宽面 2 行折行（140 ∥ 159——语义零改）。**零新语义**。
 - 2026-10-04（**issue 修复批·四 · #825 需求侧 · 主 agent 直接执行 · 可 revert**——承批档 `docs/batches/2026-10-04-issue-fix-round4.md` §2.3 ⑤）：§4.5 用例面四件改**裸名 + 读数存档 + 退场注**（`session-boot` ∥ `history-window` ∥ `history-restore` ∥ 集成 `scenario-04-session-recovery`——2026-09-28 测试树全清重置退场；死 token 全形零命中）。**零新语义**（引用形收正）。
+
+
+## OpenAI ChatGPT 实验接入（2026-10-15）
+
+新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
+旧供应商行为不变；真实账户和发布验收仍需独立完成。

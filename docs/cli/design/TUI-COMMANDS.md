@@ -264,3 +264,9 @@
   ① 落点 = `docs/cli/design/TUI-COMMANDS.md`（P2 板块内的**读者面拆分档**——由 `docs/cli/design/TUI.md` §8 拆分沿革登记）；
   ② 模块地图按**现文件结构**重建（cmd-* 族逐档入表——旧档为「其余单命令小件」汇总行）；行数列不并；
   ③ §12 / §13 的机制结论并入 §3 / §4 / §5.2，批次材料入 §6.1；④ 坐标全量改**现状路径**并实核；⑤ 命令清点不复制（挂 `docs/cli/requirements/FEATURES.md` §2.9 指针——D2）。
+
+
+## ChatGPT 账户入口（实验性，2026-10-15）
+
+账户登录、取消、切换、退出及显式启用复用 [核心认证 adapter](../../core/design/OPENAI-CHATGPT.md)；只向展示层提供白名单元数据。
+命令为 `thincoder auth` 与 `/auth`；添加 provider 后先 enable，再 login；status 不触发推理。

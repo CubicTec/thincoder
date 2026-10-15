@@ -174,3 +174,5 @@
 - core / provider 需求：[OPENAI-CHATGPT](core/requirements/OPENAI-CHATGPT.md)
 - core / provider 设计：[OPENAI-CHATGPT](core/design/OPENAI-CHATGPT.md)
 - 实施与验收：[2026-10-15-openai-chatgpt](batches/2026-10-15-openai-chatgpt.md)
+
+维护者拆分、复现、真实验收与回滚步骤：[ChatGPT plan acceptance](batches/2026-10-15-openai-chatgpt-acceptance.md)。

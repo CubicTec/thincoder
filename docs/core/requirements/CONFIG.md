@@ -65,3 +65,9 @@
 - 2026-09-14（**B 轮并入 · 第 3 批**）：§4 需求条目 = **同名旧档缺**（`thincoder-cli/docs/{design,requirements}/CONFIG.md` 均不存在）⇒ 无并入内容（不虚构）；§5 登记配置面需求级约束散布于邻面档（越段发现）；首部加需求条目面指针一行。
 - 2026-09-29（**provider-config-family 批 · 需求新增 · 父侧直接执行 · 可 revert**——承用户 20:45 请求「陈年导入你就不管了吗？」；台账 #57）：§2.1 新增条目「`${env:VAR}` 值引用」（消费侧解析 ∥ 五敏感值族 ∥ 回显回写零触 ∥ 缺 ∕ 畸 ⇒ 抛错零回退）；设计档机制单源 = `CONFIG.md` §6.3；**本档新增需求 1 条**。
 - 2026-10-02（**文档清账轮 · 执行轮 3（core/requirements + cli + vsc）· eng-designer**——承 `docs/batches/2026-10-02-doc-settlement-round.md` §2.3 · 台账 #806）：宽面 1 行折行（24——语义零改）。**零新语义**。
+
+
+## OpenAI ChatGPT 实验接入（2026-10-15）
+
+新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
+旧供应商行为不变；真实账户和发布验收仍需独立完成。

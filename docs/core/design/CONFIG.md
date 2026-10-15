@@ -244,3 +244,9 @@
 - 2026-09-30（**采集收网批 · eng-designer**——承 `docs/batches/2026-09-30-heap-snapshot-switch.md` §2）：§6.2 名录 `THINCODER_HEAP_SNAPSHOT` 行**默认值收正**（`true` ⇒ `false`——采集隐私默认关〔D-TR6 同族〕；桌面端运行期热读＝本批新机制）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
 - 2026-10-10（**team-login-client-access 批（B1）· 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-10-team-login-client-access.md` §1 · 台账 #1212）：新增 **§6.4 团队登录配置面（`team` 段）**——键面指针（全文 = `docs/core/design/TEAM.md` §2.1）∥ 通道归属（① 配置键 ∥ 不入 `DEFAULTS`）∥ 写面单源 ∥ 登录态判据（口径④）；机制单源 = `TEAM.md`（本档不复制——D2）。**四类通道 ∥ D-CF5 ∥ D-CF6 零改**。
 - 2026-10-14（**injection-switches 批 · 设计轮修正轮 · 父侧直接执行 · 可 revert**——承 `docs/batches/2026-10-14-injection-switches.md` §2 修正轮上抛·待裁裁定）：§6.2 派生消费面登记行键列补 `agent.injectDocs` ∥ `agent.injectMemories`（`thincoder-core/config.mjs` DEFAULTS `agent` 段——同经 `settings` 工具类型面装载期派生）。**零新语义**（登记面补列）。
+
+
+## OpenAI ChatGPT 实验接入（2026-10-15）
+
+新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
+旧供应商行为不变；真实账户和发布验收仍需独立完成。

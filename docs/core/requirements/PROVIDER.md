@@ -186,3 +186,9 @@ N12 零 VSC 触碰（`thincoder-vscode/**` 一字不改——VSC 未迁移，自
 - 2026-10-04（**#907 判据条目落档 · 主 agent**）：§2.1 新增 responses 适配面健壮性三判据条目（判据-D9/D8/D5——批 `docs/batches/2026-10-04-responses-robustness.md` §2；设计 = `PROVIDER.md` §6.13 + D-PR34/35/36）。〔评审 #5 发现 6：落档时漏行，本行随补〕
 - 2026-10-09（**清除批 · 需求档同拍 · 主 agent**〔自动跑完授权 · 可 revert〕——承批 `docs/batches/2026-10-09-provider-default-model-purge.md` · 台账 #1122）：§4.1 R3 立法句收正（**渠道不携模型**——单值 `providers[].model` ∥ 预设 `model` 全退场；模型身份唯二 = 顶层 `defaultModel`（复合串）∥ 会话槽选定；缺 ⇒ 明示「未设置」不静默回落）+ R2 ∥ R6 ∥ N1 同拍；§4.2 总体需求句 ∥ §4.4 边界句随正；**R15 退场删除**（判据对象随清除对象不存在——表后注在册）；§4.5 F-IDG-1 判定源退场注（渠道单值模型退场——重定在途 · 台账 #1125）。**本档新增需求 0**（收正 + 退场登记）。
 - 2026-10-10（**模型规格查表命名空间取末段 · 需求新增 · 主 agent 直接执行 · 可 revert**——承用户 2026-10-10 02:56/03:01 报障）：新增 **§4.6**（R22 / N13–N14）——测试服务器 `qwen/ZHIPU/GLM-5.3` 形误报 spec not found（父侧实跑复现：`qwen/ZHIPU/GLM-5.3` ∥ `qwen/ZHIPU/GLM-5.3-FlashX` = `matched:false`；根因 = `lookupSpec` 单跳剥离 `thincoder-core/model-specs.mjs:268-274`；大小写非成因——`:263-265` 双侧已小写化，`Qwen/` 变体同判）；修向 = 取末段（用户 03:05 裁「只取最后一段就可以」）。**本档新增需求 1 条**。
+
+
+## OpenAI ChatGPT 实验接入（2026-10-15）
+
+新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
+旧供应商行为不变；真实账户和发布验收仍需独立完成。

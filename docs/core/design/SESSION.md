@@ -1315,3 +1315,9 @@ VSC = 同批（触发支 `thincoder-vscode/src/extension/panel-messages.mjs` 选
 - 2026-10-04（**issue 修复批·五 · 登记面触评落位 · 父侧直接执行 · 可 revert**——承批档 `docs/batches/2026-10-04-issue-fix-round5.md` §2.3（eng-designer 预置内容））：§6.19 邻位 startup.mjs 登记行补**批·五触评**——现读 322 ∥ 本批 #867 增量 ≤ +10（行级非结构性——home 判据 + 提示行）⇒ ≤332 ⇒ 拆分窗口顺延；触发条件不变。**零新语义**（登记落位）。
 - 2026-10-04（**CLI ∥ VSC 会话选定写回批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §2 · 台账 #883）：§6.21 判据句 6 尾句三端落地收正（CLI ∥ VSC 触发支与写面单点点名）+ 边界表补「槽写未发生 ⇒ 零写回」行 ∥ 失败行端差明书 + 验收回指 ⑤ 三端批号随动；§6.8 D-S2 提示行文案收正（「/model 仅改本会话」⇒「/model 选定即成为默认模型」）；§5 补本批落点指针。**产品码零触（设计轮）**。明细 = 批档 §2。
 - 2026-10-04（**CLI ∥ VSC 会话选定写回批 · 修正轮（评审轮次 1 · 发现 1）· eng-designer**——承批档 `docs/batches/2026-10-04-session-carryover-cli-vsc.md` §3 轮次 1 · 台账 #883）：§6.21 判据句 6 ——系统发起之写类目补 **boot 播种径**（零写——回声判零 = 端侧机制）+ 边界表补行 + 验收回指 ⑤ 随动。**产品码零触（修正轮）**。明细 = 批档 §2 修正轮块。
+
+
+## OpenAI ChatGPT 实验接入（2026-10-15）
+
+新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
+旧供应商行为不变；真实账户和发布验收仍需独立完成。

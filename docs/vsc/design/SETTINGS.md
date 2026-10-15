@@ -901,3 +901,9 @@ P5 原文（`thincoder-vscode/docs/design/_archive/SETTINGS-REORG.md:12`）=「*
 - 2026-10-10（**尾行收口批（#1073）· 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-10-tail-residues.md` §2）：§2.18 增**无写径**条（空钥守卫 ⇒ 零写盘 ∥ 零回执 + warn 一条；写面三态单源 = `thincoder-vscode/src/extension/presets.mjs` `storeProviderKey`）+ 机检面补 #1073 追补（三态门 + 真写面腿 = 批内件 `docs/batches/2026-10-10-tail-residues.test.mjs`）∥ §5 **U-S19** 行增无写径判据 + 依据行补本批。**零新语义**（显式化既有守卫——回执 ⟺ 真写）。明细 = 批档 §5。
 - 2026-10-10（**桌面行为残渣批 · 实施轮 · eng-coder**——承批档 `docs/batches/2026-10-10-desktop-behavior-residues.md` §2 · 台账 #1041）：§2.16 ② 首启板交棒句收正（坐标 `:62 ⇒ :63`；**分支前移**（custom 先于 key 校验 ⇒ 空键亦交棒）+ **携 key 预填**（`window._openAddProviderDialog?.({ key })` ⇒ `#pa-key`——开框重置序之后落））。**零新语义**（落形随实装）。明细 = 批档 §5。
 - 2026-10-10（**vsc-consistency 批 · 设计档随正轮 · eng-coder**——承 `docs/batches/2026-10-10-vsc-consistency.md` §2（`1051-5`）· 台账 #1051）：§2.16 ① 代际句 ⇒ **探针结果归属句**（`_fetchSeq` / `_pendingFetchId`；落框按 id 判；开 ∥ 关框双清）——随实装收正（代际变量已退场）。**零新语义**（判据随正）。
+
+
+## ChatGPT 账户入口（实验性，2026-10-15）
+
+账户登录、取消、切换、退出及显式启用复用 [核心认证 adapter](../../core/design/OPENAI-CHATGPT.md)；只向展示层提供白名单元数据。
+设置和首次配置界面提供 ChatGPT plan 入口；浏览器与 token 只在宿主侧处理，不进入 renderer/webview。

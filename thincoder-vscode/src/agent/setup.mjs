@@ -1,3 +1,5 @@
+import { attachResponsesSession } from "@thincoder/core/responses-session.mjs"
+import { slotPath as responsesSlotPath } from "@thincoder/core/session.mjs"
 /**
  * agent/setup.mjs — runAgent 前置 **host 装配**（2026-09-29 parity-b1 · 批档 §2.3 件 1 逐段对位表）。
  *
@@ -292,6 +294,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
   // 读即清 = 核 `pushEnvStateReminder`）；槽绑定 = 核字段 `agent._slot`（env 行 slot ∕ `read_history` 解析读点）。
   if (restore && fullHistory.length > 0) agent._envResumed = true
   agent._slot = bind?.slot ?? null
+  if (agent._slot != null) attachResponsesSession(agent, responsesSlotPath(cwd, agent._slot))
   // R5 重启闸（端独有——extension-host 重载语义）：判真 ⇒ 置核消费位 `agent._processRestartPending`
   // ——核 `prepareRun`（!resume 段）发句（句文本与序位 git → OS → restarted → outline 随核零变）。
   if (detectRestoredSession({ depth, resume, autoTurn, fullHistory })) agent._processRestartPending = true

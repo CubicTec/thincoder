@@ -41,6 +41,8 @@ function field(labelText, control) {
 function paTypeChanged() {
   if (!_els) return
   const type = _els.type.value
+  if (_els.keyField?.style) _els.keyField.style.display = type === "openai-chatgpt" ? "none" : ""
+  if (type === "openai-chatgpt") _els.key.value = ""
   if (type === "custom") {
     _els.presetInfo.style.display = "none"
     _els.customFields.style.display = "block"
@@ -110,7 +112,7 @@ function buildDialog() {
   url.placeholder = "https://api.example.com/v1"
   const format = document.createElement("select")
   format.id = "pa-format"
-  for (const f of ["openai", "anthropic", "google"]) {
+  for (const f of ["openai", "responses", "anthropic", "google"]) {
     const opt = document.createElement("option")
     opt.value = f
     opt.textContent = f === "openai" ? "openai (default)" : f
@@ -126,6 +128,7 @@ function buildDialog() {
   key.id = "pa-key"
   key.type = "password"
   key.placeholder = "sk-..."
+  const keyField = field(t("settings.keyOptional"), key)
 
   const proxy = document.createElement("input")
   proxy.id = "pa-proxy"
@@ -169,7 +172,7 @@ function buildDialog() {
     field(t("settings.presetChoice"), type),
     presetInfo,
     customFields,
-    field(t("settings.keyOptional"), key),
+    keyField,
     proxyLabel,
     customTail,
     saveBtn,
@@ -177,7 +180,7 @@ function buildDialog() {
   )
   card.appendChild(body)
   document.body.append(backdrop, card)
-  return { backdrop, card, type, presetInfo, customFields, customTail, name, url, format, key, proxy, status }
+  return { backdrop, card, type, presetInfo, customFields, customTail, name, url, format, key, keyField, proxy, status }
 }
 
 /** 开框（单例：已在框 ⇒ 零动作）：建两件 + 开框重置 + 弃旧在飞 id + 初始焦点 = `#pa-type`（+50ms）。
@@ -235,6 +238,7 @@ function paFetchModels() {
 function paSave() {
   if (!_els) return false
   const type = _els.type.value
+  if (type === "openai-chatgpt") _els.key.value = ""
   const key = _els.key.value?.trim() || undefined
   const payload = { type: "addProvider" }
   if (type === "custom") {

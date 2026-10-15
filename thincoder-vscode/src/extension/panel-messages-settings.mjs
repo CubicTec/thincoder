@@ -96,7 +96,7 @@ export async function handleAddProvider(panel, msg) {
     // 界面明示失败消息（消息本体逐字长句）+ 行内标「不可用」（**不阻断保存**——条目已
     // 落盘；探针失败不缓存，下次配置动作重探）。
     const name = msg.custom?.name || msg.preset
-    if (name) {
+    if (name && loadRaw().providers?.find((p) => p.name === name)?.auth?.type !== "chatgpt_oauth") {
       const probe = await probeProviderAdmission(name)
       if (!probe.ok) {
         postProviderError(panel, "providers", probe.error)

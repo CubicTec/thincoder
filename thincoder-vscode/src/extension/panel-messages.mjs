@@ -3,6 +3,7 @@
  * Every `case` dispatches to a ChatPanel method or a settings/provider helper.
  */
 import * as vscode from "vscode"
+import { handleAuthAction } from "./panel-auth.mjs"
 import { loadLocaleStrings } from "../i18n.mjs"
 import { saveModelPrefs, loadSlot } from "./session-io.mjs"
 import { agentSettings, lastPushedPrefs } from "./settings.mjs"
@@ -385,6 +386,7 @@ export async function handlePanelMessage(panel, msg) {
     case "testProxy": await handleTestProxy(panel, msg); break
     // B1（团队族——登录 ∥ 退出；handler 住 panel-messages-settings.mjs——case 标签与分发沿既有缝；
     // 读面 = `teamStatus` 推送（无上行请求——推送点 = 快照族 + 登录/退出成拍））
+    case "authAction": await handleAuthAction(panel, msg); break
     case "teamLogin": await handleTeamLogin(panel, msg); break
     case "teamLogout": await handleTeamLogout(panel); break
   }

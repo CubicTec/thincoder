@@ -1,3 +1,5 @@
+import { updateAuthMessage } from "./settings-auth.js"
+import { renderProvidersCard } from "./settings-providers.js"
 /**
  * chat-messages.js — host → webview 消息分发循环（2026-09-22 structure-debt §2.4 · #163）：
  * 自 chat.js 迁出 `window.addEventListener("message", …)` 整块（switch 分发单表）——块体逐字
@@ -147,6 +149,8 @@ export function initMessageLoop(deps) {
         break
       case "project":          handleProjectMessage(m); break
       case "models":           handleModelsMessage(m); break
+      case "authStatus":
+      case "authResult": updateAuthMessage(m); renderProvidersCard(); break
       case "providerStatus":
         S._lastProviderStatus = m.status || {}
         updateProviderStatus(S._lastProviderStatus)

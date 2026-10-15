@@ -21,6 +21,7 @@ import { effortEnumForModel } from "../specs.mjs"
 import { loadModelPrefs, loadSlot } from "./session-io.mjs"
 import { _probeWindow, _probeBatch, _retryFailed } from "./provider-probe-window.mjs"
 import { teamStatus } from "./team.mjs"
+import { pushAuthStatus } from "./panel-auth.mjs"
 
 /** Agent settings merged view（W16：自 config-io 迁入——本端面板/运行读面）。默认值 = 核
  *  `DEFAULTS.agent`（单一来源）；compactThreshold 保持本端**显示口径**：null = auto
@@ -92,6 +93,7 @@ export function providerStatus() {
     status[name] = {
       configured, masked: configured ? MASKED : "",
       baseURL: entry.baseURL,
+      ...(entry.auth?.type === "chatgpt_oauth" ? { auth: { type: "chatgpt_oauth", enabled: entry.auth.enabled === true, credentialRef: entry.auth.credentialRef } } : {}),
       isActive: name === activeProvider,
       proxy: entry.proxy === true, // per-provider proxy flag (row checkbox, preset/custom agnostic)
       ...(admission ? { available: admission.ok === true } : {}),
@@ -107,7 +109,7 @@ export function providerStatus() {
   const existing = new Set(providerNames())
   const presets = Object.entries(PRESETS)
     .filter(([name]) => !existing.has(name))
-    .map(([name, p]) => ({ name, desc: p.desc, baseURL: p.baseURL }))
+    .map(([name, p]) => ({ name, desc: p.desc, baseURL: p.baseURL, authType: p.auth?.type }))
   const custom = providers.custom && typeof providers.custom === "object" && !Array.isArray(providers.custom)
     ? { baseURL: providers.custom.baseURL || "", hasKey: isProviderConfigured("custom") }
     : null
@@ -353,6 +355,7 @@ export function pushStatus(panel) {
   const ps = s.providerState
   const keyOk = !!ps && ps.state !== "invalid" && !ps.invalidReason
   panel?.webview.postMessage({ type: "providerStatus", keyOk, status: s })
+  void pushAuthStatus(panel).catch(() => {})
 }
 
 /** 团队态推送（`docs/vsc/design/SETTINGS.md` §2.20 读面——宿主 → webview）：投影四键直发
@@ -392,12 +395,13 @@ export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOve
   pushStatus(panel)
   const s = providerStatus()
   // #841：无可运行渠道（核态 invalid）⇒ 零探针（去「有 configured 渠道」第二判据——核态派生单判据）
-  if (!s.providerState || s.providerState.state === "invalid") return
+  if ((!s.providerState || s.providerState.state === "invalid") && !Object.values(s.providers).some((p) => p.auth?.type === "chatgpt_oauth" && p.configured)) return
 
   const w = _probeWindow(panel)
   const names = providerNames().filter((n) => s.providers[n]?.configured)
   /** 载荷装配 + 投递（首拍与重试成功拍共用——§2.12 ②）。 */
   const flush = () => {
+    if (w.cancelled) return
     const allModels = names.flatMap((n) => w.models.get(n) ?? [])
     const unavailable = names.flatMap((n) => (w.diag.has(n) ? [w.diag.get(n)] : []))
     _lastModelsPayload = allModels

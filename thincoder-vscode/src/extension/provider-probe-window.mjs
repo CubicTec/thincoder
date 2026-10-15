@@ -8,7 +8,7 @@
  */
 
 import { buildProvider, providerLabel } from "./presets.mjs"
-import { listModels, channelUnavailableMessage, recordAdmission } from "@thincoder/core/provider/list-models.mjs"
+import { listModelCatalog, channelUnavailableMessage, recordAdmission } from "@thincoder/core/provider/list-models.mjs"
 import { specForModel, effortEnumForModel } from "../specs.mjs"
 import { hostBusy, probeFailureOf } from "./loop-sampler.mjs"
 
@@ -67,15 +67,16 @@ async function _probeChannelInto(w, name) {
     return { id, label: id, provider: name, group: providerLabel(name), reasoning: r, effortDefault: spec.reasoningEffortDefault || null }
   }
   try {
-    const ids = await listModels(prov)
+    const catalog = await listModelCatalog(prov)
+    if (w.cancelled || (await buildProvider(name))?.auth?.credentialRef !== prov.auth?.credentialRef) return
     recordAdmission(name, { ok: true })
-    w.models.set(name, ids.map(row))
+    w.models.set(name, catalog.map((m) => ({ ...row(m.id), label: m.displayName || m.id })))
     w.diag.delete(name)
   } catch (e) {
     const reason = channelUnavailableMessage(e) // M8 逐字长句——零改
     recordAdmission(name, { ok: false, reason, failure: probeFailureOf(e) })
     w.models.set(name, [])
-    w.diag.set(name, { provider: name, reason })
+    w.diag.set(name, { provider: name, reason, retryable: prov.auth?.type !== "chatgpt_oauth" })
   }
 }
 
@@ -106,7 +107,7 @@ export function _retryFailed(w, flush) {
     let fired = 0
     let deferred = 0
     while (fired < PROBE_RETRY_MAX && deferred < PROBE_RETRY_MAX) {
-      const failed = [...w.diag.keys()]
+      const failed = [...w.diag.keys()].filter((name) => w.diag.get(name)?.retryable !== false)
       if (failed.length === 0 || w.cancelled) return // ① 批次成功 / ③ 窗口终止
       if (!(await _delayInWindow(w, _probeRetryDelayMs)) || w.cancelled) return
       if (hostBusy()) { deferred += 1; continue } // 闸：宿主忙不重试（不在忙循环上加压）

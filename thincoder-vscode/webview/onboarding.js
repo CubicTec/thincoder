@@ -121,6 +121,7 @@ export function showWelcomePanel(status) {
   ctx.welcomeSkipBtn.textContent = t("welcome.skip") // 值改：「以后再说」/「Later」（登录面补全批）
   ctx.welcomeSettingsBtn.textContent = t("welcome.fullSettings")
   ctx.welcomeKey.value = ""
+  updateWelcomeAuthFields()
   const wasHidden = ctx.welcomePanel.style.display !== "flex"
   ctx.welcomePanel.style.display = "flex"
   ctx.welcomePanel.setAttribute("aria-hidden", "false")
@@ -144,6 +145,14 @@ export function maybeShowWelcome(status, keyOk) {
   showWelcomePanel(status)
 }
 
+function updateWelcomeAuthFields() {
+  const subscription = ctx.welcomeProvider.value === "openai-chatgpt"
+  ctx.welcomeKey.style.display = subscription ? "none" : ""
+  ctx.welcomeKeyLabel.style.display = subscription ? "none" : ""
+  if (subscription) ctx.welcomeKey.value = ""
+}
+ctx.welcomeProvider.addEventListener("change", updateWelcomeAuthFields)
+
 ctx.welcomeSaveBtn.addEventListener("click", () => {
   const name = ctx.welcomeProvider.value
   const key = ctx.welcomeKey.value.trim()
@@ -153,6 +162,13 @@ ctx.welcomeSaveBtn.addEventListener("click", () => {
     hideWelcomePanel()
     _openSettings?.()
     window._openAddProviderDialog?.({ key })
+    return
+  }
+  if (name === "openai-chatgpt") {
+    vscode.postMessage({ type: "addProvider", preset: name })
+    S._welcomeDismissed = true
+    hideWelcomePanel()
+    _openSettings?.()
     return
   }
   if (!key) { ctx.welcomeKey.focus(); return }

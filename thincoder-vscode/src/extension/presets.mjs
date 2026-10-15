@@ -1,3 +1,4 @@
+import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs"
 /**
  * presets.mjs — provider access layer for the extension（W16：随 config-io 删旧成为 VSC 端
  * provider/config 访问层——核无对位件的端侧读面逐字迁入本档）。
@@ -34,7 +35,7 @@ export function isProviderConfigured(name) {
     const { providers } = resolveProviders()
     const entry = providers.find((p) => p.name === name)
     if (!entry) return false
-    return !!resolveKey(entry)
+    return hasProviderCredentials(entry)
   } catch {
     return false
   }
@@ -122,7 +123,7 @@ export function providerFromConfig(name) {
   const target = name ? findProvider(providers, name) : findProvider(providers, activeProvider)
   if (!target) return null
   const apiKey = resolveKey(target)
-  if (!apiKey) return null
+  if (!hasProviderCredentials(target)) return null
   const raw = loadRaw()
   const provider = {
     ...target,

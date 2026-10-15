@@ -329,5 +329,22 @@
   "status.team.entry": "Log in to team server",
   "workspace.required": "Open a folder first — ThinCoder needs a workspace to work in.",
   "workspace.requiredPlaceholder": "Open a folder to start…",
-  "status.timer": "⏰${n}"
+  "status.timer": "⏰${n}",
+  "auth.source": "ChatGPT plan",
+  "auth.experimental": "Enable experimental ChatGPT plan access",
+  "auth.signedOut": "Not signed in",
+  "auth.authorized": "Plan use authorized",
+  "auth.notAuthorized": "Plan use not authorized",
+  "auth.verified": "Last inference completed",
+  "auth.unverified": "Inference not verified",
+  "auth.limits": "No API key. Temperature and output-token limits are unavailable. Auxiliary requests use the same plan.",
+  "auth.login": "Sign in with ChatGPT",
+  "auth.cancel": "Cancel sign-in",
+  "auth.select": "Select account",
+  "auth.logout": "Sign out",
+  "auth.manage": "Manage usage",
+  "auth.revocationUnknown": "Signed out locally; remote revocation was not confirmed.",
+  "auth.addAccount": "Add account",
+  "auth.failed": "Last inference failed",
+  "auth.incomplete": "Last inference incomplete"
 }

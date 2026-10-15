@@ -1,3 +1,4 @@
+import { authRowHtml, bindAuthRows } from "./settings-auth.js"
 /**
  * settings-providers.js — providers card (split out of settings.js): provider list
  * rendering, key editing, and live status updates. 添加表单族（字段序 ∥ 拉取 ∥ 保存）已迁
@@ -122,6 +123,7 @@ export function providersCardHtml() {
     const label = SS.providerStatus.labels?.[name] || PROVIDER_LABELS[name] || name
     const active = !!s0.isActive
     const configured = !!s0.configured
+    const subscription = s0.auth?.type === "chatgpt_oauth"
     // 副行（2026-10-09 清除批：渠道条目不携模型——显示回退 = baseURL；原「渠道无默认模型」词族退场）
     // 类名 `prov-model` 沿旧（样式复用——内容 = baseURL）
     const sub = []
@@ -129,11 +131,11 @@ export function providersCardHtml() {
     if (s0.available === false) sub.push(`<span class="prov-unavailable">${s0.failure === "hostBusy" ? t("settings.providerHostBusy") : t("settings.providerUnavailable")}</span>`)
     html += `<div class="prov-row" id="prov-${escHtml(name)}">
       <div class="prov-main" id="rowline-${escHtml(name)}">
-        <span class="prov-dot ${configured ? "ok" : ""}"></span>
+        <span class="prov-dot ${configured && !subscription ? "ok" : ""}"></span>
         <span class="prov-name">${escHtml(label)}</span>
-        <span class="key-status ${configured ? "ok" : ""}">${configured ? escHtml(s0.masked) : t("settings.notConfigured")}</span>
+        <span class="key-status ${configured && !subscription ? "ok" : ""}">${subscription ? t("auth.source") : configured ? escHtml(s0.masked) : t("settings.notConfigured")}</span>
         <span class="prov-actions">
-          <button class="key-btn" onclick="window._editKey('${escHtml(name)}')">${configured ? t("settings.setKey") : t("settings.addKey")}</button>
+          ${subscription ? "" : `<button class="key-btn" onclick="window._editKey('${escHtml(name)}')">${configured ? t("settings.setKey") : t("settings.addKey")}</button>`}
           <button class="key-btn del-key" data-name="${escHtml(name)}" ${active ? "disabled" : ""} title="${t("settings.remove")}">✕</button>
         </span>
       </div>
@@ -141,6 +143,7 @@ export function providersCardHtml() {
         <span class="prov-model">${sub.join(" · ")}</span>
         <label class="switch" title="${t("settings.proxyRowTitle")}"><input type="checkbox" ${s0.proxy ? "checked" : ""} onchange="window._setProviderProxy('${escHtml(name)}', this.checked)"> ${t("settings.proxyRow")}</label>
       </div>
+      ${subscription ? authRowHtml(name, s0.auth) : ""}
       ${s0.available === false && s0.unavailableReason && s0.failure !== "hostBusy" ? `<div class="prov-hint">${escHtml(s0.unavailableReason)}</div>` : ""}
     </div>`
   }
@@ -155,6 +158,7 @@ export function providersCardHtml() {
  *  provider-row ✕ delete buttons (`data-name` carrier; inline onclick is undrivable under the
  *  test fixture — SETTINGS.md §2.10 载体绑定段)。添加表单族已迁弹窗档（其钮随档自绑）。 */
 export function bindAddProviderForm() {
+  bindAuthRows()
   document.getElementById("defaultmodel-btn")?.addEventListener("click", () => window._defaultModelMenu())
   // 卡行 ✕（两建面路径 `settings.js:190` / `renderProvidersCard` 均经此单点重绑）。选择器带
   // `[data-name]` ⇒ 编辑行取消重建位的 ✕（无 `data-name`、自持 addEventListener）不入本域。

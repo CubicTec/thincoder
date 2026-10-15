@@ -54,6 +54,8 @@ responses-session.mjs 把原生可回放 items 放在 `{slot}.responses.json`，
 工具执行前落 executing；执行后先落 results_ready，再经现有 recordToolResults 提交。
 完成事务记录结果以去重，并验证重启后的 history checkpoint。缺失工具结果、未知结果或损坏记录时明确阻断，
 要求核对副作用后开始新会话，不声称 exactly-once，也不自动重跑。此版本不提供跨崩溃自动补写结果。
+所有压缩、蒸馏、裁剪和缩短只在完整工具事务边界执行；未知结果或未知 schema 时，在请求摘要和修改历史前阻断。
+请求发送前校验完整 native/visible replay 的函数调用与输出配对；不得留下孤立、重复或缺少输出的交换。
 成功压缩/蒸馏建立明确 checkpoint；模型、账户、endpoint 或历史变化时从可见历史重建，并警告 opaque reasoning 未迁移。
 
 ## 辅助调用与客户端
@@ -61,7 +63,10 @@ responses-session.mjs 把原生可回放 items 放在 `{slot}.responses.json`，
 标题对订阅采用本地首句，API Key Responses 标题经共享流式入口。压缩、蒸馏、auto-think、goal、advisor
 使用 completed 守卫，失败的部分摘要不得替换历史或提交状态。advisor 的独立工具循环也保留原生 replay，压缩时显式重建。
 CLI、VS Code、Desktop 的账户入口复用 adapter；本地系统浏览器处理登录。Remote SSH/Dev Containers 登录不支持。
-models[] 保持服务端顺序与显示名，listModels 兼容 ID 返回；账户目录无跨账户缓存。usage limit 暂停同进程后续请求，显式重新选择后可恢复。
+models[] 保持服务端顺序与显示名，listModels 兼容 ID 返回；账户目录无跨账户缓存。
+usage limit 在共享 profile 元数据持久暂停账户，并取消同机消费者；刷新、目录和推理均受门控。
+仅显式恢复、重新选择或经过验证的登录清除暂停；另一个客户端恢复后原客户端也可继续。
+并发 quota 报告共用在途落盘操作；若共享暂停无法保存，报告客户端保持本地阻断并显示不含存储细节的错误。
 UI 分开显示配置、身份授权和最近 completed 推理；未获知金额不代表免费或 $0。
 
 ## 合并与发布

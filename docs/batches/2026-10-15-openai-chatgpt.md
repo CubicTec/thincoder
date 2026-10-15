@@ -22,11 +22,13 @@
 独立审查发现并修复：并发 stale-reaper 锁竞争、刷新结果未知时旧 token 重放、未完成摘要破坏历史、
 首回合无持久工具 journal、工具完成与结果提交间崩溃窗口、陈旧 staged replay、损坏 journal 重试覆盖、
 orphan 保存失败后误开放，以及真实 dispatch 结果携函数导致 DataCloneError。
+最终复查另覆盖：未决事务的压缩/裁剪边界、跨客户端用量暂停恢复，以及并发 quota 落盘结果被陈旧对象遮蔽。
 这些均有回归；实际主循环测试包含一轮只读文件工具、第二次原生 replay、最后文本以及失败终态不执行工具。
 
 ## 3. 提交粒度与依赖
 
-以下是本地被测试的提交；通过 GitHub Git-data API 搬运时远端 SHA 可能因提交元数据不同而改变，树内容需逐提交核对。
+以下是本地被测试的提交。GitHub connector 创建 tree 返回 403 Resource not accessible by integration，未创建远端分支。
+完整功能分支和粒度化提交保留在本地，待 fork 写权限恢复后直接推送；没有向 upstream 提交 PR。
 依赖顺序见维护者指南，不应跳过基础提交直接 cherry-pick UI。
 
 - d28c5d5a：契约/需求/初始设计。
@@ -36,7 +38,10 @@ orphan 保存失败后误开放，以及真实 dispatch 结果携函数导致 Da
 - 70096bdb：CLI + shared adapter；CLI 11 个，语法门通过。
 - b2a7b44a：VS Code host/webview；3 个，语法门通过。
 - 1ad4fbd3：Desktop main/preload/renderer；6 个。
-- 最后一提交：最终设计、验收记录、上游合并和发布门。
+- 1660a279：设计、验收记录、上游合并和发布门。
+- 938433cb：共享 usage-limit 持久暂停、并发落盘、跨客户端恢复；独立归档 core 87 个。
+- 5f583bd8：未决事务阻止改写、native 函数配对、延后 prune；独立归档 core 93 个。
+- 最后文档提交：更新交付证据、范围与验收状态。
 
 每个代码提交从 git archive 的独立目录执行对应测试，避免后续未提交文件掩盖依赖缺口。
 
@@ -46,7 +51,7 @@ orphan 保存失败后误开放，以及真实 dispatch 结果携函数导致 Da
 
 | 命令/范围 | 结果 |
 |---|---|
-| core npm test | 82/82 通过，含 auth25 / protocol18 / gateway12 / auxiliary12 / session11 / agent-loop4 |
+| core npm test | 93/93 通过，含 auth28 / protocol19 / gateway14 / auxiliary15 / session11 / agent-loop4 / prune2 |
 | CLI npm test | 11/11 通过 |
 | VS Code npm test | 3/3 通过 |
 | Desktop npm test | 6/6 通过 |
@@ -54,7 +59,7 @@ orphan 保存失败后误开放，以及真实 dispatch 结果携函数导致 Da
 | VS Code npm run lint | 通过，144 个源文件 |
 | Desktop main/renderer node --check | 通过 |
 | server npm run prepublishOnly | 通过，仅现有语法检查，不是服务器集成验收 |
-| auxiliary + advisor/Responses/accounting 历史批次 | 58/58 通过 |
+| auxiliary + advisor/Responses/accounting 历史批次 | 61/61 通过 |
 | provider/config/Responses 选定历史批次 | 38/38 通过 |
 | 更宽 175 项历史批次对比 | 163 通过 / 12 失败，与干净基线同样的 12 项；无新增失败 |
 | core + CLI npm pack --ignore-scripts | 通过；临时解包、临时 HOME 的 auth add/status 通过，默认 disabled |
@@ -85,6 +90,8 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 
 以下由实际 diff 生成，按提交映射可还原每个 PR 的范围。
 - `docs/README.md`
+- `docs/RELEASE.md`
+- `docs/TODO.md`
 - `docs/batches/2026-09-29-provider-config-family.test.mjs`
 - `docs/batches/2026-10-07-provider-config-parity-desktop.test.mjs`
 - `docs/batches/2026-10-09-provider-default-model-purge-core.test.mjs`
@@ -92,6 +99,7 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 - `docs/batches/2026-10-15-openai-chatgpt.md`
 - `docs/cli/design/TUI-COMMANDS.md`
 - `docs/core/design/CONFIG.md`
+- `docs/core/design/CONTEXT-COMPACTION.md`
 - `docs/core/design/OPENAI-CHATGPT.md`
 - `docs/core/design/PROVIDER.md`
 - `docs/core/design/SESSION.md`
@@ -122,8 +130,10 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 - `thincoder-cli/test/integration/responses-auxiliary.test.mjs`
 - `thincoder-core/advisor/loop.mjs`
 - `thincoder-core/advisor/responses-context.mjs`
+- `thincoder-core/agent-tools/context.mjs`
 - `thincoder-core/agent-tools/goal.mjs`
 - `thincoder-core/agent/chat-call.mjs`
+- `thincoder-core/agent/run-stages.mjs`
 - `thincoder-core/agent/turn-loop.mjs`
 - `thincoder-core/auth/client.mjs`
 - `thincoder-core/auth/credential-store.mjs`
@@ -136,6 +146,8 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 - `thincoder-core/config-io.mjs`
 - `thincoder-core/config-presets.mjs`
 - `thincoder-core/config.mjs`
+- `thincoder-core/context-degrade.mjs`
+- `thincoder-core/context-prune.mjs`
 - `thincoder-core/context-push.mjs`
 - `thincoder-core/context.mjs`
 - `thincoder-core/explore-distill.mjs`
@@ -158,19 +170,23 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 - `thincoder-core/provider/responses-stream.mjs`
 - `thincoder-core/provider/responses-tools.mjs`
 - `thincoder-core/provider/responses.mjs`
+- `thincoder-core/responses-history-guard.mjs`
 - `thincoder-core/responses-session.mjs`
 - `thincoder-core/session-guard.mjs`
 - `thincoder-core/session-lifecycle.mjs`
 - `thincoder-core/session-slot-write.mjs`
 - `thincoder-core/session-slots.mjs`
 - `thincoder-core/session.mjs`
+- `thincoder-core/test/chatgpt-auth-limits.test.mjs`
 - `thincoder-core/test/chatgpt-auth.test.mjs`
 - `thincoder-core/test/chatgpt-gateway.test.mjs`
 - `thincoder-core/test/fixtures/chatgpt-auth.mjs`
 - `thincoder-core/test/responses-agent-loop.test.mjs`
 - `thincoder-core/test/responses-auxiliary.test.mjs`
+- `thincoder-core/test/responses-context-prune.test.mjs`
 - `thincoder-core/test/responses-contract.test.mjs`
 - `thincoder-core/test/responses-session-regressions.test.mjs`
+- `thincoder-core/tool-docs/context.md`
 - `thincoder-desktop/renderer/composer-sync.mjs`
 - `thincoder-desktop/renderer/i18n-auth.mjs`
 - `thincoder-desktop/renderer/i18n.mjs`

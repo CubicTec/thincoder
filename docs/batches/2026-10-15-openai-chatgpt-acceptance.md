@@ -5,7 +5,7 @@
 
 ## PR 依赖顺序
 
-合并分支是 `feat/openai-chatgpt-plan`，基线 `dbd07a5bd6e5a59e60f97bdd82345904f434f285`。
+本地合并分支是 `feat/openai-chatgpt-plan`，基线 `dbd07a5bd6e5a59e60f97bdd82345904f434f285`。
 提交保留粒度，后续可用每个提交建 stacked PR；每个代码提交均从其归档树单独跑包测试。
 
 1. 契约文档：需求、官方来源、安全边界、默认实验性策略。
@@ -16,6 +16,9 @@
 6. VS Code：host bridge、webview 状态、local-only 登录、模型与会话接线；依赖 5 的 adapter。
 7. Desktop：main/preload/renderer 账户与首次配置；依赖 5 的 adapter，可与 6 并行评审。
 8. 验收与发布文档：实际检查结果、已知基线失败、待验、回滚说明。
+9. 共享用量暂停修正：持久门控、跨客户端恢复、并发落盘与失败守卫；依赖 5。
+10. 历史边界修正：未决工具事务阻止改写、完整 replay 配对、模型 prune 延后至确认边界；依赖 4。
+11. 最终交付说明：补充边界回归、未验项目和发布限制。
 
 若想把三端 PR 完全并行，先将第 5 提交的 core/auth/client.mjs 和 adapter 测试另拆基础提交；
 当前顺序避免在历史中出现 import 未落地的半成品。
@@ -62,6 +65,7 @@ npm pack --ignore-scripts --pack-destination /tmp/thincoder-packs ./thincoder-cl
 - [ ] 两轮工具调用后重启，reasoning/phase/function output 保留且没有重复执行。
 - [ ] 停止/断网/usage limit/无资格/缺 scope 均不转 API Key，不重复执行工具，不把 partial 当成功。
 - [ ] 两客户端同时刷新，只发生一个旋转事务；执行中关闭功能/切账户/退出，旧消费者被取消。
+- [ ] 一个客户端收到用量限制时其他客户端停止；另一个客户端显式恢复后，原客户端也能重新请求。
 - [ ] 确认远端撤销报告；撤销不明时 UI 只宣称本地退出。
 - [ ] CLI、local VS Code、Desktop 同机共享账户；webview/renderer IPC 与日志不含敏感字段。
 - [ ] Remote SSH/Dev Containers 登录被明确拒绝，没有建议复制凭据的路径。
@@ -84,3 +88,13 @@ CLI release:check 的 registry 预检未用于宣称本分支可发布；本批�
 回滚代码不需要修改旧 openai 预设。旧客户端忽略 sibling native sidecar；新版回来时核验 schema、会话身份与历史摘要。
 不要删除或手工改写损坏/未知 journal 来绕过执行门：先核对文件/工具副作用，再由用户明确开始新会话。
 本版本对崩溃缺失结果采用阻断与现场保留，不提供自动结果恢复，也不承诺 exactly-once。
+
+## 交付与范围说明
+
+GitHub connector 向 CubicTec/thincoder 创建 Git tree 时返回 403 Resource not accessible by integration；
+因此没有远端分支。完整功能分支和粒度化提交保留在本地，等待确认 fork 写权限后直接推送。
+没有再尝试其他写入通道；不需要提供或导入个人访问令牌。
+
+已实现本机共享受保护文件后端；没有实现另一个 OS keychain 后端，也没有模型目录缓存（每次按账户请求）。
+崩溃工具结果自动补写、远端 VM 凭据迁移、server-native Responses 均未实现；本期选择安全阻断或明确排除。
+真实账户、API Key 付费对照、GUI 与平台安装包属于未执行验收，不能以本次 mock 测试代替。

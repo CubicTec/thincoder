@@ -8,7 +8,9 @@
 
 ---
 
-## 需求池（18 条）
+## 需求池（19 条）
+
+- [ ] **ChatGPT plan 本地接入发布验收** → 需求 [OPENAI-CHATGPT](core/requirements/OPENAI-CHATGPT.md) · [批次与证据](batches/2026-10-15-openai-chatgpt.md) · [真实账户及平台清单](batches/2026-10-15-openai-chatgpt-acceptance.md)；离线实现已落，真实 OAuth/GUI/Windows/安装包待验 · status=待核销
 
 - [ ] **父侧无「面板视图」读取能力（主 agent 看不到活动面板）**（2026-09-16 实测：面板与池状态不一致时父侧**无法自查**——当日实例 = `#6`/`#8` running 但面板无块 · `#7` queued 却有块 ⇒ 双方各说各话无法收敛；**根因之一是两套编号空间**：面板块键 = `<role>#<核计数器>`（`relayPrefixOf(role, nextSubagentId(parent))`——全角色共享计数、嵌套子代理也吃号）∥ 父侧 spawn id（`{id:"N"}`），二者**互不相关**，同一数字可指两个不同子代理）→ **想要** = 父侧可读取「子代理块实时状态」（id / 角色 / 状态 / 最近活动）用于排查与**如实汇报**；与需求池「并发子代理 live 显示」**同族不同面**（那条 = 用户侧显示粒度，本条 = **父侧读取面**）· status=待讨论 · 锚 = 需求档 `docs/core/requirements/AGENT-LOOP.md`（节号待设计轮定）
 

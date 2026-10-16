@@ -83,3 +83,30 @@ Auto 仍按原难度映射选择普通 effort，不自动选 Ultra。用户的 6
 合计 **345 项通过**，CLI 136 个源码语法检查和 diff-check 通过。
 核心全套首次因沙盒禁止本机回调端口而中断，独立绑定探针确认 `EPERM`；
 获得沙盒外执行授权后完整通过，保留两次记录，不将环境失败记作产品通过。
+
+真实交互 TUI 使用最终安装包，四组均固定一个只读 explore 子任务，子模型为 Luna Auto。
+这轮验证模型配置、自动选档和异步结果汇总，不以明确要求委派的任务证明主动委派能力。
+
+| 主模型模式 | 实际主任务 effort | Luna 实际任务 effort | 最终有效轮 POST | 结果 |
+|---|---|---|---:|---|
+| 6.1 Sol Auto | low | low、high | 10 | 通过 |
+| 6.1 Sol Ultra | xhigh，带 Ultra 提示 | low | 9 | 通过 |
+| Astra Auto | low | high | 9 | 通过 |
+| Astra Ultra | xhigh，带 Ultra 提示 | low | 7 | 通过 |
+
+四组最终有效轮共 35 次 POST，全部 200/completed；Auto 分类请求均为 low，
+Luna 普通请求均为合法档位且不带 Ultra 提示。四组均正确读取独有 marker、核对 `7 × 6 = 42`，
+完成自动 digest、确认回执和自然 idle，退出码为 0。每组仅原生批准一次指定只读任务，
+权限 AUTO 始终关闭；未发送托管 `multi_agent` 或输出上限。测试期间真实配置和 fixture 未改动。
+
+保留两个未通过的驱动 attempt：Sol Auto 首次因隔离配置漏复制 `format` 停在模型选择器，
+0 次推理；Astra Auto 首次 10 次请求均成功，但第 11 次最终汇总请求在 fetch 前被测试预算拦截。
+修正配置字段后完成 Sol Auto；有依据地将 Astra Auto 新 attempt 上限设为 16，
+实际 9 次即完成，未重跑已通过组合。含预算受限 attempt，总计实际发送 45 次 POST，均为 200/completed。
+原始失败记录和各 attempt 汇总完整保留，不把中断轮记作通过，也不以此作质量或速度排名。
+
+本地包 `0.12.74-local.2b4ca214` 已安装并设为默认入口。473 个非 metadata 文件与源码
+提交 `2b4ca2144de95473b333adc236bca7690556e59c` 逐字节相同；包内全部 475 个文件与安装目录一致，
+版本和 help 冒烟通过，独立复核无遗漏或额外文件。全部实测完成后，仅将真实子模型改为
+`openai-chatgpt:gpt-6-luna`，子 Auto 保持启用；默认主模型仍为 Astra Ultra，主 Auto 保持关闭，
+其余配置逐项比对不变。已有 TUI 需退出并重启，才能使用新包和新子模型配置。

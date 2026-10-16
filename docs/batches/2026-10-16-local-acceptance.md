@@ -75,8 +75,9 @@ acceptance. GUI real-account inference, installed VSIX runtime, distributable
 Electron acceptance, Windows ACLs, natural/concurrent real token refresh,
 intentional second accounts and real quota exhaustion remain unverified.
 Do not manufacture refresh storms or quota exhaustion to close those checks.
-The catalog model currently uses the conservative fallback model specification
-(128K context / 32K output); no unsupported capacity claims were added.
+The follow-up [three-model compatibility batch](2026-10-16-model-compatibility.md)
+adds explicit reasoning/image capabilities while retaining the conservative
+128000-token context budget and 32000-token output reserve, not server limits.
 An isolated VS Code HOME triggered a macOS keychain prompt. Cancel that prompt;
 future isolated host launches must use `--use-inmemory-secretstorage`.
 No version bump, npm/Marketplace publication, upstream PR or merge was performed.

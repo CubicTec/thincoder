@@ -2119,6 +2119,22 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 
 无 `open` 项。
 
+## 19. GPT-6 ChatGPT 账户兼容（2026-10-16）
+
+`gpt-6-astra`、`gpt-6.1-sol`、`gpt-6-luna` 各登记独立前缀行。
+实测支持图片输入和 `low / medium / high / xhigh / max` 五档推理参数。
+`thinking: true`、`thinkApi: "effort"` 与 `multimodal: true` 使现有推理设置和
+`read_image` 能力门生效。未核验的账户专属档位不进入公共枚举。
+
+新增可选字段 `budgetSource: "conservative"` 表示该行的 `context`、`maxOutput`
+为本地预算，不是服务端容量声明。三行沿用此前的 `128000 / 32000`，
+用户 `provider.context` 配置仍优先。CLI 选择模型时明确显示本地上下文预算和输出预留。
+ChatGPT 请求不发送 `max_output_tokens`；账户目录容量与 API 产品规格分开记录，
+本批不把目录值写成所有账户通用的上限。
+
+真实账户矩阵、图片探针的失败记录及验收边界见
+[兼容测试记录](../../batches/2026-10-16-model-compatibility.md)。
+
 ## 变更记录
 - 2026-10-09（**provider-default-model-purge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §2 · 台账 #1122）：渠道单值模型退场——§9 病例 P-1..P-3 随正（计数 24 / 逐条无 `model` 键）；探针脚本入参改显式 `provider:model`（§2.2 / §7）；§12 预设面随正。**零新语义**（本批立法落位）。
 - 2026-10-07（**文档清账批 · fix 轮 · eng-designer**——承批档 `docs/batches/2026-10-07-doc-cleanup.md` §2 · 台账 #977）：§12.4「压缩阈值」行「读什么」列补 `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.6）∥ 核侧坐标 `thincoder-core/config.mjs:104-110` ⇒ `:137-144` 随正。**零语义**。

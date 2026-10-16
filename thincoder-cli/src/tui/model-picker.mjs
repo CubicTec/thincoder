@@ -247,7 +247,9 @@ export function createModelPicker(ctx) {
     const { matched } = specMatch(agent.provider.model)
     const spec = providerSpec(agent.provider)
     pushLine(
-      matched
+      spec.budgetSource === "conservative"
+        ? `Model: ${item.provider}:${item.model} — reasoning and image input supported; local context budget ${fmtContextK(spec.context)}, output reserve ${fmtContextK(spec.maxOutput)} (not server limits)`
+        : matched
         ? `Model: ${item.provider}:${item.model} — spec found (ctx ${fmtContextK(spec.context)} / out ${fmtContextK(spec.maxOutput)})`
         : `Model: ${item.provider}:${item.model} — spec not found in MODEL_SPECS — default 128K ctx / 32K out; set context in /config to override`,
       matched ? C.tool : C.error,

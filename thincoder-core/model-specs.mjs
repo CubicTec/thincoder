@@ -11,6 +11,7 @@
  * Known model capability spec table (prefix match, longer first).
  * Used for compaction threshold derivation, continuation protocol selection, and capability-aware optimization.
  *
+ * budgetSource:      "conservative" means local budgets, not verified server limits
  * context:           context window (tokens)
  * maxOutput:         max output tokens (defaults to context)
  * thinking:          whether thinking/reasoning mode is supported
@@ -86,6 +87,13 @@ const MODEL_SPECS = [
   // （逐名官方口径未取证）；枚举 / 视觉面 = **未探**（不声明）。medium 直发实测受理（batch-params-judge §1.5）。
   ["glm-4.5-air", { context: 128_000, maxOutput: 32_000, thinking: true, thinkApi: "type", reasoningEcho: "optional", tempRange: [0, 1], noUsageStream: true }],
   // GPT series
+  // GPT-6 compatibility: common API/SIWC effort levels and image input, verified
+  // 2026-10-16. API-only none and account-specific ultra are not exposed here.
+  // Capacity stays at the previous conservative local budget, NOT a server limit:
+  // SIWC catalog windows differ by model/account; no max_output_tokens is sent.
+  ["gpt-6-astra", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
+  ["gpt-6.1-sol", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
+  ["gpt-6-luna", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
   ["gpt-5.6-sol",       { context: 1_050_000, maxOutput: 128_000, thinking: false, multimodal: true }],
   ["gpt-5.6",           { context: 1_050_000, maxOutput: 128_000, thinking: false, multimodal: true }],
   ["gpt-4.1",           { context: 1_000_000, maxOutput: 128_000, thinking: false }],

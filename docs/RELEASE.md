@@ -289,7 +289,7 @@ node scripts/dev-link.mjs --force && node scripts/dev-link.mjs --check   # 自�
 
 ```bash
 cd thincoder.com
-OSS_KEY=… OSS_SECRET=… node scripts/upload-download.mjs <exe> <blockmap> <latest.yml>   # 键形 = downloads/<文件名>；顺序 = exe → blockmap → latest.yml（latest.yml 末传）
+ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/upload-download.mjs <exe> <blockmap> <latest.yml>   # 键形 = downloads/<文件名>；顺序 = exe → blockmap → latest.yml（latest.yml 末传）
 ```
 
 **判据**：三件取回（HTTP 200 ∥ 字节数 = 本地一致）+ **`latest.yml` 对盘**（`version` = 本次号 ∥ `files[0].sha512` = 本地 exe 实算）；同号重传 ⇒ URL 核验加查询串绕缓存（`?v=…`）。
@@ -332,12 +332,12 @@ OSS_KEY=… OSS_SECRET=… node scripts/upload-download.mjs <exe> <blockmap> <la
 ```bash
 cd thincoder.com
 DRY_RUN=1 node scripts/deploy-oss.mjs                 # 预演（零凭证可跑）——先核上传清单
-OSS_KEY=… OSS_SECRET=… node scripts/deploy-oss.mjs    # 实传（脚本亦接受 ALIYUN_KEY / ALIYUN_SECRET 兜底）
+ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/deploy-oss.mjs    # 实传（凭证名 = ALIYUN_KEY / ALIYUN_SECRET——脚本只读此名）
 ```
 
 **完成判定**（判据全文与比较归一 = §6.5）：① 三处版本面 = registry / 市场最新号；② changelog 页**各端分节**顶部条目 = 该端本次号；③ 取回线上页面含本次号。
 
-**失败处置**：凭证缺失（`OSS_KEY` / `OSS_SECRET` 与 `ALIYUN_KEY` / `ALIYUN_SECRET` 均无）⇒ **停下上报**（禁以 `DRY_RUN=1` 冒充完成 ✗ 禁静默跳过 ✗）；部署失败（脚本非零退出或汇总含 `N failed`）⇒ 停下上报 → 修复后**重跑**（PUT 覆盖 = 幂等；`OSS_DELETE` 保持默认关，不做远端删对象）；判据不过 ⇒ 修站点内容后重部署（**不重发版**——号已占）。
+**失败处置**：凭证缺失（`ALIYUN_KEY` / `ALIYUN_SECRET` 均无——脚本只读此名）⇒ **停下上报**（禁以 `DRY_RUN=1` 冒充完成 ✗ 禁静默跳过 ✗）；部署失败（脚本非零退出或汇总含 `N failed`）⇒ 停下上报 → 修复后**重跑**（PUT 覆盖 = 幂等；`OSS_DELETE` 保持默认关，不做远端删对象）；判据不过 ⇒ 修站点内容后重部署（**不重发版**——号已占）。
 
 ## 6. 官网更新方案（数据面）
 

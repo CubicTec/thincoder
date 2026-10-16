@@ -20,12 +20,15 @@
  * docs/core/design/MANIFEST.md §2.8 F3/F4。
  *
  * Auth: reuse the terminal config (~/.thincoder/config.json) — a resolvable
- * provider API key means "configured". No account system; `logout` is absent.
+ * API key or explicitly enabled OAuth reference means "configured". Actual OAuth
+ * authorization is checked by the shared gateway per request; no tokens cross ACP.
  *
  * `isConfigured` / `providerStatus` / `createSession` are injectable for tests.
  */
 import { readFileSync } from "node:fs"
 import { loadConfig } from "@thincoder/core/config.mjs"
+import { hasProviderCredentials, isChatGptProvider } from "@thincoder/core/provider/auth-config.mjs"
+import { isConfiguredProvider } from "./acp/provider-readiness.mjs"
 import { assembleAgent } from "./cli/make-agent.mjs"
 import { createAcpServer } from "./acp/transport.mjs"
 import { createAcpSession } from "./acp/session.mjs"
@@ -39,10 +42,10 @@ import { refuseSecretInput } from "./tui/secret-prompt.mjs"
 
 const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version
 
-/** Config is "configured" when the active provider has a resolvable API key (providers[].apiKey only). */
+/** Configuration readiness only; account scope/liveness is verified per request. */
 export function defaultIsConfigured() {
   try {
-    return !!loadConfig().provider?.apiKey?.trim()
+    return isConfiguredProvider(loadConfig().provider)
   } catch {
     return false
   }
@@ -56,9 +59,10 @@ export function defaultProviderStatus() {
   try {
     const cfg = loadConfig()
     return {
-      ok: !!cfg.provider?.apiKey?.trim(),
-      keyPresent: Array.isArray(cfg.providers) && cfg.providers.some((p) => !!p?.apiKey?.trim()),
-      reason: cfg.providerInvalidReason ?? null,
+      ok: isConfiguredProvider(cfg.provider),
+      keyPresent: Array.isArray(cfg.providers) && cfg.providers.some(hasProviderCredentials),
+      oauthPresent: isChatGptProvider(cfg.provider) || (!cfg.provider?.name && Array.isArray(cfg.providers) && cfg.providers.some(isChatGptProvider)),
+      reason: cfg.providerInvalidReason ?? (!cfg.provider?.model ? "defaultModel is not configured" : null),
     }
   } catch {
     return { ok: false, keyPresent: false, reason: null }

@@ -7,6 +7,7 @@
 import { isAbsolute, join } from "node:path"
 import { runAgent } from "@thincoder/core/agent.mjs"
 import { loadConfig, configPath } from "@thincoder/core/config.mjs"
+import { isChatGptProvider, assertProviderAuthConfig } from "@thincoder/core/provider/auth-config.mjs"
 // 批 1 CORE-DEFECT-FIXES B3：onWait 相位值域 + 文案单源（消费面禁各自枚举——PROVIDER.md §6.20）
 import { waitStatusText } from "@thincoder/core/provider/wait-status.mjs"
 import { assembleAgent, attachManifest, teamConfig, gitAuthor, validateProvider } from "./cli/make-agent.mjs"
@@ -39,7 +40,11 @@ export async function chatCommand(args, ctx) {
   const invalidClass = headlessCfg.providerState === "invalid"
     || (typeof headlessCfg.providerInvalidReason === "string" && headlessCfg.providerInvalidReason !== "")
   if (invalidClass) {
-    console.error(`[error] 未配置有效渠道（${agent._providerInvalidReason ?? headlessCfg.providerStateReason ?? "provider unavailable"}）。请运行 thincoder 进入 TUI 设置（/config 设置渠道与密钥；或 /model 选择后以会话槽生效），或编辑 ${configPath}`)
+    if (isChatGptProvider(agent.provider)) {
+      console.error('[auth] ChatGPT account is disabled or not selected. Run "thincoder auth login --enable" locally, then choose a model with /model in the TUI. No API key is required.')
+    } else {
+      console.error(`[error] 未配置有效渠道（${agent._providerInvalidReason ?? headlessCfg.providerStateReason ?? "provider unavailable"}）。请运行 thincoder 进入 TUI 设置（/config 设置渠道与密钥；或 /model 选择后以会话槽生效），或编辑 ${configPath}`)
+    }
     exitSoon(1)
     return
   }
@@ -47,7 +52,15 @@ export async function chatCommand(args, ctx) {
     const m = typeof agent.provider.model === "string" && agent.provider.model ? `:${agent.provider.model}` : ""
     console.error(`尚未设置默认模型：本次使用 \`${agent.provider.name}${m}\`——/config → 默认模型 设置一次（或 /model 选定即成为默认模型）`)
   }
-  if (!agent.provider.apiKey) {
+  if (isChatGptProvider(agent.provider)) {
+    // OAuth uses an opaque account reference, never a provider API key. Validate
+    // the opt-in/binding before running, without entering the legacy key wizard.
+    try { assertProviderAuthConfig(agent.provider) } catch (error) {
+      console.error(`[auth] ${error.message}`)
+      exitSoon(1)
+      return
+    }
+  } else if (!agent.provider?.apiKey) {
     if (!process.stdin.isTTY) {
       console.error(noKeyMessage())
       exitSoon(1)

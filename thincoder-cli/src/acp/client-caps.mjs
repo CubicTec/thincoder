@@ -31,7 +31,7 @@ export function authMethodsFor(clientCaps) {
     id: "terminal",
     type: "terminal",
     name: "Terminal login",
-    description: "Run `thincoder acp --login` in an interactive terminal to configure the provider API key.",
+    description: "Run `thincoder acp --login` in a local terminal. ChatGPT accounts use `thincoder auth login --enable`, then /model in the TUI.",
     args: ["--login"],
   }]
 }

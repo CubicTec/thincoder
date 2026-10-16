@@ -21,7 +21,7 @@ import { staleClaims } from "@thincoder/core/session-slots-manifest.mjs"
 import { PLAN_ENGINEERING_REFUSED } from "@thincoder/core/agent-tools/plan.mjs"
 // #363①（off 形族单源——MODEL-SPECS.md §16.2）：thinking 开关的取形引核（本档零副本）。
 import { thinkOffShape } from "@thincoder/core/think-off.mjs"
-import { providerSpec } from "@thincoder/core/config.mjs"
+import { providerSpec, resolveCompactThreshold } from "@thincoder/core/config.mjs"
 import { ACP_ERRORS } from "./transport.mjs"
 // §2.5（ACP-PROTOCOL-COMPLIANCE）：prompt 内容块聚合（resource_link 内联 ∥ 降级标记——基线 MUST）。
 import { buildPromptText } from "./resource-link.mjs"
@@ -87,6 +87,10 @@ export function createRequireConfigured({ isConfigured, providerStatus }) {
     if (isConfigured()) return {}
     let st = {}
     try { st = providerStatus() ?? {} } catch { st = {} }
+    if (st.oauthPresent === true) {
+      return { error: { ...ACP_ERRORS.AUTH_REQUIRED,
+        message: `ChatGPT provider is not ready: ${st.reason ?? "enable access and select an account/model"}. Run "thincoder auth login --enable" locally, then select a model with /model in the TUI; no API key is required.` } }
+    }
     if (st.keyPresent !== true) {
       return {
         error: {
@@ -118,8 +122,18 @@ export function applyConfigOption(agent, configId, value) {
       const ci = value.indexOf(":")
       const provider = ci >= 0 ? value.slice(0, ci) : null
       const model = (ci >= 0 ? value.slice(ci + 1) : value).trim()
-      if (provider && provider !== agent.provider.name) agent.provider.name = provider
-      agent.provider.model = model
+      if (!model) return false
+      const target = !provider || provider === agent.provider.name ? agent.provider
+        : agent.providers?.find((p) => p.name === provider)
+      if (!target) return false
+      // Replace the entire binding: changing only .name would retain the old
+      // account/API key/endpoint while displaying a different provider.
+      agent.provider = { ...target, model }
+      agent.activeProvider = target.name
+      agent.activeModel = model
+      if (agent.config?.agent?.compactThresholdAuto) {
+        agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+      }
       return true
     }
     case "thinking": {
@@ -264,8 +278,7 @@ export function createSessionHandlers(ctx) {
     },
 
     "session/cancel": (params) => {
-      const gate = requireConfigured()
-      if (gate.error) return gate
+      // Revoked/disabled credentials must never prevent stopping owned work.
       const found = findSession(params)
       if (found.error) return found
       found.session.cancel()
@@ -273,8 +286,6 @@ export function createSessionHandlers(ctx) {
     },
 
     "session/close": (params) => {
-      const gate = requireConfigured()
-      if (gate.error) return gate
       // 未知会话静默返回 `{}`（既有语义，本批零改——会话族其余方法返 `unknown session`）。
       const found = findSession(params)
       if (!found.error) {
@@ -298,6 +309,9 @@ export function createSessionHandlers(ctx) {
       if (!configId || value === undefined) {
         return { error: { ...ACP_ERRORS.INVALID_PARAMS, message: "set_config_option requires configId and value" } }
       }
+      if (configId === "model" && found.session.busy) {
+        return { error: { ...ACP_ERRORS.INVALID_PARAMS, message: "Cannot change model/provider during an active turn; cancel or wait for completion." } }
+      }
       // ENG-PLAN-EXCLUSION（FR31 ② / 评审轮 1 发现 #4 出口钉定）：工程模式 ⇒ plan 面**前置判**
       // ⇒ 携共用文案的 INVALID_PARAMS。`applyConfigOption` 布尔契约零改（`false` 仍 = unknown
       // configId——工程拒绝不经该路径，下方 `:unknown configId` 误导文案对 mode=plan 不再可达）；
@@ -307,7 +321,7 @@ export function createSessionHandlers(ctx) {
       }
       const applied = applyConfigOption(found.session.agent, configId, value)
       if (!applied) {
-        return { error: { ...ACP_ERRORS.INVALID_PARAMS, message: `unknown configId: ${configId}` } }
+        return { error: { ...ACP_ERRORS.INVALID_PARAMS, message: `unknown configId or invalid value: ${configId}` } }
       }
       // Last-write-wins on the internal state；§2.4：通知 = `ConfigOptionUpdate.required =
       // ["configOptions"]`——**全量数组**（非增量 `{configId,value}`）；响应同源全形（§2.3）。

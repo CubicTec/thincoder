@@ -13,6 +13,11 @@ export async function setupWizard() {
   const rl = createInterface({ input: process.stdin, terminal: false })
   const buffered = []
   let waiter = null
+  let closed = false
+  rl.on("close", () => {
+    closed = true
+    if (waiter) { const wake = waiter; waiter = null; wake(null) }
+  })
   rl.on("line", (line) => {
     if (waiter) {
       const w = waiter
@@ -26,7 +31,11 @@ export async function setupWizard() {
     new Promise((resolve) => {
       process.stderr.write(q)
       if (buffered.length) resolve(buffered.shift())
+      else if (closed) resolve(null)
       else waiter = resolve
+    }).then((line) => {
+      if (line === null) throw new DOMException("Setup cancelled", "AbortError")
+      return line
     })
   try {
     const presets = Object.entries(PROVIDER_PRESETS)
@@ -118,7 +127,18 @@ export async function setupWizard() {
     }
     console.error(`Configured: ${name} (defaultModel = ${name}:${model} — saved to ${configPath})`)
     console.error(embedKey ? "Vector search enabled\n" : "(No embedding key configured: memory search will use text-only FTS. Add embedding.apiKey to config.json to enable vector search later.)\n")
-    return { name, baseURL, model, apiKey, defaultModel: `${name}:${model}` }
+    // The first request must use the same format/options as the saved provider,
+    // including existing headers/context and the configured proxy route.
+    const saved = resolveProviders().providers.find((provider) => provider.name === name)
+    if (!saved) {
+      console.error("Provider configuration changed — retry setup before running a request.")
+      return null
+    }
+    return { ...saved, ...probeTargetOf(saved), model, defaultModel: `${name}:${model}` }
+  } catch (error) {
+    if (error?.name !== "AbortError") throw error
+    console.error("Setup cancelled — terminal input closed.")
+    return null
   } finally {
     rl.close()
   }

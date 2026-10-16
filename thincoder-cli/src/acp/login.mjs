@@ -8,23 +8,34 @@
  * never a silent hang on a non-interactive stdin (non-TTY ⇒ one actionable line + exit 1).
  */
 import { configPath, loadConfig, writeConfigAtomic } from "@thincoder/core/config.mjs"
+import { isChatGptProvider } from "@thincoder/core/provider/auth-config.mjs"
+import { isConfiguredProvider } from "./provider-readiness.mjs"
 import { setupWizard } from "../cli/setup-wizard.mjs"
 
 /** Run the login flow. @returns {Promise<number>} process exit code (0 = success). */
 export async function runAcpLogin() {
   if (!process.stdin.isTTY) {
-    console.error(`[acp] --login needs an interactive terminal (stdin is not a TTY) — run "thincoder acp --login" in a terminal, or hand-write providers[].apiKey + defaultModel in ${configPath}`)
+    console.error(`[acp] --login needs an interactive terminal (stdin is not a TTY) — run "thincoder acp --login" locally, or use "thincoder auth login --enable" and the TUI /model for ChatGPT.`)
+    return 1
+  }
+  const current = loadConfig()
+  if (isChatGptProvider(current.provider) || (!current.provider?.name && current.providers?.some(isChatGptProvider))) {
+    if (isConfiguredProvider(current.provider)) {
+      console.error("[acp] ChatGPT account reference and model configured; authorization is verified per request.")
+      return 0
+    }
+    console.error('[acp] ChatGPT setup incomplete — run "thincoder auth login --enable" locally, then choose a model with /model in the TUI.')
     return 1
   }
   const provider = await setupWizard()
   if (!provider) {
-    console.error(`[acp] login cancelled — no provider configured. Re-run "thincoder acp --login", or edit ${configPath}.`)
+    console.error(`[acp] setup did not select a runnable model. For ChatGPT, complete "thincoder auth login --enable" and /model in the TUI; otherwise retry "thincoder acp --login".`)
     return 1
   }
   // 校验并补齐 defaultModel（§11.5 判据 = `loadConfig().provider` 可解析）。wizard 已写
   // `raw.defaultModel = "<name>:<model>"`；此处为兜底核对——仍不可解析 ⇒ 按刚配置的渠道补齐。
   let cfg = loadConfig()
-  if (!cfg.provider?.apiKey?.trim()) {
+  if (!isConfiguredProvider(cfg.provider)) {
     // writeConfigAtomic 在配置不可解析时**抛错**（config-io.mjs「refusing to overwrite」）——
     // 包住并复用同一失败文案（不落 bin 顶层 rejection 通道）。
     let r
@@ -39,7 +50,7 @@ export async function runAcpLogin() {
     }
     cfg = loadConfig()
   }
-  if (!cfg.provider?.apiKey?.trim()) {
+  if (!isConfiguredProvider(cfg.provider)) {
     console.error(`[acp] login incomplete — credentials still unresolvable: ${cfg.providerInvalidReason ?? "unknown reason"} (fix via /config → 默认模型, or edit ${configPath}).`)
     return 1
   }

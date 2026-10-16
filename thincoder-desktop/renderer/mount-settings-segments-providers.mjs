@@ -38,6 +38,8 @@ const reasonOf = (receipt) => (typeof receipt?.reason === "string" && receipt.re
  */
 export function createProviderExits(deps = {}) {
   const { ask, store, setSettings, report, clearReport, loadProviders, formOf, onProvidersChanged, invalidateDrafts } = deps
+  const authRequests = new Map()
+  const authPending = new Map()
 
   /** 渠道段切片局部写（引用不变 ⇒ 零通知 —— 同值写零重绘；沿段族 `setEnvSlice` 先例）。 */
   const setProvidersSlice = (patch) => {
@@ -149,18 +151,54 @@ export function createProviderExits(deps = {}) {
 
   async function authAction(name, action, extra = {}) {
     const held = store.get().settings?.providers ?? {}
-    if (["login", "loginNew"].includes(action) && held.authBusy?.[name]) return
-    if (["login", "loginNew"].includes(action)) setProvidersSlice({ authBusy: { ...held.authBusy, [name]: true } })
+    const login = action === "login" || action === "loginNew"
+    const mutation = !["login", "loginNew", "cancel", "manage"].includes(action)
+    const mutationKey = JSON.stringify([name, "mutation"])
+    const pendingKey = JSON.stringify([name, login ? "login" : mutation ? "mutation" : action])
+    const hostBusy = held.providers?.find((p) => p.name === name)?.authStatus?.authorizing === true
+    if (authPending.has(pendingKey) || (login && (held.authBusy?.[name] || hostBusy))
+      || ((authPending.has(mutationKey) || held.authMutating?.[name]) && !["cancel", "manage"].includes(action))) return
+    const request = {}
+    authPending.set(pendingKey, request)
+    if (action === "manage") {
+      // Browser help is not an auth intent. Never clear or supersede account evidence.
+      try {
+        const receipt = await ask("auth:action", { name, action })
+        if (receipt.ok !== true) report?.("providers", receipt, "auth:action")
+      } catch {
+        console.error("[renderer] usage page could not be opened")
+        report?.("providers", { ok: false, reason: t("auth.operationFailed") }, "auth:action")
+      } finally {
+        if (authPending.get(pendingKey) === request) authPending.delete(pendingKey)
+      }
+      return
+    }
+    authRequests.set(name, request)
+    if (login) setProvidersSlice({ authBusy: { ...held.authBusy, [name]: true }, authNotice: { ...held.authNotice, [name]: "" } })
+    if (mutation) setProvidersSlice({ authMutating: { ...held.authMutating, [name]: true } })
     try {
       const receipt = await ask("auth:action", { name, action, ...extra })
-      const current = store.get().settings?.providers ?? {}
-      const notice = receipt.ok !== true ? reasonOf(receipt) : receipt.remoteRevoked === false ? t("auth.revocationUnknown") : ""
-      setProvidersSlice({ authNotice: { ...current.authNotice, [name]: notice } })
+      if (authRequests.get(name) === request) {
+        const current = store.get().settings?.providers ?? {}
+        const notice = receipt.ok !== true ? reasonOf(receipt) : receipt.remoteRevoked === false ? t("auth.revocationUnknown")
+          : action === "cancel" ? t("auth.cancelled") : ""
+        setProvidersSlice({ authNotice: { ...current.authNotice, [name]: notice } })
+      }
+      if (receipt.ok === true && action !== "cancel") onProvidersChanged?.()
       await loadProviders()
-      if (receipt.ok === true) onProvidersChanged?.()
+    } catch {
+      if (authRequests.get(name) === request) {
+        const current = store.get().settings?.providers ?? {}
+        console.error("[renderer] auth:action could not be completed")
+        setProvidersSlice({ authNotice: { ...current.authNotice, [name]: t("auth.operationFailed") } })
+      }
     } finally {
-      const current = store.get().settings?.providers ?? {}
-      if (["login", "loginNew"].includes(action)) setProvidersSlice({ authBusy: { ...current.authBusy, [name]: false } })
+      if (authPending.get(pendingKey) === request) {
+        authPending.delete(pendingKey)
+        const current = store.get().settings?.providers ?? {}
+        if (login) setProvidersSlice({ authBusy: { ...current.authBusy, [name]: false } })
+        if (mutation) setProvidersSlice({ authMutating: { ...current.authMutating, [name]: false } })
+      }
     }
   }
 

@@ -46,6 +46,8 @@ export function presetValue(slot) {
  */
 export function createWizard(deps = {}) {
   const { store, ask, report, clearReport, loadModels, submitChannel, verifyChannel } = deps
+  let submitting = false
+  let navigationEpoch = 0
   const onProjectOpened = typeof deps.onProjectOpened === "function" ? deps.onProjectOpened : null
   /** 团队路复读口（登录面补全批 —— `loadProviders` 单一实现经装配面注入）。 */
   const loadProviders = typeof deps.loadProviders === "function" ? deps.loadProviders : null
@@ -106,6 +108,7 @@ export function createWizard(deps = {}) {
   /** 步 1 前向唯一径（②③ 合并 · KD-79 —— 两钮并存歧义消）：自读表单 `key` —— 空 ⇒ 零写直进（无「已填」可丢，
    *  「零输入可走」性质保持）∥ 非空 ⇒ **先存后进**（`submitChannel` 返回 `true` 才进；写败 ⇒ 原地留步 + 失败串 —— 零静默、零乐观前进）。 */
   async function submitAndContinue(event) {
+    if (submitting) return
     const control = event?.currentTarget ?? event?.target ?? null
     const form = control !== null && typeof control.closest === "function" ? control.closest("form") : null
     if (form === null) {
@@ -115,19 +118,20 @@ export function createWizard(deps = {}) {
     const data = new FormData(form)
     const subscription = data.get("preset") === "openai-chatgpt"
     const key = String(data.get("key") ?? "")
-    if (subscription) {
-      if (await submitChannel(event) !== true) return
-      store.set(dismissWizard(store.get()))
-      deps.openSettings?.()
-      return
-    }
-    if (key === "") {
+    if (!subscription && key === "") {
       enterModelStep()
       return
     }
-    const saved = await submitChannel(event)
-    if (saved !== true) return // 写败：失败串已落面（出口族 `report`），原地留步零前进
-    enterModelStep()
+    submitting = true
+    const epoch = navigationEpoch
+    try {
+      const saved = await submitChannel(event)
+      if (saved !== true || epoch !== navigationEpoch || wizardOf(store.get()).dismissed === true) return
+      if (subscription) {
+        store.set(dismissWizard(store.get()))
+        deps.openSettings?.()
+      } else enterModelStep()
+    } finally { submitting = false }
   }
 
   /** 护栏旗清口（`guardBack` = 步 1 + 清旗；任意步写收束经 `setStep` 单点同调 —— 幂等零写）。 */
@@ -222,20 +226,21 @@ export function createWizard(deps = {}) {
    *  `onUseModel` = B③ 模型步采用接线（注入即落 —— 同一引用；缺 ⇒ 零键）；
    *  `onGuardBack` = 完成护栏「去保存渠道」（#1277 · KD-79 ③）。 */
   const handlers = {
-    onPresetChange: (selectedPreset) => store.set(patchSettings(store.get(), { wizard: { ...wizardOf(store.get()), selectedPreset } })),
+    onPresetChange: (selectedPreset) => { navigationEpoch += 1; store.set(patchSettings(store.get(), { wizard: { ...wizardOf(store.get()), selectedPreset } })) },
     onSubmit: (event) => void submitAndContinue(event), // 步 1 前向唯一径（②③ 合并 —— 写盘 + 前进同钮）
     onVerify: (name) => void verifyChannel(name),
     onPickDir: () => void pickDir(),
-    onNext: () => nextStep(),
+    onNext: () => { navigationEpoch += 1; nextStep() },
     onFinish: () => void finishWizard(),
-    onGuardBack: () => guardBack(),
+    onGuardBack: () => { navigationEpoch += 1; guardBack() },
     onDismiss: () => {
+      navigationEpoch += 1
       const state = store.get()
       const next = dismissWizard(state)
       if (next !== state) store.set(settleTeamNotice(next, false)) // 退场 = 离屏 ⇒ 提示同轮收束
     },
-    onChooseRoute: (route) => chooseRoute(route),
-    onBackToRoute: () => backToRoute(),
+    onChooseRoute: (route) => { navigationEpoch += 1; chooseRoute(route) },
+    onBackToRoute: () => { navigationEpoch += 1; backToRoute() },
     onTeamLogin: (event) => void submitTeam(event),
     ...(useModel === null ? {} : { onUseModel: useModel }),
   }

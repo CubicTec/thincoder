@@ -11,6 +11,8 @@
  */
 import { cleanupTurn, degradeTurnAttachments, prepareTurnAttachments } from "./attachments.mjs"
 import { providerStateOf, slotOfKey } from "./session-slots.mjs"
+import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs"
+import { validateProvider } from "@thincoder/core/agent/assemble.mjs"
 
 /** provider 无效**真因分类**（闭集 `defaultModel` ∥ `provider` —— `provider-invalid` 回执 `providerKind` 键单源；
  *  批档 §2 补录 ∥ 修正轮发现 6）：**结构判定**（零字符串嗅探 ∥ 零解析副本）——取装配产物**已算值**：
@@ -18,8 +20,7 @@ import { providerStateOf, slotOfKey } from "./session-slots.mjs"
  *      〔缺 `baseURL` 等〕——修点在渠道面）；
  *   ② `defaultModel` 非空而解析未过（未知渠 ∕ 模型段空 ∕ 形态非法）⇒ `defaultModel`；
  *   ③ `defaultModel` 缺 ∥ 空 ⇒ **有持 key 渠道** ? `defaultModel` : `provider`（#841 判据换源：
- *      「渠表非空」⇒「有持 key 渠道」——全无 key 态出真·无 key 词；持 key 判据 = `apiKey` trim 非空，
- *      与核 `hasKey` 同判（`thincoder-core/model-ref.mjs:78-81`）、env 变量不是密钥源）；
+ *      持凭据判据走核 `hasProviderCredentials`：API Key 或已启用且绑定账户的 OAuth 配置）；
  *   ④ `config` 不可用（测试桩 ∥ 缺）⇒ `provider`（保守——落回现词）。
  *  纯函数、零副作用（`renderer/composer-sync.mjs` 词路由按类出词）。 */
 export function providerKindOf(agent) {
@@ -31,7 +32,7 @@ export function providerKindOf(agent) {
   if (typeof defaultModel === "string" && defaultModel.trim() !== "") return "defaultModel"
   const table = Array.isArray(config.providers) ? config.providers
     : Array.isArray(config.providersList) ? config.providersList : []
-  return table.some((p) => typeof p?.apiKey === "string" && p.apiKey.trim() !== "") ? "defaultModel" : "provider"
+  return table.some(hasProviderCredentials) ? "defaultModel" : "provider"
 }
 
 /** 回合输入面工厂（msg 双通道族 —— 见档头）：返回 `{ send, interrupt }`（逐字迁出自 `turn-driver.mjs`）。 */
@@ -85,6 +86,7 @@ export function createTurnInput({ post, ensure, flights, queued, chain, suspensi
     // 跨中止闸（#515②）：装配 `await` 期被 `dispose` ∕ 切项目级联（占位已清）⇒ 本 send 不起跑——
     // 防「跨中止的回合」凭空起跑 + 结算落盘（墓碑拦不住的窗口：本回合非陈旧尾）；新 reason 码 `aborted`。
     if (flights.get(key) !== controller) return { ok: false, reason: "aborted", started: false }
+    validateProvider(agent, agent.config) // Cached agents may have received new slot preferences since assembly.
     if (agent._providerInvalid) {
       release()
       return { ok: false, reason: "provider-invalid", providerKind: providerKindOf(agent), started: false }

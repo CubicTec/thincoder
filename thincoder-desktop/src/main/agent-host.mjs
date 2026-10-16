@@ -176,8 +176,8 @@ export function createAgentHost({ emit, run = runAgent, assemble = assembleFor, 
   /** 装配 + 装载本键槽：`loadAgentSlot` 在**宿主内**（假 `assemble` 注入同走装载 —— §1.14 ① 的语义面
    *  是「装配出的代理必须持槽值」，不在装配函数里）；槽缺 ⇒ 新建形（代理原样）。
    *  **KD-8 槽复验**（批 §2 补录 3 ∥ CLI 同型 `thincoder-cli/src/command-interactive.mjs:149`）：装载后
-   *  `_providerInvalid` 仍在 ⇒ `validateProvider(agent, agent.config)` 幂等复验——槽值有效（凡
-   *  `loadAgentSlot` 命中本键渠条目）⇒ 清两标 ⇒ 本次发送放行；槽无效 ⇒ 标照旧（下一径拦）。
+   *  装载后总是 `validateProvider(agent, agent.config)`：有效全局配置也可能恢复到已停用的 OAuth 槽。
+   *  有效槽清标；无效槽置标并拒绝缓存、拒绝起跑。
    *  **MCP 警告消费（KD-70）**：装配尾入队 —— 装载后（`applySession` 重设 `_pendingReminders`）∥ 装配一次
    *  推送一次（同 key 复用不重推）；词面 = `agent-assemble.mjs` `mcpWarningReminder`（首两段逐字同 CLI）。 */
   async function assembleAndLoad(key, slot) {
@@ -187,7 +187,7 @@ export function createAgentHost({ emit, run = runAgent, assemble = assembleFor, 
     // 实况回读读面（子代理面板批 · 2026-10-04 —— `PANEL-READBACK.md` §2.1 per-key）：核 `panel` 工具经
     // `ctx.readout` 取值（`subagent.mjs` 接线）——桌面渲染面快照 ⇒ `source:"renderer"` / freeze 数据源。
     agent._panelReadout = () => panelLive.get(key)
-    if (agent._providerInvalid) validateProvider(agent, agent.config)
+    validateProvider(agent, agent.config)
     const reminder = mcpWarningReminder(agent._mcpWarnings)
     if (reminder !== null) {
       agent._pendingReminders = agent._pendingReminders ?? []

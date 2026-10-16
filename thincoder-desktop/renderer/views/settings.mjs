@@ -168,7 +168,7 @@ export function settingsModel(state) {
     providers: {
       state: stateOf(settings.providers),
       presets: listOf(settings.providers?.presets).filter((p) => p && typeof p.name === "string"),
-      rows: listOf(settings.providers?.providers).filter((p) => p && typeof p.name === "string").map((p) => ({ ...p, authBusy: settings.providers?.authBusy?.[p.name] === true, authNotice: settings.providers?.authNotice?.[p.name] || p.authNotice })),
+      rows: listOf(settings.providers?.providers).filter((p) => p && typeof p.name === "string").map((p) => ({ ...p, authBusy: settings.providers?.authBusy?.[p.name] === true, authMutating: settings.providers?.authMutating?.[p.name] === true, authNotice: settings.providers?.authNotice?.[p.name] || p.authNotice })),
       verify: settings.verify !== null && typeof settings.verify === "object" ? settings.verify : null,
       edit: str(settings.providers?.edit), probe: objOf(settings.providers?.probe), draft: objOf(settings.providers?.draft),
       // KD-75 ③：类型选择现值（形状唯一源）——预设名 ∥ `"custom"`；缺 / 空 ⇒ `"preset"`（缺省态 = 预设形首项）。

@@ -224,7 +224,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
 
   // ─── 候选面（全渠扇出 · 六径 —— 批档 §2.5）───────────────────────────────────────────────
   // 取数 = `model:catalog`（无载荷全渠扇出；显式重取归 `refreshCandidates` —— #2 ∕ #3 接线）；
-  // #4 失败渠有界重探链 ∕ #5 会话切换重推缓存（零取数）∕ #6 两键皆空零推送（菜单保持现状）。
+  // Empty catalogs clear both the menu and cache; account-bound rows must not survive logout.
 
   /** 候选面相位签名（#5 判据：活动会话键 × 会话元 provider ∕ model ∕ effort —— 变位才重推）。 */
   function prefsSignature(state1) {
@@ -238,11 +238,11 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     const held = store.get()
     const key = held?.activeSession ?? null
     push({ type: "models", models: rows, prefs: prefsOf(key === null ? null : held?.sessionMeta?.[key]) })
-    cacheModels = rows // #5 重推缓存 = 最近一次**有效推送**行（#6 零推送落定不覆写 —— 菜单旧行驻留）
+    cacheModels = rows // Including []: cleared catalogs must not resurrect on session changes.
     pushedSignature = prefsSignature(held)
   }
 
-  /** 落定（投影 + 判据）：`ok` 假 ⇒ 记错零写零推；#6 两键皆空 ⇒ 零推送判据；重探链轮次改善判据同点。 */
+  /** Successful catalogs, including empty ones, replace account-scoped candidates. */
   function land(receipt) {
     if (receipt?.ok !== true) {
       console.error(`[composer] model:catalog failed: ${reasonOf(receipt)}`)
@@ -257,7 +257,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     const counts = { models: rows.length, unavailable: unavailable.length }
     const improved = lastCounts === null || counts.unavailable < lastCounts.unavailable || counts.models > lastCounts.models
     lastCounts = counts
-    return { rows, unavailable, counts, improved, automaticRetry: receipt.automaticRetry !== false, empty: counts.models === 0 && counts.unavailable === 0 }
+    return { rows, unavailable, counts, improved, automaticRetry: receipt.automaticRetry !== false }
   }
 
   /** 取数一轮（单飞 + 尾随一轮；`chain` = 重探链轮次 —— 链内轮次不终止自身链）：
@@ -265,28 +265,29 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
   async function fetchCatalog({ chain = false } = {}) {
     if (!chain) chainToken += 1
     if (inflight !== null) {
-      if (!chain) trailing = true // 在飞期新触发 = 位标（落定后补一轮）
+      if (!chain) { trailing = true; seq += 1 } // Invalidate before the old account's response lands.
       return null
     }
     const mySeq = ++seq
     attempted = true
-    const request = call("model:catalog")
+    const request = {} // Claim before invoking; synchronous bridge failures also release this flight.
     inflight = request
     let receipt
     try {
-      receipt = await request
+      receipt = await call("model:catalog")
     } catch (error) {
       receipt = { ok: false, reason: String(error?.message ?? error) }
     } finally {
       if (inflight === request) inflight = null
     }
-    if (mySeq !== seq) return null // 陈旧（另起新取数）⇒ 丢弃 —— 零写零推
-    const landed = land(receipt)
-    if (landed === null) return null
-    if (!landed.empty && (chain ? landed.improved : true)) pushModels(landed.rows) // #6 零推送（两键皆空）
-    store.set(setModelCandidates(store.get(), landed.rows, landed.unavailable))
+    const landed = mySeq === seq ? land(receipt) : null
+    if (landed !== null) {
+      if (!chain || landed.improved) pushModels(landed.rows)
+      store.set(setModelCandidates(store.get(), landed.rows, landed.unavailable))
+    }
+    // Drain the latest requested refresh even after stale or failed responses.
     if (trailing) { trailing = false; void fetchCatalog() } // 尾随一轮（链 ∕ 非链同拍）
-    else if (!chain && landed.automaticRetry && landed.unavailable.length > 0) startRetryChain() // #4
+    else if (!chain && landed?.automaticRetry && landed.unavailable.length > 0) startRetryChain() // #4
     return landed
   }
 
@@ -316,13 +317,16 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
    *  显式重取归 `refreshCandidates`（#2 ∕ #3 接线）。 */
   function syncCandidates(state1 = store.get()) {
     if (!attempted) return void fetchCatalog() // #1 装配首跑恰一次
-    if (cacheModels === null) return // 尚无有效推送（首取在飞 ∕ #6 零推送态）⇒ 零动作
+    if (cacheModels === null) return // No catalog has landed yet.
     if (prefsSignature(state1) !== pushedSignature) pushModels(cacheModels) // #5（缓存 = 最近有效推送行）
   }
 
   /** 强制刷新口（#2 `ev:config` ∕ #3 provider 写成功接线 —— `mount-composer.mjs` 透传导出）：
    *  在飞期调用 = 位标（单飞 + 尾随一轮）；非链轮次 ⇒ 旧重探链终止。 */
   function refreshCandidates() {
+    lastCounts = null
+    if (cacheModels !== null) pushModels([])
+    store.set(setModelCandidates(store.get(), [], []))
     void fetchCatalog()
   }
 

@@ -414,7 +414,9 @@ test("T6 KD-8：槽复验（槽无效 ⇒ 标记保持；槽有效 ⇒ 清标）
     assert.equal(a3.provider?.model, "m1", "槽值施加（model）")
 
     // 源码判据（复验调用在档 —— 防「清标只活在本用例」）
-    assert.match(text("thincoder-desktop/src/main/agent-host.mjs"), /if \(agent\._providerInvalid\) validateProvider\(agent, agent\.config\)/, "assembleAndLoad 槽复验在档")
+    const hostSource = text("thincoder-desktop/src/main/agent-host.mjs")
+    assert.match(hostSource, /validateProvider\(agent, agent\.config\)/, "assembleAndLoad 槽复验在档")
+    assert.doesNotMatch(hostSource, /if \(agent\._providerInvalid\) validateProvider\(agent, agent\.config\)/, "槽恢复后无条件复验，不能沿用默认 provider 的有效标记")
   } finally {
     sessionSlotsMod._resetSessionsDirForTest()
   }

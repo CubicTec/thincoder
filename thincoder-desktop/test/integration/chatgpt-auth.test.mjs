@@ -9,7 +9,7 @@ const opened = []
 globalThis.__authOpened = opened
 registerHooks({ resolve(specifier, context, next) {
   if (specifier.startsWith("/rc/")) return { url: new URL(`thincoder-render-core/${specifier.slice(4)}`, root).href, shortCircuit: true }
-  if (specifier === "electron") return { url: "data:text/javascript,export const shell={openExternal:async(url)=>globalThis.__authOpened.push(url)}", shortCircuit: true }
+  if (specifier === "electron") return { url: "data:text/javascript,export const shell={openExternal:async(url)=>{if(globalThis.__authOpenError)throw globalThis.__authOpenError;globalThis.__authOpened.push(url)}}", shortCircuit: true }
   return next(specifier, context)
 } })
 const { authRowNode } = await import("../../renderer/views/settings-auth.mjs")
@@ -119,4 +119,175 @@ test("Desktop composer keeps subscription display order and needs explicit catal
   sync.refreshCandidates()
   await new Promise((resolve) => setImmediate(resolve))
   assert.equal(requests, 2)
+})
+
+const flush = () => new Promise((resolve) => setImmediate(resolve))
+const deferred = () => { let resolve; const promise = new Promise((done) => { resolve = done }); return { promise, resolve } }
+const catalog = (id) => ({ ok: true, automaticRetry: false, models: id ? [{ provider: "openai-chatgpt", id, label: id }] : [], unavailable: [] })
+
+test("Desktop composer discards in-flight account A models and fetches the latest account", async () => {
+  const { createComposerSync } = await import("../../renderer/composer-sync.mjs")
+  let state = {}, requests = 0
+  const first = deferred(), second = deferred(), pushed = []
+  const sync = createComposerSync({ store: { get: () => state, set: (next) => { state = next } }, push: (m) => pushed.push(m),
+    call: () => (++requests === 1 ? first.promise : second.promise) })
+  sync.refreshCandidates()
+  sync.refreshCandidates()
+  first.resolve(catalog("account-a-model"))
+  await flush()
+  assert.equal(requests, 2)
+  assert.equal(pushed.some((m) => m.models.some((row) => row.id === "account-a-model")), false)
+  second.resolve(catalog("account-b-model"))
+  await flush()
+  assert.equal(state.modelCandidates.models[0].id, "account-b-model")
+})
+
+test("Desktop composer queued refresh survives a failed earlier request", async () => {
+  const { createComposerSync } = await import("../../renderer/composer-sync.mjs")
+  let state = {}, requests = 0
+  const first = deferred()
+  const sync = createComposerSync({ store: { get: () => state, set: (next) => { state = next } }, push() {},
+    call: () => ++requests === 1 ? first.promise : Promise.resolve(catalog("new-model")) })
+  sync.refreshCandidates(); sync.refreshCandidates()
+  first.resolve({ ok: false, reason: "old-account-offline" })
+  await flush()
+  assert.equal(requests, 2)
+  assert.equal(state.modelCandidates.models[0].id, "new-model")
+})
+
+test("Desktop composer clears cached account models immediately and accepts an empty catalog", async () => {
+  const { createComposerSync } = await import("../../renderer/composer-sync.mjs")
+  let state = {}, requests = 0
+  const empty = deferred(), pushed = []
+  const sync = createComposerSync({ store: { get: () => state, set: (next) => { state = next } }, push: (m) => pushed.push(m),
+    call: () => ++requests === 1 ? Promise.resolve(catalog("account-a-model")) : empty.promise })
+  sync.refreshCandidates(); await flush()
+  sync.refreshCandidates()
+  assert.deepEqual(state.modelCandidates.models, [])
+  assert.deepEqual(pushed.at(-1).models, [])
+  empty.resolve(catalog(null)); await flush()
+  assert.deepEqual(pushed.at(-1).models, [])
+  assert.deepEqual(state.modelCandidates.models, [])
+})
+
+test("Desktop provider diagnostics recognize ready OAuth references without requiring an API key", async () => {
+  const { providerKindOf } = await import("../../src/main/turn-input.mjs")
+  const provider = { name: "openai-chatgpt", baseURL: "https://api.openai.com/v1", format: "responses", auth: { type: "chatgpt_oauth", enabled: true, credentialRef: "account-a" } }
+  assert.equal(providerKindOf({ config: { providersList: [provider] } }), "defaultModel")
+  assert.equal(providerKindOf({ config: { providersList: [{ ...provider, auth: { ...provider.auth, enabled: false } }] } }), "provider")
+})
+
+test("Desktop host-reported sign-in state keeps Cancel available after a renderer refresh", () => {
+  const flat = nodes(authRowNode({ name: "openai-chatgpt", authStatus: { enabled: true, authorizing: true }, authProfiles: [] }, {}))
+  assert.equal(flat.find((n) => n.props?.["data-auth-action"] === "login").props.disabled, true)
+  assert.ok(flat.find((n) => n.props?.["data-auth-action"] === "cancel"))
+})
+
+const providerReceipt = (profileId) => ({ ok: true, presets: [], defaultModel: "openai-chatgpt:model", providers: [
+  { name: "openai-chatgpt", authType: "chatgpt_oauth", authStatus: { profileId, enabled: true, state: "ready" } },
+] })
+function settingsHarness(ask, initial = { providers: {}, model: {} }) {
+  let state = { settings: initial }
+  return { get: () => state, deps: { ask, store: { get: () => state }, report() {},
+    setSettings: (patch) => { state = { settings: { ...state.settings, ...patch } } } } }
+}
+
+test("Desktop settings discard stale provider and model responses", async () => {
+  const { createReads } = await import("../../renderer/mount-settings-reads.mjs")
+  const oldProviders = deferred(), newProviders = deferred(), oldModels = deferred(), newModels = deferred()
+  let reads = 0, modelReads = 0
+  const harness = settingsHarness((channel) => channel === "provider:list"
+    ? (++reads === 1 ? oldProviders.promise : newProviders.promise)
+    : (++modelReads === 1 ? oldModels.promise : newModels.promise))
+  const api = createReads(harness.deps)
+  const first = api.loadProviders(), second = api.loadProviders()
+  newProviders.resolve(providerReceipt("account-b")); await flush()
+  oldProviders.resolve(providerReceipt("account-a")); await flush()
+  assert.equal(harness.get().settings.providers.providers[0].authStatus.profileId, "account-b")
+  assert.equal(modelReads, 1)
+  const newerModels = api.loadModels("different-provider")
+  newModels.resolve({ ok: true, models: [{ id: "new-model" }] }); await newerModels
+  oldModels.resolve({ ok: true, models: [{ id: "old-model" }] }); await Promise.all([first, second])
+  assert.equal(harness.get().settings.model.provider, "different-provider")
+  assert.equal(harness.get().settings.model.models[0].id, "new-model")
+})
+
+test("Desktop settings do not preserve a catalog across account changes with the same provider name", async () => {
+  const { createReads } = await import("../../renderer/mount-settings-reads.mjs")
+  const calls = []
+  const harness = settingsHarness(async (channel) => { calls.push(channel); return channel === "provider:list" ? providerReceipt("account-b") : { ok: true, models: [{ id: "b-model" }] } },
+    { providers: { providers: providerReceipt("account-a").providers }, model: { state: "ready", provider: "openai-chatgpt", current: "model", models: [{ id: "a-model" }] } })
+  await createReads(harness.deps).loadProviders({ models: false })
+  assert.deepEqual(calls, ["provider:list", "model:list"])
+  assert.equal(harness.get().settings.model.models[0].id, "b-model")
+})
+
+test("Desktop late sign-in cancellation cannot overwrite a newer account selection notice", async () => {
+  const login = deferred(), reads = [], changed = []
+  const harness = settingsHarness(async (_channel, payload) => payload.action === "login" ? login.promise : { ok: true })
+  const exits = createProviderExits({ ...harness.deps, loadProviders: async () => { reads.push(true) }, onProvidersChanged: () => changed.push(true) })
+  exits.handlers.onAuthAction("openai-chatgpt", "login")
+  exits.handlers.onAuthAction("openai-chatgpt", "select", { profileId: "account-b" })
+  await flush()
+  login.resolve({ ok: false, reason: "The old sign-in was cancelled" }); await flush()
+  assert.equal(harness.get().settings.providers.authNotice["openai-chatgpt"], "")
+  assert.equal(harness.get().settings.providers.authBusy["openai-chatgpt"], false)
+  assert.equal(changed.length, 1)
+  const before = reads.length
+  exits.handlers.onAuthAction("openai-chatgpt", "manage"); await flush()
+  assert.equal(reads.length, before)
+  assert.equal(changed.length, 1)
+})
+
+test("Desktop auth bridge handles rejected requests without retaining a busy sign-in", async () => {
+  const harness = settingsHarness(async () => { throw new Error("PRIVATE-BROWSER-URL") })
+  const exits = createProviderExits({ ...harness.deps, loadProviders: async () => {} })
+  exits.handlers.onAuthAction("openai-chatgpt", "login"); await flush()
+  assert.equal(harness.get().settings.providers.authBusy["openai-chatgpt"], false)
+  assert.match(harness.get().settings.providers.authNotice["openai-chatgpt"], /could not be completed/)
+  assert.equal(JSON.stringify(harness.get()).includes("PRIVATE-BROWSER-URL"), false)
+})
+
+test("Desktop first-run subscription save is single-flight and respects dismissal while saving", async () => {
+  const { createWizard } = await import("../../renderer/mount-onboarding.mjs")
+  let state = { settings: { configured: false, wizard: { step: 1 }, providers: {} } }
+  const save = deferred(), events = [], OldFormData = globalThis.FormData
+  globalThis.FormData = class { get(key) { return key === "preset" ? "openai-chatgpt" : "" } }
+  try {
+    const wizard = createWizard({ store: { get: () => state, set: (s) => { state = s } },
+      submitChannel: () => { events.push("save"); return save.promise }, openSettings: () => events.push("settings") })
+    const event = { currentTarget: { closest: () => ({}) } }
+    wizard.handlers.onSubmit(event); wizard.handlers.onSubmit(event)
+    assert.deepEqual(events, ["save"])
+    wizard.handlers.onDismiss()
+    save.resolve(true); await flush()
+    assert.deepEqual(events, ["save"])
+    assert.equal(state.settings.wizard.dismissed, true)
+  } finally { globalThis.FormData = OldFormData }
+})
+
+test("Desktop native browser failures cannot echo private URL or storage details through IPC", async () => {
+  globalThis.__authOpenError = new Error("Failed opening https://auth.openai.com/?code=SECRET at /private/credentials")
+  try {
+    const receipt = await authActionChannel({ action: "manage", name: "openai-chatgpt" })
+    assert.equal(receipt.ok, false)
+    assert.match(receipt.reason, /could not be completed/)
+    assert.equal(JSON.stringify(receipt).includes("SECRET"), false)
+    assert.equal(JSON.stringify(receipt).includes("/private/credentials"), false)
+  } finally { delete globalThis.__authOpenError }
+})
+
+test("Desktop account mutation controls are locked while saving, without blocking Cancel", async () => {
+  const mutation = deferred(), calls = []
+  const harness = settingsHarness((_channel, payload) => { calls.push(payload.action); return mutation.promise })
+  const exits = createProviderExits({ ...harness.deps, loadProviders: async () => {} })
+  exits.handlers.onAuthAction("openai-chatgpt", "enable", { enabled: true })
+  exits.handlers.onAuthAction("openai-chatgpt", "enable", { enabled: false })
+  assert.deepEqual(calls, ["enable"])
+  assert.equal(harness.get().settings.providers.authMutating["openai-chatgpt"], true)
+  const flat = nodes(authRowNode({ name: "openai-chatgpt", authMutating: true, authBusy: true, authStatus: { enabled: true, profileId: "a" } }, {}))
+  assert.equal(flat.find((n) => n.props?.["data-auth-enable"]).props.disabled, true)
+  assert.equal(flat.find((n) => n.props?.["data-auth-action"] === "cancel").props.disabled, false)
+  mutation.resolve({ ok: true }); await flush()
+  assert.equal(harness.get().settings.providers.authMutating["openai-chatgpt"], false)
 })

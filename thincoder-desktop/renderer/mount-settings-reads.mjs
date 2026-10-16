@@ -43,6 +43,11 @@ function activeModel(receipt) {
   return { provider: composite.slice(0, at), current: composite }
 }
 
+// Provider names are not account identities. Only retain catalogs for the same auth binding.
+const catalogIdentity = (providers) => JSON.stringify(listOf(providers).map((p) => [
+  p.name, p.authType, p.authStatus?.profileId, p.authStatus?.enabled, p.authStatus?.state,
+]))
+
 /**
  * 读数供给族：`deps = { ask, store, setSettings, report }`（单一 owner 住装配面 —— 本档零副本）。
  * 返回 `{ loadProviders, loadModels, loadAgent, loadMcp, loadEnv, loadTools }`（向导族经装配面注入取
@@ -50,21 +55,28 @@ function activeModel(receipt) {
  */
 export function createReads(deps = {}) {
   const { ask, store, setSettings, report } = deps
+  let providersSeq = 0
+  let modelsSeq = 0
 
   /** 渠道段读数（`provider:list`：预置表 + 已配行 + 激活渠道三项直取）⇒ 模型段随动（激活渠道候选面）。
     *  两读数（激活渠道 ∥ 当前模型）= 回执 `defaultModel` 复合串直读（2026-10-09 清除批）；
     *  `options.models` 假 ⇒ **保留同渠道候选面**（只复读渠行面 —— 零候选清空）。 */
   async function loadProviders(options = {}) {
+    const request = ++providersSeq
+    modelsSeq += 1 // A provider refresh invalidates model reads begun under the old binding.
     setSettings({ providers: { ...store.get().settings?.providers, state: "loading" } })
     const receipt = await ask("provider:list")
+    if (request !== providersSeq) return null
     if (receipt.ok !== true) {
       setSettings({ providers: { ...store.get().settings?.providers, state: "none", presets: [], providers: [] } }) // #671 失败写并持现切片
+      setSettings({ model: { state: "none", provider: null, current: null, models: [] } })
       report("providers", receipt, "provider:list")
       return null
     }
     const { provider, current } = activeModel(receipt)
     const held = store.get().settings?.model ?? {}
-    const kept = options.models === false && held.provider === provider
+    const kept = options.models === false && held.provider === provider && held.state === "ready"
+      && catalogIdentity(store.get().settings?.providers?.providers) === catalogIdentity(receipt.providers)
     // #671 ready 写并持现切片（草稿四切片读面零复位 —— 同失败径）；`presets` ∕ 名单两键照刷。
     setSettings({
       notice: null,
@@ -79,11 +91,13 @@ export function createReads(deps = {}) {
    *  无渠态候选行 = `{ provider, id }`（全渠；渠失败零行沿 catalog 口径）；catalog 失败 ⇒ 段归 `none` + `report`（零静默）；
    *  有渠态判据零变（`model:list` 失败 ⇒ `none` + `report`）。 */
   async function loadModels(provider) {
+    const request = ++modelsSeq
     const held = store.get().settings?.model ?? {}
     const active = typeof provider === "string" && provider !== "" ? provider : null
     if (active === null) {
       setSettings({ model: { state: "loading", provider: null, current: held.current ?? null, models: [] } })
       const receipt = await ask("model:catalog")
+      if (request !== modelsSeq) return
       const current = store.get().settings?.model?.current ?? null
       if (receipt.ok !== true) {
         setSettings({ model: { state: "none", provider: null, current, models: [] } })
@@ -95,6 +109,7 @@ export function createReads(deps = {}) {
     }
     setSettings({ model: { state: "loading", provider: active, current: held.current ?? null, models: [] } })
     const receipt = await ask("model:list", { provider: active })
+    if (request !== modelsSeq) return
     const current = store.get().settings?.model?.current ?? null
     if (receipt.ok !== true) {
       setSettings({ model: { state: "none", provider: active, current, models: [] } })

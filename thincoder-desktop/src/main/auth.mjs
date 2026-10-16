@@ -1,6 +1,7 @@
 /** SIWC IPC is reference/intent only; system browser and OAuth stay in main. */
 import { shell } from "electron"
 import { getAuthClient, PLAN_HELP_URL } from "@thincoder/core/auth/client.mjs"
+import { safeAuthError } from "@thincoder/core/auth/errors.mjs"
 export async function authActionChannel(payload) {
   try {
     if (payload?.action === "manage") { await shell.openExternal(PLAN_HELP_URL); return { ok: true } }
@@ -11,5 +12,5 @@ export async function authActionChannel(payload) {
         await shell.openExternal(url)
       } })
     return { ok: true, ...result }
-  } catch (error) { return { ok: false, reason: error.message } }
+  } catch (error) { return { ok: false, reason: safeAuthError(error).message } }
 }

@@ -38,6 +38,7 @@ import { customFieldsError, probeAdmission, probeTargetOf } from "@thincoder/cor
 import { admissionOf, probeChannelModels } from "@thincoder/core/provider/list-models.mjs"
 import { proxyFetch } from "@thincoder/core/proxy.mjs"
 import { getAuthClient } from "@thincoder/core/auth/client.mjs"
+import { safeAuthError } from "@thincoder/core/auth/errors.mjs"
 import { maskKey } from "./settings.mjs"
 // provider 态投影（#841 —— `provider:save` 设置写回执携 `providerState`：三回执族载荷单源，零第二实现）。
 import { providerStateOf } from "./session-slots.mjs"
@@ -94,7 +95,7 @@ export async function providerList() {
   const auth = new Map()
   for (const p of providers.filter((p) => p.auth?.type === "chatgpt_oauth")) {
     try { auth.set(p.name, { authStatus: await getAuthClient().status(p.name), authProfiles: await getAuthClient().list() }) }
-    catch (e) { auth.set(p.name, { authStatus: { enabled: p.auth.enabled === true, state: "temporarily_unavailable" }, authNotice: e.message }) }
+    catch (e) { auth.set(p.name, { authStatus: { enabled: p.auth.enabled === true, state: "temporarily_unavailable" }, authNotice: safeAuthError(e).message }) }
   }
   return {
     ok: true,

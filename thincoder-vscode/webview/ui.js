@@ -59,8 +59,8 @@ export function updateWelcomeStatus(ctx) {
  *  `fallback` ⇒ **两字面按载荷 `model` 在场分**（在场 ⇒ 现字面 `banner.defaultModelFallback` ∥ 缺 ⇒
  *  未定变体 `banner.defaultModelFallbackNoModel`——2026-10-09 清除批：渠道单值模型退场，「模型未定」
  *  态独立成句）+ 动作钮「选择默认模型」（`banner.chooseDefaultModel`）；
- *  `ok` ⇒ 现键 `banner.configured`。`onChoose` = 动作钮出口（chat-messages 注入 `openSettings`）——
- *  钮不开会话级模型菜单（真修口 = 设置面默认模型段；避死端同 #840 KD-3）。 */
+ *  `ok` ⇒ 现键 `banner.configured`。`onChoose` = 动作钮出口（注入点 = `webview/chat-messages.js`）——
+ *  开**会话级模型菜单**（= 模型钮同径；钮重指决策单源 = `docs/desktop/design/SETTINGS.md` §1 KD-80 ⑤）。 */
 export function showBanner(ctx, ps, onChoose) {
   let banner = document.getElementById("provider-banner")
   if (!banner) {

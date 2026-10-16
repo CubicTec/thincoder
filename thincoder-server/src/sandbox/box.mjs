@@ -20,7 +20,7 @@ import { dataDir } from "../store/credential-crypto.mjs"
 import { customBaseOf, ensureDerivedImage } from "./derive.mjs"
 import { clientForRunner } from "./docker.mjs"
 import { execOnHost } from "./hosts.mjs"
-import { applyDiskQuota } from "./quota.mjs"
+import { applyDiskQuota, releaseLoopbackVolume } from "./quota.mjs"
 import { authForImageRef } from "./registry-creds.mjs"
 import { containerNameOf, getSettings, placeWorkspace, resolveLimits, sandboxPublicBase, tryPlacePending } from "./registry.mjs"
 import { SSH_COMMAND_TIMEOUT_S } from "./ssh.mjs"
@@ -222,14 +222,26 @@ async function stepImage(db, workspace, runner, client, settings, deps) {
   return derived.tag
 }
 
-/** ② 配额就位（主机侧项目配额——不可用 ⇒ 抛（建盒停）；配额失败审计 `quota_apply_failed`。KD-SV-163）。 */
+/** ② 配额就位（主机侧项目配额——不可用 ⇒ 抛（建盒停）；配额失败审计 `quota_apply_failed`（KD-SV-163）；
+ *  自愈留痕 `quota_recovered`（KD-SV-200——绑定物理动作：**两径皆落**——成功返回携 `recovery` ∥ 重建/重接/降级后下游失败由错误携 `err.recovery`）。 */
 async function stepQuota(db, deps, runner, workspace, host, path, limits) {
+  const trace = (recovery) =>
+    auditBox(db, deps, {
+      kind: "quota_recovered",
+      target: workspace.name,
+      detail: { workspaceId: workspace.id, runnerId: runner.id, recovery, path },
+      ts: (deps.now ?? Date.now)(),
+    })
+  let applied
   try {
-    return await applyDiskQuota({ exec: host.execOf(runner), workspaceId: workspace.id, path, diskMb: limits.diskMb })
+    applied = await applyDiskQuota({ exec: host.execOf(runner), workspaceId: workspace.id, path, diskMb: limits.diskMb })
   } catch (e) {
+    if (e?.recovery !== undefined && e?.recovery !== null) trace(e.recovery) // 卷已重建/重接 ⇒ 不因后续失败丢痕
     auditBox(db, deps, { kind: "quota_apply_failed", target: workspace.name, detail: { workspaceId: workspace.id, runnerId: runner.id, reason: String(e?.message ?? e).slice(0, 300) }, ts: (deps.now ?? Date.now)() })
     throw e
   }
+  if (applied?.recovery !== undefined && applied?.recovery !== null) trace(applied.recovery)
+  return applied
 }
 
 /** 盒态批量读（按节点 `containers()` 一次——工作区列表面用；引擎不可达 ⇒ 逐行 `unreachable`）。 */
@@ -277,8 +289,28 @@ async function stepVolume(host, runner, path) {
 /**
  * 建盒全链（N65）：① 卷目录 → ② 配额 → ④ 镜像就位（仅自定义底座）→ ⑤ 网络 → ⑥ 容器 → ⑦ 启动。
  * 任一步失败 ⇒ 抛 `BoxStepError`（步名 + 人话）——**零半态**：已落步幂等可重试（行留）。
+ * **步级失败审计（#1397）**：`BoxStepError ∧ step ≠ ②`（② 配额步 = 专用 kind `quota_apply_failed`——**不叠通用行**）
+ * ⇒ 行 `sandbox_event/box_step_failed`（`detail = { kind, workspaceId, runnerId, step, reason（截 300） }`）；
+ * 含 ① 前置形错（`workspacePathOf` 抛在链前——同链级 catch 内）；抛出的错误原样透传（响应人话不变）。
  */
 export async function createWorkspaceBox(db, workspace, runner, deps = {}) {
+  try {
+    return await createBoxChain(db, workspace, runner, deps)
+  } catch (e) {
+    if (e instanceof BoxStepError && e.step !== "② 配额就位") {
+      auditBox(db, deps, {
+        kind: "box_step_failed",
+        target: workspace.name,
+        detail: { workspaceId: workspace.id, runnerId: runner.id, step: e.step, reason: String(e?.message ?? e).slice(0, 300) },
+        ts: (deps.now ?? Date.now)(),
+      })
+    }
+    throw e
+  }
+}
+
+/** 建盒链本体（①→⑦）——失败审计归 `createWorkspaceBox` 链级 catch（#1397）。 */
+async function createBoxChain(db, workspace, runner, deps = {}) {
   const now = deps.now ?? Date.now
   const settings = deps.settings ?? boxSettings(db)
   const path = workspacePathOf(settings, workspace.id)
@@ -500,9 +532,10 @@ export async function destroyWorkspaceBox(db, workspace, runner, deps = {}, { de
   if (deleteVolume && runner !== null) {
     const path = workspacePathOf(settings, workspace.id)
     const host = hostOf(deps)
-    // loopback 备径余项：挂载点先卸（尽力而为）+ 镜像文件同清
-    await host.call(runner, `mountpoint -q ${path} && umount ${path} || true`)
-    await host.call(runner, `rm -rf ${path} ${path}.loop.img`)
+    // loopback 备径余项（KD-SV-199）：卸挂载（未挂 ⇒ 零动作、不抛）+ detach loop（back-file 属本工作区者——外来 ∥ 他工作区零动）
+    // ⇒ 删目录与镜像；失败 ⇒ 抛（停 + 行留 + 重试续链——静默失败即残留成因）
+    await releaseLoopbackVolume({ exec: host.execOf(runner), path })
+    await host.run(runner, `rm -rf ${path} ${path}.loop.img`)
   }
   const snapshots = db.prepare("SELECT blob_path FROM sandbox_checkpoints WHERE workspace_id = ?").all(workspace.id)
   for (const row of snapshots) {

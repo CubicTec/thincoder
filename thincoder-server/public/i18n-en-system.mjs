@@ -137,7 +137,7 @@ export const EN_SYSTEM = Object.freeze({
   "usageReport.export": "Export CSV",
   "usageReport.exported": "CSV exported",
 
-  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 16 types here; 17 in the type face — `member_event` pending) ──
+  // ── Admin · audit (§2.3④——type enum = accounts/ACCOUNTS.md §2.1: 17 types here) ──
   "audit.title": "Audit",
   "audit.typeLabel": "Type",
   "audit.typeAll": "All types",
@@ -160,6 +160,10 @@ export const EN_SYSTEM = Object.freeze({
   "audit.agentOk": "Done",
   "audit.agentFail": "Failed",
   "audit.agentTruncated": "Result truncated",
+  "audit.sandboxRuleAdd": "Added",
+  "audit.sandboxRuleRemove": "Removed",
+  "audit.sandboxRuleAllow": "Allowed",
+  "audit.sandboxRuleDeny": "Denied",
   "audit.type.login_success": "Sign-in succeeded",
   "audit.type.login_failure": "Sign-in failed",
   "audit.type.login_locked": "Sign-in locked",
@@ -175,6 +179,7 @@ export const EN_SYSTEM = Object.freeze({
   "audit.type.sandbox_rule": "Sandbox rule decision",
   "audit.type.project_event": "Project event",
   "audit.type.ledger_event": "Team ledger",
+  "audit.type.member_event": "Member session",
   "audit.type.mcp_event": "MCP servers",
   "audit.sandboxKind.container_create": "Container created",
   "audit.sandboxKind.container_start": "Container started",
@@ -208,8 +213,10 @@ export const EN_SYSTEM = Object.freeze({
   "audit.sandboxKind.workspace_destroy": "Workspace destroyed",
   "audit.sandboxKind.checkpoint": "Checkpoint created",
   "audit.sandboxKind.checkpoint_fail": "Checkpoint failed",
+  "audit.sandboxKind.quota_recovered": "Disk quota recovered",
   "audit.sandboxKind.quota_apply_failed": "Disk quota apply failed",
   "audit.sandboxKind.placement_failed": "Placement failed",
+  "audit.sandboxKind.box_step_failed": "Box step failed",
   "audit.sandboxKept": "Kept",
   "audit.sandboxRemoved": "Removed",
 })

@@ -331,6 +331,7 @@ function applyFrame(dirtyKeys) {
   if (dirtyKeys.includes("locale")) {
     document.documentElement.dataset.locale = state.locale
     refreshResizerLabel()
+    composer.refresh() // 词面重派生（沿拖柄两处先例：boot 词表置位点 + 帧分派 locale 支）
   }
   const painted = dispatchFrame({ dirtyKeys, state, faces })
   // 实况回读上报（子代理面板批 —— 帧出口尾：五面分派后 DOM 已落；签名去重 ⇒ 状态迁转 ∥ 出生 ∥ 归档 ∥

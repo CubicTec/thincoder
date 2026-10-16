@@ -13,8 +13,8 @@
     "prepublishOnly": "node --check bin/thincoder-server.mjs && node --check src/ops/update.mjs && node --check deploy/converge.mjs"
   },
   "dependencies": {
-    "@thincoder/core": "^0.10.4",
-    "@thincoder/render-core": "file:../thincoder-render-core"
+    "@thincoder/core": "^0.10.7",
+    "@thincoder/render-core": "^0.1.0"
   },
   "engines": {
     "node": ">=24"

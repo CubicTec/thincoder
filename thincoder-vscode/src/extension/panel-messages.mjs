@@ -20,7 +20,7 @@ import { handleNewSession, handleSwitchSession, handleDeleteSession, handleRenam
 // ——本档分发表按**同名 case 标签**转发行分发（case 标签集合零变化；两新档名带 `panel-messages`
 // 前缀以落在 reverse 机检的 `HOST_DISPATCH` 扫描域内）。
 import { handleAbort, handleCancelSubagent, handleInterrupt, handleOpenFile, handleOpenDiff, handleQuestionResponse, handleSecretInputResponse, handleSetAutoApprove, handleAtComplete, handlePermissionResponse, handleBatchPermissionResponse } from "./panel-messages-turn.mjs"
-import { handleSaveProviderKey, handleDeleteProviderKey, handleSaveMcpServer, handleDeleteMcpServer, handleReconnectMcp, handleEditMcp, handleTestMcp, handleAddProvider, handleRemoveProvider, handleSetProviderProxy, handleSetKey, handleSaveEmbedKey, handleDeleteEmbedKey, handleSaveWebsearchKey, handleDeleteWebsearchKey, handleTestProvider, handleBuildIndex, handleGetMcpStatus, handleMcpTools, handleSaveAgentSettings, handleGetAgentSettings, handleSetAdvisorGuard, handleSetEngineeringEnabled, handleSetPlanMode, handleGetShellCandidates, handleSaveShellSettings, handleSaveProxySettings, handleTestProxy, handleTeamLogin, handleTeamLogout } from "./panel-messages-settings.mjs"
+import { handleSaveProviderKey, handleDeleteProviderKey, handleSaveMcpServer, handleDeleteMcpServer, handleReconnectMcp, handleEditMcp, handleTestMcp, handleAddProvider, handleRemoveProvider, handleSetProviderProxy, handleSetKey, handleSaveEmbedKey, handleDeleteEmbedKey, handleSaveWebsearchKey, handleDeleteWebsearchKey, handleTestProvider, handleBuildIndex, handleGetMcpStatus, handleMcpTools, handleSaveAgentSettings, handleGetAgentSettings, handleSetAdvisorGuard, handleSetEngineeringEnabled, handleSetPlanMode, handleGetShellCandidates, handleSaveShellSettings, handleSaveProxySettings, handleTestProxy, handleTeamLogin, handleTeamLogout, handleTeamRotate } from "./panel-messages-settings.mjs"
 // C-B2-6 细则⑥（busy-injection 批 fix 轮 2026-09-22）：F-1 降级判决函数已迁 `image-handler.mjs`
 // ——本档只留触发（`downgradeNonVisionImages` + `visionReader` per-call 缝）。
 import { savePastedImages, downgradeNonVisionImages } from "./image-handler.mjs"
@@ -387,5 +387,6 @@ export async function handlePanelMessage(panel, msg) {
     // 读面 = `teamStatus` 推送（无上行请求——推送点 = 快照族 + 登录/退出成拍））
     case "teamLogin": await handleTeamLogin(panel, msg); break
     case "teamLogout": await handleTeamLogout(panel); break
+    case "teamRotate": await handleTeamRotate(panel); break
   }
 }

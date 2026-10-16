@@ -8,7 +8,7 @@
  *   ② 命令 `thincoder.team`（命令面板 ∥ item 点击同入口）：起手 = 活校验（`teamVerify`——触发点制；
  *      零周期轮询）⇒ 未登录 ∥ 已失效 ⇒ 登录三问（server 预填留存值 → username → password 掩码）
  *      ⇒ 核 `teamLogin`；已登录 ⇒ QuickPick「退出登录」⇒ 核 `teamLogout`。
- *      成 ⇒ 复读 + 刷新 item + 推 `teamStatus`/`providerStatus`（设置面板随动——既有推送链）；
+ *      成 ⇒ 复读 + 刷新 item + 推 `teamStatus` + 全状态链（`_pushSettings()`——`models` 随探针拍落 ⇒ 模型候选面含 team 渠——`TEAM.md` §2.8）；
  *      两一次性提示逐字（同名冲突 ∥ 吊销未达）；败 ⇒ 四句逐字（`showErrorMessage`——词表复用）。
  *
  * 纪律：写面全在核（本档零自写盘）；经转口档 `./team.mjs` 取核（转口四件——与桌面
@@ -118,7 +118,8 @@ function afterChange() {
   _chatPanel?._pushStatus?.()
 }
 
-/** 登录流（未登录 ∥ 已失效两态共用）：三问（server 预填留存值 → username → password 掩码）。 */
+/** 登录流（未登录 ∥ 已失效两态共用）：三问（server 预填留存值 → username → password 掩码）⇒ 成 ⇒ 复读 + 推 `teamStatus`
+ *  + 全状态链（`_pushSettings()`——登出径不合流：`afterChange()` 为两径共用件，本径另加一行；`TEAM.md` §2.8）。 */
 async function loginFlow() {
   const st = teamStatus()
   const server = await vscode.window.showInputBox({ prompt: t("settings.team.server") + " — " + t("settings.team.serverHint"), value: st.server ?? "" })
@@ -131,6 +132,7 @@ async function loginFlow() {
   if (r?.ok === true) {
     _verify = null // 重登成 ⇒ verify 清（新 token 新判——TEAM.md §2.6）
     afterChange()
+    _chatPanel?._pushSettings?.() // 登录成 ⇒ 全状态链（`models` 随探针拍落——模型候选面含 team 渠；`TEAM.md` §2.8）
     const notice = wordOf(NOTICE_WORD, r.notice)
     if (notice !== null) vscode.window.showWarningMessage(notice)
   } else {

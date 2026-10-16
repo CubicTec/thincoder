@@ -4,7 +4,6 @@
 > 地图与契约要点 = `docs/core/design/TOOLS.md` §6.6（末段「共享 helper 权威 = 编辑辅助面」）。
 > 双端：CLI `thincoder-core/tools/shared.mjs` · VSC `thincoder-vscode/src/tools/shared.mjs`（helper 语义同，各自实现；VSC 另有编辑器路径专属面——§6）。
 > 需求侧 = `docs/core/requirements/TOOLS.md`（工具系统板块；CLI 树无逐工具需求档）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 1 批**——`thincoder-cli/docs/design/EDIT-HELPERS.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
 
 ## 1. 定位
 
@@ -22,7 +21,7 @@ findCandidates(lines, oldString, topN=3, threshold=0.5) → [{ line, preview, sc
   // LCS 行级相似度；score = LCS(old_string, line).length / max(len)；≥ threshold 才进候选
 ```
 
-**坐标（as-of 2026-09-15 实核）**：`thincoder-core/tools/shared.mjs:67`（`detectFileEol`）· `:73`（`joinWithEol`）· `:82`（`majorityEol`）· `:142`（`findCandidates`）· `:162`（`FFFD_WARNING`）。
+**坐标**：`thincoder-core/tools/shared.mjs:67`（`detectFileEol`）· `:73`（`joinWithEol`）· `:82`（`majorityEol`）· `:142`（`findCandidates`）· `:162`（`FFFD_WARNING`）。
 
 ## 3. 语义约束（helper 级）
 
@@ -67,17 +66,17 @@ hashline_edit 读入含 U+FFFD 时追加（**不阻断**）：
 - **VSC**：helper 语义同、各自实现；另有 `lfOffsetToRaw`（VS Code 编辑器路径 range 偏移——**端专属**，见 VSC 树档）。
 - **消费点**：edit（失败接 `findCandidates` / 写回 `joinWithEol`）· hashline_edit（写回 + U+FFFD 警告）· apply_patch（写回 + 新建 `majorityEol`）· write（覆盖按原行尾 F1、新建按 `majorityEol` F2）。
 
-**VSC 端差异（并入 · 批 8 · 编辑器路径面）**——VSC 端 `thincoder-vscode/src/tools/shared.mjs` 另有编辑器路径专属 helper `lfOffsetToRaw`
-（CLI 无此路径——坐标系 = LF 域偏移 → CRLF 原文偏移）：非 replace_all 走 range 编辑偏移映射（保留 undo 粒度 / 光标 / 折叠 / 大文件性能——否决整文档替换）·
+**VSC 端差异（编辑器路径面）**——VSC 端 `thincoder-vscode/src/tools/shared.mjs` 另有编辑器路径专属 helper `lfOffsetToRaw`
+（CLI 无此路径——坐标系 = LF 域偏移 → CRLF 原文偏移）：非 replace_all 走 range 编辑偏移映射（保留 undo 粒度 / 光标 / 折叠 / 大文件性能）·
 replace_all 补 EOL 还原（不静默丢 CRLF）· hash 域统一（stripBom + normalizeEOL——CRLF 尾 `\r` / BOM 首行不哈希失配）· hashline_edit BOM 还原（磁盘写回带 BOM、编辑器分支不带——防双 BOM）·
 getOpenDoc win32 盘符大小写归一（消除 split-brain）· insert_after 编辑器分支换行符按 fileEol（消除 `$` 锚失配与混合 EOL 注入）。消费点 = `{file-edit,hashline-edit,more-file}.mjs`。
 本仓检出 EOL 约定（`.gitattributes` = `* text=auto eol=lf`）与 CLI 仓逐字节同源（各端自持）。
 
-## 7. 并入的关键决策记录（含否决备选）
+## 7. 关键决策记录
 
-| # | 决策 | 理由 / 否决备选 |
+| # | 决策 | 理由 |
 |---|---|---|
-| D-H1 | **共享底层独立成档**（helper 不上收到各工具档） | 四工具同写路径——重复描述必然漂移；否决「各工具档自述 EOL 规则」 |
+| D-H1 | **共享底层独立成档**（helper 不上收到各工具档） | 四工具同写路径——重复描述必然漂移 |
 | D-H2 | `detectFileEol` 用**首个换行符**判据（非计数） | 混合行尾文件按计数判会翻车；首行风格即文件惯例 |
-| D-H3 | 失败候选**截断 500 字符 + 5000 行预算** | minified 单行文件的 LCS 会爆预算；否决无预算（失败路径拖慢交互） |
+| D-H3 | 失败候选**截断 500 字符 + 5000 行预算** | minified 单行文件的 LCS 会爆预算 |
 | D-H4 | U+FFFD **警告不阻断** | 编码损坏时仍给模型一次尝试机会；阻断会让损坏文件整体不可编辑 |

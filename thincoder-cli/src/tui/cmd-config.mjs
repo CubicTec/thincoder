@@ -1,5 +1,7 @@
 import { ansi, C } from "./ansi.mjs"
 import { probeChannelModels, dedupeModels } from "./model-catalog.mjs"
+// 派生条目隐藏判据单源（TEAM.md §2.4——#1223：/config 渠道读面过滤）
+import { isDerivedProviderHidden } from "./provider-admin.mjs"
 import { probeTargetOf } from "@thincoder/core/provider-flows.mjs"
 /** Merge an embedding-key save into the raw config, backfilling baseURL/model from defaults.
  *  Keeps existing custom values (Ollama/local embedding); defaults are the single source
@@ -289,9 +291,10 @@ export async function handleConfigCommand(ctx, args = []) {
     let idx = 0
     // M9 配置阶段准入：进本子菜单探一次各渠道 `/models`（复用 M1 + 会话缓存）。
     // 探通 → 渠道可用 + 候选直接可用；探不通 → 不缓存不阻断（标「不可用」且不入可选来源）。
+    // #1223（TEAM.md §2.4 六消费面）：派生无 key 条目隐藏——探针 ∥ 条目录入两面同过滤。
     const probes = new Map()
     pushLine("Fetching channel model lists (GET /models)…", C.dim)
-    await Promise.all(agent.providers.map(async (p) => {
+    await Promise.all(agent.providers.filter((p) => !isDerivedProviderHidden(p)).map(async (p) => {
       const r = await probeChannelModels(probeTargetOf(p)) // 探针目标构造收敛核判据（③′——逐渠旗 ∧ `uri` 在案；执行体零改）
       probes.set(p.name, r)
       if (r.ok) delete p._unavailable
@@ -301,7 +304,7 @@ export async function handleConfigCommand(ctx, args = []) {
       const dm = agent.config?.defaultModel ?? null
       const entries = [
         { type: "header", text: `config.defaultModel = ${dm ?? "(not set — 新会话起点未配置)"}` },
-        ...agent.providers.map((p) => {
+        ...agent.providers.filter((p) => !isDerivedProviderHidden(p)).map((p) => {
           const r = probes.get(p.name)
           if (!r?.ok) return { type: "item", text: `${p.name.padEnd(10)} 不可用`, action: "provider", provider: p.name, unavailable: true }
           const n = r.list.length
@@ -356,7 +359,8 @@ export async function handleConfigCommand(ctx, args = []) {
       { type: "item", text: `traces.enabled = ${tc.enabled === false ? "off" : "on"}（轨迹存档——发布默认关——隐私）`, action: "traces.enabled" },
       { type: "item", text: `traces.retentionHours = ${tc.retentionHours ?? 24} h（超期文件启动时清理）`, action: "traces.retentionHours" },
       { type: "item", text: `diagnostics.heapSnapshot = ${dc.heapSnapshot === true ? "on" : "off"}（堆快照采集——默认关——桌面会话即时生效）`, action: "diagnostics.heapSnapshot" },
-      { type: "item", text: `agent.injectDocs = ${ac.injectDocs !== false ? "on" : "off"}（文档注入——项目指令文件 + 相关文档——默认开）`, action: "agent.injectDocs" },
+      { type: "item", text: `agent.injectProjectRules = ${ac.injectProjectRules !== false ? "on" : "off"}（项目指令注入——AGENTS.md / project_rules.md——默认开）`, action: "agent.injectProjectRules" },
+      { type: "item", text: `agent.injectDocs = ${ac.injectDocs !== false ? "on" : "off"}（文档注入——相关文档自动检索——默认开）`, action: "agent.injectDocs" },
       { type: "item", text: `agent.injectMemories = ${ac.injectMemories !== false ? "on" : "off"}（记忆注入——往期相关记忆召回——默认开）`, action: "agent.injectMemories" },
       { type: "item", text: `agent.consultModels = ${consultCount} model(s)${consultCount ? ` (${(ac.consultModels ?? []).map((m) => m.provider + ":" + m.model).join(", ")})` : ""}`, action: "consult" },
       { type: "item", text: `agent.consultTurns = ${ac.consultTurns ?? 40}`, action: "agent.consultTurns" },
@@ -382,7 +386,8 @@ export async function handleConfigCommand(ctx, args = []) {
       pushLine(`traces.enabled: ${tc.enabled === false ? "off" : "on"}（默认 off——发布隐私——本地分析可开）`, C.dim)
       pushLine(`traces.retentionHours: ${tc.retentionHours ?? 24}（超期文件启动清理——D-TR10）`, C.dim)
       pushLine(`diagnostics.heapSnapshot: ${dc.heapSnapshot === true ? "on" : "off"}（堆快照采集——默认关——桌面会话即时生效）`, C.dim)
-      pushLine(`agent.injectDocs: ${ac.injectDocs !== false ? "on" : "off"}（文档注入——项目指令文件 + 相关文档——默认开）`, C.dim)
+      pushLine(`agent.injectProjectRules: ${ac.injectProjectRules !== false ? "on" : "off"}（项目指令注入——AGENTS.md / project_rules.md——默认开）`, C.dim)
+      pushLine(`agent.injectDocs: ${ac.injectDocs !== false ? "on" : "off"}（文档注入——相关文档自动检索——默认开）`, C.dim)
       pushLine(`agent.injectMemories: ${ac.injectMemories !== false ? "on" : "off"}（记忆注入——往期相关记忆召回——默认开）`, C.dim)
       pushLine(`agent.consultModels: ${(ac.consultModels ?? []).map((m) => `${m.provider}:${m.model}${m.effort ? ` (${m.effort})` : ""}`).join(", ") || "(none)"}`, C.dim)
       pushLine(`agent.poolLimits: { engCoder: ${cur("engCoder")}, other: ${cur("other")}, advisor: ${cur("advisor")} }（async 分域上限——默认 4/4/4——agent.poolLimits 可配）`, C.dim)
@@ -456,8 +461,8 @@ export async function handleConfigCommand(ctx, args = []) {
       continue // 回主菜单（Esc 退出）
     }
 
-    if (choice.action === "agent.injectDocs" || choice.action === "agent.injectMemories") {
-      // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：判据 `!== false`（缺省 = 开）——两键共用一支；
+    if (choice.action === "agent.injectProjectRules" || choice.action === "agent.injectDocs" || choice.action === "agent.injectMemories") {
+      // 注入开关（PROMPT-SYSTEM.md §6.24 §6.27 · 台账 #1420 #1465）：判据 `!== false`（缺省 = 开）——三键共用一支；
       // 保存经 saveProxy（写盘 + reloadConfig 即热——下一次提示词组装生效，无「重启」注）。
       const key = choice.action.slice("agent.".length)
       const newVal = ac[key] === false // 现为关 ⇒ 写 true；现为开（含缺省）⇒ 写 false

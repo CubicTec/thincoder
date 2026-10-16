@@ -201,8 +201,18 @@ export function subjectOf(name, args = {}) {
     return args.name !== undefined && args.name !== null && args.name !== "" ? `list ${text(args.name)}` : "list"
   }
   if (name === "timer") {
-    const seconds = args.seconds === undefined || args.seconds === null ? 180 : Number(args.seconds)
+    // 逐式主语（工具解算序：cancel → list → at → every → daily → 缺省一次性）；一次性式（含缺省 ∥ `message` 缀）逐字零变。
     const message = typeof args.message === "string" && args.message !== "" ? ` ${args.message}` : ""
+    const present = (value) => value !== undefined && value !== null
+    if (present(args.cancel)) return `cancel ${text(args.cancel)}`
+    if (args.list === true) return "list"
+    if (present(args.at)) return `at ${text(args.at)}${message}`
+    if (present(args.every)) {
+      const every = Number(args.every)
+      return `every ${Number.isFinite(every) ? `${every}s` : text(args.every)}${message}`
+    }
+    if (present(args.daily)) return `daily ${text(args.daily)}${message}`
+    const seconds = args.seconds === undefined || args.seconds === null ? 180 : Number(args.seconds)
     return `set ${Number.isFinite(seconds) ? seconds : text(args.seconds)}s${message}`
   }
   if (name === "read_history") {

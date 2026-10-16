@@ -6,8 +6,8 @@
  *
  * 契约 = `gateway/API.md` §2.13（五端点）：清单 = `GET /api/admin/mcp`；启用勾选即时写 = `PATCH …/:id { enabled }`；
  * 探活两入口（行内体 `{ id }`——零副作用 ∥ 窗内「测试」= 草稿体）= `POST /api/admin/mcp/probe`；提交 = `POST`/`PATCH`
- * （PATCH 字段缺席 = 不动）；删 = `DELETE`。编辑态非秘密字段回填 = 清单行 `target`（command ∥ url/wsUrl——`args` 清单行
- * 不下发 ⇒ 参数留空 = 不变）；秘密字段恒零回填（只进不出）。判权全在后端（admin 面——服务端 403 为准）；渲染一律节点 +
+ * （PATCH 字段缺席 = 不动）；删 = `DELETE`。编辑态非秘密字段回填 = 清单行 `target`（command ∥ url/wsUrl）**+ stdio 行 `args`**
+ * （与 `command`/`url` 同类 = 明文列——披露在案；提交 = 与原值不同（含清空 ⇒ `[]`）才携键）；秘密字段恒零回填（只进不出）。判权全在后端（admin 面——服务端 403 为准）；渲染一律节点 +
  * textContent；文案经 `t()` 取值（`webui/I18N.md` §2.1）。
  */
 import { mapError, t } from "./i18n.mjs"
@@ -136,7 +136,7 @@ export function openMcpForm(ctx, { server = null, reload = () => {} }) {
   transportSelect.value = isEdit ? String(server.transport) : TRANSPORTS[0]
   const enabledCheck = h("input", { type: "checkbox", checked: isEdit ? server.enabled === true : true }) // 缺省勾（新建——与 v24 DDL ∥ 服务端 `enabled` 缺省同拍）
   const commandInput = h("input", { value: isEdit && server.transport === "stdio" ? String(server.target ?? "") : "", placeholder: t("admin.mcp.commandPh") })
-  const argsArea = h("textarea", { rows: "3" }) // 清单行不含 `args`（无回填面）——留空 = 不变
+  const argsArea = h("textarea", { rows: "3", value: isEdit && server.transport === "stdio" && Array.isArray(server.args) ? server.args.join("\n") : "" }) // 编辑态回填（明文列——与 command/url 同类）；新建态恒空
   const envArea = h("textarea", { rows: "3" })
   const urlInput = h("input", { value: isEdit && server.transport !== "stdio" ? String(server.target ?? "") : "", placeholder: t("admin.mcp.urlPh") })
   const headersArea = h("textarea", { rows: "3" })
@@ -154,7 +154,9 @@ export function openMcpForm(ctx, { server = null, reload = () => {} }) {
       const command = commandInput.value.trim()
       if (command !== "") body.command = command
       const args = argsArea.value.split("\n").map((line) => line.trim()).filter((line) => line !== "")
-      if (args.length > 0) body.args = args
+      // args = 明文列：与原值不同（含清空）⇒ 携键（空 ⇒ `[]` = 服务端清）；同 ⇒ 不携键（库零变）
+      const original = (isEdit && Array.isArray(server.args) ? server.args : []).map((line) => line.trim()).filter((line) => line !== "") // 比较在归一化域（窗面每行 trim + 过空行）——未改动保存 ⇒ 零键、库零变
+      if (JSON.stringify(args) !== JSON.stringify(original)) body.args = args
       const env = parseKvLines(envArea.value)
       if (env === false) { showNote(note, t("admin.mcp.kvInvalid")); return null }
       if (Object.keys(env).length > 0) body.env = env

@@ -76,4 +76,4 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24 }
       # 单引擎（声明面驱动——设计档 DOC-DISCIPLINE.md §7；2026-09-18 判据面批收正：旧三档 doc-anchors / check-doc-width / check-ledger 已随 v2 收敛撤除）
-      - run: node scripts/doc-check.mjs
+      - run: node scripts/doc-check.mjs --root .

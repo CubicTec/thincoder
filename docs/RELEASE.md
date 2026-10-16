@@ -270,7 +270,7 @@ npm run publish:all
 
 ```bash
 cd thincoder-desktop
-ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run package   # prepackage = 物化；postpackage = check-dist（闸）
+ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run package   # prepackage = 物化；postpackage = check-dist（闸）+ dev 链自愈（win32 面；本机 no-op）
 ```
 
 **判据**：check-dist exit 0（全断言 = `docs/desktop/design/PACKAGING.md` §2.5 + §2.8.2 update-info 四断言）+ **签名态读数 = 已签**（未签 ⇒ 止步核查：UKey ∥ SAC ∥ PIN——未签版仅限测试）。
@@ -281,7 +281,7 @@ ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run package   # prep
 
 ```bash
 cd ..   # 回 `thincoder` 仓根——dev-link.mjs 住仓根 scripts/（步骤 2 于 thincoder-desktop 内）
-node scripts/dev-link.mjs --force && node scripts/dev-link.mjs --check   # 终态 = 0
+node scripts/dev-link.mjs --force && node scripts/dev-link.mjs --check   # 自愈已入链（postpackage 第三腿）——本步 = 幂等复判 ∥ 兜底（构建中止径）；终态 = 0
 ```
 
 **步骤 4 · 上传（OSS 托管 · feed 三件）**：键形 = `downloads/` 前缀——**Windows**：`ThinCoder-Setup-<号>.exe` ∥ 同名 `.blockmap` ∥ `latest.yml`（feed 三件——单源 = `docs/desktop/design/PACKAGING.md` §2.8.3）；**Linux（D42）**：`ThinCoder-Setup-<号>.AppImage` ∥ `ThinCoder-Setup-<号>.deb` ∥ `latest-linux.yml`（单源 = 同档 §2.11.5）；
@@ -299,7 +299,8 @@ OSS_KEY=… OSS_SECRET=… node scripts/upload-download.mjs <exe> <blockmap> <la
 
 **Linux 侧（D42 · 构建机链——构建 → 校验 → 取回 → 上传 · 机制单源 = `docs/desktop/design/PACKAGING.md` §2.11）**：
 
-- **L1 · 构建（内网构建机）**：`~/thincoder` 浅克隆 → 三镜像环境（registry ∥ `ELECTRON_MIRROR` ∥ `ELECTRON_BUILDER_BINARIES_MIRROR`）→ `npm run package`（一条链：物化 → 两目标 AppImage ∥ deb → check-dist Linux 侧 = 闸）——配方逐字 = 同档 §2.11.1；重跑 = `git fetch` + `git reset --hard` + 清 `dist`；**不得单目标跑**（覆盖 feed 面——同档 §2.11.1 纪律）。
+- **L1 · 构建（内网构建机）**：`~/thincoder` 浅克隆 → 三镜像环境（registry ∥ `ELECTRON_MIRROR` ∥ `ELECTRON_BUILDER_BINARIES_MIRROR`）→ `npm run package`（一条链：物化 → 两目标 AppImage ∥ deb → check-dist Linux 侧 = 闸；dev 链自愈腿 = win32 面——本机 no-op）——配方逐字 = 同档 §2.11.1；
+  重跑 = `git fetch` + `git reset --hard` + 清 `dist`；**不得单目标跑**（覆盖 feed 面——同档 §2.11.1 纪律）。
 - **L2 · 校验**：check-dist（闸内自跑）exit 0 + **构建机命令读数**（`dpkg-deb -f dist/ThinCoder-Setup-<号>.deb Maintainer Homepage` ∥ AppImage 提取读数——同档 §2.11.3）。
 - **L3 · 取回**：三件 → `D:\WSL\artifacts\<版本>\`（版本子目录）；sha256 对盘读数随实施记录。
 - **L4 · 上传**：同步骤 4（Linux 行——序 **AppImage → deb → latest-linux.yml**）。

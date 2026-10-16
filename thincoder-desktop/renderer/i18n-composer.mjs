@@ -8,12 +8,13 @@
  * 六件内取词走核 `i18n.t` —— 端侧经注册面 `setStringsSink(setStrings)` 注入，注册单点 = `renderer/app.mjs`；
  * 本档零装配逻辑，纯词表 —— 合并点仍 = `renderer/i18n.mjs` `HOST_DICT` 两语展开）。
  *
- * 分组（28 键 · 四组，按消费源档）：
- *   ① 提交面 ∕ 输入行（`panel.mjs`：placeholder 三态 + 守卫两词 + 满队 toast）六键；
- *   ② 控件行 ∕ AUTO 确认（`controls.mjs`）五键；
- *   ③ 模型 ∕ 推理两浮层（`model-menu.mjs`）九键（含 footer 三出口 —— 桌面出口映射 = 设置面，见批档 §2.2 A8）；
+ * 分组（51 键 · 五组，按消费源档）：
+ *   ① 提交面 ∕ 输入行（`panel.mjs` ∕ `attach.mjs` ∕ `atmenu.mjs`：placeholder 三态 + 守卫两词 + 满队 toast + 钮面四键〔car2 批〕+ a11y 五键〔car2 批〕）十五键；
+ *   ② 控件行 ∕ AUTO 确认（`controls.mjs`：五键 + 钮面五键〔car2 批〕+ a11y 六键〔car2 批〕）十六键；
+ *   ③ 模型 ∕ 推理两浮层（`model-menu.mjs`）十一键（含 footer 三出口 —— 桌面出口映射 = 设置面，见批档 §2.2 A8）；
  *   ④ 推理档位词八键（`model-menu.mjs` `reasoning.<level>` 动态取词 —— 枚举 = 核 `specForModel().reasoningEffortEnum`
  *      闭集八值，逐值一键；值 = VSC 逐字）。
+ *   ⑤ 工具卡面一键（核 `flow/tool-card*.mjs` `tool.outputOf`——car2 批；三面同集）。
  * 不入档（列明）：`paste.unsupportedFormat`（B9 非栅格拒 —— 已在 `renderer/i18n-views.mjs`）·
  *   `msg.user` ∕ `queued.pending`（核 `queued-mark` 取词 —— 已在主档 HOST_DICT）·
  *   `composer.send.failed` ∕ `composer.attach.nonvision` ∕ `composer.attach.partial`（B21 ∕ B22 两保留行 —— 端侧
@@ -29,9 +30,33 @@ export const COMPOSER_DICT = Object.freeze({
     "input.interruptPlaceholder": "Interrupt — inject a message… (Enter to send, Esc to cancel)",
     "workspace.required": "Open a folder first — ThinCoder needs a workspace to work in.",
     "workspace.requiredPlaceholder": "Open a folder to start…",
+    // 钮面四键（car2 批——核件字面入 t() 键族；值逐字同 VSC locales）
+    "toolbar.send": "Send (Enter)",
+    "toolbar.stop": "Stop",
+    "toolbar.attach": "Attach file",
+    "toolbar.attachShort": "Attach",
+    // a11y 五键（car2 批——输入 ∕ 提交面；值 = 核件现值）
+    "input.messageLabel": "Message input",
+    "input.fileSuggestions": "File suggestions",
+    "toolbar.sendMessage": "Send message",
+    "toolbar.stopGeneration": "Stop generation",
+    "toolbar.attachedFiles": "Attached files",
     // ── ② 控件行 ∕ AUTO 内联确认（`controls.mjs`）──
     "toolbar.autoApprove": "Auto-approve tools",
     "toolbar.planDisabled": "Disabled in engineering mode — engineering already runs design-before-code",
+    // 钮面五键（car2 批——同上）
+    "toolbar.model": "Change model",
+    "toolbar.reasoning": "Reasoning effort",
+    "toolbar.advisor": "Advisor review — require a review after code changes",
+    "toolbar.engineering": "Engineering mode (design-before-code)",
+    "toolbar.settings": "Settings",
+    // a11y 六键（car2 批——控件行；值 = 核件现值）
+    "toolbar.autoApproveToggle": "Toggle auto-approve",
+    "toolbar.advisorToggle": "Toggle advisor review",
+    "toolbar.engineeringToggle": "Toggle engineering mode",
+    "toolbar.planMode": "Plan mode (read-only exploration)",
+    "toolbar.planToggle": "Toggle plan mode",
+    "toolbar.settingsOpen": "Open settings",
     "auto.confirmText": "AUTO mode executes ALL tool calls — including file writes and shell commands — without asking for approval.",
     "auto.enable": "⚠ Enable AUTO",
     "auto.cancel": "Cancel",
@@ -45,6 +70,9 @@ export const COMPOSER_DICT = Object.freeze({
     "model.addProvider": "+ Add provider…",
     "model.removeProvider": "− Remove provider…",
     "model.setKey": "API Key…",
+    // car2 批两键（a11y 面）
+    "model.listLabel": "Model list",
+    "model.reasoningLevels": "Reasoning levels",
     // ── ④ 推理档位词（`reasoning.<level>` 八值闭集）──
     "reasoning.max": "Maximum",
     "reasoning.xhigh": "Extra High",
@@ -54,6 +82,8 @@ export const COMPOSER_DICT = Object.freeze({
     "reasoning.minimal": "Minimal",
     "reasoning.none": "Off",
     "reasoning.enabled": "Reasoning",
+    // ── ⑤ 工具卡面（核 `flow/tool-card*.mjs`——car2 批；三面同集）──
+    "tool.outputOf": "Output of ${name}",
   },
   zh: {
     // ── ① 输入行 ∕ 提交面 ──
@@ -63,9 +93,33 @@ export const COMPOSER_DICT = Object.freeze({
     "input.interruptPlaceholder": "中断 — 注入消息…（Enter 发送，Esc 取消）",
     "workspace.required": "请先打开文件夹——ThinCoder 需要一个工作区才能开工。",
     "workspace.requiredPlaceholder": "请先打开文件夹…",
+    // 钮面四键（car2 批——同上）
+    "toolbar.send": "发送（Enter）",
+    "toolbar.stop": "停止",
+    "toolbar.attach": "添加文件",
+    "toolbar.attachShort": "附件",
+    // a11y 五键（car2 批——同上）
+    "input.messageLabel": "消息输入框",
+    "input.fileSuggestions": "文件建议",
+    "toolbar.sendMessage": "发送消息",
+    "toolbar.stopGeneration": "停止生成",
+    "toolbar.attachedFiles": "已附加文件",
     // ── ② 控件行 ∕ AUTO 内联确认 ──
     "toolbar.autoApprove": "自动批准工具",
     "toolbar.planDisabled": "工程模式下禁用——工程模式本身即先设计后编码",
+    // 钮面五键（car2 批——同上）
+    "toolbar.model": "切换模型",
+    "toolbar.reasoning": "推理深度",
+    "toolbar.advisor": "Advisor 评审——改动代码后要求评审",
+    "toolbar.engineering": "工程模式（先设计后编码）",
+    "toolbar.settings": "设置",
+    // a11y 六键（car2 批——同上）
+    "toolbar.autoApproveToggle": "切换自动批准",
+    "toolbar.advisorToggle": "切换 Advisor 评审",
+    "toolbar.engineeringToggle": "切换工程模式",
+    "toolbar.planMode": "规划模式（只读探索）",
+    "toolbar.planToggle": "切换规划模式",
+    "toolbar.settingsOpen": "打开设置",
     "auto.confirmText": "AUTO 模式将执行所有工具调用——包括文件写入和 Shell 命令——不再逐一确认。",
     "auto.enable": "⚠ 启用 AUTO",
     "auto.cancel": "取消",
@@ -79,6 +133,9 @@ export const COMPOSER_DICT = Object.freeze({
     "model.addProvider": "+ 添加 provider…",
     "model.removeProvider": "− 移除 provider…",
     "model.setKey": "设置 API Key…",
+    // car2 批两键（同上）
+    "model.listLabel": "模型列表",
+    "model.reasoningLevels": "推理档位",
     // ── ④ 推理档位词 ──
     "reasoning.max": "最大",
     "reasoning.xhigh": "很高",
@@ -88,5 +145,7 @@ export const COMPOSER_DICT = Object.freeze({
     "reasoning.minimal": "最小",
     "reasoning.none": "关闭",
     "reasoning.enabled": "推理",
+    // ── ⑤ 工具卡面（同上）──
+    "tool.outputOf": "${name} 的输出",
   },
 })

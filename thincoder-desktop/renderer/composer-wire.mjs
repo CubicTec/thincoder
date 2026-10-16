@@ -226,6 +226,9 @@ export function createComposerWire(deps = {}) {
     const table = store.get().sessionMeta
     store.set({ sessionMeta: { ...(table !== null && typeof table === "object" ? table : {}), [key]: meta } })
     store.set(setProviderState(store.get(), receipt.providerState)) // #880：键缺席 ⇒ 原引用（零写）
+    // #1189（成功径清点）：本通道（session:prefs）写成功 ⇒ 失败行退场（行语义 = 当前态陈述——滞留即失实）；
+    // source 门 = 仅清本通道行（发送径失败行不误清——与 #1121 修③「来源分家」同义）。
+    if (failed?.source === "session:prefs") { failed = null; repaint() }
     const carried = receipt.carryover
     // #1121 修③：槽写已受理（回执 `ok:true`——本会话已生效，不反扑），配置面写回失败码仍须可见：同一条失败行。
     if (carried !== null && typeof carried === "object" && carried.ok === false) recordFailure("session:prefs", { reason: carried.reason })

@@ -3,10 +3,9 @@
 > 板块 = **编辑工具**；本档 = **insert_after 语义的权威源**（逐工具权威档之一）。
 > 地图与契约要点 = `docs/core/design/TOOLS.md` §6.6 · §8.2——本档不复制其内容（D2）。
 > 共享底层 = `docs/core/design/EDIT-HELPERS.md`（EOL 与候选 helper——本档只指不述）。
-> 双端：CLI `thincoder-core/tools/file.mjs`（`insertAfterTool` + read-before-insert 护栏）· VSC `thincoder-vscode/src/tools/more-file.mjs`（同机制，各自实现；**无 dirty 机制**——见 §4 差异）（W14 已迁核——自持镜像已删，现体同指核 `thincoder-core/tools/file.mjs`；dirty 护栏随核单源生效）。 （迁移期引文）
+> 双端：CLI `thincoder-core/tools/file.mjs`（`insertAfterTool` + read-before-insert 护栏）· VSC `thincoder-vscode/src/tools/more-file.mjs`（同机制，各自实现；**无 dirty 机制**——见 §4 差异；现体同指核 `thincoder-core/tools/file.mjs`；dirty 护栏随核单源生效）。
 > 模型可见描述 = `thincoder-core/tool-docs/insert_after.md`（提示词面 / 产品代码）。
 > 需求侧 = `docs/core/requirements/TOOLS.md`（工具系统板块；CLI 树无逐工具需求档）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 1 批**——`thincoder-cli/docs/design/INSERT-AFTER.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
 
 ## 1. 定位
 
@@ -44,9 +43,9 @@ insert_after 定位基于行号 / 正则；文件若在 `read` 之后被别的�
 
 加新行（清单条目 / 文档行 / 函数 / import）→ insert_after（首选——不必编造上下文）；改 / 删 → edit / hashline_edit；整文件 → write。
 
-## 6. 机制面（B 式迁移并入——现状路径）
+## 6. 机制面
 
-### 6.1 实现坐标（as-of 2026-09-15 实核）
+### 6.1 实现坐标
 
 | 面 | 落点 | 实核 |
 |---|---|---|
@@ -55,22 +54,22 @@ insert_after 定位基于行号 / 正则；文件若在 `read` 之后被别的�
 | 记账面（dirty / lastWrite 容器） | `thincoder-core/tools/write-path.mjs:33`（`markDirty`）· `:35`（`isDirty`）· `:41`（`recordWrite`） | 由 `file.mjs:43` re-export |
 | 拒绝文案 | `thincoder-core/tools/write-path.mjs:74`（`dirtyRefusalMessage`） | 导出在位 |
 | 描述面（模型可见） | `thincoder-core/tool-docs/insert_after.md` | 在位（`DESC()` 加载） |
-| VSC 对位实现 | `thincoder-vscode/src/tools/more-file.mjs:12`（`insert_after`）（W14 已迁核——自持镜像已删，现体 = 核 `thincoder-core/tools/file.mjs`） | 同名机制 · 独立实现 · 无 dirty 面（W14 后随核护栏） （迁移期引文） |
+| VSC 对位实现 | `thincoder-vscode/src/tools/more-file.mjs:12`（`insert_after`；现体 = 核 `thincoder-core/tools/file.mjs`） | 同名机制 · 独立实现 · 无 dirty 面（随核护栏） |
 
-### 6.2 记账面归位（迁入后收正）
+### 6.2 记账面归位
 
-旧档把 dirty 容器记在工具档本体坐标上；现状 = 记账面独立成档（`thincoder-core/tools/write-path.mjs`，`file.mjs:43` re-export）——跨工具（write / insert_after / 编辑族）共用。
+记账面独立成档（`thincoder-core/tools/write-path.mjs`，`file.mjs:43` re-export）——跨工具（write / insert_after / 编辑族）共用。
 
-### 6.3 VSC 端差异（并入 · 批 8）
+### 6.3 VSC 端差异
 
-VSC 端 `thincoder-vscode/src/tools/more-file.mjs:12`（`insert_after`；W14 已迁核——自持镜像已删，现体 = 核 `thincoder-core/tools/file.mjs`）——① **无 dirty 护栏**（结构性端差——行号漂移靠模型自觉 re-read，见 §4）；② **编辑器分支**：doc 已打开 → 换行符按 fileEol （迁移期引文）
+VSC 端 `thincoder-vscode/src/tools/more-file.mjs:12`（`insert_after`；现体 = 核 `thincoder-core/tools/file.mjs`）——① **无 dirty 护栏**（结构性端差——行号漂移靠模型自觉 re-read，见 §4）；② **编辑器分支**：doc 已打开 → 换行符按 fileEol
 （normalizeEOL + 消除 `$` 锚失配与混合 EOL 注入——`docs/core/design/EDIT-HELPERS.md` §6）；③ 无 `DESC()` md 描述（内嵌）；行尾写回与 CLI 同（F1——`EDIT-HELPERS.md` §4）。
-（W14 已迁核——自持镜像已删，现体 = 核 `thincoder-core/tools/file.mjs`；上述①③端差随迁核退场，②经写路径缝承接）
+（②经写路径缝承接）
 
-## 7. 并入的关键决策记录（含否决备选）
+## 7. 并入的关键决策记录
 
-| # | 决策 | 理由 / 否决备选 |
+| # | 决策 | 理由 |
 |---|---|---|
-| D-I1 | read-before-insert **dirty 护栏**（受影响区拒绝） | 行号漂移的静默错位比报错昂贵得多；否决「靠模型自觉 re-read」（无强制面） |
-| D-I2 | `after_line` 与 `after_regex` **互斥且 line 优先** | 两者皆给时以更精确者（行号）为准；否决「报错要求二选一」（同一意图不该被判错） |
+| D-I1 | read-before-insert **dirty 护栏**（受影响区拒绝） | 行号漂移的静默错位比报错昂贵得多 |
+| D-I2 | `after_line` 与 `after_regex` **互斥且 line 优先** | 两者皆给时以更精确者（行号）为准 |
 | D-I3 | `after_regex` **必须恰匹配一行** | 多匹配即定位不唯一——报错并列出候选优于任选其一 |

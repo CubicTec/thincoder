@@ -55,6 +55,9 @@ export async function prepareRun(agent, input, callbacks, {
   // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：判据 `!== false`（缺省 = 现行为零变）——
   // 逐 run 现读 `agent.config` ⇒ `settings` 工具 ∕ `/config` 写入后本会话下一次组装即生效。
   const injectDocs = agent.config?.agent?.injectDocs !== false
+  // 2026-10-15（PROMPT-SYSTEM.md §6.27 · 台账 #1465）：项目指令块独立开关——与 `injectDocs`
+  // 完全正交（用户 05:05 裁）；判点 = 下方 `:281`（原读 `injectDocs` ⇒ 换读本变量）。
+  const injectProjectRules = agent.config?.agent?.injectProjectRules !== false
   const injectMemories = agent.config?.agent?.injectMemories !== false
 
   agent._lastPromptTokens = null
@@ -114,7 +117,8 @@ export async function prepareRun(agent, input, callbacks, {
     // §6.10 修法 B（TUI 假死批）：回合召回注入 = **depth-0 门**——子代理（depth > 0）不注入
     // 相关文档 / 相关记忆两块（同函数其余自动注入全为 depth-0 门；需求锚 = F-M7 + 核 §4.11）。
     if (agent.memory && depth === 0) {
-      // 注入开关（§6.24 · 台账 #1420）：文档块受 `agent.injectDocs`——关 = 检索调用不执行 + 注入不发生。
+      // 注入开关（§6.24 §6.27 · 台账 #1420 #1465）：文档块受 `agent.injectDocs`——关 = 检索调用不执行 +
+      // 注入不发生。（2026-10-15：本键职责收窄为只管此 ② 块——① 项目指令块已拆至 `injectProjectRules`。）
       if (injectDocs) {
         // ── 文档检索注入：§6.15 origin 集 + #1100 声明源保底名额（两路分取——总上限 2×DOC_SEARCH_LIMIT）──
         // 无声明源（origin 集 ≤1）⇒ 原单调用路径逐字保留；有声明源 ⇒ 两路 `Promise.all` 并行：
@@ -272,8 +276,9 @@ export async function prepareRun(agent, input, callbacks, {
   // (see the current-time injection below) — variable content belongs in the history, not
   // the cached prefix.
 
-  // 注入开关（§6.24）：关 ⇒ 项目指令不读（零 I/O）+ 不注入；`loadProjectInstructions` 签名零改。
-  const projectRules = injectDocs ? await loadProjectInstructions(agent.cwd) : null
+  // 注入开关（§6.27 · 台账 #1465）：① 项目指令块受 `agent.injectProjectRules`（独立键——原读
+  // `injectDocs`）；关 ⇒ 项目指令不读（零 I/O）+ 不注入；`loadProjectInstructions` 签名零改。
+  const projectRules = injectProjectRules ? await loadProjectInstructions(agent.cwd) : null
   if (projectRules) {
     systemPrompt += `\n\nProject instructions (follow these as project conventions):\n<untrusted_project_instructions>\n${escapeXml(projectRules)}\n</untrusted_project_instructions>`
   }

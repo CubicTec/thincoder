@@ -32,27 +32,24 @@ export function createControlsRow({ post, state = {}, hooks = {}, inputRow, inpu
   const row = document.createElement("div")
   row.id = "controls-row"
 
-  const ctrlBtn = (id, extraClass, title, ariaLabel, text, aria) => {
+  const ctrlBtn = (id, extraClass, text, aria) => {
     const btn = document.createElement("button")
     btn.id = id
     btn.className = extraClass ? `ctrl-btn ${extraClass}` : "ctrl-btn"
-    btn.title = title
-    btn.setAttribute("aria-label", ariaLabel)
     if (aria) btn.setAttribute("aria-haspopup", aria)
     btn.textContent = text
     row.appendChild(btn)
     return btn
   }
-  const modelBtn = ctrlBtn("model-btn", "", "Change model", "Change model", "...", "listbox")
-  const reasoningBtn = ctrlBtn("reasoning-btn", "active", "Reasoning effort", "Reasoning effort", "max", "listbox")
-  const autoBtn = ctrlBtn("auto-btn", "", "Auto-approve tools", "Toggle auto-approve", "AUTO")
-  const advisorBtn = ctrlBtn("advisor-btn", "", "Advisor review", "Toggle advisor review", "ADVISOR")
-  const engBtn = ctrlBtn("eng-btn", "", "Engineering mode", "Toggle engineering mode", "ENG")
-  const planBtn = ctrlBtn("plan-btn", "", "Plan mode (read-only exploration)", "Toggle plan mode", "PLAN")
-  const settingsBtn = ctrlBtn("settings-btn", "", "Settings", "Open settings", "⚙")
-
-  /** plan 按钮缺省 title（静态 HTML——i18n-dom 不管 plan 面）：非工程态回填用。 */
-  const planDefaultTitle = planBtn.title
+  // 词面（title ∥ aria-label）= 下方 `applyWords()` **单源**置位（创建期 ∥ 词表到位重派生——挂载先于词表时
+  // t() 回落键名；端侧在词表到位后调用）。钮文本（"…" ∥ "max" ∥ 模式符号）= 非词面符号，创建期即定。
+  const modelBtn = ctrlBtn("model-btn", "", "...", "listbox")
+  const reasoningBtn = ctrlBtn("reasoning-btn", "active", "max", "listbox")
+  const autoBtn = ctrlBtn("auto-btn", "", "AUTO")
+  const advisorBtn = ctrlBtn("advisor-btn", "", "ADVISOR")
+  const engBtn = ctrlBtn("eng-btn", "", "ENG")
+  const planBtn = ctrlBtn("plan-btn", "", "PLAN")
+  const settingsBtn = ctrlBtn("settings-btn", "", "⚙")
 
   // ── 模式位（读面初值 → 面内核态；变更经 `syncModeState` 回端）──
   const init = state.flags?.() ?? {}
@@ -86,8 +83,28 @@ export function createControlsRow({ post, state = {}, hooks = {}, inputRow, inpu
     planBtn.classList.toggle("active", planActive)
     planBtn.classList.toggle("warning", planActive)
     planBtn.disabled = _engOn === true
-    planBtn.title = _engOn === true ? t("toolbar.planDisabled") : planDefaultTitle
+    planBtn.title = _engOn === true ? t("toolbar.planDisabled") : t("toolbar.planMode")
   }
+
+  /** 词面重派生单源（创建期取词 ∕ 挂载先于词表的面——端侧词表到位后调用；幂等）：七钮 title ∥ aria-label
+   *  两层 + plan 标题随内态（`applyModeButtons` 收口——工程态 ⇒ `toolbar.planDisabled`）。 */
+  const WORDS = [
+    [modelBtn, "toolbar.model", "toolbar.model"],
+    [reasoningBtn, "toolbar.reasoning", "toolbar.reasoning"],
+    [autoBtn, "toolbar.autoApprove", "toolbar.autoApproveToggle"],
+    [advisorBtn, "toolbar.advisor", "toolbar.advisorToggle"],
+    [engBtn, "toolbar.engineering", "toolbar.engineeringToggle"],
+    [planBtn, "toolbar.planMode", "toolbar.planToggle"],
+    [settingsBtn, "toolbar.settings", "toolbar.settingsOpen"],
+  ]
+  function applyWords() {
+    for (const [btn, titleKey, ariaKey] of WORDS) {
+      btn.title = t(titleKey)
+      btn.setAttribute("aria-label", t(ariaKey))
+    }
+    applyModeButtons()
+  }
+  applyWords()
 
   advisorBtn.addEventListener("click", () => {
     _advisorOn = !_advisorOn
@@ -215,5 +232,5 @@ export function createControlsRow({ post, state = {}, hooks = {}, inputRow, inpu
   // 初值 ⇒ 同点补绘。缺省 flags（全假）下与 VSC 静态 HTML 起始面逐字同形（零差）；无跨面同步（构造非状态变更）。
   paintFlags()
 
-  return { el: row, modelBtn, reasoningBtn, applyModeButtons, applyAutoApprove, applyAgentSettings, applyPlanMode, syncModeState, toggleAuto, togglePlan, toggleEng }
+  return { el: row, modelBtn, reasoningBtn, applyWords, applyModeButtons, applyAutoApprove, applyAgentSettings, applyPlanMode, syncModeState, toggleAuto, togglePlan, toggleEng }
 }

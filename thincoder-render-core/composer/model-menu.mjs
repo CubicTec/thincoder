@@ -277,7 +277,7 @@ function closeFlyout(overlay) {
  *  - `post(type, payload)`（② 出站）· `state`（③ `models()` 初值读面）· `hooks.confirmRemoveProvider(onConfirm)` ∕
  *    `hooks.closeSiblingDropdowns()`（⑤ 跨面）· `blocked()`（回写门判据——单点在 `panel.mjs`；钮面零门）；
  *  - `modelBtn` ∕ `reasoningBtn` ∕ `controlsRow` = 控件行调用方已建的元素与容器（两浮层由本档建 + 挂入）。
- * 返回：`{ open, close, closeReasoning, applyModels, models, selection, reasoningDropdown, modelDropdown }`——
+ * 返回：`{ open, applyWords, close, closeReasoning, applyModels, models, selection, reasoningDropdown, modelDropdown }`——
  * `open` = 模型钮 handler 提取件（斜径 `/model` 同钮同函数消费；见其函数注）。
  */
 export function createModelMenu(deps) {
@@ -289,17 +289,22 @@ export function createModelMenu(deps) {
   modelDropdown.id = "model-dropdown"
   modelDropdown.className = "dropdown"
   modelDropdown.setAttribute("role", "listbox")
-  modelDropdown.setAttribute("aria-label", "Model list")
   modelDropdown.style.display = "none"
 
   const reasoningDropdown = document.createElement("div")
   reasoningDropdown.id = "reasoning-dropdown"
   reasoningDropdown.className = "dropdown"
   reasoningDropdown.setAttribute("role", "listbox")
-  reasoningDropdown.setAttribute("aria-label", "Reasoning levels")
   reasoningDropdown.style.display = "none"
 
   controlsRow.append(modelDropdown, reasoningDropdown)
+
+  /** 词面重派生（创建期取词 ∕ 挂载先于词表的面——端侧词表到位后调用；幂等）：两浮层 aria-label。 */
+  function applyWords() {
+    modelDropdown.setAttribute("aria-label", t("model.listLabel"))
+    reasoningDropdown.setAttribute("aria-label", t("model.reasoningLevels"))
+  }
+  applyWords()
 
   // ── 面板态（`ctx` 内生面：候选缓存 + 三现值）──
   let _models = typeof state.models === "function" ? (state.models() ?? []) : []
@@ -366,7 +371,7 @@ export function createModelMenu(deps) {
       item.innerHTML = `<span>${label}</span>${level === selectedReasoning ? '<span class="check">✓</span>' : ""}`
       item.addEventListener("click", () => {
         selectedReasoning = level
-        reasoningBtn.textContent = level === "none" ? "off" : label
+        reasoningBtn.textContent = label
         reasoningBtn.classList.toggle("active", level !== "none")
         reasoningDropdown.style.display = "none"
         post("selectReasoning", { reasoning: level })
@@ -391,9 +396,9 @@ export function createModelMenu(deps) {
     // （不显式 effort ⇒ 回合侧 `if (reasoning)` 假值不 patch——`panel-turn-stages.mjs:98`）。
     // 不得回落 `levels[0]`：effort 型新档（qwen3.7/3.8-flash 族）首项 = `"none"` ⇒ 换模型即静默关思考。
     if (levels.length > 0) selectedReasoning = effortSelection(levels, selectedReasoning, m.effortDefault) ?? ""
-    const visible = levels.length > 0 ? selectedReasoning : "off"
-    reasoningBtn.textContent = visible === "" ? "—" : visible === "none" ? "off" : (reasoningLabel(visible))
-    reasoningBtn.classList.toggle("active", levels.length > 0 && visible !== "off" && visible !== "")
+    const visible = levels.length > 0 ? selectedReasoning : "none"
+    reasoningBtn.textContent = visible === "" ? "—" : reasoningLabel(visible)
+    reasoningBtn.classList.toggle("active", levels.length > 0 && visible !== "none" && visible !== "")
   }
 
   function toggleDropdown(el, build) {
@@ -424,14 +429,16 @@ export function createModelMenu(deps) {
       if (match) {
         selectedModel = match.id; selectedProvider = match.provider
         modelBtn.textContent = match.id
-        selectedReasoning = prefs.reasoning || "off"
+        // 未设（`prefs.reasoning` 无值）⇒ 中性哨兵 `""`（**∉ 档位枚举**）——不得用 `"none"`：含 `none`
+        // 族经 ① 命中即被静默关思考（#330 收口判据 ∥ `MODEL-SPECS.md` §15.4-1 中性档；car2 修复轮）。
+        selectedReasoning = prefs.reasoning || ""
         const levels = match.reasoning || []
         // 归一（单源 = `effortSelection`，同 `selectModel` 内注释）：已存值∈枚举 > 注册默认∈枚举 >
         // 中性档 `""`——不得回落 `levels[0]`（§15.4；`levels[0] === "none"` 族两径都不再被静默关思考）。
         if (levels.length > 0) selectedReasoning = effortSelection(levels, selectedReasoning, match.effortDefault) ?? ""
-        const visible = levels.length > 0 ? selectedReasoning : "off"
-        reasoningBtn.textContent = visible === "" ? "—" : visible === "none" ? "off" : (reasoningLabel(visible))
-        reasoningBtn.classList.toggle("active", levels.length > 0 && visible !== "off" && visible !== "")
+        const visible = levels.length > 0 ? selectedReasoning : "none"
+        reasoningBtn.textContent = visible === "" ? "—" : reasoningLabel(visible)
+        reasoningBtn.classList.toggle("active", levels.length > 0 && visible !== "none" && visible !== "")
         // 回写门（F-W14 判据收窄 · 2026-10-04 解锁批——只治系统回声径）：忙态零回写（显示仍更新——上列已刷）——不携快照覆写槽；idle 零回归（照发）。
         // **回滚位零回写（#1121 修③）**：`rollback` 位 = 写失败后的**显示 ∥ 本地选中态重派生**（非重写）——缺该位
         // 则「失败 ⇒ 回滚重推 ⇒ 自动回写 ⇒ 失败」自激（系统性失败：`slot-missing` 等恒复现）；位在场 ⇒ 槽零写。
@@ -474,6 +481,7 @@ export function createModelMenu(deps) {
 
   return {
     open,
+    applyWords,
     close: closeModelMenu,
     closeReasoning: () => { reasoningDropdown.style.display = "none" },
     applyModels,

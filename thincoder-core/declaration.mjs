@@ -7,7 +7,7 @@
  */
 import { existsSync, readdirSync, statSync } from "node:fs"
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path"
-import { DEFAULT_MANIFEST, MANIFEST_REL, docRootPaths, manifestFilePath, owningProject, readManifest } from "./manifest.mjs"
+import { DEFAULT_MANIFEST, MANIFEST_REL, docRootPaths, manifestFilePath, onManifestInit, owningProject, readManifest } from "./manifest.mjs"
 import { isSkippedRelPath } from "./memory/file-walk.mjs" // 面⑦ 子目录扫描的跳过段谓词单源（零环：file-walk 不引本档）
 import { logEvent } from "./log.mjs"
 
@@ -310,6 +310,10 @@ export function clearDeclarationCache() {
   _cache.clear()
   _scopeCache.clear()
 }
+
+// #1376：eng 建档路（`manifest.mjs` `resolveEngineeringManifest` init 支）成功 ⇒ 同清两缓存——
+// 反向注册（本档已向依赖 manifest.mjs，其侧零出边保持——KD-M1-33）；失败路径不广播、文件面零变。
+onManifestInit(clearDeclarationCache)
 
 /** Retired-carrier warning (existence check only — zero content parsing, zero fallback). */
 function warnRetiredCarrier(root) {

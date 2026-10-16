@@ -1,32 +1,29 @@
 # 提示词系统（PROMPT-SYSTEM）· 核心统一子系统档
 
-> **v2 就地更新**（2026-09-17 退役批）：M9 模块设计语义融入（单向生成流水线——见 §10；原旁路档 `_archive/modules/ENGINEERING-MODE-V2-MODULE-PROMPT-PIPELINE.md` 已归档 `_archive/modules/`）。
-
 > 板块归属 = **核心统一**（phase 2——「一个核 + 两个薄壳」）；本档 = 该板块的**子系统设计档**。
 > 工作流档 = `docs/core/design/CORE-UNIFICATION.md`（事实基线 / 核形态与消费契约 / 方案选型 / S0 方法 / 分段执行 S0a–S3 / 关键决策 / 受影响文件总表 / 验收回指 / 裁定 A1–A8 / 契约兼容策略 / 测试用例）——**本档不复制**。
 > 需求层 = `docs/core/requirements/CORE-UNIFICATION.md`（F1–F13 / N1–N8）。
-> 建档：2026-09-13（**文档拆分轮**——自 `CORE-UNIFICATION.md` §2.5 / §2.5.1 / §2.12.2 **逐节搬入，只搬不改语义**；行号沿用原裁定表编号）。
 > **列定义**（裁决行各列含义）→ `CORE-UNIFICATION.md` §2.5；**须裁条目的分组口径与四要素提交形式** → 该档 §2.5.1。
-> **机制面**（§6–§7 · 2026-09-15「批 5 并入」）：双源落地流程 · 装配实现事实 · 端特有段纪律 · byte-identical 取消 · 现状坐标——来源 = `thincoder-cli/docs/design/PROMPT-SYSTEM.md`（707 行 · 旧档一字未改，留参照历史）。
+> **机制面**（§6–§7）：设计文档 → 代码落地流程 · 装配实现事实 · 端特有段纪律 · byte-identical 取消 · 现状坐标。
 
-## 1. 归属与范围（自本档行内容的路径归纳）
+## 1. 归属与范围
 
 | 面 | CLI 档 | VSC 档 |
 |---|---|---|
-| 槽位提示词（运行期加载） | `thincoder-cli/src/prompts/*.md`（15 档——已随 U2 删，实核空） | 同名（已随 W2 删——实核空）；**运行期面 = 核包 `thincoder-core/prompts/*.md`** |
-| 工具描述（运行期加载） | `thincoder-cli/src/tools/*.md`（25 档——已随 U2 删，实核空） | 同名（已随 W2 删——实核空）；**运行期面 = 核包 `thincoder-core/tool-docs/*.md`** |
-| **中文设计档（供人读・非运行期——与运行期档同源）** | `thincoder-cli/docs/design/prompts/*.md`（15 档——已位移 `docs/core/design/prompts/*.md`〔现 16 档〕；实核空） | `thincoder-vscode/docs/design/prompts/*.md`（15 档——已位移；实核空） |
-| 槽位加载面 | `src/prompt-overlays.mjs`（**S2 删**——CLI 已随 U15 落地〔实核档不存在〕/ VSC 已随 `2026-09-15-vsc-core-wiring` W2 落地〔实核档不存在〕；删后装配面 = 核内单点 `thincoder-core/prompt-overlays.mjs`） | 同名（同路径对） |
+| 槽位提示词（运行期加载） | `thincoder-cli/src/prompts/*.md`（实核空） | 同名（实核空）；**运行期面 = 核包 `thincoder-core/prompts/*.md`** |
+| 工具描述（运行期加载） | `thincoder-cli/src/tools/*.md`（实核空） | 同名（实核空）；**运行期面 = 核包 `thincoder-core/tool-docs/*.md`** |
+| **中文设计档（供人读・非运行期——英文代码由它精确翻译生成）** | `thincoder-cli/docs/design/prompts/*.md`（实核空；现落 `docs/core/design/prompts/*.md`〔16 档〕） | `thincoder-vscode/docs/design/prompts/*.md`（实核空） |
+| 槽位加载面 | `src/prompt-overlays.mjs`（实核档不存在；装配面 = 核内单点 `thincoder-core/prompt-overlays.mjs`） | 同名（同路径对） |
 
-**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（51 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
+**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（52 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
 
-**核内只有运行期面** ✓——`thincoder-core/prompts/`（16）+ `thincoder-core/tool-docs/`（50）；**中文设计档永进核** ✗（归属**文档面**：现落 `docs/core/design/prompts/`——16 档，2026-09-15 批 1 位移落位；两产品侧副本实核空——其改名 / 移动只在文档面）。
+**核内只有运行期面** ✓——`thincoder-core/prompts/`（16）+ `thincoder-core/tool-docs/`（52）；**中文设计档永进核** ✗（归属**文档面**：现落 `docs/core/design/prompts/`——16 档；两产品侧副本实核空——其改名 / 移动只在文档面）。
 
 > 工具**实现面**（`src/tools/*.mjs`）的行本体住 `docs/core/design/TOOLS.md`；本档收**文本面**（槽位 / 描述 / 中文设计档）。
 
-## 2. 核模块裁决行（自 `CORE-UNIFICATION.md` §2.5 搬入 · 逐字）
+## 2. 核模块裁决行
 
-### 2.1 槽位提示词（原 §2.5（一）逐字节同组——组陈述（逐字））
+### 2.1 槽位提示词（逐字节同组——组陈述（逐字））
 
 > 逐字节相同 ⇒ 无分叉面——前提校验不适用、不命中 A11（须用户裁 = —）；每行归属与四列逐行登记（列值 = 本组陈述）。
 
@@ -41,24 +38,24 @@
 | 8 | `prompts/persona-normal.md` | 同路径 | 1.0000 · 同 | ① | 进核（`thincoder-core/prompts/persona-normal.md`） | 取任一侧、逐字节随迁 | —（逐字节同，无分叉） | — | S0a（首批建核） |
 | 9 | `prompts/persona-plan.md` | 同路径 | 1.0000 · 同 | ① | 进核（`thincoder-core/prompts/persona-plan.md`） | 取任一侧、逐字节随迁 | —（逐字节同，无分叉） | — | S0a（首批建核） |
 
-### 2.2 中文设计档（原 §2.5（一）逐字节同组——组陈述同 2.1）
+### 2.2 中文设计档（逐字节同组——组陈述同 2.1）
 
-> 本组 = **中文设计档**（`docs/core/design/prompts/*.md`——供人读・非运行期；与运行期档同源）；**归属 = 文档面**（2026-09-15 批 1 位移落位——16 档；两产品侧副本实核空；改名 / 移动随文档面计划）——**不进核内构建面**（S0a 首建 / S1 补齐 / S2 接线均不涉）。「面」列的「镜像」= 中文设计档对（对位类型，非运行期面——**非面名**：面名见 §6.1）。
+> 本组 = **中文设计档**（`docs/core/design/prompts/*.md`——供人读・非运行期；英文代码由它精确翻译生成）；**归属 = 文档面**（16 档；两产品侧副本实核空；改名 / 移动随文档面计划）——**不进核内构建面**（S0a 首建 / S1 补齐 / S2 接线均不涉）。「面」列的「镜像」= 中文设计档对（对位类型，非运行期面——**非面名**：面名见 §6.1）。
 
 | # | 相对路径 / 对位 | 面 | 相似度 · 逐字节 | 分类 | 目标 | 端差处置 | 前提校验 | 须用户裁 | 归属段 |
 |---|---|---|---|---|---|---|---|---|---|
-| 30 | `docs/core/design/prompts/advisor-round1.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 31 | `docs/core/design/prompts/advisor-round2.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 32 | `docs/core/design/prompts/advisor-round3.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 33 | `docs/core/design/prompts/common.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 34 | `docs/core/design/prompts/consult-base.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 35 | `docs/core/design/prompts/persona-coder.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 36 | `docs/core/design/prompts/persona-eng-designer.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 37 | `docs/core/design/prompts/persona-explore.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 38 | `docs/core/design/prompts/persona-normal.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
-| 39 | `docs/core/design/prompts/persona-plan.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`——2026-09-15 位移落位；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 30 | `docs/core/design/prompts/advisor-round1.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 31 | `docs/core/design/prompts/advisor-round2.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 32 | `docs/core/design/prompts/advisor-round3.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 33 | `docs/core/design/prompts/common.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 34 | `docs/core/design/prompts/consult-base.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 35 | `docs/core/design/prompts/persona-coder.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 36 | `docs/core/design/prompts/persona-eng-designer.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 37 | `docs/core/design/prompts/persona-explore.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 38 | `docs/core/design/prompts/persona-normal.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
+| 39 | `docs/core/design/prompts/persona-plan.md` | 镜像 | 1.0000 · 同 | ① | 文档面（中文设计档——非运行期，不进核） | 文档面维持（现落 `docs/core/design/prompts/`；两产品侧副本实核空） | —（逐字节同，无分叉） | — | 文档面 |
 
-### 2.3 非逐字节同组（原 §2.5（二）行集）
+### 2.3 非逐字节同组
 
 | # | 相对路径 / 对位 | 面 | 相似度 · 逐字节 | 分类 | 端差处置 | 前提校验 | 须用户裁 | 归属段 |
 |---|---|---|---|---|---|---|---|---|
@@ -70,92 +67,90 @@
 | 50 | `docs/core/design/prompts/advisor-design.md` | 镜像 | 0.9667 · 异 | ② | 融合（指针参数化） | 分叉 = VSC 侧补本地文档地图指针；文本内核一致——无失效前提（②） | — | 文档面 |
 | 51 | `docs/core/design/prompts/discipline-normal.md` | 镜像 | 0.9143 · 异 | ② | 融合（版式取一侧 + 指针参数化） | 分叉 = 指针 / 版式 / 端内节号映射适配差异；文本内核一致——无失效前提（②） | — | 文档面 |
 
-**四要素明细（原 §2.5（二）明细块 · 逐字）**
+**四要素明细（逐字）**
 
-- **#43 `prompt-overlays.mjs`**（同路径 · j 0.9853 · sha `5ff987804ff9` / `fe9c32f47f1c` · 82 / 83 行）
+- **#43 `prompt-overlays.mjs`**（同路径）
   - 左端读数（CLI）：无独有行——除右端注记外两侧逐字相同。
   - 右端读数（VSC）：独有 1 行头注 `* VSC mirror of thincoder-cli/src/prompt-overlays.mjs (多实现面纪律——语义同源、原文自持).`
   - 建议归一形态：取 CLI 侧（镜像注记随归一失去对象——核内为唯一源）。
   - 影响面：无（仅头注；须用户裁 = —）。
-- **#44 `prompts/advisor-design.md`**（同路径 · j 0.9487 · sha `f8804b1138f5` / `b46a6d77bd73` · 41 / 41 行）
+- **#44 `prompts/advisor-design.md`**（同路径）
   - 左端读数（CLI）：判据 7 措辞 = "the document that already owns its topic"。
   - 右端读数（VSC）：判据 7 措辞 = "the design document that already owns its topic"（收窄）；其余逐字相同。
   - 建议归一形态（只建议）：融合——建议取 "the document"（判据 7 通用口径——评审亦覆盖需求档 / 批次档）；一词级差异。
   - 影响面：模型可见指令（advisor 设计评审判据措辞）——**命中 A11 ①**（提交文本见 §2.5.1）；对外契约无涉 · 测试无涉。
-- **#45 `prompts/advisor-round2.md`**（同路径 · j 0.9318 · sha `46b014d51ded` / `74a5d1026103` · 46 / 44 行）
+- **#45 `prompts/advisor-round2.md`**（同路径）
   - 左端读数（CLI）：两行式——`- Stop calling tools…` 与 `## Judgment Rules…` 分行。
   - 右端读数（VSC）：一行合写（两段以空格相接）；**文本逐字相同**（含 `## Judgment Rules…do not downgrade` 全文）。
   - 建议归一形态：取一侧版式（建议 CLI 两行式——`##` 标题独立成行）。
   - 影响面：版式级——归一后模型可见文本除行断外逐字等价 ⇒ 不命中三口径（须用户裁 = —）。
-- **#46 `prompts/advisor-round3.md`**（同路径 · j 0.9250 · sha `2d701fd67699` / `aa9fd7e076aa` · 42 / 40 行）
+- **#46 `prompts/advisor-round3.md`**（同路径）
   - 左端读数（CLI）：两行式——`- Stop calling tools…` 与 `## Judgment Rules…` 分行。
   - 右端读数（VSC）：一行合写；**文本逐字相同**。
   - 建议归一形态：取一侧版式（建议 CLI 两行式）。
   - 影响面：版式级 ⇒ 不命中三口径（须用户裁 = —）。
-- **#47 `prompts/persona-engineering.md`**（同路径 · j 0.9184 · sha `dec5221e41cb` / `e4f85d9a1d3e` · 55 / 55 行）
+- **#47 `prompts/persona-engineering.md`**（同路径）
   - 左端读数（CLI）：小节标题「与 eng-designer / eng-coder 的分工界面」；指针 `AGENT-LOOP.md` 的 §18。
   - 右端读数（VSC）：标题「与 eng-coder 的分工界面（设计写作面归 eng-designer）」；指针「AGENT-LOOP（CLI 仓·设计）§18（本端交付协议节 = §8）」——含跨端节号映射。
   - 建议归一形态（只建议）：融合——标题取并集语义；指针经参数化 / 注入承载端差（契约 10）。
   - 影响面：模型可见指令（角色分工表述 + 跨端指针）——**命中 A11 ①**（提交文本见 §2.5.1）；对外契约无涉。
-- **#50 `docs/core/design/prompts/advisor-design.md`**（中文设计档 · j 0.9667 · sha `52a08b1e6a48` / `5836f82da42e` · 69 / 69 行）
+- **#50 `docs/core/design/prompts/advisor-design.md`**（中文设计档）
   - 左端读数（CLI）：判据 7 括注 =「按项目文档地图——当评审上下文提供时」。
   - 右端读数（VSC）：同句 +「；本产品自研仓 = docs/design/README.md」；其余逐字相同。
   - 建议归一形态：融合——指针参数化（取语义并集）。
   - 影响面：文档面（中文设计档）——无运行时 / 契约影响 ⇒ 不命中三口径（须用户裁 = —）。
-- **#51 `docs/core/design/prompts/discipline-normal.md`**（中文设计档 · j 0.9143 · sha `b8d86ce93ca4` / `667798a65b6c` · 187 / 185 行）
+- **#51 `docs/core/design/prompts/discipline-normal.md`**（中文设计档）
   - 左端读数（CLI）：8 行差异——文档地图指针（`docs/README.md`）、「文档体系自持」节为 `###` + 编号列表、AGENT-LOOP 指针（§18 / §25）。
   - 右端读数（VSC）：7 行差异——指针按本端地图（`docs/design/README.md`）+ 跨仓说明（「docs/requirements/ 需求层在 CLI 仓」）、同节为粗体列表、指针含端内节号映射（§18 → §8 · §25 → §9）。
   - 建议归一形态：融合——版式取一侧 + 指针参数化（中文设计档面）。
   - 影响面：文档面（中文设计档）——无运行时 / 契约影响 ⇒ 不命中三口径（须用户裁 = —）。
 
-### 2.4 纪律 / 角色面分叉档（原 §2.5（三）行集）
+### 2.4 纪律 / 角色面分叉档
 
 | # | 相对路径 / 对位 | 面 | 相似度 · 逐字节 | 分类 | 目标 | 端差处置 | 前提校验 | 须用户裁 | 归属段 |
 |---|---|---|---|---|---|---|---|---|---|
-| 117 | `prompts/discipline-engineering.md` | 同路径 | 0.7713 · 异 | ③ | 进核（`thincoder-core/prompts/discipline-engineering.md`） | 融合（取并集）+ 端特有段按注入（VSC 的 R14 池段 / 取消 eng-coder 判据；CLI 的改动面反查段） | 分叉 ＝ 各端机制不同（VSC per-role-domain 池 ∕ CLI 改动面反查——端侧副本已删〔U2 ∕ W2〕；原引 `src/prompts/discipline-engineering.md:262-265`（as-of 2026-09-29）∥ `:128-130` = 迁移期引文——现行落点见 §6.3）+ 文档地图与 `AGENT-LOOP` 节号错位（§11.2 ↔ §9）；前提（各端机制仍存在）成立 ⇒ **段级 ④** | **①②** | S1（建核补齐）· 落地 = `thincoder-core/prompts/discipline-engineering.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
-| 118 | `prompts/discipline-normal.md` | 同路径 | 0.6085 · 异 | ③ | 进核 | 融合 + 端特有段注入（VSC「收尾验收」节 / CLI 会诊终止口径） | 分叉 ＝ VSC 增「收尾验收」节（`:191-195`——端侧副本已删 ∕ 迁移期引文）+ 完成声明受审句；CLI 多「Ctrl+I 不终止会诊」等句 + 节序不同；指针按端地图（`docs/README.md` ↔ `docs/design/README.md`） | **①** | S1（建核补齐）· 落地 = `thincoder-core/prompts/discipline-normal.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
-| 119 | `prompts/persona-eng-coder.md` | 同路径 | 0.5510 · 异 | ③ | 进核 | 融合 + 端特有段注入（VSC「Guidelines」块：不得静默降级 / 收尾自审六条 / 工具权限处置） | 分叉 ＝ VSC 独有六条收尾自审与降级纪律（`:34-51`——端侧副本已删 ∕ 迁移期引文）；CLI 的 file 域节为独立标题形态（内容 VSC 以 bullet 保留） | **①** | S1（建核补齐）· 落地 = `thincoder-core/prompts/persona-eng-coder.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
+| 117 | `prompts/discipline-engineering.md` | 同路径 | 0.7713 · 异 | ③ | 进核（`thincoder-core/prompts/discipline-engineering.md`） | 融合（取并集）+ 端特有段按注入（VSC 的 R14 池段 / 取消 eng-coder 判据；CLI 的改动面反查段） | 分叉 ＝ 各端机制不同（VSC per-role-domain 池 ∕ CLI 改动面反查）+ 文档地图与 `AGENT-LOOP` 节号错位（§11.2 ↔ §9）；前提（各端机制仍存在）成立 ⇒ **段级 ④** | **①②** | S1（建核补齐）· 落地 = `thincoder-core/prompts/discipline-engineering.md`；端特有段现余 0（§6.3 现体） |
+| 118 | `prompts/discipline-normal.md` | 同路径 | 0.6085 · 异 | ③ | 进核 | 融合 + 端特有段注入（VSC「收尾验收」节 / CLI 会诊终止口径） | 分叉 ＝ VSC 增「收尾验收」节 + 完成声明受审句；CLI 多「Ctrl+I 不终止会诊」等句 + 节序不同；指针按端地图（`docs/README.md` ↔ `docs/design/README.md`） | **①** | S1（建核补齐）· 落地 = `thincoder-core/prompts/discipline-normal.md`；端特有段现余 0（§6.3 现体） |
+| 119 | `prompts/persona-eng-coder.md` | 同路径 | 0.5510 · 异 | ③ | 进核 | 融合 + 端特有段注入（VSC「Guidelines」块：不得静默降级 / 收尾自审六条 / 工具权限处置） | 分叉 ＝ VSC 独有六条收尾自审与降级纪律；CLI 的 file 域节为独立标题形态（内容 VSC 以 bullet 保留） | **①** | S1（建核补齐）· 落地 = `thincoder-core/prompts/persona-eng-coder.md`；端特有段现余 0（§6.3 现体） |
 | 120 | `docs/core/design/prompts/discipline-engineering.md` | 镜像 | 0.8268 · 异 | ② | 文档面（中文设计档——**非运行期加载面**；现落 `docs/core/design/prompts/`——两产品侧副本实核空） | 融合（版式取一侧 + 指针参数化）+ 端特有段随同源英文档裁决 | 分叉 ＝ 与同源英文档同源的中文投影（端注记 6 处 / 端特有段 / D5 细则）；前提（各端自持）仍成立 | — | 文档面 |
-| 121 | `docs/core/design/prompts/persona-eng-coder.md` | 镜像 | 0.7436 · 异 | ② | 文档面（中文设计档） | 融合 + 端特有段按注入 | 分叉 ＝ VSC 侧中文档多「实现纪律与交付报告」六条（`:38-45`，其自述来源行号已漂 2 行）；其余逐字同 | — | 文档面 |
+| 121 | `docs/core/design/prompts/persona-eng-coder.md` | 镜像 | 0.7436 · 异 | ② | 文档面（中文设计档） | 融合 + 端特有段按注入 | 分叉 ＝ VSC 侧中文档多「实现纪律与交付报告」六条；其余逐字同 | — | 文档面 |
 | 122 | `docs/core/design/prompts/persona-engineering.md` | 镜像 | 0.7872 · 异 | ② | 文档面（中文设计档） | 融合（行内注记归一）+ 尾段三条端特有随同源英文档 | 分叉 ＝ VSC 侧中文档多端特有段与「CLI 侧批次档树」注记（`:11,44,49-54`） | — | 文档面 |
 
-## 3. 须用户裁条目（自 `CORE-UNIFICATION.md` §2.5.1 搬入 · 逐字）
+## 3. 须用户裁条目
 
 ### 3.1 甲组（真选择）
 
 | # | 条目（路径 / 对位） | 命中 | 左端行为（CLI） | 右端行为（VSC） | 建议归一形态 | 影响面 | 裁定状态 |
 |---|---|---|---|---|---|---|---|
-| A16 | `prompts/discipline-engineering.md`（#117；含中文设计档 #120） | ①② | 独有「改动面反查（文档影响面）」节（`src/prompts/discipline-engineering.md:128-130`——端侧副本已删 ∕ 迁移期引文——现行落点见 §6.3）；无 R14 池段 | 独有 R24 挂钩节、**R14 域池段**（`:262-265`——端侧副本已删 ∕ 迁移期引文）、取消 eng-coder 判据、D5 冻结窗口细则（`:145`——端侧副本已删 ∕ 迁移期引文） | 融合（取并集）+ 端特有段按注入（VSC 的 R14 / 取消判据；CLI 的改动面反查） | ① 归一后两侧模型被要求做的事会**并集化**（CLI 侧开始看到 R24 / D5 细则，VSC 侧开始看到改动面反查）⇒ 须逐条确认哪些真是端特有；② 模型可见指令面变更 | **已裁（2026-09-13）· 按建议** · 落地 = `thincoder-core/prompts/discipline-engineering.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
-| A17 | `prompts/discipline-normal.md`（#118） | ① | 独有「Ctrl+I 不终止会诊」等句；会诊节位置不同 | 独有「收尾验收」节（`:191-195`——端侧副本已删 ∕ 迁移期引文——现行落点见 §6.3）——完成声明受审 / load skills / 与设计档对账 | 融合 + 端特有段注入 | ① VSC 侧新增的收尾要求是否晋升为**两端共同**纪律（会改变模型收尾行为） | **已裁（2026-09-13）· 按建议** · 落地 = `thincoder-core/prompts/discipline-normal.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
-| A18 | `prompts/persona-eng-coder.md`（#119；含中文设计档 #121） | ① | 无 Guidelines 块（`file` 域节为独立标题形态） | 独有 Guidelines 块（`:34-51`——端侧副本已删 ∕ 迁移期引文——现行落点见 §6.3）：不得静默降级 / UI 与交互决策缺失即停报 / **收尾自审六条** / 工具权限处置 | 融合 + 端特有段注入 | ① 同上：VSC 的六条收尾自审是端特有还是应两端共用（会改变 eng-coder 的收尾行为与成本） | **已裁（2026-09-13）· 按建议** · 落地 = `thincoder-core/prompts/persona-eng-coder.md`；端特有段现余 0（2026-09-17 消端差批——§6.3 现体） |
+| A16 | `prompts/discipline-engineering.md`（#117；含中文设计档 #120） | ①② | 独有「改动面反查（文档影响面）」节；无 R14 池段 | 独有 R24 挂钩节、**R14 域池段**、取消 eng-coder 判据、D5 冻结窗口细则 | 融合（取并集）+ 端特有段按注入（VSC 的 R14 / 取消判据；CLI 的改动面反查） | ① 归一后两侧模型被要求做的事会**并集化**（CLI 侧开始看到 R24 / D5 细则，VSC 侧开始看到改动面反查）⇒ 须逐条确认哪些真是端特有；② 模型可见指令面变更 | **已裁 · 按建议** · 落地 = `thincoder-core/prompts/discipline-engineering.md`；端特有段现余 0（§6.3 现体） |
+| A17 | `prompts/discipline-normal.md`（#118） | ① | 独有「Ctrl+I 不终止会诊」等句；会诊节位置不同 | 独有「收尾验收」节——完成声明受审 / load skills / 与设计档对账 | 融合 + 端特有段注入 | ① VSC 侧新增的收尾要求是否晋升为**两端共同**纪律（会改变模型收尾行为） | **已裁 · 按建议** · 落地 = `thincoder-core/prompts/discipline-normal.md`；端特有段现余 0（§6.3 现体） |
+| A18 | `prompts/persona-eng-coder.md`（#119；含中文设计档 #121） | ① | 无 Guidelines 块（`file` 域节为独立标题形态） | 独有 Guidelines 块：不得静默降级 / UI 与交互决策缺失即停报 / **收尾自审六条** / 工具权限处置 | 融合 + 端特有段注入 | ① 同上：VSC 的六条收尾自审是端特有还是应两端共用（会改变 eng-coder 的收尾行为与成本） | **已裁 · 按建议** · 落地 = `thincoder-core/prompts/persona-eng-coder.md`；端特有段现余 0（§6.3 现体） |
 
 ### 3.2 丙组（S0a 席位已裁）
 
 | # | 条目（路径 / 对位） | 命中 | 左端行为（CLI） | 右端行为（VSC） | 建议归一形态 | 影响面 | 裁定状态 |
 |---|---|---|---|---|---|---|---|
-| C1 | `prompts/advisor-design.md`（§2.5 #44） | ① | 判据 7 =「…amend **the document** that already owns its topic…」（`src/prompts/advisor-design.md`） | 判据 7 =「…the **design** document…」（收窄）；其余逐字相同 | 融合——取「the document」（判据通用口径——评审面 ≠ 仅设计档：尚覆盖需求档 / 批次档） | 模型可见指令（advisor 设计评审判据措辞）· 对外契约无涉 · 测试无涉 | **已裁（2026-09-13）**「按建议」· 已落地 `thincoder-core/prompts/advisor-design.md`（批次档 §5 实施记录） |
-| C2 | `prompts/persona-engineering.md`（§2.5 #47） | ① | 标题「与 eng-designer / eng-coder 的分工界面」+ 指针 `AGENT-LOOP.md` 的 §18（`src/prompts/persona-engineering.md`） | 标题「与 eng-coder 的分工界面（设计写作面归 eng-designer）」+ 指针「AGENT-LOOP（CLI 仓·设计）§18（本端交付协议节 = §8）」 | 融合——标题取**并集语义**；跨端指针以**注入**承载端差（契约 10） | 模型可见指令（分工表述 + 跨端指针）· 对外契约无涉 | **已裁（2026-09-13）**「按建议」· 已落地 `thincoder-core/prompts/persona-engineering.md`（批次档 §5；注入位语法待设计面定义） |
+| C1 | `prompts/advisor-design.md`（§2.5 #44） | ① | 判据 7 =「…amend **the document** that already owns its topic…」 | 判据 7 =「…the **design** document…」（收窄）；其余逐字相同 | 融合——取「the document」（判据通用口径——评审面 ≠ 仅设计档：尚覆盖需求档 / 批次档） | 模型可见指令（advisor 设计评审判据措辞）· 对外契约无涉 · 测试无涉 | **已裁**「按建议」· 已落地 `thincoder-core/prompts/advisor-design.md` |
+| C2 | `prompts/persona-engineering.md`（§2.5 #47） | ① | 标题「与 eng-designer / eng-coder 的分工界面」+ 指针 `AGENT-LOOP.md` 的 §18 | 标题「与 eng-coder 的分工界面（设计写作面归 eng-designer）」+ 指针「AGENT-LOOP（CLI 仓·设计）§18（本端交付协议节 = §8）」 | 融合——标题取**并集语义**；跨端指针以**注入**承载端差（契约 10） | 模型可见指令（分工表述 + 跨端指针）· 对外契约无涉 | **已裁**「按建议」· 已落地 `thincoder-core/prompts/persona-engineering.md`（注入位语法待设计面定义） |
 
-## 4. 对外契约影响（自 `CORE-UNIFICATION.md` §2.12.2 搬入 · 逐字）
+## 4. 对外契约影响
 
 | # | 条目（契约点） | 类 | 归一变更 | 兼容形态（§2.12.1 模板） | 落地物（档:行 / 用例名 / CHANGELOG 条目） | 裁定状态 |
 |---|---|---|---|---|---|---|
-| 9 | 提示词面指令集（`discipline-engineering` · `discipline-normal` · `persona-eng-coder` 三档 + 中文设计档） | 输出（模型可见指令） | 并集化 + 端特有段注入 | 逐条登记（§2.5 #117–#119）+ 端特有段保留 | `PROMPT-SYSTEM.md` 同步 + 核内档 + 装配用例 | 已裁（2026-09-13）· 按建议（§2.5.1 A16–A18） |
+| 9 | 提示词面指令集（`discipline-engineering` · `discipline-normal` · `persona-eng-coder` 三档 + 中文设计档） | 输出（模型可见指令） | 并集化 + 端特有段注入 | 逐条登记（§2.5 #117–#119）+ 端特有段保留 | `PROMPT-SYSTEM.md` 同步 + 核内档 + 装配用例 | 已裁 · 按建议（§2.5.1 A16–A18） |
 
 ## 5. 受影响文件（该子系统）
 
 指针（不复制）→ `CORE-UNIFICATION.md` §2.8 下列行：
-**核提示词面（S1 新建）** · **核提示词加载面（S0a 首建 · S1 随裁决面补齐）** · **提示词加载面（S2 删 / S2 改）**（7 行——**6 行「S2 删」**〔`prompt-overlays.mjs` 两行（2026-09-15 修正轮）+
-`advisor.mjs` / `advisor/main.mjs` / CLI `tools/shared.mjs` / `agent/setup.mjs` 四行（2026-09-15 修正轮-4）〕· **1 行「S2 改」**〔VSC `thincoder-vscode/src/tools/shared.mjs`——拆壳薄壳保留〕）· （迁移期引文——档已删）
+**核提示词面（S1 新建）** · **核提示词加载面（S0a 首建 · S1 随裁决面补齐）** · **提示词加载面（S2 删 / S2 改）**（7 行——**6 行「S2 删」**〔`prompt-overlays.mjs` 两行 + `advisor.mjs` / `advisor/main.mjs` / CLI `tools/shared.mjs` / `agent/setup.mjs` 四行〕· **1 行「S2 改」**〔VSC `thincoder-vscode/src/tools/shared.mjs`——拆壳薄壳保留〕）
 **提示词副本删除（S2 / S3）** · **中文设计档（文档面 · 基准层正本）** · **中文设计档（删除 · 作废）** · **产品文档（S2 改）** · **产品测试（S2 改）**。
 
-## 6. 机制面（自 CLI 产品档并入 · 2026-09-15 · 批 5）
+## 6. 机制面
 
-### 6.1 双面落地流程（现行）
+### 6.1 设计文档 → 代码落地流程（现行）
 
-- **提示词 = 产品代码**（FR1 口径不变）；**内容权 = 主 agent**（逐字文本由它定——它就是设计的一部分）；**落笔按面分述**——**中文审核面 = eng-designer 笔**（随设计轮直落）· **英文运行面 = eng-coder 落笔**（落笔走正常链：设计评审 → 用户批准 → 实施轮；起草分工 = eng-designer 起草逐字 → 主 agent 确认 → eng-coder 机械落笔）。
-- **沿革注（落笔轮次）**：本档旧句「提示词实体落笔 = 本批实施轮」∥「账内先例 = 落笔归实现轮」（§6.9 ∥ §6.16 等处在册）= 前规史实；现行 = §6.1 面分述。
-- **双面**：**中文审核面** = `docs/core/design/prompts/`（16 档——供用户审核；内容权威与设计维护面）∥ **英文运行面** = `thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（51 档工具描述）——核内唯一副本（承 F8）。 **面名等价**：§1 ∥ §2.2「中文设计档（面）」∥ 各处「中文正本」（权威源义——D-PS1）——均指本面。
+- **英文提示词 = 代码**（中文设计文档 = 设计文档；FR1 口径不变）；**内容权 = 主 agent**（逐字文本由它定——它就是设计的一部分）；**落笔分述**——**中文设计文档 = eng-designer 笔**（随设计轮直落）· **英文代码 = eng-coder 落笔**（落笔走正常链：设计评审 → 用户批准 → 实施轮；起草分工 = eng-designer 起草逐字 → 主 agent 确认 → eng-coder 机械落笔）。
+- **两份**：**中文设计文档** = `docs/core/design/prompts/`（16 档——人读的规格；设计基准与设计维护面）∥ **英文代码** = `thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（52 档工具描述）——核内唯一副本（承 F8）。 **名等价**：§1 ∥ §2.2「中文设计档」∥ 各处「中文正本」（源义——D-PS1）——均指同一份。
 - **公共层（`common.md`）节级结构** → 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3（**逐节大纲**：每节管什么；正文在两面 common 档）——**本档不复制**（D2）。
 - **行为纪律面的落点形态**：**既有节内增列**（不新增节 ⇒ 零 `##` 块计数连带）；应用实例 = 破坏性命令红线落 `common.md` §10 尾部（→ §7 D-PS5）· 「不可裁决」自止点落 `common.md` §8「上行通道」节内（→ §6.7 · §7 D-PS7）·
   **台账治理纪律落 `persona-engineering.md`「派发与收尾纪律」节内**（→ §6.8 · §7 D-PS9）· **派单尺寸与任务书形态纪律落 `persona-engineering.md`「实施委托结构化」节内**（→ §6.9 · §7 D-PS10）· **测试层级知识落两模式纪律档**（`discipline-engineering.md`「测试纪律」节内 ∥ `discipline-normal.md`「测试与交付」节内——→ §6.10 · §7 D-PS11 ∥ D-PS13）·
@@ -163,16 +158,16 @@
   **公共仓读取读侧句落两模式纪律层自持节内**（工程 ∥ 普通——→ §6.15 · §7 D-PS20 ∥ D-PS21）· **纪律线五笔落三档**（① ② `common.md` ∥ ③ ⑤ `discipline-engineering.md` ∥ ④ `persona-engineering.md`——①②④⑤ = 既有节内增列；③ = 新增节〔先例 §6.16〕；→ §6.17）·
   **用户视角门落两模式纪律档**（`discipline-engineering.md` ∥ `discipline-normal.md`——两侧各新增节〔`## 交付报告` 节前〕；→ §6.18）· **台账关联条目合并扫描落 `persona-engineering.md`「台账」节「批设计」条内**（既有条扩展 ⇒ 零 `##` 块计数连带；→ §6.19 · §7 D-PS25）·
   **台账治理纪律增补（五条 + 两笔同窗收正）落 `persona-engineering.md` 两节内 ∥ `persona-eng-designer.md` 同族句换写**（既有节内增列 / 换写 ⇒ 零 `##` 块计数连带；→ §6.20 · §7 D-PS26 ∥ D-PS28）·
-  **落笔携 why（D9「知其然知其所以然」）落 `common.md`「文档写作纪律」节 + `discipline-engineering.md` 双面 D 清单**（既有节内增列 ⇒ 零 `##` 块计数连带；详解 = `docs/core/design/DOC-DISCIPLINE.md` §1 D9 块——本档不复制）·
+  **落笔携 why（D9「知其然知其所以然」）落 `common.md`「文档写作纪律」节 + `discipline-engineering.md` 两档 D 清单**（既有节内增列 ⇒ 零 `##` 块计数连带；详解 = `docs/core/design/DOC-DISCIPLINE.md` §1 D9 块——本档不复制）·
   **普通模式工作管理统一落普通侧三档**（`discipline-normal.md` 新增节〔工作管理——批次档 + 台账 + 收口〕∥ `persona-normal.md` 设计师席句〔节内〕∥ `common.md` 六段作者行按模式分辨〔节内换写〕——→ §6.21 · §7 D-PS29）·
   **产品常识（配置项必须有配置界面）落 `common.md` 档末新增第 16 节**（用户定则——→ §6.22 · §7 D-PS30）·
   **提示词缺句收正两笔（查重「同类」定形 ∥ 多仓条扩「工具路径参数」）——`persona-engineering.md` ∥ `discipline-engineering.md` 既有条就地改写**（零 `##` 块计数连带）·
   **轻通道代码笔通路句（开轮挂账 ⇒ 直改放行 ∥ 轮次行标记 = 闸凭据）落 `persona-engineering.md`「派发与收尾纪律」节内**（既有节内增列 ⇒ 零 `##` 块计数连带；→ §6.12）· **上抛前先读档 + 携已查证据行落 `common.md`「上行通道」节内**（既有节内增列 ⇒ 零 `##` 块计数连带）·
-  **台账治理增补 v2（清账轮三条——锚点复核 ∥ 族行 ∥ evidence 指针化上限）落 `persona-engineering.md` 两节内**（既有节内增列 ⇒ 零 `##` 块计数连带；CN 正本 = 设计轮直落 ∥ EN 运行面 = 实施轮按 M9；→ §6.23 · §7 D-PS31）·
+  **台账治理增补 v2（清账轮三条——锚点复核 ∥ 族行 ∥ evidence 指针化上限）落 `persona-engineering.md` 两节内**（既有节内增列 ⇒ 零 `##` 块计数连带；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9；→ §6.23 · §7 D-PS31）·
   **安全纪律（五条携 why）落 `common.md` 档末新增第 17 节**（两模式同文——受众 = 两模式 + 全部子代理；→ §6.25 · §7 D-PS36）。
-  **跨仓勘察义务三句落四处**（义务〔工程纪律层设计步〕∥ 形态〔设计席人格 8 项 item 1〕∥ 派单〔主 agent 人格层「派发与收尾纪律」〕∥ 核查〔设计评审标准第 10 条〕——既有节内增列 / 就地扩条 ⇒ 零 `##` 块计数连带；CN 正本 = 设计轮直落 ∥ EN 运行面 = 实施轮按 M9；→ §6.26 · §7 D-PS37）。
-- **变更流**：改中文正本 → 翻译写入英文运行面（复用存量词句、语义对等；**无同步脚本、无硬一致门**）。提示词档免档位判定（`.md` 结构尺度）。生成流程本体（双面流程 / 路径取法与落地面 / 结构级复核）见 **§10**（本处不重述——D2）。
-- **批次收尾核对（内容漂移防线——2026-09-25 卫生轮 · 台账 #292）**：提示词面批次收尾加一步**一次性**比对——本批**落地档 ↔ 当批设计围栏块**（逐行）；**零常驻锁、零新增断言**（内容在场判据 = 散文锚，禁新增）。合法改档以**当批**围栏块为新基线——本步守「当批一致性」，不冻结演进。
+  **跨仓勘察义务三句落四处**（义务〔工程纪律层设计步〕∥ 形态〔设计席人格 8 项 item 1〕∥ 派单〔主 agent 人格层「派发与收尾纪律」〕∥ 核查〔设计评审标准第 10 条〕——既有节内增列 / 就地扩条 ⇒ 零 `##` 块计数连带；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9；→ §6.26 · §7 D-PS37）。
+- **变更流**：改中文正本 → 精确翻译写入英文代码（复用存量词句、语义对等；**无同步脚本、无硬一致门**）。提示词档免档位判定（`.md` 结构尺度）。生成流程本体（设计→实现流程 / 路径取法与落地面 / 结构级复核）见 **§8**（本处不重述——D2）。
+- **批次收尾核对（内容漂移防线）**：提示词面批次收尾加一步**一次性**比对——**落地档 ↔ 当批设计围栏块**（逐行）；**零常驻锁、零新增断言**（内容在场判据 = 散文锚，禁新增）。合法改档以**当批**围栏块为新基线——本步守「当批一致性」，不冻结演进。
 - **提示词零维护者注**（编写纪律 #15）：出处 / 日期 / 批次名 / 评审号一律进设计档不进提示词（语义生效边界除外——保语义去日期注）。
 
 ### 6.2 装配实现事实
@@ -180,39 +175,37 @@
 - 装配 = **整文件拼接**（`thincoder-core/prompt-overlays.mjs` 槽位表驱动；common 恒第二位、**主链七场景**全部注入）——**零段落级解析**：增 / 删节不影响装配代码（增删节类变更 = 零运行时代码改动的充分条件）。
   **槽位模型**（与 `prompt-overlays.mjs` 头注同轴）：persona → common → discipline → **[4] 子代理层**（`subagent-base.md`——eng-coder / eng-designer / explore / coder / plan 五场景行末装配）；**AGENTS.md / skills = 槽位外尾块**（无编号——装配于槽链之后的既有尾部逻辑）。
 - 槽位装配矩阵（**九场景——主链 7 + 特殊模块 2**）与降级链（缺文件 ⇒ 槽空缺 + 警告，**不 fallback**）→ 详述 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6（装配逻辑——四槽固定序 + 矩阵 + 降级链）（本档不复制——D2）。
-- **装配之后的运行期追加面**：项目指令块（不分 depth）与 skills 尾块（depth-0）——`thincoder-core/agent/setup.mjs:276-279` ∥ `:280-289`（as-of 2026-10-14 实读）；
+- **装配之后的运行期追加面**：项目指令块（不分 depth）与 skills 尾块（depth-0）——`thincoder-core/agent/setup.mjs:281-284` ∥ `:285-294`；
   以及**派单固块**（spawn 级固定机制性指令，如批次档路径行 / 审计模板；拼接位 = 槽位装配之后、项目指令之前）——字段 `child._spawnSystemBlock`、拼接点 `thincoder-core/agent/setup.mjs:231` 之后；**机制单源 = `AGENT-LOOP-SUBAGENT.md` §6.26，本档不复制**。
 
 ### 6.3 端特有段与多实现面纪律
 
 - 各实现面（CLI / VSC / 中文正本 / 运行期落地）**语义同源、原文自持**：端特有段**原地保留**、不加面间同步依赖、差异如实上报（多实现面纪律；CORE-UNIFICATION 契约面）——**例外：端差默认 = 消**（机制面差异 ⇒ 归核单源 / 两端口径统一）；**用户可见端差 = 缺陷（唯一例外 = 宿主能力面，须实证）**；
   本纪律只述实现形态，✗ 不构成差异保留依据；差异登记面 = 记录已裁的宿主能力例外项。
-- **端特有段（现体）**：提示词面**现余 0**——三示例段（池规则 / Multi-Task / 实现纪律）内容现体均在核内（2026-09-17 消端差批「端特有段通用化并入核内正文」；`thincoder-cli/src/prompt-injections.mjs:9-11` ∥ VSC 端同形——提示词面注入锚全消），逐段落点：
-  `thincoder-core/prompts/persona-engineering.md`「Parallel dispatch & multi-task」（`:186` 起——多任务派发 + `agent.poolLimits` 池规则同节 `:190`；CN 正本「并行委派与多任务」`docs/core/design/prompts/persona-engineering.md:182` 起；as-of 2026-10-09 实读）·
+- **端特有段（现体）**：提示词面**现余 0**——三示例段（池规则 / Multi-Task / 实现纪律）内容现体均在核内（`thincoder-cli/src/prompt-injections.mjs:9-11` ∥ VSC 端同形——提示词面注入锚全消），逐段落点：
+  `thincoder-core/prompts/persona-engineering.md`「Parallel dispatch & multi-task」（`:186` 起——多任务派发 + `agent.poolLimits` 池规则同节 `:190`；CN 正本「并行委派与多任务」`docs/core/design/prompts/persona-engineering.md:182` 起）·
   `thincoder-core/prompts/persona-eng-coder.md` 实现纪律（`:17` 不得静默降级 / `:23` 收尾自审；CN 正本 `:18` / `:30`）。
 - **遗留注入锚（工具面 2 锚）**：`bash-terminal-face` · `question-ui-face`（锚位 = `thincoder-core/tool-docs/bash.md:15` ∥ `thincoder-core/tool-docs/question.md:11`；
   取值表 = `thincoder-cli/src/prompt-injections.mjs` ∥ `thincoder-vscode/src/prompt-injections.mjs` ∥ `thincoder-desktop/src/main/prompt-injections.mjs`——三端面枚举齐：CLI ∥ VSC ∥ 桌面）。
-  `bash-terminal-face` 处置 = **已激活**（2026-10-04 bash-executor-face 批——运行时执行器身份声明，机制单源 = 本层 `BASH-EXECUTOR-FACE.md`）；
+  `bash-terminal-face` 处置 = **已激活**（运行时执行器身份声明，机制单源 = 本层 `BASH-EXECUTOR-FACE.md`）；
   `question-ui-face` 处置 = 待工具面 review。
 
-### 6.4 byte-identical 取消（2026-09-04——设计锚为准）（并入 · 2026-09-15）
-
-来源 = `thincoder-cli/docs/design/AGENT-LOOP.md` 旧 §12.4（旧档一字未改，留参照历史）。
+### 6.4 byte-identical 取消（设计锚为准）
 
 - 两端 `src/prompts/` 的 **byte-identical 机械约束取消**（不再强制字节相同、不需同步脚本）；替代 = **设计锚机制**：镜像锚文本在设计文档逐字定稿（权威源）——实现面照抄——差异暴露靠设计评审 + 交付审计 + 语义锚（内容断言各端自持）。
-- byte-identical 相关机械比对断言 / 同步脚本全部清理；**散文锚断言亦已按测试纪律退役**（`docs/core/design/TESTING.md` §5——2026-09-12）——现行守护 = 行为面断言 + 结构机检（语义锚不得新写为散文锚）。
+- byte-identical 相关机械比对断言 / 同步脚本全部清理；**散文锚断言亦已按测试纪律退役**（`docs/core/design/TESTING.md` §5）——现行守护 = 行为面断言 + 结构机检（语义锚不得新写为散文锚）。
 - **保留的非镜像字节断言**：advisor-design 档硬加载逐字节（防静默降级）· 前缀缓存字节断言（会话面）。
 
-### 6.5 现状坐标（as-of 2026-09-15 实核）
+### 6.5 现状坐标
 
-- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（51 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
-- 中文正本 = `docs/core/design/prompts/*.md`（16 档——2026-09-15 批 1 位移落位）。
-- **端侧装配面（S2 接线落地读数）**：CLI = `thincoder-cli/bin/thincoder.mjs` 入口首步 `configurePromptInjections(CLI 表)` + `thincoder-cli/src/prompt-injections.mjs`（随 U2 落）；
-  VSC = `thincoder-vscode/extension.mjs` `activate()` 首步 `configurePromptInjections(VSC 表)` + `thincoder-vscode/src/prompt-injections.mjs`（随 W2 落）；工具描述装载根两产品同指核 `loadToolDoc`（CORE-UNIFICATION §2.13.2 / §2.13.8）。
+- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（52 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
+- 中文正本 = `docs/core/design/prompts/*.md`（16 档）。
+- **端侧装配面**：CLI = `thincoder-cli/bin/thincoder.mjs` 入口首步 `configurePromptInjections(CLI 表)` + `thincoder-cli/src/prompt-injections.mjs`；
+  VSC = `thincoder-vscode/extension.mjs` `activate()` 首步 `configurePromptInjections(VSC 表)` + `thincoder-vscode/src/prompt-injections.mjs`；工具描述装载根两产品同指核 `loadToolDoc`（CORE-UNIFICATION §2.13.2 / §2.13.8）。
 
-### 6.6 提示词面禁带文档引用（2026-09-20 用户裁定 · 机判锁）
+### 6.6 提示词面禁带文档引用（机判锁）
 
-**裁定**：「提示词中根本不应该出现对文档的引用，这个类东西是要清干净的。」（用户 2026-09-20 19:31）——**删引用（非改址）**；句义保留。
+**裁定**：「提示词中根本不应该出现对文档的引用，这个类东西是要清干净的。」——**删引用（非改址）**；句义保留。
 **上位原则回指**：需求面第 16 条（`docs/core/requirements/PROMPT-SYSTEM.md` §4-16）= 本节判据的上位原则——**提示词与文档分属两界**：运行时环境读不到文档 ⇒ 提示词内一切文档引用 = **运行时死文本**；合法所指白名单（五类）见需求条，本节不重述（纪律D2）。
 
 **判据线（三条件全中 = 文档引用）**：① 指向对象 = 文档（档名 / 节号 / 指路句）；② 删后句义自足（引用不承担行为语义）；③ 位置 = 模型可见面（提示词装配文本 · 工具说明 / schema 文本 · 回给模型的串 · 注入提醒）或同因人读串（日志 / 告警）。
@@ -220,7 +213,7 @@
 ——四类逐处给理由：行为操作数（`AGENTS.md` / `SKILL.md` / `.thincoder/advisor.md` / `project_rules.md`）· 路径操作数（`docs/README.md` 地图探测址 · `docs/batches/<batch>-<topic>.md` 路径形 · `design/<board>.md` 落点 · 槽 loader key）。
 扩展名字面量（`".md"`）· 协议自名（段号 `§1`–`§6` 及其下级两段形——**判据 = 指称**本协议自身对象，非形状；指外部文档者一律入引证面）· `MANIFEST.md` = manifest schema `$anchor` 数据锚（非模型面）。
 **注释面不在本面**（`//` / `/* */` / JSDoc 的节号族 = 独立面，另批治理）。
-**人读面外沿**：日志 / 告警（同因串）在内；CLI usage/help 等其余用户可见文案 = **界外**（非模型面 · 非同因串面；本批实测零命中）。
+**人读面外沿**：日志 / 告警（同因串）在内；CLI usage/help 等其余用户可见文案 = **界外**（非模型面 · 非同因串面）。
 
 - **域** = `thincoder-core/prompts/**` + `thincoder-core/tool-docs/**` + `docs/core/design/prompts/**`（两面 + 工具描述）与三包生产码字符串 / 模板字面量（排除 `test/**` · `_archive/**` · `docs/**` · `scripts/**` · `.thincoder/**`；注释按行剥离）。
 - **J1**：`[A-Z][A-Z0-9-]{2,}\.md` 零命中；白名单 = 判保留面操作数族规范豁免串（`AGENTS.md` · `SKILL.md` · `README.md` · `MANIFEST.md` · `.thincoder/advisor.md` · `project_rules.md`——后二名小写形，J1 天然不命中，列全以保三面逐字一致；`MANIFEST.md` = manifest schema `$anchor` 数据锚，非模型面）；后二名对 J3 同构豁免（逐行先删 CANON 子串再扫——见 J3 条）。
@@ -230,49 +223,45 @@
 **边界（机器不可分面 · 覆盖缺口登记）**：
 - **裸档名**（无 `.md`，与代码标识符同形）不锁——靠逐处处置表 + 评审守。
 - **J3 覆盖缺口**：J3 仅扫提示词两面 ⇒ 模型可见代码串内的小写档名（J1 需大写形、J2 需节号）不落任何一式——域内实测 61 处，绝大多数 = 槽 loader key / 落点操作数（判保留面）。
-- **面级指路句**（无档名 / 无节号，如 `→ see the engineering-mode prompts`）：三式均不命中；存量 2 处已裁 = **删**（用户 2026-09-20 20:30「这种话都不应该出现在提示词里」）——两面已落（`d2181dae`），域内现余 0。
+- **面级指路句**（无档名 / 无节号，如 `→ see the engineering-mode prompts`）：三式均不命中；存量 2 处已裁 = **删**（用户「这种话都不应该出现在提示词里」）——域内现余 0。
 
-**落地记录**：本批（prompt-refs-zero 批）两面 24 档 + 生产码 18 档逐处清零；纪律句落 `common.md`「文档写作纪律」节（两面各 +1 行；内容权威 = 主 agent）。
+**落点**：纪律句落 `common.md`「文档写作纪律」节（两面各 +1 行；内容权威 = 主 agent）。
 
-### 6.7 「不可裁决」自止点（上行通道操作化 · 2026-09-25 批）
+### 6.7 「不可裁决」自止点（上行通道操作化）
 
-**来源**：用户 2026-09-25 05:43 裁定「模型不能限制，还是在提示词方向做工作」（台账 #293）——
-缺口 = 弱模型撞上自相矛盾要求反复权衡、不即时上抛（个案实证 + 同提示词下另一模型 3/3 即时上抛）⇒ 判为提示词层可修。
+**来源**：用户裁定「模型不能限制，还是在提示词方向做工作」。
 
 **机制**：上行通道 in-scope 的「不可裁决」补一条**发现即触发**的自止边界——**发现两处要求互斥的那一刻即为「不可裁决」⇒ 立即 `ask`**（一句话摆冲突双方 + 你的倾向）；
-不得自选一方解套；不得继续权衡、先做一轮再说；不得拖到最终报告——**不设权衡前置、不设配额**（用户 2026-09-25 06:2x 裁定「满量先行」：先给足药量、过量再减；调参靠实测回拨）。
+不得自选一方解套；不得继续权衡、先做一轮再说；不得拖到最终报告——**不设权衡前置、不设配额**（用户裁定「满量先行」：先给足药量、过量再减；调参靠实测回拨）。
 同族限定：各本地出口（降级交付 / 歧义注明）**不含冲突类**——冲突处置 = **正典层单源**（`subagent-base.md`「**冲突类必发、不得拖终报**」；发现矛盾的要求 ⇒ 立即 `ask`）。
 
 **分层归属判据**：判据本体 = 公共层（上行通道 in-scope）⇒ 操作化落同节（D2 单一权威源；公共层恒第二位 = 全角色覆盖）；
 子代理角色面 = **正典层 `subagent-base.md`**（受众 = 全部子代理角色——「向谁问」与冲突处置的单源面；槽位 [4] 装配）；人格档本地出口（eng-designer 的回合预算句 / plan 的歧义注明句——就近落各档本地）**不承载冲突限定**；
-工程纪律层零增补（其「途中前提失效 ⇒ 上游 `ask`」与公共层同向，无新出口需堵）。**否决备选** → §7 D-PS7。
+工程纪律层零增补（其「途中前提失效 ⇒ 上游 `ask`」与公共层同向，无新出口需堵）。
 
-**落点**：**双源**——`common.md` 两份（自止点：中文正本 `docs/core/design/prompts/common.md` + 英文运行面 `thincoder-core/prompts/common.md`）+
+**落点**：**设计文档 + 代码两份**——`common.md`（自止点：中文正本 `docs/core/design/prompts/common.md` + 英文代码 `thincoder-core/prompts/common.md`）+
 **正典层 `subagent-base.md`** 两份（槽位 [4]——全部子代理角色装配：「向谁问」/ 决策级四类 / 冲突类必发不得拖终报）；
-逐字文本 = 设计围栏块（一次性材料不混入本档）；零新增节（`##` 块计数 14 守恒 ⇒ T-CL1 无连带）。 （机检豁免——用例退场登记）
+逐字文本 = 设计围栏块（一次性材料不混入本档）；零新增节（`##` 块计数随正 ⇒ T-CL1 无连带）。
 
-**机检**：引用锁 T9 · T-CL1 · 双源锁照常适用；**不新增断言**（内容在场判据 = 散文锚，禁新增）——在场以一次性逐字比对核。 （机检豁免——用例退场登记）
+**机检**：引用锁 T9 · T-CL1 · 两份锁照常适用；**不新增断言**（内容在场判据 = 散文锚，禁新增）——在场以一次性逐字比对核。
 **边界**：模型门控 / 配置项 / loop 探测机制零加（用户裁定不可扩）；主会话（无父侧通道）的同类边界不涉（其冲突处置住「指令优先级」节——现状零动）。
 
-### 6.8 台账治理纪律（做还是记 + 池面 triage · 2026-09-25 批）
+### 6.8 台账治理纪律（做还是记 + 池面 triage）
 
-**来源**：用户 2026-09-25 17:2x 提问「你那条台账治理纪律是不是更应该进提示词啊？」（台账 #376）——父侧实核 = 属**行为纪律**（处置时的「做还是记」判断），活面 = 提示词层（先例 = *Dispatch truthfully* / *No zero-text endings* 同层人格档）；记忆面退为备份。
+**来源**：用户提问「你那条台账治理纪律是不是更应该进提示词啊？」——父侧实核 = 属**行为纪律**（处置时的「做还是记」判断），活面 = 提示词层（先例 = *Dispatch truthfully* / *No zero-text endings* 同层人格档）；记忆面退为备份。
 
 **机制（三层判断）**：① **能当场做的当场做**（评审 / 扫尾产出的一次性小形态项 = 措辞 / 坐标 / 索引 / 清理 ⇒ 当场修掉、不进池）；② **进池的才是真债**（需独立轮次 / 有条件 / 需设计）；③ **处置前先对池面陈年条目 triage**（已落地 ⇒ 追认核销——核销两源见 `docs/core/design/LEDGER.md` §3；前提消失 / 重复 ⇒ 废弃）。
 
 **分层归属**：落 **`persona-engineering.md`**（主 agent 唯一消费——处置 / 入池写权面；子代理非受众）「派发与收尾纪律」节内 **`欠账入清单` 邻位**（*Debts go on the list* = 同族前句——新句限定「什么才算欠账」；两界原则：零文档引用 ✓）。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（`欠账入清单` 行后增一行）· 英文运行面 `thincoder-core/prompts/persona-engineering.md`（*Debts go on the list* 行后增一行）——**既有节内增列**（零 `##` 块计数连带 ⇒ T-CL1 无涉）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。 （机检豁免——用例退场登记）
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（`欠账入清单` 行后增一行）· 英文代码 `thincoder-core/prompts/persona-engineering.md`（*Debts go on the list* 行后增一行）——**既有节内增列**（零 `##` 块计数连带 ⇒ T-CL1 无涉）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**连带项（父侧 2026-09-25 裁定 · 同批收正）**：双面台账节生命周期 ② 陈旧半句（`ledger_close` 只认现态「待核销」——#332 落地后失真）定点收正——「#376 新句的首个实例」（同文件、实现连带、非扩面）；改后草案逐字 = 设计围栏块（处置清单 L1 / L2），收正形与 #332 落定语义一致。
-
-**机检**：引用锁 T9（新句与连带项零文档引用）· T-CL1（块计数守恒）· 维护者注反证照常适用；**不新增断言**（内容在场 = 一次性逐行比对核——设计围栏块 ↔ 落地档，含连带两项；承 §6.1「批次收尾核对」）。 （机检豁免——用例退场登记）
+**机检**：引用锁 T9（新句与连带项零文档引用）· T-CL1（块计数守恒）· 维护者注反证照常适用；**不新增断言**（内容在场 = 一次性逐行比对核——设计围栏块 ↔ 落地档，含连带两项；承 §6.1「批次收尾核对」）。
 **边界**：零机械门（承「为臆想的失败逐点加限制 = 反模式」之裁）· 不改台账机制本体（写命令 / 状态机零动）· 不落公共层 / 纪律层（子代理非受众——台账写权仅主 agent）· 不重述攒批工作流（只补「做还是记」判断）· **「父侧不代笔」交界**：「当场修掉」不越三类例外（自有写域 / 机械形态收正 / 小修改）且照**打标义务**（注明「父侧直接执行」+ 可 revert——`persona-engineering.md:73-74`）。
 
-### 6.9 派单尺寸与任务书形态纪律（三闸 + 表形态 · 2026-09-26 批）
+### 6.9 派单尺寸与任务书形态纪律（三闸 + 表形态）
 
-**来源**：用户 2026-09-26 裁定（台账 #419）——16:41 裁定 A（落点）+ 双面流程（中文正本设计轮落形 / 英文按 M9 翻译回写）；**16:43 追加第 4 条纪律**（任务书 = 表，不是散文；措辞可润色、语义不得增删）。
-归因证据（台账实读）：✓ `#90` / `#9`（任务书含逐行动作表 ⇒ 一轮收敛）vs ✗ `#98` / `#1` / `#7` / `#10`（散文任务书 +「先读这 N 档」⇒ 读—动作比无界）；`#10` = 5 档单面、三闸全绿仍读循环 139/180 轮 ⇒ **三闸必要但不足**（缺形态面）。
+**来源**：用户裁定——裁定 A（落点）；落笔口径 = 中文设计文档设计轮落形 / 英文按 M9 精确翻译回写；**追加第 4 条纪律**（任务书 = 表，不是散文；措辞可润色、语义不得增删）。
 
 **机制（四条）**：① **一舱一单面**——实施舱的 `files` 声明面 ≤15 档且不跨变更面，跨面 ⇒ 按面拆舱；② **预检三闸**——档数 >15 ⇒ 拆 · 跨面 ⇒ 按面拆 · 未决口径落在实施面内 ⇒ 先裁（不许留给实施者「视情况」）。
 ③ **结构决定归设计 / 派单**——拆分边界 / 落点 / 形状在设计期定死，实施者只照表落码，留给实施者的开放结构决定 = 读循环的入口；④ **任务书 = 表，不是散文**——核心 = 逐行动作表（动作 / 落点 file:line / 期望），散文只留目标与边界；「先读档清单」自身计入探索预算，预算与阅读面自相矛盾的任务书 = 派单缺陷。
@@ -280,71 +269,58 @@
 **分层归属**：落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内（六字段列表末行后）——主 agent 唯一消费（派单写权面；子代理非受众）。
 四问：① 人格层（谁派 / 派多少 / 派成什么形态）；② 属工程模式派单行为、非两模式协作基础（公共层不取）；③ 不以纪律层承载（子代理非受众 + 与人格层重复）；④ 项目相关、形态为提示词行为纪律 ⇒ 人格层；落点文本零文档引用 ✓。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（六字段末行后增 **4 行**——本批由 eng-designer 在设计轮落形，父侧 16:41 裁定；账内先例 = 落笔归实现轮，本批为单批安排）。
-英文运行面 `thincoder-core/prompts/persona-engineering.md`（*Sized dispatch without these fields is a defect* 行后增 **内容 4 条（EN 物理 5 行——第 4 条折行）**，按 **M9 翻译回写**、非 cp——实施轮落笔）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（六字段末行后增 **4 行**——由 eng-designer 在设计轮落形）。
+英文代码 `thincoder-core/prompts/persona-engineering.md`（*Sized dispatch without these fields is a defect* 行后增 **内容 4 条（EN 物理 5 行——第 4 条折行）**，按 **M9 精确翻译回写**、非 cp——实施轮落笔）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性 `includes` 读数；doc-check 前后逐值相同（零新增）；英文面零连带（零 `##` 块新增 ⇒ 块计数无涉、零注入锚 ⇒ 锚集合无涉、零文档引用 ⇒ 引用锁无涉）。
+**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性 `includes` 读数；英文面零连带（零 `##` 块新增 ⇒ 块计数无涉、零注入锚 ⇒ 锚集合无涉、零文档引用 ⇒ 引用锁无涉）。
 
 **边界**：零机械门禁（尺寸上限不落 `files` 校验代码——上限属判断面，承「为臆想的失败逐点加限制 = 反模式」）· 不改 spawn 门禁语义（`batchDoc` 必传 + 六字段 `validateTaskBookFields` 零动；第 4 条约束内容形态、不机械校验）· 不改台账机制 · 不落公共层 / 纪律层（子代理非受众）· 既有节内增列、不新增节（零 `##` 块计数连带）。
 
-### 6.10 测试层级知识（定义 + 放置 · 2026-09-29 批；2026-09-30 扩双模式）
+### 6.10 测试层级知识（定义 + 放置）
 
-**来源**：用户 2026-09-29 20:15 直令（「关于什么叫单元测/什么叫集成测试的知识也得进提示词」；台账 #655）——触发 = 父侧范畴错误提问（「测试用例放 `test/`」通用约定套到批次本地单元测试档，提「单元测试是否迁入 `test/`」伪问题）⇒ 判为提示词层可修（知识缺口 = 定义 + 放置）。
-定稿文本 = 父侧 20:15 ∕ 20:17 ∕ 20:21 三轮定稿（内容权）；逐字 = 设计围栏块（一次性材料不混入本档——D2）。
-**扩展来源（2026-09-30）**：口径收正（用户 2026-09-30 16:46）——「批次档概念不是工程模式专有，普通模式一样有，文档体系对什么模式都是一样的，工程模式和普通模式的区别不在于要不要文档体系，而在于是否强流程约束。」
-⇒ 本知识非工程会话面独有 ⇒ 普通侧同知识落地（台账 #658 重述）。
+**来源**：用户直令（「关于什么叫单元测/什么叫集成测试的知识也得进提示词」）。
+逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**扩展来源**：口径收正（用户）——「批次档概念不是工程模式专有，普通模式一样有，文档体系对什么模式都是一样的，工程模式和普通模式的区别不在于要不要文档体系，而在于是否强流程约束。」
+⇒ 本知识非工程会话面独有 ⇒ 普通侧同知识落地。
 
 **机制（两条知识）**：① **定义**——单元测试 = 单个组件隔离测（外部协作者打桩）——开发者改完即跑的反馈回路（「刚改的这处对了没有」）；集成测试 = 组件协同（真实组合）——上线前的验收回路（从用户能看见的入口把真实业务走一遍）。
 ② **放置（两类分述——禁合称「测试用例」）**——单元测试用例随批次档存（开发期工具——不占项目 `test/` 树）；集成测试用例与测试代码同住项目的 `test/` 目录。
 
 **分层归属**：落**两模式纪律层**（文档体系对全模式同一——批次档非工程模式专有）——工程侧 `discipline-engineering.md`「测试纪律」节内 ∥ 普通侧 `discipline-normal.md`「测试与交付」节内（各以单元 ∕ 集成两条 bullet 定点并文）。
 知识面两模式同源；**流程约束面按模式**（工程以结构强制、普通以纪律）——本机制只涉知识面，流程约束零搬迁。
-四问：① 纪律层（该模式下怎么干活——测试是什么 ∕ 放哪）；② 非两模式协作基础（公共层不取）；③ 不以人格层承载（非角色边界）；④ 通用层内容（项目无关）。否决备选 → §7 D-PS11 ∥ D-PS13。
+四问：① 纪律层（该模式下怎么干活——测试是什么 ∕ 放哪）；② 非两模式协作基础（公共层不取）；③ 不以人格层承载（非角色边界）；④ 通用层内容（项目无关）。
 
-**落点（四档 · 双源两面 × 两模式）**：工程侧——中文正本 `docs/core/design/prompts/discipline-engineering.md`（L63 单元行 ∕ L65 集成行）· 英文运行面 `thincoder-core/prompts/discipline-engineering.md`（L65 ∕ L67）。
-普通侧（2026-09-30 扩）——中文正本 `docs/core/design/prompts/discipline-normal.md`（L103 单元行 ∕ L104 集成行）· 英文运行面 `thincoder-core/prompts/discipline-normal.md`（L105 ∕ L106）——**既有节内增列**（零 `##` 块计数连带）；逐字文本 = 设计围栏块（D2）。
+**落点（四档——中文设计文档 ∥ 英文代码，两模式各一对）**：工程侧——中文正本 `docs/core/design/prompts/discipline-engineering.md`（L63 单元行 ∕ L65 集成行）· 英文代码 `thincoder-core/prompts/discipline-engineering.md`（L65 ∕ L67）。
+普通侧——中文正本 `docs/core/design/prompts/discipline-normal.md`（L103 单元行 ∕ L104 集成行）· 英文代码 `thincoder-core/prompts/discipline-normal.md`（L105 ∕ L106）——**既有节内增列**（零 `##` 块计数连带）；逐字文本 = 设计围栏块（D2）。
 
 **口径（纯通用层）**：新文零具体项目实例（`test/` 为通用约定名——定稿原词）；现行节内既有实例 = **清出（甄别式——通用层全净）**：清 `docs/batches/` 硬路径 ∕ `node --test …` 命令形 ∕ 三前端名（→「前端口」） ∕ 「核包」（→「核心」）；留 `test/` ∕ 50–100 ∕ 「批次档 ∕ 批次目录」概念（非实例——定稿原词 ∕ 方法参数 ∕ 方法本体）。
 普通侧扩展同守本口径（新增文本零具体项目实例——`test/` 为通用约定名、批次档 ∕ 批次目录为方法本体）。
 
-**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性比对（落地档 ↔ 本批设计围栏块）；零 `##` 块新增 ⇒ 块计数无涉、零文档引用 ⇒ 引用锁无涉；CN 镜像两行守行宽 ≤300。
-普通侧（2026-09-30 扩）同规——在盘核 = 一次性比对（落地档 ↔ 该批设计围栏块）；零 `##` 块新增 ⇒ 块计数无涉；CN 两新行守行宽 ≤300；新增文本零文档引用（`scripts/prompt-refs-check.mjs` 复跑零命中）。
+**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性比对（落地档 ↔ 设计围栏块）；零 `##` 块新增 ⇒ 块计数无涉、零文档引用 ⇒ 引用锁无涉；CN 镜像两行守行宽 ≤300。
+普通侧同规——在盘核 = 一次性比对（落地档 ↔ 该批设计围栏块）；零 `##` 块新增 ⇒ 块计数无涉；CN 两新行守行宽 ≤300；新增文本零文档引用（`scripts/prompt-refs-check.mjs` 复跑零命中）。
 
-**边界**：清出限甄别式——不清方法本体 ∕ 定稿原词（留 `test/` ∕ 50–100 ∕ 「批次档 ∕ 批次目录」概念；清项见上「口径」）· **落点 = 两模式纪律档**（普通侧 2026-09-30 扩入；其余档零触）· **流程约束零搬迁**（普通侧只补知识——门 ∥ 轮次 ∥ 报告义务 ∥ 谁写谁跑等工程约束不入）· 不改测试机制本体（需求档零触）· 零机械门 · 不新增节。
+**边界**：清出限甄别式——不清方法本体 ∕ 定稿原词（留 `test/` ∕ 50–100 ∕ 「批次档 ∕ 批次目录」概念；清项见上「口径」）· **落点 = 两模式纪律档**（普通侧扩入；其余档零触）· **流程约束零搬迁**（普通侧只补知识——门 ∥ 轮次 ∥ 报告义务 ∥ 谁写谁跑等工程约束不入）· 不改测试机制本体（需求档零触）· 零机械门 · 不新增节。
 
-### 6.11 工具描述面：外置统一与预算（2026-09-29 批 · #15）
+### 6.11 工具描述面：外置统一与预算
 
-**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（51 档），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
+**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（52 档——枚举工具 51 ∥ 目录档 52），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
 
 **预算表（唯一权威处——本表；邻位只挂指针行 · D2）**：
 
-| 项 | 读数（as-of 2026-10-14 复测实读；首测 = 2026-09-29） |
+| 项 | 读数 |
 |---|---|
 | 基线 | 103,529 字符（口径 = 逐档 `JSON.stringify({description, parameters})` 字符和——与机检同式） |
-| 当前 | **124,207** 字符（= **1.20 × 基线**；首测 = 95,973 / 0.927——复测 = 现树全量实读，含 09-29 以来全部在位改动） |
-| 目标 | ≤ 0.75 × 基线——**未达 · 报告态**（三杠杆——参数回声去重 ∥ 装饰 / 重复句 ∥ top 档六要素重写——用尽；依「准比短重要 · 信息完整优先于字数」不硬削，读数上抛父侧裁） |
-| 单档帽 | ≤ 8,000 字符——超限 = `subagent` **15,808**（首测 = 12,134；契约事实保真下限；由在册——2026-09-29 工具携文批 §5.7 · 报告态）∥ `browser` **11,959**（由未在册——上抛父侧） |
+| 当前 | **129,766** 字符（= **1.253 × 基线**） |
+| 目标 | ≤ 0.75 × 基线——**未达 · 报告态**（依「准比短重要 · 信息完整优先于字数」不硬削，读数上抛父侧裁） |
+| 单档帽 | ≤ 8,000 字符——超限 = `subagent` **15,808**（契约事实保真下限；由在册（报告态））∥ `browser` **11,959**（交互面契约保真下限——16 动作族 + 引用/回执语义 + 权限门 + 错误面逐条在册；收身即丢模型可操作细节） |
 | top5 | `subagent` **15,808** ∥ `browser` **11,959** ∥ `git` 7,894 ∥ `batch` **5,421** ∥ `edit` 5,411 |
 | 机检 | `node scripts/tool-schema-size.mjs`（报告态 v1——只读读数，不入闸；复测 = 同式读数对读数） |
 
-**复测注记（2026-10-05 · 轻通道轮「模型可见面笔」收口面——承评审 #41 发现 3）**：读数对 = 95,973（0.927）→ **99,928**（0.965）；`subagent` 段配对 = 12,134（首测）→ 12,963（复测），其中本批笔① +8 行 = 12,738（#938 收口面读数 as-of）→ 12,963 区间（**+225**——含同档收口面单行修 `:25` 括注）；归因明细 = 2026-10-05 模型可见面笔批 §2。
-
-**复测注记（2026-10-06 · 批 upward-flag-marker 收口面）**：读数对 = 99,928（0.965）→ **100,349**（0.969——+421）；本批笔 = `notify_parent.md` +4 行（交付标识块）；`subagent` 12,963 维持；top5 第五位 `advisor` 4,065 ⇒ **4,143**（随动——非本批面）；归因明细 = 2026-10-06 upward-flag-marker 批 §5。
-
-**复测注记（2026-10-07 · 批 ledger-tool 收口面）**：读数对 = 100,349（0.969）→ **101,813**（**0.983**——+1,464）；本批笔 = `tool-docs/subagent.md`（九动作头 + `design-slots` 条 + `consume-design` 选择器句 ⇒ `subagent` 12,963 ⇒ **14,239**，+1,276）+ `ledger.md` 三句随动（+小）∥ tool-docs 48 档 · 63,553 字符；
-  分面 = builtin 50,290 ∥ builtin(gated) 1,372 ∥ meta 40,691 ∥ instance 9,460；归因明细 = 2026-10-07 台账工具批 §5。**目标 ≤0.75 未达**（比值较上测升 0.014——本批为功能面必增；报告态上抛父侧裁既定不变）。
-
-**复测注记（2026-10-14 · 批 design-token-recovery 收口面）**：读数对 = 101,813（0.983）→ **124,207**（**1.20**——+22,394）；本批笔 = `tool-docs/subagent.md`（+reveal 句）∥ `subagent.mjs` 参数面（+`reveal` / `designId` 描述）⇒ `subagent` 14,239 ⇒ **15,808**；
-  其余增量 = 上测以来他批在位（`browser`（11,959）等——逐档不归本批）；分面 = builtin 63,099 ∥ builtin(gated) 1,372 ∥ meta 47,623 ∥ instance 12,113 ∥ tool-docs 51 档 · 77,377 字符；
-  两档 persona-engineering 行数连带 = CN ∥ EN 207 ⇒ **208**（wc-l；本批 +1 条——提示词面，非本表射程）；归因明细 = 2026-10-14 设计令牌回收批 §5。`browser` 11,959 超单档 8,000 且无在册由——上抛父侧。**目标 ≤0.75 未达**（报告态既定不变）。
-
 **边界**：表为读数与目标面——零机械门（预算不入闸）；描述逐字文本 = 主 agent 内容权；动态装配装饰面不在本表射程。
 
-### 6.12 轻通道机制（细节面 ∥ 收敛面受控旁路）提示词落地（2026-09-30 批 · 台账 #714）
+### 6.12 轻通道机制（细节面 ∥ 收敛面受控旁路）提示词落地
 
-**来源**：用户 2026-09-30 14:03 ∥ 14:06 ∥ 14:17 三则（产品化要求 + 路由判据 + 记录在档）+ **2026-10-02 15:36–15:42 三则（扩容——收敛面准入 ∥ 修复类直改 ∥ 收尾必全链（既有律重申）∥ 启动即挂账 · 台账 #818）∥ 16:48 裁「走查反馈明示轻通道」** +
-**2026-10-02 22:36–22:58 五裁（判据收口——降门槛 · 核销紧固 · 台账 #830）**——
-需求档 = `docs/core/requirements/LIGHT-CHANNEL.md`；试运行锚 = 2026-09-30 轻通道第一轮（五笔）。
+**来源**：用户三则（产品化要求 + 路由判据 + 记录在档）+ 三则（扩容——收敛面准入 ∥ 修复类直改 ∥ 收尾必全链（既有律重申）∥ 启动即挂账）+ 裁「走查反馈明示轻通道」+ 五裁（判据收口——降门槛 · 核销紧固）；需求档 = `docs/core/requirements/LIGHT-CHANNEL.md`。
 
 **机制**：四步硬流程在**细节面 ∥ 收敛面**的**受控旁路**——成立条件 = 准入命中（三样清单：细节 / 美工 ∥ 缺陷修复 ∥ 走查当场）+ 一句边界（新机制 ∥ 大改 ⇒ 全链）+ 收尾全链闭合；误准入交收尾全链兜底（判据收口——核销不漏 = 第一优先级）；
 旁路 ≠ 取消（收尾全链补齐设计形式化 ∥ 独立评审 ∥ 批准 ∥ 收口核销）。轻通道轮次 = 批档一本（逐笔收录；§5 不适用——实施面 = 父侧直改）；**启动即挂账**（开轮先建轮次批档 + 轮次台账行——账在前、笔在后）；收尾未落 ⇒ 不许核销。**机制设计 = `docs/core/design/LIGHT-CHANNEL.md`（本档不重述——D2）**。
@@ -352,117 +328,110 @@
 **分层归属**：**机制规则**（准入三样清单 ∥ 一句边界 ∥ 附则 ∥ 轮次形（含启动即挂账）∥ 收尾形 ∥ 行使面 ∥ 边界）落 `discipline-engineering.md`「基本流程」节内；**父侧行使细则**（交底句（面类槽 ∥ 判据半句）∥ 交底即行 ∥ 零链免交底 ∥ 改判 ∥ 越界停笔 ∥ 记账（含启动即挂账）∥ 代码笔通路句（开轮挂账 ⇒ 直改放行；含轮次行标记半句）∥ **轮次界 = 收口** ∥ 收口触发（提醒时点）∥ 跨会话接手 ∥ 核销对接）落 `persona-engineering.md`「派发与收尾纪律」节内。
 四问：① 机制规则 = 该模式怎么干活（纪律层）；② 非两模式共用协作基础（公共层不取）；③ 交底 ∥ 记账 ∥ 核销 = 父侧写权面独属动作（人格层——台账用法面同轴判例：写权独属动作不落纪律层）；④ 通用层内容（零项目实例）。
 
-**落点（双源两面）**：CN 正本 ∥ EN 运行面 × 两档——逐处（档 ∥ 节 ∥ 形态）与咬合处置 = 机制设计档 §3；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）。
+**落点（中文设计文档 + 英文代码）**：CN 正本 ∥ EN 代码 × 两档——逐处（档 ∥ 节 ∥ 形态）与咬合处置 = 机制设计档 §3；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
 **机检**：**不新增断言**（测试纪律「不因单次改动而增补」）——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；新增文本零文档引用（`prompt-refs-check.mjs` 复跑）⇒ 引用锁无涉；既有节内增列（零 `##` 块新增）⇒ 块计数无涉；CN 新行守行宽 ≤300。
 
 **边界**：零机械门 · 批档 ∥ 台账机制本体零动（纯复用）· 产品码零触 · **默认面条款零改写**（铁律 ∥ 分流表 ∥ 确认与批准门——例外由新块内咬合句承载）· **单点撤件**：工程工具面直改硬约束 ②（「改判据语义 ⇒ 仍走设计」）撤——管辖面并入一句边界（直改硬约束 = 两条——判据收口定形）· 子代理零新义务。
 
-### 6.13 提示词面收正批（面向用户表述 ∥ 轮次界 = 收口 ∥ D 清单位同步）（2026-10-02 批 · 台账 #800 ∥ #727 ∥ #814）
+### 6.13 提示词面收正批（面向用户表述 ∥ 轮次界 = 收口 ∥ D 清单位同步）
 
-**来源**：① **#800** = 用户 2026-10-01 18:03「挂条需求，提示词里应该告诉 agent 该怎么说话，不要满嘴蹦黑话」（承 17:5x 两次指出讲解满篇行话）；② **#727** = 承 #725 设计轮观察（「轮次界 = 收口」仅设计档载——需求 ∥ 提示词面未载；父侧裁归批）；③ **#814** = 承 #813 批评审域外注记②（提示词正本 D1–D7 ∥ 设计档 D1–D8——先裁同步与否）。
+**来源**：用户「挂条需求，提示词里应该告诉 agent 该怎么说话，不要满嘴蹦黑话」（承两次指出讲解满篇行话）；「轮次界 = 收口」仅设计档载——需求 ∥ 提示词面未载；提示词正本 D1–D7 ∥ 设计档 D1–D8——先裁同步与否。
 
 **机制（三件）**：① **面向用户的表述纪律（说人话）**——面向用户（子代理 = 面向父代理）的回复与汇报以**可读可复述**为标尺：内部术语 / 代号 / 行话不得裸用（出现时随文一句白话解释）；复杂机制先白话打底、再按需给精确细节；文档 / 代码 / 评审表按各自惯例不受此限。
-② **「轮次界 = 收口」入文**——续笔归属：收口前的新笔 = 本轮续笔；收口后新笔另起新轮新档（规则本体已在 `docs/core/design/LIGHT-CHANNEL.md` §2.3——本批 = 入文面落点）。
-③ **文档更新纪律清单位同步 D8**——裁定 = **同步**：`discipline-engineering.md` 双面清单补 D8 行（表头 ∥ 计数句 ∥ +1 行；D8 语义已住公共层「文档写作纪律」——清单位 = D 族全表）。
+② **「轮次界 = 收口」入文**——续笔归属：收口前的新笔 = 本轮续笔；收口后新笔另起新轮新档（规则本体已在 `docs/core/design/LIGHT-CHANNEL.md` §2.3——入文面落点）。
+③ **文档更新纪律清单位同步 D8**——裁定 = **同步**：`discipline-engineering.md` 两档清单补 D8 行（表头 ∥ 计数句 ∥ +1 行；D8 语义已住公共层「文档写作纪律」——清单位 = D 族全表）。
 
 **分层归属**：① 公共层（受众 = 全角色——两模式 + 全部子代理均面向其用户 / 父侧说话；`common.md` 恒第二位 = 唯一全覆盖范围）；② 父侧行使纪律（人格层「派发与收尾纪律」——轮次归属 = 主 agent 写权独属动作；子代理不路由本通道）+ 需求档（三链之链头）；③ 纪律层（工程模式清单面——清单位与设计族同数）。
 
-**落点（双源两面）**：① `common.md`「语言纪律」节内增列 1 段（CN `docs/core/design/prompts/common.md` ∥ EN `thincoder-core/prompts/common.md`）。
+**落点（中文设计文档 + 英文代码）**：① `common.md`「语言纪律」节内增列 1 段（CN `docs/core/design/prompts/common.md` ∥ EN `thincoder-core/prompts/common.md`）。
 ② `persona-engineering.md`「派发与收尾纪律」节内增列 1 行（CN ∥ EN——收口触发行邻位）+ 需求档 `docs/core/requirements/LIGHT-CHANNEL.md` §2.3 增 1 条（主 agent 笔）。
-③ `discipline-engineering.md`「文档更新纪律」表头 ∥ 计数句 ∥ +D8 行（CN ∥ EN）。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）。
+③ `discipline-engineering.md`「文档更新纪律」表头 ∥ 计数句 ∥ +D8 行（CN ∥ EN）。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
 **机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；新增文本零文档引用（`scripts/prompt-refs-check.mjs` 复跑零命中）；零 `##` 块新增（① ② 既有节内增列 ∥ ③ 既有表增行 + 计数句随动）⇒ 块计数无涉；CN 新行守行宽 ≤300。
 
-**边界**：零机械门 · 既有提示词条款零改写（③ 清单位面 = 表头 / 计数句 / +1 行）· 不改任一 D1–D7 行语义 · 需求侧 D8 同步（`docs/core/requirements/ENGINEERING-MODE-V2.md` §13.1）不入本批（在册 = 主 agent 域）⇒ **已落**（2026-10-02——主 agent 域；D1–D8 在盘）· 产品码零触 · #818 批档零触。
+**边界**：零机械门 · 既有提示词条款零改写（③ 清单位面 = 表头 / 计数句 / +1 行）· 不改任一 D1–D7 行语义 · 需求侧 D8 同步（`docs/core/requirements/ENGINEERING-MODE-V2.md` §13.1）不入册（在册 = 主 agent 域）⇒ **已落**（主 agent 域；D1–D8 在盘）· 产品码零触。
 
-### 6.14 多仓操作机制（提示词面）（2026-10-02 批 · 台账 #827）
+### 6.14 多仓操作机制（提示词面）
 
-**来源**：用户 2026-10-02 21:50–22:01（多仓操作机制入提示词——12 条 + 定界句）；缘起 = 今日多仓实操四事实（跨仓批档 fail-closed ∥ 站点仓 manifest 建档 ∥ 双项目并存写面须显式路径 ∥ 子代理禁跨仓写）。
+**来源**：用户（多仓操作机制入提示词——12 条 + 定界句）；缘起 = 多仓实操四事实（跨仓批档 fail-closed ∥ 站点仓 manifest 建档 ∥ 双项目并存写面须显式路径 ∥ 子代理禁跨仓写）。
 
 **机制（条款集 → 三处落点）**：① 公共层「批次档常识」节内——**多仓按仓各自**（批档基根 = 会话锚的项目声明；跨仓建档被拒 = 正确行为；跨多仓任务 ⇒ 各仓分别建档、分别开批）；
 ② 工程纪律层「文档与台账自持」节内——**6 项续入**（多仓并存正常态（显式目标 / 列候选不代选 / 失败报告重试）∥ 仓 = 一个 git 仓（端 ≠ 仓）∥ 他仓六段机制条件（锚 + manifest）与首触（补层、记录落它本仓）∥ 他仓发现物路由 ∥ 跨仓只经接口耦合（含签入按仓各自）∥ 分仓 = 例外）；
 ③ 人格层「项目状态档」节内——**操作他仓前先建档**（轻动作；写权仅主 agent）。
 
 **分层归属（四问）**：① = 批次档机制常识（两模式同一的文档体系；公共层 = 恒装配全角色覆盖）——落 §14 末；② = 「该模式下怎么干活」的机制操作规则（纪律层——受众多含工程子代理；既有自持节 = 本家族提示词落点，逐条续入）；③ = 主 agent 独属写权动作（manifest 写权 `writer:'main'` 专权、子代理不可达 ⇒ 不落共享层）。
-否决「新建节」（零 `##` 增为硬口径——块计数守恒）·「全落公共层」（§13/§14 主题面外无承载——非批档/台账内容的操作规则无处安放）·「全落纪律层」（批次档常识面与 manifest 写权面各归其位——混落即受众错位）。
 
-**既有段微调（逐处列明 + 理由）**：「文档与台账自持」节提示词副本 item 5（台账本仓自持）与 item 1 为**同规则重复**、且携修订式残句「（……语义不变，去掉『头部』概念）」——处置 = item 5 删、其唯一事实「本仓自持由 schema 校验」并入 item 1、后续项序号顺缩。
-理由 = D8（失效表达必删）+ 重复即缺陷；**语义零变**（规则本体 = item 1 原样）。否决「原样保留」（残留即示范——存量不是合法态）。
+**连带（旧落笔面收口）**：`docs/core/design/DOC-DISCIPLINE.md` §4.4「跨仓批派单与写域」提示词落笔面句随正——跨仓批派单**语义**以多仓泛化形随册落笔；「反查脚本一条」落笔未做（在册——去留归父侧裁）。
 
-**连带（旧落笔面收口）**：`docs/core/design/DOC-DISCIPLINE.md` §4.4「跨仓批派单与写域」提示词落笔面句随正——跨仓批派单**语义**以多仓泛化形随本批落笔（**提示词实体落笔 = 本批实施轮**）；「反查脚本一条」落笔未做（在册——去留归父侧裁）。
-
-**落点（双源两面）**：CN 正本 `docs/core/design/prompts/` ∥ EN 运行面 `thincoder-core/prompts/`——三档：`common.md`（§14 末增 1 段）· `discipline-engineering.md`（自持节增 6 项 + item 5 删并）· `persona-engineering.md`（项目状态档增 1 行）。
-逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）。
+**落点（中文设计文档 + 英文代码）**：CN 正本 `docs/core/design/prompts/` ∥ EN 代码 `thincoder-core/prompts/`——三档：`common.md`（§14 末增 1 段）· `discipline-engineering.md`（自持节增 6 项 + item 5 删并）· `persona-engineering.md`（项目状态档增 1 行）。
+逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
 **机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；新增文本零文档引用（`scripts/prompt-refs-check.mjs` 复跑零命中）；零 `##` 块新增（三处均节内增列）⇒ 块计数无涉；CN 新行守行宽 ≤300。
 
-**边界**：零机械门 · 产品码零触 · 普通模式提示词零触（多仓机制主体 = 工程机制面；批次档多仓常识经公共层 §14 达普通侧——如另需普通侧写目标纪律，另裁）· 既有条款语义零改（微调 = 上「既有段微调」逐处清单）· 他批档零触。
+**边界**：零机械门 · 产品码零触 · 普通模式提示词零触（多仓机制主体 = 工程机制面；批次档多仓常识经公共层 §14 达普通侧——如另需普通侧写目标纪律，另裁）· 既有条款语义零改 · 他批档零触。
 
-### 6.15 公共仓读取的读侧纪律句（提示词面）（2026-10-02 批 · 台账 #832）
+### 6.15 公共仓读取的读侧纪律句（提示词面）
 
-**来源**：用户 2026-10-02 23:40（公共文档仓不被读取）→ 23:47（公共模块仓同病）→ 23:48（自持约束追问）→ 23:54（跨仓引用必须可支持）；机制面（声明 `index.publicRepos` ∥ 检索接入 ∥ 跨仓引用解析）= `MEMORY.md` §6.15 ∥ `DOC-DISCIPLINE.md` §4.2.2 ∥ `LEDGER-SELF-CONTAINED.md` §5.1（本档只承载提示词落点）。
+**来源**：用户（公共文档仓不被读取 → 公共模块仓同病 → 自持约束追问 → 跨仓引用必须可支持）；机制面（声明 `index.publicRepos` ∥ 检索接入 ∥ 跨仓引用解析）= `MEMORY.md` §6.15 ∥ `DOC-DISCIPLINE.md` §4.2.2 ∥ `LEDGER-SELF-CONTAINED.md` §4.1（本档只承载提示词落点）。
 
 **机制（读侧句 → 两模式纪律层落点）**：① **自持读侧对句**——「自持管写；读取不限」（**工作目录树默认可查可读可引**；**越出工作目录的源按声明查**（项目 manifest `index.publicRepos`））+「实施 / 设计前先查声明源」+「**发现缺源 ∥ 噪声 ⇒ 随手补清单**」（agent 托管句——工程侧 ∥ 普通侧动词分列）；② **界句**——「跨仓只经接口耦合」条与「本句管耦合、不管读取」并入；③ **记录面声明源例外**——自持节 item 1「仓外指针同样禁止」句后随「声明源例外」（声明公共仓可引——仓名前缀形可核；其余照禁）。
 
-**来源模型（2026-10-02 23:59–00:04 定调 · 用户确认）**：**默认来源 = 工作目录（会话 cwd）树**（零配置——检索 / 可读 / 可引）；**声明 = 微调**（越出 cwd 的源）；**与「声明为唯一钥匙」模型的差别（一句）：默认来源 = cwd；声明 = 微调**。清单维护者 = **agent**（非用户）——维护句落两模式读侧句（「随手补清单」轻动作）；写权面照 #827 ⑥ 判例（工程人格已载 manifest 建档句；子代理机械拒面在效——句面不另述）。**不造新工具 ∥ 不加机械门**（declared-sources 维护面限定）。
-**例外 = `manifest` 工具**（2026-10-08 批：`docs/core/requirements/ENGINEERING-MODE-V2-SPEC-MANIFEST.md` ②.7 新增——agent 对 project-manifest 的全键读写出口；机制 = `docs/core/design/MANIFEST.md` §2.10）。
+**来源模型（用户确认）**：**默认来源 = 工作目录（会话 cwd）树**（零配置——检索 / 可读 / 可引）；**声明 = 微调**（越出 cwd 的源）；**与「声明为唯一钥匙」模型的差别（一句）：默认来源 = cwd；声明 = 微调**。清单维护者 = **agent**（非用户）——维护句落两模式读侧句（「随手补清单」轻动作）；写权面照 #827 ⑥ 判例（工程人格已载 manifest 建档句；子代理机械拒面在效——句面不另述）。**不造新工具 ∥ 不加机械门**（declared-sources 维护面限定）。
+**例外 = `manifest` 工具**（`docs/core/requirements/ENGINEERING-MODE-V2-SPEC-MANIFEST.md` ②.7 新增——agent 对 project-manifest 的全键读写出口；机制 = `docs/core/design/MANIFEST.md` §2.10）。
 
 **分层归属（四问）**：读侧句 = 「该模式下怎么干活」的操作规则 ⇒ 两模式**各自纪律层**（自持家族既有落点，逐条续入）；不落公共层（非「两模式逐句都要的协作基础」——同 #827 判例）；不落人格层（非角色边界）。
 
-**落点（双源两面）**：CN 正本 `docs/core/design/prompts/discipline-engineering.md`（自持节：item 1 续行 + item 12 句尾并入 + item 14 新增）∥ `docs/core/design/prompts/discipline-normal.md`（自持节 item 3 新增）；EN 运行面 `thincoder-core/prompts/` 同两档（M9 翻译回写）。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落点（中文设计文档 + 英文代码）**：CN 正本 `docs/core/design/prompts/discipline-engineering.md`（自持节：item 1 续行 + item 12 句尾并入 + item 14 新增）∥ `docs/core/design/prompts/discipline-normal.md`（自持节 item 3 新增）；EN 代码 `thincoder-core/prompts/` 同两档（M9 精确翻译回写）。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块）；`scripts/prompt-refs-check.mjs` 复跑零命中；零 `##` 块新增（两档均节内增列）⇒ 块计数不变（engineering 8 ∥ 8 · normal 6 ∥ 6）；CN 新行守行宽 ≤300（= 仓行宽闸值——manifest `checkConfig.lineWidth`；实测：A-CN-1 59 ∥ A-CN-2 92 ∥ 替换行 100 ∥ 64 ∥ 99 ∥ 54；以本批实测为准）。
+**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块）；`scripts/prompt-refs-check.mjs` 复跑零命中；零 `##` 块新增（两档均节内增列）⇒ 块计数随正；CN 新行守行宽 ≤300（= 仓行宽闸值——manifest `checkConfig.lineWidth`）。
 
 **边界**：零机械门 · 产品码零触 · 既有自持条款语义零改（只续句 / 例外句，不拆条）· 多仓写侧条款（#827）零改 · 引用解析实现不在本档（机制面）。
 
-### 6.16 三层结构常识（提示词公共层）（2026-10-06 批 · 台账 #956）
+### 6.16 三层结构常识（提示词公共层）
 
-**来源**：用户 2026-10-06 08:14 结构层令 + 08:16「这个三层结构是我最近得出来的经验，我也希望进 thincoder 的提示词体系」+ 08:18「讲清道理……这是常识，每个模式和角色都该知道」+ 08:19「可以，现在就跑」；需求 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.3（#956 登记块）。
+**来源**：用户结构层令 +「这个三层结构是我最近得出来的经验，我也希望进 thincoder 的提示词体系」+「讲清道理……这是常识，每个模式和角色都该知道」+「可以，现在就跑」；需求 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.3。
 
 **机制**：三层结构常识（**板 → 域 → 档**）入公共层——**why** = 并行写冲突的因果（两件并行工作改同一批文件 ⇒ 互相踩；按域切开 ⇒ 隔离，冲突降到足够低）+ **判域口径**（总是一起动 ⇒ 同一份档；从不同时动 ⇒ 分开写——自旧条升层）+ **四条规矩**：① 域 = 并发隔离单位（并行的工作各动各域）· ② 域目录从第一天就立（哪怕单档）· ③ 拆分恒落域内（新档进同域目录——零跨域动 ∥ 零路径重排）· ④ 代码树与文档树同拍（模块镜像）。
 
-**同族条处置（`discipline-engineering.md`「按域分界」节——去重保留）**：删两条（划界原则 ∥ 并行写者错开——公共层已承载）；保留三条操作细则（热点面最小化 ∥ 分不开时 ∥ 改组已有内容时）；标题括注「创建即留并行面」⇒「细则」。否决「收窄为回指」（D-PS3 前例：公共层恒第二位注入——指针无导航价值）·「整条删」（余三细则公共层未承载——私删行为规则＝静默缩水）·「原样保留」（同族机制两处详述＝D2 违例）。
-**修复轮 1 扩展（评审发现 1 ∥ 2 处置——逐字 = 设计围栏块）**：① **板归属条换写**——`:94`「一个板块一个文档」与三层模型（板 → 域 → 档）互斥（板内含域与档、可多档）⇒ 弃 1:1 基数、保内核（按板块组织 ∥ 题不独立成文），补关系半句「板内分域分档、可多档」；② **保留条收窄**——`:104` 判据半句与公共层判域口径重述（判据本体已升层）⇒ 留「分不开时 ⇒ 同域顺位（串行）＝预期，不是缺陷」半句（余两条逐字不变）。
+**分层归属（四问）**：① 公共层——「两模式逐句都要的协作基础」：结构性常识，受众 = 两模式 + 全部子代理（用户明示「这是常识，每个模式和角色都该知道」）；② 非纪律层——非「该模式下怎么干活」的流程 / 规则，是任何角色建结构时都该知道的常识；③ 非人格层——非身份 / 边界；④ 通用层内容（零项目实例）。
 
-**分层归属（四问）**：① 公共层——「两模式逐句都要的协作基础」：结构性常识，受众 = 两模式 + 全部子代理（用户 08:18 明示「这是常识，每个模式和角色都该知道」）；② 非纪律层——非「该模式下怎么干活」的流程 / 规则，是任何角色建结构时都该知道的常识；③ 非人格层——非身份 / 边界；④ 通用层内容（零项目实例）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（档末第 15 节）∥ 英文代码 `thincoder-core/prompts/common.md`（第 15 节）。
+同族条 = `docs/core/design/prompts/discipline-engineering.md`「按域分界」节 + 「板块归属」条 ∥ `thincoder-core/prompts/discipline-engineering.md` 同两处。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/common.md`（档末新增第 15 节——本设计轮已落）∥ 英文运行面 `thincoder-core/prompts/common.md`（第 15 节——实施轮按 M9 翻译回写，2026-10-06 已落）；**落形安排** = 本批 CN 正本由 eng-designer 在设计轮落形（父侧派单安排——2026-10-06；账内先例 = 落笔归实现轮，本批为单批安排）。
-同族条 = `docs/core/design/prompts/discipline-engineering.md`「按域分界」节收窄 + 「板块归属」条换写（均本设计轮已落——修复轮 1 并入）∥ `thincoder-core/prompts/discipline-engineering.md` 同两处（实施轮收正——2026-10-06 已落）。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑零命中；CN 新行守行宽 ≤300。
 
-**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑零命中；`scripts/doc-check.mjs` exit 0（整档实读——锚零悬空 ∥ 行宽零超限；2026-10-06 复跑；09:1x 起整档锚检查 38 悬空 = server 新树 basename 碰撞所致——非本批面，台账 #958 在册）；CN 新行守行宽 ≤300。
+**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题 + 表行（数值以需求档为准）；② 本档 §8.2 表行 5 随正（当前读数唯一处 = §8.2）；③ 计数断言 = 无存活断言；④ `common.md` `##` 块计数随正。
 
-**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题（「common.md 15 节」）+ 表行 15（主 agent 笔——已落）；② 本档 §10.2 表行 5 读数收正 = **15/18**（2026-10-06 已落）；③ 计数断言 = 无存活断言（原 common 节数守恒用例已随 2026-09-28 测试树全清退役；现存机检族无节数断言）；④ `common.md` `##` 块计数：CN 15 ∥ EN 15（2026-10-06）。
+**边界**：零机械门 · 产品码触面 = EN 代码两档 · 改动面 = `common.md` 新增节 + `discipline-engineering.md` 两处（「按域分界」节 ∥ 「板块归属」条）· 不新造机制 · 不重述既有条。
 
-**边界**：零机械门 · 产品码触面 = EN 运行面两档（实施轮 2026-10-06 已落）· 改动面 = `common.md` 新增节 + `discipline-engineering.md` 两处（「按域分界」节收窄 ∥ 「板块归属」条换写——修复轮 1）· 不新造机制 · 不重述既有条。
+### 6.17 纪律线五笔（记忆→提示词迁移 · 第二堆）
 
-### 6.17 纪律线五笔（记忆→提示词迁移 · 第二堆）（2026-10-06 批 · 台账 #969）
-
-**来源**：用户 2026-10-06 17:58「该进的那几条进提示词」——采纳记忆→提示词迁移评估（第二堆 1–5 + 用词统一；简单清晰 = 正名版）（轻通道轮——收口设计形式化 + fix 轮）；落笔提交 = `0c9136c9`（双推）。
+**来源**：用户「该进的那几条进提示词」——采纳记忆→提示词迁移评估（第二堆 1–5 + 用词统一；简单清晰 = 正名版）。
 
 **机制（五笔 · 纪律句补句）**：
 - ① **简单清晰**——`common.md` 语言纪律节内（一句话说一件事——主句在前 ∥ 少括号、不堆记号 ∥ 去「看起来很严谨」装饰 ∥ 存疑短说 ∥ 不给自己划豁免）。
 - ② **不许假冒用户名义**——`common.md` 诚实原则列表 +1 条（只有用户原话才算用户的话；推导一律标注为推断）。
 - ③ **工程判断**——`discipline-engineering.md` 新增节（六条：判定 ≠ 归因 ∥ 违用户裁定即缺陷 ∥ 缺陷只准用缺陷命名 ∥ 定量断言先工具复核 ∥ 小功能不配大机器 ∥ 修复设计满量先行——判定四条 + 设计两条）。
-- ④ **任务书重导**——`persona-engineering.md` 实施委托段 +1 条（任务书逐条自本批文档重导，禁转录）。
+- ④ **任务书重导**——`persona-engineering.md` 实施委托段 +1 条（任务书逐条自当批文档重导，禁转录）。
 - ⑤ **一个东西一个说法**——`discipline-engineering.md` 命名纪律邻位（同一个东西在所有面只用一个名——文档词 = 界面词 = 对话词，1:1）。
 
 **分层归属（四问）**：① ② = 公共层（两模式 + 全角色共用协作基础——说话标尺 ∥ 诚实底线）；③ ⑤ = 工程纪律层（该模式下怎么干活——判定 / 量级纪律 ∥ 命名纪律族）；④ = 人格层（主 agent 派单写权面独属——子代理非受众）。
 
 **形态（与 §6.1 落点口径的关系）**：既有节内增列 ×4（① ② ④ ⑤）+ **新增节 ×1（③）**——③ 在 §6.1「行为纪律面的落点形态」默认口径（`:166`）之外；先例 = §6.16（新增节登记在案）；依据 = 用户 17:58 采纳清单；不构成越界；计数连带照 D3 随动（下行）。
 
-**落点（双源两面 · 十处）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`（下同，各给 `:行`）——
-① `common.md:9-12` ∥ `:8-11`；② `common.md:23` ∥ `:20`；③ `discipline-engineering.md:60-66` ∥ `:60-66`；④ `persona-engineering.md:136` ∥ `:137`；⑤ `discipline-engineering.md:101` ∥ `:99`。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落点（中文设计文档 + 英文代码 · 十处）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`（下同）——
+① `common.md:9-12` ∥ `:8-11`；② `common.md:23` ∥ `:20`；③ `discipline-engineering.md` §Engineering judgment ∥ §工程判断；④ `persona-engineering.md:136` ∥ `:137`；⑤ `discipline-engineering.md` §Doc discipline「One word per thing」∥ §文档纪律「一个东西一个说法」。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**计数连带（D3）**：③ 新增节 ⇒ `discipline-engineering.md` `##` 块计数 8 ∥ 8 ⇒ **9 ∥ 9**（两面）；§10.2 表行 7 标题树复算收正 = **16/16**（2026-10-06）；② = 诚实原则列表内 +1 条（零计数面）；① ④ ⑤ 零 `##` 新增。
+**计数连带（D3）**：③ 新增节 ⇒ `discipline-engineering.md` `##` 块计数随正（两面）；§8.2 表行 7 随正（当前读数唯一处 = §8.2）；② = 诚实原则列表内 +1 条（零计数面）；① ④ ⑤ 零 `##` 新增。
 
-**机检**：`scripts/prompt-refs-check.mjs` = 提示词面 80 档 · 代码面 421 档 · 命中 0（三式——walkthrough 读数在册）；`scripts/doc-check.mjs` = 悬空 65（基线不变）∥ 行宽 OK。**不新增断言**（内容在场 = 一次性比对——设计围栏块 ↔ 落地档，批次收尾核对步）；CN 新行守行宽 ≤300。
+**机检**：`scripts/prompt-refs-check.mjs` 命中 0；**不新增断言**（内容在场 = 一次性比对——设计围栏块 ↔ 落地档，批次收尾核对步）；CN 新行守行宽 ≤300。
 
-**边界**：零机械门 · 提示词六档内容 = 用户 17:58 采纳清单（本登记 = 记录面——零文面改动）· 需求档零笔（§2.3 计数面无涉——common 节数 15 未变）· 他批零触。
+**边界**：零机械门 · 提示词六档内容 = 用户采纳清单 · 需求档零笔（限本批射程——§2.3 计数面无涉；common 节数 **19**〔口径 = 行首 `##` 节计数〕未变）· 他批零触。
 
-### 6.18 多过一道用户的眼（用户视角门 · 两模式纪律档）（2026-10-07 批 · 台账 #987）
+### 6.18 多过一道用户的眼（用户视角门 · 两模式纪律档）
 
-**来源**：用户 2026-10-07 08:37 走查四连后提问「这类审查应该放在哪个环节合适」＋ 08:39「补进[到]提示词系统里」＋ 08:42「可以」（第三稿条款 ＋ 两模式范围批准）。
+**来源**：用户走查四连后提问「这类审查应该放在哪个环节合适」＋「补进[到]提示词系统里」＋「可以」（第三稿条款 ＋ 两模式范围批准）。
 
 **机制**：界面或交互的改动，交付前多过一道「用户视角」——① **设计轮**：交付里写清自查结果
   （像一个每天都在用这界面的挑剔用户那样过一遍：哪里别扭 ∥ 哪里要来回找 ∥ 哪里得猜 ∥ 哪里少了本来该有的东西；这类判断你本来就有，别只对机制；拿不准的偏好，摆出来问）；
@@ -471,63 +440,63 @@
 **分层归属（四问）**：① 纪律层（「该模式下怎么干活」——交付前用户视角检查；受众 = 两模式主会话 + 各自子代理）；② 非公共层（非「两模式逐句都要的协作基础」）；③ 非人格层（非身份 / 边界）；④ 通用层内容（零项目实例）。
 
 **形态（与 §6.1 落点口径的关系）**：两档各**新增节**（`discipline-engineering.md` ∥ `discipline-normal.md`——`## 交付报告` 节前；`##` 块计数 9 ⇒ 10 ∥ 6 ⇒ 7——两面）；
-  在 §6.1「行为纪律面的落点形态」默认口径（既有节内增列）之外；先例 = §6.16 ∥ §6.17-③；依据 = 用户 08:42 批准稿（条款自带设计/收口两轮——单一既有节无跨轮承载位）；不构成越界；计数连带照 D3 随动（下行）。
+  在 §6.1「行为纪律面的落点形态」默认口径（既有节内增列）之外；先例 = §6.16 ∥ §6.17-③；依据 = 用户批准稿（条款自带设计/收口两轮——单一既有节无跨轮承载位）；不构成越界；计数连带照 D3 随动（下行）。
 
-**落点（双源两面）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`——`discipline-engineering.md`（CN `:72` ∥ EN `:73` 节前）∥ `discipline-normal.md`（CN `:88` ∥ EN `:89` 节前）（as-of 2026-10-07 实读）；
-  逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）；**提示词实体落笔 = 本批实施轮**。
+**落点（中文设计文档 + 英文代码）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`——`discipline-engineering.md`（CN `:72` ∥ EN `:73` 节前）∥ `discipline-normal.md`（CN `:88` ∥ EN `:89` 节前）；
+  逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
-**计数连带（D3）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.4 大纲补本节目（**主 agent 笔**——登记）；② 本档 §10.2 行 7 ∥ 行 8 复算 = 16/16 ⇒ **17/17** ∥ ⇒ **21/21**（**收口轮复算**——随两面落地收正；行 8 复算前实测 20/20，旧读数 22/22 系 09-18 基线、与现盘不符）；
-  ③ `##` 块计数：engineering 9 ∥ 9 ⇒ 10 ∥ 10 · normal 6 ∥ 6 ⇒ 7 ∥ 7（两面）；④ 计数断言 = 无存活断言（2026-09-28 测试树全清在册）。
+**计数连带（D3）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.4 大纲补本节目（**主 agent 笔**——登记）；② 本档 §8.2 行 7 ∥ 行 8 随正（当前读数唯一处 = §8.2）；
+  ③ `##` 块计数随正（两面）；④ 计数断言 = 无存活断言。
 
-**机检**：**不新增断言**（测试纪律「不因单次改动而增补」）——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑（新增文本零文档引用）；`scripts/doc-check.mjs`（CN 新行守行宽 ≤300）；`##` 块计数可机判（逐档数）。
+**机检**：**不新增断言**（测试纪律「不因单次改动而增补」）——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑（新增文本零文档引用）；CN 新行守行宽 ≤300；`##` 块计数可机判（逐档数）。
 
 **边界**：零机械门 · 产品码零触 · 其余纪律零触（既有节文本零改）· 清单细目不上提示词（具体条目归域档随走查增长；零文档引用照守）· 不改其他提示词档 · 需求档零笔（连带项 = 主 agent 笔）。
 
-### 6.19 台账关联条目合并扫描（批点火前显式步）（2026-10-07 批 · 台账 #996）
+### 6.19 台账关联条目合并扫描（批点火前显式步）
 
-**来源**：用户 2026-10-07 10:08 提问「现在在干活的时候有没有检查一下台账，把相关的台账项目一起合并处理的要求？」＋ 10:12「我的意思是检查台账有没有关联项目可以合并处理的要求应该进提示词体系。」）——缺口 = 攒批工作流缺「合并扫描」显式步（批点火前必跑）+ 不并理由留痕。
+**来源**：用户提问「现在在干活的时候有没有检查一下台账，把相关的台账项目一起合并处理的要求？」＋「我的意思是检查台账有没有关联项目可以合并处理的要求应该进提示词体系」——缺口 = 攒批工作流缺「合并扫描」显式步（批点火前必跑）+ 不并理由留痕。
 
 **机制**：**批点火前（设计启动前）先扫台账相关条目（同板块 / 池面）**——**能并则并**（并进 = 同一迁移窗口 ∥ 同一评审面 ∥ 同一实施面——判断面，零机械门）、**不并须写明理由**（条件未到 ∥ 面不同 ∥ 风险高——记入轮次记录）；并 ∕ 不并皆有迹。
 时机边界 = 现行批界规则照常（合并须在批设计之前；点火后新增条目 = 改批界 ⇒ 另起新批——见 `persona-engineering.md`「一次实现轮的界」条）；新内容 = **显式扫描步**（不重述「达阈值提醒」与「批设计」既有语义）。
 
 **分层归属（四问）**：① 人格层（主 agent 唯一消费——批形成 / 扫描与留痕均属主 agent 写权面）；② 非公共层（非两模式逐句协作基础）；③ 非纪律层（子代理非受众——批形成写权仅主 agent——同 §6.8 / FR30 落点判例）；④ 项目相关、形态为提示词行为纪律 ⇒ 人格层；落点文本零文档引用 ✓。
 
-**形态（与 §6.1 落点口径的关系）**：**「批设计」条原位扩展**（既有条：现文逐字保留 + 前插扫描步）⇒ 零 `##` 块计数连带；攒批条 5 条 / 生命周期条 5 条计数均不变；生命周期表受需求档 FR30 验收「事件 → 动作」**五行**判据锁定（`docs/core/requirements/ENGINEERING-MODE-V2.md:696` 实读）——扫描不入事件表（表形态 = 事件 → 动作；扫描无触发事件）。
+**形态（与 §6.1 落点口径的关系）**：**「批设计」条原位扩展**（既有条：现文逐字保留 + 前插扫描步）⇒ 零 `##` 块计数连带；攒批条 5 条 / 生命周期条 5 条计数均不变；生命周期表受需求档 FR30 验收「事件 → 动作」**五行**判据锁定（`docs/core/requirements/ENGINEERING-MODE-V2.md:696`）——扫描不入事件表（表形态 = 事件 → 动作；扫描无触发事件）。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「批设计」条 = `:164` 原位扩展）∥ 英文运行面 `thincoder-core/prompts/persona-engineering.md`（*Batch design* 条 = `:164` 原位扩展）（as-of 2026-10-07 实读）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）；**提示词实体落笔 = 本批实施轮**。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「批设计」条 = `:164` 原位扩展）∥ 英文代码 `thincoder-core/prompts/persona-engineering.md`（*Batch design* 条 = `:164` 原位扩展）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
-**计数连带（D3）**：**无**（`##` 块计数两面不变 16 ∥ 17；条数零变；§10.2 行 12 读数不变）。需求侧随动 = 父侧裁量（U 项）。
+**计数连带（D3）**：**无**（`##` 块计数两面随正；条数零变；§8.2 行 12 读数随正）。需求侧随动 = 父侧裁量（U 项）。
 
 **机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新增文本零文档引用——`§1` 为协议自名合法正例）；CN 新行守行宽（`checkConfig.lineWidth` = 300——CN 档在扫描域；新行 125 字符 ✓）；
-EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字符不折行（同档既存 >300 行 31 条 · 最长 981 ⇒ 折单行 = 反不一致——披露不行使；先例 = ledger-tool-unification 批 §5 行 5）；`##` 块计数可机判（两面不变）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
+EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字符不折行（同档既存 >300 行 31 条 · 最长 981 ⇒ 折单行 = 反不一致——披露不行使；先例在册）；`##` 块计数可机判（两面不变）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
-**边界**：零机械门 · 台账工具 / 代码零触 · 其余纪律零触（「达阈值提醒」「批设计」现文其余部分逐字保留；「派发与收尾纪律」治理块零触）· 不发明新机制（只落「扫描」显式步）· 不重述攒批工作流 · 术语承 §1 定形（`迁移窗口` = 本批新语；`评审面` / `实施面` = 现盘词汇——先例本档 `:66` ∥ `:136`；CN 正本 `persona-engineering.md:93` ∥ `:147`；`§1` = 协议自名）· 需求档零笔（U 项 = 父侧）。
+**边界**：零机械门 · 台账工具 / 代码零触 · 其余纪律零触（「达阈值提醒」「批设计」现文其余部分逐字保留；「派发与收尾纪律」治理块零触）· 不发明新机制（只落「扫描」显式步）· 不重述攒批工作流 · 术语承 §1 定形（`迁移窗口` = 新语；`评审面` / `实施面` = 现盘词汇——先例本档 `:66` ∥ `:136`；CN 正本 `persona-engineering.md:93` ∥ `:147`；`§1` = 协议自名）· 需求档零笔（U 项 = 父侧）。
 
-### 6.20 台账治理纪律增补（收口入账 ∥ 开局自查 ∥ 入库查重 ∥ 单行单结 ∥ 结算行 · #971 ∥ #957 同窗并入）（2026-10-07 批 · 台账 #997）
+### 6.20 台账治理纪律增补（收口入账 ∥ 开局自查 ∥ 入库查重 ∥ 单行单结 ∥ 结算行）
 
-**来源**：用户 2026-10-07 10:14「你同时琢磨琢磨台账治理还有哪些方面可以优化改善？」+ 10:17「两批都应该做。」= 治理面批组批放行；（同窗并入 #971 ∥ #957）。实证锚 = 三笔存量只活在 #986 冻结档 §6（#993–995 当日补录）∥ 池面 53 条未决无人自然看见。
+**来源**：用户「你同时琢磨琢磨台账治理还有哪些方面可以优化改善？」+「两批都应该做。」= 治理面批组批放行。
 
 **机制（五条 · 逐条 = 要求 + 时机 + 衔接）**：① **收口入账**——§6 未决项**逐条落台账行**（§6 只留指针；「欠账入清单」条原位扩展）∥ 复核时点补**冻结档残留扫描**（冻结档 §6 未决项未落台账行 ⇒ 当场补录；「暂缓批先复核」条尾追加）；
  ② **开局自查**——每会话开局（与「暂缓批先复核」同拍）自查池面——未决数 ∥ 可动项 ∥ >7 天未动 top-N（作 triage 输入）；>30 天行标「老化」；**内部自查、不重复播报**（不另出播报行——用户面零噪音；新 bullet）；③ **入库查重**——登记时扫同面既有行：同类并入 ∥ 否则注记关系（与批点火前的合并扫描互为上下游——新 bullet）；
  ④ **单行 = 单结算单元**——捆绑项拆行（防部分结算僵局——新 bullet）；⑤ **结算行**——**确保收口行落**（核销同步清单机械步）+ **核销数随收口**（本次核销数随收口一并报出，不另出独立行；生命周期 ③ 条尾追加）。
 
-**同窗并入两笔**：⑥ **#971**——§10.2 行 7 尾列「段」口径定形 = **标题段**（标题节点〔层级 2+，含行内〕及其领起内容——逐段对位）；复算 = **17/17 全配对**（2026-10-07 实读——CN ∥ EN 逐段对位零孤段）；⑦ **#957**——`persona-eng-designer.md` 同族句换写（CN `:38` ∥ `:51` ∥ EN `:38` ∥ `:51`；沿 #956 裁定形：弃 1:1 基数、保内核、补关系句）。
+**同窗两笔**：⑥ §8.2 行 7 尾列「段」口径定形 = **标题段**（标题节点〔层级 2+，含行内〕及其领起内容——逐段对位）；复算 = **17/17 全配对**（CN ∥ EN 逐段对位零孤段）；⑦ `persona-eng-designer.md` 同族句换写（CN `:38` ∥ `:51` ∥ EN `:38` ∥ `:51`；弃 1:1 基数、保内核、补关系句）。
 
 **分层归属（四问）**：① 人格层——五条均主 agent 消费（欠账 / 自查 / 登记 / 结算 / 收口 = 主 agent 写权与行使面；子代理非受众——同 §6.8 / §6.19 / FR30 判例）；② 非公共层（非两模式逐句协作基础）；③ 非纪律层（子代理非受众）；④ 通用层内容（零项目实例）。
 
 **形态（与 §6.1 落点口径的关系）**：既有节内增列（原位扩展 ×1 ∥ 条尾追加 ×2 ∥ 新 bullet ×3）⇒ **零 `##` 块计数连带**；生命周期条受需求档 FR30 验收「事件 → 动作」**五行**判据锁定（`docs/core/requirements/ENGINEERING-MODE-V2.md:696`）——不增行、只扩条文；需求档「攒批工作流（五条）」计数零变。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「派发与收尾纪律」节 `:82` 原位扩展 ∥ `:83` 条尾追加 ∥ 新 bullet；「台账」节 `:170` 条尾追加 ∥ `:174` 后新 bullet ×2）
- ∥ `docs/core/design/prompts/persona-eng-designer.md`（`:38` ∥ `:51` 换写）；英文运行面 `thincoder-core/prompts/persona-engineering.md`（`:81` ∥ `:84` ∥ 新 bullet ∥ `:170` ∥ `:174` 后新 bullet ×2）
- ∥ `thincoder-core/prompts/persona-eng-designer.md`（`:38` ∥ `:51`）（as-of 2026-10-07 实读）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）；**提示词实体落笔 = 本批实施轮**。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「派发与收尾纪律」节 `:82` 原位扩展 ∥ `:83` 条尾追加 ∥ 新 bullet；「台账」节 `:170` 条尾追加 ∥ `:174` 后新 bullet ×2）
+ ∥ `docs/core/design/prompts/persona-eng-designer.md`（`:38` ∥ `:51` 换写）；英文代码 `thincoder-core/prompts/persona-engineering.md`（`:81` ∥ `:84` ∥ 新 bullet ∥ `:170` ∥ `:174` 后新 bullet ×2）
+ ∥ `thincoder-core/prompts/persona-eng-designer.md`（`:38` ∥ `:51`）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
-**计数连带（D3）**：① `persona-engineering.md` 行数 CN 201 ⇒ **204** ∥ EN 198 ⇒ **201**（+3/面 = 新 bullet 三条）；`##` 块 16 ∥ 17 不变；② `persona-eng-designer.md` 换写 **±0 行**（CN ∥ EN）；③ 本档 §10.2 行 7 尾列段读数复算 = **17/17**；④ 需求侧 = U 项（父侧笔）。
+**计数连带（D3）**：① `persona-engineering.md` 行数 ∥ `##` 块读数 → §6.23（当前读数唯一处）；增量 = +3/面（新 bullet 三条）；② `persona-eng-designer.md` 换写 **±0 行**（CN ∥ EN）；③ 本档 §8.2 行 7 尾列段读数随正（当前读数唯一处 = §8.2）；④ 需求侧 = U 项（父侧笔）。
 
 **机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本 + 换写句零文档引用）；CN 新行守行宽 ≤300（`checkConfig.lineWidth`）；`##` 块计数可机判；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
-**边界**：零机械门 · 台账工具 / 代码零触 · 其余纪律零触（「批设计」条 ∥ 「达阈值提醒」 ∥ 治理三规逐字不动；#996 落笔面逐字不动）· 零新术语（`可动项` / `注记关系` / `结算行` 均为平名直述或既有用语）· 需求档零笔（U 项 = 父侧）。
+**边界**：零机械门 · 台账工具 / 代码零触 · 其余纪律零触（「批设计」条 ∥ 「达阈值提醒」 ∥ 治理三规逐字不动；落笔面逐字不动）· 零新术语（`可动项` / `注记关系` / `结算行` 均为平名直述或既有用语）· 需求档零笔（U 项 = 父侧）。
 
-### 6.21 普通模式工作管理统一（批次档 + 台账 + 收口 · 普通侧三档）（2026-10-09 批 · 台账 #1111）
+### 6.21 普通模式工作管理统一（批次档 + 台账 + 收口 · 普通侧三档）
 
 **来源**：用户 2026-10-09 10:05–10:22 十条连述（原话在册 = 需求 `docs/core/requirements/NORMAL-MODE.md` §5.6 来源行）。
 
@@ -541,39 +510,39 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **分层归属（四问）**：① 纪律层——三块均「该模式下怎么干活」（受众 = 普通模式主会话 + 其子代理：coder 携绑定自写 §5 需教学面）；主 agent 独属动作（建档 / 挂账 / 核销 / 收口提请）以主 agent 视角直书纪律节（普通侧人格档薄——单点承载；先例 = 既有 task / 持久清单句同在纪律层）；② 人格层一句 = 身份面（设计师席并入——F-N2.4「不设设计师角色、全部工作主 agent 自担」属「你是谁 / 交付什么」）；③ 公共层 = 模式分辨率句（全角色两模式共读面——原句按工程角色写死，对普通读者误导）；④ 通用层内容（零项目实例）。
 
-**形态（与 §6.1 落点口径的关系）**：`discipline-normal.md` **新增节**（「工作管理（批次档 + 台账 + 收口）」+ 三子节；`##` 块 7 ⇒ 8 · 标题节点 +4/面）；`persona-normal.md` ∥ `common.md` 均**既有节内增列**（零块计数连带）。新增节在 §6.1「行为纪律面的落点形态」默认口径（既有节内增列）之外；先例 = §6.18（新增节登记在案）；依据 = 需求 F-N2.1 判据句（纪律层含用法节）+ 三块跨相位（建档 ∥ 落地 ∥ 收口）无单一既有节承载位。
+**形态（与 §6.1 落点口径的关系）**：`discipline-normal.md` **新增节**（「工作管理（批次档 + 台账 + 收口）」+ 三子节；`##` 块 **8** · 标题节点 **25**）；`persona-normal.md` ∥ `common.md` 均**既有节内增列**（零块计数连带）。新增节在 §6.1「行为纪律面的落点形态」默认口径（既有节内增列）之外；先例 = §6.18（新增节登记在案）；依据 = 需求 F-N2.1 判据句（纪律层含用法节）+ 三块跨相位（建档 ∥ 落地 ∥ 收口）无单一既有节承载位。
 
-**落点（双源两面）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`——`discipline-normal.md`（两侧同锚 = `## 任务边界` 节前；as-of 2026-10-09 实读 CN `:84` ∥ EN `:84`）；
-`persona-normal.md`（CN「能力边界」节内 ∥ EN `## Main-agent role` 节内）· `common.md`（「批次档常识」六段全图行——节内换写）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 翻译回写（非 cp）；**提示词实体落笔 = 本批实施轮**。
+**落点（中文设计文档 + 英文代码）**：EN 面 = `thincoder-core/prompts/` ∥ CN 面 = `docs/core/design/prompts/`——`discipline-normal.md`（两侧同锚 = `## 任务边界` 节前——CN `:84` ∥ EN `:84`）；
+`persona-normal.md`（CN「主代理角色」节内 ∥ EN `## Main-agent role` 节内）· `common.md`（「批次档常识」六段全图行——节内换写）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）；EN 按 M9 精确翻译回写（非 cp）。
 
-**计数连带（D3）**：① `discipline-normal.md` `##` 块 7 ⇒ 8 · 标题节点 21 ⇒ **25**（+4/面）——§10.2 行 8 复算 = **25/25**（**收口轮复算**）；② `persona-normal.md` ∥ `common.md`：节内增列 ⇒ 零计数连带（行 14 ∥ 行 5 读数零变）；③ 需求侧随动 = U 项（父侧笔）；④ 计数断言 = 无存活断言（2026-09-28 测试树全清在册）。
+**计数连带（D3）**：① `discipline-normal.md` `##` 块 **8** · 标题节点 **25**——§8.2 行 8 随正（当前读数唯一处 = §8.2）；② `persona-normal.md` ∥ `common.md`：节内增列 ⇒ 零计数连带；③ 需求侧随动 = U 项（父侧笔）；④ 计数断言 = 无存活断言。
 
-**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑（新文本零文档引用——`§N` 为协议自名合法正例）；`scripts/doc-check.mjs`（CN 新行守行宽 ≤300）；`##` 块计数可机判。
+**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑（新文本零文档引用——`§N` 为协议自名合法正例）；CN 新行守行宽 ≤300；`##` 块计数可机判。
 
 **边界**：不新增工程机械门（普通面——设计令牌 ∥ 强制 batchDoc ∥ 写文件门禁三者不新增；携绑定 coder 随绑定受既有批次档写门——非新增门，§4.16）· 台账机制本体零改 · 工程面提示词零触 · 机械面设计 = `BATCH-RECORD.md` §4.16（本档不重述）· 需求档零笔（U 项 = 父侧）。
 
-### 6.22 产品常识（配置项必须有配置界面 · 用户定则入 common）（2026-10-09 批 · 台账 #1139 ∥ #1140）
+### 6.22 产品常识（配置项必须有配置界面 · 用户定则入 common）
 
-**来源**：用户 2026-10-09 15:52 定则原话（「任何配置项要给配置界面这他妈的不应该是常识吗？！」——台账 #1139）∥ 15:54「这种常识你还是先进提示词面」+ 15:56「不不不，这是常识，不仅仅针对工程模式」（#1140）（轻通道轮——缺陷修复：提示词面缺用户定则；收尾轮 §2 = 设计形式化）。
+**来源**：用户定则原话（「任何配置项要给配置界面这他妈的不应该是常识吗？！」）∥「这种常识你还是先进提示词面」+「不不不，这是常识，不仅仅针对工程模式」。
 
 **机制**：公共层 `common.md` **档末新增第 16 节**「产品常识（Product common sense）」×1 条——**配置项必须有配置界面**（任何配置项默认同批给出界面写面；载入期项标注「重启生效」）∥ 例外须显式说明理由并经用户裁（「它一直是配置文件项」不构成例外）∥ 界面提示文案不得把用户指向界面里不存在的入口。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**分层归属（四问）**：① 公共层——「两模式逐句都要的协作基础」：全角色常识，受众 = 两模式 + 全部子代理（用户 15:56 明示「不仅仅针对工程模式」）；② 非纪律层——非「该模式下怎么干活」，是给配置项配界面的常识；③ 非人格层——非身份 / 边界；④ 通用层内容（零项目实例）。
+**分层归属（四问）**：① 公共层——「两模式逐句都要的协作基础」：全角色常识，受众 = 两模式 + 全部子代理（用户明示「不仅仅针对工程模式」）；② 非纪律层——非「该模式下怎么干活」，是给配置项配界面的常识；③ 非人格层——非身份 / 边界；④ 通用层内容（零项目实例）。
 
-**形态（与 §6.1 落点口径的关系）**：**新增节**——在 §6.1「行为纪律面的落点形态」默认口径（`:166`——既有节内增列）之外；先例 = §6.16 ∥ D-PS22（公共层档末新增）；**移档末** = 评审 #37 🟡3 处置（段中插入 ⇒ 档末——§N 零漂移）；计数连带照 D3 随动（下行）。
+**形态（与 §6.1 落点口径的关系）**：**新增节**——在 §6.1「行为纪律面的落点形态」默认口径（`:166`——既有节内增列）之外；先例 = §6.16 ∥ D-PS22（公共层档末新增）；**移档末**（段中插入 ⇒ 档末——§N 零漂移）；计数连带照 D3 随动（下行）。
 
-**落点（双源两面）**：CN 正本 `docs/core/design/prompts/common.md:154-155`（第 16 节——档末）∥ EN 运行面 `thincoder-core/prompts/common.md:203-204`（同节位）（本段实读）；CN = 恰-字（内容权威）∥ EN = M9 翻译（非 cp；尾句按评审 #37 🔵6 收正「an entry」——与 CN「入口」等宽）；逐字文本 = 设计围栏块。
+**落点（中文设计文档 + 英文代码）**：CN 正本 `docs/core/design/prompts/common.md:154-155`（第 16 节——档末）∥ EN 代码 `thincoder-core/prompts/common.md:203-204`（同节位）（本段实读）；CN = 恰-字（内容权威）∥ EN = M9 翻译（非 cp；尾句「an entry」——与 CN「入口」等宽）；逐字文本 = 设计围栏块。
 
-**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题（「common.md 16 节」）+ 表行 16（父侧已落——2026-10-09）；
-② 本档 §10.2 表行 5 读数复算 = **16/19**（2026-10-09——两档各 +1 标题节点：CN `##` 15 ⇒ 16 ∥ EN 15+3 ⇒ 16+3）；③ 计数断言 = 无存活断言（原 common 节数守恒用例已退役；`prompts-dual-source` 族全仓零命中——本段实读）；④ `common.md` `##` 块计数：CN 16 ∥ EN 16（2026-10-09）。
+**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题 + 表行（数值以需求档为准）；
+② 本档 §8.2 表行 5 随正（当前读数唯一处 = §8.2）；③ 计数断言 = 无存活断言；④ `common.md` `##` 块计数随正。
 
-**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs`（新文本零文档引用——`§1–§6` 为协议自名合法正例）；`scripts/doc-check.mjs`（CN 新行守行宽 ≤300）；`##` 块计数可机判（逐档数）。
+**机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs`（新文本零文档引用——`§1–§6` 为协议自名合法正例）；CN 新行守行宽 ≤300；`##` 块计数可机判（逐档数）。
 
 **边界**：零机械门 · 产品码零触（提示词文本 + 文档面）· 不改铁律 ∥ 分流表 ∥ 确认门（例外经本则「显式说明 + 用户裁」承载）· 他批零触（实例面 = server 控制台配置批在途——本则不重述）· 需求档零笔（连带项 = 父侧已落）。
 
-### 6.23 台账治理增补 v2（清账轮三条——锚点复核 ∥ 族行 ∥ evidence 指针化上限）（2026-10-14 批 · 台账 #1386）
+### 6.23 台账治理增补 v2（清账轮三条——锚点复核 ∥ 族行 ∥ evidence 指针化上限）
 
-**来源**：用户 2026-10-14 00:16「那清帐轮那些你也落地吧。」——承父侧 00:11 建议①②③（**来源 = 设计侧提议**，用户 00:16 批准落地）+ 00:15 落地方案（落点 = 本档新节 + 双面提示词；工具面零改）（同族先例 = 2026-10-07 批 §6.20——落笔轮次口径见 §6.1 沿革注）。
+**来源**：用户「那清帐轮那些你也落地吧。」——承父侧建议①②③（**来源 = 设计侧提议**，用户批准落地）+ 落地方案（落点 = 本档新节 + 提示词两份；工具面零改）。
 
 **机制（三条 · 逐条 = 要求 + 时机 + 衔接）**：① **锚点复核**——**要求**：清账轮对「归批」行**逐行核锚**，锚的批已收口而活未落 ⇒ **当场重锚**（转下一触点 ∥ 升小批候选 ∥ 降「认账不排期」）；**时机** = 清账轮；**衔接** = 与「暂缓批先复核」（锚失效扫描族）∥「能当场做的当场做」（池面 triage）同族；why = 池面未决数须代表真实工作量，不掺悬空；实证 = #1235（锚「沙盒批修正轮」——该批已收口仍挂）∥ #1193/#1194（锚「VSC 面下批」）；
  ② **族行**——**要求**：同一工作对象的散行归一为族行（一行 = 一个工作对象，标题携成员清单；成员同批同轮收口）；**时机** = 批点火扫描前的存量归并；**衔接** = 「入库查重」管登记时点、族行管存量行的归并形 ∥「单行 = 单结算单元」同轴（拆 = 不相干项不绑，并 = 同一工作对象不分家）；why = 未决面里独立工作对象少得多——批点火扫描一眼看全；实证 = 越线拆案族 #1269 ∥ #1297 ∥ #1309 ∥ #1313 ∥ #1352（五行 = 一个「结构拆分收口」）；
@@ -583,26 +552,26 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **形态（与 §6.1 落点口径的关系）**：既有节内增列（「派发与收尾纪律」节新 bullet ×1 ∥ 「台账」节新 bullet ×2）⇒ **零 `##` 块计数连带**；生命周期表受需求档 FR30「事件 → 动作」五行判据锁定——三条均不入事件表（锚点复核 trigger = 清账轮；族行 / 上限 = 行面形态）。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「能当场做的当场做」`:84` 后新 bullet ∥ 「台账」节 `:179` 后新 bullet ×2——**CN 正本 = 本设计轮直落，已落**）
- ∥ 英文运行面 `thincoder-core/prompts/persona-engineering.md`（「Fix in place first」`:84` 后新 bullet ∥ `:181` 后新 bullet ×2——**EN = 实施轮**按 M9 翻译回写，非 cp）（as-of 2026-10-14 实读）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/persona-engineering.md`（「能当场做的当场做」`:84` 后新 bullet ∥ 「台账」节 `:179` 后新 bullet ×2）
+ ∥ 英文代码 `thincoder-core/prompts/persona-engineering.md`（「Fix in place first」`:84` 后新 bullet ∥ `:181` 后新 bullet ×2）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
-**计数连带（D3）**：① `persona-engineering.md` 行数 CN 205 ⇒ **208**（+3 = 新 bullet 三条——本轮已落）∥ EN 205 ⇒ **208**（同 +3——实施轮）；`##` 块 16 ∥ 17 不变；② 本档 §10.2 行 12 读数复算 = **16/17**（标题节点零变）；③ 需求侧 = U 项（父侧笔）。
+**计数连带（D3）**：① `persona-engineering.md` 行数 CN **218** ∥ EN **216**；`##` 块 **17 ∥ 17**；② 本档 §8.2 行 12 读数随正（标题节点零变；当前读数唯一处 = §8.2）；③ 需求侧 = U 项（父侧笔）。
 
-**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；CN 新行守行宽 ≤300（`checkConfig.lineWidth`——本档与提示词档均在扫描域）；`##` 块计数可机判；`scripts/doc-check.mjs` 本批域零新增红（基线读数 = 设计面复跑）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
+**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；CN 新行守行宽 ≤300（`checkConfig.lineWidth`——本档与提示词档均在扫描域）；`##` 块计数可机判；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
-**边界**：零机械门 · 台账工具 / 代码零触（query/close/evidence 能力已足——三条 = 纯纪律）· §6.20 五条正文逐字不动（本批 = 增补 v2）· 其余纪律零触 · 零新术语（锚点复核 / 族行 / 指针化上限均为平名直述；`转下一触点` / `升小批候选` = 受控简写）· 需求档零笔（U 项 = 父侧）。
+**边界**：零机械门 · 台账工具 / 代码零触（query/close/evidence 能力已足——三条 = 纯纪律）· §6.20 五条正文逐字不动（= 增补 v2）· 其余纪律零触 · 零新术语（锚点复核 / 族行 / 指针化上限均为平名直述；`转下一触点` / `升小批候选` = 受控简写）· 需求档零笔（U 项 = 父侧）。
 
-### 6.24 注入开关（提示词 ∥ 记忆自动注入两枚全局开关）（2026-10-14 批 · 台账 #1420）
+### 6.24 注入开关（提示词 ∥ 记忆自动注入两枚全局开关）
 
-**来源**：用户 2026-10-14 09:56 提出（迁移项目「旧文档干扰行为」应急阀）+ 12:15「办」点火 + 两裁定（原话「文档和记忆分开开关，做成全局控制就行」）+ 12:14 追加（原话「几个客户端都要能在配置界面上配置，同时也开放工具给agent让agent也能自己控制开关」）；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6。
+**来源**：用户提出（迁移项目「旧文档干扰行为」应急阀）+「办」点火 + 两裁定（原话「文档和记忆分开开关，做成全局控制就行」）+ 追加（原话「几个客户端都要能在配置界面上配置，同时也开放工具给agent让agent也能自己控制开关」）；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6。
 
-**键面（口径单源 = 核 `config.json`）**：`agent.injectDocs` ∥ `agent.injectMemories`——布尔，默认 `true`（DEFAULTS.agent 声明）；判据 `!== false`（只有显式 `false` 阻断；缺省 = 现行为零变；同族先例 = `agent.timerWake`——`thincoder-core/config.mjs`）。**族面现状 = 三键**——① 项目指令块 的开关已拆至 `agent.injectProjectRules`（2026-10-15 · §6.27），`injectDocs` 只余 ② 相关文档块（见下行阻断点表）。
+**键面（口径单源 = 核 `config.json`）**：`agent.injectDocs` ∥ `agent.injectMemories`——布尔，默认 `true`（DEFAULTS.agent 声明）；判据 `!== false`（只有显式 `false` 阻断；缺省 = 现行为零变；同族先例 = `agent.timerWake`——`thincoder-core/config.mjs`）。**族面现状 = 三键**——① 项目指令块 的开关已拆至 `agent.injectProjectRules`（§6.27），`injectDocs` 只余 ② 相关文档块（见下行阻断点表）。
 
 **阻断点（三处——判点均逐 run 现读 `agent.config`）**：
 
 | # | 注入块 | 判点落位（核 `thincoder-core/agent/setup.mjs`） | 开关 |
 |---|---|---|---|
-| ① | 项目指令文件块（`~/.thincoder/AGENTS.md` 低优 + 项目根 `AGENTS.md` / `project_rules.md`） | `:276`（`loadProjectInstructions` 调用——helper 本体零改；§6.2「运行期追加面」同读数） | `agent.injectProjectRules`（2026-10-15 拆出——§6.27） |
+| ① | 项目指令文件块（`~/.thincoder/AGENTS.md` 低优 + 项目根 `AGENTS.md` / `project_rules.md`） | `:281`（`loadProjectInstructions` 调用——helper 本体零改；§6.2「运行期追加面」同读数） | `agent.injectProjectRules`（§6.27） |
 | ② | 相关文档块（自动检索 + 注入） | `:118-155` | `agent.injectDocs` |
 | ③ | 相关记忆块（自动检索 + 注入） | `:157-169` | `agent.injectMemories` |
 
@@ -611,26 +580,26 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **读键时机与热应用**：判点皆在 `prepareRun`（每次提示词组装）现读 `agent.config` ⇒ 写入落到活 `agent.config` 即**本会话下一次组装生效**：`settings` 工具 = 直写内存即热（工具热应用链零改）∥ CLI `/config` = `reloadConfig` 换新 `agent.config`（同即热）∥ 端壳设置界面腿 = 各端既有配置刷新语义（VSC `hydrateRun` 每轮重读 ⇒ 下一条消息；桌面 = 下次 agent 装配）——零新机制。
 
-**先例 ∥ 偏离 ∥ 桌面腿证据（as-of 2026-10-14 实读）**：
+**先例 ∥ 偏离 ∥ 桌面腿证据**：
 
-- **先例批** = timer-wake 阶段 2（§5.15——VSC `agent.config.agent` 白名单整建漏键 ⇒ `agent.timerWake` 在 `config.json` 关不掉；三处穿透（默认种 ∥ raw 读 ∥ `agentFields`）补齐后真链闭合）——本批 VSC 行同址预登记三处（逐文件落点 = 设计围栏块）。
+- **先例批** = timer-wake 阶段 2（§5.15——VSC `agent.config.agent` 白名单整建漏键 ⇒ `agent.timerWake` 在 `config.json` 关不掉；三处穿透（默认种 ∥ raw 读 ∥ `agentFields`）补齐后真链闭合）——VSC 行同址预登记三处（逐文件落点 = 设计围栏块）。
 - **桌面腿对照实读（无白名单）** = 写链 `settings:agent`（`thincoder-desktop/src/main/settings.mjs:255-297`——值校验 + `writeConfigAtomic`）落 `config.json`；
   读链 = 装配全量直传（`thincoder-core/agent/assemble.mjs:65` `loadConfig()` ⇒ `:106` `createAgent({ config })`；键经 `thincoder-core/config.mjs:329` 合并面直通 `agent.config`）⇒ 键必达核判点，桌面无需三处补。
-- **偏离（知会）** = UI 腿生效时点 ≠ 会话内即热（VSC = 下一条消息 ∥ 桌面 = 下次装配——装配表同键复用 `thincoder-desktop/src/main/agent-host.mjs:198-199`）；需求③热应用仅绑 `settings` 工具面（工具直写活 config = 即热）；UI 腿同热 = 需 config-watch 活重载链（新机制），本批不做。
+- **偏离（知会）** = UI 腿生效时点 ≠ 会话内即热（VSC = 下一条消息 ∥ 桌面 = 下次装配——装配表同键复用 `thincoder-desktop/src/main/agent-host.mjs:198-199`）；需求③热应用仅绑 `settings` 工具面（工具直写活 config = 即热）；UI 腿同热 = 需 config-watch 活重载链（新机制），不做。
 
-**不变式（工程模式不吃这两面）**：两开关只断自动注入三块——槽位装配（`assemblePrompt`）∥ 工程模式提醒 ∥ 批档 / 台账机制零触 ⇒ 关不破工程流程；子代理 config 继承父（`thincoder-core/agent-tools/subagent-spawn.mjs:300-302`）⇒ 子代理装配同受开关。（2026-10-15：本族新增第三键 `agent.injectProjectRules`——① 独立成键；本节两键语义收窄为「只管 ② ∥ ③」，详见 §6.27。）
+**不变式（工程模式不吃这两面）**：两开关只断自动注入三块——槽位装配（`assemblePrompt`）∥ 工程模式提醒 ∥ 批档 / 台账机制零触 ⇒ 关不破工程流程；子代理 config 继承父（`thincoder-core/agent-tools/subagent-spawn.mjs:300-302`）⇒ 子代理装配同受开关。（本族第三键 `agent.injectProjectRules`——① 独立成键；本节两键语义收窄为「只管 ② ∥ ③」，详见 §6.27。）
 
 **端面登记（多实现面 · 语义单源 = 本节）**：核机制面（本节）∥ 三客户端配置界面（CLI `/config` ∥ VSC 设置页 Agent 卡 ∥ 桌面设置 Agent 段——逐文件落点 = 设计围栏块）∥ `settings` 工具面（DEFAULTS 派生——可见可写 + 布尔类型护栏自动跟随、实现面零改码；同族面 = `CONFIG.md` §6.2「派生消费面」）。
 
-**机检**：批内件（U1–U11：核面三块开关 ∥ 热应用 ∥ `settings` 工具写入面 ∥ 子代理装配 ∥ 工程不变式 ∥ 三端面）；`scripts/doc-check.mjs` 本批域零新增红。
+**机检**：批内件（U1–U11：核面三块开关 ∥ 热应用 ∥ `settings` 工具写入面 ∥ 子代理装配 ∥ 工程不变式 ∥ 三端面）。
 
 **边界**：不改检索机制本体（`doc_search` / `memory search` 按需工具零影响）· 不删数据 · 工程模式装配链零触 · 不扩到项目级粒度（全局 = 用户裁）· 其余自动注入块不在开关面（`.cursor/rules` 尾块 `thincoder-core/agent/setup.mjs:287-288` ∥ 仓库大纲 `thincoder-core/agent/setup.mjs:103-112` ∥ skills 清单 ∥ git / env / peer / time 提醒——需求口径 = 上表三块）· 零新机制（落点 = 既有配置面 + 既有读点）。
 
-### 6.25 安全纪律（五条携 why · 提示词公共层）（2026-10-14 批 · 台账 #1435）
+### 6.25 安全纪律（五条携 why · 提示词公共层）
 
-**来源**：用户 2026-10-14 14:38–14:43 定稿（原话「早期其实我们并不清楚我们需要什么样的安全机制，只有等到功能确立以后，才能清晰的清楚安全的需求」「我希望能让未来执行的agent看到提示词能知其然知其所以然。」「可以，就这么定，开设计。」）；
-需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.4 尾「安全纪律」块（现盘 `:173`–`:184`——块头 `:173` ∥ 依赖行 `:183` ∥ 验收行 `:184`；as-of 2026-10-14 实读——主 agent 笔）。
-**why 实证（同日出站闸事故）**：闸「关」态不回收节点规则 ⇒ 残留规则掐死盒出站拉仓（台账 #1433）；同族用户令 = 10:24「你先不要着急落地出网管控这一块……安全性问题押后，等跑通以后再说，别套着枷锁跳舞」（台账 #1414 ∥ #1421）。
+**来源**：用户定稿（原话「早期其实我们并不清楚我们需要什么样的安全机制，只有等到功能确立以后，才能清晰的清楚安全的需求」「我希望能让未来执行的agent看到提示词能知其然知其所以然。」「可以，就这么定，开设计。」）；
+需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.4 尾「安全纪律」块（块头 ∥ 依赖行 ∥ 验收行——主 agent 笔）。
+**同族用户令**：用户「你先不要着急落地出网管控这一块……安全性问题押后，等跑通以后再说，别套着枷锁跳舞」。
 
 **机制（五条——逐条 = 条文 + why）**：
 ① **安全后置**——功能先到「能用」，安全机制排后或按需另轮；功能未定型前不立安全项（why：未定型时「该防什么」无答案、只有想象——按想象写的防护 = 假地板：大家以为已管住，无人再审视）。
@@ -644,21 +613,21 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **形态（与 §6.1 落点口径的关系）**：**新增节**——`common.md` 档末第 17 节；在 §6.1「行为纪律面的落点形态」默认口径（现盘 `:169`——既有节内增列）之外；先例 = §6.16 ∥ §6.22（公共层档末新增节 · D-PS22 ∥ D-PS30）；依据 = 安全主题在公共层无既有承载节（16 节零安全面——实读）+ 受众全线；**移档末**（沿 D-PS30 裁定——§N 零漂移）；计数连带照 D3 随动（下行）。**无同族条处置**（安全面无既有条）。
 
-**落点（双源两面）**：中文正本 `docs/core/design/prompts/common.md`（档末第 17 节——157 行后）∥ 英文运行面 `thincoder-core/prompts/common.md`（同节位——205 行后）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
-**落笔安排（父侧派单）**：本批 CN ∥ EN 均**实施轮**落笔（CN → eng-designer ∥ EN → eng-coder——M9 翻译回写，非 cp）。
-与 §6.1「中文审核面 = 设计轮直落」之差——**因由 = 双稿同轮落笔**：逐字稿先以设计围栏块为审核面过评审与批准，两档随后同轮落笔（修正先落稿面、不回改已落档面）；同形先例 = 本档 §6.9 条「两稿设计轮落形、实施轮落笔」（§6.16「单批安排」为异向旧例——旧规「落笔归实现轮」时代，本处不沿引）。
-**现态**：两档已落（2026-10-14 实施轮——CN `docs/core/design/prompts/common.md:159-169` ∥ EN `thincoder-core/prompts/common.md:206-216`；逐行比对 11/11 全等）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（档末第 17 节——157 行后）∥ 英文代码 `thincoder-core/prompts/common.md`（同节位——205 行后）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落笔安排（父侧派单）**：CN ∥ EN 均**实施轮**落笔（CN → eng-designer ∥ EN → eng-coder——M9 精确翻译回写，非 cp）。
+与 §6.1「中文设计文档 = 设计轮直落」之差——**因由 = 双稿同轮落笔**：逐字稿先以设计围栏块为送审对象过评审与批准，两档随后同轮落笔（修正先落稿面、不回改已落档面）；同形先例 = 本档 §6.9 条「两稿设计轮落形、实施轮落笔」（§6.16「单批安排」为异向旧例——旧规「落笔归实现轮」时代，本处不沿引）。
+**现态**：两档已落（CN `docs/core/design/prompts/common.md` ∥ EN `thincoder-core/prompts/common.md`；逐行比对 11/11 全等）。
 
-**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题（「common.md 16 节」⇒ 17 节）+ 表行 17（**父侧笔**——U 项）；② 本档 §10.2 表行 5 读数复算 = 16/19 ⇒ **17/20**（两档各 +1 标题节点——**实施轮落地后复算**，收口面）；③ `common.md` `##` 块计数：CN 16 ⇒ 17 ∥ EN 16 ⇒ 17（实施轮落地后生效）；④ 计数断言 = 无存活断言（原节数守恒用例已退役——§6.22 在册）。
+**计数连带（D3——列明处）**：① 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3 标题 + 表行（数值以需求档为准；**父侧笔**——U 项）；② 本档 §8.2 表行 5 随正（当前读数唯一处 = §8.2）；③ `common.md` `##` 块计数随正；④ 计数断言 = 无存活断言。
 
-**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用——读数入一次性记录面）；`scripts/doc-check.mjs` 本批域零新增红（设计面复跑读数）；CN 新行守行宽 ≤300（实施轮落地时核）∥ EN 档不在行宽机检域（披露不行使——同 §6.19 记法）；`##` 块计数可机判（逐档数）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
+**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用——读数入一次性记录面）；CN 新行守行宽 ≤300（实施轮落地时核）∥ EN 档不在行宽机检域（披露不行使——同 §6.19 记法）；`##` 块计数可机判（逐档数）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
 **边界**：零机械门 · 不改既有安全机制本体 ∥ 不引入新机制 ∥ 不裁决「某项防护该不该做」（逐事判断——需求块边界）；不落两模式纪律层（两模式同文——见形态行）· 不触 persona ∥ subagent-base ∥ tool-docs ∥ 其余纪律 · **上游三观档 = 无冲突、无需同拍**（五条 = 三观在安全面的应用——设计轮检查；先例 = §15 ∥ §16 入公共层未触三观；需求块「如需同拍」条件不成立）·
 **③「先关 / 先拆」仍受既有破坏性命令红线与不可逆确认门约束**（红线 = `common.md` §10 尾部 · D-PS5；非「先拆」豁免）· 需求档零笔（U 项 = 父侧）。
 
-### 6.26 跨仓勘察义务（三句文本——义务 ∥ 派单 ∥ 复核）（2026-10-14 批 · 台账 #1441）
+### 6.26 跨仓勘察义务（三句文本——义务 ∥ 派单 ∥ 复核）
 
-**来源**：用户 2026-10-14 21:02「行」（开跑授权）——承用户 19:36 实报「thincoder 在做设计时经常无视跨仓的设计文档」（台账 #1441）；三句 = 设计侧提议（父侧提出、用户批准——非用户自提）。
+**来源**：用户「行」（开跑授权）——承用户实报「thincoder 在做设计时经常无视跨仓的设计文档」；三句 = 设计侧提议（父侧提出、用户批准——非用户自提）。
 
 **病根（父侧实读在案）**：① 设计席**不被推**（相关文档注入 = depth-0 门，`thincoder-core/agent/setup.mjs:114-116`——子代理不注入）；② **无义务 / 无证据**（现仅一句泛纪律「动手前先查声明源」——从未触发）；③ **复核无牙**（设计评审无对应检查项）。**读通道本通**：树内默认可查（本工作区实证——`code_search` 直返兄弟仓 `thincoder.com/*`）；`searchOrigins` = 项目 origin ∪ 声明公共仓。
 
@@ -669,22 +638,22 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **分层归属（四问）**：**行为面（义务）** = 工程纪律层设计步（消费方 = 主会话 · 工程模式 + eng-coder + eng-designer 全装配——主 agent 需见〔核验设计稿 / 派单面〕；先例 = 同类先例勘察落同节）；**形态面（证据行）** = 设计席人格 8 项 item 1（交付物形态——就地扩条，8 计数不变）；**派单面** = 主 agent 人格层「派发与收尾纪律」节内（派单写权独属——子代理非受众 ⇒ 不落纪律层）；**核查面** = 设计评审提示词（自含档）。
 
-**形态（与 §6.1 落点口径的关系）**：**既有节内增列 / 就地扩条**——四处零新增节 ⇒ 零 `##` 块计数连带；**②不落六字段表**（task book 六字段 = `validateTaskBookFields` 判据集——机械面牵动避让，本批他域零动）。
+**形态（与 §6.1 落点口径的关系）**：**既有节内增列 / 就地扩条**——四处零新增节 ⇒ 零 `##` 块计数连带；**②不落六字段表**（task book 六字段 = `validateTaskBookFields` 判据集——机械面牵动避让，他域零动）。
 
-**落点（双源两面——四处 × 2）**：中文正本 `docs/core/design/prompts/` 四处（① `discipline-engineering.md` 设计步 ∥ ② `persona-eng-designer.md` 8 项 item 1 ∥ ③ `persona-engineering.md` 派发纪律 ∥ ④ `advisor-design.md` 评审标准第 10 条）∥ 英文运行面 `thincoder-core/prompts/` 同四处；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
-**落笔安排**：**中文审核面 = 本设计轮直落**（§6.1 面分述）；**英文运行面 = 实施轮**（按 M9 翻译回写，非 cp）。
+**落点（中文设计文档 + 英文代码——四处 × 2）**：中文正本 `docs/core/design/prompts/` 四处（① `discipline-engineering.md` 设计步 ∥ ② `persona-eng-designer.md` 8 项 item 1 ∥ ③ `persona-engineering.md` 派发纪律 ∥ ④ `advisor-design.md` 评审标准第 10 条）∥ 英文代码 `thincoder-core/prompts/` 同四处；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落笔安排**：**中文设计文档 = 本设计轮直落**（§6.1 面分述）；**英文代码 = 实施轮**（按 M9 精确翻译回写，非 cp）。
 
-**计数连带（D3——列明处）**：① 设计评审标准条目数 9 ⇒ 10（两档——「第 10 条」）；② 设计档 8 项计数不变（item 1 就地扩）；③ task book 六字段计数不变（②独立行）；④ §10.2 行 1 ∥ 7 ∥ 11 ∥ 12 复算 = **零变**（四处均非标题节点）。
+**计数连带（D3——列明处）**：① 设计评审标准条目数 **10**（两档——「第 10 条」）；② 设计档 8 项计数不变（item 1 就地扩）；③ task book 六字段计数不变（②独立行）；④ §8.2 行 1 ∥ 7 ∥ 11 ∥ 12：本节改动零涉（四处均非标题节点；读数以 §8.2 为准）。
 
-**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用——读数入一次性记录面）；`scripts/doc-check.mjs` 本批域零新增红（读数入一次性记录面）；CN 新行守行宽 ≤300 ∥ EN 档不在行宽机检域（披露不行使——同 §6.19 记法）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
+**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用——读数入一次性记录面）；CN 新行守行宽 ≤300 ∥ EN 档不在行宽机检域（披露不行使——同 §6.19 记法）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
-**边界**：零机械门 · 注入零触（`setup.mjs` depth-0 门 = 下一块石头——零改）· 需求档零笔（U 项 = 父侧）· 读侧既有句零动（§6.15——本批不重述读权限）· 不触 `common.md` ∥ subagent-base ∥ tool-docs ∥ 其余纪律 · 维度权威档未登记本维度（`ADVISOR-CONVERGENCE.md`——不在本批射程；观察项报父侧）。
+**边界**：零机械门 · 注入零触（`setup.mjs` depth-0 门 = 下一块石头——零改）· 需求档零笔（U 项 = 父侧）· 读侧既有句零动（§6.15——不重述读权限）· 不触 `common.md` ∥ subagent-base ∥ tool-docs ∥ 其余纪律 · 维度权威档未登记本维度（`ADVISOR-CONVERGENCE.md`——不在射程；观察项报父侧）。
 
-### 6.27 项目指令注入独立开关（`agent.injectProjectRules` · 拆 ① 出/职责正交）（2026-10-15 批 · 台账 #1465）
+### 6.27 项目指令注入独立开关（`agent.injectProjectRules` · 职责正交）
 
-**来源**：用户 2026-10-15 04:57 提出（原话「有些项目里的 agent.md 是适用于别的 coding agent 的，用到 thincoder 会造成混乱」）+ 05:01 收窄（原话「我需要一个单独关掉 agent.md 和 project_rules.md 注入的开关」）+ 05:02 定作用域（原话「按全局」）+ 05:04 点火「办」+ 05:05 拍定职责关系；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6（`#1465` 块——已定行 `:243` ∥ 不变式 `:245`）。**本批 = 在 §6.24（#1420）三阻断点之上，把 ① 独立成键并令两键正交。**
+**来源**：用户提出（原话「有些项目里的 agent.md 是适用于别的 coding agent 的，用到 thincoder 会造成混乱」）+ 收窄（原话「我需要一个单独关掉 agent.md 和 project_rules.md 注入的开关」）+ 定作用域（原话「按全局」）+ 点火「办」+ 拍定职责关系；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6。**本设计 = 在 §6.24 三阻断点之上，把 ① 独立成键并令两键正交。**
 
-**职责切分（用户 05:05 裁「(乙) 完全正交」——本批口径单源）**：
+**职责切分（用户裁「(乙) 完全正交」——口径单源）**：
 
 | 键 | 管 | 默认 / 判据 |
 |---|---|---|
@@ -696,130 +665,151 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **阻断点（判点逐 run 现读 `agent.config` · 核 `thincoder-core/agent/setup.mjs`）**：
 
-| # | 注入块 | 判点落位 | 开关（本批后） | 本批改动 |
+| # | 注入块 | 判点落位 | 开关（落定后） | 改动面 |
 |---|---|---|---|---|
-| ① | 项目指令文件块 | `:276`（`loadProjectInstructions` 调用——helper 本体 `agent/helpers.mjs:399` 零改） | **`agent.injectProjectRules`** | **判读取自 `injectDocs` ⇒ 改为新键**（`:57` 新增 `injectProjectRules` 归一 + `:276` 换判变量） |
+| ① | 项目指令文件块 | `:281`（`loadProjectInstructions` 调用——helper 本体 `agent/helpers.mjs:399` 零改） | **`agent.injectProjectRules`** | **判读取自 `injectDocs` ⇒ 改为新键**（`:57-60` 新增消费点变量 `const injectProjectRules = agent.config?.agent?.injectProjectRules !== false` + `:281` 换判变量） |
 | ② | 相关文档块 | `:118`（`if (injectDocs)` 门——块体 `:118-155`） | `agent.injectDocs` | **零改**（语义收窄 = ① 撤出后自然只剩 ②；门句逐字不动） |
 | ③ | 相关记忆块 | `:157`（`if (injectMemories)` 门——块体 `:157-169`） | `agent.injectMemories` | 零改 |
 
-关 = **检索调用不执行 + 注入不发生**（不止吞注入——承 §6.24 口径 D-PS35）；① 关 ⇒ 零 `loadProjectInstructions` 调用（零 I/O）；② 关 ⇒ 零 `docSearch` 调用；三块既有执行条件（depth 门 ∥ `resume` 段）零动。
+关 = **检索调用不执行 + 注入不发生**（不止吞注入）；三块既有执行条件（depth 门 ∥ `resume` 段等）零动。
+三键**互不影响**（正交——关任一方另一方照常）；① 与 ② 的职责切分详见 §6.27。
+**本表 ① 行以 §6.27 为准（落定后态）。**
 
-**判点同址判定（设计问题 2 的答复）**：① 判点**仍落 `setup.mjs:276` 同址**（不新开第二处）——新键只替换该处判读的变量名，判点位置、条件形（三元 + `loadProjectInstructions` 调用面）逐字不变。理由 = `loadProjectInstructions` 是公开导出面（`config.mjs` 派生表 + `API-CONTRACT.md` 在册）⇒ 判点留调用侧 = 最小爆炸半径（承 D-PS35 判由）；换址（如移入 helper）须动公开导出面语义，否决。
+**判点同址判定（设计问题 2 的答复）**：① 判点**仍落 `setup.mjs` 调用侧**（不新开第二处）——新键只替换该处判读的变量名，条件形（三元 + `loadProjectInstructions` 调用面）逐字不变。**坐标随动**：已在 `:57-60` 新增消费点变量 3 行 ⇒ 判点 = **`:281`**（语义零变，条件形逐字同）。理由 = `loadProjectInstructions` 是公开导出面（`config.mjs` 派生表 + `API-CONTRACT.md` 在册）⇒ 判点留调用侧 = 最小爆炸半径（承 D-PS35 判由）；换址（如移入 helper）须动公开导出面语义，否决。
 
 **默认零行为变（设计问题 4 · 可机判证明）**：
 
-- **证明形**：新键缺省（`config.json` 无该键）⇒ DEFAULTS 合并后 `agent.injectProjectRules === true` ⇒ `:276` 判 `true !== false` = 真 ⇒ `loadProjectInstructions` 照常调用，与 #1420 落地态**逐字节同**。②③ 判点零改 ⇒ 逐字零变。
-- **机判法**：不设三键跑一次装配，断言 `systemPrompt` 含 `Project instructions (follow these as project conventions):` 块 + 含 `[Relevant documentation` / `[Relevant memories` 两 reminder（或按测试装置的等价读数）；与 #1420 落地态读数逐项比对（用例型——验收 ③）。
+- **证明形**：新键缺省（`config.json` 无该键）⇒ DEFAULTS 合并后 `agent.injectProjectRules === true` ⇒ `:281` 判 `true !== false` = 真 ⇒ `loadProjectInstructions` 照常调用，与 #1420 落地态**逐字节同**。②③ 判点零改 ⇒ 逐字零变。
+- **机判法（正向 + 反向——三键正交可机判）**：
+  - **正向**：不设三键跑一次装配，断言 `systemPrompt` 含 `Project instructions (follow these as project conventions):` 块 + 含 `[Relevant documentation` / `[Relevant memories` 两 reminder（或按测试装置的等价读数）；与 #1420 落地态读数逐项比对（用例型——验收 ③）。
+  - **反向 ①**：写 `agent.injectProjectRules = false` ⇒ 装配后 `systemPrompt` **无** `Project instructions (follow these as project conventions):` 块 **∧ 含** `[Relevant documentation` / `[Relevant memories` 两 reminder。
+  - **反向 ②**：写 `agent.injectDocs = false` ⇒ `systemPrompt` **无** `[Relevant documentation` **∧ 含** `Project instructions (follow these as project conventions):` 块。
+  - **⇒ 三键正交由此三向断言机判**（任一方独立可关、关后另两方逐项仍在）。
 
-**行为变更影响面 + 迁移注（用户 05:05 拍板的代价——设计问题 5）**：
+**行为变更影响面（用户拍板的代价）**：
 
-- **变更实质**：`injectDocs` 由「管 ①②」收窄为「只管 ②」。**唯一可观察差异** = 老用户在 `config.json` 显式设过 `agent.injectDocs: false` 且**未设新键**时：本批前 ⇒ ① 不注入；本批后 ⇒ ① **重新开始注入**（因 ① 判点不再读 `injectDocs`，而新键缺省 = 开）。
-- **影响面（有界）**：仅命中「显式 `injectDocs:false`」的存量配置；缺省用户（绝大多数）零感。命中的用户若当初正是为「关项目指令」而设 `injectDocs:false`（#1420 语义下这是唯一手段），升级后会看到项目指令块回归 ⇒ 需主动设 `injectProjectRules:false`。
-- **迁移注（落地面）**：三端配置界面**文案改述**（现有 `settings.injectDocs` 词面「文档注入（项目指令文件 + 相关文档）」⇒ 收窄为「文档注入（相关文档自动检索）」——括注去掉「项目指令文件」），并在**新增键的行位给出「项目指令注入（`AGENTS.md` / `project_rules.md`）」+ 悬浮说明**（说明 = 关 = 不再注入项目指令文件；按需工具 `read` / `doc_search` 不受影响）。**不设**升级弹窗 / 不退化为「迁移脚本」（超需求边界——用户口径 = 全局配置键 + 界面可配，零新机制；不改既有数据）。**CLI `/config` 行文案**同改述（`:362` / `:388` 两处词面去「项目指令文件 + 」)。
+- **变更实质**：`injectDocs` 由「管 ①②」收窄为「只管 ②」。**唯一可观察差异** = 老用户在 `config.json` 显式设过 `agent.injectDocs: false` 且**未设新键**时：此前 ⇒ ① 不注入；此后 ⇒ ① **重新开始注入**（因 ① 判点不再读 `injectDocs`，而新键缺省 = 开）。
+- **影响面（有界）**：仅命中「显式 `injectDocs:false`」的存量配置；缺省用户（绝大多数）零感。命中的用户若当初正是为「关项目指令」而设 `injectDocs:false`（拆键前语义下这是唯一手段），此后会看到项目指令块回归 ⇒ 可自行设 `injectProjectRules:false`。
+- **关于告知**：不设——该键 2026-10-14 落地、尚未正式使用，无依赖旧语义的用户（用户裁定：不加运行期提示 / 不加检测代码 / 不加文档告示）。
 - **老用户自助路径**：三端界面 + `settings` 工具均可写 `agent.injectProjectRules`——用户在原位（配置界面）即可看到拆后两键、自选。
 
-**热应用（设计问题 3 · 照 §6.24 既有链，零新机制）**：判点逐 run 现读 `agent.config` ⇒ 写入落活 `agent.config` 即**本会话下一次组装生效**——`settings` 工具 = 直写内存即热（工具热应用链零改）∥ CLI `/config` = `saveProxy` + `reloadConfig` 换新 `agent.config`（即热）∥ VSC 设置面板 = `hydrateRun` 每轮重读 ⇒ 下一条消息 ∥ 桌面 = 下次 agent 装配（`agent-host.mjs` 装配表同键复用）。
+**热应用（照 §6.24 既有链，零新机制）**：判点逐 run 现读 `agent.config` ⇒ 写入落活 `agent.config` 即**本会话下一次组装生效**——`settings` 工具 = 直写内存即热（工具热应用链零改）∥ CLI `/config` = `saveProxy` + `reloadConfig` 换新 `agent.config`（即热）∥ VSC 设置面板 = `hydrateRun` 每轮重读 ⇒ 下一条消息 ∥ 桌面 = 下次 agent 装配（`thincoder-desktop/src/main/agent-host.mjs:183-185` `assembleAndLoad` → `assemble`，装配表同键复用）。
 
-**三端配置面落点（承 #1420 既有面 · 零新造 UI 机制）**：
+**三端配置面落点（承 §6.24 既有面 · 零新造 UI 机制 · VSC 分「穿透面」∥「UI 链」两行列）**：
 
-| 端 | 落点（本批逐点） |
+| 端 | 落点（逐点） |
 |---|---|
-| CLI `/config` | `thincoder-cli/src/tui/cmd-config.mjs`——主菜单项 `:362`（新增一行 `agent.injectProjectRules`，与 `:363` `injectDocs` 相邻）+ view 面板 `:388-389` 两行（新增 · `injectDocs` 文案改述）+ toggle 分支 `:462`（`action` 集合并入新键——`:465` `slice("agent.".length)` 取键机制天然兼容） |
-| VSC 设置面板 | 读链 `thincoder-vscode/src/extension/settings.mjs:45-46`（新增 `injectProjectRules` 归一）+ `:165-166`（快照携键）∥ 写链 `thincoder-vscode/src/extension/settings-panel-write.mjs:84-85`（新增布尔写）∥ 控件 `thincoder-vscode/webview/settings-agent.js:29-30`（新增 `#ag-injectprojectrules` switch + 载荷 `:128-129` + `EDIT_FIELDS` `:153`）∥ 词面 `locales/zh.json:144-145` + `en.json:144-145`（新增键两语 + 改述 `injectDocs` 词面）+ `…Help` 悬浮两语 `:237-238`（新增 `injectProjectRulesHelp`） |
+| CLI `/config` | `thincoder-cli/src/tui/cmd-config.mjs`——主菜单项 `:362`（新增一行 `agent.injectProjectRules`，与 `:363` `injectDocs` 相邻）+ view 面板 `:388-389` 两行（新增 · `injectDocs` 文案改述）+ toggle 分支 `:462`（**分支谓词须显式并入** `agent.injectProjectRules`——`:462` 现仅列 `agent.injectDocs \|\| agent.injectMemories`，**非自动点**；并入后 `:465` `slice("agent.".length)` 取键机制天然兼容） |
+| VSC 设置面板（**穿透面**） | `thincoder-vscode/src/agent/setup.mjs` **三处同址穿透必须齐**（timer-wake 阶段 2 先例——§5.15）：默认种 `:131`（`DEFAULTS.agent?.injectProjectRules !== false`）∥ raw 读 `:160`（`raw.agent?.injectProjectRules ?? cfgInjectProjectRules`）∥ `agentFields` 白名单 `:180`（`injectProjectRules: cfgInjectProjectRules`，表头 `:174`）——**三处缺一则该键在 `config.json` 关不掉**（timer-wake 旧疾复现）。**对照**：`agent.timerWake` 同形三处 = `:128` ∥ `:159` ∥ `:178` |
+| VSC 设置面板（**UI 链**） | 读链 `thincoder-vscode/src/extension/settings.mjs:45-46`（新增 `injectProjectRules` 归一）+ `:165-166`（快照携键）∥ 写链 `thincoder-vscode/src/extension/settings-panel-write.mjs:84-85`（新增布尔写）∥ 控件 `thincoder-vscode/webview/settings-agent.js:29-30`（新增 `#ag-injectprojectrules` switch + 载荷 `:128-129` + `EDIT_FIELDS` `:153`）∥ 词面 `locales/zh.json:144-145` + `en.json:144-145`（新增键两语 + 改述 `injectDocs` 词面）+ `…Help` 悬浮两语 `:237-238`（新增 `injectProjectRulesHelp`） |
 | 桌面设置界面 | `thincoder-desktop/renderer/views/settings-agent.mjs:63-64`（`NAMED_FIELDS` 新增一行 `agent.injectProjectRules` + 表注释「二十键 ⇒ 二十一键」）∥ 词面 `thincoder-desktop/renderer/i18n-views.mjs:208-209`（英文）+ `:398-399`（中文）——新增键两语 + 改述 `injectDocs` 词面 |
 
-**VSC 三处穿透补齐（timer-wake 阶段 2 先例——§5.15）**：`agent.injectProjectRules` 在 VSC 侧同址三处穿透必须齐（默认种 `DEFAULTS.agent.injectProjectRules` ∥ raw 读 `raw.agent?.injectProjectRules ?? cfg` ∥ `agentFields` 白名单 `injectProjectRules: cfgInjectProjectRules`）——三处缺一则该键在 `config.json` 关不掉（timer-wake 旧疾复现）。逐行坐标 = 上表 VSC 行。
+**VSC 三处穿透补齐（timer-wake 阶段 2 先例——§5.15）**：`agent.injectProjectRules` 在 VSC 侧的**真穿透面** = `thincoder-vscode/src/agent/setup.mjs`（非 `extension/settings.mjs`）——默认种 ∥ raw 读 ∥ `agentFields` 白名单三处必须齐，缺一则该键在 `config.json` 关不掉（timer-wake 旧疾复现）。**逐行坐标 = 上表「穿透面」行**（`extension/settings.mjs` ∥ `settings-panel-write.mjs` ∥ `webview/settings-agent.js` = **界面链路**，与穿透面分列，勿混为一处）。
 
 **`settings` 工具面（DEFAULTS 自动派生——零手写校验）**：`thincoder-core/config.mjs:69-70` 邻位新增 `injectProjectRules: true` ⇒ 装载期经 `_deriveTypes(DEFAULTS)`（`thincoder-core/agent-tools/settings.mjs:55-69`）自动进 `TYPE_MAP`（`boolean`）⇒ `settings` 工具 list/set 面**可见可写 + 布尔类型护栏自动跟随**，实现面**零改码**（承 `CONFIG.md:157` 「派生消费面」同族）。三键（含既有两键）在 `settings` 工具 list 面自动成列。
 
 **不变式**：① 工程模式不吃这面（纪律走提示词本体——三键只断自动注入三块，槽位装配 `assemblePrompt` ∥ 工程模式提醒 ∥ 批档 / 台账机制零触 ⇒ 关不破工程流程）；② 子代理 config 继承父（`thincoder-core/agent-tools/subagent-spawn.mjs:300-302`）⇒ 子代理装配同受三开关；③ 需求「边界（不做）」零越（不改检索机制本体：`doc_search` / `memory search` 按需工具零影响；不删数据；全局粒度；零新机制）。
 
-**端面登记（多实现面 · 语义单源 = 本节）**：核机制面（本节）∥ 三客户端配置界面（CLI `/config` ∥ VSC 设置页 Agent 卡 ∥ 桌面设置 Agent 段——逐文件落点 = 上表）∥ `settings` 工具面（DEFAULTS 派生）。**跨面差异处置（多实现面纪律 6）**：三端 = 同一机制的三实现面，**默认消除差异**——键名 / 默认 / 判据 / 词面语义三端一致；本批无宿主能力差 ⇒ 零「登记保留」例外。
+**端面登记（多实现面 · 语义单源 = 本节）**：核机制面（本节）∥ 三客户端配置界面（CLI `/config` ∥ VSC 设置页 Agent 卡 ∥ 桌面设置 Agent 段——逐文件落点 = 上表）∥ `settings` 工具面（DEFAULTS 派生）。**跨面差异处置（多实现面纪律 6）**：三端 = 同一机制的三实现面，**默认消除差异**——键名 / 默认 / 判据 / 词面语义三端一致；无宿主能力差 ⇒ 零「登记保留」例外。
 
-**机检**：`scripts/doc-check.mjs` 本批域（`docs/core/**`）零新增红；`scripts/doc-check-width.mjs` 新行守 ≤300；`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；`##` / `###` 块计数可机判（本档新增 1 个 `###` 节）。
+**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；`##` / `###` 块计数可机判（本档新增 1 个 `###` 节）。
 
-**边界**：不做按项目开关（用户定全局）· 不改检索机制本体（只断自动推送）· 不删数据 · 工程模式装配链零触 · 其余自动注入块不在开关面（`.cursor/rules` 尾块 `thincoder-core/agent/setup.mjs:287-288` ∥ 仓库大纲 `:103-112` ∥ skills 清单 ∥ git / env / peer / time 提醒）· 零新机制（落点 = 既有配置面 + 既有读点）· 需求档零笔（父侧笔——本批只核对合规）。
+**受影响文件（12 档 · 预计 Δ）**：
 
-## 7. 并入的关键决策记录（含否决备选）
-
-| # | 决策 | 理由 / 否决备选 |
+| 文件 | 现行行数 | 预计 Δ（≤±N / 结构不变） |
 |---|---|---|
-| D-PS1 | **中文审核面 = 内容权威**；英文运行面 = 翻译产物 | 承用户裁定 A7 面；生成 = 翻译不是 cp；两面不同语言、无硬一致要求 |
-| D-PS2 | EN 落地 = CN 定稿的**语义对等翻译**，**复用存量 EN 词句** | 词句连续性（存量语料 / 语义锚稳定）；否决「重写英文风格」·「逐字直译」（旧 D-CL2） |
-| D-PS3 | 重复条款处置 = **源侧删除**（非指针） | common 恒第二位注入——指针无导航价值；D2 单一权威源；否决「保留指针句」·「保留纪律层细表」（旧 D-CL3） |
+| `thincoder-core/config.mjs` | 513 | +2（`injectProjectRules: true` + 注释位） |
+| `thincoder-core/agent/setup.mjs` | 294 | +3（消费点变量 `:57-60`）+ 改 1 行（`:281` 换判变量——原 `:276`） |
+| `thincoder-core/agent-tools/settings.mjs` | 297 | **结构不变**（工具面零改码——装载期自动派生；不改此档） |
+| `thincoder-cli/src/tui/cmd-config.mjs` | 509 | +1（主菜单项）+ 1（view 行）+ 改 3 行（`:362`/`:388` 词面 + `:462` 谓词） |
+| `thincoder-vscode/src/agent/setup.mjs` | 317 | +4（默认种 + raw 读 + `agentFields` 白名单 + 注释） |
+| `thincoder-vscode/src/extension/settings.mjs` | 424 | +2（`:45-46` 归一 + `:165-166` 快照） |
+| `thincoder-vscode/src/extension/settings-panel-write.mjs` | 222 | +1（`:84-85` 邻位布尔写） |
+| `thincoder-vscode/webview/settings-agent.js` | 203 | +3（控件 + 载荷 + `EDIT_FIELDS`） |
+| `thincoder-vscode/locales/en.json` | 347 | +1 键 + 改 1 值 |
+| `thincoder-vscode/locales/zh.json` | 347 | +1 键 + 改 1 值 |
+| `thincoder-desktop/renderer/views/settings-agent.mjs` | 192 | +1（`NAMED_FIELDS` 行）+ 表注改（二十键 ⇒ 二十一键） |
+| `thincoder-desktop/renderer/i18n-views.mjs` | 434 | +1 键 × 2 语 + 改 1 值 × 2 语 |
+
+**测试档**：单测档随批档存放（`docs/batches/` 邻位，命名随批档）——不在上表 12 档内（不进产品树）；**结构线**：上表逐档均远低于 500 行咨询线，最大者 `cmd-config.mjs` 509 行 ⇒ +2 后仍近阈值，**无需拆分**（≤±3 无结构影响）。
+
+**边界**：不做按项目开关（用户定全局）· 不改检索机制本体（只断自动推送）· 不删数据 · 工程模式装配链零触 · 其余自动注入块不在开关面（`.cursor/rules` 尾块 `thincoder-core/agent/setup.mjs:287-288` ∥ 仓库大纲 `:103-112` ∥ skills 清单 ∥ git / env / peer / time 提醒）· 零新机制（落点 = 既有配置面 + 既有读点）· 需求档零笔（父侧笔——只核对合规）。
+
+## 7. 关键决策记录
+
+| # | 决策 | 理由 |
+|---|---|---|
+| D-PS1 | **中文设计文档 = 设计基准**；英文代码 = 依它精确翻译生成 | 承用户裁定 A7 面；生成 = 精确翻译，不是 cp、不是照抄；两份不同语言、无硬一致要求 |
+| D-PS2 | EN 落地 = CN 定稿的**语义对等翻译**，**复用存量 EN 词句** | 词句连续性（存量语料 / 语义锚稳定） |
+| D-PS3 | 重复条款处置 = **源侧删除**（非指针） | common 恒第二位注入——指针无导航价值；D2 单一权威源 |
 | D-PS4 | byte-identical 取消 → **设计锚机制** | 字节硬一致形成互相依赖（并发处理不利）；各面独立语义锚守（多实现面纪律） |
-| D-PS5 | **破坏性命令红线 = `common.md` §10 尾部增列**（既有节内；不新增节、不改述既有句） | 落点与「节数不变」已由需求定（`docs/core/requirements/PROMPT-SYSTEM.md` §2.3 行 10 + 增补注②）；红线是既有「有专用工具就不 hand-roll」句（仅中文正本 `common.md:69`）的同节主题延伸 ⇒ 既有文本零改述；否决「新增节」·「改述既有原则句 / 标题」（动既有语义面文本、双面同步风险、零收益）·「落人格层或纪律层」（受众 = 全角色两模式，`common.md` 恒第二位是唯一全覆盖范围） |
-| D-PS6 | **提示词面禁带文档引用 = 删引用（非改址）+ 三道机判锁（J1/J2/J3 · §6.6）**；保留面 = 操作数族规范豁免串（`AGENTS.md` · `SKILL.md` · `README.md` · `MANIFEST.md` · `.thincoder/advisor.md` · `project_rules.md`）+ 路径操作数 + 扩展名字面量 + 协议自名；纪律句落 `common.md`「文档写作纪律」节 | 用户 2026-09-20 19:31 裁定；否决「改址 / 换新节号」（口径 = 删）·「`/\.md\b/` 全域零命中」（连带打死操作数 = 行为改动）·「零例外白名单」（迫使删 `AGENTS.md` 行为指令）·「锁落 `scripts/**`」（工程工具面不在本批写域）·「只改英文面」（中文面成活口）·「锁按文件行号豁免」（行漂即破，改按形态 / 指称判） |
-| D-PS7 | **「不可裁决」自止点 = 落 `common.md` 上行通道节（既有节内增列）+ 人格档逐处同点限定（eng-designer 两处 + 同族四档）**；判据 = 发现两处要求互斥 ⇒ 即「不可裁决」⇒ 立即 `ask`（不设重读 / 权衡前置） | 判据本体在公共层 ⇒ 操作化落同节（D2；恒第二位 = 全角色覆盖）；人格档各处 = 本地出口（降级交付 / 歧义进报告 / 计划注明）的边界——就近落各档，**本地只加出口边界句 + 最短动作锚**（承编写纪律 #10「关键锚点重复」）。否决「模型门控 / 按模型设岗」·「loop 探测机制」（用户 2026-09-25 裁定不可扩）·「只改人格档」（覆盖范围不足）·「只改 eng-designer 单点」（同形出口同风险——类修复）·「落工程纪律层」（仅工程模式 + D2 重复）·「新增节」（零收益 + 计数连带）·「两拍配额（重读一次 + 仍未决再问）」（用户 2026-09-25 06:2x 裁定「满量先行」否决：先给足药量、过量再减；防卫性配额方向错——问题在欠问不在过问） |
-| D-PS8 | **漂移防线 = 流程步（批次收尾一次性比对）**——零常驻锁；否决「结构级检查」（读非测试文件断言句子在场 = 散文锚 · 2026-09-12 退役族 · 测试纪律禁新增） | 零常驻 = 守当批一致性而不冻结演进；否决「落常驻锁」（散文锚禁新增 + 2026-09-17 用户裁定「无限机检反感」）·「只加核验清单一句」（清单在需求档——本笔不越笔权） |
-| D-PS9 | **台账治理纪律 = 落 `persona-engineering.md`「派发与收尾纪律」节内 `欠账入清单` 邻位**（既有节内增列 · 零块计数连带） | 属主 agent 处置纪律（「做还是记」判断）——与同节 *Debts go on the list* / 父侧不代笔并列；否决「落台账节」（与「欠账」句分居两处，判断链断）·「新增节」（零收益 + 计数连带）·「落公共层 / 纪律层」（子代理非受众——台账写权仅主 agent，写入即误导） |
-| D-PS10 | **派单尺寸与任务书形态纪律 = 落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内**（六字段列表末行后 · 既有节内增列 ⇒ 零块计数连带）；**中文正本本设计轮落形，英文按 M9 翻译回写（实施轮）** | 属主 agent 派单行为（一舱一单面 + 预检三闸 + 结构决定归设计 + 任务书形态）——与同节「有规模委派缺这些字段是缺陷」（字段面）并列，本笔补**尺寸面 + 形态面**；否决「落纪律层」（仅工程模式 + D2 重复）·「新增节」（零收益 + 计数连带）·「落公共层」（子代理非受众——派单写权仅主 agent）·「把尺寸上限落成 `files` 校验」（机械门禁 = 为臆想的失败加限制；上限属判断面） |
-| D-PS11 | **测试层级知识（定义 + 放置）= 落 `discipline-engineering.md`「测试纪律」节内两条 bullet 并文**（既有节内增列 ⇒ 零块计数连带）；**定义照父侧定稿、放置两类分述** | 触发 = 父侧范畴错误伪问（批次本地单元测试档 vs `test/` 约定）⇒ 知识缺口在提示词层；落工程侧纪律节 = 事件面 + 现行节已有部分单元侧表述（最小增改 = 并文）；否决「独立放置节 / 合写两类」（父侧 20:21 禁合称）·「重写整节」（超最小 · 弃存量词句）·「normal 侧同批」（事件面外——另裁）·「零触保全既有实例」（通用层须全净——父侧 2026-09-29 裁；清出 = 甄别式：清 `docs/batches/` 硬路径 ∕ `node --test …` 命令形 ∕ 三前端名 ∕ 「核包」，留 `test/` ∕ 50–100 ∕ 「批次档 ∕ 批次目录」概念）；**「normal 侧另裁」2026-09-30 已落——→ D-PS13** |
-| D-PS12 | **轻通道机制 = 机制规则落 `discipline-engineering.md`「基本流程」节内 + 父侧行使细则落 `persona-engineering.md`「派发与收尾纪律」节内**（均既有节内增列）；准入判据 = **三样清单 + 一句边界**（2026-10-02 判据收口定形）；轻通道轮次 = 批档一本（§5 不适用——实施面 = 父侧直改） | 分层：机制面 = 模式怎么干活（纪律层——受众含收尾轮的评审 ∥ 设计面）；父侧动作面 = 写权独属（人格层——台账用法面判例同轴）。否决「全落人格层」（机制受众缺子代理）·「全落纪律层」（父侧独属动作入共享层）·「新增节」（零收益 + 节计数扰动）·「改写铁律 ∥ 分流表」（默认面不弱化——例外由机制块承载）·「行数 ∥ 时长阈值」（与射程语义不相关）·「路由判据落校验代码」（判断面纪律——零机械门） |
-| D-PS13 | **测试层级知识扩落普通侧**（`discipline-normal.md`「测试与交付」节内两条 bullet 定点并文——定义 ∥ 放置，与工程侧同源同知识） | 口径收正（用户 2026-09-30 16:46）：**批次档非工程模式专有 · 文档体系对全模式同一 · 两模式之别 = 是否强流程约束** ⇒ D-PS11 之「normal 侧另裁」落地；放置语义照全模式同一的文档体系书写。**流程约束面零搬迁**。否决「照搬工程侧全节」（携工程流程约束——超知识面）·「独立成节」（块计数连带）·「只补定义不补放置」（缺半——伪问不闭）。 |
-| D-PS14 | **面向用户表述纪律（说人话）= 落 `common.md`「语言纪律」节内增列**（双面——既有节内增列 ⇒ 零 `##` 块计数连带） | 受众 = 全角色（两模式 + 全部子代理——子代理面 = 面向父代理）⇒ 公共层 `common.md` 恒第二位 = 唯一全覆盖范围；表述面（怎么说）与语言纪律（用哪种语言 + 术语原文）同节同轴。否决「邻位新节」（块计数扰动 + 与语言纪律主题紧邻性不足）·「落纪律层 / 人格层」（受众不齐——子代理缺位 / 仅主 agent）。 |
-| D-PS15 | **「轮次界 = 收口」入文 = 需求 §2.3 +1 条 ∥ `persona-engineering.md`「派发与收尾纪律」节内 +1 行**（双面——既有节内增列；设计句零改——规则已在机制设计档） | 续笔归属需明文（跨会话续笔缺依据——#725 设计轮观察立案）；落点候选 = 需求 F-LC3 邻位 ∥ 提示词 P2 块邻位（#727 归批）。否决「只落设计档」（立案前提 = 需求 ∥ 提示词面未载即缺口）·「只落需求」（跨会话续笔若需提示词依据仍缺）·「落纪律层」（子代理不路由本通道——父侧独属）。 |
-| D-PS16 | **文档更新纪律清单位同步 = 同步**（`discipline-engineering.md` 双面清单列 **D1–D9**——表头 ∥ 计数句 ∥ 清单行；as-of 2026-10-09 现盘） | 清单位 = 运行期可读的 D 族全表（设计族 = D1–D9——跨档同数为簿记面所需）；D8 ∥ D9 语义已住公共层（全模式覆盖不损；清单行 = 同族行式，非详述）。否决「不同步」（跨档计数并存 = #814 立案的滞后本体；理由无承载面）。 |
-| D-PS17 | **多仓操作机制落三处**：公共层「批次档常识」§14 末（多仓按仓各自——跨仓建档被拒 = 正确 ∥ 各仓分别建档开批）+ 工程纪律层「文档与台账自持」节（6 项续入）+ 人格层「项目状态档」节（操作他仓前先建档） | 三项各归其位（常识 / 操作规则 / 写权动作）；零 `##` 增为硬口径 ⇒ 不新建节；否决「新建节」（块计数扰动）·「全落公共层」（§13/§14 主题面外无承载）·「全落纪律层」（批次档常识与 manifest 写权混落 = 受众错位） |
+| D-PS5 | **破坏性命令红线 = `common.md` §10 尾部增列**（既有节内；不新增节、不改述既有句） | 落点与「节数不变」已由需求定（`docs/core/requirements/PROMPT-SYSTEM.md` §2.3 行 10 + 增补注②）；红线是既有「有专用工具就不 hand-roll」句（仅中文正本 `common.md:69`）的同节主题延伸 ⇒ 既有文本零改述 |
+| D-PS6 | **提示词面禁带文档引用 = 删引用（非改址）+ 三道机判锁（J1/J2/J3 · §6.6）**；保留面 = 操作数族规范豁免串（`AGENTS.md` · `SKILL.md` · `README.md` · `MANIFEST.md` · `.thincoder/advisor.md` · `project_rules.md`）+ 路径操作数 + 扩展名字面量 + 协议自名；纪律句落 `common.md`「文档写作纪律」节 | 用户裁定 |
+| D-PS7 | **「不可裁决」自止点 = 落 `common.md` 上行通道节（既有节内增列）+ 人格档逐处同点限定（eng-designer 两处 + 同族四档）**；判据 = 发现两处要求互斥 ⇒ 即「不可裁决」⇒ 立即 `ask`（不设重读 / 权衡前置） | 判据本体在公共层 ⇒ 操作化落同节（D2；恒第二位 = 全角色覆盖）；人格档各处 = 本地出口（降级交付 / 歧义进报告 / 计划注明）的边界——就近落各档，**本地只加出口边界句 + 最短动作锚**（承编写纪律 #10「关键锚点重复」） |
+| D-PS8 | **漂移防线 = 流程步（批次收尾一次性比对）**——零常驻锁 | 零常驻 = 守当批一致性而不冻结演进 |
+| D-PS9 | **台账治理纪律 = 落 `persona-engineering.md`「派发与收尾纪律」节内 `欠账入清单` 邻位**（既有节内增列 · 零块计数连带） | 属主 agent 处置纪律（「做还是记」判断）——与同节 *Debts go on the list* / 父侧不代笔并列 |
+| D-PS10 | **派单尺寸与任务书形态纪律 = 落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内**（六字段列表末行后 · 既有节内增列 ⇒ 零块计数连带）；**中文正本本设计轮落形，英文按 M9 精确翻译回写（实施轮）** | 属主 agent 派单行为（一舱一单面 + 预检三闸 + 结构决定归设计 + 任务书形态）——与同节「有规模委派缺这些字段是缺陷」（字段面）并列，本笔补**尺寸面 + 形态面** |
+| D-PS11 | **测试层级知识（定义 + 放置）= 落 `discipline-engineering.md`「测试纪律」节内两条 bullet 并文**（既有节内增列 ⇒ 零块计数连带）；**定义照父侧定稿、放置两类分述** | 落工程侧纪律节 = 事件面 + 现行节已有部分单元侧表述（最小增改 = 并文）；**「normal 侧另裁」已落——→ D-PS13** |
+| D-PS12 | **轻通道机制 = 机制规则落 `discipline-engineering.md`「基本流程」节内 + 父侧行使细则落 `persona-engineering.md`「派发与收尾纪律」节内**（均既有节内增列）；准入判据 = **三样清单 + 一句边界**；轻通道轮次 = 批档一本（§5 不适用——实施面 = 父侧直改） | 分层：机制面 = 模式怎么干活（纪律层——受众含收尾轮的评审 ∥ 设计面）；父侧动作面 = 写权独属（人格层——台账用法面判例同轴） |
+| D-PS13 | **测试层级知识扩落普通侧**（`discipline-normal.md`「测试与交付」节内两条 bullet 定点并文——定义 ∥ 放置，与工程侧同源同知识） | 口径收正（用户）：**批次档非工程模式专有 · 文档体系对全模式同一 · 两模式之别 = 是否强流程约束** ⇒ D-PS11 之「normal 侧另裁」落地；放置语义照全模式同一的文档体系书写。**流程约束面零搬迁** |
+| D-PS14 | **面向用户表述纪律（说人话）= 落 `common.md`「语言纪律」节内增列**（中英两份——既有节内增列 ⇒ 零 `##` 块计数连带） | 受众 = 全角色（两模式 + 全部子代理——子代理面 = 面向父代理）⇒ 公共层 `common.md` 恒第二位 = 唯一全覆盖范围；表述面（怎么说）与语言纪律（用哪种语言 + 术语原文）同节同轴 |
+| D-PS15 | **「轮次界 = 收口」入文 = 需求 §2.3 +1 条 ∥ `persona-engineering.md`「派发与收尾纪律」节内 +1 行**（中英两份——既有节内增列；设计句零改——规则已在机制设计档） | 续笔归属需明文（跨会话续笔缺依据）；落点 = 需求 F-LC3 邻位 ∥ 提示词 P2 块邻位 |
+| D-PS16 | **文档更新纪律清单位同步 = 同步**（`discipline-engineering.md` 两档清单列 **D1–D9**——表头 ∥ 计数句 ∥ 清单行） | 清单位 = 运行期可读的 D 族全表（设计族 = D1–D9——跨档同数为簿记面所需）；D8 ∥ D9 语义已住公共层（全模式覆盖不损；清单行 = 同族行式，非详述） |
+| D-PS17 | **多仓操作机制落三处**：公共层「批次档常识」§14 末（多仓按仓各自——跨仓建档被拒 = 正确 ∥ 各仓分别建档开批）+ 工程纪律层「文档与台账自持」节（6 项续入）+ 人格层「项目状态档」节（操作他仓前先建档） | 三项各归其位（常识 / 操作规则 / 写权动作）；零 `##` 增为硬口径 ⇒ 不新建节 |
 | D-PS18 | **「文档与台账自持」节既有项微调 = item 5 删并**（与 item 1 同规则重复 + 修订式残句；唯一事实「schema 校验」并入 item 1；序号顺缩） | D8 失效表达必删 + 重复即缺陷；残留即示范（存量不是合法态）；语义零变（逐字对照 = 设计围栏块） |
-| D-PS19 | **旧「跨仓批派单」提示词落笔面收口**：语义以多仓泛化形随本批落笔；「反查脚本一条」落笔未做（在册）——`DOC-DISCIPLINE.md` §4.4 随正 | 两仓时代设计句与现况对账（提示词面「跨仓」零命中实证）；「脚本名不写进提示词」口径维持 |
-| D-PS20 | **读侧对句与界句 = 落两模式纪律层各自自持节内**（工程：item 14 新增 + item 12 句尾并入；普通：item 3 新增）——既有节内增列 ⇒ 零 `##` 连带 | 受众 = 两模式主会话 + 各自子代理；自持家族既有落点 = 两纪律层（#827 实证）；读侧句与自持条同节相邻 = 反向拉的当场对句。否决「落公共层」（非两模式逐句都要的协作基础——同 #827 判例）·「新建节」（块计数扰动）·「只落工程侧」（普通侧 = 业务实现主场景，缺位即病灶不闭） |
-| D-PS21 | **记录面声明源例外 = 自持节 item 1 续句**（声明公共仓可引——仓名前缀形可核；其余仓外指针照禁） | 台账 / 批档指针禁的读侧松绑：已声明源 = 可核坐标（`DOC-DISCIPLINE.md` §4.2.2 解析序 + `LEDGER-SELF-CONTAINED.md` §5.1 有界例外）；「登记 / 归属」面零松（#827 一档一仓不动）。否决「全禁不放」（声明源不可引 = 声明位空转）·「全放开」（未声明外仓不可核——红面失据） |
-| D-PS22 | **三层结构常识 = 公共层档末新增第 15 节**（`common.md`「工作结构常识（板 → 域 → 档）」——why + 判域口径 + 四条规矩） | 受众 = 两模式 + 全部子代理（用户 08:18「这是常识，每个模式和角色都该知道」）⇒ 公共层恒第二位 = 唯一全覆盖范围；与 §13/§14 同形（档末追加——D3 计数随动）。否决「并入既有节」（§12 = 评价尺子〔对象 = 别的项目〕∥ §13/§14 = 台账 / 批档机制常识——无「工作结构」承载面）·「落纪律层」（全角色常识，非单模式流程）·「落人格层」（非身份 / 边界） |
-| D-PS23 | **同族条收窄 = 去重保留**（删 2：划界原则 ∥ 并行写者错开；保留 3 细则：热点面最小化 ∥ 分不开时 ∥ 改组已有内容时（修复轮 1 收窄后的在盘形）；判域口径随升层；标题括注「创建即留并行面」⇒「细则」） | 去重 = 公共层已承载者删（判域口径与划界原则升层）；保特有点 = 公共层未承载的三条操作细则（私删＝静默缩水）；旧条实质 = 升层 + 收窄 + 去重。否决「收窄为回指」（D-PS3：公共层恒第二位注入——指针无导航价值）·「整条删」·「原样保留」（同族机制两处详述 = D2 违例） |
-| D-PS24 | **多过一道用户的眼（用户视角门）= 两模式纪律档各新增节**（`discipline-engineering.md` ∥ `discipline-normal.md`——`## 交付报告` 节前；两档措辞按语境差异化：设计轮/收口轮 ∥ 设计时/收尾前；清单细目不上提示词） | 条款 = 用户 08:42 批准稿——自带设计/收口两轮结构，单一既有节无跨轮承载位（工程档无 UI 节；普通档 UI 节挂「写码前」相位、收口半与「收尾前」节相隔 ⇒ 拆落即散）；受众 = 两模式主会话 + 各自子代理 ⇒ 纪律层。先例 = §6.16 ∥ §6.17-③（新增节登记在案）。否决「既有节内增列」（跨轮/相位不符——拆落即散）·「落公共层」（非两模式逐句协作基础）·「落人格层」（非身份/边界）·「只落工程模式」（用户明准两模式）·「标题改词」（批准稿原句为准） |
-| D-PS25 | **台账关联条目合并扫描 = 落 `persona-engineering.md`「台账」节「批设计」条原位扩展**（现文逐字保留 + 前插扫描步；不并理由记入轮次记录） | 扫描产出 = 入批条目集 ⇒ 贴「一次落多个需求点」的消费点（判断链不断——同 D-PS9 判据形）；生命周期表受需求档 FR30 验收「五行」锁定（`docs/core/requirements/ENGINEERING-MODE-V2.md:696`——塞第 6 行即破计数）⇒ 不入事件表；时机以文本自带（「批点火前」）；最小改动（±0 行 / 零计数连带——`##` 16 ∥ 17 不变）。否决「生命周期第 1 条邻位新条」（表形态 = 事件 → 动作；无触发事件 + 破「五行」计数）/「落治理块」（治理 = 做还是记，扫描 ≠ 治理）/「落纪律层 ∥ 公共层」（子代理非受众——批形成写权仅主 agent）/「新增独立条」（零收益 + 列表扰动） |
-| D-PS26 | **台账治理纪律增补五条 = 落 `persona-engineering.md` 两节内**（「派发与收尾纪律」：`欠账入清单` 原位扩展 ∥ `暂缓批先复核` 条尾追加 ∥ 开局自查新 bullet；「台账」节：入库查重 ∥ 单行单结新 bullet + 生命周期 ③ 条尾追加）——零 `##` 块计数连带；不新造机制 | 五条均主 agent 行为纪律（欠账 / 自查 / 登记 / 结算 / 收口 = 写权独属动作面）⇒ 人格层（同 §6.8 / §6.19 / FR30 判例）；「生命周期」表受 FR30 五行锁定 ⇒ 不增行只扩条文；需求档攒批五条计数零变。否决「落 discipline-engineering.md」（子代理亦读 ⇒ 误导——台账写权仅主 agent，FR30 落点判例）·「生命周期表增行」（破 FR30 五行验收）·「新增节」（零收益 + 计数连带）·「开局自查落台账节」（会话开局动作面 = 收尾纪律同拍家族） |
-| D-PS27 | **§10.2 行 7 尾列「段」口径定形 = 标题段**（标题节点〔层级 2+，含行内〕及其领起内容——逐段对位；复算 = **17/17 全配对**、零孤段） | 「段」原口径无在案记录（09-18 基线读数、口径未注明）；复算前置 = 定口径——取「段配对」与标题树同粒度（段 = 标题段）使读数可复算、可机判；否决「段 = 段落块」（无对位程序、随版式漂移）·「只注明不复算」（不可核读数留置 = 缺陷不闭） |
-| D-PS28 | **#957 同族句换写 = 双面四处**（CN `:38` ∥ `:51` ∥ EN `:38` ∥ `:51`；形承 #956 裁定：弃 1:1 基数、保内核、补关系句——「文档归板块（板内分域分档、可多档）」） | 三层模型（板 → 域 → 档）收口后「一板块一档」/`design/<板块>.md` 的 1:1 基数与之相抵（#957 立案——#956 修复轮披露）；修 = 两面同改（CN + EN——单面改即成对拍差）；否决「只改 CN」（对拍差）·「全删句」（内核——按板块组织 ∥ 题不独立成文——无他载）·「原样保留」（基数相抵不闭） |
-| D-PS29 | **普通模式管理教学 = 普通侧三档**（`discipline-normal.md` 新增节「工作管理（批次档 + 台账 + 收口）」〔台账用法 ∥ 批次档用法 ∥ 收口纪律〕∥ `persona-normal.md` 设计师席句〔节内〕∥ `common.md` 六段作者行模式分辨〔节内换写〕） | 需求 F-N2.1 判据句钉纪律层用法节；三块跨相位（建档 / 落地 / 收口）无单一既有节承载位 ⇒ 新增节（先例 §6.18）；主 agent 独属动作以主 agent 视角直书纪律节（普通侧人格档薄——单点承载；先例 = 既有 task / 持久清单句在纪律层）；公共层句 = 全角色两模式共读面（按角色写死即误导）；**单套逻辑** = 文本结构照工程同构、按普通模式单位改写（N-N2.1）。否决「落 persona-normal 全担」（受众缺子代理——coder 需 §5 教学）·「落公共层」（非两模式逐句协作基础）·「台账用法并入既有按任务规模节」（块计数 + 跨相位） |
-| D-PS30 | **「产品常识（配置项必须有配置界面）」= 公共层档末新增第 16 节**（`common.md`「产品常识（Product common sense）」——配置项必须有配置界面 ∥ 例外须显式说明经用户裁 ∥ 界面提示文案不得指向界面里不存在的入口） | 受众 = 两模式 + 全部子代理（用户 15:56「这是常识，不仅仅针对工程模式」）⇒ 公共层恒第二位 = 唯一全覆盖范围；与 §13–§15 同形（档末追加——D3 计数随动）；形态沿 D-PS22 先例（**移档末** = 评审 #37 🟡3——段中插入 ⇒ 档末，§N 零漂移）。否决「段中插入」（§N 漂移——评审 #37 🟡3）·「落纪律层」（用户 15:56 已排除——仅工程模式）。 |
-| D-PS31 | **清账轮三条 = 落 `persona-engineering.md` 两节内**（「派发与收尾纪律」：锚点复核新 bullet ∥ 「台账」节：族行 ∥ evidence 指针化上限新 bullet ×2）——**CN 正本 = 设计轮直落 ∥ EN 运行面 = 实施轮按 M9**；既有节内增列 ⇒ 零 `##` 块计数连带；不新造机制（工具面零改） | 三条均主 agent 行为纪律（池面锚维护 ∥ 行组织 ∥ 行形态 = 台账写权与行使面）⇒ 人格层（同 §6.8 / §6.20 / FR30 判例）；生命周期表受 FR30 五行锁定 ⇒ 三条不入事件表（锚点复核 trigger = 清账轮；族行 / 上限 = 行面形态）。否决「落 `discipline-engineering.md`」（子代理亦读 ⇒ 误导——台账写权仅主 agent）·「落公共层」（非两模式逐句协作基础）·「新增节」（零收益 + 块计数连带）·「锚点复核并入生命周期表」（破 FR30 五行） |
-| D-PS32 | **evidence 指针化上限定形 = 软上限 ≈ 300 字 + 例外形**（细节尚无落点——未建档 ∥ 待裁 ∥ 所指档不可达 ⇒ 允许内嵌摘要；落点一出现即收窄） | 判由：① 300 = 本仓「一行」的既有量级（行宽闸值同数——「台账 = 一眼能扫的账」以「一行」为直觉单位）；② 拦的就是千字级细节堆存（实证 #1250 ∥ #1208 ∥ #1354 皆千字上下）——软上限取其约三分之一量级，良形行（症状 + 坐标 + 指针）留足空间；③ 软性 = 无机械闸（台账住用户数据区、非文档机检面）——执行 = 写形纪律（登记时）+ 清账轮收窄信号（超限行 = 收窄小件）。否决「硬闸 / 字数机检」（非文档面、无载体；违「零机械门」）·「无例外」（待裁 / 未建档行须自带上下文——否则用户无法当场裁）·「值取更低」（良形行被误判——软上限用途 = 收窄信号，非收紧良形） |
-| D-PS33 | **族行与「单行 = 单结算单元」= 同轴互补**（拆 = 不相干项不绑；并 = 同一工作对象不分家）；族行成立条件 = **成员同批同轮收口**；族行 ≠ 主题伞（主题同、收口不同轮 = 注记关系不并）；不设成员数硬上限（成员清单 = 标题面，过长即信号——另裁或收窄） | 两条易被读成互斥（一拆一并）——同轴句显式化防误读；「同一工作对象」承「入库查重」既有定形（#1157 批同义句）；闭合条件 = 可判（同批收口 = 核销时点同拍）；近例 = 越线拆案族五行归一行（#1269 ∥ #1297 ∥ #1309 ∥ #1313 ∥ #1352）。否决「并入单行单结条改写」（该条 = 结算单元判据 ∥ 族行 = 行的聚合判据——分条） |
-| D-PS34 | **注入开关键面 = `agent.injectDocs` ∥ `agent.injectMemories`**（平表、动词式；默认 `true` 显式声明于 DEFAULTS；判据 `!== false`）——**2026-10-15 扩为三键**（+`agent.injectProjectRules`——见 D-PS38） | 平表开关族先例（`verifyGuard` ∥ `timerWake` ∥ `autoThink`）；DEFAULTS 声明 = 缺省零变 + settings 类型护栏 / list 面自动派生（加键流程 = DEFAULTS 一处——`SETTINGS-TOOL.md` §2.6）。否决「嵌套 `agent.injection.*`」（多一层寻址 + 各端 UI / 工具落点加层）·「名词式键名 `docInjection`」（与族形不一）·「判据 `=== true`」（缺省态被误判为关）·「不声明 DEFAULTS」（无校验 + 键面缺失） |
-| D-PS35 | **阻断点 = `setup.mjs` 调用侧三判（`loadProjectInstructions` helper 签名零改）；关 = 检索调用不执行（不止吞注入）；热应用 = 逐 run 现读既有 `agent.config`（零新机制）**——**2026-10-15：① 判点改读 `agent.injectProjectRules`**（§6.27——判点位置零变、只换判变量） | helper = 公开导出面 ⇒ 调用侧判点最小爆炸半径；关 = 零无谓 embedding / DB 开销；逐 run 现读 ⇒ `settings` 工具写入即热、端壳 UI 腿 = 各端既有刷新语义（生效时点见本节「先例 ∥ 偏离」块）。否决「helper 内读 config」（动公开导出面语义）·「只吞注入不省检索」（零收益）·「加 config-watch 活 config 重载」（新机制——需求边界外）·「判据缓存副本」（翻转不生效） |
-| D-PS36 | **安全纪律（五条携 why）= 落 `common.md` 档末新增第 17 节**（两模式同文——受众 = 两模式 + 全部子代理；条文 + why + 实例逐条入） | 受众面 = 全角色两模式（恒第二位 = 唯一全覆盖范围——同 D-PS5 论证）；内容 = 跨模式常驻判断（无模式过程挂钩 ⇒ 落两模式纪律档 = 同文双份、零差异收益——D-PS24 ∥ D-PS13 各有阶段 / 节锚，本例零锚）；先例 = D-PS22 ∥ D-PS30（公共层档末新增节 · §15 ∥ §16）。否决「落两模式纪律档」（同文双份）·「落 persona 层」（非身份 / 边界）·「既有节内增列」（公共层 16 节零安全面——无承载节）·「零 why / 去实例」（需求块明示逐条携 why + 实例——D9 口径） |
-| D-PS38 | **职责关系 = (乙) 完全正交**：`agent.injectProjectRules`（新）管 ① 项目指令块 ∥ `agent.injectDocs`（**职责收窄**——改既有键已落语义）只管 ② 相关文档块；两键互不影响（关任一方另一方照常）；① 判点落 `setup.mjs:276` 同址、只换判变量 | **用户 2026-10-15 05:05 拍板**（需求 §2.6 `:243` 已定行）——**已知代价：改 `injectDocs` 已落行为**（#1420 时它管 ①②；老用户显式 `injectDocs:false` 且未设新键 ⇒ ① 重新注入）；迁移注 = 三端词面改述 + 新键说明（**不设**升级弹窗 / 迁移脚本——超需求边界）。否决「(甲) 总闸 + 分闸」（`injectDocs` 保「文档族总闸」义，关它 ⇒ ①② 都关、新键只管 ①）——**一码事一键、最好理解**；用户选乙后已知情接受语义变更 |
-| D-PS37 | **跨仓勘察义务三句 = 四处落点 × 双面**（义务〔工程纪律层设计步——先例 = 同类先例勘察同节〕∥ 形态〔设计席人格 8 项 item 1——就地扩，8 计数不变〕∥ 派单〔主 agent 人格层「派发与收尾纪律」轮次字段后——独立行，不落六字段表〕∥ 核查〔设计评审标准第 10 条〕）；**CN 正本 = 设计轮直落 ∥ EN 运行面 = 实施轮按 M9** | 受众各归其位：行为面须主 agent 可见（核验 / 派单——先例 = 10-09 批同判据）⇒ 纪律层；形态 = 设计席自身交付物 ⇒ 其人格档；派单写权独属 ⇒ 人格层（子代理非受众）；核查 = 评审自含档；**②不落六字段表** = 机械面牵动避让（`validateTaskBookFields` 六字段判据集 ∥ tool-docs 骨架 ∥ 测试 T6——本批他域零动）；③ = 新第 10 条（独立断言面独立可核问——承第 9 条先例）。否决「单落设计席人格」（主 agent 全装配不可见——流程面失锚）·「新设设计档第 9 项」（8→9 计数连带）·「②并入六字段」（机械面牵动）·「②落纪律层」（子代理非受众——误导）·「③并入第 9 条」（两物混判） |
+| D-PS19 | **旧「跨仓批派单」提示词落笔面收口**：语义以多仓泛化形随册落笔；「反查脚本一条」落笔未做（在册）——`DOC-DISCIPLINE.md` §4.4 随正 | 两仓时代设计句与现况对账（提示词面「跨仓」零命中实证）；「脚本名不写进提示词」口径维持 |
+| D-PS20 | **读侧对句与界句 = 落两模式纪律层各自自持节内**（工程：item 14 新增 + item 12 句尾并入；普通：item 3 新增）——既有节内增列 ⇒ 零 `##` 连带 | 受众 = 两模式主会话 + 各自子代理；自持家族既有落点 = 两纪律层（#827 实证）；读侧句与自持条同节相邻 = 反向拉的当场对句 |
+| D-PS21 | **记录面声明源例外 = 自持节 item 1 续句**（声明公共仓可引——仓名前缀形可核；其余仓外指针照禁） | 台账 / 批档指针禁的读侧松绑：已声明源 = 可核坐标（`DOC-DISCIPLINE.md` §4.2.2 解析序 + `LEDGER-SELF-CONTAINED.md` §4.1 有界例外）；「登记 / 归属」面零松（#827 一档一仓不动） |
+| D-PS22 | **三层结构常识 = 公共层档末新增第 15 节**（`common.md`「工作结构常识（板 → 域 → 档）」——why + 判域口径 + 四条规矩） | 受众 = 两模式 + 全部子代理（用户「这是常识，每个模式和角色都该知道」）⇒ 公共层恒第二位 = 唯一全覆盖范围；与 §13/§14 同形（档末追加——D3 计数随动） |
+| D-PS23 | **同族条收窄 = 去重保留**（删 2：划界原则 ∥ 并行写者错开；保留 3 细则：热点面最小化 ∥ 分不开时 ∥ 改组已有内容时（在盘形）；判域口径随升层；标题括注「创建即留并行面」⇒「细则」） | 去重 = 公共层已承载者删（判域口径与划界原则升层）；保特有点 = 公共层未承载的三条操作细则（私删＝静默缩水）；旧条实质 = 升层 + 收窄 + 去重 |
+| D-PS24 | **多过一道用户的眼（用户视角门）= 两模式纪律档各新增节**（`discipline-engineering.md` ∥ `discipline-normal.md`——`## 交付报告` 节前；两档措辞按语境差异化：设计轮/收口轮 ∥ 设计时/收尾前；清单细目不上提示词） | 条款 = 用户批准稿——自带设计/收口两轮结构，单一既有节无跨轮承载位（工程档无 UI 节；普通档 UI 节挂「写码前」相位、收口半与「收尾前」节相隔 ⇒ 拆落即散）；受众 = 两模式主会话 + 各自子代理 ⇒ 纪律层。先例 = §6.16 ∥ §6.17-③（新增节登记在案） |
+| D-PS25 | **台账关联条目合并扫描 = 落 `persona-engineering.md`「台账」节「批设计」条原位扩展**（现文逐字保留 + 前插扫描步；不并理由记入轮次记录） | 扫描产出 = 入批条目集 ⇒ 贴「一次落多个需求点」的消费点（判断链不断——同 D-PS9 判据形）；生命周期表受需求档 FR30 验收「五行」锁定（`docs/core/requirements/ENGINEERING-MODE-V2.md:696`——塞第 6 行即破计数）⇒ 不入事件表；时机以文本自带（「批点火前」）；最小改动（±0 行 / 零计数连带——`##` 块计数随正） |
+| D-PS26 | **台账治理纪律增补五条 = 落 `persona-engineering.md` 两节内**（「派发与收尾纪律」：`欠账入清单` 原位扩展 ∥ `暂缓批先复核` 条尾追加 ∥ 开局自查新 bullet；「台账」节：入库查重 ∥ 单行单结新 bullet + 生命周期 ③ 条尾追加）——零 `##` 块计数连带；不新造机制 | 五条均主 agent 行为纪律（欠账 / 自查 / 登记 / 结算 / 收口 = 写权独属动作面）⇒ 人格层（同 §6.8 / §6.19 / FR30 判例）；「生命周期」表受 FR30 五行锁定 ⇒ 不增行只扩条文；需求档攒批五条计数零变 |
+| D-PS27 | **§8.2 行 7 尾列「段」口径定形 = 标题段**（标题节点〔层级 2+，含行内〕及其领起内容——逐段对位；复算 = **17/17 全配对**、零孤段） | 「段」原口径无在案记录；复算前置 = 定口径——取「段配对」与标题树同粒度（段 = 标题段）使读数可复算、可机判 |
+| D-PS28 | **同族句换写 = 中英两档四处**（CN `:38` ∥ `:51` ∥ EN `:38` ∥ `:51`；弃 1:1 基数、保内核、补关系句——「文档归板块（板内分域分档、可多档）」） | 三层模型（板 → 域 → 档）收口后「一板块一档」/`design/<板块>.md` 的 1:1 基数与之相抵；修 = 两份同改（CN + EN——单份改即成对拍差） |
+| D-PS29 | **普通模式管理教学 = 普通侧三档**（`discipline-normal.md` 新增节「工作管理（批次档 + 台账 + 收口）」〔台账用法 ∥ 批次档用法 ∥ 收口纪律〕∥ `persona-normal.md` 设计师席句〔节内〕∥ `common.md` 六段作者行模式分辨〔节内换写〕） | 需求 F-N2.1 判据句钉纪律层用法节；三块跨相位（建档 / 落地 / 收口）无单一既有节承载位 ⇒ 新增节（先例 §6.18）；主 agent 独属动作以主 agent 视角直书纪律节（普通侧人格档薄——单点承载；先例 = 既有 task / 持久清单句在纪律层）；公共层句 = 全角色两模式共读面（按角色写死即误导）；**单套逻辑** = 文本结构照工程同构、按普通模式单位改写（N-N2.1） |
+| D-PS30 | **「产品常识（配置项必须有配置界面）」= 公共层档末新增第 16 节**（`common.md`「产品常识（Product common sense）」——配置项必须有配置界面 ∥ 例外须显式说明经用户裁 ∥ 界面提示文案不得指向界面里不存在的入口） | 受众 = 两模式 + 全部子代理（用户「这是常识，不仅仅针对工程模式」）⇒ 公共层恒第二位 = 唯一全覆盖范围；与 §13–§15 同形（档末追加——D3 计数随动）；形态沿 D-PS22 先例（**移档末**——段中插入 ⇒ 档末，§N 零漂移） |
+| D-PS31 | **清账轮三条 = 落 `persona-engineering.md` 两节内**（「派发与收尾纪律」：锚点复核新 bullet ∥ 「台账」节：族行 ∥ evidence 指针化上限新 bullet ×2）——**CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9**；既有节内增列 ⇒ 零 `##` 块计数连带；不新造机制（工具面零改） | 三条均主 agent 行为纪律（池面锚维护 ∥ 行组织 ∥ 行形态 = 台账写权与行使面）⇒ 人格层（同 §6.8 / §6.20 / FR30 判例）；生命周期表受 FR30 五行锁定 ⇒ 三条不入事件表（锚点复核 trigger = 清账轮；族行 / 上限 = 行面形态） |
+| D-PS32 | **evidence 指针化上限定形 = 软上限 ≈ 300 字 + 例外形**（细节尚无落点——未建档 ∥ 待裁 ∥ 所指档不可达 ⇒ 允许内嵌摘要；落点一出现即收窄） | 判由：① 300 = 本仓「一行」的既有量级（行宽闸值同数——「台账 = 一眼能扫的账」以「一行」为直觉单位）；② 拦的就是千字级细节堆存——软上限取其约三分之一量级，良形行（症状 + 坐标 + 指针）留足空间；③ 软性 = 无机械闸（台账住用户数据区、非文档机检面）——执行 = 写形纪律（登记时）+ 清账轮收窄信号（超限行 = 收窄小件） |
+| D-PS33 | **族行与「单行 = 单结算单元」= 同轴互补**（拆 = 不相干项不绑；并 = 同一工作对象不分家）；族行成立条件 = **成员同批同轮收口**；族行 ≠ 主题伞（主题同、收口不同轮 = 注记关系不并）；不设成员数硬上限（成员清单 = 标题面，过长即信号——另裁或收窄） | 两条易被读成互斥（一拆一并）——同轴句显式化防误读；「同一工作对象」承「入库查重」既有定形；闭合条件 = 可判（同批收口 = 核销时点同拍）；近例 = 越线拆案族五行归一行 |
+| D-PS34 | **注入开关键面 = `agent.injectDocs` ∥ `agent.injectMemories`**（平表、动词式；默认 `true` 显式声明于 DEFAULTS；判据 `!== false`）——**扩为三键**（+`agent.injectProjectRules`——见 D-PS38） | 平表开关族先例（`verifyGuard` ∥ `timerWake` ∥ `autoThink`）；DEFAULTS 声明 = 缺省零变 + settings 类型护栏 / list 面自动派生（加键流程 = DEFAULTS 一处——`SETTINGS-TOOL.md` §2.6） |
+| D-PS35 | **阻断点 = `setup.mjs` 调用侧三判（`loadProjectInstructions` helper 签名零改）；关 = 检索调用不执行（不止吞注入）；热应用 = 逐 run 现读既有 `agent.config`（零新机制）**——**① 判点改读 `agent.injectProjectRules`**（§6.27——条件形零变、只换判变量；判点现盘 `:281`） | helper = 公开导出面 ⇒ 调用侧判点最小爆炸半径；关 = 零无谓 embedding / DB 开销；逐 run 现读 ⇒ `settings` 工具写入即热、端壳 UI 腿 = 各端既有刷新语义（生效时点见本节「先例 ∥ 偏离」块） |
+| D-PS36 | **安全纪律（五条携 why）= 落 `common.md` 档末新增第 17 节**（两模式同文——受众 = 两模式 + 全部子代理；条文 + why + 实例逐条入） | 受众面 = 全角色两模式（恒第二位 = 唯一全覆盖范围——同 D-PS5 论证）；内容 = 跨模式常驻判断（无模式过程挂钩 ⇒ 落两模式纪律档 = 同文双份、零差异收益——D-PS24 ∥ D-PS13 各有阶段 / 节锚，本例零锚）；先例 = D-PS22 ∥ D-PS30（公共层档末新增节 · §15 ∥ §16） |
+| D-PS37 | **跨仓勘察义务三句 = 四处落点 × 两份**（义务〔工程纪律层设计步——先例 = 同类先例勘察同节〕∥ 形态〔设计席人格 8 项 item 1——就地扩，8 计数不变〕∥ 派单〔主 agent 人格层「派发与收尾纪律」轮次字段后——独立行，不落六字段表〕∥ 核查〔设计评审标准第 10 条〕）；**CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9** | 受众各归其位：行为面须主 agent 可见（核验 / 派单——先例 = 前批同判据）⇒ 纪律层；形态 = 设计席自身交付物 ⇒ 其人格档；派单写权独属 ⇒ 人格层（子代理非受众）；核查 = 评审自含档；**②不落六字段表** = 机械面牵动避让（`validateTaskBookFields` 六字段判据集 ∥ tool-docs 骨架 ∥ 测试 T6——他域零动）；③ = 新第 10 条（独立断言面独立可核问——承第 9 条先例） |
+| D-PS38 | **职责关系 = (乙) 完全正交**：`agent.injectProjectRules`（新）管 ① 项目指令块 ∥ `agent.injectDocs`（**职责收窄**——改既有键已落语义）只管 ② 相关文档块；两键互不影响（关任一方另一方照常）；① 判点落 `setup.mjs` 调用侧同址、只换判变量（现盘 `:281`） | **用户拍板**（需求 §2.6 已定行）——**已知代价：改 `injectDocs` 已落行为**（拆键前它管 ①②；老用户显式 `injectDocs:false` 且未设新键 ⇒ ① 重新注入）。用户选乙后已知情接受语义变更 |
 
-## 10. 提示词双面流程（M9 落点）
+## 8. 提示词设计→实现流程（M9 落点）
 
-**定位**：提示词有两面——**中文审核面**（`docs/core/design/prompts/`，用户审核用）与**英文运行面**（`thincoder-core/prompts/`，国外模型运行用）。流程 = 改中文 → 翻译生成英文（生成 = 翻译不是 cp）。**无机检门**（2026-09-17 用户裁定：无限机检反感）。
+**定位**：提示词两份，关系 = **设计 → 实现**——**中文提示词 = 设计文档**（`docs/core/design/prompts/`，人读的规格；用中文因读者是中文用户，与它的性质无关）∥ **英文提示词 = 代码**（`thincoder-core/prompts/`，机器执行物）。流程 = 先改中文设计文档 → 英文由 coder 在编码时依它**精确翻译**生成（生成 = 精确翻译，不是 cp、不是照抄）。**无机检门**（用户裁定：无限机检反感）。
 
 **兑底核对清单四项 = `docs/core/requirements/ENGINEERING-MODE-V2-SPEC-PROMPT-PIPELINE.md` ②4**（**D2 单一权威源——不重述**）。
 
-### 10.1 路径（多根取法与落地面裁定）
+### 8.1 路径（多根取法与落地面裁定）
 
 | 面 | 取值规则 | 判据（可机检） |
 |---|---|---|
-| **模板（CN 审核面）** | `docRoot.design` **逐根** + `/prompts`——**取实存者**；本仓 = `docs/core/design/prompts/`（16 档） | 各根下 `prompts/` 目录**实存命中恰 1 处**：0 命中 = 配置缺口（fail-loud，不静默回落）；≥2 命中 = 歧义（拒，须显式声明） |
-| **落地（EN 运行面）** | manifest 顶层平级键 `promptsLanding`（单源声明；缺键 fallback = `DEFAULT_MANIFEST.promptsLanding` = `thincoder-core/prompts`） | 声明值 == `thincoder-core/prompt-files.mjs:30` `PROMPTS_DIR` 实测值（两值同指 ⇒ 声明与实际一致；不一致 = 生成会写偏，报） |
+| **模板（CN 设计文档）** | `docRoot.design` **逐根** + `/prompts`——**取实存者**；本仓 = `docs/core/design/prompts/`（16 档） | 各根下 `prompts/` 目录**实存命中恰 1 处**：0 命中 = 配置缺口（fail-loud，不静默回落）；≥2 命中 = 歧义（拒，须显式声明） |
+| **落地（EN 代码）** | manifest 顶层平级键 `promptsLanding`（单源声明；缺键 fallback = `DEFAULT_MANIFEST.promptsLanding` = `thincoder-core/prompts`） | 声明值 == `thincoder-core/prompt-files.mjs:30` `PROMPTS_DIR` 实测值（两值同指 ⇒ 声明与实际一致；不一致 = 生成会写偏，报） |
 
-**取法裁定（三候选 → 选定「逐根取实存」）**：
+**取法裁定（选定「逐根取实存」）**：
 
 - **选定 = `docRoot.design` 逐根 + `/prompts`，实存命中唯一者胜**。理由：不引入新键（`promptsLanding` 已覆盖落地侧）；不依赖数组顺序的隐式语义（`MANIFEST.md` 无「首元素 = 主根」条款）；与 F7「数组 = 完整声明」同向（逐根探测）。本仓实核 = 三根中仅 `docs/core/design` 下有 `prompts/`（`docs/cli/design` / `docs/vsc/design` 下无）⇒ 唯一命中。
-- **否决「数组首元素」**：首元素语义无权威源（数组顺序 = 声明序，非优先级）——重排即静默换面。
-- **否决「按 `promptsLanding` 反查」**：落地 = 核包路径（代码仓），与文档树无映射关系 ⇒ 不可实现。
-- **备选（登记不入本批）= 显式键 `promptsTemplate`**（对称于 `promptsLanding`）：仅在「零命中 / 双命中」成为真实需求时启用（须走 manifest schema 变更 + 评审）。
+**`promptsLanding` 是否 M9 落地面**：**是**——它就是落地面（EN 代码路径）的**单一声明源**。接线事实：运行期加载面 `thincoder-core/prompt-files.mjs:29-30` `PROMPTS_DIR = join(ROOT, "prompts")` **包内固定、不读 manifest** ⇒ 声明面与运行期当前**同值但不接线**（不引运行期依赖——生成流程只消费声明面）。
 
-**`promptsLanding` 是否 M9 落地面**：**是**——它就是落地面（EN 运行面路径）的**单一声明源**。接线事实（as-of 2026-09-18 实核）：运行期加载面 `thincoder-core/prompt-files.mjs:29-30` `PROMPTS_DIR = join(ROOT, "prompts")` **包内固定、不读 manifest** ⇒ 声明面与运行期当前**同值但不接线**（本批不引运行期依赖——生成流程只消费声明面）。
-
-**两面语义（用户 2026-09-17 裁定）**：模板 = **中文审核面**（用户审核用）；落地 = **英文运行面**（国外模型不懂中文）——生成 = **翻译**（中文 → 英文），**不是 cp**。
+**两份语义**：中文设计文档 = 人读的规格（用中文因读者是中文用户）；英文代码 = 机器执行物（国外模型不懂中文）——生成 = **精确翻译**（中文 → 英文），**不是 cp、不是照抄**。
 
 **功能点**：
 
 | # | 功能点 | 方案 |
 |---|---|---|
-| F2 | 更新流程约束 | 先改模板（中文）→ 翻译生成落地（英文）——落地是生成物 |
-| F3 | 落点读声明面（**v3 收正**） | 模板 = `docRoot.design` 逐根 + `/prompts`，**取实存者**（判据 = 唯一命中——§10.1）；落地 = `promptsLanding`（本仓 = `thincoder-core/prompts`） |
-| F4 | 清理「方案选型对比」残留（**v3 收正 = 按实存重定**） | **现况 = 三处对象均已零点清**（对象已不存在，无须清理动作）：① `discipline-engineering.md`「方案选型对比」节——模板 09-17 重构已无（grep 零命中）② A3⑤「方案对比已做」——同（09-17 只存于落地、随 `8b5ea7c3` 重生成消失）③ `persona-eng-designer.md` 8 项 item 1——两侧现为「决定 + 理由，不再要求候选枚举（该纪律已废）」**退役声明形态**（正面陈述，非要求）。判据域收正见 §10.5 表下注 |
+| F2 | 更新流程约束 | 先改中文设计文档 → 依它精确翻译生成英文代码——后者是生成物 |
+| F3 | 落点读声明面 | 模板 = `docRoot.design` 逐根 + `/prompts`，**取实存者**（判据 = 唯一命中——§8.1）；落地 = `promptsLanding`（本仓 = `thincoder-core/prompts`） |
+| F4 | 清理「方案选型对比」残留 | **现况 = 三处对象均已零点清**（对象已不存在，无须清理动作）：① `discipline-engineering.md`「方案选型对比」节——无（grep 零命中）② A3⑤「方案对比已做」——同 ③ `persona-eng-designer.md` 8 项 item 1——现为「决定 + 理由，不再要求候选枚举」**正面陈述**（非要求）。判据域见 §8.5 表下注 |
 
+**结构级复核（已结清）**：**判据 = 结构 / 条目级对应**（槽位标记 + 标题树 + 条目与技术 token）——两侧 = 中文设计文档 ↔ 英文代码的一致形态，字节 / 行文本比对本无信息量。
+表下四项（P1–P4）处置：P1 `persona-coder` EN 领先 2 句 · P2 `common` EN 工具面更全——**用户认账**（判为 EN 侧固有表述）；P3 `persona-normal` CN「确认与批准门」节——**已修**；P4 纯切分 / 排版差两处（`common.md` 3 子节 · `persona-engineering.md` 1 节）——**均已消解**。**零待办**。
 
-**结构级复核（已结清 · as-of 2026-09-18）**：**判据 = 结构 / 条目级对应**（槽位标记 + 标题树 + 条目与技术 token）——两侧 = CN 模板 ↔ EN 落地的双语平行版，字节 / 行文本比对本无信息量。
-表下四项（P1–P4）处置：P1 `persona-coder` EN 领先 2 句 · P2 `common` EN 工具面更全——**用户认账**（判为 EN 侧固有表述）；P3 `persona-normal` CN「确认与批准门」节——**已修**；P4 纯切分 / 排版差两处（`common.md` 3 子节 · `persona-engineering.md` 1 节）——非阻断、不再处置。**零待办**。
-
-### 10.2 结构级复核（15 对 · 已结清 · as-of 2026-09-18；表内各行复算日期为准）
+### 8.2 结构级复核（16 对 · 已结清）
 
 | # | 对 | 槽标 | 标题树 CN/EN | 结构判 | 差异性质 |
 |---|---|---|---|---|---|
@@ -827,42 +817,41 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 | 2 | `advisor-round1` | ✓ | 4/4（同） | 对齐 | 双语正当差 |
 | 3 | `advisor-round2` | ✓ | 5/5（同） | 对齐 | 双语正当差 + 示例行写法差（CN 用全路径形式、EN 用短文件名形式——皆为提示词内示例文本，非本档引用） |
 | 4 | `advisor-round3` | ✓ | 5/5（同） | 对齐 | 同上 |
-| 5 | `common` | ✓ | **17/20**（2026-10-14 复算——安全纪律第 17 节两档各 +1；口径 = 标题节点〔层级 2+，含行内〕） | **差** | **EN 领先**：EN 将工具观三条升为 3 个 `###` 子节 + 工具路由表（表 vs CN 散文；7 项仅 EN：`process` / `get_current_time` / `wait_for` / `verify` / `fetch` / `websearch` / MCP 搜索）——**处置**：四行并入 CN 正本 ∕ 余三项判非缺（2026-09-25 · 台账 #342）；`###` 子节切分 = 版式差非阻断 |
+| 5 | `common` | ✓ | **22/22**（口径 = 标题节点〔层级 2+，含行内〕） | 对齐 | 双语正当差（译法 + 段合并排版）；工具面差已收正——四行并入 CN 正本（已落）· 余三项判非缺（`fetch` / `websearch` / MCP 搜索——CN 工具观节载同义路由）· `###` 子节切分差已消解；工具路由表形差（表 vs CN 散文）= 版式差非阻断 |
 | 6 | `consult-base` | ✓ | 4/4（同） | 对齐 | 双语正当差 |
-| 7 | `discipline-engineering` | ✓ | 17/17（2026-10-07 复算——用户视角门批 +1；口径 = 标题节点〔层级 2+，含行内〕） | 对齐 | 双语正当差（段 17/17 全配对——段 = 标题段〔层级 2+，含行内〕、逐段对位零孤段；token 差仅 `文档:节` ↔ `doc:section`） |
-| 8 | `discipline-normal` | ✓ | 21/21 ⇒ **25/25**（2026-10-09 本批 +4/面——「工作管理」新增节 + 三子节；**收口轮复算**） | 对齐 | 双语正当差（编号签名集合零差） |
+| 7 | `discipline-engineering` | ✓ | 17/17（口径 = 标题节点〔层级 2+，含行内〕） | 对齐 | 双语正当差（段 17/17 全配对——段 = 标题段〔层级 2+，含行内〕、逐段对位零孤段；token 差仅 `文档:节` ↔ `doc:section`） |
+| 8 | `discipline-normal` | ✓ | **25/25**（「工作管理」新增节 + 三子节） | 对齐 | 双语正当差（编号签名集合零差） |
 | 9 | `persona-coder` | ✓ | 3/3（同） | 对齐 | **EN 领先 2 句**：`The parent CANNOT see your context…` + `You are an IMPLEMENTER with independent judgment — not a typewriter.` |
 | 10 | `persona-eng-coder` | ✓ | 6/6（同） | 对齐 | 双语正当差（token 零差） |
 | 11 | `persona-eng-designer` | ✓ | 10/10（同） | 对齐 | 双语正当差（占位符翻译：`<批>-<主题>.md` ↔ `<batch>-<topic>.md`） |
-| 12 | `persona-engineering` | ✓ | 16/17（2026-10-14 复算——台账治理增补 v2 批：两节内新增 bullet，标题节点零变） | **差** | 切分差：EN 将「一次实现轮的界」五条独立为 `## Batch-record lifecycle (five rules)`，CN 并在「项目状态档」节内（内容对应）——**处置 = 非阻断、不再处置**（纯切分差——内容逐面对应） |
-| 13 | `persona-explore` | ✓ | 3/3（同） | 对齐 | 双语正当差（2026-09-25 补列——结构级复核；EN 侧标题语言同 `persona-plan` 形） |
-| 14 | `persona-normal` | ✓ | 5/6（2026-10-09 复算；口径 = 标题节点〔层级 2+，含行内〕） | **差** | **切分差（判为双语正当差）**：EN `## Main-agent role` 独立成节，CN 该内容并在「能力边界」节内（内容逐面对应；纯切分颗粒度、非机制面差异——非阻断） |
+| 12 | `persona-engineering` | ✓ | 17/17 | 对齐 | 双语正当差 |
+| 13 | `persona-explore` | ✓ | 3/3（同） | 对齐 | 双语正当差（EN 侧标题语言同 `persona-plan` 形） |
+| 14 | `persona-normal` | ✓ | 6/6（口径 = 标题节点〔层级 2+，含行内〕） | 对齐 | 双语正当差 |
 | 15 | `persona-plan` | ✓ | 3/3（同） | 对齐 | 双语正当差 |
+| 16 | `subagent-base` | ✓ | 1/1（同） | 对齐 | 双语正当差 |
 
-**双源内容差收正（2026-09-25 · 台账 #342——本表第 5 行「EN 领先 7 项」逐项处置）**：
+**两份内容差收正（本表第 5 行工具面差逐项处置）**：
 
-- **四行并入 CN**（判据 = **D-PS1**「中文审核面 = 内容权威」——权威面缺行即补权威面，不把 EN 表降为内容源）：`verify` · `process` · `get_current_time` · `wait_for` ⇒ CN 正本 `docs/core/design/prompts/common.md` 工具路由块增补（逐字 = 设计围栏块 · 落笔走双面流程）；EN 运行面该四行现体已在（`:108` `:109`）——零改。
+- **四行并入 CN**（判据 = **D-PS1**「中文设计文档 = 内容权威」——权威面缺行即补权威面，不把 EN 表降为内容源）：`verify` · `process` · `get_current_time` · `wait_for` ⇒ CN 正本 `docs/core/design/prompts/common.md` 工具路由块增补（逐字 = 设计围栏块 · 落笔走设计→实现流程）；EN 代码该四行现体已在（`:108` `:109`）——零改。
 - **余三项判非缺**：`fetch` · `websearch` · MCP 搜索——CN 工具观节「搜索」条（`:64`）已载同义路由（MCP 首选 / Bing 后备 / 抓页前先扫工具表），与 EN 表行语义重叠 ⇒ 不重复落 CN 工具路由块。
-- **机检收正**：`thincoder-cli/test/prompts-dual-source.test.mjs` 中文侧读点改指**真实 CN 权威面**（`docs/core/design/prompts/`）——原读 CLI 仓归档副本（`thincoder-cli/docs/_archive/design/prompts/**`）⇒ CN 权威面不在机检射程；断言不变（存在性 + 头注格式），零新增断言。（迁移期引文）
 
-### 10.5 验收（回指 AC-M9）
+### 8.5 验收（回指 AC-M9）
 
 | # | 判据 |
 |---|---|
-| AC-M9-3 | 清理对象清零——**v3 判据域收正**（见下注）。现况 = 零命中 ⇒ ✅ |
+| AC-M9-3 | 清理对象清零——判据域见下注。现况 = 零命中 ⇒ ✅ |
 
 **AC-M9-3 判据域注**：
 
-- **域** = 两面提示词档（模板 16 + 落地 16 = 32 档）。
+- **域** = 两份提示词档（中文设计文档 16 + 英文代码 16 = 32 档）。
 - **模式** = `方案选型对比|候选 ?≥ ?2|对比表|单方案豁免|方案对比已做|comparison table|single-candidate exemption`。
-- **豁免形态** = 「该纪律已废 / that discipline is retired」**退役声明句**（正面陈述，不复述老要求）——现两处（两面 `persona-eng-designer.md` 各 1）。
-- **排除** = 设计档 / 批次档 / 需求档（纪律本体与历史记录，**非**清理对象——原判据把「指到纪律本体的坐标」与「提示词内的要求」混为一域，本次分彮登记）。
+- **排除** = 设计档 / 批次档 / 需求档（纪律本体与历史记录，**非**清理对象）。
 
 **边界（本节不做）**：不做提示词内容权（内容 = 主 agent 内容权 + coder 落笔）；不手改落地档（生成物）；不新增机检门。
 
 ## 9. 反向引用（v2 行为面载体）
 
-（见 §10 提示词双面流程——v2 行为面由双面翻译流程 + 收口核对承载。）
+（见 §8 提示词设计 → 实现流程——v2 行为面由该流程 + 收口核对承载。）
 
 - 本档 = 工程模式 v2 的**行为面载体**：不可机判的纪律（语义写权、角色职责、勘察边界、互锁）落提示词模板；可机判的搬结构（M1–M8 代码 + manifest 声明面）——分流权威表见 `ENGINEERING-MODE-V2.md` §2.3 E4.1。
-- 变更同步：v2 对提示词内容的任何裁定，落本档对应模板档（persona / discipline / common），双面翻译流程（M9）同步落地。
+- 变更同步：v2 对提示词内容的任何裁定，落本档对应设计文档档（persona / discipline / common），设计 → 实现流程（M9）同步落地。

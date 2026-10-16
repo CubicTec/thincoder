@@ -669,7 +669,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
         const resultText = maskSecrets(rawText, secrets)
         const truncated = resultText.length > CHAT_TOOL_CONTENT_MAX // 结果可见形截断位（KD-SV-114——审计 `truncated`）
         const trimmed = capToolContent(resultText) // 模型可见形（≤4000 字含注记——回放逐字一致）
-        appendMessage(db, chat.id, { role: "tool", content: trimmed, data: { toolCallId: call.id, name: call.name, ok: result?.ok === true, summary }, now })
+        appendMessage(db, chat.id, { role: "tool", content: trimmed, data: { toolCallId: call.id, name: call.name, ok: result?.ok === true, summary, args: argsTextOf(call.arguments) }, now }) // data.args = 帧同点同值（展示单源——回读卡参数不再恒空）
         messages.push({ role: "tool", tool_call_id: call.id, content: trimmed })
         const rawSubject = typeof result?.subject === "string" ? result.subject : "" // §12 exec 行 ∥ §14.4：**结果携 `subject` ⇒ 用之**（管理族零携 ⇒ 零变；env 族同值）
         auditChatCall({

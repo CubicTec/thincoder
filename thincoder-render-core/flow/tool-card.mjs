@@ -74,7 +74,7 @@ export function renderToolCard({ name, args, id, roundTag, t = coreT, now = Date
   const b = document.createElement("div")
   b.className = "tool-call-body"
   b.setAttribute("role", "region")
-  b.setAttribute("aria-label", `Output of ${name}`)
+  b.setAttribute("aria-label", t("tool.outputOf", { name }))
   b.textContent = t("tool.initial")
 
   h.addEventListener("click", () => {
@@ -165,7 +165,7 @@ export function renderToolHistory(name, text, idx) {
   const b = document.createElement("div")
   b.className = "tool-call-body"
   b.setAttribute("role", "region")
-  b.setAttribute("aria-label", `Output of ${name}`)
+  b.setAttribute("aria-label", coreT("tool.outputOf", { name }))
   b.textContent = text || ""
 
   h.addEventListener("click", () => {

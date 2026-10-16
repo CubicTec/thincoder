@@ -1,20 +1,12 @@
 # 两仓合并（TWO-REPO-MERGE）· 设计
 
 > 板块 = **两仓合并**——架构级机制档：本档承载**设计层 + 测试层**（需求层已拆出，见下）。
-> 需求侧 = `docs/core/requirements/TWO-REPO-MERGE.md`（**统一面**——同批迁入，与本档同名成对）。
+> 需求侧 = `docs/core/requirements/TWO-REPO-MERGE.md`（**统一面**）。
 > **phase 1（目录合并）已闭环**；**phase 2（核心统一）**的演进通道 = `docs/core/design/CORE-UNIFICATION.md`（其需求侧 = `docs/core/requirements/CORE-UNIFICATION.md`）——不在本档展开。
-> 建档：2026-09-15（**B 式迁移轮 · 第 2 批**——`thincoder-cli/docs/design/TWO-REPO-MERGE.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
-> 本档坐标与行数 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
-
-## 1. 定位
-
-两个产品曾以**两个独立 git 仓**分头维护：CLI 仓与 VSC 扩展仓。两产品在**概念层**镜像同一套机制（会话、上下文压缩、工具系统、评审收敛、工程模式……），却在**实现层**各自持有一份；为防漂移，工程体系长出一整套**跨仓机制**（跨仓引用形态判据、对端仓根发现、缺仓 / 域外口径、自指 fail-closed 防护、端差登记、各仓自持纪律、每仓一轮的评审与实施节奏、提示词双副本）。这些机制不产出产品价值，却对每一轮改动持续征税。
-
-**本板块目标**：两产品收入**一个 git 仓**、各占一个子目录，使「他仓」这个范畴**从根上消失**——跨仓机制不是被「改好」，而是**失去存在前提**，整线退役。收益是**机制面**的，非代码面；结构搬迁，不是重写。
 
 ## 2. 现行仓形态
 
-### 2.1 布局（as-of 实核）
+### 2.1 布局
 
 ```text
 thincoder/                          ← 单一 git 仓（默认分支 main）
@@ -31,7 +23,7 @@ thincoder/                          ← 单一 git 仓（默认分支 main）
 └── README.md                       ← 合并仓总览
 ```
 
-**关键约束（现行）**：两产品目录名沿用原仓名——这是**路径 token 零改写**的前提（`thincoder-cli/…` 形态在合并后自动从「跨仓引用」降格为「仓内路径」）。
+**关键约束（现行）**：两产品目录名沿用原仓名——这是**路径 token 零改写**的前提（`thincoder-cli/…` 形态现为仓内路径）。
 
 ### 2.2 两产品独立构建 / 独立发布
 
@@ -60,14 +52,14 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | 项 | 处置 |
 |---|---|
 | 仓根 `.gitattributes` / `.gitignore` | 仓根建一份（两产品共用）；各产品子目录内可保留自有规则 |
-| 产品级 `.gitignore` | `thincoder-cli/.gitignore` 存在（目录锚定形态 `/.thincoder/index/` · `/.thincoder/tmp/`）——**依据**：仓根 `.gitignore` 的含斜杠规则锚定在仓根，产品内 `.thincoder/` 产物会脱保；否决「根档规则改非锚定 `**/.thincoder/…`」（命中面扩散、把产品规则混入共享根档） |
+| 产品级 `.gitignore` | `thincoder-cli/.gitignore` 存在（目录锚定形态 `/.thincoder/index/` · `/.thincoder/tmp/`）——**依据**：仓根 `.gitignore` 的含斜杠规则锚定在仓根，产品内 `.thincoder/` 产物会脱保 |
 | `.thincoder/` | 各产品子目录内各留一份（同名不同内容不复用）；仓根如需另行建 |
 | `LICENSE` / `CHANGELOG.md` | 两产品各自保留（版本线与许可各自独立） |
 | 未跟踪临时产物 | 不入版本控制；迁入前已清理 |
 
 ### 2.5 项目台账单仓化
 
-仓根 `docs/TODO.md`（项目级唯一活档）+ `docs/TODO-archive.md`（两产品归档并入 + 单仓化归档节）；原**产品级**四档已退役。机检承接 = 台账机检默认清单改指仓根两档（`scripts/check-ledger.mjs`）。仓根 `README.md` 有「Project ledger」节登记。 （迁移期引文）
+仓根 `docs/TODO.md`（项目级唯一活档）+ `docs/TODO-archive.md`（两产品归档并入 + 单仓化归档节）；机检承接 = 台账机检默认清单改指仓根两档（`scripts/check-ledger.mjs`）。仓根 `README.md` 有「Project ledger」节登记。
 
 ### 2.6 CI 承载
 
@@ -87,7 +79,7 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 
 ## 4. 提示词承载（双源保留）
 
-现状结构：各产品持 `src/prompts/`（运行期落地物）+ `docs/design/prompts/`（中文权威模板）；提示词**正本**已上迁基准层 `docs/core/design/prompts/`（16 档）。
+现状结构：各产品持 `src/prompts/`（运行期落地物）+ `docs/design/prompts/`（中文权威模板）；提示词**正本** = 基准层 `docs/core/design/prompts/`（16 档）。
 
 | 层 | 对象 | 处置 |
 |---|---|---|
@@ -105,15 +97,15 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 - **执行根**：一律自合并仓根执行；
 - **调用**：两产品门禁链各自调用仓根统一脚本并**传入本产品域**（避免发布门禁相互牵连）；
 - **扫描域两态**：无域参 = **全域**（CI 全域调用与现行文档命令形态）；产品域态（门禁——显式传本产品域）；
-- **判据核已按 R24a 拆分**（各档 ≤300 行）：`doc-anchors.mjs` · `doc-anchors-v5.mjs` · `doc-anchors-core.mjs` · `doc-anchors-targets.mjs` · `check-doc-width.mjs` · `check-doc-width-core.mjs` · `check-ledger.mjs` · `check-ledger-core.mjs`；
+- **判据核**（各档 ≤300 行）：`doc-anchors.mjs` · `doc-anchors-v5.mjs` · `doc-anchors-core.mjs` · `doc-anchors-targets.mjs` · `check-doc-width.mjs` · `check-doc-width-core.mjs` · `check-ledger.mjs` · `check-ledger-core.mjs`；
 - **产品域外引用豁免**：带「对方产品侧」注记的引用不判 unknown-doc（单仓语义 = 产品域外引用豁免）。
 
-## 6. 关键决策记录（含否决备选）
+## 6. 关键决策记录
 
-| # | 决策 | 理由 / 否决备选 |
+| # | 决策 | 理由 |
 |---|---|---|
-| D1 | 采用 **subtree** 并入 VSC 历史 | 系统 git 自带（零安装）、不改既有历史、回滚成本低；否决 filter-repo（未安装 + 重写 SHA 使全部引用失效，且放大 tag 交集问题） |
-| D2 | 子目录名**沿用原仓名** | 路径 token 零改写；否决短名（`cli/` / `vscode/`——全量改写 + 大范围文档漂移） |
+| D1 | 采用 **subtree** 并入 VSC 历史 | 系统 git 自带（零安装）、不改既有历史、回滚成本低 |
+| D2 | 子目录名**沿用原仓名** | 路径 token 零改写 |
 | D3 | 默认分支用 `main` | CLI 为主干；VSC 的 `master` 只作历史来源，不保留为分支 |
 | D4 | **不搬 tag**，旧仓 tag 留归档仓 | 避开同名 tag；归档保留保证可查 |
 | D5 | 两产品 `docs/` **保持分层不合并** | 同名撞车自然消解；避免按 basename 解析时一对多 fail-open |
@@ -141,7 +133,7 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 
 **白名单两处**（`PEER_*` 裸字面，与跨仓判据无关——并发实例机制）：`thincoder-core/peer-domains.mjs` · `thincoder-vscode/src/extension/peer-domains.mjs`。
 
-**同型守卫退役**：自指 fail-closed 防护（对端发现 + 自指断言 + 缺仓 fail-closed 三要素）——合并后对端路径**真能解析**，断言恒真、守卫空转且静默绿 ⇒ 整段退役（产品内双源守卫改由**单仓版断言**承担：本端同名集合相等 + 本端镜像节引用可解析）。
+**同型守卫现行承担面**：产品内双源守卫由**单仓版断言**承担（本端同名集合相等 + 本端镜像节引用可解析）。
 
 ## 8. phase 2 演进通道（本档不实施）
 

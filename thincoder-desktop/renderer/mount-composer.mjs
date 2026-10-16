@@ -290,10 +290,11 @@ export function attachComposer(host, deps = {}) {
     return true
   }
 
-  /** 词面到位重派生（调用面 = `renderer/app.mjs` `boot`：`initDict` 之后一次 —— **注册面后到**：面板挂载先于
-   *  词表下发，缺本次重派生 ⇒ 占位符 ∕ 忙态门题注停留为**键名**（危而未错）；幂等（全派生面重走一遍））。 */
+  /** 词面到位重派生（调用面 = `renderer/app.mjs`：`boot` `initDict` 之后一次 + 帧分派 `locale` 支 —— **注册面后到**：
+   *  面板挂载先于词表下发，缺本次重派生 ⇒ 占位符 ∕ 钮标签 ∥ 题注停留为**键名**（危而未错）；幂等（全派生面重走一遍））。 */
   function refresh() {
     sync.syncPanel()
+    if (panel !== null) panel.applyWords()
   }
 
   return { submit, refresh, keys: COMPOSER_KEYS, detach, refreshCandidates: sync.refreshCandidates, printHelp }

@@ -55,7 +55,7 @@ export const UPSTREAM_ASK_MAX_INFLIGHT = 1
 
 /** 工具返回注（异步形——sync: false；答复按普通指令在下回合边界到达）。 */
 const ASYNC_NOTE =
-  "delivered to your parent's queue — consumed at the parent's next turn boundary (non-blocking). " +
+  "delivered to your parent's queue — consumed at the parent's next delivery round (idle wake or suspension window; not during a user turn), non-blocking. " +
   "Keep working on the unaffected parts; a reply arrives as an ordinary instruction at your next turn boundary. " +
   "If your run ends first, report the unanswered part as not done."
 

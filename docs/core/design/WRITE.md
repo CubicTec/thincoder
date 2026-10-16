@@ -6,7 +6,6 @@
 > 双端：CLI `thincoder-core/tools/file.mjs`（`writeTool`）· VSC `thincoder-vscode/src/tools/file.mjs`（同机制，各自实现）。
 > 模型可见描述 = `thincoder-core/tool-docs/write.md`（提示词面 / 产品代码——本档不复述）。
 > 需求侧 = `docs/core/requirements/TOOLS.md`（工具系统板块；CLI 树无逐工具需求档）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 1 批**——`thincoder-cli/docs/design/WRITE.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
 
 ## 1. 定位
 
@@ -35,9 +34,9 @@ write = **整文件替换 / 新建**——覆盖已有文件（read 后确认整
 
 新建文件 / 整文件重写 → write（read 先确认）；小改 → edit；加行 → insert_after；多文件 / 整块 → apply_patch。
 
-## 6. 机制面（B 式迁移并入——现状路径）
+## 6. 机制面
 
-### 6.1 实现坐标（as-of 2026-09-15 实核）
+### 6.1 实现坐标
 
 | 面 | 落点 | 实核 |
 |---|---|---|
@@ -48,16 +47,16 @@ write = **整文件替换 / 新建**——覆盖已有文件（read 后确认整
 | 注册面 | `thincoder-core/tools/index.mjs`（`builtinTools` · file 组） | 组陈述见 `docs/core/design/TOOLS.md` §6.2 |
 | VSC 对位实现 | `thincoder-vscode/src/tools/file.mjs` | 同名机制 · 独立实现 |
 
-**VSC 端差异（并入 · 批 8）**：VSC 端 `file.mjs`（`writeTool`）——① **编辑器路径**：doc 已打开 → 编辑器写（undo 单元）；否则本地写盘；② autoSyntaxCheck 与 EOL 两规则（F1 覆盖按原行尾 / F2 新建随目录多数派）双端同口径（`docs/core/design/EDIT-HELPERS.md` §4）。
+**VSC 端差异**：VSC 端 `file.mjs`（`writeTool`）——① **编辑器路径**：doc 已打开 → 编辑器写（undo 单元）；否则本地写盘；② autoSyntaxCheck 与 EOL 两规则（F1 覆盖按原行尾 / F2 新建随目录多数派）双端同口径（`docs/core/design/EDIT-HELPERS.md` §4）。
 
-### 6.2 与 edit / hashline_edit 的语义边界（迁入后收正）
+### 6.2 与 edit / hashline_edit 的语义边界
 
-旧档坐标系已失效后的现行分界：write 恒为**整文件**域；edit 为**区域**域（含删行形态）；hashline_edit 为**位置无关**域（hash 寻址）；insert_after 为**纯插入**域；apply_patch 为**多文件 / 整块**域。
+write 恒为**整文件**域；edit 为**区域**域（含删行形态）；hashline_edit 为**位置无关**域（hash 寻址）；insert_after 为**纯插入**域；apply_patch 为**多文件 / 整块**域。
 
-## 7. 并入的关键决策记录（含否决备选）
+## 7. 关键决策记录
 
-| # | 决策 | 理由 / 否决备选 |
+| # | 决策 | 理由 |
 |---|---|---|
-| D-E1 | 编辑工具**一个工具一权威档**（正文不与地图同档） | 多工具正文塞一档会超限且难维护；共享 helper 单源（同 `docs/core/design/TOOLS.md` §7 D-TO5） |
+| D-E1 | 编辑工具**一个工具一权威档**（正文不与地图同档） | 多工具正文塞一档会超限且难维护；共享 helper 单源（同 `docs/core/design/TOOLS.md` §6.6） |
 | D-E2 | **覆盖按原行尾 + 新建随目录多数派**（F1 / F2 两条分开） | 单一条规则两头都错：覆盖转行尾 ⇒ diff 全红；新建恒 LF ⇒ CRLF 仓库风格冲突 |
 | D-E3 | 写入后 **autoSyntaxCheck**（JS 类文件） | 语法错在写入点暴露，优于延后到 lint / 测试轮 |

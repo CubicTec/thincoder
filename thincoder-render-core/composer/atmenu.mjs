@@ -14,22 +14,26 @@
  * Enter 让位 = panel 侧 `isOpen()` 判定（本档接受面只在 active 项在场时 `preventDefault`，让位侧自带防默认兜住间隙）。
  *
  * 注入面（五项之局部）：② `post`（`atComplete` 出站——`:33`）。推送入口：`atResults`（经 ③ `state.subscribe`
- * → 调用方转 `showAtDropdown`）。取词：无（本档零文案）。
+ * → 调用方转 `showAtDropdown`）。取词 = 核 `../i18n.mjs`（`input.fileSuggestions`——car2 批）。
  */
 import { esc as escHtml } from "../md.mjs"
+import { t } from "../i18n.mjs"
 
 /**
  * @ 面工厂。`inputEl` = 输入框元素（键位 ∕ 输入监听宿主）；`post(type, payload)` = 出站归一
  * （`atComplete` 载荷 = `{ query, cwd: "", seq }`——VSC `autocomplete.js:33` 逐字，`cwd: ""` 保留）。
- * 返回：`{ el, showAtDropdown, closeAtDropdown, isOpen, handleAtInput }`——`el` 由调用方装配（VSC 序：`#at-dropdown` 在 `#input-row` 之前）。
+ * 返回：`{ el, applyWords, showAtDropdown, closeAtDropdown, isOpen, handleAtInput }`——`el` 由调用方装配（VSC 序：`#at-dropdown` 在 `#input-row` 之前）。
  */
 export function createAtMenu({ post, inputEl } = {}) {
   const dropdown = document.createElement("div")
   dropdown.id = "at-dropdown"
   dropdown.className = "dropdown"
   dropdown.setAttribute("role", "listbox")
-  dropdown.setAttribute("aria-label", "File suggestions")
   dropdown.style.display = "none"
+
+  /** 词面重派生（创建期取词 ∕ 挂载先于词表的面——端侧词表到位后调用；幂等）。 */
+  function applyWords() { dropdown.setAttribute("aria-label", t("input.fileSuggestions")) }
+  applyWords()
 
   let _atTimer = null, _atActive = false, _atBase = "", _atSeq = 0
 
@@ -141,5 +145,5 @@ export function createAtMenu({ post, inputEl } = {}) {
     }
   })
 
-  return { el: dropdown, showAtDropdown, closeAtDropdown, isOpen, handleAtInput }
+  return { el: dropdown, applyWords, showAtDropdown, closeAtDropdown, isOpen, handleAtInput }
 }

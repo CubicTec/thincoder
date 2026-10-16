@@ -129,6 +129,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
   // #1420（PROMPT-SYSTEM.md §6.24）：注入开关随 config 归一（默认 true——判据 `!== false`）——缺则
   // 面板 ∕ config.json 对该键关不掉（timer-wake 阶段 2 三处穿透先例）。
   let cfgInjectDocs = DEFAULTS.agent?.injectDocs !== false
+  let cfgInjectProjectRules = DEFAULTS.agent?.injectProjectRules !== false // #1465（§6.27）：① 项目指令块独立键
   let cfgInjectMemories = DEFAULTS.agent?.injectMemories !== false
   let cfgStreamRules = [] // #130 A-1/A-2：stream 规则（`.thincoder/rules` 文件规则并入 config 规则）
   try {
@@ -158,6 +159,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
     cfgAutoThink = raw.agent?.autoThink ?? cfgAutoThink // #175a：显式键优先（缺省 = 核 DEFAULTS）
     cfgTimerWake = raw.agent?.timerWake ?? cfgTimerWake // 显式键优先（缺省 = 核 DEFAULTS——默认开；判据 `!== false`）
     cfgInjectDocs = raw.agent?.injectDocs ?? cfgInjectDocs // 显式键优先（缺省 = 核 DEFAULTS——默认开；判据 `!== false`）
+    cfgInjectProjectRules = raw.agent?.injectProjectRules ?? cfgInjectProjectRules // #1465：同式
     cfgInjectMemories = raw.agent?.injectMemories ?? cfgInjectMemories
     cfgStreamRules = mergeFileRules(raw.agent?.streamRules ?? [], cwd) // #130 A-1：与 CLI make-agent.mjs:44-48 同语义
   } catch { /* config unreadable — defaults */ }
@@ -176,8 +178,8 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
       maxTurns: cfgMaxTurns, verifyGuard: cfgVerifyGuard, compactThreshold: cfgCompactThreshold,
       consultModels: cfgConsultModels, consultTurns: cfgConsultTurns, consultTimeoutMs: cfgConsultTimeoutMs,
       waitForTimeoutMs: cfgWaitForTimeoutMs, poolLimits: cfgPoolLimits, autoThink: cfgAutoThink, timerWake: cfgTimerWake,
-      // #1420：注入开关两键（默认开——判据 `!== false`；消费点 = 核 `agent/setup.mjs` 三判点）
-      injectDocs: cfgInjectDocs, injectMemories: cfgInjectMemories,
+      // #1420 #1465：注入开关三键（默认开——判据 `!== false`；消费点 = 核 `agent/setup.mjs` 判点）
+      injectProjectRules: cfgInjectProjectRules, injectDocs: cfgInjectDocs, injectMemories: cfgInjectMemories,
       goalTurns: cfgGoalTurns,
       streamRules: cfgStreamRules, // #130 A-2：经 agentFields → agent.config.agent.streamRules（消费 = 核 chat）
     },

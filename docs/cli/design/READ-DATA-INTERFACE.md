@@ -2,22 +2,21 @@
 
 > 板块 = **只读数据接口**——台账与批次档数据对外暴露的**只读出口**：CLI 命令面（`thincoder ledger list --json`）∥ ACP 协议面（`ledger/list` · `ledger/count` · `batch/list` + 数据变更通知）。
 > 配对需求档 = `docs/cli/requirements/READ-DATA-INTERFACE.md`（FR1–FR3 ∥ N1–N3——逐条承接；判定句回指 = 本档 §6）。
-> 论域文件 = `thincoder-core/ledger-db.mjs`（只读开库 ∥ 版本标记）· `thincoder-core/ledger-read.mjs`（已落——统一序列化 + 命令 runner）
-> · `thincoder-core/agent-tools/batch-read.mjs`（已落——批次档读面）· `thincoder-cli/src/acp/read-data.mjs`（已落——ACP 方法族 ∥ 变更观察）
+> 论域文件 = `thincoder-core/ledger-db.mjs`（只读开库 ∥ 版本标记）· `thincoder-core/ledger-read.mjs`（统一序列化 + 命令 runner）
+> · `thincoder-core/agent-tools/batch-read.mjs`（批次档读面）· `thincoder-cli/src/acp/read-data.mjs`（ACP 方法族 ∥ 变更观察）
 > · `thincoder-cli/src/command-table.mjs`（`list` 分发）· `thincoder-cli/src/completions.mjs` · `thincoder-cli/bin/thincoder.mjs`（USAGE）。
-> 建档：2026-10-03（read-data-interface 批 · 设计轮 · eng-designer · 台账 #886 ∥ #887）。
 
 ## 1. 定位与归属
 
-- **落点 = 新配对档**（本档——与需求档同名成对；2026-10-03 设计轮定）。备选「并入既有档」被否：四邻档各有所主（下条），本板块（两出口共用核读出口）在既有档中无承载位（D2——不硬塞）。
+- **落点 = 新配对档**（本档——与需求档同名成对）。备选「并入既有档」被否：四邻档各有所主（下条），本板块（两出口共用核读出口）在既有档中无承载位（D2——不硬塞）。
 - **与四邻档的分界**（D2 单一权威源——本档只写「只读出口」行为，四邻零重述）：
-  - 词面（命令树 / 旗标 / 补全发射 / USAGE）= `docs/cli/design/CLI-ENTRY.md`——本批新增词的登记 = 实施轮随动（§4 表）；
+  - 词面（命令树 / 旗标 / 补全发射 / USAGE）= `docs/cli/design/CLI-ENTRY.md`——新增词的登记 = 实施轮随动（§4 表）；
   - ACP 通道（传输层 / 处理器划分 / 版本协商 / 通知通道）+ 方法覆盖登记 = `docs/cli/design/ACP-CLIENT.md`——新方法行登记 = 实施轮随动；
   - 台账机制（库键 / 六态 / 写门 / 族定义 §7）= `docs/core/design/LEDGER.md`——本档只引（族口径与 §7 同源成套；N3）；
   - 批次档机制（六段骨架 / 状态词表 / 路径解析）= `docs/core/design/BATCH-RECORD.md` + 代码单源 `thincoder-core/agent-tools/batch-skeleton.mjs`。
-- **口径厘清**（两处既有语句——随 #882 让渡后的登记轮同笔收口，上抛项 1）：
-  - `docs/core/design/LEDGER.md` §7.8 不变量 ⑤（`docs/core/design/LEDGER.md:361`——不新增工具 / 命令面 ∥ headless 零新增输出）= 台账**展示面机制**的 v1 决策记录语境（自证「机制与 v1 全同」）；本批 = 另册需求档委托的**新出口板**（命令 / 方法 / 通知皆申报面）——两不相抵；
-  - 同档 §9 边界（`docs/core/design/LEDGER.md:453`——不新增工具 / 命令 / 快捷键面；不监听文件系统）：同类判读（新出口板 = 委托申报面，非机制自增面）；「不监听文件系统」= 无 `fs.watch` 式事件监听——本批为只读轮询指纹（5s stat 探测，D-7），非监听——两不相抵，如实披露。
+- **口径厘清**（两处既有语句）：
+  - `docs/core/design/LEDGER.md` §7.8 不变量 ⑤（`docs/core/design/LEDGER.md:361`——不新增工具 / 命令面 ∥ headless 零新增输出）= 台账**展示面机制**的 v1 决策记录语境（自证「机制与 v1 全同」）；= 另册需求档委托的**新出口板**（命令 / 方法 / 通知皆申报面）——两不相抵；
+  - 同档 §9 边界（`docs/core/design/LEDGER.md:453`——不新增工具 / 命令 / 快捷键面；不监听文件系统）：同类判读（新出口板 = 委托申报面，非机制自增面）；「不监听文件系统」= 无 `fs.watch` 式事件监听——为只读轮询指纹（5s stat 探测，D-7），非监听——两不相抵，如实披露。
 - **边界**：本档 = 只读出口；写面（六态写命令 ∥ 批次档写工具）零动。
 
 ## 2. 机制设计（决策与理由）
@@ -40,7 +39,7 @@
 
 - 载荷单源 = 核 `ledgerExport`：行 = `id` + 12 数据列集（**列集单源 = `DATA_COLUMNS`**——`thincoder-core/ledger-migrate.mjs:18-21`，不另立副本）；`evidence` 仅在 `full=true` 入行（FR1②）；缺列（旧库）⇒ null。
 - 行集读 = `ledgerQuery`（零 SQL 复刻——既有核读 API 直用）；版本探针 = 独立只读开库读 `PRAGMA user_version`——两开均只读态。
-- `schemaVersion`（N2）：台账库 `user_version` 标记本批新增——常量单源 `LEDGER_SCHEMA_VERSION = 1`（`ledger-db` 档）；写面开库落标（`v < 常量 ⇒ 置`）；读面如实回读（旧库未标 = 0）；库不在 ⇒ 项目不出项（空集）。
+- `schemaVersion`（N2）：台账库 `user_version` 标记新增——常量单源 `LEDGER_SCHEMA_VERSION = 1`（`ledger-db` 档）；写面开库落标（`v < 常量 ⇒ 置`）；读面如实回读（旧库未标 = 0）；库不在 ⇒ 项目不出项（空集）。
 - 对外形状与库龄无关（行按 12 列归一出形）——版本号自证结构。
 
 ### 2.4 三口径（FR2①）
@@ -58,7 +57,7 @@
 
 ### 2.6 ACP 面（FR3）
 
-- 新模块 `thincoder-cli/src/acp/read-data.mjs`（已落）：工厂 `createReadDataHandlers(ctx, { intervalMs })` → `{ handlers, watcher }`；在 `thincoder-cli/src/acp.mjs:116-122` 邻位展开（与 `checkpoint/*` · `memory/*` 工厂同法；`ext` 档零触）。
+- 新模块 `thincoder-cli/src/acp/read-data.mjs`：工厂 `createReadDataHandlers(ctx, { intervalMs })` → `{ handlers, watcher }`；在 `thincoder-cli/src/acp.mjs:116-122` 邻位展开（与 `checkpoint/*` · `memory/*` 工厂同法；`ext` 档零触）。
 - 三方法（params / result 见 §3）：`ledger/list` ∥ `ledger/count` ∥ `batch/list`。
 - 凭据门 `requireConfigured()`——与既有四族同门（统一访问策略；只读性不改通道门；§5 D-8）。
 - 版本面零动：`SUPPORTED_PROTOCOL_VERSIONS` 不变（`thincoder-cli/src/acp/client-caps.mjs:15`）；`initialize` 响应形状零动（方法为附加面，不进能力字段——先例 `checkpoint/*` · `memory/*` 未进能力面；§5 D-9）。
@@ -141,37 +140,37 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 |---|---|
 | `thincoder-core/ledger-db.mjs` | + `LEDGER_SCHEMA_VERSION`；`openLedger(cwd, { create, readOnly })` |
 | `thincoder-core/ledger-cmd.mjs` | 读面两函数切只读开库（签名零变） |
-| `thincoder-core/ledger-read.mjs`（已落） | `ledgerExport` · `runLedgerList` |
+| `thincoder-core/ledger-read.mjs` | `ledgerExport` · `runLedgerList` |
 | `thincoder-core/agent-tools/batch-skeleton.mjs` | + `readSectionStatusWord` |
 | `thincoder-core/agent-tools/batch-lifecycle.mjs` | `collectMarkdownFiles` 转导出（零行为变） |
-| `thincoder-core/agent-tools/batch-read.mjs`（已落） | `listBatchRecords` |
-| `thincoder-cli/src/acp/read-data.mjs`（已落） | `createReadDataHandlers` · `WATCH_INTERVAL_MS` |
+| `thincoder-core/agent-tools/batch-read.mjs` | `listBatchRecords` |
+| `thincoder-cli/src/acp/read-data.mjs` | `createReadDataHandlers` · `WATCH_INTERVAL_MS` |
 
 ## 4. 受影响文件与行数预算
 
-口径 = 行数实读（as-of 2026-10-03）；Δ = 预期增量；「随动」= 落笔轮次非本轮；模块 = M 族归属（L7 取数面——非 M 族标 `—`）。
+Δ = 预期增量；模块 = M 族归属（L7 取数面——非 M 族标 `—`）。
 
 | 文件 | 模块 | 现行 | Δ | 预算 | 改动点 |
 |---|---|---|---|---|---|
 | `thincoder-core/ledger-db.mjs` | M2 | 134 | +31 | ~165 | `openLedger:108` 增 readOnly 态 + items 探针 + 常量 + 落标 |
 | `thincoder-core/ledger-cmd.mjs` | M2 | 140 | +4 | ~144 | `:21` / `:34` 两读点切只读 |
-| `thincoder-core/ledger-read.mjs`（已落） | M2 | — | ~150 | ≤300 | 序列化 + 三口径 + `runLedgerList` |
+| `thincoder-core/ledger-read.mjs` | M2 | — | ~150 | ≤300 | 序列化 + 三口径 + `runLedgerList` |
 | `thincoder-core/agent-tools/batch-skeleton.mjs` | M3 | 174 | +22 | ~196 | `:113` 邻位增 `readSectionStatusWord` |
-| `thincoder-core/agent-tools/batch-read.mjs`（已落） | M3 | — | ~90 | ≤300 | 记录列举 + sections 组装 |
-| `thincoder-core/agent-tools/batch-lifecycle.mjs` | M3 | 332 | 0 | 332 | `:62` 收集器转导出（本批零增） |
-| `thincoder-core/ledger.mjs` | M2 | 241 | 0 | 241 | 零编辑——只 import `discoverFamily`（规避在飞写域；§5 D-11） |
-| `thincoder-cli/src/acp/read-data.mjs`（已落） | — | — | ~150 | ≤300 | 三方法 + 观察器 |
+| `thincoder-core/agent-tools/batch-read.mjs` | M3 | — | ~90 | ≤300 | 记录列举 + sections 组装 |
+| `thincoder-core/agent-tools/batch-lifecycle.mjs` | M3 | 332 | 0 | 332 | `:62` 收集器转导出（零增） |
+| `thincoder-core/ledger.mjs` | M2 | 241 | 0 | 241 | 零编辑——只 import `discoverFamily`（§5 D-11） |
+| `thincoder-cli/src/acp/read-data.mjs` | — | — | ~150 | ≤300 | 三方法 + 观察器 |
 | `thincoder-cli/src/acp.mjs` | — | 143 | +13 | ~156 | `:116-122` 工厂接线 + watcher 出参 + 启动 |
 | `thincoder-cli/src/command-table.mjs` | — | 185 | +8 | ~193 | `:154` 分支 + `:162` usage 行 |
 | `thincoder-cli/src/completions.mjs` | — | 140 | +6 | ~146 | 三套脚本 `list` 词（`:26` / `:73` / `:136`） |
 | `thincoder-cli/bin/thincoder.mjs` | — | 178 | +3 | ~181 | `:137` 邻位 USAGE 两行 |
 
-| `docs/README.md` | — | ≈154 | 0（本轮已落） | ≈154 | §1 计数收正 + 变更记录（**本轮已落**） |
-| `docs/cli/design/CLI-ENTRY.md` | — | 80 | +3 | ~83 | §2 行 + 变更记录（**随动**：实施轮） |
-| `docs/cli/design/ACP-CLIENT.md` | — | 650 | +9 | ~659 | §2.1 / §2.2 行 + §3 枚举（`:76` ∥ `:84` 四 ⇒ 五 handler 模块，+ `thincoder-cli/src/acp/read-data.mjs`（已落））+ §3.5 模块表（+ 行）+ 变更记录（**随动**：实施轮） |
-| `docs/core/design/LEDGER.md` | M2 | 509 | +~6 | 515 | §2 / §7.1 登记（**协调**：#882 在飞写域让渡后——上抛） |
+| `docs/README.md` | — | ≈154 | 0 | ≈154 | §1 计数收正 + 变更记录 |
+| `docs/cli/design/CLI-ENTRY.md` | — | 80 | +3 | ~83 | §2 行 + 变更记录 |
+| `docs/cli/design/ACP-CLIENT.md` | — | 650 | +9 | ~659 | §2.1 / §2.2 行 + §3 枚举（`:76` ∥ `:84` 五 handler 模块，+ `thincoder-cli/src/acp/read-data.mjs`）+ §3.5 模块表（+ 行）+ 变更记录 |
+| `docs/core/design/LEDGER.md` | M2 | 509 | +~6 | 515 | §2 / §7.1 登记 |
 
-**L7 复核（模块数——口径 = `docs/core/design/BATCH-RECORD.md` §5.1）：** 模块列去重 = **2**（M2 台账 SQLite ∥ M3 批次档生命周期）≤ 2——不拆批（§2 表落表后复核）。
+**L7 复核（模块数——口径 = `docs/core/design/BATCH-RECORD.md` §5.1）：** 模块列去重 = **2**（M2 台账 SQLite ∥ M3 批次档生命周期）≤ 2——不拆批。
 
 ## 5. 关键决策记录（含被否）
 
@@ -184,8 +183,8 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 - **D-7 触发 = 轮询指纹**（5s，可注入）∥ 被否：本进程写工具钩子——漏外部变更，而外部消费者场景的要点正是「别处也在改数据」。
 - **D-8 三方法过凭据门** ∥ 被否：免门——同通道内策略分裂（四族同门既有）。
 - **D-9 `initialize` 零动** ∥ 被否：加自定义能力字段——schema 无位、先例零，严格客户端风险。
-- **D-10 `DATA_COLUMNS` 直引**（零搬迁）∥ 被否：移入 `ledger-db`——本批不搬既有单源（零收益）。
-- **D-11 `ledger.mjs` 零编辑**（新面落 `ledger-read.mjs`；直引 `discoverFamily`）∥ 理由：该档现属他批在飞写域；「族出口 re-export」惯例的补记 = 让渡后随动（上抛）。
+- **D-10 `DATA_COLUMNS` 直引**（零搬迁）∥ 被否：移入 `ledger-db`——不搬既有单源（零收益）。
+- **D-11 `ledger.mjs` 零编辑**（新面落 `ledger-read.mjs`；直引 `discoverFamily`）∥ 理由：「族出口 re-export」惯例由该档自身承载。
 - **D-12 通知 params 只给 `{ cwd }`** ∥ 被否：携带明细——载荷与拉取面重复，喂送面另有维护债。
 
 ## 6. 验收对照（回指 FR1–FR3 ∥ N1–N3 判定句）
@@ -227,17 +226,17 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 ## 8. 边界（本档不做）
 
 - 不做写面（零写命令 / 零变更方法）；不改 `ledger migrate` / `audit` 现有语义。
-- 不做桌面面（2026-10-03 用户裁定）；不做跨机器 / 远程；不另立族定义（单源 = `docs/core/design/LEDGER.md` §7）。
+- 不做桌面面；不做跨机器 / 远程；不另立族定义（单源 = `docs/core/design/LEDGER.md` §7）。
 - 不改协议版本、不动 `initialize` 响应形状（§5 D-9）。
 - `schemaVersion` 为对外标记本身——不做无版本库的结构推断。
-- 通知 = 变更信号（不携带数据载荷 / 不做增量喂送——§5 D-12）；`ledger/count` 单项目（family 计数不在本批）。
+- 通知 = 变更信号（不携带数据载荷 / 不做增量喂送——§5 D-12）；`ledger/count` 单项目（family 计数不在射程）。
 
 ## 9. 落定与实施注意
 
 - **落定**：词面（命令 / 旗标 / 补全 / USAGE）· 输出形 · 错误面 · 退出码 · ACP params / result / error · 通知面——全定（§2 / §3）；**open 项 = 无**。
 - **实施注意**：
-  1. 与在飞批零撞车（`thincoder-core/ledger.mjs` · `ledger-surface.mjs` 在飞改动）——本批对 `ledger.mjs` 零编辑（D-11）；
-  2. 文档随动 = 实施轮同步落（CLI-ENTRY · ACP-CLIENT 词面行；`docs/README.md` 本轮已随档登记）；
-  3. `docs/core/design/LEDGER.md` 登记（§2 版本标记 / §7.1 导出面）= #882 写域让渡后随动——上抛排期；
+  1. 对 `ledger.mjs` 零编辑（D-11）；
+  2. 文档随动 = 实施轮同步落（CLI-ENTRY · ACP-CLIENT 词面行）；
+  3. `docs/core/design/LEDGER.md` 登记（§2 版本标记 / §7.1 导出面）；
   4. 单元测试先红后绿（§7）——实施者跑单元测试档即反馈环（零入集成测试树）。
 

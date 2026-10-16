@@ -84,6 +84,9 @@ export async function chat(provider, { messages, tools, onToken, onReasoning, on
     generationConfig: {
       ...(provider.temperature != null ? { temperature: provider.temperature } : {}),
       ...(provider.maxTokens ? { maxOutputTokens: provider.maxTokens } : {}),
+      // #1200（MODEL-SPECS.md §18.8）：off 形在场 ⇒ 禁思考形——载荷逐字同标题径先例
+      // （generate-title.mjs:74）；其余值（缺 ∥ on 形 ∥ null）⇒ 零发（误发 none = 反向禁用）。
+      ...(provider.thinking?.type === "disabled" ? { thinkingConfig: { thinkingLevel: "none" } } : {}),
     },
     safetySettings: [
       { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },

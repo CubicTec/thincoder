@@ -90,10 +90,10 @@ export function execUpgradeTransportFor(runner, { config = {}, httpRequestImpl =
 
 /**
  * 终端 hub（装配件——`bin` 创建并经 `gateway` `upgrade` 挂点接线；`closeAll` = 停机全收口）。
- * 注入口径（单元测试档）：`now`（时钟）∥ `fetchImpl`（Docker HTTP）∥ `httpRequestImpl`（升级劫持——明文行注入缝；TLS 行 = `execUpgradeTransportFor` 材料化）∥
+ * 注入口径（单元测试档）：`now`（时钟）∥ `fetchImpl`（Docker HTTP）∥ `httpRequestImpl`（升级劫持——明文行注入缝；TLS 行 = `execUpgradeTransportFor` 材料化）∥ `httpsRequestImpl`（TLS 升级腿假件缝——缺省 `node:https` 本尊）∥
  * `heartbeatMs`/`deadMs`/`resizeRetryMs`（心跳/判死/就绪重试——生产缺省 = §3 值）。
  */
-export function createTerminalHub({ db, log = null, now = Date.now, fetchImpl = fetch, config = {}, requestImpl = null, httpRequestImpl, heartbeatMs = TERMINAL_HEARTBEAT_MS, deadMs = TERMINAL_DEAD_MS, resizeRetryMs = TERMINAL_RESIZE_RETRY_MS, readTimeoutMs, actionTimeoutMs } = {}) {
+export function createTerminalHub({ db, log = null, now = Date.now, fetchImpl = fetch, config = {}, requestImpl = null, httpRequestImpl, httpsRequestImpl, heartbeatMs = TERMINAL_HEARTBEAT_MS, deadMs = TERMINAL_DEAD_MS, resizeRetryMs = TERMINAL_RESIZE_RETRY_MS, readTimeoutMs, actionTimeoutMs } = {}) {
   if (!db) throw new Error("createTerminalHub：缺少 db（openDatabase 产物）")
   const sessions = new Map()
   let seq = 0
@@ -326,7 +326,7 @@ export function createTerminalHub({ db, log = null, now = Date.now, fetchImpl = 
       resizeTimer: null,
     }
     // 升级腿传输按行择（TLS 行 ⇒ 材料感知 `https.request`；明文行 ⇒ 既有注入/缺省 `node:http`——零行为变化）
-    const upgradeTransport = execUpgradeTransportFor(runner, { config, httpRequestImpl })
+    const upgradeTransport = execUpgradeTransportFor(runner, { config, httpRequestImpl, httpsRequestImpl })
     session.execOps = createExecOps({ client: session.client, ...(upgradeTransport ? { httpRequestImpl: upgradeTransport } : {}), ...(readTimeoutMs ? { readTimeoutMs } : {}), ...(actionTimeoutMs ? { actionTimeoutMs } : {}) })
     sessions.set(session.id, session)
     const conn = createWsConnection(socket, {

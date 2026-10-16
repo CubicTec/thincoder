@@ -8,8 +8,8 @@
  * clone 后 remote 地址去凭据（携带 userinfo 的 URL 归一落盘——§3.6 步骤 4）。
  *
  * 失败分类（结果面人话——分类名供 server/页面映射）：`dir_conflict`（目标目录非空——盒侧检出，
- * 沿 §3.6 步骤 2）∥ `auth`（凭据缺失/无效——指回我的·账户页绑定卡）∥ `network`（网络不可达——解析/连接类失败）
- * ∥ `other`（原文兜底）。
+ * 沿 §3.6 步骤 2）∥ `auth`（凭据缺失/无效——**就地措辞**（录入/更新即重试，不再指账户页——KD-SV-215））
+ * ∥ `network`（网络不可达——解析/连接类失败）∥ `other`（原文兜底）。
  */
 import { spawn } from "node:child_process"
 import { mkdirSync } from "node:fs"
@@ -37,7 +37,7 @@ export function classifyCloneFailure(stderr) {
     return { kind: "dir_conflict", message: "目标目录已存在且非空——换个目录名或先清理" }
   }
   if (/Authentication failed|could not read Username|terminal prompts disabled|Invalid username or password|Permission denied \(publickey\)|access denied/i.test(text)) {
-    return { kind: "auth", message: "凭据缺失或无效——请在我的·账户页绑定 Git 凭据后重试" }
+    return { kind: "auth", message: "凭据缺失或无效——录入或更新该主机的 Git 凭据后重试" }
   }
   if (/Could not resolve host|Failed to connect|Connection (timed out|refused|reset)|Network is unreachable|proxy/i.test(text)) {
     return { kind: "network", message: "网络不可达——请检查目标地址与网络连接后重试" }

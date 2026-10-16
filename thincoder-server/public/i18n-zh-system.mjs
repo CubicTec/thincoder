@@ -137,7 +137,7 @@ export const ZH_SYSTEM = Object.freeze({
   "usageReport.export": "导出 CSV",
   "usageReport.exported": "已导出 CSV",
 
-  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十六型在册；型面十七型——`member_event` 待落） ────
+  // ── 管理·审计（§2.3④——类型枚举 = accounts/ACCOUNTS.md §2.1：本表十七型在册） ────
   "audit.title": "审计",
   "audit.typeLabel": "类型",
   "audit.typeAll": "全部类型",
@@ -160,6 +160,10 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.agentOk": "完成",
   "audit.agentFail": "失败",
   "audit.agentTruncated": "结果截断",
+  "audit.sandboxRuleAdd": "新增",
+  "audit.sandboxRuleRemove": "删除",
+  "audit.sandboxRuleAllow": "允许",
+  "audit.sandboxRuleDeny": "拒绝",
   "audit.type.login_success": "登录成功",
   "audit.type.login_failure": "登录失败",
   "audit.type.login_locked": "登录锁定",
@@ -175,6 +179,7 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.type.sandbox_rule": "沙盒规则裁定",
   "audit.type.project_event": "项目事件",
   "audit.type.ledger_event": "团队台账",
+  "audit.type.member_event": "成员会话",
   "audit.type.mcp_event": "MCP 服务器",
   "audit.sandboxKind.container_create": "容器创建",
   "audit.sandboxKind.container_start": "容器启动",
@@ -208,8 +213,10 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.sandboxKind.workspace_destroy": "工作区销毁",
   "audit.sandboxKind.checkpoint": "快照创建",
   "audit.sandboxKind.checkpoint_fail": "快照失败",
+  "audit.sandboxKind.quota_recovered": "磁盘配额自愈",
   "audit.sandboxKind.quota_apply_failed": "磁盘配额应用失败",
   "audit.sandboxKind.placement_failed": "放置失败",
+  "audit.sandboxKind.box_step_failed": "建盒步骤失败",
   "audit.sandboxKept": "保留",
   "audit.sandboxRemoved": "清除",
 })

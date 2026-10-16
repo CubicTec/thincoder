@@ -16,8 +16,8 @@
    - 设计要点与禁止范围
    - 验收标准（可机判）
    - 交付报告格式
-3. **角色 enum 校验**：explore / eng-designer / eng-coder（**advisor 不入 spawn enum**——评审走 advisor 工具通道；plan 不入——工程模式无 plan 角色。主 agent 2026-09-17 裁定）。
-4. **files 声明语义**：`files` = 预期触碰面（内容产物：源 / 测试 / 设计档）——**不列工程工具面（`scripts/*`——层级锚定：仅仓根与直接子层；深层目录名不携带 face 信息，2026-10-15 收正）**、不列过程档（台账 / CHANGELOG）。
+3. **角色 enum 校验**：explore / eng-designer / eng-coder（**advisor 不入 spawn enum**——评审走 advisor 工具通道；plan 不入——工程模式无 plan 角色。主 agent 裁定）。
+4. **files 声明语义**：`files` = 预期触碰面（内容产物：源 / 测试 / 设计档）——**不列工程工具面（`scripts/*`——层级锚定：仅仓根与直接子层；深层目录名不携带 face 信息）**、不列过程档（台账 / CHANGELOG）。
 
 ## ③ 边界（不做什么）
 

@@ -13,7 +13,7 @@
     "start": "electron .",
     "prepackage": "node scripts/materialize-deps.mjs",
     "package": "electron-builder",
-    "postpackage": "node scripts/check-dist.mjs",
+    "postpackage": "node scripts/check-dist.mjs && node ../scripts/dev-link.mjs --force --win32-only",
     "quickcheck": "node tools/web-quickcheck/run.mjs"
   },
   "dependencies": {

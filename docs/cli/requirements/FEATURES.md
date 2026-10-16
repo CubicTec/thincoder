@@ -3,8 +3,6 @@
 > 板块 = **功能清单**（CLI 产品当前提供的能力——功能性需求现状）。
 > **配对设计档 = 无**——本条目不设设计档（能力清单不承载机制设计；逐能力的契约与实现坐标见各自板块设计档，本档只作**清点与回指**）。层归属 = **CLI 面**（P2——含 CLI 专有的终端界面 / slash 命令面）。
 > 本档基于**现行实现**梳理（`thincoder-core/**` 共享面 + `thincoder-cli/src/**` 壳面）——**代码 / 提示词与本清单不符时：要么改实现，要么走需求变更改本档，不允许两边各说各的**。
-> 建档：2026-09-15（**B 式迁移轮 · 第 2 批**——`thincoder-cli/docs/requirements/FEATURES.md` 内容重建入基准层；旧档原地一字不改、留作参照历史）。
-> 本档坐标与清点 = **as-of 2026-09-15 实核**（登记面 = `thincoder-core/tools/index.mjs` · `thincoder-core/agent-tools.mjs` · `thincoder-cli/src/tui/slash-commands.mjs`）。
 
 ## 1. 总体需求
 
@@ -91,7 +89,7 @@
 | `consult_start` / `consult_stop` | 多模型并行会诊（只读顾问；需配置 `agent.consultModels`） |
 | `peer_instances` | 列出同工作区的其它实例（多实例协作面） |
 
-**escalate（飞刀）现状**：不再是独立工具——已并入 `subagent` 的 `action:"escalate"`（把实现交给更强的会诊模型亲自操刀，候选池同 `consultModels`）。
+**escalate（飞刀）现状**：已并入 `subagent` 的 `action:"escalate"`（把实现交给更强的会诊模型亲自操刀，候选池同 `consultModels`）。
 
 ### 2.8 版本控制
 
@@ -99,7 +97,7 @@
 |---|---|
 | `git` | 综合工具：diff / status / log / checkpoint / add / commit / push / tag / branch / checkout / restore / stash / reset / revert / merge / cherry-pick 等动作族；快照为全量副本 |
 
-### 2.9 Slash 命令（**28** 个 · 实核——2026-10-01 父侧收正：26 ⇒ 27，补 `/timers`；**2026-10-10 登录面补全批：27 ⇒ 28，补 `/team`**；登记面指针随动）
+### 2.9 Slash 命令（**28** 个 · 实核）
 
 登记面 = `thincoder-cli/src/tui/slash-commands.mjs:40`。
 
@@ -160,7 +158,7 @@
 | 2 | 历史流水句不受现态判据约束 | release note / 沿革句记述旧流程——保留原样 |
 | 3 | **改文档不改能力面** | 反向「删实装以对齐文档」= 能力回归，一律判违规 |
 
-**落点坐标（as-of 2026-09-16）**：`thincoder-cli/README.md` · `thincoder-cli/bin/thincoder.mjs`（`USAGE`）· `thincoder-cli/src/completions.mjs`（补全词表）· `thincoder-cli/src/**` 用户可见提示串。机制面权威 = `thincoder-core/hooks.mjs` + `docs/core/requirements/AGENT-LOOP.md`。
+**落点坐标**：`thincoder-cli/README.md` · `thincoder-cli/bin/thincoder.mjs`（`USAGE`）· `thincoder-cli/src/completions.mjs`（补全词表）· `thincoder-cli/src/**` 用户可见提示串。机制面权威 = `thincoder-core/hooks.mjs` + `docs/core/requirements/AGENT-LOOP.md`。
 
 **与本节对应的对账执行**（层 0 重锚 + 逐条判定 + 验收用例）= `docs/core/design/DOC-CODE-RECONCILE.md` §5.1（单一权威源——本节只给需求面，不重述对账明细）。
 
@@ -177,5 +175,5 @@
 | N7 | 输出上限 | 工具输出超限落盘 + 预览（保头保尾） |
 | N8 | 崩溃可取证 | 异常终止落崩溃记录 + 近堆快照 + 堆预警（CLI 侧面见 `docs/cli/design/CRASH-REPORTS.md`） |
 | N9 | 对外文档契约面 | README / `USAGE` / 用户可见提示串对 slash 命令 · 子命令 · 配置键 · 机制事件的列举须与实装可达面一致（判据句见 §2.13）。**度量方式**：无机检门——对外文本面不在 V5 源域（`docs/**`）内、`scripts/doc-check-anchors.mjs` 不覆盖 ⇒ 守护 = 同批改动 + 人巡；漂移处置 = 能力在位 ⇒ 改文档（反向删实装 = 违规） |
-| N10 | 盘根启动门 | cwd = 磁盘根（`X:\` ∥ `/`；win32 大小写归一）⇒ 会话面硬拦（默认 TUI ∥ `tui` ∥ `chat` ∥ `acp`）：一行提示（先进工作目录再启动）+ 非零退出；信息维护面（`-v` ∥ `--help` ∥ `memory` ∥ `upgrade` ∥ `completion` ∥ `session *`）放行。动机 = 盘根启动 ⇒ 全盘索引（实测案：`D:/` origin 13.2 万行，2026-10-08 已清）。**无强开旗**；家目录维持软防护（#867 先例，不升硬拦） |
+| N10 | 盘根启动门 | cwd = 磁盘根（`X:\` ∥ `/`；win32 大小写归一）⇒ 会话面硬拦（默认 TUI ∥ `tui` ∥ `chat` ∥ `acp`）：一行提示（先进工作目录再启动）+ 非零退出；信息维护面（`-v` ∥ `--help` ∥ `memory` ∥ `upgrade` ∥ `completion` ∥ `session *`）放行。动机 = 盘根启动 ⇒ 全盘索引。**无强开旗**；家目录维持软防护（不升硬拦） |
 

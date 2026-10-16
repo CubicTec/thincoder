@@ -83,23 +83,18 @@ export function createComposerPanel(deps = {}) {
   const inputRow = document.createElement("div")
   inputRow.id = "input-row"
 
+  // 词面（placeholder ∥ title ∥ aria ∥ textContent）= 创建期由下方 `applyWords()` **单源**置位——挂载先于词表时
+  // 回落键名，端侧（desktop ∥ VSC）词表到位后调用 `applyWords` 重派生补面。
   const inputEl = document.createElement("textarea")
   inputEl.id = "input"
   inputEl.rows = 1
-  inputEl.placeholder = "Ask ThinCoder... (Shift+Enter for new line)"
-  inputEl.setAttribute("aria-label", "Message input")
 
   const sendBtn = document.createElement("button")
   sendBtn.id = "send-btn"
-  sendBtn.title = "Send (Enter)"
-  sendBtn.setAttribute("aria-label", "Send message")
 
   const abortBtn = document.createElement("button")
   abortBtn.id = "abort-btn"
-  abortBtn.title = "Stop"
-  abortBtn.setAttribute("aria-label", "Stop generation")
   abortBtn.style.display = "none"
-  abortBtn.textContent = "Stop"
 
   // 元素入 ctx（VSC `ctx.inputEl` ∕ `sendBtn` ∕ `abortBtn` 三字段同形——档内引用面）
   ctx.inputEl = inputEl
@@ -271,6 +266,23 @@ export function createComposerPanel(deps = {}) {
   // ── 装配（序 = VSC `index.html:42-63`：at-dropdown → input-row → paste-bar → controls-row）──
   inputRow.append(attach.fileInput, ctx.inputEl, attach.attachBtn, sendBtn, abortBtn)
   root.append(atMenu.el, inputRow, attach.pasteBar, controls.el)
+
+  /** 词面重派生（**单源**——本档创建期取词面合集 + 四子件 applyWords；调用面 = 端侧词表到位后一次：
+   *  desktop `mount-composer.refresh` ∥ VSC `chat-messages` i18n 到达点；幂等——可安全重入）。 */
+  function applyWords() {
+    ctx.inputEl.placeholder = t("input.placeholder")
+    ctx.inputEl.setAttribute("aria-label", t("input.messageLabel"))
+    ctx.sendBtn.title = t("toolbar.send")
+    ctx.sendBtn.setAttribute("aria-label", t("toolbar.sendMessage"))
+    ctx.abortBtn.title = t("toolbar.stop")
+    ctx.abortBtn.setAttribute("aria-label", t("toolbar.stopGeneration"))
+    ctx.abortBtn.textContent = t("toolbar.stop")
+    attach.applyWords()
+    controls.applyWords()
+    modelMenu.applyWords()
+    atMenu.applyWords()
+  }
+  applyWords()
 
   // ── 斜径面装配（§5 条 6 动作句柄表——**同钮同门 ∥ 单一实现**）：各 = 钮 handler 提取出的同一函数（落点 = 两工厂
   // 实例导出面 `model-menu.mjs` `open` ∥ `controls.mjs` 三 toggle；门随函数）；消费面 = `cmd.run` 的 `ctx.actions`。
@@ -458,12 +470,14 @@ export function createComposerPanel(deps = {}) {
 
   // 返回面（端侧接线**最小面**——逐项各有设计消费点）：`inputEl`（回焦锚——VSC `chat.js:61,105` ∕
   // 桌面 `#input` 查询面）· `setLoading` ∕ `applyBusyLock`（宿主忙态 ∕ 守卫推送后的重派生点——VSC
-  // `panels.js:95,114` ∕ `chat-messages.js:99` 同址保位）· `isRunning()`（重派生惯用式的读数）·
+  // `panels.js:95,114` ∕ `chat-messages.js:99` 同址保位）· `applyWords`（**词面重派生单源**——挂载先于
+  // 词表的面：端侧词表到位后调用；幂等）· `isRunning()`（重派生惯用式的读数）·
   // `models()`（候选缓存读面——VSC `getModels` 接线面 `chat.js:61`）。`send` 出入两钮已内生，不出面。
   return {
     inputEl: ctx.inputEl,
     setLoading,
     applyBusyLock,
+    applyWords,
     isRunning: () => ctx.isRunning,
     models: () => modelMenu.models(),
   }

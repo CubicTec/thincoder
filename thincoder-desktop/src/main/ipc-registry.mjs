@@ -1,6 +1,6 @@
 /**
- * ipc-registry.mjs — 通道注册表族（`docs/desktop/design/IPC.md` §2「唯一入册面」）：**五十三项**（B1 批三新 —— 团队族 `team:status` ∥ `team:login` ∥ `team:logout`，末位 49–51；登录面补全批一增 —— `team:verify`，末位 52；
- * SSH 会话批增一 —— `secret:respond`（凭据门出口），末位 53；转口档 `src/main/team.mjs`）
+ * ipc-registry.mjs — 通道注册表族（`docs/desktop/design/IPC.md` §2「唯一入册面」）：**五十四项**（B1 批三新 —— 团队族 `team:status` ∥ `team:login` ∥ `team:logout`，末位 49–51；登录面补全批一增 —— `team:verify`，末位 52；
+ * SSH 会话批增一 —— `secret:respond`（凭据门出口），末位 53；team-token-rotation 批增一 —— `team:rotate`，末位 54；转口档 `src/main/team.mjs`）
  * = 白名单逐项 → 处理体映射（`HANDLERS` 表）+ 注册序（`registerIpcHandlers`）——**#28 拆点出档**
  * （批档 §2.5「通道注册表族出档」；纯搬零语义改 —— 表 ∕ 注册 ∕ 定序逐行沿出档前 `ipc.mjs`）。
  *
@@ -29,8 +29,8 @@ import {
   batchStatusChannel, indexBuild, indexStatusChannel, settingsEnvChannel, settingsToolsChannel, mcpToolsChannel,
   mcpUpdateChannel, mcpReconnectChannel,
 } from "./ipc-relays.mjs"
-/** 团队族四通道处理体（B1 批；登录面补全批增 `team:verify`）：核 `thincoder-core/team.mjs` 转口 —— 出档 `src/main/team.mjs`（表行逐字为映射）。 */
-import { teamLoginChannel, teamLogoutChannel, teamStatusChannel, teamVerifyChannel } from "./team.mjs"
+/** 团队族五通道处理体（B1 批；登录面补全批增 `team:verify`；team-token-rotation 批增 `team:rotate`）：核 `thincoder-core/team.mjs` 转口 —— 出档 `src/main/team.mjs`（表行逐字为映射）。 */
+import { teamLoginChannel, teamLogoutChannel, teamRotateChannel, teamStatusChannel, teamVerifyChannel } from "./team.mjs"
 
 /** 通道 → 处理体（新增行即新增白名单项，两处同时动）。 */
 const HANDLERS = Object.freeze({
@@ -86,6 +86,7 @@ const HANDLERS = Object.freeze({
   "team:login": teamLoginChannel,
   "team:logout": teamLogoutChannel,
   "team:verify": teamVerifyChannel,
+  "team:rotate": teamRotateChannel,
   "secret:respond": secretRespond,
 })
 

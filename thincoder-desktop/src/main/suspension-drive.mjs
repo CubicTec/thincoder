@@ -132,7 +132,7 @@ export function createSuspensionDrive({ post, runTurn, reloadSlot = null, notify
   function takeQueuedInput(list) { return takeQueuedBatchItem(list).item }
 
   /** 窗步边界取批（步边界缝读面窗半——`turn-driver` 组合为「窗优先」）：计划首动作即消费（`slash` 同判——
-   *  统一语义）+ 携图批整批让位（同步缝不可降级——与链径同判据）+ `pushReal` + 消费回执行（消费即帧——快照整置）；
+   *  统一语义）+ 携图批整批让位（同步缝不可降级——与链径同判据）+ `pushReal` + 消费回执帧（消费即帧——快照整置）；
    *  返回是否注入（未入窗 ∕ 空队 ∕ 让位 ⇒ false——零动作零帧）。 */
   function stepBoundaryPickup(key, agent) {
     const entry = windows.get(key)
@@ -140,7 +140,7 @@ export function createSuspensionDrive({ post, runTurn, reloadSlot = null, notify
     const picked = queue.stepPickup(entry.pending)
     if (picked === null) return false
     pushReal(agent, { role: "user", content: picked.text }) // 下一步生效（非中断通道）
-    postQueue(key, { text: picked.text, ts: picked.ts }) // 消费回执行（消费即帧——快照整置）
+    queue.emitDelivery(key, picked) // 消费回执帧出站（消费即帧——快照整置；单源 = 窗队件 `emitDelivery`）
     return true
   }
 

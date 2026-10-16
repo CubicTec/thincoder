@@ -65,8 +65,11 @@ export const DEFAULTS = {
     // false ⇒ 端侧不武装闩（回既有回合边界投递——零调度器面）。键面随 DEFAULTS 派生进 settings 类型表。
     timerWake: true,
     // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：文档类 ∥ 记忆类自动注入——默认开；
-    // 判据 `!== false`（缺省 = 现行为零变）。消费点 = 核 `agent/setup.mjs` 三判点（逐 run 现读）。
+    // 判据 `!== false`（缺省 = 现行为零变）。消费点 = 核 `agent/setup.mjs` 判点（逐 run 现读）。
+    // 2026-10-15（§6.27 · 台账 #1465）：① 项目指令块独立成键——`injectDocs` 收窄为只管 ② 相关文档块；
+    // 两键完全正交（关任一方另一方照常）。`injectProjectRules` 判点 = 核 `agent/setup.mjs`（`prepareRun` 项目指令段）。
     injectDocs: true,
+    injectProjectRules: true,
     injectMemories: true,
   },
   memory: {

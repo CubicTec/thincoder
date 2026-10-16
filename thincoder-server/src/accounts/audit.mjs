@@ -62,10 +62,13 @@ export function recordAudit(db, { type, actor, actorId = null, target = "", targ
 
 /**
  * 列表查询（`GET /api/audit` 数据面——倒序新在前）：过滤 `type`（十七型枚举——非法 ⇒ 400）∥ `memberId`
- * （解析后 = 成员 id——匹配 actor_id ∥ target_id，同 usage 口径）∥ `from`/`to`（unix ms）。
+ * （解析后 = 成员 id——匹配 actor_id ∥ target_id，同 usage 口径）∥ `from`/`to`（unix ms）∥ `containerId`
+ * （等值匹配 `detail.containerId`——沙盒日志窗「操作记录」按容器取数，见 `webui/SANDBOX.md` §2.1①；
+ *  `json_valid` 卫 = 一行坏 detail 不拖垮带参查询——沿 `decodeDetail` 容错口径）。
+ * 过滤一律入 `WHERE`（**先于 limit 截取**——cap 提示对过滤后集合生效）。
  * `limit` 夹在 1..`AUDIT_LIMIT_MAX`（缺省 100——沿用量口径）。
  */
-export function queryAudit(db, { type = null, memberId = null, from = null, to = null, limit = AUDIT_LIMIT_DEFAULT } = {}) {
+export function queryAudit(db, { type = null, memberId = null, from = null, to = null, containerId = null, limit = AUDIT_LIMIT_DEFAULT } = {}) {
   if (type !== null && !AUDIT_TYPES.includes(type)) {
     throw new HttpError("invalid_request_error", `审计类型非法：${type}（${AUDIT_TYPES.join(" ∥ ")}）`)
   }
@@ -78,6 +81,10 @@ export function queryAudit(db, { type = null, memberId = null, from = null, to =
   if (memberId !== null) {
     where.push("(actor_id = ? OR target_id = ?)")
     args.push(memberId, memberId)
+  }
+  if (containerId !== null) {
+    where.push("(json_valid(detail) AND json_extract(detail, '$.containerId') = ?)")
+    args.push(containerId)
   }
   if (from !== null) {
     where.push("ts >= ?")

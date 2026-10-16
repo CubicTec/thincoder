@@ -3,7 +3,7 @@
  * agent 侧读写出口（2026-10-08 · 台账 #1098；权威设计 = `docs/core/design/MANIFEST.md` §2.10）。
  *
  * 三动作（KD-M1-38）：
- *  - `read`  ⇒ `projectView(target)` 五态报明（稳定锚 `state=ok|missing|invalid|ambiguous|no-project`）；
+ *  - `read`  ⇒ `projectView(target)` 五态报明（稳定锚 `state=ok|missing|invalid|workspace|no-project`）；
  *              `ok` 态再 `readManifest(view.root)` 取细节面（`projectView` 面不含 `missingKeys` /
  *              `unknownKeys`）——**不抛**（缺档报明，非拒）。
  *  - `init`  ⇒ 缺档建默认档（`initManifest`——内容 = `DEFAULT_MANIFEST`）；**已带档 ⇒ 拒**
@@ -19,8 +19,8 @@
  * ——`docRoot.*` 的「本面无」，KD-M1-37）。
  *
  * 目标面（KD-M1-39——判据复用零新解析器）：`read` = `projectView`；`init` / `write` =
- * `projectRootView`（歧义 ⇒ 拒 + 候选全列——不猜）；`resolveProjectRoot` 对歧义塌缩 `null` 再回落 cwd
- * ⇒ 写 / 建两动作**不得**直用。
+ * `projectRootView`（工作区 ⇒ 拒 + 下辖项目全列 + 显式 `target` 指引）；`resolveProjectRoot` 对
+ * 工作区塌缩 `null` 再回落 cwd ⇒ 写 / 建两动作**不得**直用。
  *
  * 写路径复用（零新写路径）：落盘恒经 `writeManifest` / `initManifest`——`writer` 恒显式 `'main'`
  * （缺省 `'subagent'` = 写门 fail-closed 缺省，KD-M1-3 / AC-M1-5 零改）。
@@ -83,14 +83,14 @@ function setKeyPath(obj, path, value) {
   cur[segs[segs.length - 1]] = value
 }
 
-/** 歧义拒文案（候选全列——不猜；init / write 共用）：多候选 = 显式指定 target，机制不代选。 */
-function ambiguousReason(target, candidates) {
-  return `ambiguous target ${target} — ${candidates.length} candidate projects (the mechanism never picks one); pass target explicitly:\n` +
+/** 工作区拒文案（下辖项目全列 + 显式 `target` 下一步——init / write 共用；事实行，非二义框定）。 */
+function workspaceReason(target, candidates) {
+  return `${target} is a workspace holding ${candidates.length} projects — pass the project root explicitly via target:\n` +
     candidates.map((c) => `- ${c}`).join("\n")
 }
 
 /** read 动作（五态报明——**不抛**）：`state=` 稳定锚 + 各态附行（ok 细节面 / missing 引导 /
- *  ambiguous 候选全列 / invalid 错误行）。 */
+ *  workspace 下辖项目全列 / invalid 错误行）。 */
 function readAction(target) {
   const view = projectView(target)
   const lines = [`state=${view.state}`]
@@ -105,10 +105,10 @@ function readAction(target) {
     lines.push(`hint: run manifest action=init to create the default manifest here`)
   } else if (view.state === "no-project") {
     lines.push(`hint: no project on the ancestor chain and none below — manifest action=init can create one at the target`)
-  } else if (view.state === "ambiguous") {
-    lines.push(`candidates (${(view.candidates ?? []).length}):`)
+  } else if (view.state === "workspace") {
+    lines.push(`projects (${(view.candidates ?? []).length}):`)
     for (const c of view.candidates ?? []) lines.push(`- ${c}`)
-    lines.push(`hint: pass target explicitly — the mechanism never picks one`)
+    lines.push(`hint: pass target explicitly — the target must be one of the projects above`)
   } else if (view.state === "invalid") {
     if (view.errors?.length) lines.push(`errors=${view.errors.join("；")}`)
   }
@@ -122,13 +122,13 @@ export const manifestTool = {
     type: "object",
     properties: {
       action: { type: "string", enum: ["read", "init", "write"], description: "read — current manifest + validation state (five-state anchor, never throws); init — create the default manifest when missing (refused when one already exists); write — point-edit one node (key + value) of an existing manifest" },
-      target: { type: "string", description: "Explicit target directory — defaults to the session anchor; relative paths resolve against it. Ambiguous targets are refused with the full candidate list (never picks one)." },
+      target: { type: "string", description: "Explicit target directory — defaults to the session anchor; relative paths resolve against it. A workspace target (several projects below it) is refused with the full project list — pass the project root you mean." },
       key: { type: "string", description: "(write) Dot path of the node to set — version / phase / promptsLanding / codePaths, or a sub-key of docRoot / checkConfig / index / advisor (e.g. docRoot.design / index.publicRepos / advisor.docMap); whole-object writes of those four families are refused", },
       value: { type: "string", description: "(write) New value — parsed as JSON first (null / true / 5 / [\"a\"]), otherwise kept as a literal string; \"null\" is the explicit no-such-face for docRoot.<key>" },
     },
     required: ["action"],
   },
-  readonly: false, // 动作级分类（dispatch-gates `isSubagentReadonlyAction`）：read = 只读类；init / write 保持侧效门
+  readonly: false, // 动作级分类（dispatch-gates `isReadonlyAction`）：read = 只读类；init / write 保持侧效门
   async execute(args, ctx) {
     const action = args?.action
     if (!["read", "init", "write"].includes(action)) {
@@ -138,10 +138,10 @@ export const manifestTool = {
 
     if (action === "read") return readAction(target)
 
-    // init / write：目标面 = `projectRootView`（歧义直读形——不猜；KD-M1-39）
+    // init / write：目标面 = `projectRootView`（直读形——工作区不成目标；KD-M1-39）
     const rootView = projectRootView(target)
-    if (rootView.state === "ambiguous") {
-      throw refuse(action, ambiguousReason(target, rootView.candidates))
+    if (rootView.state === "workspace") {
+      throw refuse(action, workspaceReason(target, rootView.candidates))
     }
 
     if (action === "init") {

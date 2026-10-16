@@ -3,9 +3,6 @@
 > 板块 = **崩溃捕获与取证**——CLI 进程崩溃时（含 JS 钩子拦不住的面：V8 原生 OOM / abort、外部终止）的**诊断留痕机制**。
 > 配对需求档 = `docs/cli/requirements/CRASH-REPORTS.md`。
 > 对位档 = **无**（VSC 端无对应能力——CLI 单端面）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 6 批**——`thincoder-cli/docs/design/CRASH-REPORTS.md` 内容重建入基准层；
-> 旧档原地一字不改、留作参照历史。需求侧同批自 `thincoder-cli/docs/requirements/CRASH-REPORTS.md` 迁入）。
-> 本档坐标与行数 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 
 ## 1. 取证物总览（四类 + 观测面）
 
@@ -28,21 +25,21 @@
 - **动作**：mkdir 预建 `~/.thincoder/crash-reports/` + `process.report.directory` / `reportOnFatalError` 代码内启用
   （shebang 入口无法携带启动参数 ⇒ 代码内启用是唯一路径）。
 - **预建是必要动作**（非「零成本保险」）：目录缺失时 Node 对 fatal **静默不写**报告。
-- **落点更正（实测）**：`report.*.json` 实测落 `~/.thincoder/crash-reports/`——`process.report.directory` 已由进程内设定，
+- **落点**：`report.*.json` 落 `~/.thincoder/crash-reports/`——`process.report.directory` 已由进程内设定，
   **非 CWD**。
 - 接口（注入缝）：`prepareCrashReporting({ dir, heapSnapshot = true, armHeapSnapshot })`（`thincoder-cli/src/crash-reports.mjs` 导出）
-  ——默认参数保**其余调用点**（如 `thincoder-cli/test/fixtures/r25-oom.mjs` 无参调用）零改（生产判定单点 = bin 入口读配置键 `diagnostics.heapSnapshot` 后显式传入——§3.2）；`dir` 选项同时服务 mkdir / `report.directory` / purge / 返回。返回值 = 目录路径。 （迁移期引文——档已删）
+  ——默认参数保**其余调用点**（如 `thincoder-cli/test/fixtures/r25-oom.mjs` 无参调用）零改（生产判定单点 = bin 入口读配置键 `diagnostics.heapSnapshot` 后显式传入——§3.2）；`dir` 选项同时服务 mkdir / `report.directory` / purge / 返回。返回值 = 目录路径。
 
 ### 2.2 JS 异常记录与启动提示
 
 - `writeCrashRecord({ type, error })`（`crash-reports.mjs` 导出）：同步落盘 `crash-<epochms>-<pid>.json`——内容 = 时间 / 类型 / 消息 + 堆栈 /
   `uptime` / argv / cwd / 内存 / node 版本；权限 `0o600`。写失败返回 `null`（不抛——步隔离）。
 - `recentCrashHint({ dir })`（`crash-reports.mjs` 导出）：启动扫描——24h 窗内是否有记录（mtime 判定）→ 返回提示文本或 `null`（无匹配不提示）。
-- **提示行带记录内事实（2026-09-25 · 台账 #212 · 用户裁 = B：判定面增强 · 原文案保留）**：选中记录（窗内 mtime 最新者）读回
+- **提示行带记录内事实（用户裁 = B：判定面增强 · 原文案保留）**：选中记录（窗内 mtime 最新者）读回
   **`uptime` + `cwd`** 两段，提示形 = `上次运行异常终止（记录：<path> · 运行 <u>s · cwd <c>）`（`<u>` = `uptime.toFixed(1)`）。
   目的 = 「1.5s 启动尝试」与「真会话」在提示面一眼可辨（24h 窗内两条记录的形态差）。段序固定 = uptime 段在前 / cwd 段在后。
   - **字段源按记录类分**：自写记录（`crash-*.json`）取顶部 `uptime`（秒 · number）/ `cwd`（string）；Node fatal 报告
-    （`report.*.json` 档）取 `header.cwd`——**Node 报告无 uptime 字段**（2026-09-25 实测），该段略去。
+    （`report.*.json` 档）取 `header.cwd`——**Node 报告无 uptime 字段**，该段略去。
   - **退化（尽力面）**：读档 / 解析失败、记录类不明、字段缺 / **型不符**（`uptime` 非有限非负数 · `cwd` 非非空字符串）⇒ **对应段略去**；两段皆缺 ⇒ 基础形
     `上次运行异常终止（记录：<path>）`。不抛、不阻断启动（N1）。
   - **消费面零改**：两处调用点（`bin/thincoder.mjs` 内 `recentCrashHint` 调用：chat 分支 stderr 行 · `startTUI` 载荷 `crashNotice` 字段）只消费返回串。
@@ -70,12 +67,11 @@
 - 调用语义：`v8.setHeapSnapshotNearHeapLimit(1)`——「堆接近上限时写快照、至多 1 份 / 进程」。
 - 导入形态：命名空间 import（`import * as v8 from "node:v8"`）——API 缺失降级为调用期异常并被吞，不做 import 期硬失败。
 - 独立 `try/catch`（尽力面——武装失败不阻断启动、不影响既有步骤）。
-- **缺口动机**：Node 诊断报告只有堆分区统计，**无「谁在持 8GB」**——对象级快照是该问题的唯一直答。
 
 ### 3.2 开关（配置键）
 
 - 键：`diagnostics.heapSnapshot`（布尔；判定 / 默认在 `thincoder-core/config.mjs` 装载面）；**判定单点 = bin 入口读键后以显式参数传入**（`prepareCrashReporting({ heapSnapshot })`——包装器不判定，防两处判定漂移）。
-- 判定：键值 `true` → 武装；缺省 / 其余值 / 读失败 → **不武装**（默认关——2026-09-30 采集收网批：隐私默认〔traces D-TR6 同族〕；判定形 fail-closed）。**显式开的生效时点分端**：桌面会话热读（运行期即时）∥ CLI 本进程下次启动（判定单点 = 进程启动读键）。
+- 判定：键值 `true` → 武装；缺省 / 其余值 / 读失败 → **不武装**（默认关——隐私默认〔traces D-TR6 同族〕；判定形 fail-closed）。**显式开的生效时点分端**：桌面会话热读（运行期即时）∥ CLI 本进程下次启动（判定单点 = 进程启动读键）。
 - 通道纪律（自有配置禁经 env）= `CONFIG.md` §6.2。
 - 包装器的 `--diagnostic-dir` **无条件注入**（开关已关时该参数无副作用面——报告目录由 `process.report.directory` 决定，同值）。
 
@@ -100,13 +96,13 @@
 
 - **失败面**：武装异常 → 吞；快照写失败（磁盘满 / 权限 / 目录缺失）→ 快照不落，其余取证面不受影响（机制独立）。
 - 写出时 stderr 行（Node 原生）：`Wrote snapshot to <路径>`——TUI 经 tee 双写（上屏 + 日志），用户 / 同事可截图回传。
-- **不做启动提示**：罕见事件而每会话打印「快照将落在…」= 常态化噪音，否决；可发现性由写时原生行 + 落点表 + 30 天清理闭环。
+- **不做启动提示**：可发现性由写时原生行 + 落点表 + 30 天清理闭环。
 
 ## 4. 堆遥测 / 看门狗（事前预警）
 
 ### 4.1 定位
 
-事故会话堆爬升约 19 分钟无任何事前信号（「炸了才知道」）。本机制补「事前预警」：接近堆上限时主动提示，
+本机制补「事前预警」：接近堆上限时主动提示，
 为长会话用户留出保存与取证窗口。**只看不治**（不强制 GC、不阻断、不触发快照——快照面归 §3）。
 
 ### 4.2 模块契约（`thincoder-cli/src/heap-watch.mjs`）
@@ -138,12 +134,6 @@
   可靠面 = TUI 行 + 事件日志，stderr = headless 主面与日志兜底）。
 
 ## 5. 异常退出的终端恢复
-
-### 5.1 问题
-
-- 正常 / JS 异常退出：TUI 自身清理（`tui-lifecycle.mjs`）与 JS 崩溃恢复序列覆盖——**JS 钩子可拦的面**。
-- **V8 fatal（OOM / abort）：不走 JS 钩子** → 子进程猝死，终端保持 mouse 上报态（滚动飞数字串）。
-  唯一存活方 = 包装父进程（`wrapped-spawn.mjs`）——此前仅在子死后同码退出，零序列动作。
 
 ### 5.2 契约
 

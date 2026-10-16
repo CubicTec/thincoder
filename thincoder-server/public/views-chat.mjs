@@ -359,13 +359,14 @@ export async function renderChat(ctx, mount) {
     catch (error) { ctx.fail(error) }
   }
 
-  /** 换模型（KD-SV-108——明选即换、下回合生效）：`PATCH …/:id`；失败 ⇒ 就地人话 + 钮面回退（`composer` 面重派生）。 */
+  /** 换模型（KD-SV-108——明选即换、下回合生效）：`PATCH …/:id`；失败 ⇒ 就地人话 + 钮面回退（`composer` 面重派生）。
+   *  回执会话卫（B70 同款一行式）：会话 id 随拾取捕获；在飞期切走 ⇒ 回执零写他会话。 */
   async function onSelectModel(model) {
     if (activeId === null || model === "") return false
+    const chatId = activeId // 会话 id 随拾取捕获（链式调用晚于拾取——不可迟读 `activeId`）
     try {
-      const data = await ctx.api(`/api/admin/agent/chats/${activeId}`, { method: "PATCH", body: { model } })
-      if (detail !== null && data?.chat) detail.chat = data.chat
-      renderSelector()
+      const data = await ctx.api(`/api/admin/agent/chats/${chatId}`, { method: "PATCH", body: { model } })
+      if (activeId === chatId && detail !== null && data?.chat) { detail.chat = data.chat; renderSelector() }
       return true
     } catch (error) { ctx.fail(error); return false }
   }

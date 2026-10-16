@@ -124,6 +124,7 @@
  *      `wizard.saveAndNext` ∥ `wizard.finishGuard` ∥ `wizard.finishGuardGo` ∥ `wizard.finishGuardExit`（②③ 合并钮 + 完成护栏三词；
  *      ⑤ 校验面零新键——复用 `settings.providers.verify*` 五键）⇒ 实读 `HOST_DICT`（**合并表**，经合并点随动）**346 ⇒ 349**（两语同拍、键集相等；届盘实读续链）。
  *      **prefs 写失败面批增一键（补链 · 2026-10-13 清账轮 · 台账 #1190 ∥ #101）**：`composer.prefs.failed`（「模型切换未生效（${reason}）」——写失败面词）两语同增——消费面 = `renderer/composer-sync.mjs`（`data-notice="prefs-failed"`）、键面单源 = `renderer/i18n-views.mjs` ② 组 ⇒ `VIEWS_DICT`（第二档）**149 ⇒ 150**（本行 = 补链登记——值已计入后续链行届盘实读 150；HOST 合并表经合并点随动已含）。
+ *      **car2 批增二十三键（2026-10-15 · 三面键集对齐 · 台账 #1488）**：`COMPOSER_DICT`（第三档）**28 ⇒ 51**（+9 现键 +14 新键——族明细 = `renderer/i18n-composer.mjs` 头注；值逐字同 VSC `locales/*`）⇒ 届盘实读（2026-10-16）：`HOST_DICT`（**合并表**）**383** ∕ `VIEWS_DICT`（第二档）**156** ∕ `COMPOSER_DICT`（第三档）**51** ∕ `SETTINGS_DICT`（第四档）**89**（两语同拍、键集相等；其间并行批增键未逐笔续计——本行按盘收正）。
  *   ③ `t(key, params)` 解析序 = **宿主 → 核投影 → 键名自身**（缺键回落键名：不静默吞、不抛、
  *      永不返回空 / `undefined`）；插值 = **核同形** `${name}`（键值由核 `projectDictionary`
  *      原样投影 ⇒ 占位方言只能随核 —— `thincoder-core/i18n.mjs:12`「两端同约定」），缺参原样保留；

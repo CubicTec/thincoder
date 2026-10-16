@@ -2,8 +2,7 @@
 
 > 板块 = **崩溃捕获与取证**——CLI 进程崩溃时的诊断留痕（JS 异常记录 / Node 诊断报告 / TUI stderr 捕获 / 近堆上限堆快照 / 堆遥测预警 / 异常退出终端恢复）。
 > 配对设计档 = `docs/cli/design/CRASH-REPORTS.md`（机制权威）。
-> 建档：2026-09-15（**B 式迁移轮 · 第 6 批**——`thincoder-cli/docs/requirements/CRASH-REPORTS.md` 内容重建入基准层；
-> 旧档原地一字不改、留作参照历史）。层归属 = **CLI 面**（P2——VSC 端无此面）。
+> 层归属 = **CLI 面**（P2——VSC 端无此面）。
 
 ## 1. 总体需求
 
@@ -27,14 +26,14 @@ CLI 进程崩溃时（含 JS 钩子拦不住的面：V8 原生 OOM / abort、外
 
 **F1 判定句**
 
-- ① **提示行事实面**：启动「上次异常终止」提示须带记录内 `uptime`（运行秒数）+ `cwd` 两段（可得时展示；字段缺 / 型不符 ⇒ 对应段略去——退化 = 基础形）；机检锚 = `thincoder-cli/test/crash-reports.test.mjs` T7（两段在场）+ T7c（退化）（机检豁免——用例退场登记）。
+- ① **提示行事实面**：启动「上次异常终止」提示须带记录内 `uptime`（运行秒数）+ `cwd` 两段（可得时展示；字段缺 / 型不符 ⇒ 对应段略去——退化 = 基础形）；机检锚 = T7（两段在场）+ T7c（退化）。
 
 **F3 判定句**
 
 - ① **武装径（显式开）· 全路径**：`diagnostics.heapSnapshot` 取 `true` 时——任意 CLI 命令（TUI 子进程 / chat / acp / 其余）启动后近上限快照已武装——
   判定 = 注入缝断言「`v8.setHeapSnapshotNearHeapLimit` 以参数 1 调用恰一次」（真快照不跑——见 N4）；
   武装点 = 入口最前 `prepareCrashReporting()`（全部命令同源）。
-- ② **可开（opt-in）**：配置键 **`diagnostics.heapSnapshot`** 取 `true` → 武装；未设 / 其余值 / 读失败 → **不武装**（默认关——隐私默认〔traces D-TR6 同族〕；判定形 fail-closed——2026-09-30 采集收网）。
+- ② **可开（opt-in）**：配置键 **`diagnostics.heapSnapshot`** 取 `true` → 武装；未设 / 其余值 / 读失败 → **不武装**（默认关——隐私默认〔traces D-TR6 同族〕；判定形 fail-closed）。
 - ③ **落点与可见**：TUI 路径（主路径 = 实测崩溃路径）快照落 `~/.thincoder/crash-reports/`（与既有取证物同处——经子进程
   `--diagnostic-dir` 定向）；其余路径落进程 CWD（Node 默认）。写出时 Node 原生 stderr 行 `Wrote snapshot to <路径>`
   （TUI 经 F2 的 tee 上屏 + 落日志）——用户 / 同事可截图回传。

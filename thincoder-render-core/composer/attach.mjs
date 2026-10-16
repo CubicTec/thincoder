@@ -66,7 +66,7 @@ export function isTextFile(file) {
 
 /**
  * 附件面工厂。`deps.images` = 共享图列（缺省 = 新建空列——调用方应给出以保 `send` 侧同引用）。
- * 返回：`{ fileInput, attachBtn, pasteBar, pasteBadge, images, files, renderPasteBar, clear }`
+ * 返回：`{ fileInput, attachBtn, pasteBar, pasteBadge, images, files, renderPasteBar, clear, applyWords }`
  * （`files` = 文本档列，档位形 `{ name, size, text }`；与 `images` 同式由调用方 `length = 0` 清点）。
  * 元素装配（序 = VSC `index.html`：`#input-row` 内 `#file-input` / `#attach-btn`；`#paste-bar` > `#paste-badge`）
  * 归调用方——本档只造元素 + 接线。
@@ -86,9 +86,6 @@ export function createAttachBar(deps = {}) {
 
   const attachBtn = document.createElement("button")
   attachBtn.id = "attach-btn"
-  attachBtn.title = "Attach file"
-  attachBtn.setAttribute("aria-label", "Attach file")
-  attachBtn.textContent = "Attach"
 
   const pasteBar = document.createElement("div")
   pasteBar.id = "paste-bar"
@@ -96,8 +93,16 @@ export function createAttachBar(deps = {}) {
   const pasteBadge = document.createElement("span")
   pasteBadge.id = "paste-badge"
   pasteBadge.setAttribute("role", "list")
-  pasteBadge.setAttribute("aria-label", "Attached files")
   pasteBar.appendChild(pasteBadge)
+
+  /** 词面重派生（创建期取词 ∕ 挂载先于词表的面——端侧词表到位后调用；幂等）。 */
+  function applyWords() {
+    attachBtn.title = t("toolbar.attach")
+    attachBtn.setAttribute("aria-label", t("toolbar.attach"))
+    attachBtn.textContent = t("toolbar.attachShort")
+    pasteBadge.setAttribute("aria-label", t("toolbar.attachedFiles"))
+  }
+  applyWords()
 
   // ── 图像粘贴（`autocomplete.js:127-142` 逐字）──
   // Raster-only gate (GitHub thincoder#3 review #1): the extension's savePastedImages
@@ -210,7 +215,7 @@ export function createAttachBar(deps = {}) {
     pasteBadge.innerHTML = ""
   }
 
-  return { fileInput, attachBtn, pasteBar, pasteBadge, images, files, renderPasteBar, clear }
+  return { fileInput, attachBtn, pasteBar, pasteBadge, images, files, renderPasteBar, clear, applyWords }
 }
 
 /** 芯片文件名 HTML 转义（`& < > "` 四替换——零注入）。 */

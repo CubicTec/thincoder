@@ -2,11 +2,8 @@
 
 > 板块 = **产品定性**——ThinCoder 产品族的定位与跨产品共享契约（三独立产品 / 共享配置与会话 / Provider 契约）。
 > 本档 = 产品级定性面的**需求层权威**（决策表 + 共享契约——承旧 VSC 档 `PROJECT.md` 的产品级定性面）。
-> VSC 专有面（界面 / 入口 / 审批 / webview 形态 / 会话流时序）= `docs/vsc/requirements/PROJECT.md`（同 split——切分规则见 §5.2）。
-> CLI 侧同名档（`thincoder-cli/docs/requirements/PROJECT.md`——产品定性更完整）**已并入（2026-09-15 · CLI 尾部真批 · 按其档头自注对账合并）**——
-> 产品级定性面（品类 / 用户 / 核心承诺 / 产品边界 / 定位坐标 / 两种工作模式 / 总体需求 / v1 范围 / v2 团队记忆 / 技术与质量约束）入 §5。
-> 建档：2026-09-15（**B 式迁移轮 · VSC 批 5**——`thincoder-vscode/docs/requirements/PROJECT.md` 拆分重建：产品级定性面 ⇒ 本档；
-> 旧档原地一字不改、留作参照历史）。
+> VSC 专有面（界面 / 入口 / 审批 / webview 形态 / 会话流时序）= `docs/vsc/requirements/PROJECT.md`（切分规则见 §5.2）。
+> 产品级定性面（品类 / 用户 / 核心承诺 / 产品边界 / 定位坐标 / 两种工作模式 / 总体需求 / v1 范围 / v2 团队记忆 / 技术与质量约束）= §5。
 
 ## 1. 总体定位
 
@@ -25,12 +22,12 @@ ThinCoder 产品族 = **三个独立产品**（终端 CLI + VS Code 扩展 + 桌
 
 | # | 契约 | 内容 |
 |---|---|---|
-| **C1** | 配置共享 | 各端读写 `~/.thincoder/config.json`（`providers[]` + 顶层 `defaultModel`——`provider:model` 复合，新会话起点）；`activeProvider` = 派生读面（迁移期旧字段，迁移即删——非存储契约）；敏感值位可携 `${env:VAR}` **显式引用**（消费侧解析——未设 ∕ 空串即抛错，**无隐式回退**）；旧 VS Code settings 一次性迁移后停用 |
+| **C1** | 配置共享 | 各端读写 `~/.thincoder/config.json`（`providers[]` + 顶层 `defaultModel`——`provider:model` 复合，新会话起点）；`activeProvider` = 派生读面（非存储契约）；敏感值位可携 `${env:VAR}` **显式引用**（消费侧解析——未设 ∕ 空串即抛错，**无隐式回退**）；旧 VS Code settings 一次性迁移后停用 |
 | **C2** | 会话共享 | `~/.thincoder/sessions/`（完整 sha1(cwd) + 槽位）——各端互读，可无缝接续同一会话 |
-| **C3** | Provider 预设权威 | preset 表以核 `thincoder-core/config-presets.mjs` 的 `PROVIDER_PRESETS` 为唯一权威（当前全集 **25** 个，含 `kimi-code` / `glm-code` / `mimo` / `mimoplan` / `claude`（format: anthropic）/ `gemini`（format: google）/ `huawei` / `opencode-go` ∥ `opencode-go-anthropic`（OpenCode Go 双协议侧——同 key，模型按侧选））——各端不再各自硬编码（避免漂移）。〔2026-09-20 渠道接入批同步：旧述权威路径 `thincoder-cli/src/config.mjs` 已不存在（#129 融合后表体住核）；计数 20→21 与 `thincoder-core/config-presets.mjs` 同变〕〔2026-09-29 provider-config-family 批同步：计数 21→22（+ `huawei`——华为云 MaaS）〕〔2026-10-04 opencode-go-preset 批同步：计数 22→24（+ `opencode-go` / `opencode-go-anthropic`——OpenCode Go 订阅网关双协议预设）〕〔2026-10-09 server 代理批（gemini-openai）同步：计数 24→25（+ `gemini-openai`——OpenAI 形）〕（迁移期引文——档已删） |
-| **C4** | custom 三协议 | 手动输入 name / baseURL（**不携模型**——2026-10-09 清除批），并选 API format：`openai`（默认）/ `anthropic` / `google`，写入 `provider.format`；三协议均有 transport |
-| **C5** | 模型选择两级结构 | 渠道行 → 模型条目 两级菜单（**选取单位 = 模型条目——渠道行非可选**；2026-10-09 清除批）+ add / remove / key 管理项（对齐 CLI `openModelPicker → openModelListForProvider`）；各端按各自界面形态实现（VSC 端形态见 `docs/vsc/requirements/PROJECT.md`） |
-| **C6** | 添加 / 删除 provider 流程 | 对齐 CLI `addProviderFlow` / `removeProviderFlow` / `setKeyFlow`：添加 = 选 preset（过滤已添加）→ 自动填 `baseURL`（不携模型——2026-10-09 清除批）→ 输入 API key（custom 走 C4 手动流程）；删除 = 列出非 active 的 provider；key 管理 = 单独入口 |
+| **C3** | Provider 预设权威 | preset 表以核 `thincoder-core/config-presets.mjs` 的 `PROVIDER_PRESETS` 为唯一权威（当前全集 **25** 个，含 `kimi-code` / `glm-code` / `mimo` / `mimoplan` / `claude`（format: anthropic）/ `gemini`（format: google）/ `huawei` / `opencode-go` ∥ `opencode-go-anthropic`（OpenCode Go 双协议侧——同 key，模型按侧选））——各端不各自硬编码（避免漂移）。 |
+| **C4** | custom 三协议 | 手动输入 name / baseURL（**不携模型**），并选 API format：`openai`（默认）/ `anthropic` / `google`，写入 `provider.format`；三协议均有 transport |
+| **C5** | 模型选择两级结构 | 渠道行 → 模型条目 两级菜单（**选取单位 = 模型条目——渠道行非可选**）+ add / remove / key 管理项（对齐 CLI `openModelPicker → openModelListForProvider`）；各端按各自界面形态实现（VSC 端形态见 `docs/vsc/requirements/PROJECT.md`） |
+| **C6** | 添加 / 删除 provider 流程 | 对齐 CLI `addProviderFlow` / `removeProviderFlow` / `setKeyFlow`：添加 = 选 preset（过滤已添加）→ 自动填 `baseURL`（不携模型）→ 输入 API key（custom 走 C4 手动流程）；删除 = 列出非 active 的 provider；key 管理 = 单独入口 |
 | **C7** | 多 Provider 默认选择 | 自动选第一个有 key 的 provider（用户配 key 本身就是选择行为；配了多个按列表顺序取第一个） |
 | **C8** | API Key 存储 | Key 落 `~/.thincoder/config.json` 明文，各端共享同一份配置（决策动因：各端共享配置 > 密钥链隔离）；旧版 SecretStorage 仅用于一次性迁移，迁移后清除 |
 | **C9** | 与 CLI 记忆互通 | **暂不处理**——VSC 文件式记忆（`.thincoder/memory/` markdown + frontmatter）与 CLI 条目格式兼容；自动互通 / 合并检索未做，决策保留 |
@@ -47,9 +44,9 @@ ThinCoder 产品族 = **三个独立产品**（终端 CLI + VS Code 扩展 + 桌
 
 三端同级独立产品。用户只装哪一个都行；同时装则共享配置与会话，切换无感。
 
-## 5. 产品定性（单产品面——CLI 侧同名档并入 · 2026-09-15）
+## 5. 产品定性（单产品面）
 
-> 来源 = `thincoder-cli/docs/requirements/PROJECT.md`（原地留参照）。三观（`docs/core/requirements/PHILOSOPHY.md`）回答「agent 是谁、信什么」；
+> 三观（`docs/core/requirements/PHILOSOPHY.md`）回答「agent 是谁、信什么」；
 > 本节回答**产品层**问题：ThinCoder 作为一件产品是什么、给谁用、靠什么立足、明确不做什么。
 > **本节是全部需求的上游**——任何需求 / 设计 / 代码与本节冲突时，改它们或走需求变更改本节。
 
@@ -57,7 +54,7 @@ ThinCoder 产品族 = **三个独立产品**（终端 CLI + VS Code 扩展 + 桌
 
 - **品类**：**通用 AI 编码智能体**——能读写代码、与人协作完成软件开发任务。CLI/TUI、VS Code 扩展、桌面端、ACP 接入是接入面，不是定性。
 - **用户**：**把代码交给 agent 负责、自己保留决策权的开发者与团队**——人定方向、agent 写代码。
-  不假设用户在中国、不假设用户用 Node、不假设用户项目的目录形状（见 `docs/core/requirements/PORTABILITY.md` §2——FR10 正文随 v1 需求档归档待搬迁归位）。
+  不假设用户在中国、不假设用户用 Node、不假设用户项目的目录形状（见 `docs/core/requirements/PORTABILITY.md` §2）。
 
 ### 5.2 核心承诺（立身之本）
 
@@ -71,7 +68,7 @@ ThinCoder 产品族 = **三个独立产品**（终端 CLI + VS Code 扩展 + 桌
 
 ### 5.3 明确不做什么（产品边界）
 
-- **不做通用编辑器 / IDE**——不重造编辑器；IDE 内以扩展 / ACP 接入（接入面属形态，不属定性）；桌面端同受此限——不含文件视图与编辑器（2026-09-25 用户裁定，暂缓）；
+- **不做通用编辑器 / IDE**——不重造编辑器；IDE 内以扩展 / ACP 接入（接入面属形态，不属定性）；桌面端同受此限——不含文件视图与编辑器；
 - **不做云服务 / 托管平台**——本地运行、本地存储；团队记忆用 git 同步而非自建云；
 - **不做模型 / 推理服务**——只做 agent 层，直连各家 API（原生 fetch）；
 - **不做工作流引擎**——v2+ 也不当成重心；
@@ -93,21 +90,21 @@ ThinCoder 产品族 = **三个独立产品**（终端 CLI + VS Code 扩展 + 桌
 | 什么时候用 | 默认；日常绝大多数任务 | 改动有规模、要留痕、值得先想清楚再动手的任务（多文件 / 跳模块 / 需评审） |
 | 什么时候不用 | —— | 小探索、即改即验的小修——**流程开销大过收益**，用普通模式 |
 
-两模式的**差别只在约束强度**（机械门的有无）；**管理工作的逻辑同一套**——批次档 + 台账 + 收口（2026-10-09 用户裁定；详细 = `docs/core/requirements/NORMAL-MODE.md` §5.6）。
+两模式的**差别只在约束强度**（机械门的有无）；**管理工作的逻辑同一套**——批次档 + 台账 + 收口（详细 = `docs/core/requirements/NORMAL-MODE.md` §5.6）。
 
 **详细需求**：工程模式 → `docs/core/requirements/ENGINEERING-MODE-V2.md`；普通模式 → `docs/core/requirements/NORMAL-MODE.md` §5–§6。
 
 ### 5.6 总体需求与功能范围
 
-**终极差异化目标 =「团队记忆」**——一人学到、全队皆知（继 teamcode 合作尝试之后的第二次尝试）。
+**终极差异化目标 =「团队记忆」**——一人学到、全队皆知。
 v1 不需要团队记忆、先把 agent 主干做薄做扎实；存储 / 记忆接口为团队记忆**预留扩展位**。
 
-- **v1 功能范围（已全部超额交付）**：Agent 主循环、基础工具集、上下文压缩、TUI、三层记忆体系（超原计划）、
-  Agent 自律工具链（task / plan / goal / verify / recent_changes / question / checkpoint）、子 agent 并行 / MCP / checkpoint 断点恢复（提前交付）；
+- **v1 功能范围**：Agent 主循环、基础工具集、上下文压缩、TUI、三层记忆体系（超原计划）、
+  Agent 自律工具链（task / plan / goal / verify / recent_changes / question / checkpoint）、子 agent 并行 / MCP / checkpoint 断点恢复；
   明确不做（留 v2+）：工作流引擎。
 - **v2 团队记忆（远期——核心原则：存储 / 同步与检索性能分层解耦）**：真相源 = Git 仓库（markdown 条目）；本地索引 = SQLite（`node:sqlite`，可重建易失品）；
   全文检索 = SQLite FTS5（BM25）；语义检索 = embedding 向量存 sqlite BLOB + JS 余弦；混合排序 = FTS5 + 向量 RRF；远期升级位 = pgvector / 中心化服务端（接口预留）。
-  架构方向细化 = `thincoder-cli/docs/design/_archive/ARCHITECTURE-v2.md`（旧树历史档，就地留参照——v2 未启动，以其为输入）。
+  架构方向细化 = `thincoder-cli/docs/design/_archive/ARCHITECTURE-v2.md`（v2 未启动，以其为输入）。
   **已细化的需求决策**：共享内容范围全都要（项目知识 / 架构决策 / 调试经验 / 代码规范）；沉淀双轨制（手动立规矩 + 自动萃取调试经验）；
   embedding = SiliconFlow BAAI/bge-m3（Ollama 本地为离线备选）；git 同步层 A+B 分层且 B 可选（Team 层可选独立仓库 `~/.thincoder/teams/` + Project 层 `.thincoder/memory/`）；
   条目格式 = Markdown + frontmatter；冲突策略 = 结构规避 + 诚实报错；索引重建 = 增量为主、重建兜底；自动提取 = 手动触发、自动候选、人工把关（`thincoder distill` / TUI `/distill`）。
@@ -126,5 +123,5 @@ v1 不需要团队记忆、先把 agent 主干做薄做扎实；存储 / 记忆�
 | 国际化 | **面向全球，不做中文限定** | 提示词 / TUI / 系统消息均英文；不因团队在中国假设用户也是 |
 | LLM 调用 | 原生 `fetch` 直连 OpenAI 兼容接口 | 不引 SDK |
 
-**质量约束（硬约束——来自 teamcode 反面教材）**：交付必须实测可跑（生成后不实际运行验证 = 类型错误 / 依赖错位 / API 混用）；
-文档不得超出实现（PPT 项目教训）；依赖面零引入；死代码随批清理。
+**质量约束（硬约束）**：交付必须实测可跑（生成后不实际运行验证 = 类型错误 / 依赖错位 / API 混用）；
+文档不得超出实现；依赖面零引入；死代码随批清理。

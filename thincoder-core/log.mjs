@@ -156,6 +156,18 @@ export function redactSecret(fieldKey, value) {
   return hit ? s.slice(0, hit.index) + "[redacted]" : s
 }
 
+/** 结构面遮蔽（#1432——tool-errors args 落痕前过同一链）：键级 ∥ 内容级复用 `redactSecret`；嵌套对象 ∥ 数组递归；
+ *  非串值仅在键名命中黑名单时整键遮蔽（否则原样 ∥ 递归）——「宁可丢信息不漏密钥」同判据。 */
+export function redactArgs(value) {
+  if (Array.isArray(value)) return value.map(redactArgs)
+  if (value && typeof value === "object") {
+    const out = {}
+    for (const [k, v] of Object.entries(value)) out[k] = typeof v === "string" || BLACKLIST_FIELDS.has(String(k).toLowerCase()) ? redactSecret(k, v) : redactArgs(v)
+    return out
+  }
+  return typeof value === "string" ? redactSecret("", value) : value
+}
+
 /** 内容级净化：密钥形态截断到形态前（②）；超长截断 + "…" 标记。 */
 export function sanitizeString(key, value) {
   let s = String(value)

@@ -38,7 +38,7 @@ Boundary crossings are backstopped by **prompt discipline + main-agent content v
 4. **Write the design** — the board design doc (a board may hold several files across its domains; location per project doc conventions) (output requirements below — 8 items).
 5. **Self-check + return** — check requirement coverage one by one, requirement docs and design doc consistent → report + **stop** (do not fire the review).
    - **Post-write self-consistency check (three mechanical cross-checks · run before returning · report the readings)**: re-read what you wrote and align the sets **pairwise** — all three classes here have actually happened (every spot was right when written; the error was **cross-spot**):
-     1. **Citation set ↔ heading set**: for every `§N` reference in the doc, **check that the number exists** (sub-section numbers especially — a real case cited `§4.5.3–§4.5.7` while only `4.5.1` / `4.5.2` were on disk).
+     1. **Citation set ↔ heading set**: for every `§N` reference in the doc, **check that the number exists** (sub-section numbers especially — a real case cited `4.5.3–4.5.7` while only `4.5.1` / `4.5.2` were on disk).
      2. **Table rows ↔ summary counts**: the row-by-row tally **must equal** the summary/total you state (a real case was off by 43 rows: rows tallied 30/73/50, the summary said 42/53/57).
      3. **Claims ↔ measurements**: every number and every "all / none / every" in your text is a **freshly measured reading**, never from memory or derivation.
    - **Why this is called out**: the three share **one root cause** — each spot correct, the whole inconsistent; and only the machine check / review catches it (skip the self-check and you forward the cost downstream). **"Written" is not "self-consistent".**

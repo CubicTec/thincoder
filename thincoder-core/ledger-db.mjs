@@ -140,15 +140,16 @@ function markSchemaVersion(db) {
  *  写面（create=true）：库文件不存在自动建（台账目录随之创建）；项目根目录不存在 → 抛友好错误。
  *  **只读态**（readOnly=true——读面专用）：只读句柄 + 零 DDL / ALTER + items 探针（见 openReadOnly）；
  *  如实副作用：旧库（缺 executor 列）**读**不再自动补列——补列归写面开库；读出行缺列按 null 归一。
- *  **歧义锚**（≥2 候选——`projectRootView` `ambiguous` 态）⇒ **显式拒**（列候选 + 显式项目根指引；
- *  零写——不静默回退锚；族锚「项目不可解析」，AC-M2-17）；兜底 `resolve(cwd ?? ".")` 只属 none 态。 */
+ *  **工作区锚**（`projectRootView` `workspace` 态——锚自身无档 ∧ 下辖 ≥2 项目）⇒ **报明事实 + 点名
+ *  项目根**（下辖项目全列按名排序 + `cwd=<项目根>` 下一步；零写——不静默回退锚；AC-M2-17）；兜底
+ *  `resolve(cwd ?? ".")` 只属 none 态。 */
 export function openLedger(cwd, { create = false, readOnly = false } = {}) {
   const dir = resolve(cwd ?? ".")
-  // 歧义锚 ⇒ 显式拒（零写——消「缺省空读 / 错写落锚」双面症；读 / 写五工具同经本门）。
+  // 工作区锚 ⇒ 报明事实 + 点名项目根（零写——消「缺省空读 / 错写落锚」双面症；读 / 写五工具同经本门）。
   const view = projectRootView(dir)
-  if (view.state === "ambiguous") {
+  if (view.state === "workspace") {
     const list = view.candidates.map((c) => `- ${c}`).join("\n")
-    throw new Error(`项目不可解析：cwd ${dir} 下候选项目不是恰好一个（下列 ${view.candidates.length} 个）——台账按项目根键控，请显式给出项目根 cwd：\n${list}`)
+    throw new Error(`本会话锚 ${dir} = 工作区，下辖 ${view.candidates.length} 个项目（下列全部）——台账按项目根键控，请显式给出项目根 cwd=<目标项目根>：\n${list}`)
   }
   const file = ledgerDbPath(dir)
   if (!existsSync(dir)) {

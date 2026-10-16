@@ -3,7 +3,7 @@
  * 2026-09-07 token 链终消费制：+action: consume-design（ENGINEERING-MODE.md §2.6 F1——
  * 父侧链终核销消费 designId 槽——执行器 executeConsumeDesignAction 在 subagent-spawn.mjs）。
  * 2026-10-07 批 ledger-tool（#927 并入）：+action: design-slots（只读清点面——
- * DESIGN-TOKEN-SETTLEMENT.md §10 F-SL1）+ consume-design 选择器扩展（designIds / expired /
+ * DESIGN-TOKEN-SETTLEMENT.md §9 F-SL1）+ consume-design 选择器扩展（designIds / expired /
  * olderThanDays）——实现在 `design-slots.mjs`（subagent-spawn.mjs re-export 保 import 面）。
  * 2026-10-14 批 design-token-recovery（#1384 并入）：design-slots 回收读口——`designId` 过滤 + `reveal:true` 单槽揭值（必携 designId；掩蔽 = 只揭活槽）——实现随动在 `design-slots.mjs`。
  *
@@ -115,8 +115,8 @@ export function buildSyncStoppedReport(role, capturedOutput, designId) {
  * a stronger model) / cancel (stop ONE background subagent — AGENT-LOOP-SUBAGENT.md §6.7.2) / panel (view + fix
  * the live subagent panel — AGENT-LOOP-SUBAGENT.md §6.7.2) / consume-design (parent-side chain-terminal token
  * consumption — ENGINEERING-MODE.md §2.6, 2026-09-07; selectors designId / designIds / expired /
- * olderThanDays — DESIGN-TOKEN-SETTLEMENT.md §10 F-SL2) / design-slots (read-only slot inventory —
- * DESIGN-TOKEN-SETTLEMENT.md §10 F-SL1, 2026-10-07). The check
+ * olderThanDays — DESIGN-TOKEN-SETTLEMENT.md §9 F-SL2) / design-slots (read-only slot inventory —
+ * DESIGN-TOKEN-SETTLEMENT.md §9 F-SL1, 2026-10-07). The check
  * action was deleted (AGENT-LOOP-SUBAGENT.md §6.7.5): async results reach the model only via the auto channel.
  * - action:"spawn" roles: "explore" — read-only tools, search/read/analyze
  *   (suitable for codebase exploration); "coder" — full tool set, self-contained
@@ -194,7 +194,7 @@ export const subagentTool = {
       // 非只读控制动作——depth-0 + 工程模式限定（本分流已过受限变体门；工程模式门在
       // 执行器内）——planMode 拒绝（dispatch 不豁免）——不入批审批分组（dispatch 免审）。
       if (action === "consume-design") return executeConsumeDesignAction(args, ctx)
-      // 2026-10-07 批 ledger-tool（#927 并入——DESIGN-TOKEN-SETTLEMENT.md §10 F-SL1）：design-slots =
+      // 2026-10-07 批 ledger-tool（#927 并入——DESIGN-TOKEN-SETTLEMENT.md §9 F-SL1）：design-slots =
       // 只读清点（工程模式父侧限定——门在执行器内）；dispatch 分类 = readonly（planMode 放行 /
       // 免审批 / digest 放行——同 status / observe）。
       if (action === "design-slots") return executeDesignSlotsAction(args, ctx)

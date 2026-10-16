@@ -42,6 +42,7 @@ export function loadAgentSettings() {
     compactThreshold: a?.compactThreshold ?? null, // null = auto（本端面板显示口径）
     verifyGuard: a?.verifyGuard ?? d.verifyGuard,
     autoThink: a?.autoThink ?? d.autoThink,
+    injectProjectRules: a?.injectProjectRules ?? d.injectProjectRules, // #1465（§6.27）：① 项目指令注入独立键
     injectDocs: a?.injectDocs ?? d.injectDocs, // #1420：注入开关（默认 true——判据 `!== false`）
     injectMemories: a?.injectMemories ?? d.injectMemories,
     engineering: a?.engineering ?? d.engineering,
@@ -162,6 +163,7 @@ export function agentSettings(session) {
     compactThreshold: s.compactThreshold, // null = auto
     verifyGuard: s.verifyGuard,
     autoThink: s.autoThink, // #17：读链补环（loadAgentSettings 已载；此前 push 快照未携）
+    injectProjectRules: s.injectProjectRules, // #1465：读链补环（loadAgentSettings 已载）
     injectDocs: s.injectDocs, // #1420：读链补环（loadAgentSettings 已载）
     injectMemories: s.injectMemories,
     engineering: slotData?.engineering ?? s.engineering,

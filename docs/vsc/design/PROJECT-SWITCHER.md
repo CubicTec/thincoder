@@ -3,8 +3,6 @@
 > 部分 = **vsc**（`docs/vsc/`）；板块 = **扩展面板 · 会话管理（current-project 切换）**。本档 = 该板块在基准层的**活档权威**。
 > VSC 专有面（结构性不对称——`DOC-SYSTEM` §5.1 P2）：多根工作区下的「当前项目」（agent cwd）由面板显式指定，对端无对位机制。
 > 需求侧：无同板块需求档（本端设置面板/面板交互无需求对位档）。
-> 来源 = `thincoder-vscode/docs/design/PROJECT-SWITCHER.md`（VSC 产品树）——**原地一字未改，留作参照历史**（保留 ≠ 维护）。
-> 建档：2026-09-15（**B 式迁移轮 · VSC 第 1 批**）。坐标 = as-of 2026-09-15 实核。
 
 ## 1. 定位与背景
 
@@ -29,11 +27,11 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 - 切换后，所有既有 `_cwd()` 调用点（会话 slot、索引、`@` 补全、agent 启动）**自动生效**——无需逐个改调用方。
 - **跨重启记忆（多根面）**：记录 = 最后一次成功切换的锚（workspaceState 键 `thincoder.projectFolder`）——重启恢复所选根；未选定 ∥ 失效记录 ⇒ `workspaceFolders[0]` 兜底（详 = §3.1）。单根 ∥ 无工作区 = 不读不写（行为不变）。
 - `clearProjectOverride()`（`panel-messages.mjs:89`）：清除 override，`_cwd()` 回落 `workspaceFolders[0]`。
-- **无工作区守卫**（2026-09-21 批）：`workspaceFolders` 为空时，`_cwd()` 的 `process.cwd()` 回落**不再被守卫面八个工作入口（§4.1）消费**（判据 / 守卫面 / 提示面 = §4.1；回落链本身逐字未改）；射程外链判定（`atComplete`）= §4.1 派生面。
+- **无工作区守卫**：`workspaceFolders` 为空时，`_cwd()` 的 `process.cwd()` 回落**不被守卫面八个工作入口（§4.1）消费**（判据 / 守卫面 / 提示面 = §4.1）；射程外链判定（`atComplete`）= §4.1 派生面。
 
 ## 3. 切换流程（实现面）
 
-扩展端方法实现已自 `chat-panel.mjs` 拆出（500 行硬限），`ChatPanel` 只保留委托方法。模块归属（as-of 2026-09-15）：
+扩展端方法实现已自 `chat-panel.mjs` 拆出（500 行硬限），`ChatPanel` 只保留委托方法。模块归属：
 
 | 当前文件 | 内容 |
 |---|---|
@@ -57,21 +55,19 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 - `ChatPanel` 构造时注册 `onDidChangeActiveTextEditor`：设置开启**且**活动文件所属根 ≠ 当前 cwd **且**无任务运行 → 自动切换。
 - `onDidChangeWorkspaceFolders`：override 失效校验 + 切换回落（**防 agent 指向死目录**）——详 = §4.1 恢复面「第三支路」。
 
-### 3.1 锚记忆与未选定面（#1101㈠——2026-10-10 vsc-consistency 批）
+### 3.1 锚记忆与未选定面
 
-**锚语义**（需求回指 = `docs/vsc/requirements/PROJECT.md:27`）：「当前项目」= 显式选定并跨重启记忆；未选定 ⇒ `folders[0]` 兜底 + 面板钮标「· 未选定」。多根面新增；单根 ∥ 无工作区 = 不读不写（行为不变）。
+**锚语义**（需求回指 = `docs/vsc/requirements/PROJECT.md:27`）：「当前项目」= 显式选定并跨重启记忆；未选定 ⇒ `folders[0]` 兜底 + 面板钮标「· 未选定」。单根 ∥ 无工作区 = 不读不写（行为不变）。
 
 **记录读写**（`thincoder-vscode/src/extension/session-io.mjs:256-267`）：键 = workspaceState `thincoder.projectFolder`（fsPath 串）；读写宽容（缺 ∥ 抛 ⇒ 空串 ∥ 零写——沿 `loadModelPrefs` / `saveModelPrefs` 先例）。
 
 **写点**（记录写出 = `rememberProjectFolder` 单件——`panel-project.mjs:47`）：picker 径 ∥ `setProject`-fsPath 径（两路同点 = `applyProjectSwitch` `:71`）∥ 跟随自动切换（`chat-panel.mjs:115`）；拒径（busy ∥ 非成员）= 零写。
-**同根弹拍径（第四写径——本批 car3 · #1193① 已落）**：picker 早退径（选中 = 锚根）⇒ **视同显式选定**——直写记 ∥ 设 override（不经 `applyProjectSwitch`；落点 = `panel-project.mjs:128-131`）。
+**同根弹拍径（第四写径）**：picker 早退径（选中 = 锚根）⇒ **视同显式选定**——直写记 ∥ 设 override（不经 `applyProjectSwitch`；落点 = `panel-project.mjs:128-131`）。
 **记录 = 最后一次成功切换的锚——非活锚**（工作区兜底回落径（`chat-panel.mjs:156-164`）改活锚而不写记录——两义分立）。
 
 **恢复点**（`ChatPanel` 构造内 · 订阅块之前——`chat-panel.mjs:92-96`；先于一切 `_cwd()` 消费）：多根 ∧ 无活 override ∧ 记录 ∈ folders ⇒ `setProjectFolder(记录)`（`panel-project.mjs:153`）；失效记录忽略（成员校验拒）⇒ 零动作。
 
 **首开弹拍**（`resolveWebviewView`——`chat-panel.mjs:182-185`）：门四 = 多根 ∧ `!hasProjectOverride()` ∧ 未弹过 ∧ `!turnBusy()`——全过 ⇒ 弹一次（复用 `pickProject`——`panel-project.mjs:167`）；「未弹过」= workspaceState `thincoder.projectPickOffered`（弹即写，结果无关；ESC 后不再主动弹）；频度 = 每工作区恰一次。
-
-**坐标随动（本批 car3 · #1193）**：`panel-project.mjs:128` 早退径实施 +3 行（`:128-131`）⇒ 本节两处面板坐标顺移（恢复点 `:150` ⇒ **`:153`** ∥ 弹拍复用 `:164` ⇒ **`:167`**——已按盘实读收正）。
 
 **未选定标记**（`projectInfo` 载荷增 `chosen` = `hasProjectOverride()`——`panel-messages.mjs:48-50`）：`session-bar.js:158-165`——`chosen` 缺 ∥ false ⇒ 钮文本 `📁 {name} · {t("project.notChosen")}`（title 同携；zh `未选定` ∥ en `not chosen`——`locales/{zh,en}.json:278`）；已选定 ∥ 单根 ⇒ 零变。
 
@@ -82,15 +78,15 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 - 切换即换一套会话（slot 按 cwd 存——与对端按目录会话一致）；切换时当前会话已由 turn 结束的保存逻辑落盘。
 - 跟随活动文件**仅在无任务运行时**生效。
 
-### 4.1 无工作区守卫（no-folder guard · 2026-09-21）
+### 4.1 无工作区守卫（no-folder guard）
 
-**背景**：无工作区窗口里 `_cwd()` 静默回落 `process.cwd()`，而扩展宿主进程 cwd = **VS Code 安装目录**（快捷方式启动语义）⇒ 会话 / agent / 工具 / 索引全部锚在安装目录，VS Code 原地更新即清空（外部用户实证：丢过两次交付物）。用户 2026-09-21 裁定：**无工作区 ⇒ 拒启 agent + 明确提示**——否「静默锚定」，亦否「自动搬家」（替用户选落点）。
+**背景**：无工作区窗口里 `_cwd()` 静默回落 `process.cwd()`，而扩展宿主进程 cwd = **VS Code 安装目录**（快捷方式启动语义）⇒ 会话 / agent / 工具 / 索引全部锚在安装目录，VS Code 原地更新即清空（外部用户实证：丢过两次交付物）。用户裁定：**无工作区 ⇒ 拒启 agent + 明确提示**——否「静默锚定」，亦否「自动搬家」（替用户选落点）。
 
-**判据（单源）**：`hasWorkspaceFolder()` = `(vscode.workspace.workspaceFolders?.length ?? 0) > 0`——落点 = 新档 `thincoder-vscode/src/extension/workspace-guard.mjs`（判据 + 提示（逐字常量 + 去重）+ 状态推送三件；`_cwd()` 回落链**逐字未改**）。
+**判据（单源）**：`hasWorkspaceFolder()` = `(vscode.workspace.workspaceFolders?.length ?? 0) > 0`——落点 = 新档 `thincoder-vscode/src/extension/workspace-guard.mjs`（判据 + 提示（逐字常量 + 去重）+ 状态推送三件）。
 
 **守卫面（八处 · 任一被挡 = 提示 + 早退）**：
 
-| # | 守卫点（as-of 2026-09-21） | 覆盖 | 拒法 |
+| # | 守卫点 | 覆盖 | 拒法 |
 |---|---|---|---|
 | ① | `ChatPanel.resolveWebviewView`（`thincoder-vscode/src/extension/chat-panel.mjs:116`） | 面板启用 | 主动提示（每空窗恰一次） |
 | ② | `routeUserTurn`（`src/extension/panel-messages.mjs:128`） | webview 发消息 / retry——**先于** `savePastedImages`（`:154`）⇒ 图片不落 `<cwd>/.thincoder/tmp/` | 提示 + return |
@@ -102,8 +98,8 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 | ⑧ | 索引面：`buildIndex`（`src/extension/panel-index.mjs:146`）+ `maybePromptIndex`（`:123`；调用点 `panel-session.mjs:320` 跳发） | 免把用户引向「以安装目录为项目」的建档流 | 提示 + return / 邀请零发 |
 
 **派生面（无需守卫 · 如实登记）**：守卫态下 `panel._slot` 恒 null（⑤⑥ 阻断认领，解析缓存无条目）⇒ 槽写面 `setSlot*` 天然返 false（`panel-session.mjs:64-68` 记载）；`pushSessions`（`panel-session.mjs:231`）加同判据守卫——不把安装目录家族的会话列表推给面板（否则会话行可点 ⇒ 绕过 ⑦）。
-**实施轮加法 D2（可 revert）**：冷路径 `ensureSlot` 亦加同判据（`panel-session.mjs:68-72`）——使「守卫态 `_slot` 恒 null」不变量无条件成立。
-**`atComplete`（@ 补全）链（评审轮 1 发现 8 判定）**：**不入守卫面**——**只读、零落盘**：扫描 = `vscode.workspace.findFiles`（工作区级 API——`panel-index.mjs:65-69`，非 `_cwd()` 的 fs 遍历），`_cwd()` 在该链仅作 `path.relative` 显示基（`:63` / `:74`），整链零写调用（`:56-84` 逐行实读）⇒ 不加守卫；§2「不再被守卫面消费」即此口径。
+**冷路径守卫**：冷路径 `ensureSlot` 亦加同判据（`panel-session.mjs:68-72`）——使「守卫态 `_slot` 恒 null」不变量无条件成立。
+**`atComplete`（@ 补全）链**：**不入守卫面**——**只读、零落盘**：扫描 = `vscode.workspace.findFiles`（工作区级 API——`panel-index.mjs:65-69`，非 `_cwd()` 的 fs 遍历），`_cwd()` 在该链仅作 `path.relative` 显示基（`:63` / `:74`），整链零写调用（`:56-84` 逐行实读）⇒ 不加守卫；§2「不被守卫面消费」即此口径。
 
 **提示面（逐字）**：
 
@@ -117,14 +113,14 @@ _cwd() = _cwdOverride ?? workspaceFolders[0] ?? process.cwd()
 
 **恢复面（空 ↔ 非空 ⇒ 无需重载；第三支路「非空 → 非空」逐字保留）**：`chat-panel.mjs:96-104` 工作区变化处理重构（空 ↔ 非空两向覆盖 + 第三支路保留）：
 
-- **转为空**：清 override + 销毁 agent + **`_slot = null`（实施轮加法 D1——`ensureSlotAsync` 粘性直返会把「转非空后的 boot」钉在已移出的槽上，不清即恢复面失效）** + 推守卫态 + 主动提示（**不再走 `_onProjectChanged`**——旧路径会把 cwd 绑到 `process.cwd()` 并落槽）。
+- **转为空**：清 override + 销毁 agent + **`_slot = null`（`ensureSlotAsync` 粘性直返会把「转非空后的 boot」钉在已移出的槽上，不清即恢复面失效）** + 推守卫态 + 主动提示（**不走 `_onProjectChanged`**——该路径会把 cwd 绑到 `process.cwd()` 并落槽）。
 - **转为非空且此前守卫**：复位去重 + 推 `active:false` + `await openSessionContent(panel)`（认领 + 装载）⇒ 直接可用。
-- **非空 → 非空（第三支路——零改）**：被 override 的根仍在 `workspaceFolders` ⇒ 现状早退（`chat-panel.mjs:140`）；被 override 的根被移出 ⇒ `clearProjectOverride()` + `_agent = null` + `_onProjectChanged()`（现状 `:141-146`——override 失效校验，防 agent 指向死目录）。重构只动空 ↔ 非空两向，本支路逐字保留（回归锁 = 用例 14）。
+- **非空 → 非空（第三支路）**：被 override 的根仍在 `workspaceFolders` ⇒ 现状早退（`chat-panel.mjs:140`）；被 override 的根被移出 ⇒ `clearProjectOverride()` + `_agent = null` + `_onProjectChanged()`（现状 `:141-146`——override 失效校验，防 agent 指向死目录）（回归锁 = 用例 14）。
 - 一键动作路径（`vscode.openFolder`，同窗口）= VS Code 自行重载窗口（扩展宿主重启、新根正常 boot）——**未验**（实机行为待用户侧观察；可核代替面 = 调用形断言）。
 
 **零写入判据**：`process.cwd()` 快照不变 + 该 cwd 会话家族零文件 + agent 未建 + `PROJECT-MANIFEST.json` 未建。**射程外（明示）**：用户级面（`~/.thincoder/config.json` 迁移 / 记忆库句柄 / 台账读）不属本守卫——非 cwd 落点，且面板设置须在无工作区窗口可用。
 
-**边界**：运行中回合不因守卫中止（既有销毁点语义不变——守卫只挡新活）；有工作区路径（单根 / 多根 / override / 跟随活动文件）逐字零改。
+**边界**：运行中回合不因守卫中止（既有销毁点语义不变——守卫只挡新活）；有工作区路径（单根 / 多根 / override / 跟随活动文件）零改。
 
 **被否形（决策记录）**：① 静默锚定（现状）——丢交付物实证；② 自动搬家 / 自动建档他处——替用户选落点；③ 仅日志 / 控制台提示——「不吞」禁令；④ 改 `_cwd()` 回落链（返 null）——波及 11 档消费面，取前置守卫面替代。
 

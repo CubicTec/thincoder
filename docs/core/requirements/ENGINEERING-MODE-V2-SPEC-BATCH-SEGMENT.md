@@ -8,7 +8,7 @@
 
 ## ② 功能点
 
-1. **六段骨架**（继承 v1 §1.12 骨架，段名按 v2 §5.3 收正）：
+1. **六段骨架**：
 
    | 段 | 作者 | 写入手段 |
    |---|---|---|
@@ -22,7 +22,7 @@
 2. **`batch` 工具**（action: create/append/status/close——生命周期契约 = `docs/core/design/BATCH-RECORD.md` §4）：append 段白名单——调用者身份定段号（designer → §2 · 设计评审 → §3 · coder → §5 · 主 agent → §1/§4/§6），**越段即拒**；create（骨架预齐）/ close（冻结）仅 depth-0。
 3. **append-only**：段不重叠、不回改。
 4. **前情指针形态**：`前情 = docs/batches/<旧档> §N（已收口 <日期>）`。
-5. **相对路径解析序与防嵌套（F-BP1 · 2026-09-25 新增）**：批次档路径串在四处调用点（create / append·status·close / 评审门 / spawn 门）统一经单源档 `agent-tools/batch-paths.mjs`——基底枚举 `batchDocBases`（单源）——
+5. **相对路径解析序与防嵌套（F-BP1）**：批次档路径串在四处调用点（create / append·status·close / 评审门 / spawn 门）统一经单源档 `agent-tools/batch-paths.mjs`——基底枚举 `batchDocBases`（单源）——
    - **候选序**（相对路径）：① `resolve(cwd, p)` → ② `resolve(项目根, p)` → ③ 逐基底 `resolve(基底, p)`；**读面**取首个可读文件，**create** 取首个落基底根内者；绝对路径照旧。
    - **防嵌套锚定**：`p` 以基底的项目根相对前缀（如 `docs/batches`）打头 ⇒ 只解析项目根形；不落基底内 ⇒ fail-closed 带提示。
    - **零回归约束**：绝对路径、「参数在 + 路径可读」判据句、spawn 门与 `resolveBatchDocPath` 错误文案逐字不变。

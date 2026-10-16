@@ -16,6 +16,7 @@
  */
 import { runAgent } from "@thincoder/core/agent.mjs"
 import { saveSession } from "@thincoder/core/session.mjs"
+import { t } from "@thincoder/core/i18n.mjs" // 回合停止行词面单源（SESSION.md §6.26）：键 status.stopped
 import { continueDecision } from "@thincoder/core/agent/continue-decision.mjs" // #677 · I10 续跑判定单源（#127 ④ 双写退役）
 import { ansi, C } from "./ansi.mjs"
 import { buildToolCallbacks, sweepToolBlocks } from "./tool-events.mjs"
@@ -218,7 +219,7 @@ async function runAgentTurnBody(ctx, text, opts) {
             const h = agent.history
             while (h?.length > 0 && String(h.at(-1)?.content ?? "") === "[User interrupt: undefined]") h.pop()
           }
-          pushLine("[stopped]", C.warn)
+          pushLine(t("status.stopped"), C.warn)
           // #448② KD-6「显式撤销」：Ctrl+C 全停（`{ abortTrigger: "stop" }`——key-handler 二按语义）
           // ⇒ 落粘滞位：链尾闩不重武装（链头复位后新链恢复——见 `timerRearmBlocked`）。
           if (reason?.abortTrigger === "stop") state._timerRearmRevoked = true

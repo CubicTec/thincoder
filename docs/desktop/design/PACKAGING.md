@@ -209,9 +209,9 @@
 - `gen-changelog.mjs`（站点仓脚本 · 档已在）：增 `--side desktop` 分支——输入 = `thincoder-desktop/CHANGELOG.md`（工作区兄弟路径——`--desktop` 可覆盖）；`--since` 缺省 = `0.10.1`；`GAPS.desktop` = 无（零缺段）；用法注释同拍。
   判据 = 跑 `--side desktop` 输出含 `v0.10.1` + 日期（骨架形 = 既有 `--side` 两值同式）。
 - `thincoder.com/scripts/deploy-oss.mjs`（站点仓 · 档已在）：prune 过滤行（`:234`）追加 `&& !k.startsWith("downloads/")`（**downloads 前缀豁免**——下载件 ∥ feed 不在 `www/` 本地集，无豁免即被 `OSS_DELETE=1` 误删）。
-- `upload-download.mjs`（站点仓脚本 · **拟新增**——feed 上传小件；不并 `deploy-oss.mjs`——全量遍历 ∥ 大件重传两由）：
+- `upload-download.mjs`（站点仓脚本 · 已在——feed 上传小件；不并 `deploy-oss.mjs`——全量遍历 ∥ 大件重传两由）：
   用法 = `node thincoder.com/scripts/upload-download.mjs <文件…>`（键 = `downloads/` 前缀 + 文件名）；OSS HMAC 签名式照 `thincoder.com/scripts/deploy-oss.mjs:84-101`；`DRY_RUN=1` 预览（零凭证可跑）；
-  凭证 = `OSS_KEY`/`OSS_SECRET`（`ALIYUN_KEY`/`ALIYUN_SECRET` 兜底）；cache-control = `.yml`（含 `.yaml`）⇒ `no-cache`；**余档全集**（`.exe` ∥ `.blockmap` ∥ `.AppImage` ∥ `.deb`）⇒ `max-age=86400`；出口 = 非零即失败可读。
+   凭证 = `ALIYUN_KEY`/`ALIYUN_SECRET`（脚本只读此名——局部变量名 `OSS_KEY`/`OSS_SECRET` 非环境变量名）；cache-control = `.yml`（含 `.yaml`）⇒ `no-cache`；**余档全集**（`.exe` ∥ `.blockmap` ∥ `.AppImage` ∥ `.deb`）⇒ `max-age=86400`；出口 = 非零即失败可读。
 - **部署分工**：页面集走 `deploy-oss.mjs`（`www/` 全量）；feed 三件走 `upload-download.mjs`（§2.8.3 上传序）。
 
 ### 2.10 发布窗承接（前批余项——非实施项；发布动作 = 用户门）

@@ -394,10 +394,9 @@ export { endProbeWindow, _resetProbeWindowsForTest, _setProbeRetryDelayForTest }
 export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOverride = null) {
   pushStatus(panel)
   const s = providerStatus()
-  // #841：无可运行渠道（核态 invalid）⇒ 零探针（去「有 configured 渠道」第二判据——核态派生单判据）
-  if ((!s.providerState || s.providerState.state === "invalid") && !Object.values(s.providers).some((p) => p.auth?.type === "chatgpt_oauth" && p.configured)) return
-
-  const w = _probeWindow(panel)
+  // Configuration changes (including another client's account selection) create
+  // a new catalog generation. Empty/disabled configurations must clear old rows.
+  const w = _probeWindow(panel, JSON.stringify(resolveProviders().providers))
   const names = providerNames().filter((n) => s.providers[n]?.configured)
   /** 载荷装配 + 投递（首拍与重试成功拍共用——§2.12 ②）。 */
   const flush = () => {
@@ -419,6 +418,10 @@ export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOve
     // （provider-admission.test.mjs T24 断言原因随载荷下发）。
     panel?.webview.postMessage({ type: "models", models: allModels, prefs, ...(unavailable.length ? { unavailable } : {}) })
     pushSessionsFn?.()
+  }
+  if (w.models.size === 0) {
+    _lastModelsPayload = []
+    panel?.webview.postMessage({ type: "models", models: [], prefs: prefsOverride ?? loadModelPrefs(workspaceState) })
   }
   await _probeBatch(w, names)
   flush()

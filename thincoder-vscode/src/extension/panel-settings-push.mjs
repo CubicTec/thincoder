@@ -17,6 +17,7 @@ import {
 } from "./settings.mjs"
 import { _cwd } from "./panel-messages.mjs"
 import { loadRaw } from "@thincoder/core/config-io.mjs"
+import { safeAuthError } from "@thincoder/core/auth/errors.mjs"
 
 export function providerStatus(panel) {
   return settingsProviderStatus()
@@ -101,7 +102,11 @@ export async function pushSettingsLight(panel) {
 }
 
 export async function pushSettings(panel) {
-  fullStatus(panel._panel)
+  void fullStatus(panel._panel).catch((error) => {
+    const reason = safeAuthError(error).message
+    console.error("[chat-panel] catalog refresh failed:", reason)
+    panel._panel?.webview.postMessage({ type: "providerError", scope: "panel", reason })
+  })
   // F-W18（§2.11）：候选面就绪后再发快照族（异步探测——不阻塞事件循环；相对序零改）。
   const candidates = await shellCandidates()
   panel._panel?.webview.postMessage({ type: "agentSettings", settings: agentSettings(panel._agentSettingsSession()) })

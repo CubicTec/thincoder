@@ -339,6 +339,7 @@
   "auth.unverified": "Inference not verified",
   "auth.limits": "No API key. Temperature and output-token limits are unavailable. Auxiliary requests use the same plan.",
   "auth.login": "Sign in with ChatGPT",
+  "auth.cancelled": "Sign-in cancelled",
   "auth.cancel": "Cancel sign-in",
   "auth.select": "Select account",
   "auth.logout": "Sign out",

@@ -339,6 +339,7 @@
   "auth.unverified": "推理尚未验证",
   "auth.limits": "无需 API Key。不支持温度及输出 token 上限。辅助请求使用同一计划用量。",
   "auth.login": "使用 ChatGPT 登录",
+  "auth.cancelled": "已取消登录",
   "auth.cancel": "取消登录",
   "auth.select": "选择账户",
   "auth.logout": "退出登录",

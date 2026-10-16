@@ -126,11 +126,12 @@ export async function activate(context) {
   registerDiffPreviewProvider(context)
 
   // External config.json writes (CLI `/advisor`, `settings set`, manual edits) — file-system
-  // event → debounce → stat-tuple diff → light settings push (B5 batch 21; SETTINGS.md §2.6).
+  // event → debounce → stat-tuple diff → settings and model catalog refresh.
+  // Account changes from CLI/Desktop must invalidate the previous account's menu.
   // Self-write suppression is wired inside the module (config-io `onConfigSelfWrite`), so a
   // panel save never re-renders the panel under the user's cursor.
   context.subscriptions.push(
-    startConfigWatch({ onChange: () => _panel?._pushSettingsLight?.() }),
+    startConfigWatch({ onChange: () => _panel?._pushSettings?.() }),
   )
 
   // Auto-show sidebar on first activation

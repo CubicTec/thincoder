@@ -79,6 +79,9 @@ webview/index.html   Webview shell (referenced by ChatPanel._html())
 | webview → extension | `abort` | — |
 | webview → extension | `interrupt` | `{ message }` — Ctrl+I inject: abort with an interrupt reason; the agent loop commits partial output, injects the message, and resumes the same turn on a rebuilt controller |
 | webview → extension | `newSession` / `switchSession` / `deleteSession` | `{ slot }` — active list is pushed by the extension; switching mid-turn is rejected with a warning |
+| webview → extension | `authAction` | `{ action, name?, profileId?, enabled?, requestId? }`; `loginNew` is explicit new-account intent |
+| extension → webview | `authResult` | `{ name, action, requestId?, ok, error?, remoteRevoked? }`; stale request IDs are ignored |
+| extension → webview | `authStatus` | `{ name, status?, profiles?, error? }`; public metadata only, no OAuth secrets or URLs |
 | webview → extension | `getAgentSettings` | — pull: extension re-reads config.json and pushes `agentSettings` (settings panel open = fresh disk state) |
 | extension → webview | `agentSettings` | `{ settings }` — full agent.* snapshot (push at webviewReady / after saves; reply to `getAgentSettings`) |
 | webview → extension | `selectModel` / `selectReasoning` | `{ model, provider? }` / `{ reasoning }` |
@@ -128,9 +131,9 @@ webview/index.html   Webview shell (referenced by ChatPanel._html())
 
 - **Smoke test**: `node test/smoke-provider.mjs <provider> <api-key>` — directly tests an API provider (single turn, no tools).
 - **Unit tests** (`npm test`): explicit file list in `test/files.mjs`（清单单一来源——逐档登记 + 行内注释记覆盖面；测试基线读数与 as-of 的权威 = `../docs/core/design/TESTING.md` §10）。
-  **2026-09-28 全清重置（用户令）**：存量用例全退役——清单现为空（`export default []`）；重建规则 = 单元测试档随批次本地、集成测试档业务设立（见 `test/files.mjs` 档头）。
-- **Repo suite**: `npm test` — the single entry: the registered set runs in one go (slow runs as-is; no separate fast/full/integration scripts). After the 2026-09-28 reset both manifests are empty — zero tests = green（现行态认账 = `../docs/core/design/TESTING.md` §2.3）。
-- **Integration set**: business-voice scenarios asserting observable results — they run inside `npm test`（`test/integration/` + 其清单 `test/integration/files.mjs`，统一 runner `test/run.mjs` 驱动）。**2026-09-28 全清重置**：集成清单现为空（`export default []`）——重建按业务设立（窗口 50–100）。
+  **2026-09-28 全清重置（用户令）**：存量用例已退役；单元清单目前为空，ChatGPT/OAuth 集成回归已在 `test/integration/files.mjs` 登记。新增单元档随批次本地、集成档按业务设立（见清单档头）。
+- **Repo suite**: `npm test` — the single entry: the registered set runs in one go (slow runs as-is; no separate fast/full/integration scripts). The runner checks both manifests for missing/unregistered files, then runs all registered tests. Current coverage includes ChatGPT account, catalog, session-model, and safe bridge regressions.
+- **Integration set**: business-voice scenarios asserting observable results — they run inside `npm test`（`test/integration/` + 其清单 `test/integration/files.mjs`，统一 runner `test/run.mjs` 驱动）。当前已登记 `test/integration/chatgpt-auth.test.mjs`；仅合成账户与模拟网络，不代表真实 OAuth 或 GUI 验收。
 - **Release gate**: `vscode:prepublish` = `npm run lint && npm test` (runs automatically on `vsce package` / bare `vsce publish`).
 - **Doc check (not a gate step)**: `npm run doc:check` — repo-root domain; same command as the CI docs job.
 - **Packaging assertion**: `postpackage` = `node scripts/check-vsix.mjs` (runs automatically after `npm run package`) — unpacks the produced vsix and asserts the embedded core + version literal equality + prompt-face completeness (`prompts/` 16 + `tool-docs/` 24 — names + sha256); fail-closed (a core-less vsix exits 1, though vsce itself exits 0).

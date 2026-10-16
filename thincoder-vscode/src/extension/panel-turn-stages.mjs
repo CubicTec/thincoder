@@ -21,7 +21,7 @@
  */
 import { loadRaw, resolveProviders } from "@thincoder/core/config-io.mjs"
 import { resolveProviderPlan } from "@thincoder/core/model-ref.mjs"
-import { getKey, buildProvider } from "./presets.mjs"
+import { isProviderConfigured, buildProvider } from "./presets.mjs"
 import { specForModel } from "../specs.mjs"
 import { t } from "../i18n.mjs"
 import { _cwd, pushBusyQueued } from "./panel-messages.mjs"
@@ -52,7 +52,7 @@ export async function resolveTurnStage({ panel, turnSlot, providerName, modelOve
   let slotData = null
   try {
     slotData = panel._activeData?.(turnSlot)
-    if (slotData?.activeProvider && await getKey(slotData.activeProvider)) {
+    if (slotData?.activeProvider && isProviderConfigured(slotData.activeProvider)) {
       slotRef = {
         provider: slotData.activeProvider,
         model: typeof slotData.activeModel === "string" && slotData.activeModel ? slotData.activeModel : null,

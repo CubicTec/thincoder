@@ -1,4 +1,4 @@
-import { authRowHtml, bindAuthRows } from "./settings-auth.js"
+import { authRowHtml, bindAuthRows, syncAuthProviders } from "./settings-auth.js"
 /**
  * settings-providers.js — providers card (split out of settings.js): provider list
  * rendering, key editing, and live status updates. 添加表单族（字段序 ∥ 拉取 ∥ 保存）已迁
@@ -158,7 +158,7 @@ export function providersCardHtml() {
  *  provider-row ✕ delete buttons (`data-name` carrier; inline onclick is undrivable under the
  *  test fixture — SETTINGS.md §2.10 载体绑定段)。添加表单族已迁弹窗档（其钮随档自绑）。 */
 export function bindAddProviderForm() {
-  bindAuthRows()
+  bindAuthRows(renderProvidersCard)
   document.getElementById("defaultmodel-btn")?.addEventListener("click", () => window._defaultModelMenu())
   // 卡行 ✕（两建面路径 `settings.js:190` / `renderProvidersCard` 均经此单点重绑）。选择器带
   // `[data-name]` ⇒ 编辑行取消重建位的 ✕（无 `data-name`、自持 addEventListener）不入本域。
@@ -184,6 +184,7 @@ export function renderProvidersCard() {
 export function updateProviderStatus(status) {
   const changed = JSON.stringify(SS.providerStatus) !== JSON.stringify(status)
   SS.providerStatus = status
+  syncAuthProviders(status.providers)
   if (!changed) return
   // Live refresh: providerStatus pushes arrive after every provider mutation (add /
   // remove / key / proxy). When the panel is open, update the providers card in

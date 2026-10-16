@@ -26,10 +26,14 @@ export function _setProbeRetryDelayForTest(ms) { _probeRetryDelayMs = Number.isF
 const _probeWindows = new Map()
 
 /** 取（或建）面板的探针窗口：在飞去重 + 重试链 + 本窗逐渠道末次结果（`models` / `diag`）。 */
-export function _probeWindow(panel) {
+export function _probeWindow(panel, signature) {
   let w = _probeWindows.get(panel)
+  if (w && signature !== undefined && w.signature !== signature) {
+    endProbeWindow(panel)
+    w = null
+  }
   if (!w) {
-    w = { inFlight: null, retryChain: null, retryTimer: null, wake: null, cancelled: false, models: new Map(), diag: new Map() }
+    w = { inFlight: null, retryChain: null, retryTimer: null, wake: null, cancelled: false, signature, models: new Map(), diag: new Map() }
     _probeWindows.set(panel, w)
   }
   return w
@@ -61,6 +65,12 @@ export function _resetProbeWindowsForTest() {
 async function _probeChannelInto(w, name) {
   const prov = await buildProvider(name)
   if (!prov) { w.models.set(name, []); return }
+  // Check both successful and failed requests: an old account must never overwrite
+  // a newer catalog/admission after disable, removal, or an external config write.
+  const isCurrent = async () => {
+    if (w.cancelled) return false
+    try { return JSON.stringify(await buildProvider(name)) === JSON.stringify(prov) } catch { return false }
+  }
   const row = (id) => {
     const spec = specForModel(id)
     const r = effortEnumForModel(id) // I7（#677）：未在册名回退全档（对齐 CLI `cmd-think.mjs:19` 托底）
@@ -68,11 +78,12 @@ async function _probeChannelInto(w, name) {
   }
   try {
     const catalog = await listModelCatalog(prov)
-    if (w.cancelled || (await buildProvider(name))?.auth?.credentialRef !== prov.auth?.credentialRef) return
+    if (!(await isCurrent())) return
     recordAdmission(name, { ok: true })
     w.models.set(name, catalog.map((m) => ({ ...row(m.id), label: m.displayName || m.id })))
     w.diag.delete(name)
   } catch (e) {
+    if (!(await isCurrent())) return
     const reason = channelUnavailableMessage(e) // M8 逐字长句——零改
     recordAdmission(name, { ok: false, reason, failure: probeFailureOf(e) })
     w.models.set(name, [])

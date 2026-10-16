@@ -71,7 +71,7 @@
 
 ### 4.4 版本一致性断言（发版同步面）
 
-三产品（CLI ∕ VSC ∕ 桌面）`dependencies` 现声明 `"@thincoder/core": "^0.10.7"`（= 核当前版本；caret 兼容，声明面与实发对齐——核发新号后同步收正）；断言 A/B/C/D 全文 = `CORE-UNIFICATION.md` D-C11（此处不重述）。
+三产品（CLI ∕ VSC ∕ 桌面）`dependencies` 现声明 `"@thincoder/core": "^0.10.8"`（= 核当前版本；caret 兼容，声明面与实发对齐——核发新号后同步收正）；断言 A/B/C/D 全文 = `CORE-UNIFICATION.md` D-C11（此处不重述）。
 
 ## 5. 发布流程（**唯一主线** · 一步步走）
 
@@ -171,7 +171,7 @@
    **CHANGELOG 条目 = 发布轮回填（取材 = 批档 §5 提交集 + 提交标题），开发批不逐条追写**（2026-10-15 定案——维持回填 + 明示书面化；0.10.5 ∥ 0.10.6 ∥ 0.10.7 三次发布实测均回填形）。
    **附带**：CLI README 的 Changelog 摘要节（面向 npm 用户的英文精要 ✗ 非 CHANGELOG 全量镜像）同步补新版本段——首发漏更过一次（0.12.12→0.12.63 空窗 ✗ 2026-09-21 补 0.12.63/0.12.62 两段 ✗ 此后每发布必更 ✓）。
 3. **version bump**：`package.json` 改到期望号（**JSON.parse → 改字段 → JSON.stringify**——禁 PowerShell `Set-Content -Encoding UTF8`：会写 BOM `EF BB BF`，JSON 解析失败、发布门崩）。
-4. **依赖核对**：三产品（CLI ∕ VSC ∕ 桌面）`@thincoder/core` 声明与本次核版本对齐（§4.4——现 `^0.10.7`；核发新号后同步收正）。
+4. **依赖核对**：三产品（CLI ∕ VSC ∕ 桌面）`@thincoder/core` 声明与本次核版本对齐（§4.4——现 `^0.10.8`；核发新号后同步收正）。
 5. **发布轮批档**（`docs/batches/<日期>-release.md`——每轮发布建一档）：**§2 = 薄节**——一句话方案（**方案单源 = 本档 §5**：候选号 ∥ 逐端条目集 ∥ 命令 ∥ 判据 ∥ 回退全引；**零新设计**）+（可选）就位实读小表；**不做**逐端方案展开（展开 = §5 的活，重复 = 缺陷）——设计师分钟级即结（用户裁定 A · 2026-10-05）。
 
 ### 5.3 阶段 1 · 发核（`@thincoder/core`）
@@ -229,7 +229,7 @@ npm install --install-links             # link → registry 真实拷贝
 **render-core（`@thincoder/render-core`）不入发布序列**：永不发布（`private: true`）；**两打包窗内嵌形随打包器**：
 - **VSC vsix** = **link 形 + `--follow-symlinks`**——`npm install --install-links` 物化对其不可执行（vsce 依赖检测 `ELSPROBLEMS/invalid` ⇒ 打包硬失败；R1 打包窗实测 475 件）；**回链自愈**：`publish-all.mjs` 段 0.5 于打包前自动把物化态拉回 link 形（零手工——`--install-links` 后无需再手敲 `npm link`）；
 - **桌面产物** = **物化（源树实拷）**——electron-builder 无 follow 面（junction 入 asar 仅为 link 节点 ⇒ 装后断链），物化由打包窗脚本执行、一律源自源树（单源 = `docs/desktop/design/PACKAGING.md` §2.2 ∕ §1 KD-64）。
-内嵌面收窄 = 仅运行必需（`.mjs` + `package.json`；core 另携 `prompts/` 16 + `tool-docs/` 52）。
+内嵌面收窄 = 仅运行必需（`.mjs` + `package.json`；core 另携 `prompts/` 16 + `tool-docs/` 53）。
 本步 `@thincoder/core` 物化纪律不动（桌面窗同理：物化源树）。单源 = `docs/render-core/design/RENDER-CORE.md` §1.3 ∕ §10 B。
 
 **第 2 步 · 凭据预验**（防无 TTY 静默假成功——npm 的 exit-0 判定**不可**推广到 vsce/ovsx）：

@@ -94,7 +94,10 @@ HostConfig:
 - **取值**：`diskMb`（全局默认 ⇒ 每工作区覆写——既有取值序；生效 = 建盒/重建——② 配额就位步在三链在场（§3 建盒 ∥ 启动确保链 ∥ 轮换重建））。
 - **机制（项目配额优先 ∥ loopback 备选——KD-SV-74）**：探明工作区根的文件系统与挂载选项 ⇒
   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
-  ② ext4（`prjquota` 挂载）⇒ `chattr -R -p <id> +P`（赋号＋继承同句） + `setquota -P`；
+  ② ext4（`prjquota` 挂载）⇒ **项目标记分治**（`+P` 只对目录有效——`-p` 赋号不得丢） + `setquota -P`：
+     `find <path> -type d -exec chattr -p <id> +P {} + && find <path> ! -type d -exec chattr -p <id> {} +`
+     ——目录（含 `<path>` 自身）= 赋号＋继承（`+P`）∥ 文件/其余（`! -type d`）= 只赋号（不设 `+P`）；复合一句一行 ⇒ **单一步标签** `ext4 项目标记`（实施面常量 `EXT4_PROJECT_STEP`；`&&` 串联——任一半非零 ⇒ 该步非零）
+     降级腿判据零随动（本档 §4 ② 降级腿——步标签集无变）；判据成对：**绿** = 含文件的工作区上该步 `exit=0` ∥ **红** = `+P` 落非目录 ⇒ `exit=1` + `Operation not supported`（真机实测 2026-10-17）
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 `<path>.loop.img` + `mkfs.ext4 -O project,quota` + 挂载到工作区路径——备选）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **② 降级腿**（KD-SV-198）：`ext4`+`prjquota` 径的**项目标记步**（`chattr`）失败 ⇒ 降 loopback 径一次——**守卫 = 仅 `ext4-project` 径的该次调用降**（两径复用同一步标签）；降级后 loopback 径的项目标记**再失败 ⇒ 停**（零第二次降级）。判据 = 该步**步标签**（非错误文本——locale 不稳）。**披露**：降级落 loopback ⇒ 新 fs 盖住工作区路径 ⇒ 原目录内容从盒视角不可达（与 `rebuild` 同面——KD-SV-197）。
@@ -214,16 +217,16 @@ HostConfig:
 | E57 | 错误 | 执行面（底座可换） | 构建流内 `error`（假件）∥ 构建超时（假件不结） | 400 人话含日志尾 ∥ 502 + 如实句（引擎侧可能仍在跑——重试幂等：tag 在场即采用） |
 | N73 | 正常 | 执行面（连接面 TLS 档） | 假件 https 请求件（记 `requestImpl` 选项）：添加节点携 `connection:"tls"` + 三件（CA/证书/私钥）⇒ 自检三呼（引导步 → 协商 → 复读）⇒ 落行 ⇒ 探活复用适配件 | `https.request` 选项 `ca`/`cert`/`key` 逐值（= 提交值——加密往返后解密同值）∥ URL 逐值（`https://` + `v<ver>` 前缀形）；行 `tls_updated_at` 在场 ∧ `tls_key_cipher` ≠ 明文（回读库断言）；响应行形含 `connection:"tls"` + `tls.state:"sealed"`（**零材料字段**——响应键面扫描）；审计 `runner_add` detail `tls:true`；`PUT …/connection` 切回明文 ⇒ 三列零化 + 审计 `runner_connection`（`tls:false`） |
 | B76 | 边界 | 执行面（连接面 TLS 档） | **明文档零行为变化腿**：不携 `connection`/`tls` 键的添加（既有调用形）⇒ 全链 | 归一地址逐值同现状（`http://` + 2375）∥ 传输 = 注入 `fetchImpl`（**零适配件构造**——调用计数）∥ 行 `tls` 三列全 NULL（`tls.state:"none"`）∥ 审计 `runner_add` detail `tls:false` ∥ v22 升库后存量行读面逐值（零回填） |
-| N74 | 正常 | 执行面（配额步） | 健康径三腿（假件）：`xfs`+`pquota` ∥ `ext4`+`prjquota` ∥ 裸路径 + 镜像不在 | 三腿**变更性命令**序列逐条 = 现状（`xfs_quota` 三句 ∥ `chattr`+`setquota`+`repquota` ∥ `truncate`+`mkfs`+`mount`+`chown`+`chattr`）+ 只读读件在场（探明旗形含 `SOURCE` 列；loopback 腿另读 `mountpoint`/`test -f`/`dumpe2fs`）；三腿零 `umount`/`losetup -d`/`mkfs`（xfs/ext4 两腿）∥ `recovery = null` ∥ 零 `quota_recovered` 行（裸径腿 = **镜像不在**的首建——无内容可抹；裸径 ∧ 镜像在场缺 `project` 者见 B83） |
-| B77 | 边界 | 执行面（配额步） | 陈旧挂载（假件）——源 `/dev/loop32`、挂载 UUID ≠ 镜像 UUID、镜像具 `project` | `umount` → `losetup -d /dev/loop32` → `mount -o loop,prjquota` → `chown` → `chattr`；**无** `mkfs`；`recovery = "reconnect"` |
+| N74 | 正常 | 执行面（配额步） | 健康径三腿（假件）：`xfs`+`pquota` ∥ `ext4`+`prjquota` ∥ 裸路径 + 镜像不在 | 三腿**变更性命令**序列逐条 = 现状（`xfs_quota` 三句 ∥ `chattr`（目录/文件分治——§4）+`setquota`+`repquota` ∥ `truncate`+`mkfs`+`mount`+`chown`+`chattr`（目录/文件分治——§4））+ 只读读件在场（探明旗形含 `SOURCE` 列；loopback 腿另读 `mountpoint`/`test -f`/`dumpe2fs`）；三腿零 `umount`/`losetup -d`/`mkfs`（xfs/ext4 两腿）∥ `recovery = null` ∥ 零 `quota_recovered` 行（裸径腿 = **镜像不在**的首建——无内容可抹；裸径 ∧ 镜像在场缺 `project` 者见 B83） |
+| B77 | 边界 | 执行面（配额步） | 陈旧挂载（假件）——源 `/dev/loop32`、挂载 UUID ≠ 镜像 UUID、镜像具 `project` | `umount` → `losetup -d /dev/loop32` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；**无** `mkfs`；`recovery = "reconnect"` |
 | B78 | 边界 | 执行面（配额步） | 镜像失能（假件）——镜像在场、特性可读且无 `project` | 序列含 `mkfs.ext4 -q -O project,quota -F`；`recovery = "rebuild"` |
 | B79 | 边界 | 执行面（配额步） | 就绪（UUID 同 + 具 `project`）∥ 读数不可得（`dumpe2fs` 空输出） | 两例序列皆**零** `umount`/`losetup -d`/`mkfs`/`mount`；`recovery = null`（安全性质：读数不可得不重建） |
-| B80 | 边界 | 执行面（配额步） | `ext4`+`prjquota` 径、项目标记步 `exit≠0`（假件） | 降 loopback 径续走（探 → 建/挂 → `chattr`）；`recovery = "demote"` |
+| B80 | 边界 | 执行面（配额步） | `ext4`+`prjquota` 径、项目标记步 `exit≠0`（假件） | 降 loopback 径续走：探 → 建/挂 → `chattr`（目录/文件分治——§4）；`recovery = "demote"` |
 | E58 | 错误 | 执行面（销毁） | 在挂 + `losetup -a` 含本工作区两条（一在场一 `(deleted)`）+ 他人一条 | 序列 = `umount` + detach 本工作区两条（**不含他人**）+ `rm -rf` 两项；实机口径 = 该工作区零残留行 |
-| B81 | 边界 | 执行面（配额步） | 外来挂载（假件）——挂载源非 `/dev/loop<n>`（如 `/dev/sdb1`），镜像在场且具 `project` | 序列 = `umount` → `mount -o loop,prjquota` → `chown` → `chattr`；**零 `losetup -d`**（归属判据外）；`recovery = "reconnect"` |
+| B81 | 边界 | 执行面（配额步） | 外来挂载（假件）——挂载源非 `/dev/loop<n>`（如 `/dev/sdb1`），镜像在场且具 `project` | 序列 = `umount` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；**零 `losetup -d`**（归属判据外）；`recovery = "reconnect"` |
 | B82 | 边界 | 执行面（销毁） | 销毁 + 工作区路径**未挂**（xfs/ext4 径常态——`mountpoint` 非零） | 序列 = 零 `umount`/零 `losetup -d`（未挂 ⇒ 过、不抛）+ `rm -rf` 两项；终态 `destroyed` |
-| B83 | 边界 | 执行面（配额步） | 裸路径 + 镜像在场、正面缺 `project`（假件——判据① ⇒ `absent`） | 抹掉既有镜像：`truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（**抹掉既有内容 ⇒ 行必落**；与 N74 裸径腿「镜像不在 ⇒ `null`」为两条径） |
-| B84 | 边界 | 执行面（配额步） | 陈旧挂载 + 盘上镜像**不在**（假件——判据③旧 inode 挂载） | `umount` → `losetup -d /dev/loop32` → `truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（旧 inode 内容不可再达 ⇒ 有抹 ⇒ 行必落） |
+| B83 | 边界 | 执行面（配额步） | 裸路径 + 镜像在场、正面缺 `project`（假件——判据① ⇒ `absent`） | 抹掉既有镜像：`truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（**抹掉既有内容 ⇒ 行必落**；与 N74 裸径腿「镜像不在 ⇒ `null`」为两条径） |
+| B84 | 边界 | 执行面（配额步） | 陈旧挂载 + 盘上镜像**不在**（假件——判据③旧 inode 挂载） | `umount` → `losetup -d /dev/loop32` → `truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（旧 inode 内容不可再达 ⇒ 有抹 ⇒ 行必落） |
 | E59 | 错误 | 执行面（配额步） | 陈旧挂载 ⇒ 重建（`mkfs`）后项目标记步 `exit≠0`（假件） | 审计 `quota_recovered`（`recovery = "rebuild"`）**在场**（重建即留痕）+ `quota_apply_failed` 在场；错误上抛（建盒停） |
 | E60 | 错误 | 执行面（配额步） | 降级腿（`ext4-project` 项目标记失败 ⇒ loopback 径）后 loopback 径项目标记**再失败**（假件） | **停**（零第二次降级）；`quota_recovered`（`recovery = "demote"`）在场 + `quota_apply_failed` 在场 |
 

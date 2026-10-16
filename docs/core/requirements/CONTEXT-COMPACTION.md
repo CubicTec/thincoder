@@ -37,6 +37,12 @@
   - **判定句**：① 携两条**相斥 focus** 各压一次 ⇒ 两份摘要的取舍方向**可断言**（聚焦词命中计数差额）；② 压缩后 `read_history` / 人读线**全量不变**（记录面不死）；③ 清理后活上下文占用下降 ∧ 记录面不变；④ 方向转换后提示行**恰一次**（去重）∧ 零调用时零副作用；⑤ 双端工具表各 +1 项（`context`）× 三操作可达。
   - **边界（不做）**：阈值自动压缩**保留为兜底**（语义不动 ✗ 双轨并存）；**记录面不死**（机器线之外全量不变——承 §4.2 F3 口径）；**不做自动方向检测**（轻推 = 一线提示 ✗ 不得自动压）；**不新增用户侧命令**（`/compact` 类 ✗ 本期未要求）；**子代理面** = 设计轮裁定（**须带可回查性论证**：子代理现无 `read_history` 通道 ✗ 若给则同轮论证可达性，否则明确登记为边界）。
 
+- **【用户需求】压缩线目标 = 窗口 75–80%**（用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」——症状 = agent 以上下文快满为由自行停工 ✗：报面主百分比用触发线作分母 + 阈值链双重保守 ⇒ 实际在窗口 ~37% 就触发 ✗）：
+  - **阈值链**：显式 `config.agent.compactThreshold` 优先；auto = 可用窗口与 `⌊窗口 × 0.8⌋` 取小，可用窗口 = 窗口 − 完成预留（预留 = `min(显式 maxTokens 否则规格 maxOutput, ⌊窗口 × 0.25⌋)`）——阈值落窗口 **75–80%**（`resolveCompactThreshold` 单源）。
+  - **报面**：主口径 = **窗口占用**（`total / window`）；压缩线以**具名数值**露出（不再作百分比分母）；同名输出不得两个无名百分比并存。
+  - **判定句**：① 逐档推算全表（`model-specs.mjs` 全量）新占比 ∈ **[75.0%, 80.0%]**，两式（预留未封顶 / 封顶）与定式互推一致；② stats 首行恰含一个具名百分比（分母 = 窗口）∧ 压缩线以具名数值在场；③ 溢出风险论证三件在场（真溢出后果 ∥ 兜底接法 ∥ 高风险档清单）。
+  - 源 = 设计档 `CONTEXT-COMPACTION.md` §6.2 ∥ §6.16.4 ∥ D-CC29–D-CC30。
+
 ### 2.2 适用工作流条目（回指 · 不复制）
 
 | 条目 | 适用于本子系统的哪一面 |
@@ -68,14 +74,14 @@
 - **F2**：压缩摘要（SUMMARIZE_PROMPT）在压缩时，除「已完成 vs 进行中」外，显式新增保留：已改动文件清单、未决点 / 待办。
 - **F3**：人读线 `_fullHistory`（落盘 `fullHistory`）保持全量不变；机器线 `history`（落盘 `contextHistory`）承载摘要后的信号密集形式。（**记录 / 落盘语义**——完整记录在盘、压缩不触；运行期内存表示为有界窗口，机制见 `docs/core/design/SESSION.md` §6.14。）
 - **N1**：摘要质量优先，token 成本不作决策变量；摘要调用必须 `thinking:null` 且不接 onToken / onReasoning。
-- **N2**：压缩机制落地单一权威面；**2026-09-18 收正（W6 迁核后）**：压缩面已**单源**（`thincoder-core/context.mjs`）；一致性由单源承接。
+- **N2**：压缩机制落地单一权威面：压缩面**单源**（`thincoder-core/context.mjs`）；一致性由单源承接。
 - **N3**：轮末摘要失败不得阻塞 / 影响 runAgent 返回（静默跳过，原始历史保留）。
 
 ### 4.3 VSC 端条目
 
 语义同源——VSC 档 F-K1–F-K6 / N-K1–N-K4 与 §4.1 逐条同义（不重并）；**VSC 独有条目** = **F-K7 压缩可见性（本端）**：
 回调链 onCompressStart → onCompress / onCompressFail → webview `compress` 消息四态（start / done / fallback / failed）渲染至 `#compress-status` 状态行（仅生命周期可见——摘要正文不进前端）。
-（THRESHOLD_FRACTION 0.60 / KEEP_HEAD 0 / COMPRESS_FAILURE_LIMIT 3 / SUMMARIZE_PROMPT）+ `src/extension/panel-callbacks.mjs:144-152`（compress 回调接线）。**端差（已裁保留 · 形态类——类判据单源 = `docs/vsc/design/WEBVIEW-PROTOCOL.md` §6.1 首）**：呈现面（webview 状态行四态 vs TUI 压缩面板）；
+（阈值 / 切割 / 降级常量**单源 = 核**——本端不另持）+ `src/extension/panel-callbacks.mjs:144-152`（compress 回调接线）。**端差（已裁保留 · 形态类——类判据单源 = `docs/vsc/design/WEBVIEW-PROTOCOL.md` §6.1 首）**：呈现面（webview 状态行四态 vs TUI 压缩面板）；
 提示词（`SUMMARIZE_PROMPT`）**单源 = 核 export**（`thincoder-core/context.mjs:61`）。**测试缺口（发现即报）**：VSC `test/` 对压缩面零专属用例——补测触发 = 该面下次被触碰。
 
 **二态化裁定行**：端差（呈现面四态）= **已裁保留**（形态类——类判据单源 = `docs/vsc/design/WEBVIEW-PROTOCOL.md` §6.1 首）；提示词面 = **单源 = 核 export**（非端差）。

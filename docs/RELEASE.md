@@ -22,7 +22,7 @@
 | **F2** | 号在发布时定 | 开发批变更记录挂 `[Unreleased]` 段（**不编号**）；发布 = 唯一定号动作（bump → Unreleased 段头改新号；条目 = 发布轮回填——§5.2 步 2） |
 | **F3** | 待发号推导 | 待发号推导规则 = §4.2（当月最高 + 1 / 月切换 = `0.<当月>.1`） |
 | **F4** | 发布完成判定 | 发布命令正确返回（exit 0）= 完成——不轮询、不检查上线版本（npm publish 即见 / vsce 审核队列 = 平台侧事务）；**发布轮**收口 = 三端 ∧ 官网同步（一体发布——§5.8，2026-10-03 用户裁定） |
-| **F5** | 核 = 独立可发布单元 | `@thincoder/core` · 非 private · 独立版本（壳核解耦——D-C10）；核发布 = **S2 收口动作**（核先发 → 产品后发）；`files` 白名单含 `prompts/` 16 + `tool-docs/` 52（断言 D 对象） |
+| **F5** | 核 = 独立可发布单元 | `@thincoder/core` · 非 private · 独立版本（壳核解耦——D-C10）；核发布 = **S2 收口动作**（核先发 → 产品后发）；`files` 白名单含 `prompts/` 16 + `tool-docs/` 53（断言 D 对象） |
 
 ## 3. 非功能性需求（统一）
 
@@ -32,7 +32,7 @@
 | **N2** | **禁止一次跳多号** | 发布前核对当月最高号（§4.2） |
 | **N3** | 门禁不可绕过 | 门禁不过 = 发布中止（**有意设计**） |
 | **N4** | 缺口不补 | 历史缺口（0.12.54→0.12.58，55/56/57 永缺——registry 不可回溯重写）**不补发**；越月预占号**作废**（0.8.11 先例）；规则从下一发起保证零新缺口 |
-| **N5** | **版本一致性三断言 + 提示词面完备性**（D-C11） | **断言 A（仓内）** 产品声明范围与核版本相容（caret 语义）；**断言 B（VSC 产物）** vsix 内核 `version` 逐字等于仓内核版本；**断言 C（CLI 发布预检）** 装入版本逐字等于仓内核版本 ∧ registry 上该版本存在；**断言 D（提示词面完备性）** 核包 tarball / CLI 装机目录 / vsix 解包 / **桌面 asar 解包**（`check-dist` D 族）**四处** `prompts/` 16 档 + `tool-docs/` 52 档名集合逐字相等，同档 sha256 等于仓内核档。**发版同步**：三产品（CLI ∕ VSC ∕ 桌面）`dependencies` 现声明 `^0.10.7`（= 核当前版本）——随核发布同步收正（声明面与实发对齐） |
+| **N5** | **版本一致性三断言 + 提示词面完备性**（D-C11） | **断言 A（仓内）** 产品声明范围与核版本相容（caret 语义）；**断言 B（VSC 产物）** vsix 内核 `version` 逐字等于仓内核版本；**断言 C（CLI 发布预检）** 装入版本逐字等于仓内核版本 ∧ registry 上该版本存在；**断言 D（提示词面完备性）** 核包 tarball / CLI 装机目录 / vsix 解包 / **桌面 asar 解包**（`check-dist` D 族）**四处** `prompts/` 16 档 + `tool-docs/` 53 档名集合逐字相等，同档 sha256 等于仓内核档。**发版同步**：三产品（CLI ∕ VSC ∕ 桌面）`dependencies` 现声明 `^0.10.7`（= 核当前版本）——随核发布同步收正（声明面与实发对齐） |
 | **N6** | **凭据不入库** | PAT 只走环境变量 / 显式传参；仓库内零凭据（源码与发布产物同查） |
 
 ## 4. 版本号规则（CalVer · **各端同制**——用户 2026-08-27 拍板）
@@ -96,7 +96,7 @@
 | 端 | 干跑命令 | 通过判据（读数形） |
 |---|---|---|
 | 核 | `cd thincoder-core && npm publish --access public --dry-run` | 窗口内（bump 后）exit 0——输出含 `prepublishOnly → npm test` 段 + `Tarball Details`（`total files` ∕ `package size`）。bump 前 ⇒ 止于 `You cannot publish over the previously published versions: <现号>` exit 1 = **版本占用守卫在位**（非缺陷） |
-| 核（tarball 内容） | `node scripts/check-pack.mjs thincoder-core`（在仓根跑；脚本 = `scripts/check-pack.mjs`（拟新增））∥ 原读数式 `cd thincoder-core && npm pack --dry-run --json` | exit 0 + 读数行「pack 件数 ∥ 根 `.mjs` 集 = 源树（实读 100——含 `think-off.mjs`——#470 判据）∥ 闭包缺口 0」——**闭包断言** = `files[]` ⊇ 运行时 import 闭包（台账 #1363；判例 = 0.10.5 缺 `browser/`）；`prompts/` 16 档 + `tool-docs/` 52 档（实读 2026-10-15）；排除面 = 根非 `.mjs` 档（`CHANGELOG.md` ∥ `LICENSE` ∥ `package.json` ∥ `README.md`）；**发布后复验形 = `node scripts/check-pack.mjs thincoder-core --registry <号>`**（registry 面与源树同口径：路径集 + integrity 相等——防核内容滞留；台账 #1222） |
+| 核（tarball 内容） | `node scripts/check-pack.mjs thincoder-core`（在仓根跑；脚本 = `scripts/check-pack.mjs`（拟新增））∥ 原读数式 `cd thincoder-core && npm pack --dry-run --json` | exit 0 + 读数行「pack 件数 ∥ 根 `.mjs` 集 = 源树（实读 100——含 `think-off.mjs`——#470 判据）∥ 闭包缺口 0」——**闭包断言** = `files[]` ⊇ 运行时 import 闭包（台账 #1363；判例 = 0.10.5 缺 `browser/`）；`prompts/` 16 档 + `tool-docs/` 53 档（实读 2026-10-17）；排除面 = 根非 `.mjs` 档（`CHANGELOG.md` ∥ `LICENSE` ∥ `package.json` ∥ `README.md`）；**发布后复验形 = `node scripts/check-pack.mjs thincoder-core --registry <号>`**（registry 面与源树同口径：路径集 + integrity 相等——防核内容滞留；台账 #1222） |
 | CLI | `node scripts/check-pack.mjs thincoder-cli`（在仓根跑——CLI 打包面闭包，口径同 #1363）∥ `cd thincoder-cli && node scripts/release-check.mjs` | 前者 = exit 0 + 闭包缺口 0；后者 = exit 0 + 尾行 `✅ release-check 全绿——可发版`；读面 = `⓪ ✔ registry 上存在 @thincoder/core@<号>` + `✔ lint OK` + test 摘要行。⓪ 不过 = 核先发守卫（设计如此） |
 | VSC | `cd thincoder-vscode && node scripts/publish-all.mjs --dry-run` | 段 0（核版本预检）+ 段 1 `vsce package`（`vscode:prepublish` = lint + test）+ 段 1.5 vsix 含核断言（B ∕ D ∕ E ∕ F 全过——E = 撞帽检查点接线 ∥ F = 渲染核版本逐字；定义 = `thincoder-vscode/scripts/check-vsix.mjs` 断言 E ∕ F 段）+ 段 2 🧪 跳过；exit 0 |
 
@@ -156,7 +156,7 @@
       ↓
 [阶段 3 · 发 VSC]  verify-pat → npm run publish:all（VSC thincoder-vscode · 双市场）
       ↓
-[阶段 3b · 发桌面]  物化 → package（check-dist 闸）→ 签名（hook）→ 上传（Windows 三件 ∥ Linux 三件：AppImage ∥ deb ∥ latest-linux.yml）→ 官网挂载（Windows ∥ Linux）
+[阶段 3b · 发桌面]  物化 → package（check-dist 闸）→ 签名（hook）→ 上传（Windows 三件：exe ∥ blockmap ∥ latest.yml）→ 官网挂载（Windows）——Linux 面暂缓
       ↓
 [阶段 4 · 收尾  ]  验证 → 失败处置原则
       ↓
@@ -258,11 +258,12 @@ npm run publish:all
 
 > **双远端推送（通则 · 2026-08-30 判例 · 代理固定）**：发版 commit + tag **两端皆推**；**github 固定走 proxy**——`git -c http.proxy=http://10.2.2.112:3128 push github main`，tag 同法。**漏推 github = 漏发布**（0.12.51 实测判例）。
 
-### 5.6 阶段 3b · 发桌面（`thincoder-desktop` · Windows 安装包 ∥ Linux 产物）
+### 5.6 阶段 3b · 发桌面（`thincoder-desktop` · Windows 面；Linux 面暂缓）
 
 > **定位**：桌面 = **三端之一**（发布轮含桌面——2026-10-13 用户裁定）；**发布动作 = 用户门**。机制 ∕ 契约单源 = `docs/desktop/design/PACKAGING.md` §2（2.1 配置契约 ∥ 2.2 构建序列 ∥ 2.3 签名 ∥ 2.5 产物校验 ∥ 2.6 失败面 ∥ **2.8 自动更新** ∥ **2.10 发布窗承接** ∥ **2.11 Linux 面**）；物化纪律（打包物化一律源自源树）= §5.3 同律——桌面窗同遵。
 > **构建机要求**（签名侧）：GlobalSign EV token（eToken 5300）在位 + SafeNet SAC 驱动在 + 签名时 PIN 弹窗（构建者在场）。
-> **构建机要求（Linux 侧）**：内网构建机（ha-proxy · Ubuntu 22.04 x86_64——配方 ∥ 读数 = `docs/desktop/design/PACKAGING.md` §2.11.1；凭据零入库（N6））；签名面 = 无（Linux 两产物均不签）。
+> **Linux 面 = 暂缓**（2026-10-16 用户裁定 · 台账 #1593）：复核条件 = 用户要求发布 Linux 面时恢复；存量面全覆盖（构建机 ∥ 配方 ∥ 产物集 ∥ 校验断言 ∥ feed ∥ 上传序 ∥ 站点卡）= `docs/desktop/design/PACKAGING.md` §2.11.1–§2.11.5（父侧实测可用——恢复时零推导）。
+> **勘测与偏离（2026-10-17 · 台账 #1593）**：勘测 = `docs/desktop/design/PACKAGING.md` §2.3 ∥ §2.5 ∥ §2.8.2 ∥ §2.11 实读——相关（签名载体 ∥ 断言面 ∥ Linux 面单源）∥ `docs/desktop/requirements/PACKAGING.md` D42——能力面需求（零改）；余公开源档无相关内容（`AppImage` ∥ `latest-linux` 复扫零其余命中——批档记录除外）。偏离 = 相对暂缓前含 Linux 面的桌面发布形态不再适用（用户 2026-10-16 裁定）。
 
 **步骤 1 · 定号 + CHANGELOG + bump**（同 §5.2 各步；桌面号段 = §4.2 步骤 5）：`thincoder-desktop/package.json` `version` 改到期望号（首版 = `0.10.1`）；`thincoder-desktop/CHANGELOG.md`（已建——首版 `0.10.1` 段在）段头改新号。
 
@@ -273,7 +274,7 @@ cd thincoder-desktop
 ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run package   # prepackage = 物化；postpackage = check-dist（闸）+ dev 链自愈（win32 面；本机 no-op）
 ```
 
-**判据**：check-dist exit 0（全断言 = `docs/desktop/design/PACKAGING.md` §2.5 + §2.8.2 update-info 四断言）+ **签名态读数 = 已签**（未签 ⇒ 止步核查：UKey ∥ SAC ∥ PIN——未签版仅限测试）。
+**判据**：check-dist exit 0（全断言 = `docs/desktop/design/PACKAGING.md` §2.5 + §2.8.2 update-info 四断言——暂缓态断言面 = win32 分支：全集为 Windows 产物断言（零 Linux 产物断言；Linux 分支断言 +9 住同档 §2.11.3）⇒ Windows-only 构建按 win32 分支过闸）+ **签名态读数 = 已签**（未签 ⇒ 止步核查：eToken 5300 ∥ SAC ∥ PIN——同本阶段「构建机要求」行；未签版仅限测试）。
 
 （本步产物面 = 安装包 + `.blockmap` + **`latest.yml`**（update-info）+ `resources/app-update.yml`——publish 契约 = 同档 §2.1 ∥ §2.8.2；`npm run package` 不触发发布（generic 无上传面）——上传恒走步骤 4。）
 
@@ -284,7 +285,7 @@ cd ..   # 回 `thincoder` 仓根——dev-link.mjs 住仓根 scripts/（步骤 2
 node scripts/dev-link.mjs --force && node scripts/dev-link.mjs --check   # 自愈已入链（postpackage 第三腿）——本步 = 幂等复判 ∥ 兜底（构建中止径）；终态 = 0
 ```
 
-**步骤 4 · 上传（OSS 托管 · feed 三件）**：键形 = `downloads/` 前缀——**Windows**：`ThinCoder-Setup-<号>.exe` ∥ 同名 `.blockmap` ∥ `latest.yml`（feed 三件——单源 = `docs/desktop/design/PACKAGING.md` §2.8.3）；**Linux（D42）**：`ThinCoder-Setup-<号>.AppImage` ∥ `ThinCoder-Setup-<号>.deb` ∥ `latest-linux.yml`（单源 = 同档 §2.11.5）；
+**步骤 4 · 上传（OSS 托管 · feed 三件）**：键形 = `downloads/` 前缀——**Windows**：`ThinCoder-Setup-<号>.exe` ∥ 同名 `.blockmap` ∥ `latest.yml`（feed 三件——单源 = `docs/desktop/design/PACKAGING.md` §2.8.3）。
   上传 = 站点仓独立小件 `thincoder.com/scripts/upload-download.mjs`（站点小件——规格 = 同档 §2.9.7；凭证只走环境变量，N6）：
 
 ```bash
@@ -293,20 +294,10 @@ ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/upload-download.mjs <exe> <blockma
 ```
 
 **判据**：三件取回（HTTP 200 ∥ 字节数 = 本地一致）+ **`latest.yml` 对盘**（`version` = 本次号 ∥ `files[0].sha512` = 本地 exe 实算）；同号重传 ⇒ URL 核验加查询串绕缓存（`?v=…`）。
-  **Linux 判据**：三件取回（HTTP 200 ∥ 字节数一致）+ `latest-linux.yml` 对盘（`version` = 本次号 ∥ `files[0].url` = AppImage 名（逐字）∥ `path` = 同名 ∥ `files` 恰一条（**不含 deb**）∥ `files[0].sha512` = 本地 AppImage 实算）。
 
 **步骤 5 · 官网挂载** = §5.8 阶段 5 一并执行（下载卡 + 版本面三处——条目形见本档 §6.2 分节）。
 
-**Linux 侧（D42 · 构建机链——构建 → 校验 → 取回 → 上传 · 机制单源 = `docs/desktop/design/PACKAGING.md` §2.11）**：
-
-- **L1 · 构建（内网构建机）**：`~/thincoder` 浅克隆 → 三镜像环境（registry ∥ `ELECTRON_MIRROR` ∥ `ELECTRON_BUILDER_BINARIES_MIRROR`）→ `npm run package`（一条链：物化 → 两目标 AppImage ∥ deb → check-dist Linux 侧 = 闸；dev 链自愈腿 = win32 面——本机 no-op）——配方逐字 = 同档 §2.11.1；
-  重跑 = `git fetch` + `git reset --hard` + 清 `dist`；**不得单目标跑**（覆盖 feed 面——同档 §2.11.1 纪律）。
-- **L2 · 校验**：check-dist（闸内自跑）exit 0 + **构建机命令读数**（`dpkg-deb -f dist/ThinCoder-Setup-<号>.deb Maintainer Homepage` ∥ AppImage 提取读数——同档 §2.11.3）。
-- **L3 · 取回**：三件 → `D:\WSL\artifacts\<版本>\`（版本子目录）；sha256 对盘读数随实施记录。
-- **L4 · 上传**：同步骤 4（Linux 行——序 **AppImage → deb → latest-linux.yml**）。
-- **L5 · 官网挂载**：§5.8 阶段 5 一并（download 卡 Linux 区块 ∥ desktop 页 Linux 节 ∥ 版本面同号——规格 = 同档 §2.11.5）。
-
-**完成判定**：check-dist 绿 + 签名态 = 已签（发布版）+ URL 可达（exe ∥ blockmap ∥ latest.yml 三件）+ 站点三处版本面 = 本次号；**Linux 侧（D42）** = 构建机链 exit 0 + URL 可达（AppImage ∥ deb ∥ latest-linux.yml 三件）+ `latest-linux.yml` 对盘过（步骤 4 判据）+ 站点 Linux 区块 ∥ 版本面同号。
+**完成判定**：check-dist 绿 + 签名态 = 已签（发布版）+ URL 可达（exe ∥ blockmap ∥ latest.yml 三件）+ 站点三处版本面 = 本次号；**Linux 面 = 暂缓**（复核条件 = 用户要求发布 Linux 面时恢复）。
 
 **失败处置**：§5.7 失败总原则（从失败端重跑；已发端不重发）+ `docs/desktop/design/PACKAGING.md` §2.6 失败面表 ∥ §2.8.1 更新失败面（fail-soft）。
 
@@ -384,7 +375,6 @@ ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/deploy-oss.mjs    # 实传（凭�
 2. **changelog 页**：① **各端分节顶部条目 = 该端本次号**（每发布必跑——单端发布只核该端节）；② 窗口内**版本集合相等**（页面 ↔ registry / 市场，比较归一同上）——追平验收一次性跑。
 3. **线上**：取回 `https://thincoder.com/changelog.html` 含本次号（页面档 `no-cache` ⇒ 取回即现行）。
 4. **feed 面（自动更新源）**：`https://thincoder.com/downloads/latest.yml` 可取回 ∧ `version` = 源树号 ∧ `files[0].url` 指向的安装包 URL 可取回（比较归一 = 判据 1 同法）。
-   **Linux feed（D42）**：`https://thincoder.com/downloads/latest-linux.yml` 可取回 ∧ `version` = 源树号 ∧ `files[0].url` = `ThinCoder-Setup-<源号>.AppImage`（逐字）∧ 该 URL 可取回 ∧ `files` 恰一条（不含 deb——feed 分流判据）。
 
 ### 6.6 边界（本节不做）
 

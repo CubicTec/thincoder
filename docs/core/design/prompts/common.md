@@ -102,6 +102,9 @@ repo_outline → doc_search → code_search。结构 → 意图 → 细节。
 ### 并行调用原则
 独立的读类工具调用合并到一条回复批量发出（并发执行）—— 串行逐个调用浪费回合。
 
+### 上下文自掌舵
+**上下文是你自己掌舵的。** ① 想看用量与构成、离压缩线还有多远，随时查（`context`）；② 觉得该收拾了（方向变了 / 太嘈杂）就**自己发起压缩**，并写清「**下一步要什么**」（focus）——压掉的**可取回**（回执带锚）。③ 到压缩线会自动压缩，**那只是兜底**，不是让你收工——收拾完接着干，直到任务真做完。
+
 ## 工具路由（写类场景按表路由，不用 bash）
 写文件用专用工具：`read`/`write`/`edit`/`hashline_edit`/`insert_after`/`apply_patch`/`delete`/`file_ops`；
 读用 `read`、列目录/找文件/搜内容用 `ls`/`glob`/`grep`/`tree`、查符号用 `repo_outline`/`code_search`/`doc_search`；

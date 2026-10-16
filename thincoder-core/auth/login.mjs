@@ -2,6 +2,7 @@ import { createServer } from 'node:http'
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
 import { AUTHORIZE, RESOURCE, SCOPES } from './oidc.mjs'
 import { authError, abortError, checkSignal } from './errors.mjs'
+import { assertTokenSet } from './tokens.mjs'
 
 const random = () => randomBytes(32).toString('base64url')
 const equal = (a, b) => typeof a === 'string' && typeof b === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
@@ -11,6 +12,7 @@ const callbackError = () => authError('invalid_callback', 'The ChatGPT sign-in c
 export async function beginLogin(service, { profileId, openBrowser, signal, timeoutMs = 300000, newAccount = false } = {}) {
   checkSignal(signal)
   const host = await service.store.getHost()
+  checkSignal(signal)
   if (newAccount) { profileId = undefined; service.registrationRetry = null }
   if (service.registrationRetry?.expiresAt <= service.now()) service.registrationRetry = null
   const retry = !profileId && service.registrationRetry?.hostId === host.hostId ? service.registrationRetry : null
@@ -18,8 +20,16 @@ export async function beginLogin(service, { profileId, openBrowser, signal, time
   const selected = profileId ? profiles.profiles.find(p => p.profileId === profileId) : null
   if (profileId && !selected) throw authError('profile_not_found', 'The selected ChatGPT account was not found.', { state: 'signed_out' })
   if (selected?.paused) throw authError('profile_paused', 'Enable ChatGPT plan access before signing in to this saved account.')
-  const credentials = selected ? await service.store.readCredential(profileId) : null
+  let credentials = selected?.state !== 'signed_out' && selected ? await service.store.readCredential(profileId) : null
+  // Corrupt or cross-account hints must never be transmitted during recovery.
+  if (credentials) {
+    try {
+      assertTokenSet(credentials)
+      if (['issuer', 'subject', 'clientId', 'hostId', 'sessionId'].some(key => !selected[key] || credentials[key] !== selected[key])) credentials = null
+    } catch { credentials = null }
+  }
   await service.oidc.discovery(signal)
+  checkSignal(signal)
   const loginId = randomUUID()
   const controller = new AbortController()
   let resolveCompletion, rejectCompletion
@@ -72,8 +82,19 @@ export async function beginLogin(service, { profileId, openBrowser, signal, time
   const result = { loginId, redirectUri: pending.redirectUri, completion, cancel }
   // Authorization URLs can contain an ID token hint; exclude them from JSON/log inspection.
   Object.defineProperty(result, 'authorizationUrl', { value: url.href, enumerable: false })
+  Object.defineProperty(result, 'committed', { get: () => pending.committed === true, enumerable: false })
+  checkSignal(signal)
   if (openBrowser) {
-    try { await openBrowser(url.href) } catch { cancel(); throw authError('browser_open_failed', 'The system browser could not open ChatGPT sign-in.') }
+    // Some host openers wait for a browser process to exit. A verified callback
+    // must still reach the adapter immediately, so later logout/disable/select
+    // actions address the account that already committed. Late opener failures
+    // cannot overturn that success, and pre-commit cancellation stays prompt.
+    const opening = Promise.resolve().then(() => { checkSignal(signal); return openBrowser(url.href) }).then(() => 'opened', () => 'failed')
+    const outcome = await Promise.race([opening, completion.then(() => 'committed')])
+    if (outcome === 'failed' && !pending.committed) {
+      cancel()
+      throw authError('browser_open_failed', 'The system browser could not open ChatGPT sign-in.')
+    }
   }
   return result
 }
@@ -88,7 +109,7 @@ export function finishLogin(service, pending, error, status) {
   pending.server.closeIdleConnections?.()
   pending.verifier = null
   if (error) pending.rejectCompletion(error)
-  else pending.resolveCompletion(status)
+  else { pending.committed = true; pending.resolveCompletion(status) }
 }
 
 export async function completeLogin(service, loginId, callbackUrl) {
@@ -118,7 +139,7 @@ export async function completeLogin(service, loginId, callbackUrl) {
     finishLogin(service, pending, null, status)
     return status
   } catch (error) {
-    if (error.code === 'invalid_grant' && !pending.selected && pending.issuedClientId) {
+    if (error.code === 'invalid_grant' && !pending.controller.signal.aborted && service.pending.has(loginId) && !pending.selected && pending.issuedClientId) {
       // Keep only an unverified registration candidate. A later explicit retry
       // creates fresh OAuth values; no identity, profile or tokens are activated.
       service.registrationRetry = { clientId: pending.issuedClientId, hostId: pending.hostId, expiresAt: service.now() + 600000 }

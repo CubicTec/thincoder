@@ -118,6 +118,9 @@ export async function listLegacyModels(provider, { signal } = {}) {
 
 /** Rich account-specific catalog. No cache: switching profiles cannot reuse another account's results. */
 export async function listModelCatalog(provider, { signal } = {}) {
+  // Settings may change while the catalog is in flight. Quota attribution and
+  // parsing must use the same account and protocol that sent the request.
+  provider = { ...provider, ...(provider.auth ? { auth: { ...provider.auth } } : {}) }
   assertProviderAuthConfig(provider)
   if (!isChatGptProvider(provider)) return (await listLegacyModels(provider, { signal })).map((id) => ({ id, slug: id, displayName: id }))
   const auth = await resolveProviderAuth(provider, { signal, path: "/models", method: "GET", purpose: "catalog" })

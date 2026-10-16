@@ -7,8 +7,10 @@ export const AUTHORIZE = `${ISSUER}/api/accounts/authorize`
 export const TOKEN = `${ISSUER}/api/accounts/oauth/token`
 export const DISCOVERY = `${ISSUER}/.well-known/openid-configuration`
 export const SCOPES = 'openid profile email offline_access resource.invoke chatgpt.tokens.use.direct'
-export const hasPlanScope = scopes => ['resource.invoke', 'chatgpt.tokens.use.direct'].every(scope => scopes?.includes(scope))
+export const hasPlanScope = scopes => Array.isArray(scopes) && ['resource.invoke', 'chatgpt.tokens.use.direct'].every(scope => scopes.includes(scope))
 const invalid = () => authError('invalid_id_token', 'The ChatGPT account identity could not be verified.', { state: 'reauth_required' })
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+const invalidResponse = () => authError('auth_response_invalid', 'The authentication service returned an invalid response.')
 
 export function trustedAuthUrl(value) {
   let url
@@ -18,9 +20,30 @@ export function trustedAuthUrl(value) {
 }
 
 async function boundedJson(response) {
-  const text = await response.text()
-  if (text.length > 1024 * 1024) throw authError('auth_response_invalid', 'The authentication service returned an invalid response.')
-  try { return JSON.parse(text) } catch { throw authError('auth_response_invalid', 'The authentication service returned an invalid response.') }
+  const limit = 1024 * 1024
+  let reader
+  try {
+    let text
+    if (response.body?.getReader) {
+      reader = response.body.getReader()
+      const chunks = []
+      let bytes = 0
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        bytes += value.byteLength
+        if (bytes > limit) throw invalidResponse()
+        chunks.push(value)
+      }
+      text = Buffer.concat(chunks).toString('utf8')
+    } else text = await response.text()
+    if (Buffer.byteLength(text) > limit) throw invalidResponse()
+    return JSON.parse(text)
+  } catch {
+    // Transport errors can contain request URLs or echoed token bodies.
+    reader?.cancel().catch(() => {})
+    throw invalidResponse()
+  } finally { reader?.releaseLock() }
 }
 
 export class OidcClient {
@@ -51,7 +74,7 @@ export class OidcClient {
     const response = await this.request(DISCOVERY, { signal })
     if (!response.ok) throw authError('auth_discovery_unavailable', 'ChatGPT sign-in information is temporarily unavailable.', { retryable: true })
     const data = await boundedJson(response)
-    if (data.issuer !== ISSUER || data.authorization_endpoint !== AUTHORIZE || data.token_endpoint !== TOKEN) throw authError('untrusted_auth_endpoint', 'The ChatGPT authentication configuration is not trusted.')
+    if (!object(data) || data.issuer !== ISSUER || data.authorization_endpoint !== AUTHORIZE || data.token_endpoint !== TOKEN) throw authError('untrusted_auth_endpoint', 'The ChatGPT authentication configuration is not trusted.')
     trustedAuthUrl(data.jwks_uri)
     if (data.revocation_endpoint) trustedAuthUrl(data.revocation_endpoint)
     if (!Array.isArray(data.id_token_signing_alg_values_supported)) throw invalid()
@@ -65,7 +88,7 @@ export class OidcClient {
     const response = await this.request(metadata.jwks_uri, { signal })
     if (!response.ok) throw authError('auth_keys_unavailable', 'ChatGPT identity verification is temporarily unavailable.', { retryable: true })
     const data = await boundedJson(response)
-    if (!Array.isArray(data.keys) || data.keys.length > 100) throw invalid()
+    if (!object(data) || !Array.isArray(data.keys) || data.keys.length > 100 || data.keys.some(key => !object(key) || (key.key_ops !== undefined && (!Array.isArray(key.key_ops) || key.key_ops.some(op => typeof op !== 'string'))))) throw invalid()
     this.jwks = { value: data.keys, fetchedAt: this.now() }
     return data.keys
   }
@@ -76,7 +99,7 @@ export class OidcClient {
     if (parts.length !== 3 || parts.some(part => !/^[A-Za-z0-9_-]+$/.test(part))) throw invalid()
     let header, claims
     try { header = JSON.parse(Buffer.from(parts[0], 'base64url')); claims = JSON.parse(Buffer.from(parts[1], 'base64url')) } catch { throw invalid() }
-    if (!header || !claims || header.crit || header.jku || header.jwk || header.x5u || !['RS256', 'ES256'].includes(header.alg) || typeof header.kid !== 'string') throw invalid()
+    if (!object(header) || !object(claims) || ['crit', 'jku', 'jwk', 'x5u'].some(key => key in header) || !['RS256', 'ES256'].includes(header.alg) || typeof header.kid !== 'string' || !header.kid) throw invalid()
     const metadata = await this.discovery(signal)
     if (!metadata.id_token_signing_alg_values_supported.includes(header.alg)) throw invalid()
     const matches = keys => keys.filter(key => key.kid === header.kid && (!key.alg || key.alg === header.alg) && (!key.use || key.use === 'sig') && (!key.key_ops || key.key_ops.includes('verify')))
@@ -92,12 +115,12 @@ export class OidcClient {
     } catch { throw invalid() }
     const now = this.now() / 1000
     const aud = typeof claims.aud === 'string' ? [claims.aud] : claims.aud
-    if (claims.iss !== ISSUER || typeof claims.sub !== 'string' || !claims.sub || !Array.isArray(aud) || !aud.includes(clientId) || (aud.length > 1 && claims.azp !== clientId) || (claims.azp && claims.azp !== clientId)) throw invalid()
+    if (typeof clientId !== 'string' || !clientId || claims.iss !== ISSUER || typeof claims.sub !== 'string' || !claims.sub || !Array.isArray(aud) || aud.some(value => typeof value !== 'string' || !value) || !aud.includes(clientId) || (aud.length > 1 && claims.azp !== clientId) || (claims.azp !== undefined && claims.azp !== clientId)) throw invalid()
     if (!Number.isFinite(claims.exp) || claims.exp <= now - 30 || !Number.isFinite(claims.iat) || claims.iat > now + 30 || (claims.nbf !== undefined && (!Number.isFinite(claims.nbf) || claims.nbf > now + 30))) throw invalid()
     if (nonce !== undefined && claims.nonce !== nonce) throw invalid()
     if (identity && (claims.iss !== identity.issuer || claims.sub !== identity.subject)) throw authError('account_identity_mismatch', 'The sign-in belongs to a different saved ChatGPT account.', { state: 'reauth_required' })
     if (claims.at_hash !== undefined) {
-      if (typeof claims.at_hash !== 'string' || !accessToken) throw invalid()
+      if (typeof claims.at_hash !== 'string' || typeof accessToken !== 'string' || !accessToken) throw invalid()
       const expected = Buffer.from(createHash('sha256').update(accessToken).digest().subarray(0, 16).toString('base64url'))
       const actual = Buffer.from(claims.at_hash)
       if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) throw invalid()
@@ -127,12 +150,17 @@ export class OidcClient {
       result = {}
     }
     if (!response.ok) {
+      // An unstructured proxy error is not evidence that an upstream server
+      // rejected, rather than consumed, a rotating refresh token.
+      const explicitRejection = object(result) && ['invalid_grant', 'invalid_client', 'invalid_scope', 'access_denied', 'invalid_request', 'unauthorized_client', 'unsupported_grant_type', 'server_error', 'temporarily_unavailable'].includes(result.error)
+      if (fields.grant_type === 'refresh_token' && !explicitRejection) throw authError('refresh_outcome_unknown', 'The ChatGPT refresh result is unknown. Sign in again before resuming.', { state: 'reauth_required' })
       const code = ['invalid_grant', 'invalid_client', 'invalid_scope', 'access_denied'].includes(result?.error) ? result.error : 'token_exchange_failed'
       const terminal = ['invalid_grant', 'invalid_client', 'invalid_scope', 'access_denied'].includes(code)
       const error = authError(code, terminal ? 'ChatGPT authorization must be renewed.' : 'ChatGPT authorization is temporarily unavailable.', { state: terminal ? 'reauth_required' : 'temporarily_unavailable', retryable: !terminal, status: response.status })
-      error.refreshRejected = true // Explicit non-success response, rather than an unknown transport outcome.
+      error.refreshRejected = explicitRejection
       throw error
     }
+    if (!object(result)) throw authError('invalid_token_response', 'ChatGPT returned an invalid token response.')
     return result
   }
 

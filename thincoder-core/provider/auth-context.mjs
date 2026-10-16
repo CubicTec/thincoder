@@ -42,6 +42,7 @@ export async function recordProviderInference(provider, result) {
 }
 
 export async function resolveProviderAuth(provider, { signal, path, method = "POST", purpose = "main" } = {}) {
+  provider = { ...provider, ...(provider.auth ? { auth: { ...provider.auth } } : {}) }
   assertProviderAuthConfig(provider)
   if (!isChatGptProvider(provider)) {
     const resolved = resolveProviderSecrets(provider)
@@ -62,10 +63,12 @@ export async function resolveProviderAuth(provider, { signal, path, method = "PO
   }
   const service = authServiceOverride ?? (await import("../auth/service.mjs")).getAuthService()
   const context = await service.getAuthContext(provider.auth.credentialRef, { signal })
-  return {
-    url: `${OPENAI_RESOURCE}${path}`,
-    headers: { Authorization: `Bearer ${context.accessToken}` },
-    signal: context.signal, release: () => context.release(),
-    binding: context.profileId, purpose,
-  }
+  try {
+    return {
+      url: `${OPENAI_RESOURCE}${path}`,
+      headers: { Authorization: `Bearer ${context.accessToken}` },
+      signal: context.signal, release: () => context.release(),
+      binding: context.profileId, purpose,
+    }
+  } catch (error) { context.release(); throw error }
 }

@@ -12,3 +12,10 @@ export class AuthError extends Error {
 export const authError = (code, message, options) => new AuthError(code, message, options)
 export const abortError = () => new DOMException('Authentication operation cancelled', 'AbortError')
 export function checkSignal(signal) { if (signal?.aborted) throw abortError() }
+
+/** Native browser, filesystem and connector errors may echo sensitive values. */
+export function safeAuthError(error) {
+  if (error instanceof AuthError) return error
+  if (error?.name === 'AbortError') return abortError()
+  return authError('auth_operation_failed', 'The ChatGPT account operation could not be completed. Check local configuration and credential storage, then try again.')
+}

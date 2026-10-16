@@ -1,5 +1,6 @@
 /** Local client adapter. Config contains references only; OAuth stays in AuthService. */
 import { getAuthService } from "./service.mjs"
+import { authError, abortError, safeAuthError } from "./errors.mjs"
 import { loadRaw, persistRaw, addProviderEntry } from "../config-io.mjs"
 import { getInferenceStatus, clearInferenceStatus } from "../provider/auth-context.mjs"
 
@@ -12,7 +13,7 @@ export function publicAuthStatus(value, inference = null) {
     profileId: text(value?.profileId), label: text(value?.label),
     state: inference?.status === "usage_limited" && inference.sharedPauseSaved !== true ? "usage_limited" : text(value?.state) ?? "signed_out", planAuthorized: value?.planAuthorized === true,
     lastInference: inference && ["completed", "failed", "incomplete"].includes(inference.status)
-      ? { status: inference.status, at: inference.at, model: text(inference.model) } : null,
+      ? { status: inference.status, at: Number.isFinite(inference.at) ? inference.at : null, model: text(inference.model) } : null,
   }
 }
 
@@ -30,16 +31,16 @@ export function createAuthClient({ service = getAuthService(), read = loadRaw, w
   const pending = new Map()
   function entry(name = "openai-chatgpt") {
     const value = (read().providers ?? []).find((p) => p?.name === name)
-    if (!value || value.auth?.type !== "chatgpt_oauth") throw new Error("Add the openai-chatgpt provider first")
+    if (!value || value.auth?.type !== "chatgpt_oauth") throw authError("provider_not_configured", "Add the openai-chatgpt provider first")
     return value
   }
   function patch(name, change) {
     const result = write((raw) => {
       const value = (raw.providers ?? []).find((p) => p?.name === name)
-      if (!value || value.auth?.type !== "chatgpt_oauth") throw new Error("ChatGPT provider no longer exists")
+      if (!value || value.auth?.type !== "chatgpt_oauth") throw authError("provider_not_configured", "ChatGPT provider no longer exists")
       change(value)
     })
-    if (!result?.ok) throw new Error(result?.reason || "Unable to save authentication reference")
+    if (!result?.ok) throw authError("auth_config_save_failed", "Unable to save the ChatGPT account configuration")
   }
   async function status(name = "openai-chatgpt") {
     const value = entry(name)
@@ -55,8 +56,9 @@ export function createAuthClient({ service = getAuthService(), read = loadRaw, w
   }
   async function run({ action, name = "openai-chatgpt", profileId, enabled, newAccount = false, openBrowser, signal } = {}) {
     if (action === "add") {
+      if (name !== "openai-chatgpt") throw authError("invalid_auth_action", "The ChatGPT preset must be added as openai-chatgpt")
       const error = add({ preset: "openai-chatgpt" })
-      if (error) throw new Error(error)
+      if (error) throw authError("provider_add_failed", "Unable to add the ChatGPT provider. Check local configuration and try again.")
       return status(name)
     }
     const value = entry(name)
@@ -64,10 +66,10 @@ export function createAuthClient({ service = getAuthService(), read = loadRaw, w
     if (action === "list") return { profiles: await list(), ...await status(name) }
     if (action === "cancel") { pending.get(name)?.cancel(); return status(name) }
     if (action === "enable") {
-      if (typeof enabled !== "boolean") throw new Error("enabled must be a boolean")
+      if (typeof enabled !== "boolean") throw authError("invalid_auth_action", "enabled must be a boolean")
       if (!enabled) pending.get(name)?.cancel()
-      if (enabled && value.auth.credentialRef) { await service.resumeProfile(value.auth.credentialRef); clearInference(value.auth.credentialRef) }
       patch(name, (p) => { p.auth.enabled = enabled })
+      if (enabled && value.auth.credentialRef) { await service.resumeProfile(value.auth.credentialRef); clearInference(value.auth.credentialRef) }
       if (!enabled && value.auth.credentialRef) await service.pauseProfile(value.auth.credentialRef)
       return status(name)
     }
@@ -77,18 +79,18 @@ export function createAuthClient({ service = getAuthService(), read = loadRaw, w
       if (value.auth.credentialRef) clearInference(value.auth.credentialRef)
       return { ...await status(name), localSignedOut: result.localSignedOut === true, remoteRevoked: result.remoteRevoked === true }
     }
-    if (value.auth.enabled !== true) throw new Error("Enable experimental ChatGPT plan access before signing in or selecting an account")
+    if (value.auth.enabled !== true) throw authError("profile_paused", "Enable experimental ChatGPT plan access before signing in or selecting an account")
     if (action === "select") {
-      if (typeof profileId !== "string" || !(await list()).some((p) => p.profileId === profileId)) throw new Error("Unknown ChatGPT account")
+      if (typeof profileId !== "string" || !(await list()).some((p) => p.profileId === profileId)) throw authError("profile_not_found", "Unknown ChatGPT account")
       pending.get(name)?.cancel()
       await service.switchProfile(profileId)
       clearInference(profileId)
       patch(name, (p) => { p.auth.credentialRef = profileId; delete p.apiKey })
       return status(name)
     }
-    if (action !== "login") throw new Error("Unknown authentication action")
-    if (pending.has(name)) throw new Error("Sign-in is already in progress; cancel it before trying again")
-    if (typeof openBrowser !== "function") throw new Error("A system browser is required for sign-in")
+    if (action !== "login") throw authError("invalid_auth_action", "Unknown authentication action")
+    if (pending.has(name)) throw authError("login_in_progress", "Sign-in is already in progress; cancel it before trying again")
+    if (typeof openBrowser !== "function") throw authError("browser_required", "A system browser is required for sign-in")
     // Claim before async beginLogin so rapid duplicate clicks cannot start two listeners.
     const held = { cancel: () => controller.abort() }
     const controller = new AbortController()
@@ -96,25 +98,41 @@ export function createAuthClient({ service = getAuthService(), read = loadRaw, w
     if (signal?.aborted) controller.abort()
     signal?.addEventListener("abort", abort, { once: true })
     pending.set(name, held)
+    let login
     try {
-      const login = await service.beginLogin({ profileId: newAccount ? undefined : value.auth.credentialRef, newAccount, openBrowser, signal: controller.signal })
+      login = await service.beginLogin({ profileId: newAccount ? undefined : value.auth.credentialRef, newAccount, openBrowser, signal: controller.signal })
       held.cancel = () => { controller.abort(); login.cancel() }
       const result = await login.completion
-      if (controller.signal.aborted) throw new Error("Sign-in cancelled")
-      if (!result?.profileId) throw new Error("Sign-in returned no account reference")
+      if (controller.signal.aborted && login.committed !== true) throw abortError()
+      if (!result?.profileId) throw authError("invalid_login_result", "Sign-in returned no account reference")
       clearInference(result.profileId)
-      patch(name, (p) => {
-        if (p.auth.enabled !== true) throw new Error("Experimental access was disabled during sign-in")
-        p.auth.credentialRef = result.profileId
-        delete p.apiKey
-      })
+      try {
+        patch(name, (p) => {
+          if (p.auth.enabled !== true) throw authError("profile_paused", "Experimental access was disabled during sign-in")
+          p.auth.credentialRef = result.profileId
+          delete p.apiKey
+        })
+      } catch (error) {
+        if (error?.code === "profile_paused") throw error
+        throw authError("auth_config_save_failed", "ChatGPT sign-in succeeded, but its account reference could not be saved. Fix local configuration, then select the saved account.")
+      }
+    } catch (error) {
+      if (controller.signal.aborted && login?.committed !== true) throw abortError()
+      throw error
     } finally {
       if (pending.get(name) === held) pending.delete(name)
       signal?.removeEventListener("abort", abort)
     }
     return status(name)
   }
-  return { status, list, run }
+  const boundary = operation => async (...args) => {
+    try { return await operation(...args) } catch (error) { throw safeAuthError(error) }
+  }
+  return { status: boundary(status), list: boundary(list), run: boundary(run) }
 }
-let singleton
-export function getAuthClient() { return singleton ??= createAuthClient() }
+let singleton, singletonService
+export function getAuthClient() {
+  const service = getAuthService()
+  if (singletonService !== service) { singletonService = service; singleton = createAuthClient({ service }) }
+  return singleton
+}

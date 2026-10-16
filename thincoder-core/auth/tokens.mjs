@@ -1,9 +1,26 @@
 import { randomUUID } from 'node:crypto'
 import { authError } from './errors.mjs'
 
+const bearer = value => typeof value === 'string' && value.length > 0 && value.length <= 65536 && /^[A-Za-z0-9\-._~+/]+=*$/.test(value)
+const opaque = value => typeof value === 'string' && value.length > 0 && value.length <= 65536 && !/[\s\x00-\x1f\x7f]/.test(value)
+const scope = value => typeof value === 'string' && /^[\x21\x23-\x5b\x5d-\x7e]+$/.test(value)
+
+/** Saved JSON is untrusted input too; corrupted metadata must fail closed. */
+export function assertTokenSet(value) {
+  if (!value || !bearer(value.accessToken) || value.tokenType !== 'Bearer' ||
+      !Number.isSafeInteger(value.expiresAt) || value.expiresAt <= 0 ||
+      !Array.isArray(value.scopes) || value.scopes.some(item => !scope(item)) ||
+      (value.refreshToken != null && !opaque(value.refreshToken)) ||
+      (value.idToken != null && (typeof value.idToken !== 'string' || !value.idToken || value.idToken.length > 65536)) ||
+      (value.earliestRefreshAt != null && (!Number.isSafeInteger(value.earliestRefreshAt) || value.earliestRefreshAt < 0)) ||
+      (value.refreshContractUnknown !== undefined && typeof value.refreshContractUnknown !== 'boolean')) {
+    throw authError('credential_storage_invalid', 'The saved ChatGPT session is invalid. Sign in again.', { state: 'reauth_required' })
+  }
+}
+
 /** Preserve earliest_refresh_at exactly. Never infer seconds vs milliseconds by magnitude. */
 export function tokenSet(response, { now = Date.now(), previous } = {}) {
-  if (!response || typeof response !== 'object' || typeof response.access_token !== 'string' || !response.access_token || /[\s\x00-\x1f\x7f]/.test(response.access_token) || response.access_token.length > 65536 || typeof response.token_type !== 'string' || response.token_type.toLowerCase() !== 'bearer' || !Number.isSafeInteger(response.expires_in) || response.expires_in <= 0 || !Number.isSafeInteger(now + response.expires_in * 1000) || typeof response.scope !== 'string') {
+  if (!response || typeof response !== 'object' || !bearer(response.access_token) || typeof response.token_type !== 'string' || response.token_type.toLowerCase() !== 'bearer' || !Number.isSafeInteger(response.expires_in) || response.expires_in <= 0 || !Number.isSafeInteger(now + response.expires_in * 1000) || typeof response.scope !== 'string' || response.scope.length > 65536 || response.scope.split(' ').filter(Boolean).some(item => !scope(item))) {
     throw authError('invalid_token_response', 'ChatGPT returned an invalid token response.')
   }
   if (response.refresh_token !== undefined && (typeof response.refresh_token !== 'string' || !response.refresh_token || /[\s\x00-\x1f\x7f]/.test(response.refresh_token) || response.refresh_token.length > 65536)) throw authError('invalid_token_response', 'ChatGPT returned an invalid refresh token.')

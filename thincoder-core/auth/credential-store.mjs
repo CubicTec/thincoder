@@ -104,14 +104,25 @@ export class CredentialStore {
   }
   readCredential(profileId) { return this.read(`credentials/${profileId}.json`) }
   writeCredential(profileId, value) { return this.write(`credentials/${profileId}.json`, value) }
-  readProfiles() { return this.read('profiles.json', { version: 1, activeProfileId: null, activation: 0, profiles: [] }) }
+  async readProfiles() {
+    const value = await this.read('profiles.json', { version: 1, activeProfileId: null, activation: 0, profiles: [] })
+    if (!value || value.version !== 1 || !Array.isArray(value.profiles) ||
+        (value.activation !== undefined && (!Number.isSafeInteger(value.activation) || value.activation < 0)) ||
+        value.profiles.some(profile => !profile || typeof profile.profileId !== 'string' || !validName.test(profile.profileId)) ||
+        new Set(value.profiles.map(profile => profile.profileId)).size !== value.profiles.length ||
+        (value.activeProfileId !== null && !value.profiles.some(profile => profile.profileId === value.activeProfileId))) {
+      throw authError('credential_storage_invalid', 'The saved ChatGPT account directory is invalid. Restore it before changing accounts.')
+    }
+    return value
+  }
 
   async getHost() {
     await this.init()
     return this.withLock('host', async () => {
-      const saved = await this.read('host.json')
-      if (saved) {
-        if (!/^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(saved.hostId)) throw denied()
+      const missing = Symbol('missing host record')
+      const saved = await this.read('host.json', missing)
+      if (saved !== missing) {
+        if (!saved || saved.version !== 1 || typeof saved.hostId !== 'string' || !/^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(saved.hostId)) throw denied()
         return saved
       }
       const host = { version: 1, hostId: `urn:uuid:${randomUUID()}` }

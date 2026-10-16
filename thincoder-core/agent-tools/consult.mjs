@@ -23,7 +23,7 @@
  * 同族收齐批 · #748; a cancelled session's children emit ⟦ev⟧stopped — R17: the old
  * in-turn check consumption is gone; consumed blocks archive at the consumption window).
  */
-import { createAgent, runAgent, readonlyToolNames, excludeSubagentTools } from "../agent.mjs"
+import { createAgent, runAgent, inheritableTools, readonlyToolNames, excludeSubagentTools } from "../agent.mjs"
 import { resolveChildProvider } from "./subagent.mjs"
 import { pushReal } from "../context.mjs"
 import { offloadToolResult, escapeXml } from "../agent/helpers.mjs"
@@ -273,9 +273,10 @@ async function runConsultChild(ctx, session, id, m, problem, ctrl) {
     clampEffort(provider, m.model, m.effort)
 
     // Read-only consultant: filter the parent tool set down to readonly tools + main_history.
-    const allowed = readonlyToolNames(agent.tools ?? [])
+    const inherited = inheritableTools(agent)
+    const allowed = readonlyToolNames(inherited)
     const tools = [
-      ...excludeSubagentTools((agent.tools ?? []).filter((t) => allowed.has(t.name))), // TOOLS.md §6.16：继承面过谓词
+      ...excludeSubagentTools(inherited.filter((t) => allowed.has(t.name))),
       makeMainHistoryTool(agent),
     ]
 

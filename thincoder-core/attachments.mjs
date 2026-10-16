@@ -26,7 +26,7 @@
  *     缺省实现 = 核 `vision-reader.mjs` `runVisionReader`（桌面径直取）；VSC 经宿主包装注入）。
  */
 import { join } from "node:path"
-import { specForModel } from "./model-specs.mjs"
+import { providerSpec } from "./model-specs.mjs"
 
 /** 单项上限 15MB（与 `read_image` 内闸同值同单位 —— `tools/file.mjs:26` `MAX_IMAGE_BYTES = 15_000_000`：
  *  超阈件交核也读不进 ⇒ 接纳面不得宽于该闸）。 */
@@ -51,7 +51,7 @@ export function parseDataUrl(value) {
 /** 非多模态判据（单源 = 规格表 `multimodal` 位）：显式 `true` 之外一切（未声明 ∕ 未知模型 ∕ 模型缺省）
  *  ⇒ `true`。降级判决与本档外「档位处置」（端侧各留其处置面）共用本判据。 */
 export function isNonVisionModel(model) {
-  return specForModel(model).multimodal !== true
+  return providerSpec(typeof model === "object" && model !== null ? model : { model }).multimodal !== true
 }
 
 /**

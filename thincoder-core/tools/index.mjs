@@ -57,19 +57,20 @@ export {
 // ——让出 `context` 名给核新工具（`agent-tools/context.mjs`；同名撞车 ⇒ provider 逐字 400）。
 //
 // `read_image` registration follows VS Code (#70): it is registered only when the
-// model accepts image input (`specForModel(model).multimodal`) — the conservative
+// model accepts image input (`providerSpec(provider).multimodal`) — the conservative
 // default spec carries no `multimodal`, so an unknown or absent model does NOT get
 // it. The runtime gate in `tools/file.mjs` stays as a second line of defence.
-export async function assembleBuiltinTools({ memory, cwd, projectDir = null, author = "unknown", team = null, model = null } = {}) {
-  const { specForModel } = await import("../model-specs.mjs");
+// 装配方可先取候选交宿主过滤；最终注册由 agent/model-info.mjs 按当前账户规格同步。
+export async function assembleBuiltinTools({ memory, cwd, projectDir = null, author = "unknown", team = null, model = null, provider = null, includeUnavailable = false } = {}) {
+  const { providerSpec } = await import("../model-specs.mjs");
   const { memoryTools, codeSearchTool, docSearchTool } = await import("../memory.mjs");
   const { repoOutlineTool } = await import("./repomap.mjs");
   const { settingsTool } = await import("../agent-tools/settings.mjs");
   const { peerInstancesTool } = await import("../peer-instances.mjs");
-  const imageOk = Boolean(specForModel(model)?.multimodal);
+  const imageOk = Boolean(providerSpec(provider ?? { model })?.multimodal);
   return [
     ...builtinTools,
-    ...(imageOk ? [readImageTool] : []),
+    ...(imageOk || includeUnavailable ? [readImageTool] : []),
     ...memoryTools(memory, { cwd, projectDir, author, team }),
     codeSearchTool(memory),
     docSearchTool(memory),

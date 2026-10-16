@@ -2,17 +2,20 @@
  *  Interactive loop UX — stays in menu after each action, Esc to exit.
  *  ctx: { agent, showPicker, syncProviderField, pushLine, pushLabel } */
 import { ansi, C } from "./ansi.mjs"
+import { providerSpec } from "@thincoder/core/config.mjs"
+import { refreshAgentModelInfo } from "@thincoder/core/agent/model-info.mjs"
 // off 形族单源（`docs/core/design/MODEL-SPECS.md` §16.2 / §16.4）——取形与「有效 off 路径」判据
 // 一律自本档取，本档零副本（叶档：零 import 纯函数）。
 import { thinkOffShape, thinkOffPath } from "@thincoder/core/think-off.mjs"
 
 export async function handleThinkCommand(ctx, args = []) {
   const { agent, showPicker, syncProviderField, pushLine, pushLabel } = ctx
-  const { specForModel } = await import("@thincoder/core/config.mjs")
+  try { await refreshAgentModelInfo(agent) }
+  catch (error) { pushLine(`[model] Model information unavailable: ${error.message}`, C.error); return }
 
   // Fast path: direct args — exit immediately
   const cur = agent.provider
-  const spec = specForModel(cur.model)
+  const spec = providerSpec(cur)
   const isEffortOnly = spec.thinkApi === "effort"
   const thinkOnValue = spec.thinkEnabledValue ?? "enabled"
   const isCustomThink = thinkOnValue !== "enabled"
@@ -63,9 +66,11 @@ export async function handleThinkCommand(ctx, args = []) {
     const autoOn = agent.config?.agent?.autoThink === true
     // 头 / 回执同式（`thinkingOn` 单口径）——状态与回执不得各自成式。
     const thinkingEnabled = thinkingOn()
+    const defaultEffort = thinkingEnabled ? spec.defaultReasoningEffort : null
+    const shownEffort = cur.reasoningEffort || (defaultEffort ? `${defaultEffort} (model default)` : "—")
 
     const entries = [
-      { type: "header", text: `Auto: ${autoOn ? "ON" : "OFF"} | Thinking: ${thinkingEnabled ? "ON" : "OFF"} | Effort: ${cur.reasoningEffort || "—"}` },
+      { type: "header", text: `Auto: ${autoOn ? "ON" : "OFF"} | Thinking: ${thinkingEnabled ? "ON" : "OFF"} | Effort: ${shownEffort}` },
       { type: "item", text: `Auto: ${autoOn ? "ON" : "OFF"}`, action: "auto" },
     ]
     // Thinking 开关项：非 effort 族 ∧ 有有效 off 路径才渲染（§16.4——无有效 off 路径族不提供该动作，

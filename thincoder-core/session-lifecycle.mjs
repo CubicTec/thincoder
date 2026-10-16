@@ -42,10 +42,11 @@ import { scheduleSessionGC } from "./session-gc.mjs"
 import { restoreEngTokens } from "./token-ttl.mjs"
 import { clearPlanMode } from "./agent-tools/plan.mjs"
 import { bindRecordStore, unbindRecordStore, RECORD_WINDOW_MESSAGES } from "./session-store.mjs"
-// 会话级档位（§6.21 判据句 4）判据单源：off 形族（`think-off.mjs`）+ 逐模型枚举
-// （`model-specs.mjs`）——两叶档（零 import）⇒ 不新增环，核内零第二份族别表。
-import { specForModel } from "./model-specs.mjs"
+// 会话级档位（§6.21 判据句 4）复用 off 形族与当前 provider 规格，不另设族别表。
+import { providerSpec } from "./model-specs.mjs"
 import { thinkOffShape, thinkOffPath } from "./think-off.mjs"
+import { isChatGptProvider } from "./provider/auth-config.mjs"
+import { hasFreshModelCatalog } from "./provider/model-info.mjs"
 
 /** 恢复决策包装（SESSION.md §6.12 启动钩子，2026-09-06）：本端恢复入口触发一次残留 GC——
  *  scheduleSessionGC 内部**启动窗外延迟拍**（`GC_PASS_DELAY_MS` = 3s）+ 每进程每前缀去重，
@@ -73,6 +74,36 @@ function stripTruncatedToolArgs(m) {
   return changed ? { ...m, tool_calls } : m
 }
 
+/** 会话档位施加单源：目录就绪后校验；有效非 none 档清除低优先级配置留下的 off 标记。 */
+function applySessionEffort(provider, effort) {
+  const spec = providerSpec(provider)
+  if (effort === "off") {
+    if (thinkOffPath(spec)) {
+      const shape = thinkOffShape(spec)
+      provider.thinking = shape
+      if (shape === null) provider.reasoningEffort = "none"
+    }
+  } else if (spec.reasoningEffortEnum?.includes(effort)) {
+    provider.reasoningEffort = effort
+    if (effort !== "none" && (provider.thinking === null || provider.thinking?.type === "disabled")) delete provider.thinking
+  }
+}
+
+const effortBinding = (provider) => JSON.stringify([
+  provider?.name, provider?.model, provider?.baseURL, provider?.auth,
+  provider?.thinking, provider?.reasoningEffort,
+])
+
+/** 成功装载后只消费一次；换会话、模型、账号或用户新改档都不能被旧恢复操作覆盖。 */
+export function applyPendingSessionEffort(agent) {
+  const pending = agent._pendingSessionEffort
+  if (!pending) return
+  delete agent._pendingSessionEffort
+  if (agent.provider === pending.provider && effortBinding(agent.provider) === pending.binding) {
+    applySessionEffort(agent.provider, pending.effort)
+  }
+}
+
 /** Apply loaded session data onto an agent object; returns true if the runtime composite
  *  was switched. 2026-08-31 会诊 F1：清空 _slot/_slotMtime 缓存——切换后下次保存重新认领。
  *
@@ -87,6 +118,7 @@ function stripTruncatedToolArgs(m) {
  *  删旧支："activeModel==null 清 stale override 回渠道默认"——前提 = 渠道默认字段——已随
  *  三旧层删除消失——双字段恒非空故不可能触发（评审 #7）。 */
 export function applySession(agent, data, opts = {}) {
+  delete agent._pendingSessionEffort
   // 机读线语义（历史注释保留）：data.history = FULL 未压缩记录（人读线）；data.contextHistory =
   // 压缩后机器线——恢复各从其源（保留压缩收益——从完整 history 重建会塞回中间过程——实测
   // prompt 膨胀 283%）。v1 老文件（无 contextHistory）回退播种，剥离被 slimForDisplay 截断的
@@ -198,17 +230,9 @@ export function applySession(agent, data, opts = {}) {
     // ⇒ 另置 `reasoningEffort: "none"`——§16.4 载荷门，单源 = `think-off.mjs`）；枚举字面 ⇒ 直置；
     // `null` / 缺键 / 表外串 ⇒ 不动（边界表第 1–3 行：老槽零行为变更，表外不静默改写）。
     if (data.effort != null) {
-      // 非串 model（外端脏载 / 手工档）按未登记归一——本块不因类型脏载抛（同 `resolveEffortPatch` 口径）
-      const spec = specForModel(typeof agent.provider.model === "string" ? agent.provider.model : "")
-      if (data.effort === "off") {
-        if (thinkOffPath(spec)) {
-          const shape = thinkOffShape(spec)
-          agent.provider.thinking = shape
-          if (shape === null) agent.provider.reasoningEffort = "none"
-        }
-      } else if (spec?.reasoningEffortEnum?.includes(data.effort)) {
-        agent.provider.reasoningEffort = data.effort
-      }
+      if (isChatGptProvider(agent.provider) && !hasFreshModelCatalog(agent.provider)) {
+        agent._pendingSessionEffort = { provider: agent.provider, binding: effortBinding(agent.provider), effort: data.effort }
+      } else applySessionEffort(agent.provider, data.effort)
     }
     return switched
   }
@@ -298,6 +322,7 @@ export async function newSession(cwd, opts = {}) {
  *  旧标题写进新槽（实锤 .19/.3 双副本）；注入标志不清则 /new 后新会话永不注入
  *  OS/cwd reminder（2026-09-01 会诊 glm 🟡）。autoApprove 是用户偏好，跨会话保留（有意）。 */
 export function resetSessionState(agent) {
+  delete agent._pendingSessionEffort
   resetResponsesSession(agent)
   agent._fullHistory = []
   agent.history = []

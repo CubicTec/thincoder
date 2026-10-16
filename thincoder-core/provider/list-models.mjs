@@ -15,6 +15,7 @@
  */
 import { resolveProviderAuth, recordProviderInference } from "./auth-context.mjs"
 import { assertProviderAuthConfig, isChatGptProvider } from "./auth-config.mjs"
+import { parseModelInfo, recordModelCatalog, hasFreshModelCatalog } from "./model-info.mjs"
 import { responsesError } from "./errors.mjs"
 import { proxyFetch } from "../proxy.mjs"
 import { resolveProviderSecrets } from "../env-ref.mjs"
@@ -116,7 +117,7 @@ export async function listLegacyModels(provider, { signal } = {}) {
   return ids.filter((id) => typeof id === "string" && id).sort()
 }
 
-/** Rich account-specific catalog. No cache: switching profiles cannot reuse another account's results. */
+/** Rich account-specific catalog. Explicit listing always fetches a new account snapshot. */
 export async function listModelCatalog(provider, { signal } = {}) {
   // Settings may change while the catalog is in flight. Quota attribution and
   // parsing must use the same account and protocol that sent the request.
@@ -130,13 +131,22 @@ export async function listModelCatalog(provider, { signal } = {}) {
     if (data.models.some((m) => !m || typeof m.slug !== "string" || !m.slug || typeof m.display_name !== "string" || typeof m.visibility !== "string")) {
       throw new Error("ChatGPT model catalog contains an invalid model record")
     }
-    return data.models.filter((m) => m.visibility === "list").map((m) => ({
-      id: m.slug, slug: m.slug, displayName: m.display_name, visibility: m.visibility,
-    }))
+    const catalog = data.models.filter((m) => m.visibility === "list").map((m) => {
+      const spec = parseModelInfo(m)
+      return { id: m.slug, slug: m.slug, displayName: m.display_name, visibility: m.visibility, ...(spec ? { spec } : {}) }
+    })
+    recordModelCatalog(provider, catalog)
+    return catalog
   } catch (error) {
     if (error.code === "subscription_sharing_usage_limit_exceeded") await recordProviderInference(provider, error)
     throw error
   } finally { auth.release() }
+}
+
+/** 运行前按账户装载规格；失败不缓存，不据目录成员限制用户显式选择的模型。 */
+export async function ensureProviderModelInfo(provider, { signal, fresh = false } = {}) {
+  if (!isChatGptProvider(provider) || (!fresh && hasFreshModelCatalog(provider))) return
+  await listModelCatalog(provider, { signal })
 }
 
 /** Compatibility facade: SIWC preserves server order; existing providers retain sorted IDs. */

@@ -17,7 +17,7 @@
 import { chat } from "./provider/core.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
 import { isChatGptProvider } from "./provider/auth-config.mjs"
-import { specForModel } from "./config.mjs"
+import { providerSpec } from "./config.mjs"
 // #860（AGENT-LOOP.md §6.1 ∥ §7 D-AL26）：off 形族的单一实现源（写面取形 + 有效 off 路径判据）
 import { thinkOffPath, thinkOffShape } from "./think-off.mjs"
 
@@ -71,7 +71,7 @@ export async function classifyAndApply(agent, turn) {
   if (!agent.config?.agent?.autoThink) return null
   if (turn !== 0) return null // Only classify on the first turn of user input
 
-  const spec = specForModel(agent.provider.model)
+  const spec = providerSpec(agent.provider)
   const validEfforts = spec.reasoningEffortEnum
   if (!validEfforts) return null // Model doesn't support reasoning effort
 

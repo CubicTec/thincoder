@@ -268,5 +268,10 @@
 
 ## ChatGPT 账户入口（实验性，2026-10-15）
 
+2026-10-16：启动、`/model`、`/session`、`/think` 使用核账户规格装载面。
+模型回执显示准确 token 数及窗口来源；输出值称为预留。`/think` 只列当前账号支持的 wire 档位，
+未显式设置时显示目录默认档。启动装载错误留在 TUI 可见区域，随后仍可进入登录或设置。
+机制单源见 [MODEL-SPECS §19](../../core/design/MODEL-SPECS.md#191-规格合并与生命周期)。
+
 账户登录、取消、切换、退出及显式启用复用 [核心认证 adapter](../../core/design/OPENAI-CHATGPT.md)；只向展示层提供白名单元数据。
 命令为 `thincoder auth` 与 `/auth`；添加 provider 后先 enable，再 login；status 不触发推理。

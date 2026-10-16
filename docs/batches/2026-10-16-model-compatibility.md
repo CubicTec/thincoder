@@ -1,5 +1,8 @@
 # Three-model ChatGPT compatibility — 2026-10-16
 
+> 后续状态：下文保留首轮兼容测试的实测记录。保守容量策略已由
+> [账户规格自动配置](2026-10-16-account-model-info.md) 取代；当前实现按账号目录自动读取窗口和能力。
+
 Scope: local CLI on macOS arm64, Node 24.18.0, using the user's authorized
 ThinCoder ChatGPT account. This follows the [local acceptance batch](2026-10-16-local-acceptance.md).
 The reported unknown-spec warning was reproduced for `gpt-6-astra`.

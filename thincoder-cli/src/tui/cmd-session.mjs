@@ -1,3 +1,5 @@
+import { refreshAgentModelInfo } from "@thincoder/core/agent/model-info.mjs"
+import { resolveCompactThreshold } from "@thincoder/core/config.mjs"
 import { listSlots, switchToSlot, applySession, renameSlot, activeSlot, slotOccupancy, readEndMarker, sessionDescriptor, loadSlotFile, ledgerHealth } from "@thincoder/core/session.mjs"
 import { resolveEngineeringManifest } from "@thincoder/core/manifest.mjs"
 import { ansi, C } from "./ansi.mjs"
@@ -119,6 +121,17 @@ export async function handleSessionCommand(ctx) {
     pushLine(`⚠ Slot ${e.slot} is being used by another live process (${occ.owner}) — continuing here will create a new copy on the next save`, C.warn)
   }
   applySession(agent, data, occ.occupied ? {} : { slot: e.slot })
+  const sessionProvider = agent.provider
+  const sessionHistory = agent.history
+  let modelInfoWarning
+  try { await refreshAgentModelInfo(agent) }
+  catch (error) { modelInfoWarning = `[model] Model information unavailable: ${error.message}` }
+  // Another /session or /new can run while the catalog is loading. Its view and
+  // manifest belong to the new session even when the older request fails.
+  if (agent.provider !== sessionProvider || agent.history !== sessionHistory) return
+  if (!modelInfoWarning && agent.config?.agent?.compactThresholdAuto) {
+    agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+  }
   // #41 准翻列：附着动作 = 翻转面自己赋值（`agent.manifest` ← 判据结果——相位行当回合起活）。
   if (manifestAfterSwitch) agent.manifest = manifestAfterSwitch
   // Rebuild from history (lazy) — the display snapshot is deprecated.
@@ -133,5 +146,6 @@ export async function handleSessionCommand(ctx) {
     state.tasks = []
   }
   pushLabel(`── Switched to slot ${e.slot} (${desc.total} messages) ──`, C.warn)
+  if (modelInfoWarning) pushLine(modelInfoWarning, C.warn)
   render()
 }

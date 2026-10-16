@@ -13,7 +13,7 @@
 
 import { basename, isAbsolute, relative } from "node:path"
 import {
-  createAgent,
+  createAgent, inheritableTools,
   readonlyToolNames, escapeXml, excludeSubagentTools,
 } from "../agent.mjs"
 import { allocRelay, wrapChildCallbacks, relayPrefixOf } from "../agent/spawn-child.mjs"
@@ -251,12 +251,13 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   }
 
   // Filter tool set by role: explore/plan are read-only (plan is a planning agent, its deliverable is the plan itself)
+  const inherited = inheritableTools(parent)
   let tools
   if (role === "explore" || role === "plan") {
-    const allowed = readonlyToolNames(parent.tools)
-    tools = parent.tools.filter((t) => allowed.has(t.name))
+    const allowed = readonlyToolNames(inherited)
+    tools = inherited.filter((t) => allowed.has(t.name))
   } else {
-    tools = parent.tools
+    tools = inherited
   }
   // Then the depth>0 exclusion (TOOLS.md §6.16): role selection above, exclusion LAST — both
   // branches converge here (`question` = interactive main-session tool; a child has no user to ask).

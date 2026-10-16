@@ -24,7 +24,7 @@
  *  - Mutations feed _touchedFiles and fire-and-forget memory reindex.
  */
 import { pushReal } from "../context.mjs"
-import { specForModel } from "../config.mjs"
+import { providerSpec } from "../config.mjs"
 import { FILE_MUTATORS, toolTouchPaths } from "./helpers.mjs"
 import { capHistoryImages } from "../provider/normalize.mjs"
 import { resolve } from "node:path"
@@ -51,7 +51,7 @@ export async function recordToolResults(agent, toolByName, results) {
         if (parsed.images?.length) {
           // tool message first — closes the tool_call pairing (OpenAI API requires tool result immediately after assistant with tool_calls)
           pushReal(agent, { role: "tool", tool_call_id: toolCall.id, name: toolCall.name, content: parsed.text })
-          if (specForModel(agent.provider.model).multimodal) {
+          if (providerSpec(agent.provider).multimodal) {
             // then inject multimodal user message with base64 images for the model to actually "see" them on the next turn
             deferredUserMsgs.push({
               real: true,

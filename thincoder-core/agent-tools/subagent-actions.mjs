@@ -14,7 +14,7 @@
  * 执行器与 panel re-export，并 re-export 上述两执行器保 subagent.mjs 既有 import 面。
  */
 import { isAbsolute, relative } from "node:path"
-import { runAgent, createAgent, DEFAULT_SUBAGENT_TURNS, excludeSubagentTools } from "../agent.mjs"
+import { runAgent, createAgent, inheritableTools, DEFAULT_SUBAGENT_TURNS, excludeSubagentTools } from "../agent.mjs"
 import {
   runWithContinue, TURN_CAP_MARK, makeRelay, wrapChildCallbacks,
   ensureChildApiKey, clampEffort,
@@ -164,7 +164,7 @@ export async function executeEscalateAction(args, ctx) {
     // G3（施工②）：overlay 摘除——coder 人格槽由 assemblePrompt 场景表承载（G3 映射）。
     child = createAgent({
       provider,
-      tools: excludeSubagentTools(parent.tools), // TOOLS.md §6.16：子代面按面排除（行内改——本档 Δ±0）
+      tools: excludeSubagentTools(inheritableTools(parent)),
       config: parent.config,
       cwd: parent.cwd,
       memory: parent.memory,

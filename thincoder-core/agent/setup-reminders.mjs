@@ -31,7 +31,7 @@ import { statSync } from "node:fs"
 import { resolve } from "node:path"
 import { sessionEnd } from "../session-slots.mjs"
 import { peerInstances } from "../peer-instances.mjs"
-import { specForModel } from "../config.mjs"
+import { providerSpec } from "../config.mjs"
 import { manifestFilePath, readManifest, projectView } from "../manifest.mjs"
 
 /** env-state line builder — 对入参 + 进程端名确定（§6.20 端名缝 sessionEnd()；setSessionEnd 注入 ⇒ 单元测试可用）。
@@ -247,7 +247,7 @@ export function pushInjections(history, injections) {
  */
 export function appendImagePointer(userMsg, images, providerModel, { depth } = {}) {
   if (depth !== 0 || !userMsg || !Array.isArray(images) || images.length === 0) return
-  const spec = specForModel(providerModel)
+  const spec = providerSpec(typeof providerModel === "object" && providerModel !== null ? providerModel : { model: providerModel })
   if (!spec.multimodal) {
     throw new Error("This model does not support pasted images. Switch to a vision-capable model (Kimi K3, Qwen, GLM, etc.) or attach the image as a file and let the model read it.")
   }

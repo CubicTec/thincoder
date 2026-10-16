@@ -3,7 +3,7 @@
  * Sliding-window accounting; pre-check budget before sending requests; sleep until window frees space when over budget.
  */
 import { abortError } from "../abort-provenance.mjs"
-import { specForModel } from "../model-specs.mjs"
+import { providerSpec } from "../model-specs.mjs"
 
 export const RETRYABLE_STATUS = new Set([408, 409, 425, 429, 500, 502, 503, 504])
 export const MAX_RETRIES = 3
@@ -88,7 +88,7 @@ export async function rateGate(provider, estimated, onWait, signal) {
   // §2.5 #114 并入（默认限流口径取 VSC 的 spec 回退）：provider 未显式配置 tpm/rpm 时
   // 回退到模型规格表的限流字段（当前表内无 tpm/rpm 字段 ⇒ 回退为未配置，行为不变；
   // 表后续补字段时自动生效）。
-  const spec = specForModel(provider.model)
+  const spec = providerSpec(provider)
   const configuredTpm = provider.tpm ?? spec?.tpm ?? null
   const configuredRpm = provider.rpm ?? spec?.rpm ?? null
   // 2026-08-31 会诊 #16：单请求估算已超 tpm 时原实现静默放行（必然撞服务端 429）。

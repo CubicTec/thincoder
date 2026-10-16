@@ -18,6 +18,8 @@ import { createMemory, syncDir } from "../memory.mjs"
 import { discoverRules, mergeFileRules } from "../rules.mjs"
 import { assembleBuiltinTools } from "../tools/index.mjs"
 import { isChatGptProvider, hasProviderCredentials } from "../provider/auth-config.mjs"
+import { ensureProviderModelInfo } from "../provider/list-models.mjs"
+import { syncModelTools } from "./model-info.mjs"
 
 /** 装配缺省面（逐项可注入 —— 断言装配调用序用假 deps；缺省 = 本档单源）。 */
 export const DEFAULT_DEPS = Object.freeze({
@@ -75,6 +77,12 @@ export async function assembleAgent({ cwd, deps = {}, toolsFinalize = null }) {
   injectProxy(providers, config)
   if (provider?.name) provider.proxyUri = providers.find((p) => p.name === provider.name)?.proxyUri
 
+  // 启动即用账户目录；目录失败保留设置/登录入口，实际运行前再次检查并报告错误。
+  if (isChatGptProvider(provider) && hasProviderCredentials(provider)) {
+    try { await ensureProviderModelInfo(provider) }
+    catch (error) { console.warn(`[model] Could not load account model information: ${error.message}`) }
+  }
+
   const memory = D.createMemory({ dbPath: config.memory.dbPath })
   // Vector retrieval: enabled if embedding is configured (lazy vector generation, computed on first search)
   if (config.embedding?.apiKey) {
@@ -100,14 +108,16 @@ export async function assembleAgent({ cwd, deps = {}, toolsFinalize = null }) {
   }
   // #70（CORE-UNIFICATION TOOLS）：注册表与消费侧拼装面归位核内——单源 `assembleBuiltinTools`
   // （静态表 ∪ memory / code_search / doc_search / repo_outline / settings / peer_instances 六面 ∪
-  // 门控 read_image）。传 `model` 必需：漏传 ⇒ `read_image` 对所有模型静默消失
-  // （门判据 = specForModel(model)?.multimodal）。
+  // 门控 read_image）。先将候选交宿主过滤，再按 providerSpec 同步当前模型能力；
+  // 保留通过过滤的候选，切换到视觉模型时可重新启用，不绕过宿主排除规则。
   const baseTools = await D.assembleBuiltinTools({
     memory, cwd, projectDir: config.memory.projectDir, author: D.author(), team,
-    model: provider?.model ?? null,
+    model: provider?.model ?? null, provider, includeUnavailable: true,
   })
   const tools = toolsFinalize ? await toolsFinalize(baseTools, { config, cwd, provider }) : baseTools
   const agent = D.createAgent({ provider, tools, config, cwd, memory })
+  agent._readImageTool = tools.find((tool) => tool.name === "read_image") ?? null
+  syncModelTools(agent)
   agent.providers = providers
   agent.activeProvider = provider?.name ?? ""
   agent.activeModel = provider?.model ?? null

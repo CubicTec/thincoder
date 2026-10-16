@@ -8,7 +8,7 @@ const fixture = { agent: null, calls: [], wizard: null }
 globalThis.__chatCommandAuthFixture = fixture
 const sources = new Map([
   ["@thincoder/core/agent.mjs", `export async function runAgent(agent, prompt) { globalThis.__chatCommandAuthFixture.calls.push(["run", agent, prompt]) }`],
-  ["@thincoder/core/config.mjs", `export const configPath = "/fixture/config.json"; export function loadConfig() { return {} }`],
+  ["@thincoder/core/config.mjs", `export const configPath = "/fixture/config.json"; export function loadConfig() { return {} }; export function resolveCompactThreshold() { throw new Error("One-shot chat must leave compaction setup to runAgent") }`],
   ["@thincoder/core/provider/wait-status.mjs", `export function waitStatusText() { return "" }`],
   ["./cli/make-agent.mjs", `export async function assembleAgent() { return globalThis.__chatCommandAuthFixture.agent }; export function attachManifest() {}; export function teamConfig() {}; export function gitAuthor() {}; export function validateProvider() {}`],
   ["./cli/setup-wizard.mjs", `export async function setupWizard() { const f = globalThis.__chatCommandAuthFixture; f.calls.push(["wizard"]); return f.wizard }`],

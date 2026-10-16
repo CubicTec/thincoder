@@ -6,7 +6,8 @@
  */
 import { isAbsolute, join } from "node:path"
 import { runAgent } from "@thincoder/core/agent.mjs"
-import { loadConfig, configPath } from "@thincoder/core/config.mjs"
+import { loadConfig, configPath, resolveCompactThreshold } from "@thincoder/core/config.mjs"
+import { refreshAgentModelInfo } from "@thincoder/core/agent/model-info.mjs"
 import { isChatGptProvider, assertProviderAuthConfig } from "@thincoder/core/provider/auth-config.mjs"
 // 批 1 CORE-DEFECT-FIXES B3：onWait 相位值域 + 文案单源（消费面禁各自枚举——PROVIDER.md §6.20）
 import { waitStatusText } from "@thincoder/core/provider/wait-status.mjs"
@@ -170,6 +171,15 @@ export async function tuiCommand(ctx) {
   // D-S3 优先级补全：applySession 可能已用会话中的有效 provider 修复（config 无效 + 会话有效）——
   // 修复后复验清除标记，仅当两者都无效才弹重选（validateProvider 幂等）
   if (agent._providerInvalid) validateProvider(agent)
+  // Refresh the restored provider as well as the configured default. Catalog failures
+  // remain visible in the TUI; login and model selection must stay available offline.
+  let modelInfoWarning
+  try {
+    await refreshAgentModelInfo(agent)
+    if (agent.config?.agent?.compactThresholdAuto) {
+      agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+    }
+  } catch (error) { modelInfoWarning = `[model] Model information unavailable: ${error.message}` }
   // MCP 连接失败在 TUI alt-buffer 下 stderr 不可见，注入为下一条 user 消息后的提醒
   if (agent._mcpWarnings?.length) {
     agent._pendingReminders = agent._pendingReminders ?? []
@@ -197,6 +207,7 @@ export async function tuiCommand(ctx) {
       crashNotice: recentCrashHint() ?? undefined,
       // F-LX3（同上）：变体键库首跑提示行（showStartup 渲染——无命中不传）
       ledgerVariantNotice,
+      ...(modelInfoWarning ? { modelInfoWarning } : {}),
     })
   } catch (error) {
     console.error(`[error] ${error.message}`)

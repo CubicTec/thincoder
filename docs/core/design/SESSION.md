@@ -768,6 +768,10 @@ VSC = 同批（触发支 `thincoder-vscode/src/extension/panel-messages.mjs` 选
 
 **不做（边界）**：不改 CLI / VSC 端侧档位面（`/think` / `reasoning-mode.mjs` / `settings-panel-write.mjs` 各自实现沿用——「推理档位面端侧自有」既有裁定；本批只补**槽字段 + 写出口 + 保存携带 + 恢复施加**四事）· 会话级偏好自身不落 config（`settings:agent` 仍是设置面全局默认）——**例外 = 判据句 6 选定写回**（2026-10-03 起）· 不校验端侧控件域 / 不做档位闭集机检 · 不回填老槽 · 不动 marker 与槽认领语义。
 
+> 2026-10-16 对 §6.21 档位恢复的补充：OAuth 账号目录尚未装载时，槽 effort 延迟到目录就绪后
+> 按当前账号能力应用；待恢复值只绑定此次 provider，应用一次即清除。切模型、切槽或用户改档后，
+> 旧异步结果不能覆盖新设置。来源与装载规则见 [MODEL-SPECS §19](MODEL-SPECS.md#191-规格合并与生命周期)。
+
 ### 6.22 会话清单盘面实读（2026-09-28 · SESSION-LIST-DISK 批）
 
 > 来源 = 用户 2026-09-28 04:27 走查裁定「清单不能从 manifest 选，只能从盘面实际读，让 manifest 参与清单列表是过度设计」（症状 = 本户 50 槽文件 · 列表仅显 2 条）。需求层 = `docs/core/requirements/SESSION.md` §4.1 F5；批档 = `docs/batches/2026-09-28-session-list-disk.md`。

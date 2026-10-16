@@ -11,6 +11,8 @@
  */
 
 import { chat } from "./provider/index.mjs"
+import { providerSpec } from "./model-specs.mjs"
+import { thinkOffPath } from "./think-off.mjs"
 import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
 import { captureContextRewrite } from "./context-rewrite.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
@@ -97,7 +99,11 @@ async function distillExplorations(history, start, provider, signal, agent, dept
     // 会话续写形态（§6.15 / D-CC21）：messages 由单源构造器 buildCompressMessages 产出（不设第二构造
     // 点）；tools 取与回合请求同一声明面（**不带** tool_choice——实测该参数使服务端丢弃 tools 区）；
     // 不覆盖 reasoningEffort ⇒ 与回合侧同源（v3 形态）。extras 缺省 ⇒ 退化面 1（无 system / 无 tools）。
-    const resp = await chat({ ...provider, thinking: null }, {
+    // 恒思考 effort 族沿用回合设置；有 off 路径的旧模型保持摘要关思考行为。
+    const summarySpec = providerSpec(provider)
+    const summaryProvider = summarySpec.thinkApi === "effort" && !thinkOffPath(summarySpec)
+      ? { ...provider } : { ...provider, thinking: null }
+    const resp = await chat(summaryProvider, {
       messages: buildCompressMessages(history, cut, extras?.systemPrompt, EXPLORE_SUMMARY_PROMPT),
       tools: extras?.tools,
       signal,

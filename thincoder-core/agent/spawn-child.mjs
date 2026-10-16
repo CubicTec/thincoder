@@ -9,14 +9,15 @@
  *                          （onToolOutput 复用 dispatch.mjs 的 onOutput 管线，D1；
  *                          LLM 文本 token strip ⟦ev⟧ 哨兵——防伪造，D7）
  *   - runWithContinue:     turn-cap ContinueError 循环骨架（askContinue 差异点经参数注入）
- *   - ensureChildApiKey:   provider.apiKey trim/检查（apiKey 检查 ×3 合并）
+ *   - ensureChildApiKey:   子代理凭据配置检查（OAuth 绑定 / API key trim；兼容原函数名）
  *   - clampEffort:         effort 枚举钳制（enum 外丢弃——行为与 escalate/consult 现状逐字一致）
  *
  * 不收编（防过度抽象，留在各工具内）：角色过滤/overlay/git 注入、subagent 专属
  * （报告契约 MIN_REPORT_CHARS、mergeChildMutations）、escalate 专属（touched-files、
  * effortNote）、consult 专属（session 队列、watchdog、main_history 工具）。
  */
-import { specForModel } from "../config.mjs"
+import { providerSpec } from "../config.mjs"
+import { assertProviderAuthConfig, hasProviderCredentials, isChatGptProvider } from "../provider/auth-config.mjs"
 import { ContinueError } from "../agent.mjs"
 import { relayPrefixOf } from "./relay-prefix.mjs"
 import { appendCappedText } from "../text-budget.mjs"
@@ -192,12 +193,15 @@ export const CAPTURE_CAP_OPTS = {
 }
 
 /**
- * 子 agent provider API key 检查：trim 后非空才保留；缺失返回 null（调用方
- * 按各自业务语汇报错——subagent 抛出 / escalate·consult 返回 Error 文本）。
+ * 子代理凭据配置检查：OAuth 仅验证显式启用的账户绑定，不写 API key 字段；
+ * API key 保留原 trim 行为。无效返回 null，调用方报告错误，不回落父代理密钥。
  */
 export function ensureChildApiKey(provider) {
+  if (isChatGptProvider(provider)) {
+    try { assertProviderAuthConfig(provider); return provider } catch { return null }
+  }
   provider.apiKey = provider.apiKey?.trim() || null
-  return provider.apiKey ? provider : null
+  return hasProviderCredentials(provider) ? provider : null
 }
 
 /**
@@ -208,7 +212,7 @@ export function ensureChildApiKey(provider) {
  */
 export function clampEffort(provider, model, effort) {
   if (!effort) return true
-  const enumList = specForModel(model).reasoningEffortEnum
+  const enumList = providerSpec({ ...provider, model }).reasoningEffortEnum
   if (enumList && !enumList.includes(effort)) {
     delete provider.reasoningEffort
     return false

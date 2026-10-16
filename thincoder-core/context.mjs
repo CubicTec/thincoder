@@ -12,6 +12,8 @@
  */
 
 import { chat } from "./provider/index.mjs"
+import { providerSpec } from "./model-specs.mjs"
+import { thinkOffPath } from "./think-off.mjs"
 import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
 import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
 import { captureContextRewrite } from "./context-rewrite.mjs"
@@ -210,7 +212,11 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
     messages[messages.length - 1] = { ...last, content: last.content + focusBlock(String(extras.focus), anchorText(agent)) }
   }
   assertCurrent() // Lifecycle callbacks may have switched sessions before the request.
-  const summary = await chat({ ...agent.provider, thinking: null }, {
+  // 恒思考 effort 族沿用回合设置；有 off 路径的旧模型保持摘要关思考行为。
+  const summarySpec = providerSpec(agent.provider)
+  const summaryProvider = summarySpec.thinkApi === "effort" && !thinkOffPath(summarySpec)
+    ? { ...agent.provider } : { ...agent.provider, thinking: null }
+  const summary = await chat(summaryProvider, {
     messages,
     tools: extras?.tools,
     signal,

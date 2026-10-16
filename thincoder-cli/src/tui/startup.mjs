@@ -265,6 +265,7 @@ export function showStartup(ctx) {
   // F-L4（账本可靠批 · SESSION.md §6.25 判据句 4）：账本异常警示行——**不继承** `allSlots.length > 1`（单 / 零会话项目同样在场）；正常 ⇒ 零行。
   const lh = ledgerHealth(agent.cwd)
   if (lh.refused > 0 || lh.scene) pushLine(`会话账本异常（${lh.refused > 0 ? lh.lastReason : "scene"}）——打开会话即自动补回${lh.scene ? "；损坏现场档保留 30 天" : ""}`, C.warn)
+  if (opts.modelInfoWarning) pushLine(opts.modelInfoWarning, C.warn)
   render()
 }
 

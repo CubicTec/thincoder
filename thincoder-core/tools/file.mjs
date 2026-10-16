@@ -17,7 +17,7 @@ import { runSingleEdit } from "./edit-diff.mjs";
 // 单一写路径点（编辑器编辑径注入缝——CORE-UNIFICATION §2.13.5）：本档三个写点全走它，
 // 记账面同源住该档（下面只做再导出——保既有 import 面稳定）。
 import { writeThroughPath, clearDirty, clearLastWrite, lastWriteOf, isDirty } from "./write-path.mjs";
-import { specForModel } from "../config.mjs";
+import { providerSpec } from "../config.mjs";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, stat } from "node:fs/promises";
 import { join, relative, dirname } from "node:path";
@@ -156,7 +156,7 @@ export const readImageTool = {
     // F-3（IMAGE-DOWNGRADE-VISION——2026-09-09）：软引导句逐字锚（设计档照抄——CLI 无 extension
     // 式自动降级——模型收到错误后自选 spawn 视觉渠道子代理路径）。
     const model = ctx.agent?.provider?.model
-    if (model && !specForModel(model).multimodal) {
+    if (model && !providerSpec(ctx.agent.provider).multimodal) {
       throw new Error(
         `Model "${model}" does not support image input — read_image is unavailable with this provider. ` +
         `Verify visual output programmatically (file size, dimensions, pixel checks via code) or ask the user to switch to a vision-capable provider.\n` +

@@ -763,6 +763,12 @@ spawn 撞域 → ⟦ev⟧queued → routeSubToken → ensureSubTaskKey 建 waiti
 
 **边界**：不做团队面板（状态 = 本段；入口 = `/team` 命令族——`docs/cli/design/TUI-COMMANDS.md` §5.5）；不搬服务器 URL 全串（主机形）；零新定时器（校验触发点制——`docs/core/design/TEAM.md` §2.6）；CLI 语言面现缺省 en（台账 #7 未决——沿 §7.7 观察①同注）。
 
+### 7.9 账户模型信息（2026-10-16）
+
+> 2026-10-16 账户规格接线：启动恢复历史后保留可见的模型目录错误；窗口和自动压缩预算在
+> 启动及切换后更新。命令行为见 [TUI-COMMANDS 账户入口](TUI-COMMANDS.md#chatgpt-账户入口实验性2026-10-15)，
+> 规格机制单源见 [MODEL-SPECS §19](../../core/design/MODEL-SPECS.md#191-规格合并与生命周期)。
+
 ## 8. 不并项与历史沿革
 
 ### 8.1 历史沿革（(d) 类——**不并**）

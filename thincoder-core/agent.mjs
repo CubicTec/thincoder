@@ -48,6 +48,14 @@ export { hasCodeMutations } from "./advisor/repos.mjs"
 // 流式输出门（§2.5 #78）2026-09-29 P2 三拆随 agent/chat-call.mjs 迁出——re-export 保 import 面
 export { streamOutputAllowed } from "./agent/chat-call.mjs"
 
+/** Include only the parent's approved model-gated candidate before child role/exclusion filtering. */
+export function inheritableTools(agent) {
+  const tools = [...(agent?.tools ?? [])]
+  const image = agent?._readImageTool
+  if (image && !tools.some((tool) => tool.name === "read_image")) tools.push(image)
+  return tools
+}
+
 /** Create a new agent state object with all fields initialized to defaults */
 export function createAgent({
   provider, tools, config, cwd, memory, overlay, role,
@@ -57,6 +65,8 @@ export function createAgent({
 }) {
   return {
     provider, tools, config, cwd, memory, _role: role,
+    // The supplied table has already passed host/child filters; never recover from a global registry.
+    _readImageTool: tools?.find((tool) => tool.name === "read_image") ?? null,
     overlay, tasks, history,
     planMode, autoApprove, goal,
     _mutatedThisRun: false, _verifiedThisRun: false, _verifyPassed: undefined, _calledAdvisorThisRun: false,

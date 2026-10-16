@@ -8,7 +8,7 @@ import { runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from
 import { resolve } from "node:path"
 import { pushReal, summarizeRunExplorations } from "../context.mjs"
 import { abortError, annotateAbort } from "../abort-provenance.mjs"
-import { specForModel, assistantToolCallMessage } from "../config.mjs"
+import { providerSpec, assistantToolCallMessage } from "../config.mjs"
 import { executeToolCalls } from "./dispatch.mjs"
 import { recordToolResults } from "./record-results.mjs"
 import { injectPostTurn } from "./post-turn.mjs"
@@ -220,7 +220,7 @@ export async function runTurnLoop(agent, {
     // abort after chat completes, before committing history: don't commit a half-finished turn
     if (signal?.aborted) throw abortError(signal, "agent", "post-chat")
 
-    pushReal(agent, assistantToolCallMessage(response, specForModel(agent.provider.model)))
+    pushReal(agent, assistantToolCallMessage(response, providerSpec(agent.provider)))
 
     const results = await runResponsesToolTransaction(agent, response.toolCalls,
       () => executeToolCalls(agent, toolByName, response.toolCalls, callbacks, depth, signal))

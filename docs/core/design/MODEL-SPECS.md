@@ -2122,18 +2122,42 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 ## 19. GPT-6 ChatGPT 账户兼容（2026-10-16）
 
 `gpt-6-astra`、`gpt-6.1-sol`、`gpt-6-luna` 各登记独立前缀行。
-实测支持图片输入和 `low / medium / high / xhigh / max` 五档推理参数。
-`thinking: true`、`thinkApi: "effort"` 与 `multimodal: true` 使现有推理设置和
-`read_image` 能力门生效。未核验的账户专属档位不进入公共枚举。
+静态尺寸按 OpenAI API 官方模型页登记为 `1050000 / 128000`（上下文 / 最大输出），
+三者图片输入、`low / medium / high / xhigh / max` 五档推理及默认 `medium` 均有官方依据；
+Luna 的 API 行另含 `none`。这些 API 规格不代替当前 ChatGPT 账号的目录值。
 
-新增可选字段 `budgetSource: "conservative"` 表示该行的 `context`、`maxOutput`
-为本地预算，不是服务端容量声明。三行沿用此前的 `128000 / 32000`，
-用户 `provider.context` 配置仍优先。CLI 选择模型时明确显示本地上下文预算和输出预留。
-ChatGPT 请求不发送 `max_output_tokens`；账户目录容量与 API 产品规格分开记录，
-本批不把目录值写成所有账户通用的上限。
+### 19.1 规格合并与生命周期
+
+`providerSpec(provider)` 的优先级为：静态模型行 → 同账号目录 → 用户显式 `context`。
+目录位于 `provider/model-info.mjs` 的进程内快照，按 endpoint、`credentialRef` 和精确 slug 隔离；
+不修改共享 `MODEL_SPECS`，不把账号能力写入配置文件。`specForModel` 保留纯静态查询语义。
+`contextSource: "catalog" / "config"` 分别表示窗口来自账号 / 手动配置；无此位表示静态规格。
+`specSource: "catalog"` 只表示存在账号元数据，不代表窗口一定来自账号。
+
+`listModelCatalog` 成功后整体替换该账号快照；删除的模型和字段不保留旧值。
+`ensureProviderModelInfo` 在启动、切换和运行前装载；成功快照复用 60 秒，显式列目录仍重新请求。
+错误不缓存；启动错误显示在 TUI，保留登录和设置入口；运行前装载失败则报错，避免静默使用错误窗口。
+目录不包含的显式模型仍可选择。异步返回后复核代理的账号和模型，旧请求不能完成新会话的装载。
+
+### 19.2 字段与消费面
+
+| 目录字段 | 归一与消费 |
+|---|---|
+| `context_window` | 正安全整数才接纳；缺失时可用 `max_context_window`。自动压缩阈值沿用 `(context - outputReserve) × 0.6` 规则 |
+| `supported_reasoning_levels` | 只取本客户端支持的 wire 档位；`ultra` 是 Codex 多 agent 模式，不直接当作 Responses effort 发送 |
+| `default_reasoning_level` | 必须属于有效枚举；用户未显式设置时才用于请求和 `/think` 显示 |
+| `input_modalities` | 是否含 `image` 同时控制工具注册、执行和结果入历史；保留宿主对工具的过滤 |
+
+未使用的提示词、工具定义和服务端指令不进入规格快照。目录中的压缩建议不当作窗口容量。
+自动阈值在每轮运行局部重算；子代理即使共享父配置也不写回阈值。手动阈值、手动窗口仍优先。
+ChatGPT 请求不发送 `max_output_tokens`；`maxOutput` 只作为既有预算算法的输出预留，
+CLI 回执不把它称作账号的输出上限。关闭思考仅在有效 `none` 档存在时编码为 `reasoning.effort: "none"`。
+压缩摘要与探索蒸馏对无 off 路径的 effort 族沿用回合设置，避免请求不存在的 off 档；
+有 off 路径的旧模型保留原有摘要关思考行为。
 
 真实账户矩阵、图片探针的失败记录及验收边界见
-[兼容测试记录](../../batches/2026-10-16-model-compatibility.md)。
+[兼容测试记录](../../batches/2026-10-16-model-compatibility.md)；
+本次自动配置与官方来源见 [账户规格自动配置批次](../../batches/2026-10-16-account-model-info.md)。
 
 ## 变更记录
 - 2026-10-09（**provider-default-model-purge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §2 · 台账 #1122）：渠道单值模型退场——§9 病例 P-1..P-3 随正（计数 24 / 逐条无 `model` 键）；探针脚本入参改显式 `provider:model`（§2.2 / §7）；§12 预设面随正。**零新语义**（本批立法落位）。

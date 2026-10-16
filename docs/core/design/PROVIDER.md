@@ -774,3 +774,6 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 新增显式 OAuth 认证、Responses 原生状态及三端账户入口的权威约束见 [OPENAI-CHATGPT](OPENAI-CHATGPT.md)。
 旧供应商行为不变；真实账户和发布验收仍需独立完成。
+
+2026-10-16 账户规格补充：`providerSpec` 在静态行与用户窗口覆盖之间合并当前账号的模型目录。
+装载、隔离、字段白名单和失效规则单源见 [MODEL-SPECS §19](MODEL-SPECS.md#191-规格合并与生命周期)。

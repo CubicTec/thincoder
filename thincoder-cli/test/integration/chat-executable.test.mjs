@@ -21,7 +21,8 @@ function run({ oauth = true, enabled = true, terminal = "completed" } = {}) {
       { cwd, input: "", encoding: "utf8", timeout: 20000, env: { ...process.env, HOME: home, USERPROFILE: home,
         THINCODER_TEST_REPORT: report, THINCODER_TEST_AUTH: oauth ? "oauth" : "api_key", THINCODER_TEST_TERMINAL: terminal } })
     assert.equal(result.error, undefined)
-    return { ...result, requests: existsSync(report) ? JSON.parse(readFileSync(report, "utf8")) : [] }
+    const recorded = existsSync(report) ? JSON.parse(readFileSync(report, "utf8")) : { requests: [], catalogRequests: [] }
+    return { ...result, ...recorded }
   } finally { rmSync(root, { recursive: true, force: true }) }
 }
 
@@ -30,6 +31,9 @@ test("actual CLI executable assembles and completes a keyless OAuth agent turn w
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /CLI-FIXTURE-OK/)
   assert.equal(result.requests.length, 1)
+  assert.deepEqual(result.catalogRequests, [{ url: "https://api.openai.com/v1/models", method: "GET" }])
+  assert.equal(result.requests[0].method, "POST")
+  assert.equal(result.requests[0].body.reasoning.effort, "high")
   assert.doesNotMatch(result.stdout + result.stderr, /synthetic-cli-token|First time using/)
 })
 
@@ -37,10 +41,12 @@ test("actual CLI executable rejects disabled OAuth and incomplete output without
   const disabled = run({ enabled: false })
   assert.equal(disabled.status, 1, disabled.stderr)
   assert.equal(disabled.requests.length, 0)
+  assert.equal(disabled.catalogRequests.length, 0)
   assert.match(disabled.stderr, /auth login --enable/)
   const partial = run({ terminal: "incomplete" })
   assert.equal(partial.status, 1, partial.stderr)
   assert.equal(partial.requests.length, 1)
+  assert.equal(partial.catalogRequests.length, 1)
   assert.doesNotMatch(partial.stdout, /CLI-FIXTURE-OK/)
 })
 
@@ -49,4 +55,5 @@ test("actual CLI executable preserves API-key Responses operation", () => {
   assert.equal(result.status, 0, result.stderr)
   assert.match(result.stdout, /CLI-FIXTURE-OK/)
   assert.equal(result.requests.length, 1)
+  assert.equal(result.catalogRequests.length, 0)
 })

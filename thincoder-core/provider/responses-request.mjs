@@ -4,7 +4,8 @@
  * Existing API-key host chain behavior is retained behind narrow recovery rules.
  */
 import { createHash } from "node:crypto"
-import { specForModel, isBailianHost } from "../config.mjs"
+import { providerSpec, isBailianHost } from "../config.mjs"
+import { thinkOffPath } from "../think-off.mjs"
 import { isChatGPTProvider, responsesProfileBinding, validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
 import { resolveProviderSecrets } from "../env-ref.mjs"
 import { buildResponsesTools, encodeToolChoice } from "./responses-tools.mjs"
@@ -107,7 +108,7 @@ export function buildBody(provider, messages, tools, opts = {}) {
   const toolMapping = buildResponsesTools(provider, tools)
   const { instructions: extracted, items } = requestItems(provider, messages, toolMapping, opts.responsesContext)
   const toolsFlat = toolMapping.tools.length ? toolMapping.tools : undefined
-  const spec = specForModel(provider.model)
+  const spec = providerSpec(provider)
   const warnings = []
   const wantStateful = !siwc && provider.stateful !== false && opts.stateful !== false
   const hostStateful = isStatefulHost(provider.baseURL)
@@ -164,7 +165,17 @@ export function buildBody(provider, messages, tools, opts = {}) {
     }
     body.temperature = t
   }
-  if (provider.reasoningEffort) body.reasoning = { effort: provider.reasoningEffort }
+  // 账户目录与 API 规格共用 providerSpec；显式档位优先，未设置才取模型默认。
+  // effort 族的 off 必须编码为 none，不能只删字段而让服务端继续默认思考。
+  let effort = provider.reasoningEffort || spec.defaultReasoningEffort
+  if (spec.thinkApi === "effort" && provider.thinking === null && provider.reasoningEffort == null) {
+    if (!thinkOffPath(spec)) throw new Error(`Model "${provider.model}" does not support disabling reasoning`)
+    effort = "none"
+  }
+  if (effort && spec.reasoningEffortEnum && !spec.reasoningEffortEnum.includes(effort)) {
+    throw new Error(`Model "${provider.model}" does not support reasoning effort "${effort}"; choose ${spec.reasoningEffortEnum.join("|")}`)
+  }
+  if (effort) body.reasoning = { effort }
   if (opts.toolChoice !== undefined) body.tool_choice = encodeToolChoice(opts.toolChoice, toolMapping, provider)
   if (opts.parallelToolCalls !== undefined) body.parallel_tool_calls = opts.parallelToolCalls
   if (siwc || new URL(provider.baseURL).hostname === "api.openai.com") body.include = ["reasoning.encrypted_content"]

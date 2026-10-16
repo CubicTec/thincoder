@@ -12,18 +12,16 @@
  *
  * `runVisionReader`：一次性 depth-1 只读 explore 子代理读图返回文本描述。
  *  渠道 = 视觉渠道（`resolveProviders()` 现读；`findVisionChannel` 判源退场 ⇒ 现恒无渠道）；provider = 核 `resolveChildProvider`（`<渠道>:<模型>`）；
- *  工具 = 按**该渠道模型**装配的只读族（`read_image` 随 multimodal 注册 —— 主模型非视觉时其工具表
- *  本无该件，故按子代理模型重装，不沿用主代理工具表）；`config ∕ memory` = 主代理同源。
+ *  工具 = 主代理已通过宿主过滤的工具及模型候选，再过只读与子代理排除规则；
+ *  主模型暂不可用的 read_image 候选保留，宿主排除的工具不从全局重建。`config ∕ memory` = 主代理同源。
  *  失败径全 `null`（原样兜底，不静默丢）：无渠道 ∕ 渠道未知 ∕ 渠道无 key（spawn 期失败回落）∕
  *  spawn 失败 ∕ 超时 ∕ 空返；外部 `signal` 已停 ⇒ 快速失败，否则桥接内部控制器。
  *
  *  W8 契约②（2026-09-29 断链）：`agent.mjs` ∕ `agent-tools/subagent-async.mjs` 静态链达 `node:sqlite`
  *  （`agent.mjs` → `agent/setup.mjs` → `memory.mjs` → `memory/schema.mjs`）⇒ 两端一律**函数体内动态 import**
- *  （约定源 = `ledger.mjs:16`；实例 = `tools/index.mjs:63`）；本档静态边只留闭包净件（`config-io.mjs` ∕
- *  `tools/index.mjs`）。
+ *  （约定源 = `ledger.mjs:16`；实例 = `tools/index.mjs:63`）；本档静态边只留闭包净件 `config-io.mjs`。
  */
 import { resolveProviders } from "./config-io.mjs"
-import { assembleBuiltinTools } from "./tools/index.mjs"
 
 /** 读图墙钟上限（VSC `image-handler.mjs:70` 同值——一次性子代理的成功径上限）。 */
 export const VISION_READ_TIMEOUT_MS = 60_000
@@ -55,10 +53,11 @@ export async function runVisionReader({ paths, providerName, cwd, parentAgent, s
   const onAbort = () => ac.abort()
   if (signal) signal.addEventListener("abort", onAbort, { once: true })
   try {
-    const { createAgent, runAgent, readonlyToolNames, excludeSubagentTools } = await import("./agent.mjs") // 动态 import（agent 链静态达 node:sqlite——W8 契约②）
-    const builtins = await assembleBuiltinTools({ memory: parentAgent?.memory, cwd, model: vc.model })
-    const allowed = readonlyToolNames(builtins)
-    const tools = excludeSubagentTools(builtins.filter((t) => allowed.has(t.name)))
+    const { createAgent, runAgent, inheritableTools, readonlyToolNames, excludeSubagentTools } = await import("./agent.mjs") // 动态 import（agent 链静态达 node:sqlite——W8 契约②）
+    const inherited = inheritableTools(parentAgent)
+    const allowed = readonlyToolNames(inherited)
+    const tools = excludeSubagentTools(inherited.filter((t) => allowed.has(t.name)))
+    if (!tools.some((tool) => tool.name === "read_image")) return null
     const child = createAgent({ provider, tools, config: parentAgent?.config, cwd, memory: parentAgent?.memory, role: "explore" })
     const task = paths.map((f) => `用 read_image 读 ${f} 返回图像内容描述`).join("\n")
     const desc = await runAgent(child, task, {}, { depth: 1, maxTurns: 10, signal: ac.signal })

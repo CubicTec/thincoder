@@ -17,6 +17,7 @@
  */
 import { sliceByWidth } from "./render.mjs"
 import { providerSpec, specMatch } from "@thincoder/core/config.mjs"
+import { refreshAgentModelInfo } from "@thincoder/core/agent/model-info.mjs"
 import { saveSession, loadSlotFile } from "@thincoder/core/session.mjs"
 import { carryoverDefaultModel } from "./config-helpers.mjs"
 import { getProviderModels, modelListFailureText, dedupeModels, modelDisplayName } from "./model-catalog.mjs"
@@ -233,6 +234,13 @@ export function createModelPicker(ctx) {
     agent.activeModel = item.model
     agent.provider = { ...target }
     agent.provider.model = item.model
+    const selectedProvider = agent.provider
+    try { await refreshAgentModelInfo(agent) }
+    catch (error) {
+      if (agent.provider !== selectedProvider) return
+      pushLine(`[model] Model information unavailable: ${error.message}; selection kept`, C.warn)
+    }
+    if (agent.provider !== selectedProvider) return
     if (agent.config?.agent?.compactThresholdAuto) {
       const { resolveCompactThreshold } = await import("@thincoder/core/config.mjs")
       agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
@@ -244,15 +252,17 @@ export function createModelPicker(ctx) {
     if (carried.ok !== true) console.error(`[model] default model carryover failed: ${carried.reason}`)
     else if (carried.written === true && agent.config) agent.config.defaultModel = `${target.name}:${item.model}` // 内存镜像（/config 显示面新鲜——wizard.mjs:210-211 先例）
     // M6 切换回显：规格来源一行（DEFAULT 兜底 → 警示色 + /config 提示）
-    const { matched } = specMatch(agent.provider.model)
     const spec = providerSpec(agent.provider)
+    const contextOverride = Number(agent.provider.context)
+    const manualContext = Number.isInteger(contextOverride) && contextOverride > 0
+    const matched = manualContext || spec.contextSource === "catalog" ? false : specMatch(agent.provider.model).matched
+    const contextSource = manualContext ? "provider configuration override"
+      : spec.contextSource === "catalog" ? "account catalog"
+        : matched ? "model specification" : "default specification; model not found in MODEL_SPECS"
     pushLine(
-      spec.budgetSource === "conservative"
-        ? `Model: ${item.provider}:${item.model} — reasoning and image input supported; local context budget ${fmtContextK(spec.context)}, output reserve ${fmtContextK(spec.maxOutput)} (not server limits)`
-        : matched
-        ? `Model: ${item.provider}:${item.model} — spec found (ctx ${fmtContextK(spec.context)} / out ${fmtContextK(spec.maxOutput)})`
-        : `Model: ${item.provider}:${item.model} — spec not found in MODEL_SPECS — default 128K ctx / 32K out; set context in /config to override`,
-      matched ? C.tool : C.error,
+      `Model: ${item.provider}:${item.model} — context ${spec.context} tokens (${contextSource}), output reserve ${spec.maxOutput} tokens`
+        + (!manualContext && !matched && spec.contextSource !== "catalog" ? "; set context in /config to override" : ""),
+      manualContext || matched || spec.contextSource === "catalog" ? C.tool : C.error,
     )
     if (!agent.provider.apiKey && agent.provider.auth?.type !== "chatgpt_oauth") {
       const selKey = await askQuestion(`Enter API key for ${item.provider} (leave empty to skip):`)

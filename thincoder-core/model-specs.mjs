@@ -6,12 +6,12 @@
  * importers stay untouched. (PROVIDER_PRESETS has since moved out, to
  * config-presets.mjs — the core's single preset face, re-exported by config.mjs.)
  */
+import { modelInfoFor } from "./provider/model-info.mjs"
 
 /**
  * Known model capability spec table (prefix match, longer first).
  * Used for compaction threshold derivation, continuation protocol selection, and capability-aware optimization.
  *
- * budgetSource:      "conservative" means local budgets, not verified server limits
  * context:           context window (tokens)
  * maxOutput:         max output tokens (defaults to context)
  * thinking:          whether thinking/reasoning mode is supported
@@ -87,13 +87,11 @@ const MODEL_SPECS = [
   // （逐名官方口径未取证）；枚举 / 视觉面 = **未探**（不声明）。medium 直发实测受理（batch-params-judge §1.5）。
   ["glm-4.5-air", { context: 128_000, maxOutput: 32_000, thinking: true, thinkApi: "type", reasoningEcho: "optional", tempRange: [0, 1], noUsageStream: true }],
   // GPT series
-  // GPT-6 compatibility: common API/SIWC effort levels and image input, verified
-  // 2026-10-16. API-only none and account-specific ultra are not exposed here.
-  // Capacity stays at the previous conservative local budget, NOT a server limit:
-  // SIWC catalog windows differ by model/account; no max_output_tokens is sent.
-  ["gpt-6-astra", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
-  ["gpt-6.1-sol", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
-  ["gpt-6-luna", { context: 128_000, maxOutput: 32_000, budgetSource: "conservative", thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], multimodal: true }],
+  // GPT-6：官方 API 模型页（2026-10-16）规格；SIWC 账户目录在 providerSpec 覆盖对应字段。
+  // 目录不声明输出上限；SIWC 请求不据静态 maxOutput 发送 max_output_tokens。
+  ["gpt-6-astra", { context: 1_050_000, maxOutput: 128_000, thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], defaultReasoningEffort: "medium", multimodal: true }],
+  ["gpt-6.1-sol", { context: 1_050_000, maxOutput: 128_000, thinking: true, thinkApi: "effort", reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], defaultReasoningEffort: "medium", multimodal: true }],
+  ["gpt-6-luna", { context: 1_050_000, maxOutput: 128_000, thinking: true, thinkApi: "effort", reasoningEffortEnum: ["none", "low", "medium", "high", "xhigh", "max"], defaultReasoningEffort: "medium", multimodal: true }],
   ["gpt-5.6-sol",       { context: 1_050_000, maxOutput: 128_000, thinking: false, multimodal: true }],
   ["gpt-5.6",           { context: 1_050_000, maxOutput: 128_000, thinking: false, multimodal: true }],
   ["gpt-4.1",           { context: 1_000_000, maxOutput: 128_000, thinking: false }],
@@ -321,14 +319,14 @@ export function specMatch(model) {
 }
 
 /**
- * providerSpec(provider) — spec with a provider-level context override (PROVIDER.md §15, 2026-09-02).
+ * providerSpec(provider) — 静态规格 → 当前账户目录 → provider 手动 context（PROVIDER.md §15）。
  *
  * providers[].context is configured in K units (128 = 128K = 131072 tokens) and overrides the
- * MODEL_SPECS value for THIS provider only — the same model can have different real context
+ * resolved value for THIS provider only — the same model can have different real context
  * windows on different endpoints (official vs local deployment). The ×1024 conversion happens
  * HERE and nowhere else.
  *
- * Returns a COPY ({ ...spec, context }) — the shared spec object from the SORTED_SPECS lookup
+ * Returns a COPY — the shared spec object from the SORTED_SPECS lookup
  * must never be mutated, or the override would leak across providers (T-C1).
  *
  * Validation is defensive (pure function): absent/invalid context falls back to the plain spec
@@ -337,9 +335,13 @@ export function specMatch(model) {
  * provider keep using it.
  */
 export function providerSpec(provider) {
-  const spec = specForModel(provider?.model ?? "")
+  const info = modelInfoFor(provider)
+  // 目录已识别的模型不触发「未知模型」警告；缺少的能力仍按静态表 / 默认规格补齐。
+  const base = info ? (lookupSpec(provider?.model) ?? DEFAULT_SPEC) : specForModel(provider?.model ?? "")
+  const spec = { ...base, ...info, ...(info ? { specSource: "catalog" } : {}), ...(info?.context ? { contextSource: "catalog" } : {}) }
+  if (spec.defaultReasoningEffort && !spec.reasoningEffortEnum?.includes(spec.defaultReasoningEffort)) delete spec.defaultReasoningEffort
   const k = Number(provider?.context) // Number() 接受数字字符串（"128"）——两端语义统一（code review #1）
-  if (Number.isInteger(k) && k > 0) return { ...spec, context: k * 1024 }
+  if (Number.isInteger(k) && k > 0) return { ...spec, context: k * 1024, contextSource: "config" }
   return spec
 }
 

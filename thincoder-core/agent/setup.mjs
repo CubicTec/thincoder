@@ -22,6 +22,8 @@ import { assembleFamilyTools } from "./family-tools.mjs"
 import { normalizeOrigin } from "../memory/origin.mjs"
 import { searchOrigins } from "../memory/code-search.mjs"
 import { INDEX_ORIGIN_ROW_WARN } from "../memory/schema.mjs"
+import { resolveCompactThreshold } from "../config.mjs"
+import { refreshAgentModelInfo } from "./model-info.mjs"
 
 const DEFAULT_COMPACT_THRESHOLD = 100_000
 const DOC_SEARCH_LIMIT = 5
@@ -50,8 +52,12 @@ export async function prepareRun(agent, input, callbacks, {
   // （A2 提示尾块载位已退役——B7 3a：核自持 `.cursor/rules` 尾块，见下方 depth-0 块。）
   injections = null, toolDecorate = undefined,
 } = {}) {
+  await refreshAgentModelInfo(agent, { signal })
   const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_TURNS
-  const threshold = agent.config?.agent?.compactThreshold ?? DEFAULT_COMPACT_THRESHOLD
+  // 子代理可能共享父 config；自动预算按本轮模型局部计算，不写回共享配置。
+  const threshold = agent.config?.agent?.compactThresholdAuto
+    ? resolveCompactThreshold(null, agent.provider).value
+    : agent.config?.agent?.compactThreshold ?? DEFAULT_COMPACT_THRESHOLD
   // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：判据 `!== false`（缺省 = 现行为零变）——
   // 逐 run 现读 `agent.config` ⇒ `settings` 工具 ∕ `/config` 写入后本会话下一次组装即生效。
   const injectDocs = agent.config?.agent?.injectDocs !== false

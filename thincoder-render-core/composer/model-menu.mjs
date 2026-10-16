@@ -319,10 +319,10 @@ export function createModelMenu(deps) {
       anchorEl: modelBtn,
       models: _models,
       value: { provider: selectedProvider, model: selectedModel },
-      onPick: ({ provider, model, row }) => {
-        // `row` 直传优先（#1121 修② —— 菜单在场期候选推送换行集 ⇒ 旧行对象仍在手：零「查无即静默丢」）；缺 `row` 的
-        // 调用方（VSC 三消费面不吃该键）走回查；回查亦无 ⇒ 记错一行（零静默）。
-        const m = row ?? _models.find((x) => x.id === model && (x.provider || "") === provider)
+      onPick: ({ provider, model }) => {
+        // Recheck the current catalog; an account change can invalidate the
+        // displayed row before a queued click reaches this handler.
+        const m = _models.find((x) => x.id === model && (x.provider || "") === provider)
         if (m) selectModel(m)
         else console.error(`[composer] model menu: unknown pick ${provider}:${model}`)
       },
@@ -344,7 +344,7 @@ export function createModelMenu(deps) {
 
   function buildReasoningDropdown() {
     reasoningDropdown.innerHTML = ""
-    const model = _models.find((m) => m.id === selectedModel)
+    const model = _models.find((m) => m.id === selectedModel && (m.provider || "") === selectedProvider)
     const levels = model?.reasoning || []
     if (levels.length === 0) {
       reasoningDropdown.appendChild(sectionEl(t("model.noReasoning")))
@@ -384,7 +384,7 @@ export function createModelMenu(deps) {
 
   function selectModel(m) {
     selectedModel = m.id; selectedProvider = m.provider || ""
-    modelBtn.textContent = m.id; closeModelMenu()
+    modelBtn.textContent = m.label || m.id; closeModelMenu()
     post("selectModel", { model: m.id, provider: m.provider || "" })
     const levels = m.reasoning || []
     // 归一 = 单源 `effortSelection`（§15.4-1）：已存值∈枚举 > 注册默认∈枚举 > **中性档 `""`**
@@ -415,7 +415,15 @@ export function createModelMenu(deps) {
 
   /** models message: apply the pushed model list + persisted prefs.（`model-picker.js:111-151` 逐字） */
   function applyModels(m) {
-    _models = m.models || []
+    const nextModels = m.models || []
+    // Invalidate old account rows, without dismissing an unchanged live menu on
+    // a routine status refresh. Hosts send an empty list on account invalidation.
+    if (m.rollback === true || JSON.stringify(nextModels) !== JSON.stringify(_models)) {
+      closeModelMenu()
+      reasoningDropdown.style.display = "none"
+      reasoningBtn.setAttribute("aria-expanded", "false")
+    }
+    _models = nextModels
     if (_models.length > 0) {
       modelBtn.style.display = ""
       reasoningBtn.style.display = ""
@@ -423,7 +431,7 @@ export function createModelMenu(deps) {
       const match = _models.find((x) => x.id === prefs.model && x.provider === prefs.provider)
       if (match) {
         selectedModel = match.id; selectedProvider = match.provider
-        modelBtn.textContent = match.id
+        modelBtn.textContent = match.label || match.id
         selectedReasoning = prefs.reasoning || "off"
         const levels = match.reasoning || []
         // 归一（单源 = `effortSelection`，同 `selectModel` 内注释）：已存值∈枚举 > 注册默认∈枚举 >
@@ -449,14 +457,19 @@ export function createModelMenu(deps) {
         selectedModel = prefs.model
         selectedProvider = prefs.provider
         modelBtn.textContent = prefs.model
-      } else if (m.rollback === true) {
-        // 写失败回滚（#1121 修③）∧ 槽复合缺 ⇒ 显示 ∥ 本地选中态复归「未选」空态（乐观值零留影）。本支只认
-        // `rollback` 位（回滚重推专属标记）：常规 `models` 推送零位 ⇒ 空复合仍沿现行零动作（跨端既有面零变）。
+      } else if (m.rollback === true || !_models.some((row) => row.id === selectedModel && (row.provider || "") === selectedProvider)) {
+        // No explicit session preference: rollback or a removed catalog entry
+        // clears the old selection without choosing a replacement automatically.
         selectedModel = ""
         selectedProvider = ""
         modelBtn.textContent = ""
       }
     } else {
+      // Preserve an explicit session choice so auth failures cannot silently
+      // turn into API-key billing; otherwise drop the previous ephemeral pick.
+      selectedModel = m.prefs?.model || ""
+      selectedProvider = m.prefs?.provider || ""
+      selectedReasoning = m.prefs?.reasoning || ""
       modelBtn.textContent = ""
       modelBtn.title = ""
       modelBtn.style.display = "none"

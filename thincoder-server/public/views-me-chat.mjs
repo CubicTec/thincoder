@@ -111,7 +111,7 @@ export async function renderMeChat(ctx, mount) {
     const btn = typeof event.target?.closest === "function" ? event.target.closest(".code-copy-btn") : null
     if (btn === null) return
     event.preventDefault(); event.stopPropagation()
-    showToast(t("me.chat.copyUnavailable")) // 降级形单源 = 核 toast（§3.11(6)）——零闪条（设计单源 = agent/MEMBER-AGENT.md:317）
+    showToast(t("me.chat.copyUnavailable")) // 降级形单源 = 核 toast（§3.11(6)）——零闪条（设计单源 = `agent/MEMBER-AGENT.md` §3.11(6)）
   }, true)
   // 滚动（核件单源：`applyPin` 写口 ∥ `createPinWatch` 旗标维护——上滚不夺阅读位；作用元素 = 文档流滚动元素，事件桥同管理面）
   if (detachScrollFace !== null) { detachScrollFace(); detachScrollFace = null } // 重渲（语言切换）⇒ 旧实例监听先撤

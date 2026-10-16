@@ -38,7 +38,7 @@ export const ENV_TOOL_FAMILIES = Object.freeze([
   { family: "会话", tools: Object.freeze(["read_history"]) },
 ])
 
-/** 限幅取值（§14.3）：缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs:26`——**镜像常量，核值变更须同拍**）∥ 无上限（自造 600s 顶已撤——用户 2026-10-12 15:00）。 */
+/** 限幅取值（§14.3）：缺省 = 核 `BASH_TIMEOUT_MS`（`thincoder-core/tools/shared.mjs`——**镜像常量，核值变更须同拍**）∥ 无上限（自造 600s 顶已撤——用户 2026-10-12 15:00）。 */
 export const ENV_BASH_TIMEOUT_DEFAULT_MS = 120_000
 
 let coreToolsCache = null // 懒载缓存（真核八件 + 形转换 + 投递/中止两读面）
@@ -68,7 +68,7 @@ export async function loadCoreEnvTools() {
   if (coreToolsError !== null) throw coreToolsError
   try {
     const [ops, timer, search, file, bash, shared, timers, readHistory, bashAsync, settle, discard] = await Promise.all([
-      import("@thincoder/core/tools/ops.mjs"), // get_current_time ∥ process（`:51`/`:140`）
+      import("@thincoder/core/tools/ops.mjs"), // get_current_time ∥ process
       import("@thincoder/core/agent-tools/timer.mjs"), // timer
       import("@thincoder/core/tools/search.mjs"), // ls ∥ grep
       import("@thincoder/core/tools/file.mjs"), // read

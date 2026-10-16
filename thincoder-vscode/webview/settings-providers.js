@@ -43,7 +43,7 @@ export function installProviderHandlers() {
   window._setProviderProxy = function(name, proxy) {
     window._vscode.postMessage({ type: "setProviderProxy", name, proxy })
   }
-  // provider 行 ✕（删整条）：载体 = `data-name` + 卡级装配位绑定（卡 HTML `:137`；删整条时
+  // provider 行 ✕（删整条）：载体 = `data-name` + 卡级装配位绑定（卡 HTML 装配位；删整条时
   // 其 apiKey 原文随条目消失 —— 不可复得类，`SETTINGS.md` §2.10 入口册 #4）。消息名 / 载荷
   // 逐字不变；载荷闭包 = 开框时捕获（同 §2.10 弹框契约）。
   window._removeProvider = function(name, btn) {
@@ -107,7 +107,7 @@ export function providersCardHtml() {
  *  (`data-name` carrier; inline onclick is undrivable under the test fixture — SETTINGS.md §2.10
  *  载体绑定段)。添加表单族已迁弹窗档（其钮随档自绑）。 */
 export function bindAddProviderForm() {
-  // 卡行 ✕（两建面路径 `settings.js:190` / `renderProvidersCard` 均经此单点重绑）。选择器带
+  // 卡行 ✕（两建面路径 `buildSettings` / `renderProvidersCard` 均经此单点重绑）。选择器带
   // `[data-name]` ⇒ 编辑行取消重建位的 ✕（无 `data-name`、自持 addEventListener）不入本域。
   for (const btn of document.querySelectorAll("#prov-list .del-key[data-name]")) {
     btn.addEventListener("click", () => {

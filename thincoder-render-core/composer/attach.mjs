@@ -1,17 +1,17 @@
 /**
- * attach.mjs — composer 附件面工厂（核化 VSC `webview/autocomplete.js:122-184` 的采集 ∕ 栅格门 ∕ 芯片条
+ * attach.mjs — composer 附件面工厂（核化 VSC `webview/autocomplete.js` 的采集 ∕ 栅格门 ∕ 芯片条
  * 三面——上提批 `2026-09-28-desktop-input-vsc-align.md` §2.3 ∕ §2.4 P5；工厂化 = 模块级副作用
  * （DOM 查询 ∕ 事件注册）搬进工厂体，语义零变）。
  *
  * 面：
- *  - 栅格门 `RASTER_MIME`（值源 = `autocomplete.js:126` 同式，含非标 `image/jpg`）——
+ *  - 栅格门 `RASTER_MIME`（值源 = `autocomplete.js` 同式，含非标 `image/jpg`）——
  *    **判据与桌面 `renderer/attach.mjs` 现物同源合流**：两处现为同一字面；桌面换装轮改指本档（§2.3 attach 行）。
- *  - 文档级 paste 采集（`:127-142` 逐字：栅格受纳 + `preventDefault` 一次；非栅格图项拒即核 toast，非图零吞）。
- *  - `#file-input` ∕ `#attach-btn`（`:144-153` 逐字：点击 ⇒ 文件选取；change 毕清 `value`）——**受纳面扩文本/源码族**
+ *  - 文档级 paste 采集（`autocomplete.js` 逐字：栅格受纳 + `preventDefault` 一次；非栅格图项拒即核 toast，非图零吞）。
+ *  - `#file-input` ∕ `#attach-btn`（`autocomplete.js` 逐字：点击 ⇒ 文件选取；change 毕清 `value`）——**受纳面扩文本/源码族**
  *    （2026-10-05 · §2 KD-RC-13 · 批 `docs/batches/2026-10-05-attach-file-support.md`）：`accept` 同源派生
  *    （`image/*` + `text/*` + `TEXT_EXTS`）；`isTextFile` ⇒ `collectTextFile`（判序 = 档数 → 单档 → 合计；
  *    前 8000 B NUL 扫描 ⇒ UTF-8 解码入列）；非受纳 ⇒ 出声拒（零静默）。
- *  - `#paste-bar` ∕ `#paste-badge` 芯片条（`:155-184` 逐字：`📎 image N` + ✕ 按 idx splice 重渲）——
+ *  - `#paste-bar` ∕ `#paste-badge` 芯片条（`autocomplete.js` 逐字：`📎 image N` + ✕ 按 idx splice 重渲）——
  *    双族同条（图 `data-kind="image"` ∥ 档 `📎 <名>` 经 HTML 转义；✕ 按 `data-kind` 分列删除）。
  *  - 内联纯函数两件（导出面）：`formatFileBlock` ∥ `withAttachedFiles`（`panel.mjs` `send()` 两径消费）。
  *
@@ -19,12 +19,12 @@
  * 返回 = 调用方装配面（元素引用 + 清面 + 共享图列 + 文本档列）。
  *
  * 图列身份：`images` 由调用方给出（本项目 = `panel.mjs`）——`send` 径 `[...images]` 快照 + `length = 0`
- * 保身份（VSC `send.js:74-82` GitHub thincoder#3 注：引用失效 = 首次粘贴后即断）；本档不改身份。
+ * 保身份（VSC `send.js` GitHub thincoder#3 注：引用失效 = 首次粘贴后即断）；本档不改身份。
  */
 import { t } from "../i18n.mjs"
 import { showToast } from "../toast.mjs"
 
-/** 栅格四型判据（值源 = VSC `webview/autocomplete.js:126` 同式）。 */
+/** 栅格四型判据（值源 = VSC `webview/autocomplete.js` 同式）。 */
 export const RASTER_MIME = /^(image\/(png|jpeg|jpg|gif|webp))$/
 
 /** 受纳扩展名清单（**79** 项——文本 / 源码族；值源 = 设计 KD-RC-13 逐项枚举）。 */
@@ -76,7 +76,7 @@ export function createAttachBar(deps = {}) {
   // 文本/源码档列（档位形 = `{ name, size, text }`——`send` 径 `[...files]` 快照 + `length = 0` 保身份，照 images 式）。
   const files = []
 
-  // ── 结构（照 VSC `index.html:44,46,50-52` 静态形）──
+  // ── 结构（照 VSC `index.html` 静态形）──
   const fileInput = document.createElement("input")
   fileInput.type = "file"
   fileInput.id = "file-input"
@@ -104,7 +104,7 @@ export function createAttachBar(deps = {}) {
   }
   applyWords()
 
-  // ── 图像粘贴（`autocomplete.js:127-142` 逐字）──
+  // ── 图像粘贴（`autocomplete.js` 逐字）──
   // Raster-only gate (GitHub thincoder#3 review #1): the extension's savePastedImages
   // accepts png/jpeg/gif/webp only — accepting other image/* here would render a 📎 chip
   // that silently vanishes on send (no pointer, no error on the model side).
@@ -125,7 +125,7 @@ export function createAttachBar(deps = {}) {
     }
   })
 
-  // ── 文件选取（`autocomplete.js:144-153` 逐字；DOM 查询 → 本档元素引用）──
+  // ── 文件选取（`autocomplete.js` 逐字；DOM 查询 → 本档元素引用）──
   attachBtn.addEventListener("click", () => fileInput.click())
   fileInput.addEventListener("change", () => {
     for (const file of fileInput.files) {
@@ -187,7 +187,7 @@ export function createAttachBar(deps = {}) {
       pasteBar.style.display = "none"
       return
     }
-    // VSC `:171` 的 `!bar || !badge` 支（fixture DOM 兜底）随工厂化退场——两元素由本档自建，恒在。
+    // VSC `autocomplete.js` 的 `!bar || !badge` 支（fixture DOM 兜底）随工厂化退场——两元素由本档自建，恒在。
     // 双族同条：图芯片 `📎 image N`（文本锁不动——仅 +`data-kind` 属性级）∥ 档芯片 `📎 <名>`（名经 HTML 转义）。
     pasteBadge.innerHTML = [
       ...images.map((_, i) =>
@@ -209,7 +209,7 @@ export function createAttachBar(deps = {}) {
     })
   }
 
-  /** 提交后清面（VSC `send.js:52-53,81-82` 两行：条隐 + 徽标清空；图列清空归调用方 `length = 0`）。 */
+  /** 提交后清面（VSC `send.js` 两行：条隐 + 徽标清空；图列清空归调用方 `length = 0`）。 */
   function clear() {
     pasteBar.style.display = "none"
     pasteBadge.innerHTML = ""

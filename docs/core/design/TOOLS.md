@@ -166,7 +166,7 @@
 
 - **内置工具**（`thincoder-core/tools/index.mjs` `builtinTools`）：file 6（read / write / edit / insert_after / hashline_edit / read_image）· patch 2（apply_patch / delete）· system 4（bash / glob / grep / ls）· web 2（websearch / fetch）· git 2（git / question）· 
 其余 lint / lsp / execute / tree / browser / ops 4（file_ops / process / get_current_time / wait_for）。
-- **元工具**（`thincoder-core/agent-tools.mjs`）：task / plan / goal / verify / batch / subagent / skill / recent_changes / advisor / eng / timer / read_history / context / consult_start / consult_stop / notify_parent / manifest——readonly 自管纪律工具；台账统一入口 `ledger`（`thincoder-core/ledger.mjs`）。
+- **元工具**（`thincoder-core/agent-tools.mjs`）：task / plan / goal / verify / batch / subagent / skill / recent_changes / advisor / eng / timer / read_history / context / consult_start / consult_stop / notify_parent / manifest / doc_check——readonly 自管纪律工具；台账统一入口 `ledger`（`thincoder-core/ledger.mjs`）。
 - 子代理按 role 过滤（explore/plan 只读，eng-coder 额外门控）；`context`（主动整理上下文 · 单工具三操作 · depth-0 段——形态与机制权威 = 本层 `CONTEXT-COMPACTION.md` §6.16）。
 - `read_history` 语义权威 = SESSION 板（本层 `SESSION.md`）。
 - **schema 生成**：`toOpenAISchema(tool)`——name / description / parameters 转 OpenAI function 格式。description 来源：两端均用 `thincoder-core/tool-docs/*.md`（`DESC()` 机制——md 文件即描述源；VSC 经核 `loadToolDoc`、`toOpenAISchema` 调用期过锚替换原语）。md 描述给模型**完整使用手册**（含参数说明 / 路由 / 反模式），非一行字符串。
@@ -244,6 +244,7 @@ interval 默认 1s 下限 100ms。**`advisor settled` 判据** = 后台评审池
 - **process / file_ops / get_current_time / tree / lsp / lint / delete / bash**：按各自描述契约。
 - **batch**：批次档生命周期（action = create ∕ append ∕ status ∕ close；**无路径参数**——目标档 = spawn 绑定；身份定可写段）；append 段写入 append-only；写前剔凭证；工具盖轮次戳（仅 §3）；fail-closed 逐条 throw。权威 = 工程模式板。
 - **manifest**：project-manifest 全键读写出口（三动作 `read` / `init` / `write`——点改 ∥ 全键族白名单 ∥ depth-0 两模式同挂）；机制 = `docs/core/design/MANIFEST.md` §2.10。
+- **doc_check**：文档纪律机检（只读 · 报告态 · 非门禁——不阻断、不置退出码）——判据两条（锚 = 文档指针可解析 ∥ 行宽 = 单行 > 阈值）；判据参数依据 `PROJECT-MANIFEST.json` `checkConfig`；参数 = `target`（可选）。机制 = `docs/core/design/DOC-DISCIPLINE.md` §3.20。
 - **notify_parent**：子代理上行通道（`kind` = ask / note；非阻塞；父侧队列 ≤20 条 ∥ 单条 ≤1,500 字符）；depth>0 段装配（consult 段除外）。
 - **ledger**：台账统一入口（`action` = add / update / close 写仅主 agent ∥ query / count 只读全角色）；随核家族段装配（`thincoder-core/ledger.mjs`——全量变体 depth-0 ∥ 读二变体 depth>0）。
 

@@ -1,6 +1,6 @@
 /**
  * provider/responses-request.mjs — Responses **请求构造面**出档（2026-09-29 structure-split-2 · 台账 #620）：自
- * `provider/responses.mjs` 全量迁出〔原 `:22-245`〕——host 白名单判定（`isStatefulHost` ∕ `isStoreRequiredHost` ∕
+ * `provider/responses.mjs` 全量迁出——host 白名单判定（`isStatefulHost` ∕ `isStoreRequiredHost` ∕
  * `isNonStatefulHost`）· `chainKey` · `builtinToolsFor` · `toItems` / `toTools` / `normalizeUsage` · `buildBody`；
  * **结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；切点 ∕ 缝单源 = 批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-B）。
  *

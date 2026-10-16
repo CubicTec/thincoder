@@ -6,7 +6,7 @@
  * 〔autoTurn 支**起跑**一发 —— 收尾 `end` 写点前移入 `turn-face.mjs` 结算序，修复轮 3〕；**归档 ⇒ 起跑窗（本批 2026-10-01 复位）**
  * （用户 2026-09-30 18:49 ∥ 2026-10-01 02:08：消化起跑点（`ev:digest start` 发帧点）= 对本轮将消费驻留条目（起跑快照 =
  * 起跑刻 pending 单容器）逐条补发 `ev:subagent { status:"done" }` = **主面**——`settled` 待消化块随起跑归档入流、居消费轮行族之后；
- * `hooks.reclaim` = **兜底幂等**（迟结算面；已冻结块零动作）〔对位 VSC `suspension.mjs:112-119` ∥ CLI `suspension-drive.mjs:182`〕）；
+ * `hooks.reclaim` = **兜底幂等**（迟结算面；已冻结块零动作）〔对位 VSC `backgroundCounts` ∥ CLI `digestTurn`〕）；
  * 冻结 ⇒ 退出兜底同型）④ 输入 ∕ 关闭路由（`pushInput` + `wake` ∕ `abort`——容量满判先行
  * 〔#625：`pending.length >= QUEUED_MAX_ITEMS` ⇒ 零受理返 `"full"`〕）+ **窗队共镜**（窗输入队投影 = 载体 `entry.pending`——核输入队列同数组，零第二写者 ∥ **六帧**出站；降级窗占位 `suspension-guard.mjs` ∕ 帧面 `window-queue.mjs`）
  * ⑤ 提示面触发（用户回合完成 —— 档①）⑥ **残输入兜底**（出窗残值非空 ⇒ 以普通回合续发——不静默丢）⑦ **留档记录起跑半**
@@ -70,7 +70,7 @@ export function createSuspensionDrive({ post, runTurn, reloadSlot = null, notify
     return out
   }
 
-  /** 已消化驻留块自动回收（2026-10-06——#76 digested-stuck 事故；形状 = 手动 freeze 谓词（`subagent-panel.mjs:117-155`）
+  /** 已消化驻留块自动回收（2026-10-06——#76 digested-stuck 事故；形状 = 手动 freeze 谓词（`renderSubagentPanel`）
    *  的 beat 级自动化）：渲染面报块中 `awaitingDigest ∧ frozen ∧ 非 consult` ∧ 核侧不在驻留（两池 + pending 皆无）
    *  ⇒ 判定「已消化驻留」（done 帧曾丢——帧面零持久痕为该事故的读面缺口）⇒ 补发 done（幂等：重复发射由渲染面归档闸消化）。
    *  谓词逐 beat 现算 = 零新存储（符「位置零存储」裁）；效果 = 分钟级自愈，不再等池空 freezeAll ∥ 手动 freeze。 */

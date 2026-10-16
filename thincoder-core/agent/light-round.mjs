@@ -39,7 +39,7 @@ export async function lightRoundOpen(agent) {
     const candidates = [anchor, ...ledgerChildren(anchor).map((p) => p.root)]
     for (const cand of candidates) {
       // 工作区候选（下辖 ≥2 项目——`projectRootView`）⇒ 跳过、照查其余（工作区锚不充当项目 = AC-M2-19 同判；
-      // `openLedger` 工作区报明拒 = AC-M2-17——既定观察态，非读错）。
+      // 该态判据 = 根推导单源「已注册」的库臂排除（键控库在盘 ≠ 可作项目）——既定观察态，非读错）。
       if (projectRootView(cand).state === "workspace") continue
       let rows
       try { rows = ledgerQuery({ cwd: cand, status: "在途" }) } catch { continue } // 候选读错 ⇒ 停本候选

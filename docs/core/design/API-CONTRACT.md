@@ -4341,7 +4341,7 @@
 | `ledgerKey` | `(root)` | 库键（sha1 前 16 位） | 未填充——读码 | `docs/core/design/LEDGER.md` §7 |
 | `openLedger` | `(cwd)` | DatabaseSync 句柄 | ensureSchema（幂等建表） | `docs/core/design/LEDGER.md` §7 |
 | `ledgerQuery` | `({ cwd, status, kind, board })` | SELECT 行集 | 只读 | `docs/core/design/LEDGER.md` §7 |
-| `ledgerCount` | `({ cwd })` | COUNT(*)（未决四态） | 只读 | `docs/core/design/LEDGER.md` §7 |
+| `ledgerCount` | `({ cwd })` | `{ count, overdue, evidenceOversize }`（本档单源 = `docs/core/design/LEDGER.md` §7.1——未决四态计数 ∥ 超龄桶 ∥ `evidence` 超限数） | 只读 | `docs/core/design/LEDGER.md` §7 |
 | `ledgerAdd` | `({ cwd, row })` | 未填充——读码 | INSERT（写命令 · 主 agent） | `docs/core/design/LEDGER.md` §7 |
 | `ledgerUpdate` | `({ cwd, id, patch })` | 未填充——读码 | UPDATE（写命令 · 主 agent） | `docs/core/design/LEDGER.md` §7 |
 | `ledgerClose` | `({ cwd, id, status })` | 未填充——读码 | UPDATE status + `closed_at`（事务） | `docs/core/design/LEDGER.md` §7 |

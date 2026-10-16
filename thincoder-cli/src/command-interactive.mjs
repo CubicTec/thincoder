@@ -34,7 +34,7 @@ export async function chatCommand(args, ctx) {
   // 与 TUI 面同式）：**invalid 类**（`state === "invalid"` ∨ `providerInvalidReason` 非空——无渠/key
   // ⇒ 不可运行）⇒ 可读错误 + 退出码 1（不弹 UI、不崩溃）；**fallback**（无有效 defaultModel 但可运行）
   // ⇒ stderr 一行明示 + 继续运行（不退出——D-S2 同态同解）。条目结构不全不在本门（负向锁 =
-  // PROVIDER.md:437）——归运行期失败径（stderr + 非 0 退出）。
+  // PROVIDER.md §6.22）——归运行期失败径（stderr + 非 0 退出）。
   const headlessCfg = agent.config ?? {}
   const invalidClass = headlessCfg.providerState === "invalid"
     || (typeof headlessCfg.providerInvalidReason === "string" && headlessCfg.providerInvalidReason !== "")

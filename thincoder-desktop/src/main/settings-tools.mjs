@@ -6,7 +6,7 @@
  * 密钥纪律）· 写 `{ patch: { embedding?: { apiKey }, websearch?: { apiKey } } }`（**写经核
  * `writeConfigAtomic`**；空串 = 清键 ⇒ 摘键，节点空 ⇒ 删节点）。
  * 语义源：embedding merge（置键回填 `baseURL` ∕ `model`——既有自定义值优先、缺位取核
- * `DEFAULTS.embedding`）= CLI `cmd-config.mjs:6` `embeddingPatch`（默认值单源 = 核）；websearch
+ * `DEFAULTS.embedding`）= CLI `embeddingPatch`（默认值单源 = 核）；websearch
  * 单键写 = VSC `saveWebsearchKeyFromPanel`。
  * 纪律：零 electron 依赖（平 node 可直测）；`apiKey` 非串 ⇒ `invalid-patch`（零写）。
  */
@@ -22,7 +22,7 @@ function toolsFace() {
   }
 }
 
-/** embedding key 写形（merge 语义源 = CLI `cmd-config.mjs:6` `embeddingPatch`：置键并回填
+/** embedding key 写形（merge 语义源 = CLI `embeddingPatch`：置键并回填
  *  `baseURL` ∕ `model`（既有自定义值优先、缺位取核 `DEFAULTS.embedding`——**默认值单源 = 核**）；
  *  空 key ⇒ **摘键**，节点空 ⇒ 删节点）。 */
 function applyEmbeddingKey(disk, apiKey) {

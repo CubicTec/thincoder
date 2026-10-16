@@ -15,7 +15,7 @@
  * （`version` / `phase` / `promptsLanding` / `codePaths` 整键）+ `nestedKeys` 子键
  * （`docRoot.*` / `checkConfig.*` / `index.*`（含 `publicRepos`）/ `advisor.*`）；**四族整键写
  * （传整个对象）⇒ 拒**；白名单外 ⇒ 拒（拼写保护——未知键写盘 = 静默死键，KD-M1-36 问题本体）。
- * `value` 解析 = 同款口径 `settings.mjs:216-228`（先 `JSON.parse`，失败取字面串；`"null"` ⇒ `null`
+ * `value` 解析 = 同款口径 `settings.mjs` 的 `parseValue`（先 `JSON.parse`，失败取字面串；`"null"` ⇒ `null`
  * ——`docRoot.*` 的「本面无」，KD-M1-37）。
  *
  * 目标面（KD-M1-39——判据复用零新解析器）：`read` = `projectView`；`init` / `write` =
@@ -43,7 +43,7 @@ function refuse(action, reason) {
   return new Error(`manifest ${action}: refused — ${reason}`)
 }
 
-/** `target` 解析（先例 `eng.mjs:81` 缺省会话锚 ∥ `git.mjs:32-35` 相对形归一）：缺省 = 会话锚
+/** `target` 解析（先例 `eng.mjs` 的 `resolveEngineeringManifest` 缺省会话锚 ∥ `git.mjs` 的 `resolveBaseDir` 相对形归一）：缺省 = 会话锚
  *  （`ctx.agent.cwd ?? ctx.cwd ?? process.cwd()`）；显式相对形按会话锚归一（绝对形原样）。 */
 function resolveTarget(args, ctx) {
   const base = ctx?.agent?.cwd ?? ctx?.cwd ?? process.cwd()
@@ -65,7 +65,7 @@ function isWritableKey(key) {
   return false
 }
 
-/** `value` 解析（同款口径 = `settings.mjs:216-228`）：先 `JSON.parse`（`"null"` ⇒ `null`；数值 /
+/** `value` 解析（同款口径 = `settings.mjs` 的 `parseValue`）：先 `JSON.parse`（`"null"` ⇒ `null`；数值 /
  *  布尔 / 数组皆 JSON 形），失败取字面串（裸串如 `docs/design`）。 */
 function parseValue(raw) {
   const s = String(raw)

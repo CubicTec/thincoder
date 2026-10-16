@@ -68,7 +68,7 @@ export function toolSeg(state, l, i, cols, maxRows) {
   return rows
 }
 
-/** done 面注记整形（#1188——跨端同式：空白折叠 + 140 上限；核件标尺 = `subblocks/activity-view.mjs:88-91`）：
+/** done 面注记整形（#1188——跨端同式：空白折叠 + 140 上限；核件标尺 = `subblocks/activity-view.mjs`）：
  *  折叠后为空 ⇒ 零注记（负向锁——逐字节等价）。 */
 function noteSuffix(note) {
   const flat = typeof note === "string" ? note.replace(/\s+/g, " ").trim() : ""
@@ -95,13 +95,13 @@ function frozenSubTaskLines(state, sub, cols, maxRows) {
   const modelPart = sub.model ? ` · ${sub.model}` : ""
   const turnPart = sub.maxTurns > 0 ? ` · turn ${sub.turn}/${sub.maxTurns}` : ""
   // 图标三态互斥（2026-09-20 端差·显示面消差批 M5）：修前 stopped 冻结头 `✓` 与 verb 相抵
-  // ⇒ 补齐 VSC `webview/activity-view.js:46-49` 已成的 cancelled → `⏹` 形态（VSC 标尺；#821 起
+  // ⇒ 补齐 VSC `webview/activity-view.js` 已成的 cancelled → `⏹` 形态（VSC 标尺；#821 起
   // error 面同归 `⏹`——见下）。
   const errored = sub.errored === true
   const icon = sub.approval ? "⏸" : (sub.stopped || errored) ? "⏹" : "✓"
   const verb = sub.stopped ? t("sub.stopped") : errored ? t("sub.error") : t("sub.done") // AGENT-LOOP-SUBAGENT.md §6.7.2: cancel 冻结标题 "stopped"（SESSION.md §6.26 词面单源——en 缺省逐字 = stopped/error/done）
   const head = `[${icon} ${sub.key}${modePart}${modelPart} · ${verb} ${elapsed}s${turnPart}]`
-  // 注记整形（#1175 ∥ #1188 · SESSION.md §6.26 注记整形单源；核件标尺 = `thincoder-render-core/subblocks/activity-view.mjs:88-91`）：
+  // 注记整形（#1175 ∥ #1188 · SESSION.md §6.26 注记整形单源；核件标尺 = `thincoder-render-core/subblocks/activity-view.mjs`）：
   // ① error 面 = 尾接 ` — <error>`（过 `noteSuffix`——空白折叠 + trim + 140 上限，随本批由「原串·零折叠零截断」收正）；
   // ② done 面 = 尾接 ` — <note>`（同过 `noteSuffix`——error ∥ done 两类注记同式）；
   // ③ stopped 面 = **零注记**（原因词与 verb 重复——对齐核件 `cancelled` 面）。

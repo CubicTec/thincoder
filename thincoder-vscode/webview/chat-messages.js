@@ -68,7 +68,7 @@ export function initMessageLoop(deps) {
       case "token":            markOutput(); clearStatusText(); onToken(m.text); break
       case "reasoning":        markOutput(); clearStatusText(); onReasoning(m.text); break
       case "turnBreak":        onTurnBreak(); break
-      // X2（显示面消差批 §2.1）：advisor 卡头携轮次标签 + 状态行字面 = CLI `tool-events.mjs:145`
+      // X2（显示面消差批 §2.1）：advisor 卡头携轮次标签 + 状态行字面 = CLI `buildToolCallbacks`
       // 逐字（`advisor review (round N · model)`）；无 round 字段（非 advisor / 旧载荷）⇒ 逐字节同修前。
       // 注：`round` 仅 advisor 载荷携（宿主 `advisorMeta`）⇒ 以标签非空分派，**不写工具名字面比较**
       // （该形会被 `protocol-coverage` 提取器当消息判别式——§12 表机检）。
@@ -271,7 +271,7 @@ export function initMessageLoop(deps) {
         // Subagent/consultant content streams into an activity-region block
         // (§13/§14 — activity.js ensureBlock). Advisor has no webview consumer
         // (VSC-DEBT D-2: no host emitter — the advisor family merged into the
-        // subagent container; src/agent.mjs:79).
+        // subagent container; `src/agent.mjs`).
         if (m.name?.startsWith("sub:")) { markOutput(); subagentChunk(m) }
         break
     }

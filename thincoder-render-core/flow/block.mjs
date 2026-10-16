@@ -15,7 +15,7 @@ import { renderToolHistory } from "./tool-card.mjs"
 
 // ─── 顾问块（advisor / 子代理块共用的块容器与内容面）──
 
-/** 顾问 / 子代理块容器（承 `ui.js:19-30` 逐字）：`details.advisor-block[open]` + summary + `.advisor-content`。 */
+/** 顾问 / 子代理块容器（承 `ui.js` 逐字）：`details.advisor-block[open]` + summary + `.advisor-content`。 */
 export function buildAdvisorBlock(roundLabel) {
   const details = document.createElement("details")
   details.className = "advisor-block"
@@ -37,7 +37,7 @@ function appendIntoLastTextNode(parent, str) {
   else parent.appendChild(document.createTextNode(str))
 }
 
-/** 顾问块内容追加（承 `ui.js:45-85` 逐字——合并判据 / 冻结守卫 / §5.6 toolOutput RAW 拼接语义全同）。
+/** 顾问块内容追加（承 `ui.js` 逐字——合并判据 / 冻结守卫 / §5.6 toolOutput RAW 拼接语义全同）。
  *  `block` = 块元素（含 `.advisor-content`）；返回零值（DOM 原地追加）。 */
 export function appendAdvisorChunk(block, kind, text, sub, meta) {
   // §27.1 F3（缺陷①）: 冻结块不接受追加（advisor 块无 _subMeta——不受影响）
@@ -83,7 +83,7 @@ export function appendAdvisorChunk(block, kind, text, sub, meta) {
 
 // ─── 消息块（user / assistant 帧 / 恢复面）──
 
-/** 历史用户消息气泡（承 `ui.js:136-145`；`ctx` 入参未用——去参）。时间只显真实 ts
+/** 历史用户消息气泡（承 `ui.js`；`ctx` 入参未用——去参）。时间只显真实 ts
  *  （缺失不显示——无 `fmtTime(new Date())` 误导回退）；`dataset.raw` = 待发送标记面锚定源。 */
 export function buildUserMessage(text, timestamp, idx) {
   const el = document.createElement("div")
@@ -96,7 +96,7 @@ export function buildUserMessage(text, timestamp, idx) {
   return el
 }
 
-/** 恢复助手帧容器（承 `ui.js:160-174`——live-DOM parity：label（turnStart 才画）→ thinking 块
+/** 恢复助手帧容器（承 `ui.js`——live-DOM parity：label（turnStart 才画）→ thinking 块
  *  → content bubble → 嵌套工具卡 ×n；data-idx = 帧原始全局 idx——分页锚只外层消息）。
  *  #875（2026-10-04）：推理块恢复径默认折叠（`open` 属性删——与 live 径 `flow/reasoning.mjs` 同拍）。 */
 export function buildAssistantRestore(msg) {
@@ -115,7 +115,7 @@ export function buildAssistantRestore(msg) {
   return el
 }
 
-/** 空助手块容器（承 `ui.js:176-189` newBlock 的 DOM 面——`withLabel` = 本回合首块（未画过 label）；
+/** 空助手块容器（承 `ui.js` newBlock 的 DOM 面——`withLabel` = 本回合首块（未画过 label）；
  *  `_nextIdx` 分配、`assistantLabeled` 翻转、append 与窗口裁剪留端）。 */
 export function renderBlock({ idx, withLabel = false } = {}) {
   const block = document.createElement("div")
@@ -126,7 +126,7 @@ export function renderBlock({ idx, withLabel = false } = {}) {
   return block
 }
 
-/** 懒加载历史元素分派（承 `ui.js:396-402`；返回 null = 该 kind 不渲）。 */
+/** 懒加载历史元素分派（承 `ui.js`；返回 null = 该 kind 不渲）。 */
 export function buildHistoryMessage(msg) {
   if (!msg) return null
   if (msg.kind === "user") return buildUserMessage(msg.text, msg.timestamp, msg.idx)
@@ -137,7 +137,7 @@ export function buildHistoryMessage(msg) {
 
 // ─── 错误横幅 ──────────────────────────────────
 
-/** 错误横幅（承 `ui.js:404-417`；唯一出站 `retry`（`:413`）经 `deps.emit("retry", {})` 注入；
+/** 错误横幅（承 `ui.js`；唯一出站 `retry` 经 `deps.emit("retry", {})` 注入；
  *  `currentBlock` 建块与 scrollDown 留端）。 */
 export function renderErrorBanner(text, techInfo, deps = {}) {
   const t = deps.t ?? coreT

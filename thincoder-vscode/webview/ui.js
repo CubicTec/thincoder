@@ -131,7 +131,7 @@ export function newBlock(ctx) {
   trimOldMessages(ctx)
 }
 
-/** X2（显示面消差批 §2.1）：advisor 卡头轮次标签（字面 = CLI `tool-events.mjs:152` `roundTag` 逐字）
+/** X2（显示面消差批 §2.1）：advisor 卡头轮次标签（字面 = CLI `buildToolCallbacks` `roundTag` 逐字）
  *  `(round N · model)`；无 model ⇒ 降级形 `(round N)`（不显 `null`）；无 round ⇒ `""`（零改面——
  *  非 advisor / 无轮次载荷逐字节同修前）。状态行同用（`chat.js`：`advisor review${tag}`）。 */
 export function advisorRoundTag(round, model) {
@@ -192,7 +192,7 @@ export function buildHistoryMessage(ctx, msg) {
   return null
 }
 
-/** 错误横幅：唯一出站 `retry`（`:413`）经 `ctx.vscode.postMessage` 绑定注入（判别式字面量须在
+/** 错误横幅：唯一出站 `retry` 经 `ctx.vscode.postMessage` 绑定注入（判别式字面量须在
  *  发射位可提取——§13 发面机检）；建块 / append / 跟滚留端。 */
 export function showError(ctx, text, techInfo) {
   if (!ctx.currentBlock) newBlock(ctx)

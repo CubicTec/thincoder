@@ -267,7 +267,7 @@ function clipboardReady() {
 }
 
 /** 节点侧接线提示块（#1235——说明句 + 命令文本：`<pre class="snippet">` 可选中；**复制钮按可用性门**
- *  （`navigator.clipboard` 在场 ⇒ 钮在场；缺（http 内网无安全上下文）⇒ 钮不渲染——零假控件，判式沿 `views-me-chat.mjs:108` 先例）；
+ *  （`navigator.clipboard` 在场 ⇒ 钮在场；缺（http 内网无安全上下文）⇒ 钮不渲染——零假控件，判式沿 `views-me-chat.mjs` `clipboardReady` 先例）；
  *  文本源 = `sandbox/SANDBOX.md` §3「节点侧前置」；TLS 档句（证书 = 用户自备）并入提示句。 */
 function nodeWiringBlock(h) {
   const command = t("admin.sandbox.nodeWiringCmd")

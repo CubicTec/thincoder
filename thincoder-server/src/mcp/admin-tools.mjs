@@ -8,19 +8,19 @@
  * `resolveProbeConfig` ∥ `mcpServerView`）＋ `face.mjs`（`closeMcpServer` ∥ `loadCoreMcp` ∥ `clearMcpCooldown`）——
  * 形校验 ∥ 编辑三态（缺席 = 不变 ∥ 显式 `null` = 清 ∥ 敏感键空串 = 不变）∥ 密文列 ∥ 探活体解析全转 store 单源；
  * 本档零自造 SQL ∥ 零第二加密 ∥ 零第二探活协议。**同形重复（不可共享——如实登记）**：探活调用 ＋ 读数归一
- * （`routes.mjs:104-134` 内联）与 `mcp_event` detail 三写入点（`routes.mjs:43-49` ∥ `:64-70` ∥ `:84-90` 内联、无导出）按本档**同形自建**
+ * （`routes.mjs` 探活端点内联）与 `mcp_event` detail 三写入点（`routes.mjs` 增/改/删三端点的 `recordAudit` 内联、无导出）按本档**同形自建**
  * ——不抽共享件（抽件须动 routes，与 `routes.mjs` 零改声明相抵）。
  * 寻址（§12.2①）：`update` = `id`（`name` 键 = 改名——providers.update 同形）；`remove`/`probe` = `id ∥ name` 两形
  * （按名解析 = `listMcpServers` 视图按 `name` 取 `id`，其后全走既有导出）；未命中 ⇒ 工具级错误人话「先 mcp.list 查在册」。
  *
  * 凭据（§12.2③——只写零回显）：`token`/`headers`/`env` 可入参、永不回显（结果 = 视图——`hasSecrets` 布尔；`update` 出 `keys` 只键名）；
- * 本档零携值日志点（如记：只名/形）；掩蔽 = 键名表 `SENSITIVE_KEYS`（`chat.mjs:230`——`token` 等列名键 ⇒ `args` 落库/帧面 `***`）；
+ * 本档零携值日志点（如记：只名/形）；掩蔽 = 键名表 `SENSITIVE_KEYS`（`chat.mjs`——`token` 等列名键 ⇒ `args` 落库/帧面 `***`）；
  * `headers`/`env` 袋内**非列名键**值 = 掩蔽面残余（本批零改掩蔽链——披露全文 = §12.2③）。
  * 审计（§12.2⑤——KD-SV-207①）：写动作（`add`/`update`/`remove`）⇒ `mcp_event` 三 kind 照落（detail 逐值同 `routes.mjs` 形——
  * `{kind,id,name,transport}` ∥ `{kind,id,name,keys}` ∥ `{kind,id,name}`；actor/actorId = 会话 actor）＋ 驱动层 `chat_call` 逐调用（**两行**）；
  * `list`/`probe` ⇒ 仅 `chat_call`（探活零落库零审计——沿 `routes.mjs` 口径）；`chat_call.subject` = null（本档结果零携 `subject`——管理族既有口径）。
- * 注入缝（§12.2②——键面与 routes/face 同源）：`deps.mcpProbeImpl`（探活替身——`routes.mjs:104` 同键）∥ `deps.mcpRemoveImpl`
- * （关会话替身——`face.mjs:158` 同键）；`?? null` 缺省 = 真件回落、生产零变。
+ * 注入缝（§12.2②——键面与 routes/face 同源）：`deps.mcpProbeImpl`（探活替身——`routes.mjs` 同键）∥ `deps.mcpRemoveImpl`
+ * （关会话替身——`face.mjs` 同键）；`?? null` 缺省 = 真件回落、生产零变。
  */
 import { recordAudit } from "../accounts/audit.mjs"
 import { clearMcpCooldown, closeMcpServer, loadCoreMcp } from "./face.mjs"

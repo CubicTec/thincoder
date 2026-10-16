@@ -11,10 +11,19 @@
  * 消费侧一律动态 import（`ledger-db.mjs` 静态 import node:sqlite ⇒ W8 契约②）。
  */
 import { ledgerAdd, ledgerClose, ledgerCount, ledgerQuery, ledgerUpdate } from "./ledger-cmd.mjs"
+import { resolveLedgerRoot } from "./ledger-db.mjs"
 import { DESC } from "./tools/shared.mjs" // #15 描述外置：文本单点 = tool-docs/ledger.md（DESC 单解析面）
 
-/** 工具 cwd 供值面（缺省 → 当前项目根）。 */
+/** 工具 cwd 供值面（缺省 → 当前会话锚——「动作目标路径」；项目根由核 `resolveLedgerRoot` 推导）。 */
 const cwdOf = (ctx) => ctx?.agent?.cwd ?? ctx?.cwd ?? process.cwd()
+
+/** 根推导**报明面**（设计档 §3.8「报明形态」）：向下发现（`basis === 'descendant'`——容器锚收敛序）⇒
+ *  对象形回执增 `root` 键；祖先支（自明路径）⇒ `null`（展开零键——回执逐字零改）。供值面 = 核同一
+ *  单源 `resolveLedgerRoot`（工具层零自算根；单实现、多调用点）。 */
+const reportedRoot = (cwd) => {
+  const derived = resolveLedgerRoot(cwd)
+  return derived && derived.basis === "descendant" ? { root: derived.root } : null
+}
 
 // ── 工具层参数守卫（设计档 §3.2 · 2026-09-27 快车道修复 · Gitee #IKIQGK / 台账 #472） ──
 
@@ -80,7 +89,7 @@ const FULL_ACTIONS = ["add", "update", "close", "query", "count"]
 const READ_ACTIONS = ["query", "count"]
 
 /** cwd 参数描述（五前身声明同文——文本单点）。 */
-const CWD_DESC = "项目根目录——台账按项目根关联存储于用户数据目录（工作树外、不进 git）。相对路径按当前工作目录解析；查/写别的项目请给绝对路径。缺省 = 当前会话项目根"
+const CWD_DESC = "本次动作的目标路径——项目根由它推导：沿祖先链最近的项目目录（带 PROJECT-MANIFEST.json 或已有台账库）；容器目录下收敛到子项目。台账按项目根关联存储于用户数据目录（工作树外、不进 git）。相对路径按当前工作目录解析；查/写别的项目请给绝对路径。缺省 = 当前会话锚"
 
 /** 各 action 声明条目（= 前身旧工具 `parameters` 逐字；伪工具对象守卫 + 弃用壳共用单源）。 */
 const ACTION_SPECS = {
@@ -207,25 +216,31 @@ function makeLedgerTool(actions, { readonly = false, writeFace = false } = {}) {
       switch (action) {
         case "add": {
           const { cwd, ...row } = rest
-          const id = ledgerAdd({ cwd: cwd ?? cwdOf(ctx), row })
-          return JSON.stringify({ id, status: "待讨论" })
+          const target = cwd ?? cwdOf(ctx)
+          const id = ledgerAdd({ cwd: target, row })
+          return JSON.stringify({ id, status: "待讨论", ...reportedRoot(target) })
         }
         case "update": {
           const { cwd, id, ...patch } = rest
+          const target = cwd ?? cwdOf(ctx)
           let executorSessionId
           if (patch.executor == null) {
             // 显式 `null` ≡ 略去（§3.1 `null` 口径 · #474——与缺省同分支）；动态 import——零新静态边（K-LX1）
             const { getSessionId } = await import("./session-slots.mjs")
             executorSessionId = getSessionId()
           }
-          return JSON.stringify(ledgerUpdate({ cwd: cwd ?? cwdOf(ctx), id, patch, executorSessionId }))
+          return JSON.stringify({ ...ledgerUpdate({ cwd: target, id, patch, executorSessionId }), ...reportedRoot(target) })
         }
-        case "close":
-          return JSON.stringify(ledgerClose({ cwd: rest.cwd ?? cwdOf(ctx), id: rest.id, status: rest.status, evidence: rest.evidence, evidenceReplace: rest.evidenceReplace }))
+        case "close": {
+          const target = rest.cwd ?? cwdOf(ctx)
+          return JSON.stringify({ ...ledgerClose({ cwd: target, id: rest.id, status: rest.status, evidence: rest.evidence, evidenceReplace: rest.evidenceReplace }), ...reportedRoot(target) })
+        }
         case "query":
           return JSON.stringify(ledgerQuery({ cwd: rest.cwd ?? cwdOf(ctx), status: rest.status, kind: rest.kind, board: rest.board, trigger: rest.trigger }), null, 2)
-        case "count":
-          return JSON.stringify({ count: ledgerCount({ cwd: rest.cwd ?? cwdOf(ctx) }) })
+        case "count": {
+          const target = rest.cwd ?? cwdOf(ctx)
+          return JSON.stringify({ count: ledgerCount({ cwd: target }), ...reportedRoot(target) })
+        }
         default:
           // 不可达（② 枚举守门已先拒）——fail-loud 兜底（防未来变体增量 drift）
           throw new Error(`ledger：action 非法：${argPreview(action)}（取值 ∈ ${enumText(actions)}）`)

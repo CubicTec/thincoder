@@ -64,7 +64,7 @@ export function createComposerWire(deps = {}) {
 
   let failed = null // B21 行源（回执写 —— 本地闭包量，非切片）
   let lastEcho = null // 最近一次本地先行出的用户块 `{ key, block, attempt }`（标记三态落点 —— 按引用定位；`attempt` = 提交侧认领令牌 —— #613，未认领 ⇒ `null`）
-  let atSeq = 0 // @ 面请求 seq（迟到回执丢弃判据 —— VSC `autocomplete.js:29-34` 同式）
+  let atSeq = 0 // @ 面请求 seq（迟到回执丢弃判据 —— VSC `closeAtDropdown` 同式）
   const inFlight = new Map() // 本键最新发送尝试登记（key → 尝试令牌 —— 陈旧回执 ∕ 陈旧超时守卫单点 · #597）
 
   /** 失败态记录（B21）：`{ reason, kind, source }` 入态 + 记错 + 提示行重挂。`kind` = `provider-invalid` 回执真因
@@ -181,7 +181,7 @@ export function createComposerWire(deps = {}) {
   }
 
   /** 停止 ∕ 中断注入（D2 · 收正轮）：**单投** `msg:interrupt { key, message }` —— `abort` 无文本（停回合）；
-   *  `interrupt` 携文本 ⇒ 宿主下传核 abort 面 ⇒ 同上下文注入续跑（VSC `panel-messages-turn.mjs:129-138` 同式；
+   *  `interrupt` 携文本 ⇒ 宿主下传核 abort 面 ⇒ 同上下文注入续跑（VSC `handleInterrupt` 同式；
    *  「abort + 另投 `msg:send`」双投形退场 —— 队径送达 ≠ 同上下文续跑）。
    *  **#656（KD-52 ③）**：cap 询问待答径队满 ⇒ 宿主回 `queue-full`（**零中止** ∕ 零入队 —— 询问在场）⇒
    *  端侧可见形 = `slotFullNotice(message)`（toast + 文本回注 —— 零丢失；缺省 ⇒ 零动作）；其余失败因照旧诊断。 */

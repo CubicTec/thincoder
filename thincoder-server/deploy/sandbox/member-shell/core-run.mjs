@@ -14,7 +14,7 @@
  *   `setSlotEngineering`/`setSlotAdvisorGuard`）∥ 配置 `core/config.mjs` `loadConfig` ∥ 事件 token
  *   文法 `core/agent/relay-prefix.mjs` `parseRelayPath`（本批：relay 前缀 token **零剥离** ⇒ `sub` 帧）
  *   ∥ 停单件控制面 `core/agent-tools/subagent-async.mjs`（`cancelSyncChild`/`executeCancelAction`）+
- *   `core/agent-tools/async-settle.mjs` `getAsyncPool`（同桌面 `subagent-face.mjs:33-34` 先例）。
+ *   `core/agent-tools/async-settle.mjs` `getAsyncPool`（同桌面 `subagent-face.mjs` 的 `stopSubagent` 先例）。
  *
  * **核导入 = 动态（`loadCore`）**：本档顶层零 `@thincoder/core` 静态 import——包只在镜像内
  * （件位 `/opt/thincoder/app/node_modules/@thincoder/core`）可解析；开发机侧单元测试经
@@ -33,7 +33,7 @@
  *      ⇒ `runAgent(…, { extraTools })`（件序 = 成员件先 ∥ MCP 件后）；失败降级 = 零件 + 日志一条（回合不阻断）。
  *   ④ server 域成员件并面（§3.11(7)／KD-SV-222）：`./member-tools.mjs` 四件（建/启/停/销毁——工作区 key 第三门）
  *      同经 `extraTools` 缝注入；**防撞 `taken` = 装配后基集 ∪ 注入件名集（成员件四件）**——同名 MCP 件
- *      不得顶掉注入件（核 `setup.mjs:220` `toolByName` 后到者胜——先者留存）。
+ *      不得顶掉注入件（核 `setup.mjs` 的 `toolByName` 后到者胜——先者留存）。
  */
 
 import { existsSync, readdirSync } from "node:fs"
@@ -46,7 +46,7 @@ import {
 import { createMcpTools } from "./mcp-tools.mjs"
 import { MEMBER_TOOL_NAMES, createMemberTools } from "./member-tools.mjs"
 
-/** 工具结果全文截断（核 `thincoder-render-core/lib.mjs:27` `MAX_TOOL_OUTPUT` 镜像——渲染核不件位于盒
+/** 工具结果全文截断（核 `thincoder-render-core/lib.mjs` `MAX_TOOL_OUTPUT` 镜像——渲染核不件位于盒
  *  镜像（件位契约 = 核 + 壳），故与 `isToolFailureText` 同法镜像；网页侧仍以渲染核原文为准）。 */
 export const MAX_TOOL_OUTPUT = 64 * 1024
 
@@ -66,7 +66,7 @@ export class ShellError extends Error {
 /** 会话四旗（KD-SV-218——槽字段键序；读 = 行 `flags` ∥ 写 = `session.update` 四件）。 */
 export const FLAG_KEYS = Object.freeze(["autoApprove", "planMode", "engineering", "advisorGuard"])
 
-/** 四旗写面（核 `session-slot-write.mjs:146-165` 四件——名对位）。 */
+/** 四旗写面（核 `session-slot-write.mjs` `setSlotAutoApprove`/`setSlotPlanMode`/`setSlotEngineering`/`setSlotAdvisorGuard` 四件——名对位）。 */
 const FLAG_SETTERS = Object.freeze({
   autoApprove: "setSlotAutoApprove",
   planMode: "setSlotPlanMode",
@@ -461,7 +461,7 @@ export function createCoreRun({
 
       // 工具面并面（装配序 = assembleAgent ⇒ 取表 ⇒ 防撞过滤 ⇒ runAgent extraTools；读时读零缓存）：
       // 件序 = 成员件先（server 域四件——§3.11(7)）∥ MCP 件后；防撞 `taken` = 装配后基集（`agent.tools`）
-      // ∪ 注入件名集（成员件四件——KD-SV-222）；同名 MCP 件不得顶掉注入件（核 `setup.mjs:220` `toolByName`
+      // ∪ 注入件名集（成员件四件——KD-SV-222）；同名 MCP 件不得顶掉注入件（核 `setup.mjs` 的 `toolByName`
       // 后到者胜 ⇒ 先者留存）。取表/建桩失败 ⇒ 空表 + 日志一条（`mcp-tools.mjs` 内）——回合照跑。
       const baseNames = (Array.isArray(agent.tools) ? agent.tools : []).map((tool) => tool?.name).filter((name) => typeof name === "string" && name !== "")
       const taken = new Set([...baseNames, ...MEMBER_TOOL_NAMES])

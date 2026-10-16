@@ -359,7 +359,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | `thincoder-desktop/renderer/views/compress-status.mjs`（R4 新档） | → `docs/desktop/design/CHAT.md` §3.1 | — |
 | `thincoder-desktop/renderer/core.css`（R3c） | → `docs/desktop/design/UI.md` §4.1 | — |
 | `thincoder-desktop/renderer/chat-cards.css`（「桌面处理流 · VSC 对齐」批拆档产出） | → `docs/desktop/design/CHAT.md` §3.1 | — |
-| `thincoder-desktop/renderer/chat-fixes.css`（同批拆档产出） | → `docs/desktop/design/CHAT.md` §3.1 | — |
+| `thincoder-desktop/renderer/chat-fixes.css`（拆档产出） | → `docs/desktop/design/CHAT.md` §3.1 | — |
 | `thincoder-desktop/renderer/core-markdown.css` | → `docs/desktop/design/UI.md` §4.1 | — |
 | `thincoder-desktop/renderer/settings.css` | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/renderer/chat-composer.css` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |

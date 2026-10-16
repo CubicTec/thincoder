@@ -129,7 +129,7 @@ function recentProjects() {
 }
 
 /** `sessions:list`（无入参）⇒ `{ cwd, sessions }`：`cwd` 取主进程当前项目内存态；读面转口 `sessions.mjs`（零算法副本）。
- *  **A8 键名收正 = handler 重映射（源档零改）**：出站键 `rows ⇒ sessions`（VSC 回执键同形 —— `panel-session.mjs:262`）。 */
+ *  **A8 键名收正 = handler 重映射（源档零改）**：出站键 `rows ⇒ sessions`（VSC 回执键同形 —— `pushSessions`）。 */
 function sessionList() {
   const { rows, ...receipt } = listSessions(currentCwd())
   return { ...receipt, sessions: rows }

@@ -181,7 +181,7 @@
 | BR-53 | 边界 | 携绑定 coder 直写他批档 ∥ 写自身档 ∥ 自身批次伴随件 | 前 = 写门拒（§6.29.1——判据键 = `_batchDoc` 在场，零改）；后两者 = 放行 |
 | BR-54 | 正常 | create `ledger` = 多枚（数组 ∥ ` · ` / `,` / 空白 分隔串）+ `board` | 档头台账行 = `> 台账 = #a · #b · #c（<板块> · 归批）。`（单物理行——§4.10）；未给 / 单枚 ⇒ 逐字旧形（回归锚） |
 | BR-55 | 边界 | create `ledger` 值含换行 | 拒（单行——既有归一判据；台账行不得破单行） |
-| BR-56 | 正常 | `close({path})` 且本批尚存未落行（`task_book` 指本档 ∧ `status ∉ {已核销, 已废弃}`） / 全已落 | 前者：回执含未落行列表（逐行点名）+ 冻结照常（零写、不阻断）；后者：无该段 |
+| BR-56 | 正常 | `close({path})` 且本批尚存未落行（`task_book` 指本档 ∧ `status ∈ {待讨论, 待设计, 在途}`——`待核销` 属已落只待结账，不取） / 全已落 | 前者：未落行**自动改 `trigger=条件`** + 复启句落 `evidence`（`trigger=认账不排期` 者零触），回执逐行点名 + 冻结照常；后者：无该段（零写） |
 
 ### 4.9 状态行冻结拒写 + `docRoot.batches` 双基底（v2——M3 增量）
 
@@ -225,7 +225,9 @@ manifest `docRoot.batches` 复判（M1 缺键 → M1 默认值 fallback；注入
 
 **实参替换注（2026-10-05）**：`date` / `topic` / `source` / `prev` = 已知实参；`ledger` / `board` = 可选参（给则台账行实参化、未给保持占位字面——填充时点 = 建档后、本档首个 append/status 之前）。
 
-**台账行多编号形（一批多行时的承载形）**：一个批动辄十几行台账行 ⇒ 档头台账行**携多枚编号**。形 = `> 台账 = #1530 · #1531 · #1532（core · 归批）。前情 = …。`（` · ` 分隔，**单物理行**）。**骨架与占位零改**：占位字面仍为 `#<编号>` / `<板块>`（`TEMPLATE_PLACEHOLDERS` 与机检面 `TOOLS.md` §6.20 逐字不动——填充形变化不影响残留判据）。**反向引用**：台账行列本批的行号；各行的 `task_book` 指回本档（`design/LEDGER.md` §6.2 归批门）——两向互为反查。
+**台账行多编号形（一批多行时的承载形）**：一个批动辄十几行台账行 ⇒ 档头台账行**携多枚编号**。形 = `> 台账 = #1530 · #1531 · #1532（core · 归批）。前情 = …。`（` · ` 分隔，**单物理行**）。
+**骨架与占位零改**：占位字面仍为 `#<编号>` / `<板块>`（`TEMPLATE_PLACEHOLDERS` 与机检面 `TOOLS.md` §6.20 逐字不动——填充形变化不影响残留判据）。
+**反向引用**：台账行列本批的行号；各行的 `task_book` 指回本档（`design/LEDGER.md` §6.2 归批门）——两向互为反查。
 
 **段头映射注（2026-09-21 fix 轮——评审发现 #11）**：骨架段头（`## §1 讨论（主 agent）` 形态）为 create 权威形态；`design/ENGINEERING-MODE-V2.md` 六段表段名（§1 目标+前情+条目…）= 内容职责描述——两 face 相邻时**段头以本骨架为准**，V2 六段表不改写。
 
@@ -255,7 +257,8 @@ manifest `docRoot.batches` 复判（M1 缺键 → M1 默认值 fallback；注入
 **参数**：`path`（目标批次档——同 depth-0 append/status 取值规则，见 §4.1 / D-BR21）。
 **动作**：§1 段内状态行 →「已收口 <YYYY-MM-DD>」；此后该档 append / status 全拒（冻结判据唯一真值 = §1 行——与 §4.9 一致，零语义变）。
 **身份判据**：仅 depth-0 放行。**不替代**：台账核销事务 / 前批遗留核对（收口链主面仍是 §6 写入 + 台账动作——close 只收**机械收口**：状态行 + 冻结；不代写 §6 内容）。
-**收口报警（本批未落行——读数非闸门）**：close 回执末尾附一行「本批未落行」列表——取台账行集（`ledgerQuery`——读面只读开库）中 `task_book` 指向**本档** ∧ `status ∉ {已核销, 已废弃}` 的行，逐行点名（`#<id> <status> <title>`）。**零写**（不回改台账行、不阻断冻结——冻结照常完成）；无未落行 ⇒ 无该段。判据 = `design/LEDGER.md` §6.2。
+**收口重锚（本批未落行——自动）**：close ⇒ 取本批行集（`ledgerBatchRows`——选行单源 = `design/LEDGER.md` §7.1 解析同址，零二写）中 `task_book` 指向**本档** ∧ `status ∈ {待讨论, 待设计, 在途}` 的行（`待核销` 属已落只待结账，不取），**自动**改 `trigger=条件` + 复启句落 `evidence`（写入单源 = `ledgerReanchorBatch`——`design/LEDGER.md` §7.1；单事务 + 幂等）。
+`trigger = 认账不排期` 的行**零触**；回执逐行点名（`#<id> <status> <title>` → `条件`）；冻结照常完成；无未落行 ⇒ 无该段。**重锚 ≠ 核销**（不改 `status`——核销仍走台账写命令）。判据 = `design/LEDGER.md` §6.2。
 
 ### 4.15 相对路径解析序与防嵌套（2026-09-25 批）
 
@@ -328,22 +331,22 @@ manifest `docRoot.batches` 复判（M1 缺键 → M1 默认值 fallback；注入
 
 **常量面（单源 = `thincoder-core/agent-tools/batch-skeleton.mjs`——判定字面与骨架共址）**：`SEGMENT_BY_ROLE_NORMAL = { "coder": 5 }` + depth-0 两集模式键常量（append / status）。
 
-### 4.17 批级操作增量（P7 + P2 收口报警）：先例 ∥ 勘察证据 ∥ 受影响面
+### 4.17 批级操作增量（P7 + P2 收口重锚）：先例 ∥ 勘察证据 ∥ 受影响面
 
 **先例行（逐项——对齐 ∥ 偏离）**：
 
 - **P7 档头台账行多编号形（§4.10 / §4.11）**：先例 = 单编号形（`ledger` 单值 ⇒ `> 台账 = #<编号>`——本档 §4.10 既有骨架占位）；多编号 = 同形承载（单物理行、` · ` 连接）——偏离 = 输入分隔符集合扩为 数组 ∥ ` · ` ∥ `,` ∥ 空白（理由 = 一批多行实测 14 行；承载面单行契约不变）。
-- **P2 收口报警（§4.13——读数非闸门）**：**无先例**（`close` 回执此前无台账读数段）——对齐 = 既有「读数非闸门」裁定；偏离 = 回执新增只读段 + 动态 import 只读开库。
+- **P2 收口重锚（§4.13——收径自动写）**：先例 = 批级批量体例（`design/LEDGER.md` §3.3——取行 + 逐行落笔 + 单事务）∥ `close` 回执段（列名单、不阻断冻结）。**对齐** = 取行单源 ∥ 事务体例 ∥ 不阻断冻结。**偏离** = 回执段由只读改为**自动写台账行**（放开面 = 收径一处——§8 边界 12）。
 
-**勘察证据行**：查过 = 本仓公共源档——`docs/core/design/DOC-DISCIPLINE.md` §4.2.2（声明源 / 引用解析序）∥ `MANIFEST.md` §2.2（`docRoot.batches`）∥ `design/LEDGER.md` §6.2（归批指针门——本批 P2 收口报警的反查源）——**相关**。声明源 = `PROJECT-MANIFEST.json` `index.publicRepos` = **`[]`**（实读 `:189`）⇒ **无仓外声明源可查**（照记）。**结论 = 无仓外声明源相关**。
+**勘察证据行**：查过 = 本仓公共源档——`docs/core/design/DOC-DISCIPLINE.md` §4.2.2（声明源 / 引用解析序）∥ `MANIFEST.md` §2.2（`docRoot.batches`）∥ `design/LEDGER.md` §6.2（归批指针门——本批 P2 收口重锚的反查源）——**相关**。声明源 = `PROJECT-MANIFEST.json` `index.publicRepos` = **`[]`**（实读 `:189`）⇒ **无仓外声明源可查**（照记）。**结论 = 无仓外声明源相关**。
 
 **受影响面（行数 = 现行 · 落笔当刻实读）**：
 
-- **实现**：`thincoder-core/agent-tools/batch-skeleton.mjs`（219 行——多枚归一 + 渲染）· `thincoder-core/agent-tools/batch-lifecycle.mjs`（376 行——`close` 径台账只读查询 + 报警段；动态 import）· `thincoder-core/agent-tools/batch.mjs`（337 行——`ledger` schema 描述）。
-- **文档 / 描述面（模型可见文案——换写）**：本档 §4.8（BR-54 / BR-56）/ §4.10 / §4.11 / §4.13 · `thincoder-core/tool-docs/batch.md`（`ledger` 参数描述面）。
+- **实现**：`thincoder-core/agent-tools/batch-skeleton.mjs`（219 行——多枚归一 + 渲染）· `thincoder-core/agent-tools/batch-lifecycle.mjs`（376 行——`close` 径重锚：取行集 + 调核内重锚单源 + 回执点名；动态 import）· `thincoder-core/agent-tools/batch.mjs`（337 行——`ledger` schema 描述）。
+- **文档 / 描述面（模型可见文案——换写）**：本档 §4.8（BR-54 / BR-56）/ §4.10 / §4.11 / §4.13 · 本档 §7（D-BR29）/ §8 边界 12 · `thincoder-core/tool-docs/batch.md`（`ledger` 参数描述面）。
 - **零改面**：骨架与占位字面（`TEMPLATE_PLACEHOLDERS` ∥ `TOOLS.md` §6.20 判定域）逐字不动。
 
-**贴线判（500 顾问线 / 800 硬线）**：有增量档全列**最高 `batch-lifecycle.mjs` 376 行** ⇒ **零拆分义务**。
+**贴线判（500 顾问线 / 800 硬线）**：有增量档全列**最高 `batch-lifecycle.mjs` 376 行（增量后 ≈401）** ⇒ **零拆分义务**。
 
 ## 5. 行为纪律（提示词层，两份同步）
 
@@ -496,7 +499,7 @@ node -e "const fs=require('fs');const r=[];for(const f of fs.readdirSync('docs/b
 | D-BR26 | **段白名单模式感知**——模式位**执行期实读**（`ctx.agent.config?.agent?.engineering`）；普通面 append = §1/§2/§4/§5/§6 · status = §1/§2/§5 · `coder → §5` 增表（`SEGMENT_BY_ROLE_NORMAL`）；工程面判定字面逐字零变；骨架按模式取形（§4.10 四处替换） | 需求 `docs/core/requirements/NORMAL-MODE.md` §5.6（管理逻辑一套 · 差别只在约束强度）+ §4.16。 |
 | D-BR27 | **coder §5 = 可选绑定自写**（spawn 携 `batchDoc` 非强制；未绑定承接 ⇒ 主 agent 代记打标） | 实施者自写（工程同源）+「spawn 强制 batchDoc」不移植（用户裁定面）。 |
 | D-BR28 | **档头台账行 = 多编号单行形**（`#a · #b · …`）——骨架 / 占位字面零改 | 一批多行（实测 14 行）⇒ 一个编号装不下；单行保档头结构行契约（`findPlaceholderResidue` 判定域 `^>\s*台账` 只认一行——不改机检）+ 占位枚举单源（`TEMPLATE_PLACEHOLDERS`）零动。 |
-| D-BR29 | **close 附本批未落行读数**（台账行集只读查询）——报警非闸门 | 用户裁定「不新增机检门」：读数只点名不拦冻结；台账只读开库（写面零触）+ 动态 import（W8 契约②）；未落行台账以自查（收口同步清单「待办勾销」的机读形）。 |
+| D-BR29 | **close 收口重锚**（本批未落行**自动**改 `trigger=条件`，复启句落 `evidence`）——只锚 `条件`，不锚 `认账不排期` | 用户 2026-10-16 10:41 采纳父侧所提 ②（原话「同意你的判断。」）；理由 = 零写报警只报不改，行仍需人工脱钩。`条件` 的复启句 = 机械可造的事实句（可代填），`认账不排期` = 政策判断（不代填）。**被否** = 零写报警 + 建议处置句。代价（用户知情）= 收径允许写台账行（§8 边界 12 修正）+ `归批` 意图降级（回执照报）。写单源 = `design/LEDGER.md` §7.1 `ledgerReanchorBatch`；单事务 + 幂等。 |
 
 ## 8. 边界（本档不做）
 
@@ -512,5 +515,5 @@ node -e "const fs=require('fs');const r=[];for(const f of fs.readdirSync('docs/b
 10. 不新增工程机械门到普通面（设计令牌 ∥ spawn 强制 `batchDoc` ∥ 写文件门禁——三者在普通面**不新增**；第三门名统一「写文件门禁」——权威措辞 = `docs/core/design/ADVISOR-CONVERGENCE.md:378`）
 ——普通面作者缝 = 纪律 + 可选绑定（§4.16）；**携批次档绑定的实施子代理随绑定受既有批次档写门**（containment——非新增门；§4.16 ∥ `AGENT-LOOP-SUBAGENT.md` §6.29.1）。
 11. 不做档头台账行的多**物理行**形态（多编号仍居单行——§4.10）：多物理行会破「档头结构行」单行契约与占位残留判定域（`TOOLS.md` §6.20）——不做。
-12. 不做台账行本体（`design/LEDGER.md` 写域）；收口报警**只读只报**（不代改台账行、不代核销——核销仍走台账写命令）。
+12. 不做台账行本体（`design/LEDGER.md` 写域）；**收径（close 收口重锚）例外 = 允许写台账行**——仅「本批未落行 ⇒ `trigger=条件` + 复启句」一处（`design/LEDGER.md` §6.2）；**其余报警 / 读数面仍只读只报**（不代核销、不代改其它字段——核销仍走台账写命令）。
 

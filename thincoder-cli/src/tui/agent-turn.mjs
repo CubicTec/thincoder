@@ -263,7 +263,7 @@ async function runAgentTurnBody(ctx, text, opts) {
         }
         // decision === "error"：其余异常 —— provider 失败面（X8 原语义）——
         // X8（2026-09-20 端差·显示面消差批）：provider 失败面 = 友好首行（判据同 VSC
-        // panel-turn-loop.mjs:152-153：原文首行 + URL 脱敏）+ 诊断两行（Provider/Model）+ Retry
+        // panel-turn-loop.mjs：原文首行 + URL 脱敏）+ 诊断两行（Provider/Model）+ Retry
         // 询问（复用 permission 机制——同意 ⇒ 重建 controller + resume 重入，与 ContinueError
         // 同法；拒绝 ⇒ 现状 break，[error] 行保留）。
         const rawMsg = error?.message || String(error)

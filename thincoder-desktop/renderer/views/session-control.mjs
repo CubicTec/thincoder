@@ -9,7 +9,7 @@
  * 面（纯函数 —— 零 DOM；机检 = 下拉结构锚 ∕ 条目形 ∕ 位标 ∕ 空态）：
  *   条体三件 = 项目钮（📁 当前项目 —— 桌面单活动项目 ⇒ **恒在场**〔适配 a：VSC 多根显隐 vs 桌面单项目〕，
  *   出口 `project:open`）→ 下拉选择器（标签 = 活动会话题；开合锚 = `aria-expanded` + 下拉 `data-open`；
- *   Enter ∕ Space 键触发 —— VSC `session-bar.js:20-25` 同径）→ 新建钮（出口 `session:create`）。
+ *   Enter ∕ Space 键触发 —— VSC `session-bar.js` 同径）→ 新建钮（出口 `session:create`）。
  *   下拉（开时挂选择器子位）：首行 = 账本警示注记（`data-ledger-notice` 锚保持 · 非可点 —— 端既有面迁位；
  *   缺席 ⇒ 零节点）⇒ 条目（标题 + 元数据 `provider · N msgs · updated` + 位标〔运行中 ∕ 待审批 —— `tabBadges`
  *   切片〕+ 行内 ✎ ∕ ✕〔>1 才显 ✕〕）⇒ 空态行（`session.empty`，半透明）。
@@ -36,7 +36,7 @@ function shortDate(ts) {
   return `${day} ${clock}`
 }
 
-/** 目录基名（项目钮读数 —— 沿 VSC `session-bar.js:157` 取法）。 */
+/** 目录基名（项目钮读数 —— 沿 VSC `handleProjectMessage` 取法）。 */
 function baseName(cwd) {
   const parts = String(cwd).split(/[\\/]/)
   return parts[parts.length - 1] !== "" ? parts[parts.length - 1] : String(cwd)
@@ -88,7 +88,7 @@ export function sessionBarTree(model, handlers = {}, face = {}) {
 }
 
 /** 下拉内容树（注记首行 → 条目 ⋯ → 空态行）：`el` 形描述符 —— 机检 = 结构锚 ∕ 条目形 ∕ 空态。
- *  **点内不关**（VSC `session-bar.js:27-29` 同径）：下拉内任一点按吞泡 —— 选择器本体的开合 handler 在上层，
+ *  **点内不关**（VSC `session-bar.js` 同径）：下拉内任一点按吞泡 —— 选择器本体的开合 handler 在上层，
  *  不吞则条目 ∕ 换形键点按会连带 toggle（真 DOM 事件冒泡下必现）。 */
 export function sessionDropdownTree(model, handlers = {}, face = {}) {
   const children = []
@@ -117,7 +117,7 @@ function projectNode(model, handlers) {
   return { tag: "button", props: { ...wire(props, handlers.onOpenProject) }, children: [label] }
 }
 
-/** 下拉选择器（开合锚 = `aria-expanded` + 下拉 `data-open`；Enter ∕ Space 键触发 —— VSC `session-bar.js:20-25` 同径；
+/** 下拉选择器（开合锚 = `aria-expanded` + 下拉 `data-open`；Enter ∕ Space 键触发 —— VSC `session-bar.js` 同径；
  *  **形内让行**（#659）：键源住改名形内 ⇒ 零 `preventDefault` ∕ 零 `onToggle`（空格可键入 ∕ Enter 不关形）——
  *  不用 `stopPropagation`（形内键面不外溢阻断，语义过宽）。 */
 function selectorNode(model, handlers, face) {

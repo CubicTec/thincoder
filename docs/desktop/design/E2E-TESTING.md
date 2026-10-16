@@ -229,7 +229,7 @@ _electron.launch({
 4. **`docs/core/design/TESTING.md` 多实现面枚举**：首部多实现面行含**桌面面**（单入口 · 集成域 `thincoder-desktop/test/integration/`）。
 5. **`docs/core/design/TESTING.md` §10 边界口径**：边界行为「**运行期零第三方依赖（守）∥ 测试覆盖 `devDependencies` 不在此限（放开）**」；`playwright-core` = 测试驱动（判据⑥）。
 6. **产品缝 = 停手上抛**：实施期若出现「必须改产品码才能断言」的项 ⇒ 停下报父侧裁定。
-7. **`docs/desktop/design/PROJECT.md` 随动**：档头档数 · 需求侧行 `D1–D14` · §4.1（`package.json` 值 `21` + `files.mjs` 值 `15` + 两新行）· §7 **T-DSK27** · §8 不做行；行数读数见 §8-9。
+7. **`docs/desktop/design/PROJECT.md` 随动**：档头档数 · 需求侧行 `D1–D42` · §4.1（`package.json` 值 `21` + `files.mjs` 值 `15` + 两新行）· §7 **T-DSK27** · §8 不做行；行数读数见 §8-9。
 8. **`docs/README.md` 地图随动**（桌面板块现记档数与总档数口径）⇒ 新档入册属父侧。
 9. **计数面口径**：两表各自面、非矛盾——`docs/desktop/design/PROJECT.md` §4.1 `thincoder-desktop/test/files.mjs` 值 = **登记行数**（现 12 + 批 A 两行 + 集成用例文件一行 ⇒ **15**）；同表「二十七档」= **单元用例模块枚举**（实读 25 + 批 A 两档；集成用例文件单列、不入该枚举）；口径 = 内容行数（文末换行不计）。
 10. **`thincoder-desktop/test/run.mjs` 注释随改**：注释须与「集成域 `thincoder-desktop/test/integration/` 已建」同实 ⇒ 已并入（§4 表在册）；runner 逻辑零改动（walk 递归 + 反向自检天然覆盖新档）。

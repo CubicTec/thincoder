@@ -69,7 +69,7 @@ export async function handleCancelSubagent(panel, msg) {
   // ⏹ 路由到 cancelAdvisorReview（②-6b——controller abort——取消不入 pending/不签发 token）。
   const lines = panel._liveLines ?? panel._susp?.lines
   // W13 键形单源（评审 🔴 收口）：核池键恒 `String(id)`（核 spawn/launch 写侧 `set(String(id))`
-  // ——`advisor-async.mjs:326` / `subagent-run.mjs`；旧端侧 `Number(msg.id)` 归一在生产恒 miss
+  // ——`refreshAdvisorQueuedTokens` / `subagent-run.mjs`；旧端侧 `Number(msg.id)` 归一在生产恒 miss
   // ⇒ ⏹ 路由失效面）。读键 = String 归一，与核 `getAsyncPool`/`cancelAsyncSubagent` 同形。
   const id = String(msg.id)
   const entry = lines?.history?._asyncSubagents?.get(id) ?? lines?.history?._asyncAdvisors?.get(id)

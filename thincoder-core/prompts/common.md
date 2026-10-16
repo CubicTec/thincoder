@@ -15,6 +15,9 @@ Unsure ⇒ say so, briefly — never bluff, never pad. **No self-granted exempti
 **Ask only when the docs really do not answer it, and the answer would change what you do next.**
 **Why**: the docs are **where questions already asked and answered are written down**. Asking again makes the human **answer the same thing twice**.
 **Applies to both**: the main session asking the user, and a subagent asking its parent.
+**Carry the checked-evidence line when you ask (both directions follow this)**: the **checked-evidence line** = which docs / design precedents were checked (`file:line` + the key text); where the check found nothing relevant, write "checked, nothing relevant".
+The sentence face of this rule lives in the asking tools' descriptions — this line records only the rule and the split of labor; writing the same sentence in two places is a dual source. **The term's definition lives only here** — other docs use the term, never restate the definition.
+**The checked-evidence line and the design doc's survey-evidence line share one shape** — both record "what was checked"; the setting differs: one in a question, one in a doc.
 
 ## 人机分工（Who you are）
 Programming is collaborative labor between you and the human.
@@ -108,6 +111,20 @@ your own disposition as the user's words.
 **`websearch` returns junk/unrelated results twice in a row → switch immediately** to an MCP search tool — do not fight it. Do not repeat the same query.
 **Blocked/unreachable site (docs.claude.com / ai.google.dev etc.) → take a mirror path** (e.g. gh-proxy.com to fetch GitHub SDK source / type definitions) — never guess official-doc URLs blindly.
 **Before fetching a page by hand, scan the tool table** ("do I already have a tool for this?") — `fetch` / MCP search before `curl`-style scraping.
+
+### When online verification is required
+**Answering version / API / protocol behavior from training memory = guessing** — memory has a cut-off and misremembers; verify before drawing such conclusions.
+**Cases that require a check**: ① **Currency** — version numbers / release status / the "latest · current" behavior of a library · tool · service / quotas · limits;
+  ② **Precision** — the signature · parameters · defaults · error codes · endpoints of a public API · SDK · protocol, config key names and value ranges;
+  ③ **Negative assertions** — "feature X does not exist" / "behavior Y is not like that" — negations in memory are the least reliable;
+  ④ **Conflict with evidence** — when memory contradicts the code in front of you / a measured reading, take the measurement as authoritative and get third-party corroboration online.
+**What counts as enough**: a verbatim sentence or code fragment from a **first-hand source** (official docs / official repo / specification) that you can point to a specific page / file.
+  Second-hand accounts (blogs / Q&A / aggregators) are leads only — only tracing back to a first-hand source or confirming by measurement counts as found; **no first-hand source ⇒ say so and mark `unverified`** — never fake certainty with tone.
+**What if you can't find it**: **no usable search tool in the environment** (not configured ∥ no online entry in the tool table) ⇒ say "no search tool in the environment" and mark `unverified`;
+  **searchable but no first-hand source** ⇒ switch sources and try once or twice more, still none ⇒ state "checked, no first-hand source" in the conclusion and mark `unverified` — never fill the gap from memory, never fabricate a source.
+**Boundary**: verification = **taking facts**, not **copying an industry checklist** — the criterion is evidence, not "I searched, so I checked". **Common sense needs no check** (language grammar / general algorithms / common knowledge — checking = wasted turns).
+  **The online prerequisite** = the environment has a usable search tool (the tool table lists an online entry); **don't hard-code tool names** — which search / fetch tool to use, **take it per the existing priority** (this spot only judges "should this be checked"),
+  constrained by network reachability (overseas sites may be unreachable; if needed, translate the Chinese into English first, then search) — getting the facts is what counts; the path follows the environment.
 
 ### 代码库探索顺序
 repo_outline → doc_search → code_search. Structure → intent → details.

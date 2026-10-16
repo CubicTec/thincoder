@@ -32,7 +32,7 @@ export const BOX_LOST_CMD_MESSAGE = "工作区连接已断开——命令未完�
 
 /** ask kind 四值（§3.11(2) 表——注册与应答校验面）。 */
 export const ASK_KINDS = Object.freeze(["permission", "batch", "question", "secret"])
-/** 裁决词表（请求体校验——逐值同桌面 `thincoder-desktop/src/main/suspensions.mjs:19-21`；盒壳映射单点 =
+/** 裁决词表（请求体校验——逐值同桌面 `thincoder-desktop/src/main/suspensions.mjs` 的 `ITEM_VERDICTS`/`BATCH_VERDICTS`；盒壳映射单点 =
  *  `deploy/sandbox/member-shell/protocol.mjs` `answerSettlementOf`）。 */
 export const ITEM_VERDICTS = Object.freeze(["once", "always", "reject"])
 export const BATCH_VERDICTS = Object.freeze(["approveAll", "deny", "oneByOne"])

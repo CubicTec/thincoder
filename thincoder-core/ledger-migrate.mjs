@@ -12,7 +12,7 @@ import { basename, dirname, join, resolve } from "node:path"
 import { DatabaseSync } from "node:sqlite"
 
 import { resolveDeclaredRef } from "./declaration.mjs"
-import { ledgerDirPath, ledgerKey, openLedger } from "./ledger-db.mjs"
+import { ledgerDirPath, ledgerKey, openLedger, resolveLedgerRoot } from "./ledger-db.mjs"
 import { resolveProjectRoot } from "./manifest.mjs"
 
 /** 12 数据列（**等值比对列集**——不含 id：id 重发，§2.2 语义保全 / AC-M2-12）。 */
@@ -92,9 +92,9 @@ function fromKeyRefusal(fromKeys, dir) {
   return null
 }
 
-/** 迁移计划（dry-run / confirm 共用）。cwd 口径 = 写门口径 2 同一子表达式（`resolveProjectRoot` ∨ 兜底）。 */
+/** 迁移计划（dry-run / confirm 共用）。cwd 口径 = 写门口径 2 同一子表达式（根推导单源 `resolveLedgerRoot(cwd)?.root` ∨ 兜底）——与实开库（`openLedger`）同源。 */
 export function planLedgerMigration(cwd, { fromKeys = [] } = {}) {
-  const projectRoot = resolveProjectRoot(cwd) ?? resolve(cwd ?? ".")
+  const projectRoot = resolveLedgerRoot(cwd)?.root ?? resolve(cwd ?? ".")
   const dir = ledgerDirPath()
   const targetKey = ledgerKey(projectRoot)
   const targetPath = join(dir, `${targetKey}.db`)

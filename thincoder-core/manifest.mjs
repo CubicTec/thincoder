@@ -10,7 +10,7 @@
  *    未知键（#802 / KD-M1-36）→ 产 unknownKeys + 一行可见告警（console.warn + logEvent；
  *    同档同键集去重、读到零未知键清该档 memo）——非拒定性零变。
  *  - validateManifest(obj) → { ok, errors, missingKeys, unknownKeys }：枚举 / version 数值 /
- *    docRoot 子键值形态（串 | 数组 | null（本面无——KD-M1-37），F7）+ checkConfig.lineCounts 元素层形态——**纯函数、零 fs**；不落盘。
+ *    docRoot 子键值形态（串 | 数组 | null（本面无——KD-M1-37），F7）——**纯函数、零 fs**；不落盘。
  *  - 三族声明键（`codePaths` / `index.{codeExtensions,docExtensions,publicRepos}` / `advisor.{docMap,standardsDoc}`——
  *    KD-M1-31 / M1-32）：缺键补默认；形态错 = 档非法（fail-closed，与 docRoot 子键同款）；
  *    读向 = `declaration.mjs`（2026-10-01 自 `conventions.mjs` 迁出——经其转口可达）经 `readManifest` /

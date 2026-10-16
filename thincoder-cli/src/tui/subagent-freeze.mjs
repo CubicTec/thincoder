@@ -137,7 +137,7 @@ export function shiftFreezeAnchors(state, removedCount) {
 /** 存活查询（P0-a/P0-b 共用单点——与墓碑写点 `freezeSubTaskLines` 同址：墓碑条件 /
  *  墓碑写入 / 载体行增删单一权威）。key 形 = `role#id`（`_frozenSubKeys` / `subTasks`
  *  同命名空间）；**存活判据（逐字 = §6.8.3.3）**：**条目在池 ∧ `entry.done !== true` ∧
- *  `entry.cancelled !== true`（running/queued）**（判据先例 = `thincoder-core/agent-tools/async-discard.mjs:55`
+ *  `entry.cancelled !== true`（running/queued）**（判据先例 = `thincoder-core/agent-tools/async-discard.mjs`
  *  ——零新谓词；仅「键在池内」会把 done-in-pool 误判为存活）。
  *  映射（写死 = §6.8.3.3）：最后 `#` 切分 → role + id；命中 = `pool.has(String(id))` ∧
  *  `entry.role === role`；非池键（`compress#N` 等）恒 false（维持既有丢弃语义）。
@@ -154,7 +154,7 @@ export function livePoolHas(state, key) {
   const id = k.slice(i + 1)
   for (const pool of [agent._asyncSubagents, agent._asyncAdvisors]) {
     if (!(pool instanceof Map)) continue
-    const entry = pool.get(id) // 池键 = String(id)（subagent-run.mjs:187 / advisor-async.mjs:410）
+    const entry = pool.get(id) // 池键 = String(id)（subagent-run.mjs / advisor-async.mjs）
     if (!entry || entry.role !== role) continue
     if (entry.done === true || entry.cancelled === true) continue // 已终态（含 done-in-pool）
     return true

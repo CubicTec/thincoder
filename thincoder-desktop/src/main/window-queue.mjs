@@ -88,7 +88,7 @@ export function createWindowQueue({ postQueue = null, prepare = null, degrade = 
     drain(pending) { return pending.splice(0) },
     /** 消费（窗内消费 ∕ 残续发两同点）：送达面（`prepare` 判决 ⇒ `degrade` 定局）⇒ 消费帧（`delivered` 单写者
      *  入流恰一枚的宿主半）；返回回合入参 `{ text, attached }`（`text` = 送达文本——无附件径 ∕ 送达面违约（非串）
-     *  ⇒ 该条文本逐字；判据与链径 `turn-chain.mjs:94` 同式）。
+     *  ⇒ 该条文本逐字；判据与链径 `createTurnChain` 同式）。
      *  **时序面（占位 ∕ 中断语义）**：`signal` = 调用方占位信号（`hold.signal`——缺缝 ∥ 零占位 ⇒ `null`，沿链径缺省式）；
      *  窗内 `msg:interrupt` 命中占位 ⇒ 降级信号 abort（读图 fail-fast）——起窗 ∕ 查位 ∕ `release` 与窗后零起跑
      *  判据住守卫件 `suspension-guard.mjs`（两调用点 `driveTurn` ∕ `resumeResidual` 经其守卫）。 */

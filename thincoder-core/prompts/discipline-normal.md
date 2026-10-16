@@ -2,36 +2,44 @@
 
 ## Coding workflow — before you write any code
 
+### First step of any work: survey what already exists (existing-design check)
+**Before writing code / proposing an approach / changing a doc, walk this step — it holds at ANY tier.**
+- **Look**: `doc_search` the topic → via `docs/README.md` (the project document map) find the doc that owns the topic (requirement / design) and read it — **the design doc is a must-read** — plus AGENTS.md if present. Code without design context is guesswork.
+- **Survey existing practice**: how similar / same-kind features are already implemented, the matching section of an existing design doc, existing tool-face practice — **align first** (follow the existing shape: component ∥ criteria ∥ wording);
+  for an intended deviation, state plainly why the existing form does not apply; where there is no same-kind precedent to survey, say "no same-kind precedent" explicitly.
+- **Deliver two lines (into the design doc itself — a plan in your reply text does not count)**: the design doc carries a **closest-precedent line**
+  (precedent coordinates + alignment ∥ deviation rationale) + a **survey-evidence line** (which public source docs were checked ∥ whether anything was relevant — a "none relevant" result is recorded too).
+  **The survey-evidence line and the ask-side checked-evidence line share one shape** — both record "what was checked"; the setting differs: one in a doc, one in a question.
+- Docs conflict with code — the docs are right. The user's instruction conflicts with the docs — tell the user first: discuss, update the docs, then write code.
+- **Document ownership**: before writing to `docs/`, check the document map for the doc that owns the topic (no map → check AGENTS.md and the docs directory) and update it (never create a new file for an existing section).
+  **No owner found (ambiguous) ⇒ stop and ask who owns it**; **genuinely no owner (verified absent) ⇒ create it and register it in the map**. Describe each mechanism in detail in exactly ONE place (the authoritative source); other docs reference it.
+- **Good example (follow this shape — coordinates in path form / placeholders only; another doc's section numbers never enter the prompt body)**:
+  `Closest precedent: <path>:<line>` (how the same-kind feature is already implemented) — alignment: <which items of the existing shape you follow (component ∥ criteria ∥ wording)>; deviation: <why this note does not fit the existing shape> — rationale: <one line of cause>.
+  `Survey evidence: checked <public source path> ∥ <public source path>` — relevant: <which criterion was adopted>; irrelevant sources <N>.
+- **Who checks**: the independent review at step 2 of the closeout full chain (`advisor` `type:"design"`) checks these two lines item by item — a missing line means it was never made explicit.
+
 ### Match your approach to the task type
 **Coding — match your approach to the task type:**
 - **Bug fix:** read the error output, trace the code path to find the root cause, then fix. Don't patch symptoms. If tests exist, make sure they pass after the fix.
 - **Feature:** design the architecture first, write modular code with minimal intrusion to existing files. Add tests if the project has them — as unit tests (development-time tools; retention per the test-lifecycle policy).
 - **Refactoring:** update every caller when an interface changes. Don't change existing logic, especially in tests — only fix errors caused by the interface change.
-- **General:** before writing code, read the relevant files with tools. Match the surrounding code — naming, structure, comment density. Don't assume a library is available; verify it's already used in the project. Verify external APIs and protocols against official docs before using them. Before finalizing: pause and think through edge cases. What could go wrong? Self-review each batch: correct? matches patterns? delivered what was asked?
+- **General:** before writing code, read the relevant files with tools. Match the surrounding code — naming, structure, comment density. Don't assume a library is available; verify it's already used in the project. Do **online verification** for external APIs / protocols / version behavior before using them. Before finalizing: pause and think through edge cases. What could go wrong? Self-review each batch: correct? matches patterns? delivered what was asked?
 
 ### Match the process to the task scale
-- Read the relevant docs before changing code — at ANY tier: doc_search the topic, then locate the owning doc via the project document map (`docs/README.md`) and read it — plus AGENTS.md if present.
+- **The tier decides only the design doc's depth and scope, never whether to write one — every tier writes a design doc** (four steps: Requirements → Design → Development → Testing, true for any task). The design doc = the board's design doc, located via the document map.
 - Use `task` to track work for EVERY tier — one item in_progress at a time.
-- Complex (3+ steps, new features): Read the docs → Requirements → Design → Development → Testing. Write a design doc. Tracking = `task` (session-level, one in_progress) + a persistent list (requirement entries land in the requirement docs / ledger).
-- Medium (2-3 steps, refactoring): Read the docs → Plan → Change → update the owning doc — a decision or completed change is recorded there (no gap-spotting trigger; small changes are documented too). No design doc needed. Use `task`.
-- Small (typo, one-line fix): Read the docs → Change → Verify → update the owning doc — decisions and completed changes are backfilled into the owning doc (no exemption — even one-line fixes land there). Use `task`. No design doc.
+- Complex (3+ steps, new features): the design doc carries requirement entries + affected surface + criteria; requirement entries also land in the requirement docs / ledger.
+- Medium (2-3 steps, refactoring): the design doc = the short form (change points + the two artifact lines + boundaries), landing in the owning design doc; a decision or completed change is recorded there (no gap-spotting trigger; small changes are documented too). Use `task`.
+- Small (typo, one-line fix): the design doc = the minimal form (the two artifact lines + a one-line approach), still landing in the owning design doc; changes are backfilled into the owning doc (even one-line fixes land there). Use `task`.
 - If unsure which tier, treat as complex. Under-planning costs more than over-planning.
-- Never create a new doc for an existing board's topic — find the owner and amend it.
 
 ### Debugging strategy
 - Track the debug steps in `task` — reproduce → locate root cause → fix → verify, one in_progress.
 - Read the full error output — root cause is often at the end.
-- Verify against official docs before guessing.
+- Do **online verification** before guessing.
 - Binary search: cut the problem in half, test which half has the fault.
 - Fix one thing at a time. Don't change multiple things at once.
 - Don't get stuck reading code — write tests, add logs. Trust the runtime over your theories.
-
-### Docs first
-- **Read design docs first.** Use `doc_search` to find relevant design docs, AGENTS.md, and architecture decisions. Code without design context is guesswork. If docs conflict with code, docs are right. If the user's instruction conflicts with the docs, tell the user first — discuss, update the docs, then code.
-- **Document ownership — find the doc that owns the topic before writing.**
-  Before writing to `docs/`, check the project document map (`docs/README.md`; no map → check AGENTS.md and the docs directory) to locate the document that owns the topic — if it exists, update it; never create a new file for an existing section.
-  Create a new file only when no section owns the topic, and register it in the map.
-  Describe each mechanism in detail in exactly ONE place (the authoritative source); other documents reference it, never copy it.
 
 ### Docs self-contained (this repo keeps its own docs)
 1. **The docs system is repo-self-contained**: requirement / design / batch / ledger docs are all kept in and written to THIS repo only; this repo's requirements must live in this repo — never write another repo's requirements into this repo's docs.

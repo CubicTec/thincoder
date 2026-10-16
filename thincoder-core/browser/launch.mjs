@@ -1,10 +1,10 @@
 /**
  * browser/launch.mjs — 浏览器发现 ∥ profile 锁 ∥ 启动 ∥ 杀树（BROWSER-TOOL.md §4）。
  *
- * 候选表与启动参数沿 `scripts/console-walkthrough.mjs:33-44`（Edge 先于 Chrome）∥ `:123`
+ * 候选表与启动参数沿 `scripts/console-walkthrough.mjs`（Edge 先于 Chrome）∥ 同档启动参数段
  * （`--headless=new` ∥ `--remote-debugging-port=0` ∥ `stdio:"ignore"` ∥ POSIX `detached`）——
  * 本档不 import 该脚本，只内化其形。
- * profile = `~/.thincoder/browser/profile`（`configDir` 同源——`config-io.mjs:32`）= **持久**
+ * profile = `~/.thincoder/browser/profile`（`configDir` 同源——`config-io.mjs`）= **持久**
  * （F-BT6：有头登录一次 ⇒ 后续含无头复用登录态）。
  *
  * 注入缝（N-BT6）：`resolveBrowser({platform, env, pathExists, which})` 与 `acquireProfileLock`
@@ -177,7 +177,7 @@ export async function launchBrowser({ exe, headless = true, profile, timeoutMs =
   return { child, port, profile }
 }
 
-/** 杀整棵进程树（win32 `taskkill /T /F`；POSIX 组杀 + 单杀兜底——walkthrough `:192-193` 同式）。 */
+/** 杀整棵进程树（win32 `taskkill /T /F`；POSIX 组杀 + 单杀兜底——walkthrough 同式）。 */
 export function killBrowser(child, { platform = process.platform, exec = execFileSync } = {}) {
   if (!child || typeof child.pid !== "number") return
   if (platform === "win32") {

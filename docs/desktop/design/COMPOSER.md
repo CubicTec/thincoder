@@ -199,7 +199,7 @@
 | `thincoder-desktop/src/main/window-queue.mjs` | **103**（步边界取批 `stepPickup` + 五帧） |
 | `thincoder-desktop/src/main/turn-chain.mjs` | **99**（步边界 slash 即消费 + 尾径核件取项（`peek` ∕ `take`）） |
 | `thincoder-desktop/src/main/turn-driver.mjs` | **291**（步边界缝组合（窗优先）+ 窗支回执三态） |
-| 核 ∕ VSC ∕ CLI 同批档 | 核 `queued.mjs` **90**（slash 单条取）· VSC `queued-merge` **11** ∕ `queued-pickup` **42** ∕ `panel-turn-stages` **250** ∕ `suspension` **290** · CLI 两档注释 |
+| 核 ∕ VSC ∕ CLI 三档 | 核 `queued.mjs` **90**（slash 单条取）· VSC `queued-merge` **11** ∕ `queued-pickup` **42** ∕ `panel-turn-stages` **250** ∕ `suspension` **290** · CLI 两档注释 |
 | 测试覆盖 | 全清令：**集成测试不写 ∕ 不改 ∕ 不跑；批档本地用例随批留存（不入集成测试树）**；验收 = 判据句 + 真机读数——父侧闭合 |
 | `docs/desktop/design/{PROJECT,UI}.md` + `docs/vsc/design/WEBVIEW-INPUT.md` | 本档设计档（KD-40 ①⑤⑥ 句 + 本档 §2「批注（slash 命令面）」 + WEBVIEW-INPUT 细则⑧） |
 

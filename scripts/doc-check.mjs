@@ -2,10 +2,10 @@
 /**
  * doc-check.mjs — M8 机检引擎 · 单引擎入口（锚 + 行宽）。
  * 权威设计 = `docs/core/design/DOC-DISCIPLINE.md` §7（机器可检纪律）（2026-09-22 hygiene 批改指旧归档模块名 · 父侧直接执行 · 可 revert）
- * 单引擎：锚检查 + 行宽检查 + 行数面同一 main 驱动、同一报告；台账一致性不并入（由 M2 SQLite schema 承接，
+ * 单引擎：锚检查 + 行宽检查 同一 main 驱动、同一报告；台账一致性不并入（由 M2 SQLite schema 承接，
  * check-ledger* 家族随单引擎作废——无文件）。
  * 声明面：判据全部读 manifest checkConfig（scanDirs / lineWidth / anchors.domain / anchors.exclude /
- * exemptions / lineCounts / widthExemptZones）——无硬编码路径 / 阈值；整档缺失 fail-closed（readManifest 拒，不静默 fallback）。
+ * exemptions / widthExemptZones）——无硬编码路径 / 阈值；整档缺失 fail-closed（readManifest 拒，不静默 fallback）。
  * 本档不写 manifest（写门 = M1 writeManifest，writer:'main' 专权——唯一写 manifest 的路径）。
  * 用法：node scripts/doc-check.mjs --root <仓根> [--domain <产品域>]（`--root` 必带——零发现/零探测；缺 ⇒ `FAIL(root)` + exit 1）
  * 2026-10-13（父侧直接执行 · 可 revert——#101 上抛闭环）：--domain 指不存在路径 ⇒ fail-closed（原落空扫「0 悬空」假绿；域路径 = 仓根相对解析，机制不猜）。
@@ -18,7 +18,6 @@ import { readManifest } from "../thincoder-core/manifest.mjs";
 import { declaredPublicRoots } from "../thincoder-core/declaration.mjs";
 import { checkAnchors } from "./doc-check-anchors.mjs";
 import { checkDocWidths, discoverDomains } from "./doc-check-width.mjs";
-import { checkLineCounts } from "./doc-check-linecounts.mjs";
 
 /** 锚报告（报告段逐条 + 汇总 + 两态固定句）。
  * 逐条行族标（§4.2.9 / §4.2.10）：拟新增 / 迁移期引文 = 列报 · 不入闸；标记失据 = 违规行行尾标；
@@ -63,8 +62,8 @@ export function main(argv = process.argv.slice(2), { log = console.log } = {}) {
   const cfg = read.manifest.checkConfig;
   const declaredRoots = declaredPublicRoots(root); // §6.15 单一声明源根集（#832——声明源候选入参；缺省 [] ⇒ 零行为）
   // D3 计数纪律：判据键清单 = 单一数组（计数 = 列表长度——加键时改一处，计数自动同改）。
-  // 派生自 checkConfig 实际键面：scanDirs / lineWidth / anchors.domain / anchors.exclude / exemptions / lineCounts / widthExemptZones。
-  const CRITERIA_KEYS = ["scanDirs", "lineWidth", "anchors.domain", "anchors.exclude", "exemptions", "lineCounts", "widthExemptZones"];
+  // 派生自 checkConfig 实际键面：scanDirs / lineWidth / anchors.domain / anchors.exclude / exemptions / widthExemptZones。
+  const CRITERIA_KEYS = ["scanDirs", "lineWidth", "anchors.domain", "anchors.exclude", "exemptions", "widthExemptZones"];
   log(`判据项 ${CRITERIA_KEYS.length} 项（${CRITERIA_KEYS.join(" / ")} = checkConfig 声明面——D3）`);
   const bases = domainArg ? [resolve(root, domainArg)] : discoverDomains(root);
   if (domainArg && !existsSync(bases[0])) {
@@ -85,18 +84,6 @@ export function main(argv = process.argv.slice(2), { log = console.log } = {}) {
       : `OK(行宽): 源域全部 .md 无 >${cfg.lineWidth} 字符单行${zoneNote}。`);
     if (r.danglingTotal > 0 || widths.length) fail = 1;
   }
-  // —— 行数面（#546）：声明读取面 = 运行根单读；执行域 = 运行根一次；差异 = 报告态（KD-2）——
-  for (const base of bases) {
-    if (resolve(base) === root) continue;
-    const sub = readManifest(base);
-    if (sub.ok && (sub.manifest.checkConfig.lineCounts ?? []).length) {
-      log(`✗ 行数面声明面错误：子域 ${relative(root, base).replace(/\\/g, "/")} 持 checkConfig.lineCounts 声明——声明读取面 = 运行根单读（fail-closed）。`);
-      fail = 1;
-    }
-  }
-  const lc = checkLineCounts(cfg.lineCounts ?? [], { root });
-  for (const line of lc.lines) log(line);
-  log(`行数面：差异 ${lc.diffCount} 条（比对 ${lc.compared} 行 · 跳过 ${lc.skipped.est + lc.skipped.nonnum} 行〔预估 ${lc.skipped.est} ∕ 非数 ${lc.skipped.nonnum}〕）——报告态，回填工单即本清单`);
   return fail ? 1 : 0;
 }
 

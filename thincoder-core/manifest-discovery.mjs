@@ -1,6 +1,6 @@
 /**
  * manifest-discovery.mjs — **发现 ∕ 归属族**出档（2026-09-29 structure-split-2 · 台账 #620）：自 `manifest.mjs`
- * 全量迁出〔原 `:39-143`〕——`MANIFEST_REL` · 测试注入位（`_setProjectRootForTest` / `_resetProjectRootForTest`）·
+ * 全量迁出——`MANIFEST_REL` · 测试注入位（`_setProjectRootForTest` / `_resetProjectRootForTest`）·
  * `scanChildren`（两条梯表共用 walk 内核）· `discoverProjects`（项目梯）· `discoverRepos`（仓梯）·
  * `owningProject`（归属形）· `resolveProjectRoot`（归属 ∨ 发现）；**结构拆分零语义**（面不变 ∕ 判据不变，
  * 只换宿主档；切点 ∕ 缝单源 = 批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-C）。

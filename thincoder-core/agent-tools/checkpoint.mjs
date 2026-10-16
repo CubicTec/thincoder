@@ -72,7 +72,7 @@ export function registerTurnCapCheckpoint(child, carrier, { turn = 0, signal } =
     const onAbort = () => finish(false)
     rec.resolve = finish
     signal?.addEventListener?.("abort", onAbort, { once: true })
-    // 注册后复检（`permission-gate.mjs:80-81` 同款序）：监听只认注册后的状态转移，
+    // 注册后复检（`permission-gate.mjs` 的 `permissionGate` 同款序）：监听只认注册后的状态转移，
     // 窗口内已中止 ⇒ 监听不落地，此处兜住。
     if (signal?.aborted) { abortedNow = true; onAbort() }
   })

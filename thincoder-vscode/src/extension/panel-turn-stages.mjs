@@ -3,9 +3,9 @@
  * 2026-09-18 · 设计 `docs/vsc/design/VSC-DEBT.md` §12.2.1）。
  *
  * 迁出段（逐字搬迁 · 既有注释一并随迁 · 控制流翻译按 §12.2.1 契约）：
- *   · 段 A `resolveTurnStage`（原 `panel-chat.mjs:178-235`）——provider / 模型解析；
- *   · 收尾 `finalizeTurn`（原 `:311-350` finally 体）——落盘 / 标题 / 忙态归位；
- *   · 段 B `enterSuspensionTurn`（原 `:352-382`）——挂起会话接管。
+ *   · 段 A `resolveTurnStage`（原 `runPanelChatImpl`）——provider / 模型解析；
+ *   · 收尾 `finalizeTurn`（原 finally 体）——落盘 / 标题 / 忙态归位；
+ *   · 段 B `enterSuspensionTurn`——挂起会话接管。
  * 留主档（`panel-chat.mjs`）= 入口守卫段（`ensurePanelAgent` / `ensureMemoryHandle` 同址——
  * 结构机检 = 单元测试档 `docs/batches/2026-09-29-residuals-round2.test.mjs`——W8 契约②判据现载体，单元测试树重建时回迁端侧单元测试档）+ 行加载 / 回调装配段 + 循环调用。
  *
@@ -100,7 +100,7 @@ export async function resolveTurnStage({ panel, turnSlot, providerName, modelOve
 /** 迁出自 `panel-chat.mjs`（本批逐字搬迁——`b.mjs` 收尾段）：回合收尾——标题 + 落盘 +
  *  忙态归位 + `loading:false`。参数化捕获变量（原 finally 体同函数作用域引用）。
  *  D7（2026-09-21 块标题行对齐批——标题链单源 · `docs/core/design/SESSION.md` §6.7）：序翻为
- *  「先标题后 save」（CLI `agent-turn.mjs:307-322` 同序）——标题值并入 extra 后随**整档
+ *  「先标题后 save」（CLI `runAgentTurnBody` 同序）——标题值并入 extra 后随**整档
  *  save 单写**（无第二写）；写后刷会话列表。A2 分支不变：标题仍在忙态归位前（running 窗口）。 */
 export async function finalizeTurn(panel, { history, fullHistory, slotStamp, turnSlot, susp, skipSession }) {
   traceStop("finally: turn complete — UI released", panel._stopClickTs)

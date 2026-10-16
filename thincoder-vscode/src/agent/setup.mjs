@@ -161,7 +161,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
     cfgInjectDocs = raw.agent?.injectDocs ?? cfgInjectDocs // 显式键优先（缺省 = 核 DEFAULTS——默认开；判据 `!== false`）
     cfgInjectProjectRules = raw.agent?.injectProjectRules ?? cfgInjectProjectRules // #1465：同式
     cfgInjectMemories = raw.agent?.injectMemories ?? cfgInjectMemories
-    cfgStreamRules = mergeFileRules(raw.agent?.streamRules ?? [], cwd) // #130 A-1：与 CLI make-agent.mjs:44-48 同语义
+    cfgStreamRules = mergeFileRules(raw.agent?.streamRules ?? [], cwd) // #130 A-1：与 CLI `assembleAgent` 同语义
   } catch { /* config unreadable — defaults */ }
 
   // 槽 reconcile：顶层会话绑定（opts.engPersist）每轮读权威槽（hydrate = 唯一 reconcile 点）；
@@ -216,10 +216,10 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
   // B 类 run 绑定（每轮重指——复用 agent 不残留上轮引用）+ opts 派生字段
   agent._role = role
   // autoApprove 字段接线（2026-09-16 缺陷修复——承 `docs/batches/2026-09-16-vsc-autoapprove-misalign.md`
-  // §2 A′）：核读点 = **父对象字段** `parent.autoApprove`（spawn 门 `subagent.mjs:271` ∕ escalate 门
-  // `:194` ∕ 子代权限继承 `subagent-spawn.mjs:304` · 读点族 `subagent-async.mjs:291` 等）；
+  // §2 A′）：核读点 = **父对象字段** `parent.autoApprove`（spawn 门 `subagentTool` ∕ escalate 门
+  // `subagentTool` ∕ 子代权限继承 `buildSpawnChild` · 读点族 `executeCancelAction` 等）；
   // 形态 = **访问器**（每轮重定义——取值恒 live；无 setter ⇒ 面板 flag 为唯一来源，fail-loud）。
-  const autoProbe = typeof getAuto === "function" ? getAuto : () => false // 归一（同核 `agent.mjs:69`）
+  const autoProbe = typeof getAuto === "function" ? getAuto : () => false // 归一（同核 `createAgent`）
   Object.defineProperty(agent, "autoApprove", { configurable: true, enumerable: true, get: () => autoProbe() === true })
   agent._depth = depth // TRACE-STORE-VSC（D-TR4）：compress/distill 等内嵌 chat 调用点的 depth 归属
   agent._provider = provider
@@ -283,7 +283,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
   if (depth === 0) agent._fullHistory = fullHistory
 
   // §2.6 表注处置（裁定①）：记忆 ∕ 索引句柄随 host 装配补齐——核注入组读点 = `agent.memory`
-  // （依赖大纲 ∕ 文档召回 ∕ 记忆召回三块——核 `agent/setup.mjs:91/:103`）；端句柄 = `memoryFor(cwd)`
+  // （依赖大纲 ∕ 文档召回 ∕ 记忆召回三块——核 `prepareRun`）；端句柄 = `memoryFor(cwd)`
   // （形兼容 `createMemory({dbPath})` + `.db`；停用 ∕ 未建 ⇒ null ⇒ 核静默跳过 = 旧端同形，同 I/O）。
   if (depth === 0) {
     try { agent.memory = await memoryFor(cwd) } catch { agent.memory = null /* 记忆面不可用 ⇒ 三块静默跳过（核同形） */ }

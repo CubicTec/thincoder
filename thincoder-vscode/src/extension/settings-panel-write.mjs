@@ -143,7 +143,7 @@ export function saveAgentSettingsFromPanel(payload) {
     if (typeof adv.timeoutMs === "number" && adv.timeoutMs > 0) merged.timeoutMs = adv.timeoutMs
     if (!Number.isFinite(merged.timeoutMs) || merged.timeoutMs <= 0) delete merged.timeoutMs
     // §15.4-6（台账 #331——死键接线）：写键 = `advisor.reasoningEffort`（单源 = 核读取键
-    // `thincoder-core/advisor/run.mjs:48/:64`——as-of 本批实施，与 CLI `/advisor` 菜单同键）。三态写语义
+    // `resolveAdvisorProvider`——as-of 本批实施，与 CLI `/advisor` 菜单同键）。三态写语义
     // = **核单源** `applyAdvisorEffort`（B10 S11 上提：none ⇒ 族别 off 形 + 删键；档 ⇒ 字面值 + 清 off 形
     // 残记；空 ⇒ 删键 + 清 off 形残记 —— 桌面主侧同引，跨端零副本）。spec 取形源 = payload 内 `adv.model`
     // （off 档只在 select 已渲染时可达 ⇒ spec 可解；未给名 ⇒ 查表兜底 DEFAULT_SPEC）。

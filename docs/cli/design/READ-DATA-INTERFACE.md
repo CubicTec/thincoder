@@ -39,7 +39,7 @@
 
 - 载荷单源 = 核 `ledgerExport`：行 = `id` + 12 数据列集（**列集单源 = `DATA_COLUMNS`**——`thincoder-core/ledger-migrate.mjs:18-21`，不另立副本）；`evidence` 仅在 `full=true` 入行（FR1②）；缺列（旧库）⇒ null。
 - 行集读 = `ledgerQuery`（零 SQL 复刻——既有核读 API 直用）；版本探针 = 独立只读开库读 `PRAGMA user_version`——两开均只读态。
-- `schemaVersion`（N2）：台账库 `user_version` 标记新增——常量单源 `LEDGER_SCHEMA_VERSION = 1`（`ledger-db` 档）；写面开库落标（`v < 常量 ⇒ 置`）；读面如实回读（旧库未标 = 0）；库不在 ⇒ 项目不出项（空集）。
+- `schemaVersion`（N2）：台账库 `user_version` 标记新增——常量单源 `LEDGER_SCHEMA_VERSION = 2`（`ledger-db` 档）；写面开库落标（`v < 常量 ⇒ 置`）；读面如实回读（旧库未标 = 0）；库不在 ⇒ 项目不出项（空集）。
 - 对外形状与库龄无关（行按 12 列归一出形）——版本号自证结构。
 
 ### 2.4 三口径（FR2①）
@@ -99,7 +99,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
     {
       "root": "<绝对路径>",
       "name": "<basename>",
-      "schemaVersion": 1,
+      "schemaVersion": 2,
       "rows": [
         { "id": 7, "kind": "requirement", "status": "在途", "title": "…", "board": "…",
           "req_doc": null, "task_book": "…", "trigger": null, "executor": null,
@@ -111,7 +111,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 ```
 
 - 行键集 = `id` + 11 数据列（`kind`…`closed_at`）；`--full` / `full=true` 时 `task_book` 与 `trigger` 之间入 `"evidence"`。
-- `schemaVersion` = 该库 `user_version`（0 = 旧库未标；1 = 现行结构——§2.3）；空集 = `{"projects": []}`。
+- `schemaVersion` = 该库 `user_version`（0 = 旧库未标；2 = 现行结构——§2.3）；空集 = `{"projects": []}`。
 - `root` / `name` 派生写死：`root` = 与库键同源解析的项目根（`resolveProjectRoot(cwd) ?? resolve(cwd ?? ".")`——子目录锚归项目根；同式 = `ledgerDbPath` 键源——`thincoder-core/ledger-db.mjs:50-52`）；`name` = `basename(root)`。
 
 ### 3.3 ACP 方法（params / result / 错误）
@@ -119,7 +119,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 | 方法 | params | result | 错误 |
 |---|---|---|---|
 | `ledger/list` | `{ cwd?, family?, full? }` | `{ projects: [...] }`（与 CLI 载荷逐字同形） | `-32602` INVALID_PARAMS（`cwd` 非字符串 / `family`·`full` 非布尔 / 解析类错误转述） |
-| `ledger/count` | `{ cwd? }` | `{ count: <number> }`（单源 = 核 `ledgerCount`——未决四态计数） | 同上 |
+| `ledger/count` | `{ cwd? }` | `{ count, overdue, evidenceOversize }`（单源 = 核 `ledgerCount` 对象直传——未决四态计数 + 出口面 `overdue` + `evidence` 超限行数；处理器零包装） | 同上 |
 | `batch/list` | `{ cwd? }` | `{ batches: [ { file, path, sections } ] }` | 同上 |
 
 - `sections` = `{ "§1" … "§6" }` 映射：`§1`–`§3` / `§5` = 已识别关键词 ∥ null；`§4` / `§6` = 字面 `无状态词`（§2.5）。
@@ -177,7 +177,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 - **D-1 输出分组形**（`{ projects: [...] }`——族态逐项归属）∥ 被否：平铺 `{ schemaVersion, items }`——跨库 id 撞号、族态零归属。
 - **D-2 只读 = 独立开库态**（readOnly 句柄 + 零 DDL）∥ 被否：复用写开库 +「读后不写」承诺——DDL 已执行，承诺不可机检。
 - **D-3 行集单源复用**（`ledgerQuery` + 独立版本探针两开）∥ 被否：单开内联 SELECT——SQL 复刻，破 N1。
-- **D-4 schemaVersion = 库标记如实回读**（旧库 0）∥ 被否：常量回填成 1——掩盖未迁移结构（N2 成空文）。
+- **D-4 schemaVersion = 库标记如实回读**（旧库 0）∥ 被否：常量回填成 2——掩盖未迁移结构（N2 成空文）。
 - **D-5 `--json` 必需 + 未知参拒**（fail-closed）∥ 被否：可选 + 人性化文本——输出未定形不可机检（人性面既有 `/ledger`）。
 - **D-6 通知双方法**（`ledger/changed` ∥ `batch/changed`）∥ 被否：单 `read-data/changed` 带载荷标志——两族粒度合并又要拆，直给更简。
 - **D-7 触发 = 轮询指纹**（5s，可注入）∥ 被否：本进程写工具钩子——漏外部变更，而外部消费者场景的要点正是「别处也在改数据」。
@@ -201,7 +201,7 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 | FR3② 通知在数据变更后可达 | 变更后捕获 + 无变更零捕获 | RDI-9 |
 | FR3③ `batch/list` 状态与文件面一致 | 与档面逐段对拍 | RDI-8 |
 | N1 双出口同源 | 同夹具两出口载荷深等 | RDI-7 |
-| N2 `schemaVersion` 标记 | 写后 = 1 ∥ 旧库读 = 0 | RDI-4 |
+| N2 `schemaVersion` 标记 | 写后 = 2 ∥ 旧库读 = 0 | RDI-4 |
 | N3 族同源 | family 输出 = `discoverFamily` 逐项 | RDI-5 |
 
 ## 7. 用例表（单元测试档——先红后绿）
@@ -210,13 +210,13 @@ thincoder ledger list --json [--full] [--family] [--cwd <dir>]
 
 | # | 类 | 输入 | 期望 | 先红点 |
 |---|---|---|---|---|
-| RDI-1 | 正常 | 夹具项目 3 行（混态、经写面建库）+ `ledger list --json` 子进程 | exit 0 · 单段 JSON · `projects[0].schemaVersion` = 1 · 行键集 = id+11 列 · 与核 `ledgerQuery` 逐 id 等 | 命令不存在 |
+| RDI-1 | 正常 | 夹具项目 3 行（混态、经写面建库）+ `ledger list --json` 子进程 | exit 0 · 单段 JSON · `projects[0].schemaVersion` = 2 · 行键集 = id+11 列 · 与核 `ledgerQuery` 逐 id 等 | 命令不存在 |
 | RDI-2 | 正常 | 同行带 `evidence`；`--json` vs `--json --full` | 默认零 `evidence` 键 ∥ `--full` 等值含 | 命令不存在 |
 | RDI-3 | 边界 | 空项目（无库） | exit 0 · `{"projects":[]}` · stderr 空 | 命令不存在 |
-| RDI-4 | 边界 | (a) 旧库（旧 DDL——缺 executor、无 user_version）+ 读前读后哈希；(b) 无库项目读后仍无库；(c) 旧库 `schemaVersion` 读 = 0；(d) 写面开库后 = 1；(e) 文件在盘但非台账库（SQLite 可开、无 `items` 表） | 哈希等 ∥ 无新档 ∥ 0 ∥ 1 ∥ `projects: []` ∧ 文件零改 | 现行读即 DDL / ALTER |
+| RDI-4 | 边界 | (a) 旧库（旧 DDL——缺 executor、无 user_version）+ 读前读后哈希；(b) 无库项目读后仍无库；(c) 旧库 `schemaVersion` 读 = 0；(d) 写面开库后 = 2；(e) 文件在盘但非台账库（SQLite 可开、无 `items` 表） | 哈希等 ∥ 无新档 ∥ 0 ∥ 2 ∥ `projects: []` ∧ 文件零改 | 现行读即 DDL / ALTER |
 | RDI-5 | 正常 | 容器 + 双项目（A 2 行 ∥ B 3 行 + 无库兄弟）；读 A ∥ `--cwd B` ∥ `--family` | 单范围各出自身 ∥ family = 发现序逐项（对拍 `discoverFamily`）+ 无库兄弟不出项 | 命令不存在 |
 | RDI-6 | 边界 | 空容器 `--family` ∥ 族内混不可读库 | `{"projects":[]}` ∥ 不可读跳过 | 命令不存在 |
-| RDI-7 | 正常 | 同夹具：CLI 载荷 vs ACP `ledger/list` ∥ `ledger/count` ∥ `batch/list` | 深等 ∥ `count` = 核 `ledgerCount` ∥ batches 形 | 方法不存在 |
+| RDI-7 | 正常 | 同夹具：CLI 载荷 vs ACP `ledger/list` ∥ `ledger/count` ∥ `batch/list` | 深等 ∥ `count` = 核 `ledgerCount` 对象形（三键 `{ count, overdue, evidenceOversize }`——非 `{ count: <number> }` 单键包装） ∥ batches 形 | 方法不存在 |
 | RDI-8 | 正常 | 批基底夹具：全骨架档（§1 进行中 · §2 设计完成）∥ 无状态行档 ∥ 嵌套档 | sections 逐段对拍：§1–§3 / §5 关键词 ∥ null ∥ §4 / §6 = `无状态词` ∥ 嵌套档在列 | 方法不存在 |
 | RDI-9 | 正常 | `watcher.check()` 基线 → 核写一行 → check；再改批次档 → check；静默轮 → check | 基线静默 ∥ `ledger/changed` ∥ `batch/changed` ∥ 零新增（params `{cwd}`） | 观察器不存在 |
 | RDI-10 | 错误 | `ledger list`（缺 `--json`）∥ `--bogus` | exit 1 + usage（stderr） | 命令不存在 |

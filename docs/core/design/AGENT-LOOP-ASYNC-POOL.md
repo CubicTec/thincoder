@@ -417,7 +417,7 @@ I1 → `thincoder-cli/test/integration/subagent-lifecycle.test.mjs:182`（扩）
 
 **描述面收正（D-TW8）**：`thincoder-core/tool-docs/timer.md:10` 的契约句「the reminder fires at the deadline」在自唤醒落地后成立；收正 = 保留该句为契约句 + 补**投递形态**一句（驱动面 = 空闲面交付——挂起窗 ∥ 空闲闩；回退面 = 下一步边界投递；批 async-delivery-formalize 收正 · §6.34）与在途帽一句。**逐字文本 = 父侧定稿**（内容权威）；参数 schema 零变（该批范围——见 §6.30.18 扩五参）。
 **端限定（合同形——评审轮 1 #5 · 阶段 2 合同句）**：收正文本中「空闲 = 自唤醒」表述须携带**支持面限定**（回指 §6.30.5）——阶段 2 后支持面 = **CLI / VSC / 桌面三端前台**，headless（`chat` / ACP / 直连 `runAgent`）保留边界投递。
-**合同句（域限收正 · 批 async-delivery-formalize 2026-10-12 · 对应段 = `thincoder-core/tool-docs/timer.md:11`）**：驱动面（CLI / VSC / 桌面前台与挂起窗）= 空闲面交付（§6.34）；headless（`chat` / ACP / 直连 `runAgent`）= 保留步边界交付。**逐字文本 = 父侧定稿**（候落）。
+**合同句（域限收正 · 对应段 = `thincoder-core/tool-docs/timer.md:11`）**：驱动面（CLI / VSC / 桌面前台与挂起窗）= 空闲面交付（§6.34）；headless（`chat` / ACP / 直连 `runAgent`）= 保留步边界交付。**逐字文本 = 父侧定稿**（候落）。
 **`TIMER_TURN_DOMAIN` 正文** = 阶段 1 既有文本复用（端侧 re-export 核单源——零新文本；落点见 §6.30.11 VSC 块「域文本」行）。
 
 ### 6.30.4 关键决策记录

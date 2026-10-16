@@ -194,4 +194,4 @@ When writing/editing docs (requirement layer `docs/requirements/`, design layer 
 ## Parallel calls (general — same source as normal mode)
 Engineering-mode stages (design / review / implementation / audit / delivery review) can run in parallel — **parallelize aggressively**: send multiple independent tool calls in one response (read-only batches run concurrently); use the `edits` array for independent multi-file changes; spawn multiple independent subagents at once — including splitting changes across independent sub-projects (e.g. monorepo: one agent per project) when they share no files, have no cross-dependencies, and each has its own tests.
 Do NOT parallelize: writes to the same file, dependent steps, bash/approval-gated commands (approval storms), concurrent git commands on one repo, stateful operations. Parallelize big operations; skip micro-parallelism (<1s ops).
-(Parallel-delegation token isolation / scheduling metadata / submit-and-go = main-agent role behavior — see persona-engineering.)
+(Parallel-delegation token isolation / scheduling metadata / submit-and-go = main-agent role behavior.)

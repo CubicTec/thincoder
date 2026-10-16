@@ -28,13 +28,13 @@ const SELF_FACED_KINDS = Object.freeze(["model", "effort", "guard"])
  *  —— 本表 = 键集 / 词键 / 表定控型三面单源）：
  *  `path` = 全点分路径（字段读面同域；缺字段面 ⇒ 表定控型照出空控件）；`kind` = 字段缺位时的控型回退；
  *  `text` = 字面标签（缺 ⇒ 词键 `word`，经 `t()`）；`scale` = 显示比例（`consultTimeoutMs` 显示单位 = 分钟 ——
- *  沿 VSC `webview/settings-agent.js:69` / `:119` 同式：读 ÷60000 · 写 ×60000）。
- *  `agent.advisor.reasoningEffort` = 核**读取键**单源（核 `config.mjs:49` 顾问覆写族列 `reasoningEffort`；VSC 写面同键
- *  `settings-panel-write.mjs:122-130`）；**S11 控型 = `effort` 选项**（候选 = `model:list` 该模型 `effortEnum` ∪
+ *  沿 VSC `consultAdvisorCardHtml` 同式：读 ÷60000 · 写 ×60000）。
+ *  `agent.advisor.reasoningEffort` = 核**读取键**单源（核 `DEFAULTS.agent.advisor` 顾问覆写族列 `reasoningEffort`；VSC 写面同键
+ *  `saveAgentSettingsFromPanel`）；**S11 控型 = `effort` 选项**（候选 = `model:list` 该模型 `effortEnum` ∪
  *  off 两特值 —— 中性 `—` ∕ `none`）。
- *  `agent.autoThink`（R7）= 核 `DEFAULTS.agent.autoThink`（布尔，缺省 false——核 `config.mjs:50`）⇒ 分类器开关
- *  （VSC 侧消费点 = `src/agent.mjs:270`；核分类器单源 = `@thincoder/core/auto-think.mjs`）。
- *  **S10 六件**（子代理模型槽 —— VSC `settings-agent.js:27-29` 同序同角色集；值 = `provider:model` 复合串
+ *  `agent.autoThink`（R7）= 核 `DEFAULTS.agent.autoThink`（布尔，缺省 false——核 `DEFAULTS.agent.autoThink`）⇒ 分类器开关
+ *  （VSC 侧消费点 = `src/agent.mjs`；核分类器单源 = `@thincoder/core/auto-think.mjs`）。
+ *  **S10 六件**（子代理模型槽 —— VSC `agentCardHtml` 同序同角色集；值 = `provider:model` 复合串
  *  〔CLI 兼容〕；角色名 = 字面标签）；**S14b** `agent.advisor.guard`（会话槽面键 —— 值面 = `sessionFlags`
  *  切片投影，写经 `session:flags` 槽面；读面字段作 `taken` 排除防重复行）。
  */
@@ -46,7 +46,7 @@ export const NAMED_FIELDS = Object.freeze([
   { path: "agent.poolLimits.advisor", word: "settings.agent.poolLimits.advisor", kind: "number" },
   { path: "agent.compactThreshold", word: "settings.agent.compactThreshold", kind: "number" },
   { path: "agent.verifyGuard", word: "settings.agent.verifyGuard", kind: "boolean" },
-  // S10 子代理模型槽六件（VSC `settings-agent.js:26-29` 段位：verifyGuard 之后、咨询参数之前）
+  // S10 子代理模型槽六件（VSC `agentCardHtml` 段位：verifyGuard 之后、咨询参数之前）
   { path: "agent.subagentModel", word: "settings.submodelGlobal", kind: "model" },
   { path: "agent.subagentModels.explore", text: "explore", kind: "model" },
   { path: "agent.subagentModels.plan", text: "plan", kind: "model" },
@@ -56,7 +56,7 @@ export const NAMED_FIELDS = Object.freeze([
   { path: "agent.consultTurns", word: "settings.agent.consultTurns", kind: "number" },
   { path: "agent.consultTimeoutMs", word: "settings.agent.consultTimeoutMs", kind: "number", scale: 60000 },
   { path: "agent.advisor.reasoningEffort", word: "settings.agent.advisorEffort", kind: "effort" },
-  // S14b guard 开关（VSC `settings-agent.js:58` advisor 段位：effort 之后）
+  // S14b guard 开关（VSC `consultAdvisorCardHtml` advisor 段位：effort 之后）
   { path: "agent.advisor.guard", word: "settings.advisorGuard", kind: "guard" },
   { path: "agent.autoThink", word: "settings.agent.autoThink", kind: "boolean" },
   // #1420 #1465 注入开关三键（PROMPT-SYSTEM.md §6.24 §6.27——全局；默认 true；读面 = `loadConfig` 合并 ⇒ 默认装态 = 勾选）

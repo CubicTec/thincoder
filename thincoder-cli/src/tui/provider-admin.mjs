@@ -1,7 +1,7 @@
 /**
  * provider-admin.mjs — 渠道管理四流 + 级联清理出档（structure-split-2 · 2026-09-29）：自
- * `model-picker.mjs` 迁出〔原 `:309-471`（probeChannelFlow ∥ addProviderFlow ∥ removeProviderFlow ∥
- * setKeyFlow ∥ setProviderKey ∥ setContextFlow）+ `:476-499`（cascadeRemoveProvider）〕——
+ * `model-picker.mjs` 迁出〔probeChannelFlow ∥ addProviderFlow ∥ removeProviderFlow ∥
+ * setKeyFlow ∥ setProviderKey ∥ setContextFlow + cascadeRemoveProvider〕——
  * 结构拆分零语义（面不变 ∕ 判据不变，只换宿主档）；切点 ∕ 缝单源 = 批档
  * `docs/batches/2026-09-29-structure-split-2.md` §2.2-A。
  *

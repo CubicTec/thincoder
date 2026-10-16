@@ -2,7 +2,7 @@
  * agent/family-tools.mjs — 家族矩阵单源（`assembleFamilyTools`）。
  *
  * 批次 `docs/batches/2026-09-15-vsc-tool-table-dup.md` §2.3A：家族矩阵（哪个运行面得哪些
- * 家族工具）自 CLI 侧 `agent/setup.mjs:173-293`（as-of 迁出前坐标）整体迁出——CLI 与 VSC 同调同一份实现
+ * 家族工具）自 CLI 侧 `agent/setup.mjs` 的 `assembleFamilyTools`（as-of 迁出前坐标）整体迁出——CLI 与 VSC 同调同一份实现
  * （消灭「同一角色矩阵两份实现」= 本批缺陷的类根因）；端差（VSC 装饰链 / settings 追加 /
  * consult 池来源）经 `decorate` 注入——**不传 = 核默认形态**（CLI = 迁出前逐字）。
  *
@@ -26,7 +26,7 @@ export async function assembleFamilyTools({
   decorate = null,       // object   端差面：{ subagent?, consultStart?, consultStop?, settings? }
 } = {}) {
   // CORE-UNIFICATION TOOLS #83：consult 家族随统一登记册自 `../agent-tools.mjs` 取用（单一来源）
-  const { planTool, subagentTool, taskTool, skillTool, goalTool, verifyTool, recentChangesTool, timerTool, advisorTool, engTool, readHistoryTool, contextTool, batchTool, manifestTool, consultStartTool, consultStopTool, parentChannelTool } = await import("../agent-tools.mjs")
+  const { planTool, subagentTool, taskTool, skillTool, goalTool, verifyTool, recentChangesTool, timerTool, advisorTool, engTool, readHistoryTool, contextTool, batchTool, manifestTool, consultStartTool, consultStopTool, parentChannelTool, docCheckTool } = await import("../agent-tools.mjs")
   // 台账统一入口（2026-10-05 统一入口批——台账 #923）：全量变体 = depth-0 段 ∥ 只读变体 = 全部
   // depth>0 段。动态 import——ledger 链静态达 node:sqlite（W8 契约②）；两变体同名单对象、schema 窄化。
   const { ledgerTool, ledgerReadTool } = await import("../ledger.mjs")
@@ -151,6 +151,9 @@ export async function assembleFamilyTools({
       // manifest 工具（`MANIFEST.md` §2.10 · 2026-10-08 · 台账 #1098）：主 agent 读写出口——
       // **两模式同挂**（需求未设模式门）；子代理各段零挂（未装配 = 权限面第一道）。
       manifestTool,
+      // 文档纪律机检（`DOC-DISCIPLINE.md` §3.20 条目 S）：只读报告态——depth-0 主 agent 段；
+      // 写文档 / 设计档的角色段（eng-coder / eng-designer）另挂（见下两分支）。
+      docCheckTool,
       // 端差（decorate.settings——VSC depth-0 主 agent 面；缺省不追加）：核默认形态里
       // settings 住**基础集**（`tools/index.mjs` `assembleBuiltinTools`），端侧自持清单
       // 无该面 ⇒ 端以 decorate 补位（收敛通道 = 将来去 decorate 项即归核位）。
@@ -175,12 +178,14 @@ export async function assembleFamilyTools({
     // SUBAGENT-UPSTREAM-CHANNEL（AGENT-LOOP-UPSTREAM.md §6.27.4 装配接线）：子代理上行通道
     // （`notify_parent`）随 depth>0 段**前置**——4 处携带 = eng-coder / eng-designer / coder / 兜底段
     // （未列名 depth>0 role 落同一兜底段 ⇒ 亦装配；语义 =「depth>0 且非 consult 皆装配」）；
-    // 计数口径：`consult` 分支不入 ⇒ 「5 个插入点」读法已作废（实读 `thincoder-core/agent/family-tools.mjs:165-169`）。
+    // 计数口径：`consult` 分支不入 ⇒ 「5 个插入点」读法已作废（实读本档 eng 两分支的 `batch` 挂载段）。
     // consult 段不入（其角色语义 = 父发起的一次性会诊，父在其 settle 前不期望中途对话）。
     // 台账只读变体（query / count）——全部 depth>0 角色段（含 consult ∕ 兜底；写三 schema 级不可达）；
     // 团队台账只读变体（team-ledger 批）同律。
-    : engChildRole === "eng-coder" ? [parentChannelTool, ledgerReadTool, teamLedgerReadTool, advisorTool, verifyTool, batchTool(batchDoc), ...(engChildSubagent ? [engChildSubagent] : [])]
-    : engChildRole === "eng-designer" ? [parentChannelTool, ledgerReadTool, teamLedgerReadTool, batchTool(batchDoc), ...(engChildSubagent ? [engChildSubagent] : [])]
+    : engChildRole === "eng-coder" ? [parentChannelTool, ledgerReadTool, teamLedgerReadTool, advisorTool, verifyTool, batchTool(batchDoc), docCheckTool,
+      ...(engChildSubagent ? [engChildSubagent] : [])]
+    : engChildRole === "eng-designer" ? [parentChannelTool, ledgerReadTool, teamLedgerReadTool, batchTool(batchDoc), docCheckTool,
+      ...(engChildSubagent ? [engChildSubagent] : [])]
     : role === "coder" ? [parentChannelTool, ledgerReadTool, teamLedgerReadTool, verifyTool, advisorTool, ...(batchDoc ? [batchTool(batchDoc)] : [])]
     : role === "consult" ? [recentChangesTool, ledgerReadTool, teamLedgerReadTool]
     : [parentChannelTool, ledgerReadTool, teamLedgerReadTool]
@@ -191,7 +196,7 @@ export async function assembleFamilyTools({
   // execute 层另有机械拒兜底，见 `agent-tools/task.mjs`）。
   // 工程模式固定段 = plan / task 皆**不入表**；普通模式固定段逐字不变（FR31 边界 / F10 边界）。
   // 判据 = 单一模式位 `engineering`（不带深度分支——子代理面随同排除，role enum
-  // `:44-49` + spawn 门 / task execute 门已同向）。
+  // `subagentRoles` + spawn 门 / task execute 门已同向）。
   return engineering
     ? [timerTool, ...depthOnly]
     : [taskTool, planTool, timerTool, ...depthOnly]

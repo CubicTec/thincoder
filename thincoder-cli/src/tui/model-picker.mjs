@@ -247,7 +247,7 @@ export function createModelPicker(ctx) {
     // 选定写回（判据句 6——定序槽先配置后；失败不反扑会话写、记错零静默）
     const carried = await carryoverDefaultModel({ provider: target.name, model: item.model, slotBefore })
     if (carried.ok !== true) console.error(`[model] default model carryover failed: ${carried.reason}`)
-    else if (carried.written === true && agent.config) agent.config.defaultModel = `${target.name}:${item.model}` // 内存镜像（/config 显示面新鲜——wizard.mjs:210-211 先例）
+    else if (carried.written === true && agent.config) agent.config.defaultModel = `${target.name}:${item.model}` // 内存镜像（/config 显示面新鲜——wizard.mjs 先例）
     // M6 切换回显：规格来源一行（DEFAULT 兜底 → 警示色 + /config 提示）
     const { matched } = specMatch(agent.provider.model)
     const spec = providerSpec(agent.provider)

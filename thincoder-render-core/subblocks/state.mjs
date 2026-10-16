@@ -36,7 +36,7 @@
  * 痕迹钩分面（once / always——源档 `traceSub` vs `traceSubOnce`，成文于此）：`reassert-hit` /
  * `drop-tombstone` 走**去重版**（`traceSubOnce`）；`birth` / `takeover` / `drop-frozen` /
  * `drop-unknown-role` / `late-terminal-stub` 走 `traceSub`。内容面 chunk 丢弃痕在端
- * （`renderSubagentChunk` 调用侧）——同为去重版（源档 `streaming.js:251-252`）。**桌面接线（#608①② · 2026-09-29）——痕迹 = 端观测面——桌面无上行面 ⇒ 不接（给由）——已兑现（2026-10-06 · #978）**：`subagent-reduce.mjs` deps 收 `trace`（`:189-194`——丢径零静默；原「deps 仅 `{ now }`」括注随兑现退场）。
+ * （`renderSubagentChunk` 调用侧）——同为去重版（源档 `streaming.js`）。**桌面接线（#608①② · 2026-09-29）——痕迹 = 端观测面——桌面无上行面 ⇒ 不接（给由）——已兑现（2026-10-06 · #978）**：`subagent-reduce.mjs` deps 收 `trace`（丢径零静默；原「deps 仅 `{ now }`」括注随兑现退场）。
  */
 
 // 判据族（parseChannel / findBlockNames / terminalKindOf / terminalStubKind / stubAllowed）住
@@ -282,7 +282,7 @@ export function subBlocksReduce(list, patch, deps = {}) {
 }
 
 /**
- * 会话退出 freeze 兜底（逐字承 `activity.js:430-436` `freezeLiveBlocks`——suspension
+ * 会话退出 freeze 兜底（逐字承 `activity.js` `freezeLiveBlocks`——suspension
  * active:false + freeze:true）：区全体归档——live → 折叠；awaitingDigest / 已在流者按
  * `regionOf` 判（驻活动区 ⇒ 归档；已在流者不动）。`deps.interrupted` 真 ⇒ 未冻结块补
  * `— interrupted` 注记（X11——与 X6 同载体）；已冻结（含 awaitingDigest）块不回头改写。
@@ -307,7 +307,7 @@ export function subBlocksFreezeAll(list, deps = {}) {
 }
 
 /**
- * 出生闸（**内容 chunk 出生路径**——逐字承 `activity.js:146-158` `ensureBlock`）：无键 ⇒ 建块
+ * 出生闸（**内容 chunk 出生路径**——逐字承 `activity.js` `ensureBlock`）：无键 ⇒ 建块
  * （`birth` 痕 + `born` 效果）；已终态（frozen）或墓碑（在连假）⇒ `{ block: null }`（幂等守卫
  * ——迟来内容绝不复活重建）；live ⇒ 复用（不重挂 / 不刷新）。
  * **与 `subBlocksReduce` 出生闸（`enterBlock`）判据不同**：后者对冻结键走**接管**（新代），

@@ -350,7 +350,7 @@ export function providerSpec(provider) {
  *
  * Callers (as-of 2026-10-10): thincoder-core/agent/turn-loop.mjs (main loop) · thincoder-core/advisor/loop.mjs
  * (review mirror) · bench/lib/client.mjs (bench client) — each passes its own spec face; VSC 转口
- * (thincoder-vscode/src/specs.mjs:13/:17) 零调用点（父侧收口机械笔 · 可 revert）。
+ * (`thincoder-vscode/src/specs.mjs` 的 `providerSpec` ∕ `assistantToolCallMessage` 再导出) 零调用点（父侧收口机械笔 · 可 revert）。
  */
 export function assistantToolCallMessage(response, spec) {
   const msg = {

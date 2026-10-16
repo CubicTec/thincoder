@@ -25,7 +25,7 @@ export function poolCur(pl, defaults) {
 
 /** Effort 菜单档位构造（#16 双 `none` 去重——枚举自带 `none` 的族如 qwen3.8-flash 时原来出两行）：
  *  `none` 恒为首项且唯一，其余档序保持（`filter` 保序）。语义面零改——`none` = 清档，
- *  消费点 `:205`/`:232` 只认 `=== "none"`；空枚举在 `pickEffort` 处已早退 null、不经本函数。
+ *  消费点（`consultMenu` 两支）只认 `=== "none"`；空枚举在 `pickEffort` 处已早退 null、不经本函数。
  *  Exported for unit tests (`cmd-config-effort.test.mjs`). */
 export function effortMenuLevels(enumList) {
   return ["none", ...(enumList ?? []).filter((l) => l !== "none")]

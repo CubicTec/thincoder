@@ -62,7 +62,7 @@ export function stubParentProvider({ name = "probe-parent", model = "probe-paren
   })
 }
 
-/** 父面工具表（§10.3-1）：`builtinTools` 静态表 + 按模型多模态位补 `read_image`（判据同 `tools/index.mjs:64`）。
+/** 父面工具表（§10.3-1）：`builtinTools` 静态表 + 按模型多模态位补 `read_image`（判据同 `assembleBuiltinTools`）。
  *  memory 绑定工具族 / 家族工具均不装（§10.9-①；家族段由 child 侧装配）。 */
 export function probeParentTools(model) {
   return specForModel(model)?.multimodal ? [...builtinTools, readImageTool] : [...builtinTools]

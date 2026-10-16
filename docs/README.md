@@ -22,7 +22,7 @@
 2. **旧档不批量搬**——保留原地作**参照**；**被触碰时随批迁**（一次一档或一批）；迁移 = `git mv` + 改引用 + 机检 + 与触发批同提交。
 3. **不复制**——同一档同一时间只有一份实体（迁移是**移动**不是拷贝），避免双权威源。
 4. **产品级档留各产品树**；**哪些旧档属项目级随触碰逐个判定**（判定依据：是否跨两产品被引用）。
-5. 迁移动作的验收 = 仓根机检（`node scripts/doc-check.mjs --root .`——单引擎：锚 + 行宽）exit 0，且**零悬空锚**。
+5. 迁移动作的验收 = **源面核**（逐处：引用可解析——目标档 + 节在盘；行宽无 >300 字符单行；受影响档清单逐档比对）——**读数器禁调**（用户 2026-10-15 12:10 令「不再跑、不再引其读数、不再以其红 / 绿作任何判据」），机检读数不作判据。
 6. **五部分落点规划**（core / CLI / VSC / desktop / render-core）——目标结构 / 命名规则 / 归属判据 / 交叉引用形态 = `core/design/DOC-SYSTEM.md`（2026-09-14 建档；2026-09-25 桌面端设计轮收正为四部分；2026-09-27 布局收正轮收正为五部分——模块镜像裁定）；
    本节政策（逐档随批迁 / 不复制 / 旧档留参照）不变，迁入时的**落点与档名**按该档 §4–§6 判定。
 
@@ -87,9 +87,20 @@
 
 **两产品旧子系统档的处置（建议 · 未代裁）**：按本层 §2 迁移政策「**旧档不批量搬 · 保留原地作参照 · 被触碰时随批迁**」——各子系统于 **S2 迁移该子系统时**逐档 `git mv` 入本层（一次一档 + 引用改写 + 机检），并在产品地图撤登记行。
 
+**`core/requirements/` 登记（逐档 · 48）**：与 design 侧同形，分五组逐档列名（全 48 档）：
+
+- 子系统档（与 design 侧同名成对）**15**：`AGENT-LOOP.md` · `CHECKPOINT.md` · `CONFIG.md` · `CONSULTATION.md` · `CONTEXT-COMPACTION.md` · `I18N.md` · `LOGGING.md` · `MCP.md` · `MEMORY.md` · `PROMPT-SYSTEM.md` · `PROVIDER.md` · `SESSION.md` · `TOOLS.md` · `TRACES.md` · `WORKSPACE.md`；
+- 其它板块 / 迁入档 **3**：`DOC-SYSTEM.md` · `PHILOSOPHY.md` · `TWO-REPO-MERGE.md`；
+- 工作流档 **1**：`CORE-UNIFICATION.md`（登记表 · 事实基线 —— 计入实档计数）；
+- 工程模式 V2 面 **11**：`ENGINEERING-MODE-V2.md` + `ENGINEERING-MODE-V2-SPEC-{BATCH-SEGMENT,CHECKLIST-REMOVAL,DELEGATION,LEDGER,MACHINE-CHECK,MANIFEST,PROMPT-PIPELINE,REVIEW-CREDENTIAL,TEST-DISCIPLINE,WRITE-GATE}.md`；
+- 其余机制 / 流程 / 文档面 **18**：`ADVISOR-CONVERGENCE.md` · `AGENT-PARAMS.md` · `BROWSER-TOOL.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `ENG-TOKEN-BINDING.md` · `ESCALATE.md` · `LIGHT-CHANNEL.md` · `METHODOLOGY.md` · `MULTI-INSTANCE-COLLAB.md`
+  · `NORMAL-MODE.md` · `PORTABILITY.md` · `PROJECT.md` · `SEND-STALL-DISTILL.md` · `SETTINGS-TOOL.md` · `STRUCTURE-DEBT.md` · `TESTING.md` · `TURN-CAP-CONTINUE.md` · `VERIFY-REDESIGN.md`。
+
+**计数核对（复跑 as-of 2026-10-16 · 按名对账）**：`core/requirements/` 实档 **48** = 本图登记 **48** + **待补登 0**（逐名相等）。
+
 ## 5. 与产品文档地图的关系
 
 - CLI 产品地图 = `thincoder-cli/docs/README.md`（**CLI 产品**的文档入口）——它此前登记了项目级板块（历史原因：合并前无项目级层）；板块迁入本层后，其登记行**撤除**（该板块不再属 CLI 产品树——本层为唯一登记处）。
 - VSC 产品地图 = `thincoder-vscode/docs/README.md`（VSC 产品入口）。
-- 本层**不进**两产品的文档域扫描；本层自带机检覆盖（`node scripts/doc-check.mjs --root .`，扫描域 = `docs`）；台账核销面 = `/ledger`（`thincoder-core/ledger.mjs`）。
+- 本层**不进**两产品的文档域扫描；本层自带**源面核**面（扫描域 = `docs`；**读数器禁调**——用户 2026-10-15 12:10 令）；台账核销面 = `/ledger`（`thincoder-core/ledger.mjs`）。
 - **五部分不各设地图**——本 README = 五部分（`core/` · `cli/` · `vsc/` · `desktop/` · `render-core/`）的唯一地图（目标结构 `core/design/DOC-SYSTEM.md` §4）；`cli/` · `vsc/` 两产品面档所对应的产品树旧档（`thincoder-cli/docs/**` · `thincoder-vscode/docs/**`）= 迁移期参照历史（§2 政策——保留 ≠ 维护）。

@@ -120,7 +120,7 @@ export function registerBoxRoutes(routes, { db, config = {}, log = null, relay, 
       failure = e // 体异常不得洩在途态（回合登记不回收 ⇒ 工作区级门恒闭）——统一由 finally 收口
     } finally {
       // 体从未自称回合（首帧缺 begin / 行非 JSON）⇒ 按工作区 + 槽号取在途回合收口（在途态残留 = 工作区级门恒闭）；
-      // `begin` 对位失败径（`:98`）则零副作用——不回收（未知 cmdId / 会话不符 = 拒绝该流，不动在途回合）
+      // `begin` 首帧对位失败径则零副作用——不回收（未知 cmdId / 会话不符 = 拒绝该流，不动在途回合）
       const active = turn ?? (claimed ? null : relay.turnOfSession(workspace.id, target.slot))
       if (active !== null) relay.finishTurnStream(active.cmdId) // 无 `end` 帧收口 ⇒ 按失败收尾（如实补帧——幂等）
     }

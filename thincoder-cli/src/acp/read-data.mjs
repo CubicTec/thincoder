@@ -97,7 +97,10 @@ export function createReadDataHandlers(ctx, { intervalMs = WATCH_INTERVAL_MS } =
     try {
       const cwd = ctx.getCwd()
       const { ledgerDb, batchRead } = await core()
-      const ledgerSig = fileSig(ledgerDb.ledgerDbPath(cwd))
+      // 观察域根 = 判据单源 `resolveLedgerRoot`（与写入面同源）：根 ⇒ 其键控库指纹；无根 ⇒ 该域无台账库、
+      // 指纹恒 "0"（观察域照常上报——键控库在盘 / 变动即报 `ledger/changed`）。
+      const root = ledgerDb.resolveLedgerRoot(cwd)?.root
+      const ledgerSig = root ? fileSig(ledgerDb.ledgerDbPath(root)) : "0"
       const batchSig = batchRead.listBatchRecords({ cwd }).batches.map((b) => `${b.path}:${fileSig(b.path)}`).join("|")
       if (!last || last.cwd !== cwd) { last = { cwd, ledgerSig, batchSig }; return [] } // 首查 / 观察域切换 ⇒ 立基线（静默）
       const fired = []

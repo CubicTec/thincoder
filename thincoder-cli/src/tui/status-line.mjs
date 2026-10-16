@@ -65,7 +65,7 @@ export function renderStatus(state, agent, cols, slashCommands) {
   return `${C.attention}${(chip + " │ " + inner).replaceAll(ansi.reset, ansi.reset + C.attention)}${ansi.reset}`
 }
 
-/** 标题回退链（B6 消 · #677——对位 VSC `panel-session.mjs:243-247` 链值 `title → "firstMessage" → "(empty)"`；
+/** 标题回退链（B6 消 · #677——对位 VSC `panel-session.mjs` 链值 `title → "firstMessage" → "(empty)"`；
  *  截断逐字同该链 `truncate(s, 40)`——生成前 ∕ 失败期两端同值）。首条真实 user 消息 = 活读单源：
  *  绑定态取槽摘要字段（`counters().firstMessage`——与 VSC `listSlots` 同字段）；未绑定回退内存人读线。 */
 function sessionTitleFallback(agent) {

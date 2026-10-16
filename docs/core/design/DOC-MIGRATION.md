@@ -1,6 +1,6 @@
 # 文档迁移台账（DOC-MIGRATION）· CLI 树 84 档二分与落点
 
-> 归属 = **文档体系板块**（`docs/core/design/DOC-SYSTEM.md` 的下游执行表）；本档 = **CLI 树 84 档的逐档二分（活 / 历史）+ 落点 + 批次分组**的唯一权威表；并载后续迁移执行方案（§10 v1 文档退役 ∥ §11 桌面端设计档按域拆分）。
+> 归属 = **文档体系板块**（`docs/core/design/DOC-SYSTEM.md` 的下游执行表）；本档 = **CLI 树 84 档的逐档二分（活 / 历史）+ 落点 + 批次分组**的唯一权威表；并载后续迁移执行方案（§10 v1 文档退役 ∥ §11 桌面端设计档按域拆分 ∥ §12 R2 层前缀引称迁移执行表）。
 > 判据（**本节不复制**）→ `docs/core/design/DOC-SYSTEM.md` §5.1（P1–P5 归属判据句）· §4（目标目录结构）· §6（命名规则）。
 > 迁法（用户裁定「**明显应该是 B**」）= **旧档留原地一字不改 + 内容补写 / 重建进根层**。
 > 底本口径 = `thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**（不含 `design/prompts/` · `design/_archive/`）。
@@ -53,7 +53,7 @@
 | 28 | PROVIDER | 已清 | 对账：CLI §1–§16 / §21 / §23 ↔ 根层 §6.1–§6.17 | 无动作 |
 | 29 | PROXY | **已迁** | 活——根层无正文（`CONFIG.md` §8.2 越段登记）；**§TLS 段按实装**（默认全量校验 + `insecureTls` 显式放行，`thincoder-core/proxy.mjs:214`）；§web 消费面 = 逐次调用参数 | 已落 `docs/core/design/PROXY.md` |
 | 30 | QUICKFIX-BATCH-3 | 历史 | 批档形态（需求→设计→用例→验收） | 不迁（就地留）；**F-3 / F-4 未落且无承载 ⇒ 须回写台账**（父侧） |
-| 31 | RELEASE | **已迁** | 活 · **CLI 面（P2）**——npm 发布面结构性只属 CLI（P5「P2 > P1」压过 VSC 同名对位档）；与需求档层归属不对称（见落点档档头注） | 已落 `docs/cli/design/RELEASE.md` |
+| 31 | RELEASE | **已迁** | 活 · **统一面**——核 + CLI / VSC / 桌面三端统一发布计划（单档承载 · 单主线）；设计 ∥ 需求不分离 ⇒ 落仓根 | 已落 `docs/RELEASE.md`（仓根层） |
 | 32 | SEND-STALL-DISTILL | **已迁** | 同名根档已建；CLI 独有面（TUI 保存回调接线 / 退出 flush 有界等待）并入 | 已并入 `docs/core/design/SEND-STALL-DISTILL.md`（§2.3 / §2.6 / §3） |
 | 33 | SESSION | 已清 | 对账：CLI §1–§14 ↔ 根层 §6.1–§6.14 | 无动作 |
 | 34 | SETTINGS-TOOL | **已迁** | 设计侧根层无档（需求侧同名根档已建）⇒ 纯新建；null 形状表 / parseValue 去引号裁定按现行实装落笔 | 已落 `docs/core/design/SETTINGS-TOOL.md`（新建） |
@@ -98,7 +98,7 @@
 | 21 | PORTABILITY | **已迁** | 同名根档已建；接受方向表 + FR14 落实文本并入 | 已并入 `docs/core/requirements/PORTABILITY.md`（§5；(d) 类入 §6.1） |
 | 22 | PROJECT | **已迁** | 同名根档已建（其档头自注「迁入时对账合并」）；产品级定性面全量并入为 §5 | 已并入 `docs/core/requirements/PROJECT.md`（§5 对账合并——用户裁定②） |
 | 23 | PROMPT-SYSTEM | **已迁** | 蓝图条目已并入（分层模型 / 命名法 / 内容大纲 / 编写纪律 15 条 / 装配逻辑 / 归属判定）；§8–§10 批面登记不并 | 已并入 `docs/core/requirements/PROMPT-SYSTEM.md` §4 |
-| 24 | RELEASE | **已迁** | 活 · **统一面**（发布流程 = 跨产品板块主题）；**与设计档层归属不对称**（设计 = CLI 面）——两侧档头互注配对档位置 | 已落 `docs/core/requirements/RELEASE.md` |
+| 24 | RELEASE | **已迁** | 活 · **统一面**（发布流程 = 跨产品板块主题）；设计 ∥ 需求不分离 ⇒ 单档 | 已落 `docs/RELEASE.md`（同 §2.1 :31 档） |
 | 25 | SEND-STALL-DISTILL | **已迁** | 对账并入：N3 CLI 中止形态（退出 flush / Stop 不中止蒸馏） | 已并入 `docs/core/requirements/SEND-STALL-DISTILL.md`（余面现有正文已载） |
 | 26 | SESSION | 已清 | 对账：CLI ↔ 根层 §4.1–§4.4 | 无动作 |
 | 27 | SETTINGS-TOOL | **已迁** | 同名根档已建；缺口（F-ST7 值解析裁定 / 热应用细节 / 无静默判据 / 持久性边界 / CLI 边界族）并入；§4 错误边界行按双端实装 | 已并入 `docs/core/requirements/SETTINGS-TOOL.md`（§2–§4；(d) 类入 §5.1） |
@@ -116,7 +116,7 @@
 ## 3. 待核（**已清空**）
 
 **去向**：判与落点见 §2.1 / §2.2 对应行的「判」与「动作 / 落点」列（本表不再另立——D2 单一权威源）。
-**层归属不对称登记**：`RELEASE` 两档跨部分成对（设计 = `docs/cli/design/` · 需求 = `docs/core/requirements/`）——各自档头互注配对档位置（防读者以为漏档）。
+**统一面档登记**：`RELEASE` = **单档** `docs/RELEASE.md`（仓根层 · 核 + 三端统一发布计划）——**不分 design / requirements 两层**，故不计入 R2 / R3 同名面。
 
 ## 4. 对账：已并入的 11 板块
 
@@ -406,9 +406,12 @@
 | 13 | `E2E-TESTING.md` | 测试基建 | 保持（零迁） |
 | 14 | `WEB-QUICKCHECK.md` | web 快筛 | 保持（零迁） |
 
-**跨档计数热点消除（O-2 实例）**：五档档头的 `需求侧 D1–D37` 范围计数**摘除**、改稳定指针；档数枚举（「设计侧 N 档」类）只住总览档索引节（单源）；`§4.1 本端文件清单与行数预算` 行族按域拆、每域档自持族账（声明面随动 = §11.5 ②）。
+**跨档计数热点消除（O-2 实例）**：五档档头的 `需求侧 D1–D37` 范围计数**摘除**、改稳定指针；档数枚举（「设计侧 N 档」类）只住总览档索引节（单源）；`§4.1 本端文件清单与行数预算` 行族按域拆、每域档自持族账。
 
 **档名查重结果**：14 名中唯 `SETTINGS.md` 与既有 `docs/vsc/design/SETTINGS.md` 同名——域内（`docs`）裸名引用面**零命中**（命中仅在闸域外）⇒ 处置 = 引用一律全路径形态（N-c 扩用），无需改名。
+
+**同名面判据（R2 ∥ R3）**：同一部分内 design ↔ requirements **同名成对** ⇒ 判 **R2**（带层前缀 `design/X.md` ∥ `requirements/X.md`）；该档名在 **≥2 个部分**出现 ⇒ 判 **R3**（仓根相对全路径 `docs/<部分>/<层>/X.md`）；两判同中者判 **R3**。判据句住 `design/DOC-SYSTEM.md` §7 的 R2 ∥ R3 两行——本条不重述（**D2**）。
+**本例（`SETTINGS.md`）**：跨 `desktop` ∥ `vsc` 两部分 ⇒ 判 **R3**——与上行「引用一律全路径形态」**同向**。
 
 ### 11.2 迁法规则（实例口径 —— 工序单源 = §3.16 O-5，不重述）
 
@@ -446,7 +449,7 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 | 波 2a · 渲染族 | `CHAT` ∥ `COMPOSER` ∥ `ACTIVITY` 建 + `RENDERER` 收编 | 同波内域档零交 + 共享档（`PROJECT.md` ∥ `UI.md`）剪枝段串行（文件级调度——O-4）；验收 = AC-1 ∥ AC-2 |
 | 波 2b · 会话设置壳族 | `SESSIONS` ∥ `SETTINGS` 建 + `SHELL` ∥ `IPC` 收编 | 同上（四域同判：域档零交 + 共享档剪枝段串行） |
 | 波 2c · 降格收尾 | `UI.md` 降格 + `PROJECT.md` 降格（索引 ∥ 跨域 ∥ 历史段） | 顺序执行（须各域闭环先齐——域档全 ∧ 剪枝已落）；验收 = AC-1 ∥ AC-3 |
-| 波 3 · 需求分卷 + 收尾 | 需求分卷（主 agent）· 索引 ∥ 地图改指收尾（§11.5 ④）· 终扫 | 主 agent + 执行批；验收 = AC-6 ∥ AC-1 |
+| 波 3 · 需求分卷 + 收尾 | 需求分卷（主 agent）· 索引 ∥ 地图改指收尾（§11.5 ③）· 终扫 | 主 agent + 执行批；验收 = AC-6 ∥ AC-1 |
 
 避让：各波开工前按在飞批文件域调度（`docs/desktop/**` 冻结窗在批——D5 照旧）；同波并行 = 允许（域档零交；共享档剪枝段串行），波间 = 顺序。
 
@@ -455,11 +458,10 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 | # | 面 | 内容 | 笔权 |
 |---|---|---|---|
 | ① | 扫描域 | 新档自动入 `checkConfig.scanDirs`（`docs` 全深）——零声明改；内容过锚 ∥ 宽门 | —（零改） |
-| ② | `lineCounts` 声明 | 单条 `{PROJECT.md, 4.1}` 扩为与域档一一对应的多条目——**执行前实核多条目支持**（节遍历口径） | main 直写（M1 专权——已落，`docs/core/design/DOC-DISCIPLINE.md` §3.9 附加口径 ②） |
-| ③ | 档头 | 跨档范围计数摘除（§11.1 热点消除行） | 执行批 |
-| ④ | 索引 ∥ 映射 | `docs/README.md` §1 ∥ §4 行、`DOC-SYSTEM.md` §4 第四部分段（现「设计侧五档」句**已陈旧**——实为七档；随迁移波一并收正为 14 档）、各档头互指行（验收 = AC-1） | 执行批 ∥ 父侧 |
-| ⑤ | 锚检查 | 每波 `doc-check` 相对判据（基线 = 波 0 件）；保位指针 ∥ 新档名解析 | 执行批 |
-| ⑥ | 评审面 | 文档 scope 按域收窄（`documents` 列表）——零改，既有机制 | —（零改） |
+| ② | 档头 | 跨档范围计数摘除（§11.1 热点消除行） | 执行批 |
+| ③ | 索引 ∥ 映射 | `docs/README.md` §1 ∥ §4 行、`DOC-SYSTEM.md` §4 第四部分段（现「设计侧五档」句**已陈旧**——实为七档；随迁移波一并收正为 14 档）、各档头互指行（验收 = AC-1） | 执行批 ∥ 父侧 |
+| ④ | 锚检查 | 每波 `doc-check` 相对判据（基线 = 波 0 件）；保位指针 ∥ 新档名解析 | 执行批 |
+| ⑤ | 评审面 | 文档 scope 按域收窄（`documents` 列表）——零改，既有机制 | —（零改） |
 
 ### 11.6 并发验证矩阵
 
@@ -506,9 +508,9 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 
 | # | 判据 | 回指 |
 |---|---|---|
-| AC-1 | 14 档域清单逐档在位 ∧ 每档过 `doc-check`（零悬空 ∥ 零区带外超宽）∧ 索引 ∥ 地图指向齐（§11.5 ④） | O-1 ∥ O-3 |
+| AC-1 | 14 档域清单逐档在位 ∧ 每档过 `doc-check`（零悬空 ∥ 零区带外超宽）∧ 索引 ∥ 地图指向齐（§11.5 ③） | O-1 ∥ O-3 |
 | AC-2 | 逐波迁移零语义——逐域闭环、波末已迁域全闭合（剪枝 = 域收尾步，§11.2）：`doc-check` 相对判据（新增悬空 0 ∥ 区带外新增超宽 0）∧ 计守恒对拍逐项全等 ∧ 保位指针解析命中 ∧ 原址零正文副本 | O-5 |
-| AC-3 | 机检随动四件（§11.5 ①–③ + §11.1 档名查重行）落齐：扫描域零声明改 ∧ 声明面多条目跑绿 ∧ 档头计数摘除 ∧ 档名查重过 | O-6 |
+| AC-3 | 机检随动三件（§11.5 ①② + §11.1 档名查重行）落齐：扫描域零声明改 ∧ 档头计数摘除 ∧ 档名查重过 | O-6 |
 | AC-4 | 并发面实测：夹具 = 菜单批 `{MENU, SHELL, IPC, COMPOSER}` ∥ 设置批 `{SETTINGS}`——拆分后写域交集 = ∅ ∧ 评审 `docSetKey` 互异（复跑 = `docSetKey(两集, cwd)` 对拍——导出 = `thincoder-core/agent-tools/review-facts.mjs`；现状同 scope 拒发 = 对照基线）；矩阵「消」行 ≥2 组逐行实证 | O-4 |
 | AC-5 | 提示词两份同批落（中文设计文档 + 英文代码；节名对应——各面取该面草案名逐字）∧ 零新悬空引用 ∧ 无外露计数 | §11.7 |
 | AC-6 | 需求分卷与 D 行全集对拍（37 行零遗漏零重复——分卷执行波判） | §11.3 |
@@ -532,3 +534,211 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 ### 11.11 open / 未决
 
 ① KD 行 ∥ UI 块级归属在波 0 逐行钉死前为**候选**（本表 = 域边界 + 现址锚形状）；② 需求分卷表 = 提案（主 agent 裁）；③ `SETTINGS.md` 同名处置 = 全路径形态（§11.1 查重行）；④ 变更记录整块留原址的「迁移前（≤ 迁移日）」标记形态——波 0 定形；⑤ `DOC-DISCIPLINE.md` §3.14 既有「`DOC-SYSTEM.md` §3.4 行 M-2 实例」登记不变（零随动）。
+
+
+## 12. R2 层前缀引称迁移 · 执行表（全树 332 行 / 140 组）
+
+> 主题 = 引称按 `DOC-SYSTEM.md` §7 R2 形（同部分跨层同名对 ⇒ 带层前缀）迁移——本节 = 该迁移的**唯一执行表**（跨分批 1–6 多轮执行）。
+> 判据句单源 = `docs/core/design/DOC-SYSTEM.md` §7（R1 / R2 / R3 三行 + 计数口径 + 例外条 + R2 ∥ R3 分工句）——本节**不重述判据**（**D2**），只载口径 / 计数 / 逐组表 / 分批序。
+> 核法 = **人读**（用户裁：R2 属语义约定，不设机检）。
+
+**扫描口径（实测 · 非转抄）**：域 = `docs/<部分>/{design,requirements}/**`（扣 `_archive`）；命中 = 裸名 token `X.md`（token 内**不含 `/`**）后**紧随坐标**（`§N` ∥ `:N`）；面 = **R2**（该部分 design ↔ requirements 同名对）∥ **R3**（`X.md` 在 **≥2 个部分**出现）；两判同中时计 **R3**；**逐行计数**（同行重复 token 去重）。
+
+**`_archive` 不计**：同名对基数不含 `_archive`——`core` 两侧 `_archive/ENGINEERING-MODE.md` 成对 ⇒ 计入则 `core` 35 / 合计 53，扣后 34 / 52（差 1 对全在 `_archive`）。判据单源 = `design/DOC-SYSTEM.md` §7 计数口径。
+
+**坐标口径**：行号列 = **设计轮实测 as-of 2026-10-16**——行号随各档编辑漂移，**不构成执行依据**；迁移轮须逐处**改前回读**。本表内 `DOC-MIGRATION.md` 自身行号 ≥ `413` 者已按本节新增段（§11.1，两行）**+2 收正**。
+
+**本表非引称**：表内「被引」列 = 裸档名列（与「行号」列分栏，非同格），属**登记表形态** ⇒ 不判 R2 / R3（判据住 `docs/core/design/DOC-SYSTEM.md` §7 例外条）。
+
+**计数**
+
+| 面 | 可动 | 禁区（原） | 合计 |
+|---|---|---|---|
+| R2（纯） | 210 | 65 | 275 |
+| R3（纯） | 28 | 10 | 38 |
+| R2+R3 | 18 | 1 | 19 |
+| **合计** | **256 行 / 114 组** | **76 行 / 26 组** | **332 行 / 140 组** |
+
+**读法**：本表 = **原始扫描分类**；逐组表按 KD-3（两判同中归 R3）⇒ 其「面」列只出现 `R2` / `R3` 两值（同一处只判一遍）。两表同源——计数表看**原始面**，逐组表看**处置面**。
+**按部分（行）**：`cli` 2 · `core` 262 · `desktop` 3 · `server` 13 · `vsc` 52。**同名对 52 对**（cli 5 · core 34 · desktop 10 · server 1 · vsc 2）。
+
+**R2 改写规则（判据句 · 禁「视情况」）**：现写法三式——① 两段反引号 `` `X.md` §N `` ∥ ② 单段 `` `X.md §N` `` ∥ ③ 坐标式 `` `X.md`:N ``——改后一律 = **层前缀档名 + 原坐标**：`design/X.md §N` ∥ `requirements/X.md §N` ∥ `requirements/X.md:N`。
+
+**层归属**：引称方与被引档同层 ⇒ 该层（设计档互引 ⇒ `design/`）；需求档回指设计档 ⇒ `design/`。
+
+**R3 改写规则**：`docs/<部分>/<层>/X.md §N`（**仓根相对全路径** · 层 = 被引档所在层）。
+
+**层判定的实证例外（逐条 · 非推测）——五条**
+- `core/design/MANIFEST.md:334` ⇒ `requirements/PORTABILITY.md:63`（FR11 = 需求侧）
+- `core/design/TESTING.md:6` ⇒ `requirements/TOOLS.md §4.7`（`§4.7` 实居 `docs/core/requirements/TOOLS.md:120`）
+- `core/requirements/PROMPT-SYSTEM.md:28/32/33/34/47` ⇒ `requirements/ENGINEERING-MODE-V2.md`（句作「v2 需求」）
+- `core/requirements/TOOLS.md:124/149` ⇒ `requirements/TESTING.md §6/§6.2`
+- `core/requirements/TESTING.md:181/183/188/210/232` ⇒ `requirements/TOOLS.md §4.7`
+
+**逐组表（可动 114 组 = 实迁移 113 组 + 出射程 1 组 · 表列 = 源档 ∥ 被引 ∥ 面 ∥ 改后前缀 ∥ 行号）**
+
+| 源档（`docs/` 下相对） | 被引 | 面 | 改后 | 行号 |
+|---|---|---|---|---|
+| `cli/requirements/READ-DATA-INTERFACE.md` | `LEDGER.md` | R3 | `docs/core/design/LEDGER.md` | 18 |
+| `cli/requirements/TUI.md` | `TUI.md` | R2 | `design/` | 36 |
+| `core/design/ADVISOR-CONVERGENCE.md` | `CONTEXT-COMPACTION.md` | R2 | `design/` | 404 |
+| `core/design/AGENT-LOOP-ASYNC-POOL.md` | `AGENT-LOOP.md` | R2 | `design/` | 14 36 871 1004 1087 |
+| `core/design/AGENT-LOOP-SUBAGENT.md` | `AGENT-LOOP.md` | R2 | `design/` | 101 350 407 410 |
+| `core/design/AGENT-LOOP-SUBAGENT.md` | `CONFIG.md` | R2 | `design/` | 647 |
+| `core/design/AGENT-LOOP-SUBAGENT.md` | `DESIGN-TOKEN-SETTLEMENT.md` | R2 | `design/` | 49 |
+| `core/design/AGENT-LOOP-SUBAGENT.md` | `TESTING.md` | R2 | `design/` | 273 330 |
+| `core/design/AGENT-LOOP-SUBAGENT.md` | `TOOLS.md` | R2 | `design/` | 672 |
+| `core/design/AGENT-LOOP.md` | `CONTEXT-COMPACTION.md` | R2 | `design/` | 276 458 |
+| `core/design/AGENT-LOOP.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 163 167 456 460 |
+| `core/design/AGENT-LOOP.md` | `MEMORY.md` | R2 | `design/` | 461 |
+| `core/design/AGENT-LOOP.md` | `MULTI-INSTANCE-COLLAB.md` | R2 | `design/` | 467 |
+| `core/design/AGENT-LOOP.md` | `PORTABILITY.md` | R2 | `design/` | 288 |
+| `core/design/API-CONTRACT.md` | `TOOLS.md` | R2 | `design/`（出射程——见下） | 814 |
+| `core/design/BASH-EXECUTOR-FACE.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 90 |
+| `core/design/BATCH-RECORD.md` | `TOOLS.md` | R2 | `design/` | 64 229 239 244 347 517 |
+| `core/design/BROWSER-TOOL.md` | `TOOLS.md` | R2 | `design/` | 33 |
+| `core/design/CHECKPOINT.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 64 |
+| `core/design/CHECKPOINT.md` | `TOOLS.md` | R2 | `design/` | 104 |
+| `core/design/CONFIG.md` | `ADVISOR-CONVERGENCE.md` | R2 | `design/` | 96 |
+| `core/design/CONFIG.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 57 59 72 |
+| `core/design/CONSULTATION.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 85 89 |
+| `core/design/CONTEXT-COMPACTION.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 37 |
+| `core/design/CONTEXT-COMPACTION.md` | `PROVIDER.md` | R2 | `design/` | 41 57 |
+| `core/design/CONTEXT-COMPACTION.md` | `SESSION.md` | R2 | `design/` | 104 |
+| `core/design/CONTEXT-COMPACTION.md` | `TOOLS.md` | R2 | `design/` | 354 |
+| `core/design/CORE-UNIFICATION.md` | `AGENT-LOOP.md` | R2 | `design/` | 744 769 |
+| `core/design/CORE-UNIFICATION.md` | `TOOLS.md` | R2 | `design/` | 796 |
+| `core/design/DESIGN-TOKEN-SETTLEMENT.md` | `ENG-TOKEN-BINDING.md` | R2 | `design/` | 94 |
+| `core/design/ENG-TOKEN-BINDING.md` | `DESIGN-TOKEN-SETTLEMENT.md` | R2 | `design/` | 195 |
+| `core/design/ENGINEERING-MODE-V2.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 295 297 |
+| `core/design/ENGINEERING-MODE-V2.md` | `SESSION.md` | R2 | `design/` | 329 |
+| `core/design/I18N.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 38 42 |
+| `core/design/LEDGER-SELF-CONTAINED.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 146 |
+| `core/design/LEDGER.md` | `MEMORY.md` | R2 | `design/` | 65 268 379 654 |
+| `core/design/LOGGING.md` | `CONFIG.md` | R2 | `design/` | 100 |
+| `core/design/LOGGING.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 41 |
+| `core/design/MANIFEST.md` | `DESIGN-TOKEN-SETTLEMENT.md` | R2 | `design/` | 332 |
+| `core/design/MANIFEST.md` | `LEDGER.md` | R3 | `docs/core/design/LEDGER.md` | 331 686 |
+| `core/design/MANIFEST.md` | `LIGHT-CHANNEL.md` | R2 | `design/` | 332 |
+| `core/design/MANIFEST.md` | `MEMORY.md` | R2 | `design/` | 123 125 280 683 |
+| `core/design/MANIFEST.md` | `PORTABILITY.md` | R2 | `design/`（`:334` 例外 ⇒ `requirements/`） | 280 296 334 358 |
+| `core/design/MANIFEST.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 240 |
+| `core/design/MANIFEST.md` | `TOOLS.md` | R2 | `design/` | 331 |
+| `core/design/MCP.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 19 47 |
+| `core/design/MEMORY.md` | `AGENT-LOOP.md` | R2 | `design/` | 812 |
+| `core/design/MEMORY.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 20 73 |
+| `core/design/MEMORY.md` | `PORTABILITY.md` | R2 | `design/` | 804 |
+| `core/design/MEMORY.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 800 |
+| `core/design/MODEL-BENCH.md` | `CONFIG.md` | R2 | `design/` | 105 |
+| `core/design/MODEL-SPECS.md` | `PROVIDER.md` | R2 | `design/` | 467 1400 1413 1442 |
+| `core/design/MODEL-SPECS.md` | `SETTINGS.md` | R3 | `docs/vsc/design/SETTINGS.md` | 1415 |
+| `core/design/MULTI-INSTANCE-COLLAB.md` | `SESSION.md` | R2 | `design/` | 23 45 66 71 75 298 320 321 |
+| `core/design/MULTI-INSTANCE-COLLAB.md` | `TOOLS.md` | R2 | `design/` | 144 |
+| `core/design/PROMPT-SYSTEM.md` | `CONFIG.md` | R2 | `design/` | 593 710 |
+| `core/design/PROMPT-SYSTEM.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 144 |
+| `core/design/PROMPT-SYSTEM.md` | `ENGINEERING-MODE-V2.md` | R2 | `design/` | 880 |
+| `core/design/PROMPT-SYSTEM.md` | `MEMORY.md` | R2 | `design/` | 377 |
+| `core/design/PROMPT-SYSTEM.md` | `SETTINGS-TOOL.md` | R2 | `design/` | 798 |
+| `core/design/PROMPT-SYSTEM.md` | `TOOLS.md` | R2 | `design/` | 307 |
+| `core/design/PROVIDER.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 57 |
+| `core/design/PROXY.md` | `PROVIDER.md` | R2 | `design/` | 36 |
+| `core/design/SESSION.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 24 42 60 |
+| `core/design/SESSION.md` | `MULTI-INSTANCE-COLLAB.md` | R2 | `design/` | 91 |
+| `core/design/SESSION.md` | `PROVIDER.md` | R2 | `design/` | 192 |
+| `core/design/SETTINGS-TOOL.md` | `MULTI-INSTANCE-COLLAB.md` | R2 | `design/` | 31 |
+| `core/design/TESTING.md` | `TOOLS.md` | R2 | `requirements/`（`§4.7` 实居需求档） | 6 |
+| `core/design/TOOLS.md` | `AGENT-LOOP.md` | R2 | `design/` | 282 |
+| `core/design/TOOLS.md` | `BROWSER-TOOL.md` | R2 | `design/` | 904 1185 |
+| `core/design/TOOLS.md` | `CONTEXT-COMPACTION.md` | R2 | `design/` | 170 |
+| `core/design/TOOLS.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 85 146 771 |
+| `core/design/TOOLS.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 258 |
+| `core/design/TRACES.md` | `AGENT-LOOP.md` | R2 | `design/` | 44 |
+| `core/design/TRACES.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 40 |
+| `core/design/WORKSPACE.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 6 63 |
+| `core/requirements/AGENT-LOOP.md` | `AGENT-LOOP.md` | R2 | `design/` | 23 247 |
+| `core/requirements/CHECKPOINT.md` | `CHECKPOINT.md` | R2 | `design/` | 24 |
+| `core/requirements/CONFIG.md` | `CONFIG.md` | R2 | `design/` | 23 26 |
+| `core/requirements/CONSULTATION.md` | `CONSULTATION.md` | R2 | `design/` | 21 |
+| `core/requirements/CONTEXT-COMPACTION.md` | `CONTEXT-COMPACTION.md` | R2 | `design/` | 22 25 29 |
+| `core/requirements/ENGINEERING-MODE-V2-SPEC-LEDGER.md` | `MEMORY.md` | R2 | `design/` | 41 |
+| `core/requirements/I18N.md` | `I18N.md` | R3 | `docs/core/design/I18N.md` | 24 |
+| `core/requirements/LOGGING.md` | `LOGGING.md` | R2 | `design/` | 20 |
+| `core/requirements/MCP.md` | `MCP.md` | R3 | `docs/core/design/MCP.md` | 21 |
+| `core/requirements/MEMORY.md` | `MEMORY.md` | R2 | `design/` | 24 |
+| `core/requirements/MEMORY.md` | `MULTI-INSTANCE-COLLAB.md` | R2 | `design/` | 201 |
+| `core/requirements/PROMPT-SYSTEM.md` | `ENGINEERING-MODE-V2.md` | R2 | `requirements/` | 28 32 33 34 47 |
+| `core/requirements/PROMPT-SYSTEM.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 59 216 |
+| `core/requirements/PROVIDER.md` | `PROVIDER.md` | R2 | `design/` | 20 24 25 31 |
+| `core/requirements/SESSION.md` | `SESSION.md` | R2 | `design/` | 22 39 |
+| `core/requirements/TESTING.md` | `TOOLS.md` | R2 | `requirements/` | 181 183 188 210 232 |
+| `core/requirements/TOOLS.md` | `TESTING.md` | R2 | `requirements/` | 124 149 |
+| `core/requirements/TOOLS.md` | `TOOLS.md` | R2 | `design/` | 23 62 63 64 65 66 68 69 |
+| `core/requirements/TRACES.md` | `TRACES.md` | R2 | `design/` | 20 |
+| `core/requirements/WORKSPACE.md` | `WORKSPACE.md` | R2 | `design/` | 23 |
+| `desktop/design/ACTIVITY.md` | `PROJECT.md` | R3 | `docs/desktop/design/PROJECT.md` | 116 |
+| `desktop/design/SESSIONS.md` | `PROJECT.md` | R3 | `docs/desktop/design/PROJECT.md` | 142 163 |
+| `server/design/accounts/ACCOUNTS.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/agent/ADMIN-AGENT.md` | `PROJECT.md` | R3 | `docs/server/design/PROJECT.md` | 6 41 540 613 |
+| `server/design/client/CLIENT.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/gateway/API.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/ledger/LEDGER.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/mcp/MCP.md` | `PROJECT.md` | R3 | `docs/server/design/PROJECT.md` | 89 |
+| `server/design/metering/METERING.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/ops/OPS.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/project/PROJECTS.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `server/design/webui/WEBUI.md` | `PROJECT.md` | R3 | `docs/server/requirements/PROJECT.md` | 4 |
+| `vsc/design/VSC-DEBT.md` | `PROJECT.md` | R3 | `docs/vsc/requirements/PROJECT.md` | 13 15 145 146 147 151 152 195 197 421 459 |
+| `vsc/design/VSC-DEBT.md` | `WEBVIEW.md` | R2 | `design/` | 14 149 150 196 224 |
+| `vsc/design/WEBVIEW-PROTOCOL.md` | `I18N.md` | R3 | `docs/core/design/I18N.md` | 275 |
+| `vsc/design/WEBVIEW-PROTOCOL.md` | `SETTINGS.md` | R3 | `docs/vsc/design/SETTINGS.md` | 115 120 122 124 390 413 415 451 463 496 497 |
+| `vsc/design/WEBVIEW-PROTOCOL.md` | `WEBVIEW.md` | R2 | `design/` | 50 92 101 190 200 210 216 246 262 263 266 271 311 315 316 319 320 329 363 424 427 500 501 |
+| `vsc/requirements/WEBVIEW.md` | `SETTINGS.md` | R3 | `docs/vsc/design/SETTINGS.md` | 33 |
+
+**出射程 1 组（不改 .md · 不改源码）**：`core/design/API-CONTRACT.md:814`（被引 `TOOLS.md`）——命中落在**生成区**（`API-CONTRACT.md:10`「生成器唯一笔——勿手改」· `:12` 重跑 = `node scripts/api-contract.mjs --write`），文本源 = 代码注释（`thincoder-core/agent.mjs:42`）⇒ 手改 .md 即被重跑覆盖、改源码越本批边界 ⇒ **出迁移射程**。⇒ **实迁移面 = 331 行 / 139 组**。
+
+**禁区表（26 组 / 76 行 · 原在途批射程内 —— 该批已收口 ⇒ 解除，可迁）**
+
+| 源档（`docs/` 下相对） | 被引 | 面 | 改后 | 行号 |
+|---|---|---|---|---|
+| `core/design/DOC-DISCIPLINE.md` | `AGENT-LOOP.md` | R2 | `design/` | 264 378 389 390 391 392 393 394 395 401 409 1496 1627 |
+| `core/design/DOC-DISCIPLINE.md` | `CHAT.md` | R3 | `docs/desktop/design/CHAT.md` | 944 |
+| `core/design/DOC-DISCIPLINE.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 210 1626 |
+| `core/design/DOC-DISCIPLINE.md` | `DESIGN-TOKEN-SETTLEMENT.md` | R2 | `design/` | 1235 |
+| `core/design/DOC-DISCIPLINE.md` | `DOC-SYSTEM.md` | R2 | `design/`（两处引称本体 = 层前缀形） | 521 522 723 726 1389 1501 1503 1544 1546 |
+| `core/design/DOC-DISCIPLINE.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 521 522 606 1501 1503 1505 |
+| `core/design/DOC-DISCIPLINE.md` | `SETTINGS.md` | R3 | `docs/desktop/design/SETTINGS.md` | 944 |
+| `core/design/DOC-DISCIPLINE.md` | `TESTING.md` | R2 | `design/` | 264 |
+| `core/design/DOC-DISCIPLINE.md` | `TOOLS.md` | R2 | `design/` | 522 606 1501 1503 1505 |
+| `core/design/DOC-MIGRATION.md` | `AGENT-LOOP.md` | R2 | `design/` | 29 41 64 289 |
+| `core/design/DOC-MIGRATION.md` | `CONFIG.md` | R2 | `design/` | 54 310 |
+| `core/design/DOC-MIGRATION.md` | `CONSULTATION.md` | R2 | `design/` | 310 |
+| `core/design/DOC-MIGRATION.md` | `CORE-UNIFICATION.md` | R2 | `design/` | 195 310 |
+| `core/design/DOC-MIGRATION.md` | `DOC-SYSTEM.md` | R2 | `design/` | 14 151 311 462 536 |
+| `core/design/DOC-MIGRATION.md` | `ENG-TOKEN-BINDING.md` | R2 | `design/` | 311 314 |
+| `core/design/DOC-MIGRATION.md` | `I18N.md` | R3 | `docs/core/design/I18N.md` | 311 |
+| `core/design/DOC-MIGRATION.md` | `LEDGER.md` | R3 | `docs/core/design/LEDGER.md` | 311 |
+| `core/design/DOC-MIGRATION.md` | `PORTABILITY.md` | R2 | `design/` | 312 |
+| `core/design/DOC-MIGRATION.md` | `PROJECT.md` | R3 | `docs/desktop/design/PROJECT.md` | 395 396 400 405 470 473 526 |
+| `core/design/DOC-MIGRATION.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 505 |
+| `core/design/DOC-MIGRATION.md` | `SEND-STALL-DISTILL.md` | R2 | `design/` | 312 |
+| `core/design/DOC-MIGRATION.md` | `TOOLS.md` | R2 | `design/` | 30 38 39 71 72 |
+| `core/design/DOC-MIGRATION.md` | `TWO-REPO-MERGE.md` | R2 | `design/` | 313 |
+| `core/design/DOC-MIGRATION.md` | `VERIFY-REDESIGN.md` | R2 | `design/` | 200 |
+| `core/design/DOC-MIGRATION.md` | `WORKSPACE.md` | R2 | `design/` | 45 |
+| `core/design/DOC-SYSTEM.md` | `PROMPT-SYSTEM.md` | R2 | `design/` | 143 |
+
+**逐处判 5 组 → 定案（按被引档的实际指向）**
+- `DOC-DISCIPLINE.md:944` 的 `CHAT.md` ∥ `SETTINGS.md` = **桌面域设计档清单**（同列 `ACTIVITY.md:147` 等）⇒ `docs/desktop/design/CHAT.md` ∥ `docs/desktop/design/SETTINGS.md`。
+- `DOC-MIGRATION.md:311` 的 `I18N.md` ∥ `LEDGER.md` = **本档核心设计档清单**（同列 `DOC-CODE-RECONCILE.md:134` 等）⇒ `docs/core/design/I18N.md` ∥ `docs/core/design/LEDGER.md`。
+- `DOC-MIGRATION.md:395/396/400/405/470/473/526` 的 `PROJECT.md` = **§11 桌面端拆分面**（`SHELL.md` / `IPC.md` / `PACKAGING.md` 行内）⇒ `docs/desktop/design/PROJECT.md`。
+
+**分批顺序（依据 = 写者冲突 ∥ 面大小）**
+
+| 批 | 部分 | 行数 | 依据 |
+|---|---|---|---|
+| 1 | `server` | 13 | 面小 · **无在途写者** · R2 / R3 同轮（`PROJECT.md` 一次定形） |
+| 2 | `desktop` | 3 | 同上 |
+| 3 | `vsc` | 52 | 有**正向夹具**（`docs/vsc/requirements/WEBVIEW.md:5` 已写 `design/WEBVIEW.md`、`:142` 明文引 R2 形 ⇒ 零改，可作对齐样板）· R3 面最大 |
+| 4 | `cli` | 2 | 同第 1 批 |
+| 5 | `core` 可动 | 186 | 面最大；**76 行原在在途批射程内——该批已收口 ⇒ 条件解除** |
+| 6 | `core` 禁区 | 76 | 随第 5 批同轮 |

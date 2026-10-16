@@ -7,7 +7,7 @@
  *  - `projectDictionary(locale)` = **VSC 字典投影**：核常量 → VSC `locales/*.json` 的扁平
  *    字典形态（VSC 的 `i18n.mjs` `t()` 壳在 S2 接线时并入本投影，壳内零文案）。
  *
- * 契约（CORE-UNIFICATION §2.12.2 第 12 行 · 输出文案类）：**机器消费面冻结**——本表键值
+ * 契约（CORE-UNIFICATION §2.12.2「输出文案类」）：**机器消费面冻结**——本表键值
  * 与现 VSC `locales/{en,zh}.json` 逐字一致（已锁定串不得改）；人读文案后续变更须登记 +
  * CHANGELOG（S2 落地物）。`${name}` = 插值占位（两端同约定）。
  *

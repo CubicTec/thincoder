@@ -12,7 +12,7 @@
  * 拉仓 = **既有能力登记**（盒内核 `git` 工具 + git 凭据助手——不另立工具；KD-SV-222 收正）。
  *
  * 形 = 核工具形（`{ name, description, parameters, readonly: false, execute }`——同 `mcp-tools.mjs` 桩件族）；
- * `readonly: false` ⇒ 逐调用吃核权限门挡（`thincoder-core/agent/dispatch.mjs:177-243`——审批卡/`autoApprove`
+ * `readonly: false` ⇒ 逐调用吃核权限门挡（`thincoder-core/agent/dispatch.mjs` `executeToolCalls`——审批卡/`autoApprove`
  * 全沿核语义；零专属门）。缝 = `fetchImpl` 注入（测试假件）∥ env 基址/键 ∥ `AbortSignal.timeout`（`ctx.signal`
  * 在场 ⇒ `AbortSignal.any` 合流——中止随断连/回合传播）。
  */

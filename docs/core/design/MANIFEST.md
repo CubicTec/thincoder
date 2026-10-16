@@ -51,7 +51,7 @@
 
 **核心方案（就机制本身说清为什么）**：
 
-1. **schema 落成校验器常量**（`MANIFEST_SCHEMA` + `DEFAULT_MANIFEST`）：枚举（`phase`）、键存在（`docRoot` 五键、`checkConfig` 六键、`index` / `advisor` 子键）、形态（`docRoot` 子键值形态 + 三族声明键形态——KD-M1-32）由校验器机械判——判据单源，读面（下游 M2–M9）与写门（本模块）同用一处；**校验器不读 fs**。
+1. **schema 落成校验器常量**（`MANIFEST_SCHEMA` + `DEFAULT_MANIFEST`）：枚举（`phase`）、键存在（`docRoot` 五键、`checkConfig` 五键、`index` / `advisor` 子键）、形态（`docRoot` 子键值形态 + 三族声明键形态——KD-M1-32）由校验器机械判——判据单源，读面（下游 M2–M9）与写门（本模块）同用一处；**校验器不读 fs**。
 2. **整档缺失 vs 缺键两分**：整档缺失 = **不静默 fallback**（`readManifest` 返回 `{ok:false, reason:'missing'}`）⇒ 壳面 / 动作侧**报明并走建档流**（梯②④⑤ 就地建档——会话照常起；KD-M1-25 / M1-29）；缺键 = **便利 fallback**（用默认值补，`{ok:true, missingKeys:[...]}`）。这两分对应规格 ②.3 / ②.4，不可混（整档缺失绝不能静默 fallback）。
 3. **写门 = 校验器内 `writeManifest` 的 `writer` 上下文**（fail-closed）：`writeManifest(cwd, manifest, { writer })` 仅在 `writer === 'main'` 时放行，缺省 / 其他值一律拒。主 agent 经 M1 读写装配调用；子代理无此调用路径（其二道防线 = M5 spawn 门 `files` 域排除 `PROJECT-MANIFEST.json`——见 §2.5）。
 4. **初始化 = `initManifest` 写默认档**：只提供机制（写默认八键档），不包交互问答（问答归壳面）——与规格 ③ 边界一致。落盘走同一写门（内部 `writeManifest(cwd, DEFAULT_MANIFEST, { writer })`，缺省拒——与 AC-M1-5 同一闸，无第二条写路径）。
@@ -101,10 +101,10 @@
   · **`matched` 契约**：命中（或工作区）出自哪一级——归属段命中 ⇒ `'manifest'`；发现段 ⇒ `discoverProjects.matched` 逐字（`manifest` / `git`）；`no-project` / 覆盖位短路 ⇒ `null`——报明行工作区变体按它分野（§2.6 条 1b）。
   · **覆盖位定形**：`owningProject` 与 `discoverProjects` **两处头部短路**（`discoverRepos` 既有短路零改）⇒ 覆盖在场时 `resolveProjectRoot`（归属先行）与 `projectView`（归属段先行）均**不落真判据**。
     「覆盖即覆盖值」语义保持（回归守卫 = 单元测试档覆盖位用例：`_setProjectRootForTest(base)` ⇒ `resolveProjectRoot("ignored") === resolve(base)`）。
-- `MANIFEST_SCHEMA`（对象：`phase` 枚举、`docRoot` 五键存在、`checkConfig` 六键存在、`index` / `advisor` 子键存在、`promptsLanding` 存在、`version` 数值、**三族声明键形态**——KD-M1-32）。
+- `MANIFEST_SCHEMA`（对象：`phase` 枚举、`docRoot` 五键存在、`checkConfig` 五键存在、`index` / `advisor` 子键存在、`promptsLanding` 存在、`version` 数值、**三族声明键形态**——KD-M1-32）。
 - `DEFAULT_MANIFEST`（对象：默认八键——`version:1`、`phase:"initial-dev"`、`docRoot` 默认五路径、`promptsLanding` 默认落地路径、`checkConfig` 默认判据、`codePaths:["src"]`、`index:{codeExtensions:[],docExtensions:[],excludePaths:[],publicRepos:[]}`、`advisor:{docMap:"",standardsDoc:""}`）。
 - `readManifest(cwd)` → `{ ok, manifest, missingKeys, unknownKeys, errors, reason }`：读 + `validateManifest(obj)`；缺键 → 产 `missingKeys`（非拒）→ 补默认值 → 再校验通过；整档缺失 → `{ok:false, reason:'missing'}`。**未知键（#802）**：产 `unknownKeys` + 读面一行可见告警（含键名；同档同键集去重）——非拒定性零变、搬运语义零改（KD-M1-11 / M1-36）。
-- `validateManifest(obj)` → `{ ok, errors, missingKeys, unknownKeys }`：形状校验（枚举 / `version` 数值 / 键存在 / **`docRoot` 子键值形态**——F7 / **`checkConfig.lineCounts` 元素层形态**——#546 / **三族声明键形态**——KD-M1-32）+ **未知键产线**（KD-M1-36——非拒）；**纯函数、不读 fs、不落盘**。
+- `validateManifest(obj)` → `{ ok, errors, missingKeys, unknownKeys }`：形状校验（枚举 / `version` 数值 / 键存在 / **`docRoot` 子键值形态**——F7 / **三族声明键形态**——KD-M1-32）+ **未知键产线**（KD-M1-36——非拒）；**纯函数、不读 fs、不落盘**。
 - `requireManifest(cwd)` → 装配钩子入口 = `readManifest(cwd)`：`ok:true` 返回补默认值后的 manifest；`reason:'missing'` 由调用方走**建档流**（**工程模式会话**口径——梯②④⑤ 就地建档，**不拒会话**；KD-M1-29）；模式门 + 建档分支见下方两端装配钩子）。
 - `resolveEngineeringManifest(cwd, { writer = 'subagent', init = true })` → **非抛错**的入口决策树（§2.8 F1）：
   `{ ok:true, manifest, created }` \| `{ ok:false, code:'missing' \| 'invalid' \| 'no-project' \| 'workspace' \| 'init-failed', message?, errors?, candidates? }`——入口钩子（**读侧已不抛**——KD-M1-25/28）与翻转面（拒翻）**共用同一张树**（判据单源，KD-M1-20）。
@@ -198,7 +198,7 @@
 | 51 | `thincoder-core/agent-tools.mjs` | 29 | 修改 | 登记册 +1 导出行（`manifestTool`——邻 `engTool` `:15`；注册面单一（F1）∥ 探针可枚举照旧） | ≤ +2 |
 | 52 | `thincoder-core/agent/family-tools.mjs` | 187 | 修改 | depth-0 段挂载（动态 import 名面 `:29` + `depthOnly` 表 `ledgerTool` `:145` 后）——两模式同挂；子代理段零挂 | ≤ +4 |
 | 53 | `thincoder-core/agent/dispatch-gates.mjs` | 143 | 修改 | `isSubagentReadonlyAction` +`manifest` `read` 只读格（`init` / `write` 侧效门——`:75` 邻位） | ≤ +5 |
-| 54 | `thincoder-core/tool-docs/manifest.md`（已落） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:70`） | ≈ +1.2k 字符 |
+| 54 | `thincoder-core/tool-docs/manifest.md`（已落） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:72`） | ≈ +1.2k 字符 |
 | 55 | `thincoder-vscode/scripts/check-vsix.mjs` | 100 | 修改 | `EXPECT["tool-docs"]` **50**（VSC 打包口径——描述档 +1 ∧ 既有漂移收正 +1；`:37`） | ±1 |
 | 56 | 单元测试档（manifest-agent-tool） | 0 | 新增 | 单元测试档（T63–T73 对应用例——不进集成测试树） | 新增 |
 
@@ -601,7 +601,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 - 挂载 = `thincoder-core/agent/family-tools.mjs` **depth-0 段**（`depthOnly` 表 `:141-149`——`ledgerTool` `:145` 后；动态 import 名面 `:29`）：**两模式同挂**（需求未设模式门——写门对任何会话生效，同 `spawn-gates.mjs:79-86` 口径）；
   子代理各段（eng-coder / eng-designer / coder / consult / 兜底）**零挂**（未装配 = 权限面第一道）。CLI / VSC / desktop 同表自动（核单源装配——调用点 `thincoder-core/agent/setup.mjs:183`；VSC 经核 `prepareRun` 同调）。
 - 分类面 = `thincoder-core/agent/dispatch-gates.mjs` `isSubagentReadonlyAction` 补一格：`manifest` `read` ⇒ 只读类（planMode 放行 / 免审批——先例 = settings `:73-78`）；`init` / `write` 保持侧效门（审批不绕过）。
-- 描述档 = `thincoder-core/tool-docs/manifest.md`（已落——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:70`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` 48 ⇒ **50**（描述档 +1 ∧ 既有漂移收正——仓内侧现盘实读 49 档）。
+- 描述档 = `thincoder-core/tool-docs/manifest.md`（已落——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:72`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` 48 ⇒ **50**（描述档 +1 ∧ 既有漂移收正——仓内侧现盘实读 49 档）。
 - 二道防线**零改**（`spawn-gates.mjs` `MANIFEST_BASENAME` 分支 `:104-106`——子代理 `files` 域拒照旧）。
 
 **报告面（KD-M1-40——判定 = 随动，零改）**：工具写盘 = 盘面变化 ⇒ 情境行经既有 ③b mtime 门控于下回合采纳（`thincoder-core/agent/setup-reminders.mjs:122-140` `refreshManifest`——KD-M1-17 零改）；**不新增**「工具写后同步内存值」通道——`agent.manifest` 写点保持两处（钩子附着 ∥ ③b 采纳；第二值源否）；且工具目标可为**非锚项目**——直写内存值会把非锚项目状态错当锚项目状态（违 §2.9 D「注入物 = 会话锚项目」）。
@@ -620,6 +620,93 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 **登记（零动——父侧裁）**：`promptsLanding` 校验面 = `validateManifest` 无形态校验；消费面 = 核内未见读取方（实读）——⇒ 写面可落任意形态且当下无消费方感知。既有状态（非引入）；补校验 / 补消费面 = 另裁。
 
 **需求侧锚**：`SPEC-MANIFEST.md` ②.7（`:29-34`）+ ③ 边界句（`:41`）+ ④ **AC-M1-10–12**（`:55-57`）+ ⑤（`:63`）——本档只挂指针（D2）。
+
+**字段语义达用点（知识面——2026-10-16 用户令 · 台账 `#1585`）**
+
+**需求（回指 · 三链同源）**：主 agent 仅凭**工具描述 + 提示词**即可判「某键该不该改、改成什么、不改会怎样」，不必翻设计档——需求块 = `docs/core/requirements/ENGINEERING-MODE-V2.md` §5.1「字段语义须达用点」（台账 `#1585`）。
+**本块 = 知识面设计**（不碰机制面：键面语义 / 写门 / 结构 / 白名单零改）。
+
+**方案与理由（两层分工——D2 不重复）**：
+
+| 层 | 载体 | 常驻性 | 载荷（住哪层） | 不载 |
+|---|---|---|---|---|
+| ① 键面事实 | `thincoder-core/tool-docs/manifest.md`（`DESC("manifest")` 单解析面——`thincoder-core/tools/shared.mjs:19`） | **常驻**（每轮可见）⇒ 受篇幅约束 | **键目录（可族分组）+ 每键一句**：是什么 · 何时动 · 改错后果 | 管理流程 / 与台账·批次档分工（②的活） |
+| ② 管理面 | `docs/core/design/prompts/persona-engineering.md`「项目状态档」节 + 英文落地副本 `thincoder-core/prompts/persona-engineering.md`（同义） | 场景触发**阅读**（物理上文件级常驻——见「触发与实况」） | **怎么管 · 有什么用 · 何时动 · 与台账 / 批次档的分工**（三账分工 = 需求 §5.4） | 每键完整语义目录（①的活） |
+
+**为什么这样分**：键面事实是**用点必需且封闭有限**（20 个可写节点）⇒ 宜常驻、宜短句，一次备齐；管理面判据（何时想起它）是**流程面**，随场景触发阅读，不进常驻噪音。
+**分工线 = 一句问法**：「这个键是什么」住 ①；「什么时候该想起它 / 它和别的账怎么分」住 ②。同一句不写两遍（D2）。
+
+**篇幅上限与取形**：
+
+- **上限**：机制硬限 = 单档 ≤8,000 字符（`scripts/tool-schema-size.mjs:72` `over8k`）；**设计自设更紧上限 = `tool-docs/manifest.md` ≤5,000 字符**（面专属读数）。
+- **算术闭合**：现值 **2,235 字符** + 载荷预算 **≤2,300 字符** = **≤4,535 ≤ 5,000**（余 ~465；且 5,000 ≤ 8,000 机制硬限）。
+- 载荷预算 = 20 节点 × ~115 字符/节点（族级行按节点均摊）；**目标语言 = 英文**（同义句长于中文 ⇒ 按 115 取值）。
+  **帽值登记**：本帽 = **面专属读数**（读数与算式住本块）+ **指针行**——总预算读数唯一权威处 = `docs/core/design/PROMPT-SYSTEM.md:309`（§6.11 预算表）；该表 +1 指针行 = 实施轮（受影响文件表行 5）。
+  **F15 总预算影响**：载荷 ≤+2,300 字符 ⇒ 总量 129,766 → ≤132,066，比值 1.253 → ≤1.276（离「≤0.75 × 基线」更远——报告态，父侧裁；`docs/core/requirements/TOOLS.md:69` F15）。
+- **取形 = 目录 + 每键一句**（非段落散文；**可族分组**——同族节点键名逐列 + 逐族一句）。句形「`键` — 是什么；何时动；改错 ⇒ 后果」（三腿齐）。
+  例：`index.excludePaths` — 项目根相对路径**前缀**数组（索引用途）；**要排除某目录不入索引时改它**；写错 ⇒ 该目录仍入索引（前缀命中 = 恰等 ∨ 后随 `/`）。
+- **引设计档不复制**：描述只承载「用点上必须知道的最小事实」；全语义 / 判据 / 机制**仍单源在本档**（D2），描述不复制本档段落。
+  **引法（解「禁引证」）**：描述内**零档名 / 零节号 / 零指路句**（`docs/core/design/prompts/common.md:48`——提示词面禁带文档引用，模型读到的句子须自足）；设计档指针只落**注释面**——`thincoder-core/agent-tools/manifest.mjs:3` 头注已载「权威设计 = `docs/core/design/MANIFEST.md` §2.10」，无需在描述里再指。
+
+**触发与实况（须报）**：② 的**触发条件** = 「主 agent 要动 manifest 某个键 / 判断某声明该不该改」这一刻——节领句写成场景条件句（「动 manifest 键之前……」），内容只在该场景被读取执行。
+**物理实况**：工程模式提示词三档为**文件级常驻**（`thincoder-core/prompt-overlays.mjs:42` 恒拼接 `persona-engineering.md` / `common.md` / `discipline-engineering.md`），**无节级条件装配机制** ⇒「只在该场景进上下文」在**文件级不可达**。本设计以「**短节（新增 ≤8 行）+ 场景触发领句**」达成「不常驻噪音」的**意图**；**节级条件装配 = 新机制，出本批边界**（另批另裁）。
+**同批收正（`:56` 措辞）**：② 节尾续管理面的同一笔，一并收正 `persona-engineering.md:56`（EN `:56`）的失义措辞「多个 = 歧义——停：列候选，不猜，也绝不建档」。
+收正后口径与 `MANIFEST.md:310` / `:769` 同源：工作区 = **常态**（不抛「歧义」/ `ambiguous`）；处置 = 列候选 + 报明事实 + 点名项目根（不猜、不 brick）。
+
+**键目录（①载荷骨架）= 描述内容契约**（本表 = 语义契约：键名 + 三腿 + 值形逐条；落地文本 = 英文同义句——`thincoder-core/tool-docs/manifest.md` 现状全英文）。**实施后保留**为描述漂移的唯一对照载体（对照核法 = AC-K2 键名覆盖）；语义单源仍在本档 §2.2，本表不构成第二权威。全 **20** 可写节点；节点集判据单源 = `MANIFEST_SCHEMA`（`thincoder-core/manifest-schema.mjs:54-66`）：
+
+| 族 | 节点 | 一句语义（是什么 / 何时动 / 改错后果） |
+|---|---|---|
+| 顶层整键 | `version` | 档版本号（数值）；建档 / 迁移档时动；写错 ⇒ 校验拒（盘零变） |
+| | `phase` | 项目阶段（枚举 `initial-dev` / `production`）；阶段跨越时动；写错 ⇒ 校验拒 |
+| | `promptsLanding` | 提示词落地目录声明；落地面变更时动；**无失败后果**（理由 = 校验器无形态校验 + 核内未见读取方——登记面，写错当下零感知） |
+| | `codePaths` | 路径**段名**数组（声明即替换默认 `["src"]`）；段面布局变时动；写错 ⇒ 分类段面收空（兜底分类仍在） |
+| `docRoot.*` | `requirements` · `specs` · `design` · `modules` · `batches` | 文档层各根的路径（串 ∥ 多根数组 ∥ `null`＝本面无）；文档层跨根 / 换根时动；写错 ⇒ 校验拒，或机检 / 批次档落点 / 评审根静默错 |
+| `checkConfig.*` | `scanDirs` · `lineWidth` · `widthExemptZones` · `anchors` · `exemptions` | 机检配置（扫描目录 / 行宽 / 豁免区 / 锚定域与排除 / 豁免表）；机检口径变时动；写错 ⇒ 机检按错口径静默执行（漏扫 / 行宽误判 / 豁免失效——校验器不拒） |
+| `index.*` | `codeExtensions` · `docExtensions` | 追加的代码 / 文档扩展名（并集，只增不减）；索引漏某类型时动；写错 ⇒ 该类型文件不入索引（只增不减 ⇒ 多写不炸 · 漏写即漏索引） |
+| | `excludePaths` | 项目根相对路径**前缀**数组（索引用途）；**要排除某目录不入索引时改它**；写错 ⇒ 该目录仍入索引 / 误排除他目录 |
+| | `publicRepos` | 公共仓路径数组（从本仓根可解析）；接入公共仓索引 / 跨仓引用时动；写错 ⇒ 该公共仓检索不可达（origin 集收空 / 指错路径——见上「变更记账面」③） |
+| `advisor.*` | `docMap` · `standardsDoc` | 评审指针（地图文件 / 标准档单指针，空串＝未声明）；评审注入面变时动；写错 ⇒ 评审注入落空（地图 / 标准档读不到 ⇒ 评审按无档判） |
+
+> 目录只给「用点必需」的最小事实；值形归一细则 / 消费面清单 / 判据仍读本档对应节（§2.2 `:120-132`）。四族整键写 ⇒ 拒（须点改子键）——此句属**动作面**，住描述既有段（零改）。
+
+**验收对照（回指需求块——三链同源）**：
+
+| # | 验收条 | 核法（源面） |
+|---|---|---|
+| AC-K1 | **场景答问·字段语义**：给「本仓要排除归档目录不入索引」，**只读** `tool-docs/manifest.md` + `prompts/persona-engineering.md`（不开本档）⇒ 答出 ① 键 = `index.excludePaths` ② 为什么 = 索引用途前缀排除数组 ③ 改错 = 前缀命中语义（该目录仍入索引 / 误排除他目录） | 描述档**恰一行**把该键绑到「索引用途 + 前缀排除 + 目录」（该键语义断言全在描述面）；提示词节**零键名**（只供管理面） |
+| AC-K1b | **场景答问·动作面**：问「本仓无档时怎么建」「改一个键怎么写」⇒ 答 `init`（无档建默认档 · 已带档拒）/ `write <key> <value>`（缺档拒 + 引导 init） | 描述档动作段命中 `init` / `write` 两行且明「已带档拒」「缺档拒」 |
+| AC-K2 | **键目录全备**：载**全部 20 可写节点**（键名逐列 ∥ 可族分组）；每节点三腿齐 = 是什么 · 何时动 · 改错 ⇒ 后果（无后果者明写「无失败后果 + 理由」） | 文本键名覆盖 = 20（与 `MANIFEST_SCHEMA` 白名单逐字对齐）；三腿逐节点在（源面读判） |
+| AC-K3 | **两层不重复（D2）**：同一键语义句只在 ① 出现一次；② 节内不含键面语义 | ② 节内**零键名命中**（20 键名行扫——可机判）；① 同键同义句恰一次 |
+| AC-K4 | **字面上限**：① ≤5,000 字符（本块自设帽；且 ≤机制硬限 8,000）；② 提示词节新增 ≤8 行 | 字符计数（`tool-docs/manifest.md`）/ 行数差 |
+| AC-K5 | **零语义 · 零行为改**：键面语义 / 写门 / manifest 结构 / 白名单零 diff | `thincoder-core/manifest.mjs` / `manifest-schema.mjs` / `MANIFEST_SCHEMA` 零 diff |
+
+**受影响文件表（行数口径 = 读取工具显示行数——末行无换行符 ⇒ = `wc -l` + 1；as-of 2026-10-16 实测）**：
+
+| # | 文件 | 面 | 执行角色 | 当前行数 | 变更 | 编辑点 | 增量 |
+|---|---|---|---|---|---|---|---|
+| 1 | `thincoder-core/tool-docs/manifest.md` | 产品（描述档——`DESC("manifest")` 常驻面） | eng-coder | **17**（2,235 字符） | 修改 | 末段后增「键目录」块（全 20 节点） | ≤ +2,300 字符（落 ≤5,000 自设帽） |
+| 2 | `docs/core/design/prompts/persona-engineering.md` | 文档（中文评审面提示词） | eng-designer | **219** | 修改 | 「项目状态档」节（`:52-60`）尾续**管理面** + `:56` 失义措辞收正 | ≤ +8 行 |
+| 3 | `thincoder-core/prompts/persona-engineering.md` | 产品（英文运行时面提示词） | eng-coder | **217** | 修改 | 「Project state file」节（`:52-60`）**同义落地**（含 `:56` 同款收正） | ≤ +8 行 |
+| 4 | `docs/core/design/MANIFEST.md` | 文档（设计档） | eng-designer | **868** | 修改 | 本块（§2.10 尾）+ `:201` / `:604` 坐标收正 | ≤ +100 行 |
+| 5 | `docs/core/design/PROMPT-SYSTEM.md` | 文档（设计档——预算表） | eng-designer | **882** | 修改 | §6.11 预算表 +1 行（面专属帽指针行） | +1 行 |
+
+> **文档 / 提示词面零行数义务**（`docs/core/requirements/ENGINEERING-MODE-V2.md:645` F12）；受篇幅约束者 = 产品描述档（**字符帽**，非行数）。**测试覆盖 = 无**（文本面知识设计——核法 = 源面读判 AC-K1–K5，无代码可单测）；实施轮只改文本，无单元测试档。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| KD-M1-42 | **分层载荷**：① 描述载「键面事实目录」（常驻 · 短句）；② 提示词载「管理面」（场景触发阅读）；两侧零重复 | 键面封闭有限（20）宜常驻；管理面是流程判据，常驻即噪音（D2） |
+| KD-M1-43 | **描述取形 = 目录 + 每键一句（可族分组）**（是什么/何时动/改错后果）；**描述内零引证**（档名 / 节号 / 指路句），设计档指针落代码注释面 | `common.md:48` 提示词面禁带文档引用（模型读到的句子须自足）——「引设计档不复制」的实现形 |
+| KD-M1-44 | **篇幅** = 机制硬限 8,000 字符 ∨ 设计自设 5,000（面专属读数——算式住本块）；**不用新载体**（不加 skill / 不加节级条件装配） | 新载体 = 新机制，出本批边界（本批 = 知识面） |
+| KD-M1-45 | 与 `settings` 描述形**对齐**、**偏离其粒度** | 对齐：工具描述承载「用点必需的字段语义 / 值口径 / 副作用」（先例 = `thincoder-core/tool-docs/settings.md`；需求面 `docs/core/requirements/SETTINGS-TOOL.md` N-ST6「描述纪律」）。偏离：settings 只给两例类型口径（无全键目录）；manifest 键面封闭（20）且需求要逐键可判 ⇒ 给全目录 |
+
+**边界（本块不做）**：不改键面语义 / 不改写门（fail-closed）/ 不改 manifest 结构 / 不新增字段 / 不改校验器判据（需求块边界逐字）；**不动机制代码**（`thincoder-core/agent-tools/manifest.mjs` / `manifest-schema.mjs` 等零改）；**不做节级条件装配机制**（新机制——另批另裁）；编修需求档 = 父侧笔。
+
+**先例与勘察**：先例 = `settings` 工具描述形（`thincoder-core/tool-docs/settings.md`；需求面 `docs/core/requirements/SETTINGS-TOOL.md` N-ST6「描述纪律」）——对齐其形、偏离其粒度（KD-M1-45）。
+**勘察行（查过的公共源 ∥ 结论）**：① 本仓工作目录内——`thincoder-core/tool-docs/*.md`（52 档）实读 ⇒ **无「描述档承载全键目录」先例**（`settings.md` 只给两例类型口径）；② 键语义单源 = 本档 §2.2——在位；③ 工作目录外公共源（`D:\ref\` 参考系）= **未勘察**（出本仓工作目录——按声明读；本批未查）。
+**归属（判据 7）**：文档地图 = `docs/README.md`（在位）——本批五档均在既有档内就地扩（描述档末段 ∥ 「项目状态档」节尾 ∥ 本档 §2.10 尾 ∥ `PROMPT-SYSTEM.md` §6.11 表内 +1 行），零新建档 / 零新建节。
 
 ## 3. 测试层
 

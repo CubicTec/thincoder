@@ -1,7 +1,7 @@
 /**
  * manifest-schema.mjs — **校验 ∕ 默认值族**出档（2026-09-29 structure-split-2 · 台账 #620）：自 `manifest.mjs`
- * 全量迁出〔原 `:194-205` + `:240-369` 两段非连续〕——`isValidDocRootValue`（docRoot 子键值形态判据）·
- * `DEFAULT_MANIFEST`（默认八键）· `MANIFEST_SCHEMA`（判据单源）· 元素层谓词两件 · `validateManifest` ·
+ * 全量迁出——`isValidDocRootValue`（docRoot 子键值形态判据）·
+ * `DEFAULT_MANIFEST`（默认八键）· `MANIFEST_SCHEMA`（判据单源）· 元素层谓词一件 · `validateManifest` ·
  * `fillDefaults`；**结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；切点 ∕ 缝单源 =
  * 批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-C）。
  *
@@ -43,7 +43,6 @@ export const DEFAULT_MANIFEST = Object.freeze({
     widthExemptZones: Object.freeze([]),
     anchors: Object.freeze({ domain: "docs", exclude: Object.freeze(["_archive", "batches"]) }),
     exemptions: Object.freeze([]),
-    lineCounts: Object.freeze([]), // 行数面机检声明（#546）：[] = 未载惰性（doc-check 行数族）
   }),
   // 项目声明三族（2026-09-27 声明载体唯一化批并入——键名 / 形态逐字承前；来源档已退役）。
   codePaths: Object.freeze(["src"]),
@@ -70,12 +69,6 @@ export const MANIFEST_SCHEMA = Object.freeze({
  *  **数组层**自身可空（`[]` 合法——`codePaths:[]` = 无段名代码面 / `index.*:[]` = 追加零项）。 */
 function isNonEmptyStringArray(v) {
   return Array.isArray(v) && v.every((e) => typeof e === "string" && e.trim() !== "")
-}
-
-/** `checkConfig.lineCounts` 元素层判据（#546）：数组且各元素为非数组对象、`doc` / `section` 皆非空串（`trim` 后非空）；`[]` = 未载惰性。 */
-function isLineCountsValue(v) {
-  return Array.isArray(v) && v.every((e) => e !== null && typeof e === "object" && !Array.isArray(e)
-    && typeof e.doc === "string" && e.doc.trim() !== "" && typeof e.section === "string" && e.section.trim() !== "")
 }
 
 /**
@@ -115,10 +108,6 @@ export function validateManifest(obj) {
       // docRoot 子键值形态（F7 / KD-M1-7 / KD-M1-37）：串 | 非空串数组 | null（本面无）；非法 → 拒（不静默跳过）。
       if (nested === "docRoot" && !isValidDocRootValue(value[sub])) {
         errors.push(`docRoot.${sub} 值形态非法：${JSON.stringify(value[sub])}（须为非空字符串 / 非空字符串数组 / null（本面无）——KD-M1-6 / KD-M1-7 / KD-M1-37）`)
-      }
-      // checkConfig.lineCounts 元素层形态（#546）：数组，元素 = { doc, section } 非空串；非法 → 拒（不静默跳过）。
-      if (nested === "checkConfig" && sub === "lineCounts" && !isLineCountsValue(value[sub])) {
-        errors.push(`checkConfig.lineCounts 值形态非法：${JSON.stringify(value[sub])}（须为数组，元素 = { doc: 非空串, section: 非空串 }——#546）`)
       }
     }
   }

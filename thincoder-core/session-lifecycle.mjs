@@ -131,7 +131,7 @@ export function applySession(agent, data, opts = {}) {
   }
   // ENG-PLAN-EXCLUSION（FR31 ③ / KD10——恢复点①·CLI `applySession`）：工程模式 ⇒ planMode 恒
   // false（内存位 + 未注入的 plan 提示语）——防「工程纪律 × plan 只读」半状态随槽恢复复活。
-  // **槽不就地回写**：内存值在下一次 `saveSession` 随 `planMode` 字段自然收正（`session.mjs:128`）。
+  // **槽不就地回写**：内存值在下一次 `saveSession` 随 `planMode` 字段自然收正（`session.mjs`）。
   if (agent.config?.agent?.engineering === true) clearPlanMode(agent)
   if (data.advisor) {
     agent.config.advisor = { ...data.advisor }

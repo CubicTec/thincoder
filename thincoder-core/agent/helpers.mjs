@@ -377,7 +377,7 @@ export function readonlyToolNames(tools) {
 export const SUBAGENT_TOOL_EXCLUSIONS = new Set(["question", "ssh"])
 
 /** Apply the depth>0 exclusion set — always returns a NEW array (parent table untouched).
- *  #9（TOOLS.md §6.19）：`bash` 的 `async` 参仅 depth-0——子代副本删参（照 `family-tools.mjs:98`
+ *  #9（TOOLS.md §6.19）：`bash` 的 `async` 参仅 depth-0——子代副本删参（照 `family-tools.mjs` 的 `engChildSubagent`
  *  先例；返回值仍恒新数组、未命中条目原对象直传）。运行期第二道在 `tools/bash.mjs` execute
  *  （照 `read_image`「schema 门 + 运行期第二道」双线先例）；批 browser-async-fix（#1045）同线
  *  扩至 `browser` 的 `async` 参（运行期第二道在 `tools/browser.mjs` execute）。 */

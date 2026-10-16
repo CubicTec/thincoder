@@ -49,7 +49,7 @@ export async function runTurnLoop(agent, {
 
   // SUBAGENT-UPSTREAM-CHANNEL（AGENT-LOOP-UPSTREAM.md §6.27.4 消费点）：子 → 父在飞消息的
   // 回合边界注入单点取用一次（模块缓存 ⇒ 每 run 一次代价）；动态 import = 零新增静态边
-  // （同款先例 = run-start.mjs:43 ∥ :66——injectAsyncResult 动态 import）。
+  // （同款先例 = `run-start.mjs` 的 `injectAsyncResult` 动态 import）。
   const { drainChildUpstream } = await import("../agent-tools/parent-channel.mjs")
   // #934（零落笔看门狗——AGENT-LOOP-UPSTREAM.md §6.32）：连续零写越阈 ⇒ 自动上行提醒（只推——
   // 不杀 / 不转向）；单源叶 = zero-write-watch.mjs，动态 import 沿上条同款（零新增静态边）。

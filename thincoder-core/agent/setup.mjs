@@ -56,7 +56,7 @@ export async function prepareRun(agent, input, callbacks, {
   // 逐 run 现读 `agent.config` ⇒ `settings` 工具 ∕ `/config` 写入后本会话下一次组装即生效。
   const injectDocs = agent.config?.agent?.injectDocs !== false
   // 2026-10-15（PROMPT-SYSTEM.md §6.27 · 台账 #1465）：项目指令块独立开关——与 `injectDocs`
-  // 完全正交（用户 05:05 裁）；判点 = 下方 `:281`（原读 `injectDocs` ⇒ 换读本变量）。
+  // 完全正交（用户 05:05 裁）；判点 = 下方 `projectRules` 装配支（原读 `injectDocs` ⇒ 换读本变量）。
   const injectProjectRules = agent.config?.agent?.injectProjectRules !== false
   const injectMemories = agent.config?.agent?.injectMemories !== false
 

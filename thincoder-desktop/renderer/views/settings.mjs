@@ -147,7 +147,7 @@ function guardFlagOf(state) {
 }
 
 /** advisor 推理档**归属模型**（S11 收正 · 顾问评审 🟡2——写面 ∕ 候选面同源同序；对位核 `resolveAdvisorProvider`
- *  `thincoder-core/advisor/run.mjs:26-56`「cfg.model > 父解析模型单档」——**2026-10-09 清除批**：原「渠道 model」分支
+ *  `resolveAdvisorProvider`「cfg.model > 父解析模型单档」——**2026-10-09 清除批**：原「渠道 model」分支
  *  随渠道单值模型退场）：`advisor.model` ⇒ 该值；再缺 ⇒ 主模型段（`defaultModel`）；无 ⇒ `null`。 */
 function advisorTargetOf(settings) {
   const advisor = settings.models?.advisor ?? {}

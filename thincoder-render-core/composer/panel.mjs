@@ -4,7 +4,7 @@
  * （DOM 查询 ∕ 事件注册 ∕ `vscode.*` 直调）搬进工厂体 + 注入面，语义零变）。
  *
  * 面：① 结构（`#at-dropdown` ∕ `#input-row`（`#file-input` ∕ `#input` ∕ `#attach-btn` ∕ `#send-btn` ∕
- * `#abort-btn`）∕ `#paste-bar>#paste-badge` ∕ `#controls-row`——ids ∕ 类名照 VSC `index.html:42-63` 输入段，
+ * `#abort-btn`）∕ `#paste-bar>#paste-badge` ∕ `#controls-row`——ids ∕ 类名照 VSC `index.html` 输入段，
  * 结构单源 = 该骨架；`#status-line` 属状态行面（A12 本批外）不建）② 键位 B1–B7（Enter ∕ IME 门 ∕ Ctrl+C ∕
  * Ctrl+I 中断模态 ∕ Ctrl+U ∕ ↑↓ 历史 ∕ 自增高）③ 提交面（直发 ∕ 忙态排队出泡（B12 本地先行）∕ 满队 toast ∕ 附件内联（KD-RC-13——`withAttachedFiles` 两径同式））④ 忙态派生
  * （占位符三态 守卫>busy>常态 ∕ 两钮显隐）⑤ 推送接线（五类经 ③ `state.subscribe`）
@@ -32,14 +32,14 @@
  *     `actions` 由本档装配（「斜径面装配」段 = 钮 handler 提取出的同一函数，同钮同门）。
  *
  * 忙态 ∕ 队列面触发点（端接线）：`loading` 推送 ⇒ `setLoading(on)`；`turnState` ∕ `suspension` 推送 ⇒
- * `setLoading()`（缺省 = 现刻 `isRunning`——VSC `panels.js:95,114` `setLoading(ctx, ctx.isRunning)` 同式）；
- * `workspaceGuard` 推送 ⇒ `applyBusyLock()`（VSC `chat-messages.js:99` 同式）。
+ * `setLoading()`（缺省 = 现刻 `isRunning`——VSC `panels.js` `setLoading(ctx, ctx.isRunning)` 同式）；
+ * `workspaceGuard` 推送 ⇒ `applyBusyLock()`（VSC `chat-messages.js` 同式）。
  *
  * **行数读数**：本档 **470 行**（口径 = 内容行数；2026-10-05 attach 文件支持批按盘复核——`send()` 两径内联 +7；2026-10-08 500/800 口径更换批按盘复核——义务句删 −2）。
  *
- * 回合起点钩的相对序（对 VSC 逐行的唯一近似，见 `send.js:62-72`）：`onTurnStart` 置于 `setLoading` **之前**——
- * 取「`_turnStart` 先于状态行刷新落位」（VSC `:62` 早于 `:68` 的同点，elapsed 段首帧即新回合）；其 `clearPanels`
- * 支随之提前（`send.js:72` 原序在 `setLoading` 后——面板清面与状态行刷新无相互依赖，逐帧不可辨）。
+ * 回合起点钩的相对序（对 VSC 逐行的唯一近似，见 `send.js`）：`onTurnStart` 置于 `setLoading` **之前**——
+ * 取「`_turnStart` 先于状态行刷新落位」（VSC `send.js` 同点，elapsed 段首帧即新回合）；其 `clearPanels`
+ * 支随之提前（`send.js` 原序在 `setLoading` 后——面板清面与状态行刷新无相互依赖，逐帧不可辨）。
  */
 import { t } from "../i18n.mjs"
 import { showToast } from "../toast.mjs"
@@ -79,7 +79,7 @@ export function createComposerPanel(deps = {}) {
   const busyState = () => state.turnState?.() ?? "idle"
   const workspaceRequired = () => state.workspaceRequired?.() === true
 
-  // ── 结构（照 VSC `index.html:43-49`；`#at-dropdown`（:42）由 atmenu 造）──
+  // ── 结构（照 VSC `index.html`；`#at-dropdown`（:42）由 atmenu 造）──
   const inputRow = document.createElement("div")
   inputRow.id = "input-row"
 
@@ -242,7 +242,7 @@ export function createComposerPanel(deps = {}) {
     ctx.inputEl.style.height = Math.min(ctx.inputEl.scrollHeight, 150) + "px"
   }
 
-  // ── ② @ 面（注册序前提：本档键位监听先于本调用——见 `input.js:79-83` 序注）──
+  // ── ② @ 面（注册序前提：本档键位监听先于本调用——见 `input.js` 序注）──
   const atMenu = createAtMenu({ post, inputEl: ctx.inputEl })
 
   // ── ③ 附件面（共享图列 = ctx._pastedImages——send 径 length=0 保身份）──
@@ -263,7 +263,7 @@ export function createComposerPanel(deps = {}) {
   })
   ctx.reasoningDropdown = modelMenu.reasoningDropdown
 
-  // ── 装配（序 = VSC `index.html:42-63`：at-dropdown → input-row → paste-bar → controls-row）──
+  // ── 装配（序 = VSC `index.html`：at-dropdown → input-row → paste-bar → controls-row）──
   inputRow.append(attach.fileInput, ctx.inputEl, attach.attachBtn, sendBtn, abortBtn)
   root.append(atMenu.el, inputRow, attach.pasteBar, controls.el)
 
@@ -298,7 +298,7 @@ export function createComposerPanel(deps = {}) {
   // 队列计数（读面 = ③ `state.queue()`——宿主镜像**如实单读**：端侧零影子态、零本地增量——提交受理时
   // 不改写）。满队门 = 该计数直读（同 tick 空窗〔镜像未及更新〕以宿主权威兜底——宿主满队拒收回执
   // `queue-full` ⇒ 端侧可见形在场：桌面失败行 ∥ VSC `showWarningMessage` + 重推实况）。
-  // `_busyQueuedPending` 镜像位（VSC `send.js:41`）= 保留派生位（`state.js:130` 自注「保留字段」——
+  // `_busyQueuedPending` 镜像位（VSC `send.js`）= 保留派生位（`state.js` 自注「保留字段」——
   // VSC 全树零读者）：端侧 queued-mark 面（`S` 镜像写者）照旧维护；核侧无消费点 ⇒ 不自持（禁假造）。
   function queueCount() {
     return state.queue?.()?.count ?? 0
@@ -464,15 +464,15 @@ export function createComposerPanel(deps = {}) {
   }
   state.subscribe?.(applyPush)
 
-  // ── 两钮点击（VSC `chat.js:47-48` 的输入区绑定面——随工厂化内生）──
+  // ── 两钮点击（VSC `chat.js` 的输入区绑定面——随工厂化内生）──
   sendBtn.addEventListener("click", send)
   abortBtn.addEventListener("click", () => post("abort"))
 
-  // 返回面（端侧接线**最小面**——逐项各有设计消费点）：`inputEl`（回焦锚——VSC `chat.js:61,105` ∕
+  // 返回面（端侧接线**最小面**——逐项各有设计消费点）：`inputEl`（回焦锚——VSC `chat.js` ∕
   // 桌面 `#input` 查询面）· `setLoading` ∕ `applyBusyLock`（宿主忙态 ∕ 守卫推送后的重派生点——VSC
-  // `panels.js:95,114` ∕ `chat-messages.js:99` 同址保位）· `applyWords`（**词面重派生单源**——挂载先于
+  // `panels.js` ∕ `chat-messages.js` 同址保位）· `applyWords`（**词面重派生单源**——挂载先于
   // 词表的面：端侧词表到位后调用；幂等）· `isRunning()`（重派生惯用式的读数）·
-  // `models()`（候选缓存读面——VSC `getModels` 接线面 `chat.js:61`）。`send` 出入两钮已内生，不出面。
+  // `models()`（候选缓存读面——VSC `getModels` 接线面 `chat.js`）。`send` 出入两钮已内生，不出面。
   return {
     inputEl: ctx.inputEl,
     setLoading,

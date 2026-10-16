@@ -1,6 +1,6 @@
 /**
  * session-wire.mjs — 会话族**接线面**出档（越线档结构轮 · 台账 #536）：自 `renderer/mount-sessions.mjs` 全量迁出
- * 〔原 `:244-406`〕——接线面 + 通道出口 + 归一助手，**结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；
+ * 〔原 `renderer/mount-sessions.mjs` 段〕——接线面 + 通道出口 + 归一助手，**结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；
  * 切点 ∕ 缝单源 = 批档 `docs/batches/2026-09-29-structure-split-round.md` §2.2-B）。
  *
  * 接线：会话路三出口**同一路**（`session:switch` / `session:create` / `session:resume`）⇒ 共用尾 `openResult`
@@ -52,7 +52,7 @@ export async function refreshRail() {
 }
 
 /** 槽号回代：视图面行键 / 条目键是**串**（键域），通道载荷 `{ slot }` 是槽号域 —— 核写本端记录时**原值落盘**
- *  （`thincoder-core/session-slots.mjs:133`）且读面要求整数槽（同档 `:126` `Number.isInteger`）⇒ 串入会使本端记录
+ *  （核 `readEndMarker`）且读面要求整数槽（同函数 `Number.isInteger`）⇒ 串入会使本端记录
  *  退化为「缺失」。纯类型回代（非整数 ⇒ 原值直传，交核判 —— 端层**零预校验**：判据单源 = 核）。 */
 function slotOf(key) {
   const slot = Number(key)
@@ -143,7 +143,7 @@ export async function createSession() {
 
 /** 改名出口（下拉条目 ✎ 换形后的确认键 —— 通道既有）：`ok` 真 ⇒ 列表刷新（新标题可见）+ 回 `true`（面收形）；
  *  `ok:false`（核拒：`invalid-slot` ∕ `mtime-conflict` 等四值闭集直传）∕ 抛 ⇒ **零写零收形**（草稿不丢）+ 记错
- *  + **可见提示**（toast —— #556：对位 VSC `panel-messages-session.mjs:96` 改名失败提示；词面同 `session.openFailed` 族）。 */
+ *  + **可见提示**（toast —— #556：对位 VSC `handleRenameSession` 改名失败提示；词面同 `session.openFailed` 族）。 */
 export async function confirmRename(key, text) {
   try {
     const receipt = await host.invoke("session:rename", { slot: slotOf(key), title: text })

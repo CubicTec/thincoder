@@ -60,7 +60,7 @@ export function summarizeEngTaskBook(taskInput) {
 }
 
 /**
- * 审计块（spawn 级固定 ⇒ system 固块——§6.26 分类裁定表第 2 行）：纯函数——touched 快照
+ * 审计块（spawn 级固定 ⇒ system 固块——§6.26 分类裁定表「审计块」行）：纯函数——touched 快照
  * （`ctx.agent._touchedFiles`——机制面证据，非 eng-coder 自述）+ A2 任务书摘要
  * （`summarizeEngTaskBook(ctx.agent._engTaskInput)`）+ 指令 / 范围 / 零 git 权威 / 预算 /
  * 报告格式五段模板**逐字**。零副作用（只读 ctx）；块内文本与搬移前逐字节一致。

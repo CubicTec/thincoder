@@ -8,7 +8,7 @@
  * （`ctx.signal` 透传 fetch——断连中止随传；§6.2）。失败降级（取表失败 ⇒ 出空表 + 日志一条——**回合不阻断**）；
  * 盒零会话态（无连接可管、无关闭链——生命周期归 server）。
  *
- * 缝/env（沿 `git-cred.mjs:47`/`:75` 先例）：`fetchImpl` 注入缝（缺省 = 全局 fetch——测试假件）∥ 基址与键 = env
+ * 缝/env（沿 `git-cred.mjs` `fetchCredential` 注入缝 ∥ `main` env 取值先例）：`fetchImpl` 注入缝（缺省 = 全局 fetch——测试假件）∥ 基址与键 = env
  * （`TC_SERVER_URL` ∥ `OPENAI_API_KEY`——工作区 key）∥ 超时 = `AbortSignal.timeout`（`ctx.signal` 在场 ⇒ `AbortSignal.any` 合流）。
  */
 export const MCP_TOOLS_PATH = "/api/box/mcp"

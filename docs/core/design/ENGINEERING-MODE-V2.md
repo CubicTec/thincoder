@@ -139,8 +139,7 @@ M10 测试（独立简化，无依赖）
     "lineWidth": 300,
     "widthExemptZones": [],
     "anchors": { "domain": "docs", "exclude": ["_archive", "batches"] },
-    "exemptions": [],
-    "lineCounts": []
+    "exemptions": []
   },
   "codePaths": ["src"],
   "index": { "codeExtensions": [], "docExtensions": [] },
@@ -151,7 +150,7 @@ M10 测试（独立简化，无依赖）
 - `phase` = 情境旋钮落点（E5，模型侧经 E5.1 情境行注入）；`docRoot` = 文档体系声明面（E2）；`promptsLanding` = 提示词落地声明面（E4/M9——顶层平级键：落地是代码仓路径，不入 docRoot）；`checkConfig` = 机检声明面（E4/M8）。
 - `codePaths` / `index` / `advisor` = **项目声明三族键**（分类段名 / 索引扩展名追加 / 评审注入指针）；声明语义 = `docs/core/design/PORTABILITY.md` §3.1，形态 / 缺省 / 校验 = `docs/core/design/MANIFEST.md` §2.2。
 - **`docRoot` 值形态**（用户裁定）：非空字符串（单根——默认档即此形态）或**非空字符串数组**（多根：一个文档层跨多个根目录——数组 = 完整声明，不与默认合并）。值域 / 解析 / 消费面单一权威源 = `docs/core/design/MANIFEST.md` §2.7（D2——本档不重述）。
-- 校验：schema 枚举字段（phase 取值、docRoot 各键 + promptsLanding 存在）+ **`docRoot` 子键值形态**（非空串 | 非空且元素皆非空串的数组——非法形态拒）+ **`checkConfig.lineCounts` 元素层形态**（#546）+ **三族声明键形态**（`codePaths` / `index.*` / `advisor.*`——KD-M1-32）由 M1 的校验器机械判。
+- 校验：schema 枚举字段（phase 取值、docRoot 各键 + promptsLanding 存在）+ **`docRoot` 子键值形态**（非空串 | 非空且元素皆非空串的数组——非法形态拒）+ **三族声明键形态**（`codePaths` / `index.*` / `advisor.*`——KD-M1-32）由 M1 的校验器机械判。
 
 **台账（SQLite）表结构**（M2 产出）：
 

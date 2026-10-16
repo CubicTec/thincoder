@@ -122,8 +122,8 @@ function readAsarEntry({ header, dataStart }, fd, entry) {
   return buf
 }
 
-/** D 族口径（档数硬等——`prompts` 16 ∥ `tool-docs` 52；同源 = `thincoder-vscode/scripts/check-vsix.mjs` `EXPECT`——两处硬等，改一改二；实读 2026-10-15）。 */
-const PROMPT_FACE_EXPECT = { prompts: 16, "tool-docs": 52 }
+/** D 族口径（档数硬等——`prompts` 16 ∥ `tool-docs` 53；同源 = `thincoder-vscode/scripts/check-vsix.mjs` `EXPECT`——两处硬等，改一改二；实读 2026-10-16）。 */
+const PROMPT_FACE_EXPECT = { prompts: 16, "tool-docs": 53 }
 
 /** 源树提示词面（档名 → sha256；单源 = `thincoder-core/<dir>/*.md`）。 */
 function repoPromptFace(dir) {

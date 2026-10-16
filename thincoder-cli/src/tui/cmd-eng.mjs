@@ -1,5 +1,5 @@
 /** /eng command: toggle engineering mode.
- *  No retired-concept prerequisites (FR11 收正口径 — `docs/core/requirements/PORTABILITY.md:62`):
+ *  No retired-concept prerequisites (FR11 收正口径 — `docs/core/requirements/PORTABILITY.md` §5.1):
  *  no methodology file, no docs tree. **可拒面 = 仅「档非法」一格**（工作区 `workspace` 放行）：
  *  该格上 ON = 拒翻 + 明示原因、模式保持 OFF（#41 —
  *  `docs/core/design/MANIFEST.md` §2.8 F2/F3；判定面 = 入口决策树单源）。

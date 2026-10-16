@@ -91,7 +91,7 @@ export function buildAcpCallbacks({ sessionId, agent, notify, request, log = () 
   const update = (sessionUpdate, extra = {}) =>
     notify("session/update", { sessionId, update: { sessionUpdate, ...extra } })
   // §11.4 fs 能力位（默认 false——文档「MUST treat all capabilities omitted … as UNSUPPORTED」）；
-  // 判据同构 = kimi server.ts:626-636。edit 桥需读回 + 写回 ⇒ 两位皆真才路由。
+  // 判据同构 = kimi server.ts。edit 桥需读回 + 写回 ⇒ 两位皆真才路由。
   const canReadFile = clientCaps?.fs?.readTextFile === true
   const canWriteFile = clientCaps?.fs?.writeTextFile === true
   let toolSeq = 0
@@ -222,7 +222,7 @@ export function buildAcpCallbacks({ sessionId, agent, notify, request, log = () 
       // D7 + 批 1 B2/D13（ACP-CLIENT.md §7.2）：剥离判据 = **形态**（`⟦ev⟧<小写名>` + RS
       // 终止符同现）——枚举是漏项发生器（`queued` / `cancelled` 发射点在位而白名单未跟 ⇒
       // 随 agent_message_chunk 泄漏给客户端）。终止符约束 load-bearing：放宽为无终止符形态
-      // 会吞真实正文（先例教训见 src/tui/render.mjs:250-252）。
+      // 会吞真实正文（先例教训见 src/tui/render.mjs）。
       // 判据单源 = 核模块 `subagent-event.mjs`（2026-10-04 批统一——桥内联式退役，剥离语义
       // 零改）：`parseSubagentEvent` 非空 ⇒ 剥；§12 结构化发射 = 同一调用取投影载荷。
       const ev = parseSubagentEvent(payload)

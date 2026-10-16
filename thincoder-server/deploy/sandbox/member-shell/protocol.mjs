@@ -30,13 +30,13 @@ export const FRAME_TYPES = [
 /** ask 帧 kind 四值（§3.11(2) 表——卡族与应答体按此分发）。 */
 export const ASK_KINDS = Object.freeze(["permission", "batch", "question", "secret"])
 
-/** 裁决词表（沿桌面 `thincoder-desktop/src/main/suspensions.mjs:19-21` 逐值——`respond` 映射单点同源）：
+/** 裁决词表（沿桌面 `thincoder-desktop/src/main/suspensions.mjs` 的 `ITEM_VERDICTS`/`BATCH_VERDICTS` 逐值——`respond` 映射单点同源）：
  *  单件三值 ∥ 批门三值。**映射**（盒壳 = `core-run.mjs` 单点）：`once`/`always` ⇒ `true`（`always` 另置槽
- *  `autoApprove`）、`reject` ⇒ `false`；批门三值直传（核 `dispatch.mjs:190-243` 同判）。 */
+ *  `autoApprove`）、`reject` ⇒ `false`；批门三值直传（核 `dispatch.mjs` `executeToolCalls` 同判）。 */
 export const ITEM_VERDICTS = Object.freeze(["once", "always", "reject"])
 export const BATCH_VERDICTS = Object.freeze(["approveAll", "deny", "oneByOne"])
 
-/** `sub` 帧内容面四值（核 `thincoder-render-core/subblocks/relay.mjs:155` `relaySubContentChunk` 面集同源）。 */
+/** `sub` 帧内容面四值（核 `thincoder-render-core/subblocks/relay.mjs` `relaySubContentChunk` 面集同源）。 */
 export const SUB_FACES = Object.freeze(["text", "think", "toolCall", "toolOutput"])
 
 /** 管理面同源常量（`gateway/API.md` §2.8 / `agent/ADMIN-AGENT.md` §11——值 = 展示面口径）。 */

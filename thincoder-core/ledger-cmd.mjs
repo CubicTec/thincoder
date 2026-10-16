@@ -11,8 +11,7 @@
  * 消费侧静态 import 会破 W8 契约②）。
  */
 import { resolve } from "node:path"
-import { ALLOWED_MIGRATIONS, nowIso, openLedger, PENDING_STATUSES, AGING_DAYS } from "./ledger-db.mjs"
-import { resolveProjectRoot } from "./manifest.mjs"
+import { AGING_DAYS, ALLOWED_MIGRATIONS, nowIso, openLedger, PENDING_STATUSES, resolveLedgerRoot } from "./ledger-db.mjs"
 import { resolveDeclaredRef } from "./declaration.mjs"
 
 /** 逐行老化判真（LEDGER.md §13.4 · 2026-10-07 批 ledger-tool）：未决四态（`PENDING_STATUSES`）∧
@@ -60,8 +59,8 @@ export function ledgerCount({ cwd } = {}) {
  *  （首个 `§` 前子串，trim）须经基准 `resolve(base, …)` 指向存在的档；缺文件部分（`§2` / 空串 /
  *  全空白）⇒ 拒；不在册 / 非文件 ⇒ 拒（throw，行不变）。
  *  判位与迁移表判同层（落盘前）；文案前缀 = 调用函数名（与同函数既有两条文案同款）。
- *  基准 `base` = **与台账库关联键同源**（2026-09-18 fix 轮 · O1 收正）：`resolveProjectRoot(cwd) ??
- *  resolve(cwd ?? ".")`——同表达式见 `ledger-db.mjs` `ledgerDbPath`；容器根会话（锚 cwd 下唯一注册
+ *  基准 `base` = **与台账库关联键同源**（设计档 §6.1 口径 2——根推导单源）：`resolveLedgerRoot(cwd)?.root
+ *  ?? resolve(cwd ?? ".")`——同一子表达式见 `ledger-db.mjs` `ledgerDbPath`；容器根会话（锚 cwd 下唯一注册
  *  子仓 P）与子仓会话 ⇒ 库键与指针基准同取 P（同库同基准；原实现 `resolve(cwd, …)` = 原始 cwd 会误拒）。
  *  #832 ∥ #834：声明源前缀形同判——判定单源 = `declaration.mjs` `resolveDeclaredRef`（① 仓根解析 →
  *  ② 声明源前缀解析序；同名多仓 ⇒ 声明序首者）——**与迁移旗（`ledger-migrate.mjs` `writeGateFlag`）
@@ -71,7 +70,7 @@ function assertTaskBookGate(cwd, fnName, status, taskBook) {
   if (taskBook == null) throw new Error(`${fnName}：task_book 必填（在途 / 待核销 须携任务书指针）`)
   const part = String(taskBook).split("§")[0].trim()
   if (!part) throw new Error(`${fnName}：task_book 不可解析（缺文件部分）：${taskBook}`)
-  const base = resolveProjectRoot(cwd) ?? resolve(cwd ?? ".")
+  const base = resolveLedgerRoot(cwd)?.root ?? resolve(cwd ?? ".")
   const { ok, abs } = resolveDeclaredRef(base, part)
   if (!ok) throw new Error(`${fnName}：task_book 指向的档不存在：${taskBook}（解析 = ${abs}）`)
 }

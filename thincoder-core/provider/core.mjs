@@ -86,6 +86,11 @@ export function effectiveFetchTimeoutMs(provider) {
 }
 
 export async function chat(provider, opts = {}) {
+  // Dispatch and outcome attribution must use the same snapshot, including across
+  // the asynchronous transport import. Only transport bookkeeping writes to owner.
+  const owner = provider
+  provider = { ...provider, ...(provider?.auth ? { auth: { ...provider.auth } } : {}),
+    ...(provider?.headers ? { headers: { ...provider.headers } } : {}) }
   // LOGGING（docs/design/LOGGING.md）：llm:* 事件统一在此落点——所有 chat 调用
   // （主回合/消化轮/compress/distill/advisor/子代理/auto-think/consult）都经本函数，
   // 格式分派（anthropic/google/responses）在内部——单点覆盖即 llm:* 全覆盖。
@@ -99,7 +104,7 @@ export async function chat(provider, opts = {}) {
   const pname = provider?.name ?? provider?.model ?? "unknown"
   logEvent("llm:start", { provider: pname, model: provider?.model ?? "", stage: logCtx.stage, turn: logCtx.turn, auto: logCtx.auto === true, child: logCtx.child })
   try {
-    const result = await chatImpl(provider, opts)
+    const result = await chatImpl(provider, opts, owner)
     await recordProviderInference(provider, result)
     logEvent("llm:done", {
       provider: pname, model: provider?.model ?? "",
@@ -129,7 +134,7 @@ export async function chat(provider, opts = {}) {
 }
 
 /** chat 本体（LOG(LLM) 事件包装之外——见上方 chat 包装器）。 */
-async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWait, signal, streamRules, firedPatterns, toolChoice, parallelToolCalls, logCtx, responsesContext, purpose }) {
+async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWait, signal, streamRules, firedPatterns, toolChoice, parallelToolCalls, logCtx, responsesContext, purpose }, owner = provider) {
   // #57（provider-config-family 批）：凭据值位 `${env:VAR}` 消费侧解析——单源 `../env-ref.mjs`
   // （CONFIG.md §6.3）。格式分派之前：四 transport ∕ 续写 ∕ advisor ∕ 子代理 ∕ 压缩同享；
   // 未设 ∕ 空串 ∕ 畸形 ⇒ 此处抛错（点名变量，无回退）。
@@ -178,13 +183,13 @@ async function chatImpl(provider, { messages, tools, onToken, onReasoning, onWai
   if (provider.format === "responses") {
     // 2026-08-31：Responses API transport（PROVIDER.md §6.13）——双轨链在 transport 内部
     // 自行管理（provider._responsesChain），agent 层零改动。
-    // round3 #3：配对归一化必须在此分派前（压缩/中断遗留的孤儿 tool 消息发向严格服务端会 400）
-    if (!responsesContext && !isChatGptProvider(provider)) messages = normalizeToolPairing(messages)
+    // Responses validates every actual exchange itself. The Chat Completions repair
+    // pass would silently drop orphan outputs and invent results for unfinished calls.
     const { chat: responsesChat } = await import("./responses.mjs")
     return responsesChat(provider, {
       messages, tools, onToken, onReasoning, onWait, signal, toolChoice, parallelToolCalls,
       responsesContext, purpose: purpose ?? logCtx?.kind ?? logCtx?.stage ?? "main",
-    })
+    }, owner)
   }
 
   messages = normalizeToolPairing(messages)

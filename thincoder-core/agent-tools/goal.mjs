@@ -48,6 +48,15 @@ export const goalTool = {
       return `Error: no active goal to '${args.action}' (current: ${agent.goal?.status ?? "none"}). Set one first.`
     }
     if (args.action === "complete") {
+      const goal = agent.goal
+      const goalSignature = JSON.stringify([goal.objective, goal.criteria, goal.status])
+      const session = agent._sessionStart
+      const goalChanged = () => agent.goal !== goal || session !== agent._sessionStart
+        || goalSignature !== JSON.stringify([goal.objective, goal.criteria, goal.status])
+      const changedMessage = "Goal completion unverified — the goal or session changed during verification. The current goal was not changed; verify its current criteria before completing it."
+      // This independent request must not overwrite the main Responses chain.
+      const judgeProvider = agent.provider?.format === "responses"
+        ? { ...agent.provider, stateful: false, _responsesChain: null } : agent.provider
       // Evidence chain threshold: files were mutated this run without verify — refuse completion (aligns with completion guard)
       if (agent._mutatedThisRun && !agent._verifiedThisRun) {
         return "Error: files were modified but verify has not run. Run the check your criteria names AND the verify tool before marking the goal complete — false completion is the worst outcome of autonomous work."
@@ -61,13 +70,13 @@ export const goalTool = {
           const recent = agent.history.filter(m => m.role === "assistant").slice(-4)
           const activity = recent.map(m => (m.content ?? "").slice(0, 500)).join("\n---\n")
           const { chat } = await import("../provider/index.mjs")
-          const judgeRes = await chat(agent.provider, {
+          const judgeRes = await chat(judgeProvider, {
             messages: [{
               role: "user",
               content: `You are an independent goal judge. Evaluate whether this goal has been achieved based on the agent's activity.
 
-Goal: ${agent.goal.objective}
-Success criteria: ${agent.goal.criteria}
+Goal: ${goal.objective}
+Success criteria: ${goal.criteria}
 
 Recent agent activity:
 ${activity || "(no activity recorded)"}
@@ -86,22 +95,25 @@ Has this goal been achieved? Answer ONLY "YES" or "NO" followed by a one-sentenc
               traces: agent.config?.traces?.enabled !== false,
             },
           })
-          requireCompletedResponse(agent.provider, judgeRes, "goal verification")
+          if (goalChanged()) return changedMessage
+          requireCompletedResponse(judgeProvider, judgeRes, "goal verification")
           const verdict = (judgeRes.content ?? "").trim()
-          if (verdict.toUpperCase().startsWith("NO")) {
+          if (/^NO\b/i.test(verdict)) {
             return `Goal NOT complete (judge says NO): ${verdict.slice(2).trim()}\n\nContinue working or report blocked if this is a true impasse.`
           }
-          if (!verdict.toUpperCase().startsWith("YES")) {
+          if (!/^YES\b/i.test(verdict)) {
             return `Goal completion unverified — judge response ambiguous: "${verdict.slice(0, 200)}". Re-check your criteria and try again with clear evidence.`
           }
         } catch {
-          if (agent.provider?.format === "responses") {
+          if (goalChanged()) return changedMessage
+          if (judgeProvider?.format === "responses") {
             return "Goal completion unverified — the judge request did not complete. The goal remains active; verify the criteria and retry or report the blocker."
           }
           // Preserve the existing fallback for other provider protocols.
         }
       }
 
+      if (goalChanged()) return changedMessage
       agent.goal.status = "complete"
       if (ctx.depth === 0) pushContextNudge(agent) // F-CC4（depth-0 门）
       return `Goal verified complete ✓: ${agent.goal.objective}\nIn your next message, summarize the evidence (what check ran, what it showed) — the user should be able to audit this claim.`

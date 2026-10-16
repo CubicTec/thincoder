@@ -63,9 +63,23 @@ export function compactMessages(messages, pinned = null) {
   // user message — the rest is summarized.
   if (messages.length <= 20) return
 
-  const system = messages[0]
-  const recent = messages.slice(-20)
-  const old = messages.slice(1, -20)
+  const headEnd = messages[0]?.role === "system" ? 1 : 0
+  let tailStart = messages.length - 20
+  // The count is only a candidate: a parallel tool batch must stay whole. Move
+  // the cut back to every retained output's owner, including interleaved notes.
+  const owners = new Map()
+  for (let i = headEnd; i < messages.length; i++) {
+    for (const call of messages[i].tool_calls ?? []) owners.set(call.id, i)
+    if (i >= tailStart && messages[i].role === "tool") {
+      const owner = owners.get(messages[i].tool_call_id)
+      if (owner !== undefined) tailStart = Math.min(tailStart, owner)
+    }
+  }
+  // A single large batch cannot be shortened without losing its pairing.
+  if (tailStart <= headEnd) return
+  const head = messages.slice(0, headEnd)
+  const recent = messages.slice(tailStart)
+  const old = messages.slice(headEnd, tailStart)
 
   // Count actual tool messages (old.length counts user/assistant rows too)
   const toolCount = old.filter((m) => m.role === "tool").length
@@ -82,7 +96,7 @@ export function compactMessages(messages, pinned = null) {
   // 重复压缩允许重复挂回，不做存在性判定）。
   const pin = pinned ? [{ role: "user", content: pinned }] : []
   messages.splice(0, messages.length,
-    system,
+    ...head,
     { role: "user", content: `[Context compacted] ${summary}` },
     ...pin,
     ...recent)

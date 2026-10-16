@@ -1,7 +1,7 @@
 /** Responses input codec and native replay schema. UI messages are not protocol state. */
 import { ProviderError } from "./errors.mjs"
 import { wireFunctionIdentity } from "./responses-tools.mjs"
-import { responsesProfileBinding } from "./capabilities.mjs"
+import { responsesProfileBinding, responsesCredentialBinding } from "./capabilities.mjs"
 
 const pick = (item, fields) => Object.fromEntries(fields.filter((k) => item[k] !== undefined).map((k) => [k, structuredClone(item[k])]))
 const invalid = (provider, message, param = "input") => new ProviderError(provider, message, { code: "invalid_responses_context", param, stage: "configuration", retryClass: "never" })
@@ -86,6 +86,9 @@ export function requestItems(provider, messages, mapping, context) {
   if (context.endpointBinding !== undefined && context.endpointBinding !== provider.baseURL.replace(/\/+$/, "")) {
     throw invalid(provider, "Responses endpoint changed; explicitly rebuild context before transferring history", "responsesContext")
   }
+  if (context.credentialBinding !== undefined && context.credentialBinding !== responsesCredentialBinding(provider)) {
+    throw invalid(provider, "Responses credentials changed; explicitly rebuild context before transferring history", "responsesContext")
+  }
   if (!Array.isArray(context.orderedReplayableItems) || !Number.isInteger(context.messageCount) || context.messageCount < 0 || context.messageCount > messages.length) {
     throw invalid(provider, "Responses replay checkpoint is invalid; rebuild context explicitly", "responsesContext")
   }
@@ -98,7 +101,7 @@ export function requestItems(provider, messages, mapping, context) {
 }
 
 /** Validate the assembled full replay before stateful transport can select its output suffix. */
-function assertFunctionPairs(items, provider) {
+export function assertFunctionPairs(items, provider) {
   const seen = new Set(), pending = new Set()
   for (const item of items) {
     if (item.type !== "function_call" && item.type !== "function_call_output") continue

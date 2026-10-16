@@ -14,6 +14,7 @@
 import { chat } from "./provider/index.mjs"
 import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
 import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
+import { captureContextRewrite } from "./context-rewrite.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"
 import { contextUsage, estimateTokens, keepTailSize, splitHistory, tailBudgetTokens } from "./token-window.mjs"
@@ -186,6 +187,7 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
   }
 
   const middle = history.slice(split.headEnd, split.tailStart)
+  const assertCurrent = captureContextRewrite(agent, "Compaction")
 
   // Compression request form v2/v3 (§6.14 / D-CC20): continuation — same system + same tools declaration (the turn's own
   // array) + the middle's verbatim messages + one tail instruction. 首现即复用回合所建前缀 ⟺ 带 tools 声明（无 tool_choice）
@@ -207,6 +209,7 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
     const last = messages.at(-1)
     messages[messages.length - 1] = { ...last, content: last.content + focusBlock(String(extras.focus), anchorText(agent)) }
   }
+  assertCurrent() // Lifecycle callbacks may have switched sessions before the request.
   const summary = await chat({ ...agent.provider, thinking: null }, {
     messages,
     tools: extras?.tools,
@@ -222,6 +225,7 @@ export async function compressIfNeeded(agent, threshold, callbacks, extras = {},
   })
 
   requireCompletedResponse(agent.provider, summary, "compaction")
+  assertCurrent()
 
   // Blank-summary guard (§6.14 退化面 3): a blank summary would land in applyCompression as
   // "middle dropped + empty note" and still count as success — throw into the failure chain instead.

@@ -61,7 +61,7 @@ export async function* responseEvents(body, { signal, onChunk, maxFrameBytes = M
 }
 
 export async function parseStream(response, {
-  onToken, onReasoning, signal, provider, toolMapping, allowResponseDone = false, maxFrameBytes, readIdleMs = 120_000,
+  onToken, onReasoning, signal, provider, toolMapping, previousCallIds = [], allowResponseDone = false, maxFrameBytes, readIdleMs = 120_000,
 } = {}) {
   const result = { content: "", reasoning: "", toolCalls: [], usage: null, finishReason: null,
     builtinToolResults: [], outputItems: [], terminalStatus: "in_progress" }
@@ -96,8 +96,8 @@ export async function parseStream(response, {
     const prior = content[partIndex]
     content[partIndex] = delta ? { ...(prior ?? part), text: (prior?.text ?? "") + (part.text ?? "") } : { ...part }
   }
-  const text = (value) => { if (typeof value === "string") { result.content += value; onToken?.(value) } }
-  const reasoning = (value) => { if (typeof value === "string") { result.reasoning += value; onReasoning?.(value) } }
+  const text = (value) => { if (typeof value === "string" && value) { result.content += value; onToken?.(value) } }
+  const reasoning = (value) => { if (typeof value === "string" && value) { result.reasoning += value; onReasoning?.(value) } }
   const receiveMeta = (resp) => {
     if (resp?.usage) result.usage = normalizeUsage(resp.usage)
     if (resp?.id) result.responseId = resp.id
@@ -114,6 +114,7 @@ export async function parseStream(response, {
   armIdle()
   try {
     for await (const ev of responseEvents(response.body, { signal, maxFrameBytes, onChunk: armIdle })) {
+      if (signal?.aborted) throw new DOMException("Aborted", "AbortError")
       switch (ev.type) {
         case "response.output_item.added": addItem(ev); break
         case "response.output_item.done": addItem(ev, true); break
@@ -188,23 +189,31 @@ export async function parseStream(response, {
           if (result.content && !output.some((item) => item.type === "message" && item.content?.length)) {
             output.push({ type: "message", role: "assistant", content: [{ type: "output_text", text: result.content }] })
           }
-          const seenCalls = new Set()
+          const seenCalls = new Set(previousCallIds)
           const toolCalls = []
           for (const item of output) {
             if (item.type !== "function_call") continue
-            if (!item.call_id || seenCalls.has(item.call_id) || item.status === "incomplete" || item.status === "in_progress") throw protocolError("Invalid, duplicate or unfinished function call")
+            if (typeof item.call_id !== "string" || !item.call_id || seenCalls.has(item.call_id)
+              || (item.status !== undefined && item.status !== "completed")) throw protocolError("Invalid, duplicate or unfinished function call")
             let args
             try { args = JSON.parse(item.arguments) } catch { throw protocolError("Function call arguments are incomplete JSON") }
             if (!args || typeof args !== "object" || Array.isArray(args)) throw protocolError("Function call arguments must be an object")
             seenCalls.add(item.call_id)
-            toolCalls.push({ id: item.call_id, name: resolveResponseTool(item, toolMapping, provider), arguments: item.arguments })
+            const name = resolveResponseTool(item, toolMapping, provider)
+            toolCalls.push({ id: item.call_id, name, arguments: item.arguments })
+            // Compatibility aliases may resolve to a local tool, but replay must use
+            // the registered wire identity rather than perpetuating the alias.
+            if (toolMapping) Object.assign(item, toolMapping.byLocal.get(name))
           }
           result.outputItems = output.map((item) => replayableItem(item, provider))
           result.toolCalls = toolCalls
           result.builtinToolResults = output.filter((item) => item.type === "web_search_call").map((item) => ({ id: item.id ?? "", query: item.action?.query ?? "", status: item.status ?? "completed", sources: item.action?.sources ?? [] }))
           // Some compatible endpoints send only final items, without text deltas.
-          if (!result.content) for (const item of output) if (item.type === "message") for (const part of item.content ?? []) text(part.text ?? part.refusal)
+          const finalText = output.filter((item) => item.type === "message").flatMap((item) => item.content ?? []).map((part) => part.text ?? part.refusal ?? "").join("")
+          if (finalText.startsWith(result.content)) text(finalText.slice(result.content.length))
+          else if (finalText) result.content = finalText
           if (!result.reasoning) for (const item of output) if (item.type === "reasoning") for (const part of item.summary ?? []) reasoning(part.text)
+          if (signal?.aborted) throw new DOMException("Aborted", "AbortError")
           result.terminalStatus = "completed"; result.finishReason = "stop"; terminal = true
           break
         }
@@ -216,8 +225,8 @@ export async function parseStream(response, {
     if (!terminal) throw protocolError("Stream ended without a completed Responses event", "responses_missing_terminal")
     return result
   } catch (error) {
-    if (error?.name === "AbortError" && signal?.aborted) {
-      if (!signal.reason?.interrupt) throw error
+    if (signal?.aborted) {
+      if (!signal.reason?.interrupt) throw signal.reason instanceof Error ? signal.reason : new DOMException("Aborted", "AbortError")
       return { ...fail(protocolError("Response interrupted"), "interrupted"), interrupted: true, interruptMessage: signal.reason.message }
     }
     const structured = idleError ?? (error instanceof ProviderError ? error : protocolError("Responses stream transport or decoding failed"))

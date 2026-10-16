@@ -9,6 +9,7 @@
 
 import { compressIfNeeded, compressFallback, COMPRESS_FAILURE_LIMIT } from "../context.mjs"
 import { RESPONSES_HISTORY_BOUNDARY_ERROR } from "../responses-history-guard.mjs"
+import { CONTEXT_HISTORY_CHANGED } from "../context-rewrite.mjs"
 import { applyPendingContextPrune } from "../context-prune.mjs"
 import { ensureAutoReminder, injectEngineeringReminder, ContinueError, snapshotGuard } from "./helpers.mjs"
 import { pushManifestStateReminder } from "./setup-reminders.mjs"
@@ -109,7 +110,7 @@ export async function runCompactionCheck(agent, ctx) {
       ensureAutoReminder(agent)
     }
   } catch (compressError) {
-    if (compressError?.code === RESPONSES_HISTORY_BOUNDARY_ERROR) throw compressError
+    if ([RESPONSES_HISTORY_BOUNDARY_ERROR, CONTEXT_HISTORY_CHANGED].includes(compressError?.code)) throw compressError
     // AbortError must not be swallowed: user cancellation must propagate
     if (compressError?.name === "AbortError" || signal?.aborted) throw compressError
     agent._compressFailures = (agent._compressFailures ?? 0) + 1

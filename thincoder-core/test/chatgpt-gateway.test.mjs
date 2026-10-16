@@ -136,12 +136,14 @@ test("mocked two-turn function exchange persists native reasoning/phase across r
   stageResponsesReplay(agent, first, system)
   pushReal(agent, { role: "assistant", content: "", tool_calls: first.toolCalls.map((tc) => ({ id: tc.id, type: "function", function: { name: tc.name, arguments: tc.arguments } })) })
   let executions = 0
-  const execute = async () => { executions++; return [{ toolCall: first.toolCalls[0], ok: true, content: "fixture contents" }] }
+  const execute = async () => { executions++; return [{ toolCall: first.toolCalls[0], ok: true, result: "fixture contents" }] }
   await runResponsesToolTransaction(agent, first.toolCalls, execute)
-  await runResponsesToolTransaction(agent, first.toolCalls, execute)
+  await assert.rejects(runResponsesToolTransaction(agent, first.toolCalls, execute), /unresolved/)
   assert.equal(executions, 1)
   pushReal(agent, { role: "tool", tool_call_id: "call-a", content: "fixture contents" })
   acknowledgeResponsesToolTransaction(agent)
+  await runResponsesToolTransaction(agent, first.toolCalls, execute)
+  assert.equal(executions, 1)
   const restored = { provider: p, history: structuredClone(agent.history) }
   attachResponsesSession(restored, slot)
   const nextMessages = [{ role: "system", content: system }, ...restored.history]
@@ -159,7 +161,7 @@ test("unresolved tool side effects block restart and unknown native schema is pr
   const slot = join(temp(), "slot.json.1")
   const agent = { provider: provider(), history: [] }
   attachResponsesSession(agent, slot)
-  await assert.rejects(runResponsesToolTransaction(agent, [{ id: "call" }], async () => { throw new Error("process interrupted") }))
+  await assert.rejects(runResponsesToolTransaction(agent, [{ id: "call", name: "write", arguments: "{}" }], async () => { throw new Error("process interrupted") }))
   const resumed = { provider: provider(), history: [] }
   attachResponsesSession(resumed, slot)
   assert.throws(() => prepareResponsesContext(resumed, []), /unknown outcome/)
@@ -173,7 +175,7 @@ test("unresolved tool side effects block restart and unknown native schema is pr
 
 test("account/model/history changes checkpoint opaque state explicitly", () => {
   const agent = { provider: provider(), history: [{ role: "user", content: "hello" }] }
-  stageResponsesReplay(agent, { terminalStatus: "completed", responsesReplay: { schemaVersion: 1, profileBinding: "profile-a", modelBinding: "test-model", endpointBinding: "https://api.openai.com/v1", messageCount: 2,
+  stageResponsesReplay(agent, { terminalStatus: "completed", responsesReplay: { schemaVersion: 1, profileBinding: "profile-a", credentialBinding: "profile-a", modelBinding: "test-model", endpointBinding: "https://api.openai.com/v1", messageCount: 2,
     orderedReplayableItems: [{ type: "reasoning", encrypted_content: "opaque", summary: [] }] } }, "system")
   pushReal(agent, { role: "assistant", content: "answer" })
   assert.ok(prepareResponsesContext(agent, [{ role: "system", content: "system" }, ...agent.history]))

@@ -9,7 +9,10 @@ import { requireCompletedResponse } from "../provider/errors.mjs"
 const provider = { name: "auxiliary-test", format: "responses", baseURL: "https://api.openai.com/v1", apiKey: "fixture-only", model: "test-model", stateful: false, builtinTools: false }
 const frame = (event) => `data: ${JSON.stringify(event)}\n\n`
 function fakeResponse(end, text = "PARTIAL DERIVED CONTENT") {
-  return new Response(frame({ type: "response.output_text.delta", delta: text }) + (end ? frame(end) : ""), { headers: { "content-type": "text/event-stream" } })
+  const terminal = end?.type === "response.completed"
+    ? { ...end, response: { ...end.response, output: [{ type: "message", role: "assistant", content: [{ type: "output_text", text }] }] } }
+    : end
+  return new Response(frame({ type: "response.output_text.delta", delta: text }) + (terminal ? frame(terminal) : ""), { headers: { "content-type": "text/event-stream" } })
 }
 const endings = [
   { type: "response.failed", response: { error: { code: "server_error", message: "summary generation failed" } } },
@@ -303,7 +306,10 @@ test("completed Responses tool boundaries permit summary, distillation and deter
     assert.ok(distill.history.some((m) => m.content.startsWith("[Exploration summary]")))
     assert.equal(compressFallback(ready(longHistory())), true)
     assert.equal(shrinkOversized(ready([{ role: "user", content: "x".repeat(9000) }])), true)
-    const prune = ready([{ role: "tool", tool_call_id: "old", content: "x".repeat(12000) }, ...longHistory()])
+    const prune = ready([
+      { role: "assistant", content: "", tool_calls: [{ id: "old", function: { name: "read", arguments: "{}" } }] },
+      { role: "tool", tool_call_id: "old", content: "x".repeat(12000) }, ...longHistory(),
+    ])
     assert.equal(pruneStaleToolOutputs(prune).pruned, 1)
     assert.equal(requests, 2)
   } finally { globalThis.fetch = fetch }

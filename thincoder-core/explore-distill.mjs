@@ -12,7 +12,7 @@
 
 import { chat } from "./provider/index.mjs"
 import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
-import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
+import { captureContextRewrite } from "./context-rewrite.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"
 
@@ -142,10 +142,10 @@ async function distillExplorations(history, start, provider, signal, agent, dept
  * `extras` = 前缀面（{ systemPrompt, tools }——调用点透传、与回合请求同源 · §6.15）；缺省 ⇒ 退化面 1。
  */
 export async function summarizeRunExplorations(agent, callbacks, signal, depth = 0, extras) {
-  assertResponsesHistoryBoundary(agent, "Exploration distillation")
+  const assertCurrent = captureContextRewrite(agent, "Exploration distillation")
   const next = await distillExplorations(agent.history, agent._runStartHistoryLen ?? 0, agent.provider, signal, agent, depth, extras)
   if (!next) return
-  assertResponsesHistoryBoundary(agent, "Exploration distillation")
+  assertCurrent()
   agent.history = next
   // The machine line changed shape — the measured token baseline was for the pre-shrink context.
   // Invalidate so the next compaction check re-estimates instead of over-counting stale history.

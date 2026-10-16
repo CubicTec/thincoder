@@ -9,7 +9,7 @@ import { prepareAdvisorMessages } from "../advisor.mjs"
 import { buildObjectDeclarationBlock, buildDesignApprovalBlock } from "./messages.mjs"
 import { appendCitationReport } from "./citations.mjs"
 import { runAdvisorToolLoop } from "./loop.mjs"
-import { estimateTokens } from "./compaction.mjs"
+import { estimateTokens, advisorIncompleteMarker } from "./compaction.mjs"
 import { batchDocForReview } from "../agent-tools/batch.mjs"
 
 // 拆分后 import 面（既有导出名逐一保面——re-export；谓词为本批新增）。
@@ -154,7 +154,8 @@ export async function runAdvisorReview(agent, reviewType, callbacks, designToken
     // push-back; the parent agent sees the verification report.
     // F14/`ADVISOR-GUARDS.md §3`：解析候选 = cwd + 评审对象声明范围派生根（scope = documents + paths）。
     let final = result
-    if (!result.trimStart().startsWith("Advisor:")) {
+    const incomplete = advisorIncompleteMarker(result)
+    if (!incomplete && !result.trimStart().startsWith("Advisor:")) {
       final = appendCitationReport(result, advisorCwd, { scope: [...(documents ?? []), ...(paths ?? [])] })
       // Success path: keep the FULL review output for convergence rounds —
       // round 2+ injects this verbatim and the model understands it (decision
@@ -175,7 +176,7 @@ export async function runAdvisorReview(agent, reviewType, callbacks, designToken
     const tokensUsed = estimateTokens(messages)
     onOutput?.({
       kind: "text",
-      text: `\n[advisor] Review completed: ${elapsed}s, ${toolCallCount} tool calls, ~${Math.round(tokensUsed / 1000)}k tokens\n`,
+      text: `\n[advisor] Review ${incomplete ? "incomplete" : "completed"}: ${elapsed}s, ${toolCallCount} tool calls, ~${Math.round(tokensUsed / 1000)}k tokens\n`,
     })
     return final
   } catch (e) {

@@ -87,6 +87,12 @@ export async function classifyAndApply(agent, turn) {
 
   const prompt = buildClassifierInput(agent.history)
   if (prompt == null) return null
+  const targetProvider = agent.provider, session = agent._sessionStart
+  const targetSettings = () => JSON.stringify([
+    agent.provider?.format, agent.provider?.name, agent.provider?.model, agent.provider?.baseURL,
+    agent.provider?.auth, agent.provider?.apiKey, agent.provider?.thinking, agent.provider?.reasoningEffort,
+  ])
+  const settings = targetSettings()
 
   // Classification call: use same provider, minimal tokens, no tools, no streaming
   let level
@@ -116,7 +122,7 @@ export async function classifyAndApply(agent, turn) {
         kind: "autothink",
       },
     })
-    requireCompletedResponse(agent.provider, response, "difficulty classification")
+    requireCompletedResponse(classifierProvider, response, "difficulty classification")
     const word = (response.content ?? "").trim().toLowerCase()
     if (word.startsWith("low")) level = "low"
     else if (word.startsWith("medium") || word.startsWith("med")) level = "medium"
@@ -131,6 +137,10 @@ export async function classifyAndApply(agent, turn) {
     }
     return null // Classification failure → fall back to current setting
   }
+
+  // A late classification belongs to its original model and user request only.
+  if (agent.provider !== targetProvider || session !== agent._sessionStart || settings !== targetSettings()
+    || prompt !== buildClassifierInput(agent.history)) return null
 
   // Map difficulty to the closest valid reasoning effort
   const candidates = EFFORT_MAP[level] || EFFORT_MAP.medium

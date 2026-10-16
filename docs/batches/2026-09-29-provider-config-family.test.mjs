@@ -241,7 +241,7 @@ test("E-8 遮蔽零改：引用串住敏感值位 ⇒ MASKED（headers 族同）
   assert.equal(gotH, `providers.0.headers.X-Secret = ${settings.MASKED} (string)`, "headers 族遮罩不变")
 })
 
-test("E-9 静态：解析函数使用点集 = 七处（排除叶档定义 ∕ 内部复用）——防漏接 ∕ 防扩面", () => {
+test("E-9 静态：解析函数使用点集 = 十处（排除叶档定义 ∕ 内部复用）——防漏接 ∕ 防扩面", () => {
   const TREES = ["thincoder-core", "thincoder-cli/src", "thincoder-cli/bin", "thincoder-vscode/src", "thincoder-desktop/src"]
   const FUNCS = /resolveEnvRefs|resolveEnvRefMap|resolveProviderSecrets|resolveMcpServerSecrets/
   const hits = []
@@ -263,10 +263,13 @@ test("E-9 静态：解析函数使用点集 = 七处（排除叶档定义 ∕ �
     "thincoder-core/generate-title.mjs",
     "thincoder-core/mcp.mjs",
     "thincoder-core/provider/auth-context.mjs",
+    "thincoder-core/provider/capabilities.mjs",
     "thincoder-core/provider/core.mjs",
     "thincoder-core/provider/list-models.mjs",
+    "thincoder-core/provider/responses-request.mjs",
+    "thincoder-core/provider/responses.mjs",
     "thincoder-core/tools/web.mjs",
-  ], "七处消费点（防漏接 ∕ 防扩面）")
+  ], "十处消费点（含 Responses 请求绑定快照；防漏接 ∕ 防扩面）")
   const USE = {
     "thincoder-core/provider/core.mjs": "resolveProviderSecrets",
     "thincoder-core/provider/list-models.mjs": "resolveProviderSecrets",

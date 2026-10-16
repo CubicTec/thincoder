@@ -9,6 +9,7 @@
  */
 
 import { chat } from "./provider/index.mjs"
+import { requireCompletedResponse } from "./provider/errors.mjs"
 import { isChatGptProvider } from "./provider/auth-config.mjs"
 import { proxyFetch } from "./proxy.mjs"
 import { resolveProviderSecrets } from "./env-ref.mjs"
@@ -49,7 +50,8 @@ export async function generateTitle(userContent, provider) {
           { role: "user", content: userText.slice(0, 200) }],
         signal: AbortSignal.timeout(10000), purpose: "title", logCtx: { stage: "title" },
       })
-      return response.terminalStatus === "completed" ? response.content?.trim().slice(0, 40) || null : null
+      requireCompletedResponse(provider, response, "session title")
+      return response.content?.trim().slice(0, 40) || null
     } catch { return null }
   }
 
@@ -144,6 +146,8 @@ export async function generateTitle(userContent, provider) {
 export async function ensureSessionTitle(agent) {
   if (agent.title) return agent.title
   try {
+    const session = agent._sessionStart, recordStore = agent._recordStore
+    const sourceHistory = agent._fullHistory ?? agent.history
     // TUI-OOM-ROOTCAUSE 批（SESSION.md §6.14）：绑定态首条 user 消息在记录存储（段 1）——
     // 内存窗口可能已滑过它（store.firstUserMessage 首扫一次并缓存）；未绑定回退内存查找
     // （谓词单源 = `isRealUserMsg`——与 VSC 端壳同判据）。
@@ -152,7 +156,8 @@ export async function ensureSessionTitle(agent) {
     if (firstUser) {
       // #632：读源处剥离（注入形不得入标题请求——与恢复面同读一函数，零第二实现）
       const title = await generateTitle(stripAtRefs(firstUser.content), agent.provider)
-      if (title) agent.title = title
+      if (title && !agent.title && session === agent._sessionStart && recordStore === agent._recordStore
+        && sourceHistory === (agent._fullHistory ?? agent.history)) agent.title = title
     }
   } catch {
     // Title generation failure is non-fatal

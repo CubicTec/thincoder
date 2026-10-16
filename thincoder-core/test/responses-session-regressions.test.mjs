@@ -24,7 +24,7 @@ const calls = [{ id: "call-a", name: "write_file", arguments: '{"path":"a"}' }]
 const toolMessage = () => ({ role: "tool", tool_call_id: "call-a", content: "Written" })
 const agentFor = (extra = {}) => ({ provider: provider(), history: [{ role: "user", content: "Write it" }], _sessionStart: "session-a", ...extra })
 const disk = agent => JSON.parse(readFileSync(agent._responsesStatePath, "utf8"))
-const execute = async () => [{ toolCall: calls[0], ok: true, content: "Written" }]
+const execute = async () => [{ toolCall: calls[0], ok: true, result: "Written" }]
 const messages = agent => [{ role: "system", content: "system" }, ...agent.history]
 const replay = () => ({ terminalStatus: "completed", responsesReplay: {
   schemaVersion: 1, profileBinding: "api_key:test", modelBinding: "test-model",
@@ -207,4 +207,98 @@ test("tool transaction deduplication is scoped to its endpoint as well as accoun
   agent.provider = { ...agent.provider, baseURL: "https://other-provider.example/v1" }
   await runResponsesToolTransaction(agent, calls, run)
   assert.equal(invoked, 2)
+})
+
+test('structurally corrupted schema-one journals stay latched closed without replacing bytes', async () => {
+  for (const damaged of [
+    { pendingToolTransaction: '' },
+    { pendingToolTransaction: { key: 'x', callIds: ['call-a'], status: 'results_ready' } },
+    { transactions: [{}] },
+    { toolHistoryCheckpoint: { messageCount: -1, digest: 'x' } },
+    { replay: [] },
+  ]) {
+    const slot = join(temp(), 'slot.json.1')
+    const bytes = JSON.stringify({ schemaVersion: 1, identity: 'session-a', replay: null, transactions: [], pendingToolTransaction: null, ...damaged })
+    writeFileSync(responsesSessionPath(slot), bytes)
+    const agent = agentFor()
+    attachResponsesSession(agent, slot)
+    assert.throws(() => prepareResponsesContext(agent, messages(agent)), /unsupported/)
+    await assert.rejects(runResponsesToolTransaction(agent, calls, execute), /recovery/)
+    persistResponsesSession(agent)
+    assert.equal(readFileSync(responsesSessionPath(slot), 'utf8'), bytes)
+  }
+})
+
+test('missing or mismatched execution results keep the durable transaction unresolved', async () => {
+  for (const bad of [[], [{ toolCall: { ...calls[0], id: 'other-call' }, ok: true, result: 'Written' }]]) {
+    const agent = agentFor()
+    const slot = join(temp(), 'slot.json.1')
+    attachResponsesSession(agent, slot)
+    await assert.rejects(runResponsesToolTransaction(agent, calls, async () => bad), /incomplete|match/)
+    assert.equal(disk(agent).pendingToolTransaction.status, 'executing')
+    const restored = agentFor()
+    attachResponsesSession(restored, slot)
+    assert.throws(() => prepareResponsesContext(restored, messages(restored)), /unknown outcome/)
+  }
+})
+
+test('unacknowledged saved results cannot bypass the unresolved transaction gate', async () => {
+  const agent = agentFor()
+  attachResponsesSession(agent, join(temp(), 'slot.json.1'))
+  await runResponsesToolTransaction(agent, calls, execute)
+  await assert.rejects(runResponsesToolTransaction(agent, calls, execute), /unresolved/)
+  agent.history.push(toolMessage())
+  acknowledgeResponsesToolTransaction(agent)
+  assert.deepEqual(await runResponsesToolTransaction(agent, calls, () => { throw new Error('must not execute twice') }), await execute())
+})
+
+test('acknowledgement requires fresh, unique outputs from this execution boundary', async () => {
+  const agent = agentFor({ history: [toolMessage()] })
+  attachResponsesSession(agent, join(temp(), 'slot.json.1'))
+  await runResponsesToolTransaction(agent, calls, execute)
+  assert.throws(() => acknowledgeResponsesToolTransaction(agent), /incomplete/)
+  agent.history.push(toolMessage(), toolMessage())
+  assert.throws(() => acknowledgeResponsesToolTransaction(agent), /duplicated/)
+})
+
+test('failed acknowledgement persistence blocks this process and a restart', async () => {
+  const slot = join(temp(), 'slot.json.1')
+  const agent = agentFor()
+  attachResponsesSession(agent, slot)
+  await runResponsesToolTransaction(agent, calls, execute)
+  agent.history.push(toolMessage())
+  const originalRename = fs.renameSync
+  fs.renameSync = (from, to) => {
+    if (to === responsesSessionPath(slot)) throw Object.assign(new Error('Disk write failed'), { code: 'EIO' })
+    return originalRename(from, to)
+  }
+  syncBuiltinESMExports()
+  try { assert.throws(() => acknowledgeResponsesToolTransaction(agent), /Disk write failed/) }
+  finally { fs.renameSync = originalRename; syncBuiltinESMExports() }
+  assert.equal(agent._responsesRecoveryRequired, true)
+  const beforeSave = readFileSync(responsesSessionPath(slot), 'utf8')
+  assert.throws(() => persistResponsesSession(agent), /recovery/)
+  assert.equal(readFileSync(responsesSessionPath(slot), 'utf8'), beforeSave)
+  assert.throws(() => prepareResponsesContext(agent, messages(agent)), /saved history/)
+  await assert.rejects(runResponsesToolTransaction(agent, calls, execute), /recovery/)
+  const restored = agentFor({ history: structuredClone(agent.history) })
+  attachResponsesSession(restored, slot)
+  assert.throws(() => prepareResponsesContext(restored, messages(restored)), /unknown outcome/)
+})
+
+test('switching session during tool execution cannot commit old results into the new journal', async () => {
+  const root = temp(), oldSlot = join(root, 'old'), newSlot = join(root, 'new')
+  const agent = agentFor()
+  attachResponsesSession(agent, oldSlot)
+  await assert.rejects(runResponsesToolTransaction(agent, calls, async () => {
+    agent._sessionStart = 'new-session'
+    agent.history = [{ role: 'user', content: 'New conversation' }]
+    attachResponsesSession(agent, newSlot)
+    persistResponsesSession(agent)
+    return execute()
+  }), /Session changed/)
+  assert.equal(JSON.parse(readFileSync(responsesSessionPath(oldSlot), 'utf8')).pendingToolTransaction.status, 'executing')
+  assert.equal(disk(agent).pendingToolTransaction, null)
+  assert.deepEqual(disk(agent).transactions, [])
+  assert.deepEqual(agent.history, [{ role: 'user', content: 'New conversation' }])
 })

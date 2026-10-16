@@ -140,3 +140,83 @@ for (const [label, ending, code] of [
     assert.equal(journal.replay, null); assert.equal(agent._pendingResponsesReplay, undefined)
   })
 }
+
+test('model changes during an in-flight completed response never execute its tools', async () => {
+  const { agent, observed, run, serve } = fixture()
+  serve([[terminal('resp_old_model', [functionCall])]])
+  const fetch = globalThis.fetch
+  globalThis.fetch = async (...args) => {
+    const response = await fetch(...args)
+    agent.provider.model = 'different-model'
+    return response
+  }
+  await assert.rejects(run, { code: 'responses_request_binding_changed' })
+  assert.equal(observed.executions, 0)
+  assert.equal(observed.releases, 1)
+  assert.equal(agent.history.some((message) => message.tool_calls?.length), false)
+})
+
+test('session changes during an in-flight completed response never overwrite the new conversation', async () => {
+  const { agent, observed, run, serve } = fixture()
+  serve([[terminal('resp_old_session', [functionCall])]])
+  const fetch = globalThis.fetch
+  const replacement = [{ role: 'user', content: 'New conversation' }]
+  globalThis.fetch = async (...args) => {
+    const response = await fetch(...args)
+    agent.history = replacement
+    agent._sessionStart = 'new-session'
+    return response
+  }
+  await assert.rejects(run, { code: 'responses_request_history_changed' })
+  assert.equal(observed.executions, 0)
+  assert.equal(agent.history, replacement)
+  assert.deepEqual(agent.history, [{ role: 'user', content: 'New conversation' }])
+})
+
+for (const [label, ending] of [
+  ['failed', { type: 'response.failed', response: { status: 'failed', error: { code: 'server_error', message: 'Fixture stream failed' } } }],
+  ['incomplete', { type: 'response.incomplete', response: { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } } }],
+  ['EOF', null],
+]) {
+  for (const change of ['session', 'provider']) {
+    test(`${label} Responses output cannot be appended after a ${change} switch`, async () => {
+      const { agent, observed, run, serve } = fixture()
+      serve([[{ type: 'response.output_text.delta', delta: 'Old partial response' }, ...(ending ? [ending] : [])]])
+      const fetch = globalThis.fetch
+      let expectedHistory
+      globalThis.fetch = async (...args) => {
+        const response = await fetch(...args)
+        if (change === 'session') {
+          agent.history = [{ role: 'user', content: 'New conversation' }]
+          agent._sessionStart = 'replacement-session'
+          agent._responsesStatePath = `${agent._responsesStatePath}.replacement`
+        } else {
+          agent.provider.auth.credentialRef = 'replacement-profile'
+        }
+        expectedHistory = structuredClone(agent.history)
+        return response
+      }
+      await assert.rejects(run, { code: change === 'session' ? 'responses_request_history_changed' : 'responses_request_binding_changed' })
+      assert.equal(observed.executions, 0)
+      assert.deepEqual(agent.history, expectedHistory)
+      assert.equal(agent._pendingResponsesReplay, undefined)
+    })
+  }
+}
+
+test('an interrupted request cannot inject its reminder into a replacement session', async () => {
+  const { callModelTurn } = await import('../agent/chat-call.mjs')
+  const { agent } = fixture()
+  const controller = new AbortController()
+  const replacement = [{ role: 'user', content: 'New conversation' }]
+  globalThis.fetch = async () => {
+    agent.history = replacement
+    agent._sessionStart = 'replacement-session'
+    controller.abort({ interrupt: true, message: 'Old request interruption' })
+    throw new DOMException('Aborted', 'AbortError')
+  }
+  await assert.rejects(callModelTurn(agent, {
+    systemPrompt: 'Read the fixture', toolSchemas: [toolSchema], callbacks: {}, depth: 0, turn: 0, signal: controller.signal,
+  }), { code: 'responses_request_history_changed' })
+  assert.deepEqual(agent.history, [{ role: 'user', content: 'New conversation' }])
+})

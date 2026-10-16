@@ -6,6 +6,12 @@ import { ensureResponsesSession, prepareResponsesContext, stageResponsesReplay }
  * 由 runAgent 的 catch/finally 收束。
  */
 import { chat } from "../provider/index.mjs"
+import { responsesProfileBinding, responsesCredentialBinding } from "../provider/capabilities.mjs"
+import { ProviderError } from "../provider/errors.mjs"
+import { createHash } from "node:crypto"
+import { stripLocalMessageFields } from "../escape.mjs"
+
+const historyDigest = (history) => createHash("sha256").update(JSON.stringify(stripLocalMessageFields(history))).digest("hex")
 
 /** 流式输出门（§2.5 #78 并入——VSC 三态门，纯函数可直驱测试）：depth 0 恒通；
  *  consult 子代理豁免（其输出进会诊面板）；其余经 `streamOutput` 显式选择进入。 */
@@ -17,6 +23,28 @@ export async function callModelTurn(agent, {
   systemPrompt, toolSchemas, streamOutput, callbacks, signal, streamRuleFired, autoTurn, depth, turn,
 }) {
   await ensureResponsesSession(agent, depth)
+  const history = agent.history, historyLength = history.length, digest = historyDigest(history)
+  const session = agent._sessionStart, journal = agent._responsesStatePath
+  const binding = agent.provider?.format === "responses" ? {
+    profile: responsesProfileBinding(agent.provider), credential: responsesCredentialBinding(agent.provider),
+    model: agent.provider.model, endpoint: agent.provider.baseURL?.replace(/\/+$/, ""), enabled: agent.provider.auth?.enabled,
+  } : null
+  const assertOwnership = () => {
+    if (!binding) return
+    if (history !== agent.history || session !== agent._sessionStart || journal !== agent._responsesStatePath
+      || digest !== historyDigest(agent.history.slice(0, historyLength))) {
+      throw new ProviderError(agent.provider, "Session history changed while Responses was running; the old response was not committed or executed", {
+        code: "responses_request_history_changed", stage: "context_boundary", retryClass: "never", retryable: false,
+      })
+    }
+    if (agent.provider?.format !== "responses" || binding.profile !== responsesProfileBinding(agent.provider)
+      || binding.model !== agent.provider.model || binding.endpoint !== agent.provider.baseURL?.replace(/\/+$/, "")
+      || binding.enabled !== agent.provider.auth?.enabled || binding.credential !== responsesCredentialBinding(agent.provider)) {
+      throw new ProviderError(agent.provider, "Provider changed while Responses was running; the old response was not committed or executed", {
+        code: "responses_request_binding_changed", stage: "context_boundary", retryClass: "never", retryable: false,
+      })
+    }
+  }
   const messages = [{ role: "system", content: systemPrompt }, ...agent.history]
   let response
 
@@ -27,6 +55,7 @@ export async function callModelTurn(agent, {
   }
 
   try {
+    assertOwnership()
     response = await chat(agent.provider, {
       messages, tools: toolSchemas,
       responsesContext: prepareResponsesContext(agent, messages),
@@ -55,6 +84,7 @@ export async function callModelTurn(agent, {
       },
     })
   } catch (e) {
+    assertOwnership()
     // User interrupt (Ctrl+I): controller.abort({ interrupt: true, message }).
     // Inject into history; the outer loop recreates the controller and resumes.
     if (e.name === "AbortError" && signal?.reason?.interrupt) {
@@ -68,6 +98,9 @@ export async function callModelTurn(agent, {
     throw e
   }
 
+  // Partial/failed/interrupted responses have no replay envelope, but still must
+  // belong to this session before turn-loop commits any display text or reminders.
+  assertOwnership()
   stageResponsesReplay(agent, response, systemPrompt)
   return response
 }

@@ -2,6 +2,8 @@
  * Source: https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations
  * This snapshot is an internal policy, not an API version or request header. */
 import { ProviderError } from "./errors.mjs"
+import { createHash } from "node:crypto"
+import { resolveProviderSecrets } from "../env-ref.mjs"
 
 export const SIWC_POLICY = "siwc-2026-10-15"
 export const SIWC_UNSUPPORTED_FIELDS = Object.freeze([
@@ -12,6 +14,11 @@ export const SIWC_UNSUPPORTED_FIELDS = Object.freeze([
 export const isChatGPTProvider = (provider) => provider?.auth?.type === "chatgpt_oauth"
 export const responsesProfileBinding = (provider) => isChatGPTProvider(provider)
   ? provider.auth.credentialRef : `api_key:${provider.name ?? provider.baseURL}`
+export function responsesCredentialBinding(provider) {
+  if (isChatGPTProvider(provider)) return responsesProfileBinding(provider)
+  const resolved = resolveProviderSecrets(provider)
+  return createHash("sha256").update(JSON.stringify({ apiKey: resolved.apiKey, headers: resolved.headers })).digest("hex")
+}
 
 export function capabilityError(provider, param, message) {
   return new ProviderError(provider, message, {

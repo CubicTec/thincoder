@@ -5,7 +5,8 @@
  */
 import { createHash } from "node:crypto"
 import { specForModel, isBailianHost } from "../config.mjs"
-import { isChatGPTProvider, validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
+import { isChatGPTProvider, responsesProfileBinding, validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
+import { resolveProviderSecrets } from "../env-ref.mjs"
 import { buildResponsesTools, encodeToolChoice } from "./responses-tools.mjs"
 import { requestItems } from "./responses-items.mjs"
 
@@ -47,6 +48,24 @@ function chainKey(messages) {
   const instructions = (messages ?? []).filter((m) => m.role === "system" || m.role === "developer")
   const lastUser = (messages ?? []).findLast((m) => m.role === "user")
   return createHash("sha256").update(JSON.stringify({ instructions, lastUser })).digest("hex")
+}
+
+/** Compare the actual replay prefix, not just the last user turn. Display history omits
+ * output IDs/annotations and opaque reasoning; none of those may manufacture new input. */
+export function chainReplayItems(items) {
+  return items.filter((item) => item.type !== "reasoning").map((item) => {
+    if (item.type === "message" || item.role) return { role: item.role, content: item.content.map((part) => {
+      const { annotations, ...content } = part
+      return content
+    }) }
+    const { id, status, ...content } = item
+    return content
+  })
+}
+const replayDigest = (items) => createHash("sha256").update(JSON.stringify(items)).digest("hex")
+export function chainReplayCheckpoint(items) {
+  const replay = chainReplayItems(items)
+  return { replayCount: replay.length, replayDigest: replayDigest(replay) }
 }
 
 /** 内置工具声明（2026-08-31 用户拍板"内置工具还是要用"，一期 web_search）。
@@ -95,7 +114,11 @@ export function buildBody(provider, messages, tools, opts = {}) {
   const hostNonStateful = isNonStatefulHost(provider.baseURL)
 
   let chain = provider._responsesChain ?? null
-  const key = `${provider.model}\u0000${chainKey(messages)}`
+  const resolved = resolveProviderSecrets(provider)
+  // Hash credentials/header routing rather than retaining their plaintext in chain state.
+  const key = replayDigest({ model: provider.model, turn: chainKey(messages),
+    endpoint: provider.baseURL.replace(/\/+$/, ""), binding: responsesProfileBinding(provider),
+    apiKey: resolved.apiKey, headers: resolved.headers })
 
   if (!wantStateful) {
     chain = null // stateful:false 显式覆盖：残留链（同 session 开过）必须作废
@@ -152,11 +175,14 @@ export function buildBody(provider, messages, tools, opts = {}) {
   const outputs = items.filter((i) => i.type === "function_call_output")
   let previousResponseId = null
   if (chain && chain.id) {
-    const newOutputs = outputs.slice(chain.outputSent ?? 0)
-    if (newOutputs.length === 0) {
-      chain = null // 无新增（重复调用/异常重试）：退化为全量，正确性优先
+    const replay = chainReplayItems(items)
+    const suffix = replay.slice(chain.replayCount)
+    if (!Number.isInteger(chain.replayCount) || chain.replayCount < 0
+      || replayDigest(replay.slice(0, chain.replayCount)) !== chain.replayDigest
+      || !suffix.length || suffix.some((item) => item.type !== "function_call_output")) {
+      chain = null // Changed history or intervening instructions require complete replay.
     } else {
-      body.input = newOutputs
+      body.input = suffix
       previousResponseId = chain.id
     }
   } else {

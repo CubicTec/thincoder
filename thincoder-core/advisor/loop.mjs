@@ -201,7 +201,7 @@ async function runAdvisorToolLoop(provider, messages, onOutput, signal, agent, c
     // already streamed into the timeline via onText; fall back to
     // response.content only if nothing was recorded.
     if (!response.toolCalls?.length) {
-      if (!response.content?.trim()) return renderTimeline(timeline) || "Advisor: empty response — review was inconclusive"
+      if (!response.content?.trim()) return renderTimeline(timeline, "Advisor: empty response — review was inconclusive")
       return renderTimeline(timeline) || response.content.trim()
     }
 

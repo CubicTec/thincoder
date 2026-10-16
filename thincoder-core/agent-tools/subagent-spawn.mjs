@@ -17,6 +17,7 @@ import {
   readonlyToolNames, escapeXml, excludeSubagentTools,
 } from "../agent.mjs"
 import { allocRelay, wrapChildCallbacks, relayPrefixOf } from "../agent/spawn-child.mjs"
+import { markInheritedChildEffort } from "../agent/model-info.mjs"
 // TUI-OOM-ROOTCAUSE（AGENT-LOOP.md §6.15）：子代理人读线窗口常量单源（store 零依赖）。
 import { RECORD_WINDOW_MESSAGES } from "../session-store.mjs"
 import { validateDesignToken } from "./advisor.mjs"
@@ -317,6 +318,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
     overlay,
     role,
   })
+  markInheritedChildEffort(child)
   // TUI-OOM-ROOTCAUSE（AGENT-LOOP.md §6.15）：子代理人读线窗口置位（常量单源
   // session-store.mjs）——机制复用主 agent 同路径（context.mjs pushReal 驱逐）；
   // 每个 child 原先各自一份永不压缩的 _fullHistory（勘察 C2 乘数面）。

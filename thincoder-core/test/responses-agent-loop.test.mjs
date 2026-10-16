@@ -220,3 +220,30 @@ test('an interrupted request cannot inject its reminder into a replacement sessi
   }), { code: 'responses_request_history_changed' })
   assert.deepEqual(agent.history, [{ role: 'user', content: 'New conversation' }])
 })
+
+
+test("OAuth read executes once when terminal snapshots omit completed streamed items", async () => {
+  const { agent, observed, run, serve } = fixture()
+  serve([
+    [
+      { type: "response.output_item.done", output_index: 0, item: reasoning },
+      { type: "response.output_item.done", output_index: 1, item: functionCall },
+      terminal("resp_tool", []),
+    ],
+    [
+      { type: "response.output_item.done", output_index: 0, item: message("The file says café.") },
+      terminal("resp_final", []),
+    ],
+  ])
+  assert.equal(await run(), "The file says café.")
+  await agent._pendingDistill
+  assert.equal(observed.executions, 1)
+  assert.equal(observed.requests.length, 2)
+  const input = observed.requests[1].input
+  assert.deepEqual(input.filter(i => i.type === "reasoning"), [reasoning])
+  assert.deepEqual(input.filter(i => i.type === "function_call"), [functionCall])
+  assert.equal(input.filter(i => i.type === "function_call_output").length, 1)
+  const journal = JSON.parse(readFileSync(agent._responsesStatePath, "utf8"))
+  assert.equal(journal.pendingToolTransaction, null)
+  assert.equal(journal.transactions.length, 1)
+})

@@ -180,7 +180,9 @@ export async function parseStream(response, {
         case "response.completed": {
           if (ev.response?.status && ev.response.status !== "completed") throw protocolError("Completed event has a contradictory response status")
           receiveMeta(ev.response)
-          const output = Array.isArray(ev.response?.output) ? ev.response.output : [...items.entries()].sort(([a], [b]) => a - b).map(([index, item]) => {
+          // SIWC can send an empty terminal snapshot after output_item.done.
+          // Keep the streamed items in that case, with the same completion gate.
+          const output = Array.isArray(ev.response?.output) && ev.response.output.length ? ev.response.output : [...items.entries()].sort(([a], [b]) => a - b).map(([index, item]) => {
             if (item.type === "function_call" && !completedItems.has(index)) throw protocolError("Function call did not finish before the terminal event")
             return item
           })

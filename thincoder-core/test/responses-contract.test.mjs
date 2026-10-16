@@ -284,3 +284,26 @@ test("Idle watchdog terminates a stalled body and retains partial display only",
     assert.equal(body.destroyed, true); assert.deepEqual(result.toolCalls, [])
   } finally { clearTimeout(hold) }
 })
+
+// Real SIWC HTTP streams can finish with output:[] after complete item events.
+test("empty terminal output retains completed stream tools and opaque replay items", async () => {
+  const { toolMapping } = buildBody(plan, user, localTools)
+  const output = [reasoning, call, assistant]
+  const events = output.map((item, output_index) => frame({ type: "response.output_item.done", output_index, item }))
+  const result = await parseStream(stream([...events, frame(completed([]))]), { provider: plan, toolMapping })
+  assert.equal(result.terminalStatus, "completed")
+  assert.equal(result.toolCalls.length, 1)
+  assert.equal(result.toolCalls[0].arguments, call.arguments)
+  assert.equal(result.content, "Hello 世界")
+  assert.deepEqual(result.outputItems.map(i => i.type), ["reasoning", "function_call", "message"])
+  assert.equal(result.outputItems[0].encrypted_content, reasoning.encrypted_content)
+  assert.equal(result.outputItems[2].phase, "commentary")
+})
+
+test("empty terminal output cannot release an unfinished streamed function", async () => {
+  const { toolMapping } = buildBody(plan, user, localTools)
+  await assert.rejects(() => parseStream(stream([
+    frame({ type: "response.output_item.added", output_index: 0, item: call }),
+    frame(completed([])),
+  ]), { provider: plan, toolMapping }), /did not finish/)
+})

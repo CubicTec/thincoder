@@ -27,8 +27,10 @@ orphan 保存失败后误开放，以及真实 dispatch 结果携函数导致 Da
 
 ## 3. 提交粒度与依赖
 
-以下是本地被测试的提交。GitHub connector 创建 tree 返回 403 Resource not accessible by integration，未创建远端分支。
-完整功能分支和粒度化提交保留在本地，待 fork 写权限恢复后直接推送；没有向 upstream 提交 PR。
+以下列原始本地测试提交。最初的 GitHub installation 选库范围缺少本仓库，产生 403；用户补齐范围后，
+11 个逻辑提交已发布到 fork 的 feat/openai-chatgpt-plan，原始远端顶点 e6a62fa5。
+GitHub 创建提交重写了元数据/ID，但最终 tree 与本地一致；没有向 upstream 提交 PR。
+2026-10-16 的追加修复与测试见 [缺陷审计](2026-10-16-chatgpt-bugfix-audit.md)。
 依赖顺序见维护者指南，不应跳过基础提交直接 cherry-pick UI。
 
 - d28c5d5a：契约/需求/初始设计。

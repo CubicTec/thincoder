@@ -91,9 +91,10 @@ CLI release:check 的 registry 预检未用于宣称本分支可发布；本批�
 
 ## 交付与范围说明
 
-GitHub connector 向 CubicTec/thincoder 创建 Git tree 时返回 403 Resource not accessible by integration；
-因此没有远端分支。完整功能分支和粒度化提交保留在本地，等待确认 fork 写权限后直接推送。
-没有再尝试其他写入通道；不需要提供或导入个人访问令牌。
+原始 11 个逻辑提交已发布到 CubicTec/thincoder 的 feat/openai-chatgpt-plan，远端顶点 e6a62fa5。
+首次 403 由 installation 选库范围缺失引起，用户补齐后已解决；没有修改 main 或发 upstream PR。
+追加的 2026-10-16 修复与验收证据见 [缺陷审计](2026-10-16-chatgpt-bugfix-audit.md)。
+下文原始离线结果是 2026-10-15 快照，不代替追加修复后的测试记录。
 
 已实现本机共享受保护文件后端；没有实现另一个 OS keychain 后端，也没有模型目录缓存（每次按账户请求）。
 崩溃工具结果自动补写、远端 VM 凭据迁移、server-native Responses 均未实现；本期选择安全阻断或明确排除。

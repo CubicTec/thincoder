@@ -7,6 +7,14 @@
 > 来源 = `thincoder-vscode/docs/design/WEBVIEW.md`（VSC 产品树）——**原地一字未改，留作参照历史**（保留 ≠ 维护）。对应源节 = §4 · §7 · §8 · §14.3（C-9–C-16）。
 > 建档：2026-09-15（**B 式迁移轮 · VSC 第 2 批**）。坐标 = as-of 2026-09-15 实核（仓根相对路径 + `:行`）。
 
+## ChatGPT 账户消息秩序（2026-10-16）
+
+`authAction` 携 action/provider 及可选单调 requestId；host 的 `authResult` 回显 action/requestId。
+账户状态只含共享 adapter 的公开白名单，不包含 token、PKCE、浏览器授权 URL 或 callback。
+webview 忽略陈旧回执，登录按钮共享 busy 所有权；取消可立即发送，旧 finally 不清除新操作。
+帮助/用量链接不会推进账户序列，打开失败走已脱敏 providerError，不覆盖账户结果。
+账户或配置变化会使目录 generation 失效；外部配置 watcher 也重建目录与账户快照。
+
 ## 1. 消息流（基本回合）
 
 ```

@@ -7,6 +7,14 @@
 > 旧档原地一字不改、留作参照历史。需求侧同批自 `thincoder-cli/docs/requirements/ACP-CLIENT.md` 迁入）。
 > 本档坐标与行数 = **as-of 2026-09-15 实核**（仓根 = `thincoder/`）。
 
+## ChatGPT 认证补充（2026-10-16）
+
+就绪门接受有效且已启用的 OAuth 引用，不能以 apiKey 是否非空推断全部认证类型。
+`--login` 在真实终端识别已配置 OAuth；未完成时指引 auth 命令，不要求复制 Key。
+`session/cancel` 与 `session/close` 不受凭据门阻挡，撤销后仍可停止/清理在途会话。
+模型切换必须从配置替换完整 provider binding，拒绝不存在 provider/空模型及忙回合切换；
+不能只改 name 而沿用旧 endpoint/账户/API Key。ACP `logout` RPC 仍未实现；使用独立 auth logout。
+
 ## 1. 协议基础（ACP schema v1）
 
 - **传输**：NDJSON over stdio（每行一个 JSON，JSON-RPC 2.0）。
@@ -45,7 +53,7 @@
 | `session/set_config_option` | ✅ | model / thinking / mode 分发（见 §5.3） |
 | `session/close` | ✅ | 返回 `{}` + stderr 日志；先 abort 在飞回合再删除 session |
 | `ledger/list` · `ledger/count` · `batch/list` | ✅ | 只读数据接口（扩展拉取面）——台账 / 批次档数据对外只读出口；params / result / 错误面契约 = `docs/cli/design/READ-DATA-INTERFACE.md` §3.3；过凭据门（同四族）；协议版本与 `initialize` 能力面零动（不进能力字段——先例 `checkpoint/*` · `memory/*`） |
-| `logout` | ❌ | 无账号体系 |
+| `logout` | ❌ | RPC 尚未接线；本机 ChatGPT 退出使用独立 auth logout |
 
 ### 2.2 Client-side reverse-RPC（agent → IDE）
 

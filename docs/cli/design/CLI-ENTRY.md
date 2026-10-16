@@ -91,6 +91,14 @@
 - 不设常驻机检门（全量锁缺位在册——§4 射程）；不代裁需求面（`docs/cli/requirements/**` = 主 agent 笔）。
 - 判据源 = 实装面 + 各批裁定（补全 / 机检形逐条注实装源——§2 / §4）。
 
+## ChatGPT 本地认证入口（2026-10-16）
+
+`auth add/status/enable/login/list/select/cancel/disable/logout` 复用 core auth adapter。
+一次性 `chat` 与 TUI 都按认证种类判断就绪：有效 OAuth 引用不要求 apiKey，失效引用不转旧 Key 向导。
+API Key 首次配置仍保留；向导返回保存后的完整 provider binding（含 format/proxy/stateful），EOF 正常取消。
+实际 CJS executable 的临时 HOME/合成传输测试覆盖 keyless OAuth、disabled、incomplete 与 API Key Responses。
+这不等于真实账户或交互终端验收；范围见 `docs/batches/2026-10-16-chatgpt-bugfix-audit.md`。
+
 ## 变更记录
 
 **2026-10-0x 批次落点指针**（本档涉批——落点表 = 各批档 §2 · 一次性材料承载面）：

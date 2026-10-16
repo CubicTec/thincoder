@@ -49,6 +49,7 @@ export const DEFAULTS = {
     streamRules: [],      // time-traveling stream rules: [{ pattern: "regex", message: "reminder", action: "abort"|"warn", repeat: "always"|"once" }]
     advisor: { guard: false },  // code review is always available; guard: true pushes completion back until reviewed (opt-in). Also accepts provider/model/thinking/reasoningEffort/timeoutMs overrides. Deprecated: enabled (2026-08-21)
     autoThink: false,     // auto-classify task difficulty and set reasoning effort per-turn
+    subagentAutoThink: null, // spawned children: boolean overrides autoThink; null inherits the parent setting
     engineering: false,   // initial default only — the runtime value is the session authority (MANIFEST.md §2.2 / ENGINEERING-MODE-V2.md §2.3 E5.1). Strict methodology enforcement — design-before-code (design review + user approval before code)
     // Async pool limits (AGENT-LOOP-ASYNC-POOL.md §6.10 D-24a/R14 + R13 — POOL-CONFIG-
     // UNIFIED 2026-09-09): { engCoder, other, advisor } — eng-coder pool / other-role
@@ -387,6 +388,7 @@ export function loadConfig() {
   warnSubagentModelsFiltered([...smClean.dropped, ...smsClean.dropped], path)
   merged.agent.subagentModel = smClean.value
   merged.agent.subagentModels = smsClean.value
+  if (typeof merged.agent.subagentAutoThink !== "boolean") merged.agent.subagentAutoThink = null
 
   // Backward compatibility: promote root-level config fields to agent sub-object
   if (config.verifyGuard !== undefined) {

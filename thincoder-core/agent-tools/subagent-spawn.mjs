@@ -298,8 +298,14 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   // 场景映射落到 assemblePrompt("eng-coder"/"eng-designer")（persona-{role} + common +
   // discipline-engineering）；designer 也必须 engineering=true 才能装配工程纪律槽。
   const engineeringRole = role === "eng-coder" || role === "eng-designer"
-  const childConfig = engineeringRole
-    ? { ...parent.config, agent: { ...parent.config.agent, engineering: true } }
+  const subagentAutoThink = parent.config?.agent?.subagentAutoThink
+  const overrideAutoThink = typeof subagentAutoThink === "boolean"
+  const childConfig = engineeringRole || overrideAutoThink
+    ? { ...parent.config, agent: {
+      ...parent.config.agent,
+      ...(engineeringRole ? { engineering: true } : {}),
+      ...(overrideAutoThink ? { autoThink: subagentAutoThink } : {}),
+    } }
     : parent.config
 
   const child = createAgent({

@@ -4,7 +4,7 @@ import { registerHooks } from "node:module"
 
 // Exercise the real command/picker/startup handlers. Only their core/host boundary
 // is replaced: no account, network, terminal takeover, or configuration writes.
-const fromCommand = (url = "") => /\/(?:command-interactive|model-picker|cmd-think|cmd-session|startup)\.mjs$/.test(url)
+const fromCommand = (url = "") => /\/(?:command-interactive|model-picker|cmd-think|cmd-session|startup|slash-commands)\.mjs$/.test(url)
 const moduleOf = (source) => ({ shortCircuit: true, url: `data:text/javascript,${encodeURIComponent(source)}` })
 registerHooks({ resolve(specifier, context, next) {
   const parent = context.parentURL ?? ""
@@ -65,6 +65,7 @@ const { createModelPicker } = await import("../../src/tui/model-picker.mjs")
 const { tuiCommand } = await import("../../src/command-interactive.mjs")
 const { showStartup } = await import("../../src/tui/startup.mjs")
 const { handleSessionCommand } = await import("../../src/tui/cmd-session.mjs")
+const { createSlashCommands } = await import("../../src/tui/slash-commands.mjs")
 
 function fixture() {
   const provider = { name: "openai-chatgpt", model: "gpt-6-astra", baseURL: "https://fixture.invalid", format: "responses", auth: { type: "chatgpt_oauth", credentialRef: "account-a", enabled: true } }
@@ -104,7 +105,7 @@ test("/think shows account efforts and the effective default without persisting 
   assert.deepEqual(s.fields, [])
 })
 
-test("/think accepts catalog effort and rejects API-only none and unsupported ultra", async () => {
+test("/think accepts catalog effort and rejects API-only none and unadvertised ultra", async () => {
   const { s, agent, ctx } = fixture()
   await handleThinkCommand(ctx, ["effort", "max"])
   assert.equal(agent.provider.reasoningEffort, "max")
@@ -115,6 +116,130 @@ test("/think accepts catalog effort and rejects API-only none and unsupported ul
   assert.equal(agent.provider.reasoningEffort, "max")
   assert.ok(s.lines.some(line => line.includes("Usage: /think effort <low|medium|high|xhigh|max>")))
   assert.ok(s.lines.some(line => line.includes("No off path")))
+})
+
+test("/think ultra persists the local selection and reports the distinct model effort", async () => {
+  const { s, agent, ctx } = fixture()
+  s.catalog.reasoningEffortEnum.push("ultra")
+  s.catalog.ultraReasoningEffort = "high"
+  await handleThinkCommand(ctx, ["ultra"])
+  assert.equal(agent.provider.reasoningEffort, "ultra")
+  assert.deepEqual(s.fields, [["openai-chatgpt", "reasoningEffort", "ultra"]])
+  assert.ok(s.lines.includes("Thinking mode: Ultra (proactive subagents; model effort high)"))
+  assert.equal(agent.provider.model, "gpt-6-astra")
+  assert.equal(agent.config.agent.compactThreshold, 57600)
+})
+
+test("the Ultra menu item, receipt, and selected header explain the local mode", async () => {
+  const { s, agent, ctx } = fixture()
+  s.catalog.reasoningEffortEnum.push("ultra")
+  s.catalog.ultraReasoningEffort = "max"
+  ctx.showPicker = async (title, entries) => {
+    s.menus.push({ title, entries })
+    return s.menus.length === 1 ? entries.find(e => e.level === "ultra") : null
+  }
+  await handleThinkCommand(ctx)
+  assert.match(s.menus[0].entries.find(e => e.level === "ultra").text, /Ultra \(proactive subagents; model effort max\)/)
+  assert.equal(agent.provider.reasoningEffort, "ultra")
+  assert.deepEqual(s.fields, [["openai-chatgpt", "reasoningEffort", "ultra"]])
+  assert.match(s.menus[1].entries[0].text, /Effort: Ultra \(proactive subagents; model effort max\)/)
+  assert.ok(s.lines.includes("Thinking mode: Ultra (proactive subagents; model effort max)"))
+})
+
+test("Ultra follows the ordinary manual-effort Auto gate without changing Auto", async () => {
+  const { s, agent, ctx } = fixture()
+  s.catalog.reasoningEffortEnum.push("ultra")
+  s.catalog.ultraReasoningEffort = "max"
+  agent.config.agent.autoThink = true
+  await handleThinkCommand(ctx, ["effort", "high"])
+  await handleThinkCommand(ctx, ["ultra"])
+  await handleThinkCommand(ctx, ["effort", "ultra"])
+  assert.equal(agent.config.agent.autoThink, true)
+  assert.equal(Object.hasOwn(agent.provider, "reasoningEffort"), false)
+  assert.deepEqual(s.fields, [])
+  assert.equal(s.lines.filter(line => line.includes("turn Auto off first via /think")).length, 3)
+  ctx.showPicker = async () => ({ action: "auto" })
+  await handleThinkCommand(ctx)
+  assert.equal(agent.config.agent.autoThink, false)
+  const beforeUltra = s.lines.length
+  await handleThinkCommand(ctx, ["effort", "ultra"])
+  assert.equal(agent.provider.reasoningEffort, "ultra")
+  assert.deepEqual(s.fields, [["openai-chatgpt", "reasoningEffort", "ultra"]])
+  assert.ok(!s.lines.slice(beforeUltra).some(line => line.startsWith("Auto-think:")))
+  await handleThinkCommand(ctx)
+  assert.equal(agent.config.agent.autoThink, true)
+  assert.equal(Object.hasOwn(agent.provider, "reasoningEffort"), false)
+  assert.deepEqual(s.fields.at(-1), ["openai-chatgpt", "reasoningEffort", undefined])
+})
+
+test("an account's Ultra default is described without persisting it or labeling Auto as Ultra", async () => {
+  const { s, agent, ctx } = fixture()
+  s.catalog.reasoningEffortEnum.push("ultra")
+  s.catalog.ultraReasoningEffort = "high"
+  s.catalog.defaultReasoningEffort = "ultra"
+  await handleThinkCommand(ctx)
+  assert.match(s.menus[0].entries[0].text, /Ultra \(proactive subagents; model effort high\) \(model default\)/)
+  assert.equal(Object.hasOwn(agent.provider, "reasoningEffort"), false)
+  assert.deepEqual(s.fields, [])
+  agent.config.agent.autoThink = true
+  await handleThinkCommand(ctx)
+  assert.match(s.menus[1].entries[0].text, /Auto: ON .* Effort: automatic$/)
+  assert.ok(!s.menus[1].entries.some(e => e.level === "ultra"))
+  assert.deepEqual(s.fields, [])
+})
+
+test("Luna and API providers without advertised Ultra reject both direct forms without changing Auto", async () => {
+  for (const api of [false, true]) {
+    const { s, agent, ctx } = fixture()
+    if (api) {
+      delete agent.provider.auth
+      s.catalog.reasoningEffortEnum.push("ultra")
+      s.catalog.ultraReasoningEffort = "max"
+    } else agent.provider.model = agent.activeModel = "gpt-6-luna"
+    agent.config.agent.autoThink = true
+    await handleThinkCommand(ctx, ["ultra"])
+    await handleThinkCommand(ctx, ["effort", "ultra"])
+    assert.equal(agent.config.agent.autoThink, true)
+    assert.equal(Object.hasOwn(agent.provider, "reasoningEffort"), false)
+    assert.deepEqual(s.fields, [])
+    assert.equal(s.lines.filter(line => line.startsWith("Usage: /think effort <")).length, 2)
+  }
+})
+
+test("think completion follows the hydrated account and removes Ultra after an account switch", () => {
+  const { s, agent, ctx } = fixture()
+  s.catalog.reasoningEffortEnum.push("ultra")
+  s.catalog.ultraReasoningEffort = "max"
+  const { completions } = createSlashCommands(ctx)
+  assert.deepEqual(completions("/think u"), [])
+  s.ready.add(s.key(agent.provider))
+  assert.deepEqual(completions("/think u"), ["/think ultra"])
+  assert.deepEqual(completions("/t u"), ["/t ultra"])
+  assert.deepEqual(completions("/think effort "), s.catalog.reasoningEffortEnum.map(e => `/think effort ${e}`))
+  agent.provider.auth = { ...agent.provider.auth, credentialRef: "account-b" }
+  assert.deepEqual(completions("/think u"), [])
+  assert.deepEqual(completions("/think effort u"), [])
+})
+
+test("an Ultra choice from an older account menu cannot write to the new provider binding", async () => {
+  for (const replaceProvider of [true, false]) {
+    const { s, agent, ctx } = fixture()
+    s.catalog.reasoningEffortEnum.push("ultra")
+    s.catalog.ultraReasoningEffort = "max"
+    ctx.showPicker = async (_title, entries) => {
+      const choice = entries.find(e => e.level === "ultra")
+      assert.ok(choice)
+      const auth = { ...agent.provider.auth, credentialRef: "account-without-ultra" }
+      if (replaceProvider) agent.provider = { ...agent.provider, auth }
+      else agent.provider.auth = auth
+      return choice
+    }
+    await handleThinkCommand(ctx)
+    assert.equal(Object.hasOwn(agent.provider, "reasoningEffort"), false)
+    assert.deepEqual(s.fields, [])
+    assert.ok(s.lines.includes("Model or account changed — reopen /think to choose current capabilities"))
+    assert.ok(!s.lines.some(line => line.startsWith("Thinking mode: Ultra")))
+  }
 })
 
 test("API none retains the existing off shape, while a catalog failure writes nothing", async () => {

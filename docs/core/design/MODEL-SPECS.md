@@ -2144,7 +2144,8 @@ Luna 的 API 行另含 `none`。这些 API 规格不代替当前 ChatGPT 账号�
 | 目录字段 | 归一与消费 |
 |---|---|
 | `context_window` | 正安全整数才接纳；缺失时可用 `max_context_window`。自动压缩阈值沿用 `(context - outputReserve) × 0.6` 规则 |
-| `supported_reasoning_levels` | 只取本客户端支持的 wire 档位；`ultra` 是 Codex 多 agent 模式，不直接当作 Responses effort 发送 |
+| `supported_reasoning_levels` | 取已支持的普通档位；账号明确列出 `ultra` 时保留为客户端主动委派模式，不直接作为 Responses effort 发送 |
+| `multi_agent_reasoning_effort` | Ultra 的实际请求档位；必须是当前枚举中的普通档。缺失或无效时依次取 `max`、最后一个普通档、`medium`，归一结果存为 `ultraReasoningEffort` |
 | `default_reasoning_level` | 必须属于有效枚举；用户未显式设置时才用于请求和 `/think` 显示 |
 | `input_modalities` | 是否含 `image` 同时控制工具注册、执行和结果入历史；保留宿主对工具的过滤 |
 
@@ -2158,6 +2159,20 @@ CLI 回执不把它称作账号的输出上限。关闭思考仅在有效 `none`
 真实账户矩阵、图片探针的失败记录及验收边界见
 [兼容测试记录](../../batches/2026-10-16-model-compatibility.md)；
 本次自动配置与官方来源见 [账户规格自动配置批次](../../batches/2026-10-16-account-model-info.md)。
+
+### 19.3 Ultra 本地协作模式（2026-10-16）
+
+`Ultra` 是所选模式，`ultraReasoningEffort` 是载荷值，两者不混写。`buildBody` 保留
+`provider.reasoningEffort: "ultra"`，仅将发出的 `reasoning.effort` 转换为目录映射的普通档位。
+API key 静态表和未提供 Ultra 的账号不新增此选项。刷新目录移除 Ultra 后，显式旧值在请求前报错，
+不静默降档。未选择 Ultra 时，普通档位、模型默认值和 Auto 的难度映射不变。
+
+语义参考 Codex 的 `resolve_reasoning_effort_for_model` 与本地主动协作模式，沿用 ThinCoder
+现有 `subagent` 工具、角色、权限和并发限制。主 Agent 的主动委派由每轮运行提示控制；
+不新增服务端 `multi_agent` 字段，不把单次请求的推理档位提升宣称为 Ultra。
+子 Agent 的模型和 Auto 设置不被模式覆盖。普通子 Agent 不获得递归委派能力。
+当前账号 Astra / 6.1 Sol 的映射均为 `xhigh`，该值来自目录，不是静态常量。
+详细证据与边界见 [Ultra 接入批次](../../batches/2026-10-16-ultra-mode.md)。
 
 ## 变更记录
 - 2026-10-09（**provider-default-model-purge 批 · 设计轮 · eng-designer**——承批档 `docs/batches/2026-10-09-provider-default-model-purge.md` §2 · 台账 #1122）：渠道单值模型退场——§9 病例 P-1..P-3 随正（计数 24 / 逐条无 `model` 键）；探针脚本入参改显式 `provider:model`（§2.2 / §7）；§12 预设面随正。**零新语义**（本批立法落位）。

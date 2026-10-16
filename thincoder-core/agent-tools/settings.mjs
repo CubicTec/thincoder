@@ -40,6 +40,7 @@ export function isSensitiveKey(path) {
 const _NULL_LEAF_SHAPES = {
   defaultModel: { kind: "nonEmptyString", providerModel: true, expects: 'non-empty string ("provider:model" composite)' },
   "agent.subagentModel": { kind: "nonEmptyString", expects: "non-empty string" },
+  "agent.subagentAutoThink": { kind: "boolean", expects: "boolean" },
   shell: { kind: "nonEmptyString", expects: "non-empty string" },
   "memory.team": { kind: "team", expects: "object { repo: string, name?, dir? }" },
 }
@@ -110,6 +111,10 @@ function _expectsError(path, expects, value) {
 
 /** 形状校验（形状表命中键——`null` 在 _checkKnownKeyValue 已放行）。 */
 function _checkShape(path, spec, value) {
+  if (spec.kind === "boolean") {
+    if (typeof value !== "boolean") throw _expectsError(path, spec.expects, value)
+    return
+  }
   if (spec.kind === "team") {
     if (!value || typeof value !== "object" || Array.isArray(value)) throw _expectsError(path, spec.expects, value)
     if (typeof value.repo !== "string" || !value.repo.trim()) {

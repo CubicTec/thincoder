@@ -35,7 +35,7 @@ test("catalog parser takes the active window and only supported capability field
     supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }, { effort: "high" }, { effort: "ultra" }],
     default_reasoning_level: "high", input_modalities: ["text", "image"],
     base_instructions: "untrusted prompt", tool_instructions: "untrusted tools", unknown: true,
-  }), { context: 272000, reasoningEffortEnum: ["low", "high"], thinkApi: "effort", thinking: true, defaultReasoningEffort: "high", multimodal: true })
+  }), { context: 272000, reasoningEffortEnum: ["low", "high", "ultra"], ultraReasoningEffort: "high", thinkApi: "effort", thinking: true, defaultReasoningEffort: "high", multimodal: true })
 })
 
 test("missing and malformed optional metadata preserves the static fallback", () => {
@@ -49,13 +49,15 @@ test("missing and malformed optional metadata preserves the static fallback", ()
   assert.deepEqual(parseModelInfo({ context_window: null, max_context_window: 1050000 }), { context: 1050000 })
 })
 
-test("reasoning metadata can disable modes and never maps ultra to a wire effort", () => {
+test("reasoning metadata can disable modes and retains Ultra separately from wire effort", () => {
   assert.deepEqual(parseModelInfo({ supported_reasoning_levels: [{ effort: "none" }], default_reasoning_level: "none", input_modalities: ["text"] }),
     { reasoningEffortEnum: ["none"], thinkApi: "effort", thinking: false, defaultReasoningEffort: "none", multimodal: false })
-  for (const levels of [[], [{ effort: "ultra" }], [{ effort: "future-mode" }]]) {
+  for (const levels of [[], [{ effort: "future-mode" }]]) {
     assert.deepEqual(parseModelInfo({ supported_reasoning_levels: levels, default_reasoning_level: "ultra" }),
       { reasoningEffortEnum: [], thinkApi: "effort", thinking: false })
   }
+  assert.deepEqual(parseModelInfo({ supported_reasoning_levels: [{ effort: "ultra" }], default_reasoning_level: "ultra" }),
+    { reasoningEffortEnum: ["ultra"], ultraReasoningEffort: "medium", thinkApi: "effort", thinking: true, defaultReasoningEffort: "ultra" })
   assert.deepEqual(parseModelInfo({ supported_reasoning_levels: [{ effort: "low" }], default_reasoning_level: "high" }),
     { reasoningEffortEnum: ["low"], thinkApi: "effort", thinking: true })
 })

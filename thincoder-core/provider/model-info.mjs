@@ -3,10 +3,11 @@ import { assertProviderAuthConfig, isChatGptProvider } from "./auth-config.mjs"
 
 const CATALOG_TTL_MS = 60_000
 const WIRE_EFFORTS = new Set(["none", "minimal", "low", "medium", "high", "xhigh", "max"])
+export const isWireReasoningEffort = (value) => WIRE_EFFORTS.has(value)
 const catalogs = new Map() // endpoint + credentialRef → { ts, models: Map<exact slug, spec> }
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value)
 
-/** 缺失字段沿用静态规格；畸形字段不构成能力声明。ultra 是客户端多 agent 模式，不能直送。 */
+/** 缺失字段沿用静态规格；畸形字段不构成能力声明。ultra 保留为客户端模式，另存合法请求档位。 */
 export function parseModelInfo(record) {
   if (!object(record)) return undefined
   const spec = {}
@@ -15,7 +16,14 @@ export function parseModelInfo(record) {
 
   const levels = record.supported_reasoning_levels
   if (Array.isArray(levels) && levels.every((level) => object(level) && typeof level.effort === "string")) {
-    spec.reasoningEffortEnum = [...new Set(levels.map((level) => level.effort).filter((effort) => WIRE_EFFORTS.has(effort)))]
+    spec.reasoningEffortEnum = [...new Set(levels.map((level) => level.effort).filter((effort) => WIRE_EFFORTS.has(effort) || effort === "ultra"))]
+    if (spec.reasoningEffortEnum.includes("ultra")) {
+      // Codex resolve_reasoning_effort_for_model：目录指定 → max → 最后一个普通档 → medium。
+      // 不发送 hosted multi_agent；主动委派由本客户端的现有 subagent 工具执行。
+      const ordinary = spec.reasoningEffortEnum.filter((effort) => effort !== "ultra")
+      spec.ultraReasoningEffort = ordinary.includes(record.multi_agent_reasoning_effort)
+        ? record.multi_agent_reasoning_effort : ordinary.includes("max") ? "max" : ordinary.at(-1) ?? "medium"
+    }
     spec.thinkApi = "effort"
     spec.thinking = spec.reasoningEffortEnum.some((effort) => effort !== "none")
     if (spec.reasoningEffortEnum.includes(record.default_reasoning_level)) spec.defaultReasoningEffort = record.default_reasoning_level

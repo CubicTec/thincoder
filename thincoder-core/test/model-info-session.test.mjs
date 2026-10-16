@@ -59,6 +59,19 @@ test("cold account session waits for its catalog before restoring a supported ef
   assert.equal(agent.provider.reasoningEffort, "low")
 })
 
+test("a restarted Ultra session restores the selected mode and normalizes only the request", async () => {
+  mockAuth()
+  globalThis.fetch = async () => catalog("gpt-6-astra", ["low", "medium", "max", "ultra"], "medium")
+  const p = provider(), agent = agentFor([p])
+  applySession(agent, session(p.name, "ultra", "gpt-6-astra"))
+  assert.equal(agent.provider.reasoningEffort, undefined)
+  await refreshAgentModelInfo(agent)
+  assert.equal(agent._slotEffort, "ultra")
+  assert.equal(agent.provider.reasoningEffort, "ultra")
+  assert.equal(buildBody(agent.provider, user, []).body.reasoning.effort, "max")
+  assert.equal(p.reasoningEffort, undefined)
+})
+
 test("cold Luna session does not apply API-only off before account metadata arrives", async () => {
   mockAuth()
   globalThis.fetch = async () => catalog("gpt-6-luna", ["low", "medium", "high"], "medium")

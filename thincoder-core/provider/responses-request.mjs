@@ -10,6 +10,7 @@ import { isChatGPTProvider, responsesProfileBinding, validateResponsesConfig, va
 import { resolveProviderSecrets } from "../env-ref.mjs"
 import { buildResponsesTools, encodeToolChoice } from "./responses-tools.mjs"
 import { requestItems } from "./responses-items.mjs"
+import { isWireReasoningEffort } from "./model-info.mjs"
 
 /** 白名单：已实证 previous_response_id 的官方端（2026-08-31 真机验证：
  *  百炼 store:true 全链路 ✅；GLM（open.bigmodel.cn/api/v1）store:true 全链路 ✅）。 */
@@ -174,6 +175,11 @@ export function buildBody(provider, messages, tools, opts = {}) {
   }
   if (effort && spec.reasoningEffortEnum && !spec.reasoningEffortEnum.includes(effort)) {
     throw new Error(`Model "${provider.model}" does not support reasoning effort "${effort}"; choose ${spec.reasoningEffortEnum.join("|")}`)
+  }
+  // Ultra 是所选客户端协作模式。保留 provider 值供 UI / 会话 / 主动委派消费，载荷只送普通档位。
+  if (effort === "ultra") {
+    if (!siwc || !isWireReasoningEffort(spec.ultraReasoningEffort)) throw new Error(`Model "${provider.model}" does not support reasoning effort "ultra" on this account`)
+    effort = spec.ultraReasoningEffort
   }
   if (effort) body.reasoning = { effort }
   if (opts.toolChoice !== undefined) body.tool_choice = encodeToolChoice(opts.toolChoice, toolMapping, provider)

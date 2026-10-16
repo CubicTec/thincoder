@@ -9,7 +9,7 @@
  */
 
 import { C } from "./ansi.mjs"
-import { specForModel } from "@thincoder/core/config.mjs"
+import { providerSpec } from "@thincoder/core/config.mjs"
 import { handleClearCommand } from "./cmd-clear.mjs"
 import { handleNewCommand } from "./cmd-new.mjs"
 import { handleExitCommand } from "./cmd-exit.mjs"
@@ -157,10 +157,10 @@ export function createSlashCommands(ctx) {
       if (parts[1] && !["reset"].includes(parts[1]) && argIndex === 1) return match(agent.providers.map((p) => p.name))
     }
     if (cmd === "/think") {
-      if (argIndex === 0) return match(["on", "off", "effort"])
+      const levels = providerSpec(agent.provider).reasoningEffortEnum ?? ["high", "max"]
+      if (argIndex === 0) return match(["on", "off", "effort", ...(levels.includes("ultra") ? ["ultra"] : [])])
       if (argIndex === 1 && parts[1].toLowerCase() === "effort") {
-        // effort enum is model-specific — take it from the current model's spec
-        const levels = specForModel(agent.provider?.model).reasoningEffortEnum ?? ["high", "max"]
+        // Account-specific capabilities take precedence over the static model spec.
         return match(levels)
       }
     }

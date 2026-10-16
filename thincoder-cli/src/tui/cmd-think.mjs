@@ -15,11 +15,21 @@ export async function handleThinkCommand(ctx, args = []) {
 
   // Fast path: direct args — exit immediately
   const cur = agent.provider
+  const binding = (provider) => [provider?.name, provider?.model, provider?.baseURL,
+    provider?.auth?.type, provider?.auth?.credentialRef, provider?.auth?.enabled]
+  const currentBinding = binding(cur)
+  const stillCurrent = () => agent.provider === cur
+    && binding(agent.provider).every((value, index) => value === currentBinding[index])
   const spec = providerSpec(cur)
   const isEffortOnly = spec.thinkApi === "effort"
   const thinkOnValue = spec.thinkEnabledValue ?? "enabled"
   const isCustomThink = thinkOnValue !== "enabled"
   const effortLevels = spec.reasoningEffortEnum ?? ["high", "max"]
+  const effortLabel = (level) => level === "ultra"
+    ? `Ultra (proactive subagents; model effort ${spec.ultraReasoningEffort ?? "unavailable"})`
+    : level
+  const effortReceipt = (level, prefix) => level === "none" ? "Thinking: OFF"
+    : level === "ultra" ? `Thinking mode: ${effortLabel(level)}` : `${prefix}: ${level}`
   // 有效 off 路径（判据单源 = `@thincoder/core/think-off.mjs`；§16.4）——无 ⇒ 不提供 / 不宣称 off。
   const offPath = thinkOffPath(spec)
 
@@ -45,8 +55,8 @@ export async function handleThinkCommand(ctx, args = []) {
     pushLine(`Thinking: ${sub}`, C.tool)
     return
   }
-  if (sub === "effort") {
-    const level = args[1]?.toLowerCase()
+  if (sub === "effort" || sub === "ultra") {
+    const level = sub === "ultra" ? "ultra" : args[1]?.toLowerCase()
     if (!level || !effortLevels.includes(level)) {
       pushLine(`Usage: /think effort <${effortLevels.join("|")}>`, C.error)
       return
@@ -55,10 +65,10 @@ export async function handleThinkCommand(ctx, args = []) {
     await applyThink({ action: "effort", level }, agent, syncProviderField, spec, isEffortOnly, isCustomThink, thinkOnValue)
     pushLabel("❯ Think", ansi.bold + C.tool)
     // none = 关思考档（applyThink 内归一到 off 路径）⇒ 回执同 off 文案，不比照档位报“…none”
-    pushLine(level === "none" ? "Thinking: OFF" : `Thinking effort: ${level}`, C.tool)
+    pushLine(effortReceipt(level, "Thinking effort"), C.tool)
     return
   }
-  if (sub) { pushLine("Usage: /think [on|off|effort <level>]", C.error); return }
+  if (sub) { pushLine(`Usage: /think [on|off|effort <level>${effortLevels.includes("ultra") ? "|ultra" : ""}]`, C.error); return }
 
   // ── Interactive loop ──
   let mainIdx = 0
@@ -67,7 +77,9 @@ export async function handleThinkCommand(ctx, args = []) {
     // 头 / 回执同式（`thinkingOn` 单口径）——状态与回执不得各自成式。
     const thinkingEnabled = thinkingOn()
     const defaultEffort = thinkingEnabled ? spec.defaultReasoningEffort : null
-    const shownEffort = cur.reasoningEffort || (defaultEffort ? `${defaultEffort} (model default)` : "—")
+    const shownEffort = autoOn ? "automatic"
+      : cur.reasoningEffort ? effortLabel(cur.reasoningEffort)
+        : defaultEffort ? `${effortLabel(defaultEffort)} (model default)` : "—"
 
     const entries = [
       { type: "header", text: `Auto: ${autoOn ? "ON" : "OFF"} | Thinking: ${thinkingEnabled ? "ON" : "OFF"} | Effort: ${shownEffort}` },
@@ -81,12 +93,16 @@ export async function handleThinkCommand(ctx, args = []) {
     if (!autoOn) {
       for (const level of effortLevels) {
         const mark = cur.reasoningEffort === level ? "▸ " : "  "
-        entries.push({ type: "item", text: `${mark}effort: ${level}`, action: "effort", level })
+        entries.push({ type: "item", text: `${mark}${level === "ultra" ? effortLabel(level) : `effort: ${level}`}`, action: "effort", level })
       }
     }
 
     const e = await showPicker("Think", entries, { defaultIndex: mainIdx })
     if (!e) return // Esc
+    if (!stillCurrent()) {
+      pushLine("Model or account changed — reopen /think to choose current capabilities", C.warn)
+      return
+    }
     mainIdx = Math.max(0, entries.filter((en) => en.type === "item").indexOf(e))
 
     await applyThink(e, agent, syncProviderField, spec, isEffortOnly, isCustomThink, thinkOnValue)
@@ -98,7 +114,7 @@ export async function handleThinkCommand(ctx, args = []) {
       pushLine(`Auto-think: ${newAuto ? "ON" : "OFF"}`, C.tool)
       return // exit loop — no useful actions remain when auto mode just changed (T8b 锁定——toggle 即退是已批准语义——2026-09-05 曾误改 OFF 回菜单——测试抓回归——已撤销)
     } else if (e.action === "effort") {
-      pushLine(e.level === "none" ? "Thinking: OFF" : `Reasoning effort: ${e.level}`, C.tool)
+      pushLine(effortReceipt(e.level, "Reasoning effort"), C.tool)
     } else {
       // 与菜单头（`thinkingOn`）同式：`thinking:null`（NF1 显式 off）落 OFF；无有效 off 路径族
       // 恒报 ON（§16.4——残留 off 标记不生效；本式缺守卫时 effort 型 off 后回执误报 ON = 红）。

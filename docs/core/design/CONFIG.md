@@ -194,6 +194,10 @@
 - **登录态判据**：`team.token`（trim 非空）——= 团队功能开关（口径④）；消费面 = 三端 + 后续团队面（各面设计轮）。
 - **边界**：不做 team 段的手工编辑入口（写面 = 登录/退出流程单源）∥ 不做多套登录态并存 ∥ 不写 `DEFAULTS`。
 
+### 6.5 子代理自动推理覆盖（2026-10-16）
+
+`agent.subagentAutoThink` 为可空布尔值，默认 `null`（继承 `agent.autoThink`）；`true` / `false` 仅覆盖新建 `subagent.spawn` 子代理的 Auto 设置。配置加载将非法值归为 `null`，settings 写入仅接受布尔或清除值。完整运行语义见 `docs/core/design/AGENT-LOOP.md` §6.19。
+
 ## 7. 并入的关键决策记录（含否决备选）
 
 现有决策面见 §3.1 A4 / A5 与 §4.1 第 1–4 行。**2026-09-15 批 5 并入**（自 `POOL-CONFIG-UNIFIED`）：

@@ -67,20 +67,24 @@ export function buildClassifierInput(history) {
  * @param {number} turn
  * @returns {Promise<string|null>}
  */
-export async function classifyAndApply(agent, turn) {
+export async function classifyAndApply(agent, turn, { signal, depth = 0 } = {}) {
   if (!agent.config?.agent?.autoThink) return null
   if (turn !== 0) return null // Only classify on the first turn of user input
+  if (signal?.aborted) return null
 
   const spec = providerSpec(agent.provider)
   const validEfforts = spec.reasoningEffortEnum
   if (!validEfforts) return null // Model doesn't support reasoning effort
 
-  // #860 守卫（D-AL26）：无法关思考的模型（thinkAlwaysOn ∕ 枚举无 none）⇒ 分类调用必然失败
-  //（思考吃光小预算 ∕ 400）——不调用；一次可见警示（按 model 去重），语义回退 null。
-  if (!thinkOffPath(spec)) {
+  // Reasoning-only Responses models can classify at low effort. They must not
+  // receive an unsupported "none" effort or the legacy 32-token output budget.
+  const canDisableThinking = thinkOffPath(spec)
+  const reasoningClassifier = !canDisableThinking && agent.provider.format === "responses"
+    && spec.thinkApi === "effort" && validEfforts.includes("low")
+  if (!canDisableThinking && !reasoningClassifier) {
     if (!warnedThinkGuard.has(agent.provider.model)) {
       warnedThinkGuard.add(agent.provider.model)
-      console.warn(`[auto-think] model "${agent.provider.model}" cannot disable thinking — difficulty classification skipped (reasoning effort unchanged)`)
+      console.warn(`[auto-think] model "${agent.provider.model}" has no supported difficulty-classification mode — reasoning effort unchanged`)
     }
     return null
   }
@@ -94,19 +98,25 @@ export async function classifyAndApply(agent, turn) {
   ])
   const settings = targetSettings()
 
-  // Classification call: use same provider, minimal tokens, no tools, no streaming
+  // Classification stays separate from the task's provider state and conversation.
   let level
   try {
-    // #860：关思考形（族别 off 形）+ 小预算 32（原 10 token 被思考吃光）+ reasoningEffort 清空
-    //（防父档外溢；effort 族 off 形由载荷门补发 reasoning_effort:"none"）。
-    const classifierProvider = { ...agent.provider, ...(!isChatGptProvider(agent.provider) ? { maxTokens: 32 } : {}), thinking: thinkOffShape(spec), reasoningEffort: null }
+    const classifierProvider = { ...agent.provider, stateful: false, builtinTools: false,
+      reasoningEffort: reasoningClassifier ? "low" : null }
+    if (reasoningClassifier) delete classifierProvider.thinking
+    else classifierProvider.thinking = thinkOffShape(spec)
+    // Account requests use the server's output budget; the API path must leave
+    // room for reasoning before the one-word classification answer.
+    if (isChatGptProvider(classifierProvider)) delete classifierProvider.maxTokens
+    else classifierProvider.maxTokens = reasoningClassifier ? 4096 : 32
+    const timeout = AbortSignal.timeout(reasoningClassifier ? 30_000 : 5_000)
     const response = await chat(classifierProvider, {
       messages: [
         { role: "system", content: CLASSIFY_PROMPT },
         { role: "user", content: prompt },
       ],
       tools: [],
-      signal: AbortSignal.timeout(5_000),
+      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
       // D-TS12 (TRACES.md §6.1): full logCtx field set at the chat call
       // point — traces/session/cwd/role/depth/kind (this call point carried
       // only {stage,turn,child}). The traces field closes the D-TR6 "off = no
@@ -118,7 +128,7 @@ export async function classifyAndApply(agent, turn) {
         session: agent._sessionStart ?? null,
         cwd: agent.cwd,
         role: agent._role ?? null,
-        depth: agent._depth ?? 0, // agent state carries no depth stamp (the call site passes none) — 0 for the top-level agent
+        depth,
         kind: "autothink",
       },
     })
@@ -129,6 +139,7 @@ export async function classifyAndApply(agent, turn) {
     else if (word.startsWith("high")) level = "high"
     else return null // Unparseable
   } catch (e) {
+    if (signal?.aborted) return null // The task's normal cancellation path owns the user-visible result.
     // #860（D-AL26）：失败一次可见（按错误签名进程级去重——不再静默）；回退 null 语义不变。
     const sig = e?.message ?? String(e)
     if (!warnedClassifyFailure.has(sig)) {
@@ -139,12 +150,14 @@ export async function classifyAndApply(agent, turn) {
   }
 
   // A late classification belongs to its original model and user request only.
-  if (agent.provider !== targetProvider || session !== agent._sessionStart || settings !== targetSettings()
+  if (signal?.aborted || !agent.config?.agent?.autoThink
+    || agent.provider !== targetProvider || session !== agent._sessionStart || settings !== targetSettings()
     || prompt !== buildClassifierInput(agent.history)) return null
 
   // Map difficulty to the closest valid reasoning effort
   const candidates = EFFORT_MAP[level] || EFFORT_MAP.medium
-  const matched = candidates.find(e => validEfforts.includes(e))
+  const currentEfforts = providerSpec(targetProvider).reasoningEffortEnum ?? []
+  const matched = candidates.find(e => currentEfforts.includes(e))
   if (!matched) return null
 
   agent.provider.reasoningEffort = matched

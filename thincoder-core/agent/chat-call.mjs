@@ -10,6 +10,7 @@ import { responsesProfileBinding, responsesCredentialBinding } from "../provider
 import { ProviderError } from "../provider/errors.mjs"
 import { createHash } from "node:crypto"
 import { stripLocalMessageFields } from "../escape.mjs"
+import { syncUltraModeReminder } from "./ultra-mode.mjs"
 
 const historyDigest = (history) => createHash("sha256").update(JSON.stringify(stripLocalMessageFields(history))).digest("hex")
 
@@ -23,7 +24,8 @@ export async function callModelTurn(agent, {
   systemPrompt, toolSchemas, streamOutput, callbacks, signal, streamRuleFired, autoTurn, depth, turn,
 }) {
   await ensureResponsesSession(agent, depth)
-  const history = agent.history, historyLength = history.length, digest = historyDigest(history)
+  const history = agent.history
+  let historyLength = history.length, digest = historyDigest(history)
   const session = agent._sessionStart, journal = agent._responsesStatePath
   const binding = agent.provider?.format === "responses" ? {
     profile: responsesProfileBinding(agent.provider), credential: responsesCredentialBinding(agent.provider),
@@ -45,17 +47,23 @@ export async function callModelTurn(agent, {
       })
     }
   }
-  const messages = [{ role: "system", content: systemPrompt }, ...agent.history]
   let response
 
-  // Auto-think: classify difficulty and set reasoning effort on turn 0; silent on failure.
+  // Auto-think owns its fallback warning; cancellation follows the task's signal.
   if (agent.config?.agent?.autoThink && turn === 0) {
     const { classifyAndApply } = await import("../auto-think.mjs")
-    await classifyAndApply(agent, turn).catch(() => {})
+    await classifyAndApply(agent, turn, { signal, depth }).catch(() => {})
   }
 
   try {
     assertOwnership()
+    // Auto classification can replace Ultra with an ordinary effort. Reconcile before
+    // copying messages, then accept only this synchronous local history adjustment.
+    if (syncUltraModeReminder(agent, { depth, tools: toolSchemas })) {
+      historyLength = history.length
+      digest = historyDigest(history)
+    }
+    const messages = [{ role: "system", content: systemPrompt }, ...history]
     response = await chat(agent.provider, {
       messages, tools: toolSchemas,
       responsesContext: prepareResponsesContext(agent, messages),

@@ -24,6 +24,7 @@ import { searchOrigins } from "../memory/code-search.mjs"
 import { INDEX_ORIGIN_ROW_WARN } from "../memory/schema.mjs"
 import { resolveCompactThreshold } from "../config.mjs"
 import { refreshAgentModelInfo } from "./model-info.mjs"
+import { syncUltraModeReminder } from "./ultra-mode.mjs"
 
 const DEFAULT_COMPACT_THRESHOLD = 100_000
 const DOC_SEARCH_LIMIT = 5
@@ -295,6 +296,7 @@ export async function prepareRun(agent, input, callbacks, {
   }
 
   ensureAutoReminder(agent)
+  syncUltraModeReminder(agent, { depth, tools })
 
   return { maxTurns, threshold, tools, toolSchemas, toolByName, systemPrompt }
 }

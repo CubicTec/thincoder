@@ -22,7 +22,8 @@ import { modelInfoFor } from "./provider/model-info.mjs"
  * thinkEnabledValue: when thinkApi is "type", the value used to enable thinking (default "enabled"; MiniMax uses "adaptive")
  * thinkAlwaysOn:     server-enforced thinking (true = always on — no off path; single source = MODEL-SPECS.md §16.3)
  * reasoningEcho:     reasoning_content cross-turn echo strategy: "required"=must echo (error if missing) / "optional"=echo optional (default: don't echo)
- * reasoningEffortEnum: valid reasoning_effort enum values (if undeclared, no validation — passed through as-is)
+ * reasoningEffortEnum: selectable reasoning levels (account Ultra is a local mode; otherwise wire values)
+ * ultraReasoningEffort: account Ultra's ordinary Responses effort; local agent orchestration stays separate
  * tempRange:         valid temperature range [min, max] (if undeclared, no clamping)
  */
 const MODEL_SPECS = [

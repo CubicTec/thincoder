@@ -204,7 +204,7 @@
 | `thincoder-core/agent/child-marks.mjs` | 子代理报告文本锚点（`TURN_CAP_MARK` / `STOPPED_MARK`）**唯一定义**（零依赖叶——先例 `relay-prefix.mjs`；端壳静态导入面，W8 契约②）；`spawn-child.mjs:33` 原样再导出 ⇒ 既有 import 面零改 |
 | `thincoder-core/agent/run-stages.mjs` | 回合阶段骨架 / abort 分支 / pending 单容器过滤 / `finalizeAgentTurn`（收尾单点） |
 | `thincoder-core/agent/suspension.mjs` | 挂起 / 唤醒状态机（核内形态与载体契约见 §2.3） |
-| `thincoder-core/auto-think.mjs` | 任务难度分类 → 自动设置 reasoning effort（opt-in）；分类调用先过**「可关思考」守卫**（不可关 ⇒ 跳过 + 一次可见警示）；失败一次可见——D-AL26 |
+| `thincoder-core/auto-think.mjs` | 任务难度分类 → 自动设置 reasoning effort（opt-in）；可关闭思考时使用原分类路径，Responses effort 模型支持 `low` 时也可分类；失败保留原档——§6.19 |
 | `thincoder-core/agent-tools/subagent*.mjs` | subagent 工具：spawn / status / observe / send / escalate / cancel / panel 动作面、async 池、调度器、审计任务书；`subagent-panel.mjs` = 面板执行器 |
 | `thincoder-core/agent-tools/async-settle.mjs` | async 结果容器统一共享 helper：`settleAsyncEntry` / `getAsyncPool` / `parkAsyncPending` / `parentAborted` 守卫 / `buildChildSignal` |
 | `thincoder-core/agent-tools/subagent-scheduler.mjs` | 任务调度器：`normalizeFileList` / `filesOverlap` / `depInfo` / `queueRunnable` / `assertNoDepCycle` / 停滞检测 |
@@ -476,6 +476,35 @@ VSC 侧**接线**面（端装配 / 面板 / webview 呈现）——机制本体�
 ③ 已消解（§2.1 F 端名缝——「已裁保留」退场）；④ **消**（#677——抽核 `continueDecision` 单源 + 两端接线；判保留退场）；⑤ 端转口现住 `thincoder-vscode/src/agent.mjs:9`（9 行转口残面）；
 ⑦ 端 = 核单源转口（`thincoder-vscode/src/extension/peer-instances.mjs` 21 行——核单源转口 + 核缓存预热薄转口；见 `MULTI-INSTANCE-COLLAB.md` §3.1）。⑥ **消**（#677——端描述面退场入核单源）。）
 
+### 6.19 子代理 Auto 与 reasoning-only 分类（2026-10-16）
+
+`agent.subagentAutoThink` 为 `boolean | null`，默认 `null`。`buildSpawnChild` 中，显式布尔值覆盖子代理的 `agent.autoThink`；缺省、`null` 或非法值继承父设置。覆盖使用独立的 `config.agent` 对象；父配置、父 provider 和既有主代理 Auto 开关不变。普通与工程 spawn 角色共用此规则。会诊、飞刀、评审保持原配置通道。
+
+`classifyAndApply` 仅在新任务的首轮分类，沿用难度映射：简单优先 `low`，中等优先 `high`、再 `medium`，复杂优先 `max`、再 `xhigh`，并以该模型当前有效枚举限制结果。所选 effort 只写当前 agent 的运行态；不写配置。
+
+分类请求始终禁用工具和状态链。可关思考的模型沿用 off、32-token、5 秒分类路径；不能关思考但满足 `format=responses`、`thinkApi=effort`、支持 `low` 的模型，采用 `low` 分类并留出推理预算（API 4096 output tokens，30 秒）。ChatGPT OAuth 两条路径都不发送 `max_output_tokens`。其余不可关闭思考的模型继续跳过并提示。
+
+分类共享任务取消信号。响应必须完整完成；失败、超时或无法解析时保留当前档位（未设置则仍使用模型默认）。回写前复核取消、Auto 开关、provider、会话、档位设置、任务内容和最新有效枚举。`callModelTurn` 保留原中断处理，Ctrl+I 仍注入新消息且不再发送已取消任务。
+
+验收覆盖真实 `buildSpawnChild → callModelTurn → Responses` 分类与任务两次请求、配置三态及父状态隔离、OAuth/API 载荷、旧 off 路径、失败与取消回退。回归与账号分类实测记录见 `docs/batches/2026-10-16-subagent-auto-think.md`。
+
+### 6.20 Ultra 本地主动协作（2026-10-16）
+
+`syncUltraModeReminder` 从 `providerSpec` 和当前有效档位判断模式，只对 depth-0 且实际工具表
+含 `subagent` 的主代理生效。提示使用 `prompts/ultra-mode.md`，中文权威面为
+`docs/core/design/prompts/ultra-mode.md`。它是 transient user reminder，不修改稳定的 system 前缀。
+保持有效提示的原位置；补入时位于最新时间提醒之前；切出模式、切换模型、目录撤销能力或变成子代理时移除。
+仅提供普通模型调用的辅助场景不注入委派提示。
+
+`prepareRun` 在家族工具表形成后同步，`callModelTurn` 在首轮 Auto 分类结束后再次同步，
+确保请求实际采用的档位与模式提示相符。同步前先保留原有会话 ownership 检查，
+只把本次同步的本地修改作为新历史基线，不接纳分类期间的外部会话切换。
+请求映射归 `buildBody`，运行侧不改 provider、子代理模型、Auto 配置或并发额度。
+跨模式的历史变动沿用现有 Responses 上下文重建机制；不伪造原生 reasoning item。
+
+模式沿用 ThinCoder 本地编排，提供 Codex Ultra 的“模型档位＋主动委派”语义，
+不承诺 Codex V2 的任意层递归或相同调度器。验收见 `docs/batches/2026-10-16-ultra-mode.md`。
+
 ## 7. 并入的关键决策记录（含否决备选）
 
 | # | 决策 | 理由 / 否决备选 |
@@ -505,7 +534,7 @@ VSC 侧**接线**面（端装配 / 面板 / webview 呈现）——机制本体�
 | D-AL23 | 释放点 = 注入完成后置空（三消费点同点 + 幂等守卫）——**fallback 面**（无挂起驱动）逐字沿用；会话态见右列 | 池内窗口语义零变；否决「settle 时刻置空」（破坏未消化期 status / observe）·「不置空」（无界驻留——会话态改以 N 上限封顶的**有界保留**）。**2026-10-05 消化账务批推翻会话态一截**（理由 = 重投需原文）：会话态 = 注入后仅释放 `childAgent`（`releaseChildHold`），`report` 保留至销账 / 升级——机制 = `AGENT-LOOP-ASYNC-POOL.md` §6.31.4 / KD-DA7。 |
 | D-AL24 | VSC 侧接线面 = **只登记接线事实、不复制机制本体**（挂起 / 协议 / 呈现 / 权限门回指既有节） | 机制权威已单源（§2.3 / SUBAGENT 档 / WEBVIEW 档 / 工程模式板）——平行档 / 重复叙述 = 漂移源 |
 | D-AL25 | child permission gate **按现状并入**（C-2 契约——非「无此状态」） | 批 2 发现「审批态已实装」（activity-view.js ⏸ + 等待审批）——活档口径按现状（VSC 源档为参照历史） |
-| D-AL26 | auto-think 分类 = **可关思考守卫 + 关思考小预算请求 + 失败一次可见** | 思考型模型上分类调用 100% 失败（38/38 实测——思考吃光 `maxTokens: 10` + 无思考开关守卫；catch 静默 ⇒ 功能失效无感知）。修法：`thinkOffPath(spec)` 假 ⇒ 不调用（+ 一次 warn）；真 ⇒ `thinking = thinkOffShape(spec)` + `reasoningEffort` 清空 + `maxTokens = 32`；失败一次可见 warn（回退 null 语义不变）。被否：加大 maxTokens 让思考跑完（延迟 / 成本与 cheap 分类意图相悖）· 换分类渠道（超本批范围）。 |
+| D-AL26 | auto-think 分类的初始保护与后续修订 | 初始修法针对 38/38 次小预算分类失败：可关闭思考才分类，使用 32-token 预算并显示失败。2026-10-16 为满足 reasoning-only 子代理 Auto，新增受限 `low` 分类路径；适用条件、预算、取消和失败回退以 §6.19 为准，不更换分类渠道。 |
 | D-AL27 | 文档注入配额 = **两侧分取**（本仓侧 ∥ 声明侧）+ `docSearch` 可选 `origins` 覆盖参 | 单次调用的全局排序在候选池有界（`max(limit*4,20)`）下不保任一侧 top-5（F-DI1 保底不可达）⇒ 两侧各独立 top-5、合并序 = 本仓 ≤5 + 声明 ≤5（上限 10）；`origins` 缺省 `null` ⇒ 现行为逐字（无声明源零变）· 给定 ⇒ 以其为集 · 空数组 ⇒ 现「不过滤」语义。被否：单调用后按 origin 切分（行不含 origin 且相对路径可重名——不可判源）· 配额下沉进 `docSearch` 内部（注入策略混入记忆层 + 工具面语义连带）· 加大候选池（池有界——无上界保证）· 共享查询向量形（先按成本登记，复测越线再另裁）。机制 = `docs/core/design/MEMORY.md` §6.15；实现 = `thincoder-core/agent/setup.mjs` ∥ `thincoder-core/memory/docs.mjs`。 |
 
 ## 8. 不并项与历史沿革

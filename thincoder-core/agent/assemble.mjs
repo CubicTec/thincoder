@@ -17,6 +17,7 @@ import { configDir, loadConfig } from "../config.mjs"
 import { createMemory, syncDir } from "../memory.mjs"
 import { discoverRules, mergeFileRules } from "../rules.mjs"
 import { assembleBuiltinTools } from "../tools/index.mjs"
+import { isChatGptProvider, hasProviderCredentials } from "../provider/auth-config.mjs"
 
 /** 装配缺省面（逐项可注入 —— 断言装配调用序用假 deps；缺省 = 本档单源）。 */
 export const DEFAULT_DEPS = Object.freeze({
@@ -44,13 +45,16 @@ export function gitAuthor() {
  *  返回 agent 便于链式调用。 */
 export function validateProvider(agent, config) {
   const p = agent?.provider
-  if (p?.name && p?.model && p?.baseURL) {
+  const oauthUnavailable = isChatGptProvider(p) && !hasProviderCredentials(p)
+  if (p?.name && p?.model && p?.baseURL && !oauthUnavailable) {
     delete agent._providerInvalid
     delete agent._providerInvalidReason
     return agent
   }
   agent._providerInvalid = true
-  agent._providerInvalidReason = config?.providerInvalidReason
+  agent._providerInvalidReason = oauthUnavailable
+    ? "ChatGPT account is disabled or not selected — sign in explicitly; API billing fallback is disabled"
+    : config?.providerInvalidReason
     ?? (!p?.name ? "provider 不存在" : !p.model ? "model 缺失" : "缺少 baseURL")
   return agent
 }

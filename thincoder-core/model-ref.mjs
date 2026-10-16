@@ -121,6 +121,11 @@ export function resolveProviderPlan({ providers, defaultModel, slot } = {}) {
 
   // An explicit subscription choice must never silently become API-billed usage.
   const requested = slotName ? list.find((p) => p?.name === slotName) : parseModelRef(defaultModel, list).provider
+  const requestedName = slotName ?? (typeof defaultModel === "string" && defaultModel.includes(":") ? defaultModel.slice(0, defaultModel.indexOf(":")) : null)
+  if (!requested && requestedName === "openai-chatgpt") {
+    return { state: "invalid", source: slotName ? "slot" : "defaultModel", channel: requestedName,
+      model: slotModel, provider: {}, reason: "The selected ChatGPT provider was removed — select a provider explicitly; API billing fallback is disabled" }
+  }
   if (isChatGptProvider(requested) && !hasKey(requested)) {
     return { state: "invalid", source: slotName ? "slot" : "defaultModel", channel: requested.name,
       model: slotModel ?? resolveChannelModel(requested, defaultModel), provider: { ...requested, model: slotModel ?? resolveChannelModel(requested, defaultModel) },

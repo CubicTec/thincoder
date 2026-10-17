@@ -100,9 +100,9 @@ HostConfig:
 - **机制（项目配额优先 ∥ loopback 备选——KD-SV-74）**：探明工作区根的文件系统与挂载选项 ⇒
   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
   ② ext4（`prjquota` 挂载）⇒ **项目标记分治**（`+P` 只对目录有效——`-p` 赋号不得丢） + `setquota -P`：
-     `find <path> -type d -exec chattr -p <id> +P {} + && find <path> -type f -exec chattr -p <id> {} +`
-     ——目录（含 `<path>` 自身）= 赋号＋继承（`+P`）∥ 普通文件（`-type f`）= 只赋号（不设 `+P`）——符号链接 / 特殊文件承载数据近零（残余未量），且其 `chattr` 行为未实测 ⇒ 不收（主因 = 行为未实测；`-p` 赋号口径 = 目录 + 普通文件）；复合一句一行 ⇒ **单一步标签** `ext4 项目标记`（实施面常量 `EXT4_PROJECT_STEP`；`&&` 串联——任一半非零 ⇒ 该步非零）
-     降级腿判据零随动（本档 §4 ② 降级腿——步标签集无变）；判据成对：**绿** = 含文件的工作区上该步 `exit=0` ∥ **红** = `+P` 落非目录 ⇒ 该步 `exit≠0`（机检面 = 步标签 + 非零；非错误文本——locale 不稳）∥ 参考读数 = `Operation not supported`（来源 = runner 真机实测 2026-10-17）
+     `find <path> -type d -exec chattr -p <id> +P {} +`（目录一半）∥ `find <path> -type f -exec chattr -p <id> {} +`（文件一半）
+     ——目录（含 `<path>` 自身）= 赋号＋继承（`+P`）∥ 普通文件（`-type f`）= 只赋号（不设 `+P`）——符号链接 / 特殊文件承载数据近零（残余未量），且其 `chattr` 行为未实测 ⇒ 不收（主因 = 行为未实测；`-p` 赋号口径 = 目录 + 普通文件）；**两句各自成步**（真机实测 2026-10-17：host 命令面只在首条命令前加 `sudo -S`——`&&` 串联时后继命令落回普通用户 ⇒ 文件半句无 root 赋号必 `EPERM`），步标签同为 **`ext4 项目标记`**（实施面常量 `EXT4_PROJECT_STEP`）——任一句非零 ⇒ 该步非零
+     降级腿判据零随动（本档 §4 ② 降级腿——步标签集无变）；判据成对：**绿** = 含文件的工作区上该步两句皆 `exit=0` ∥ **红** = 任一句非零（机检面 = 步标签 + 非零；非错误文本——locale 不稳）∥ 参考读数 = `Operation not supported`（来源 = runner 真机实测 2026-10-17）
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 `<path>.loop.img` + `mkfs.ext4 -O project,quota` + 挂载到工作区路径——备选）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **② 降级腿**（KD-SV-198）：`ext4`+`prjquota` 径的**项目标记步**（`chattr`）失败 ⇒ 降 loopback 径一次——**守卫 = 仅 `ext4-project` 径的该次调用降**（两径复用同一步标签）；降级后 loopback 径的项目标记**再失败 ⇒ 停**（零第二次降级）。判据 = 该步**步标签**（非错误文本——locale 不稳）。**披露**：降级落 loopback ⇒ 新 fs 盖住工作区路径 ⇒ 原目录内容从盒视角不可达（与 `rebuild` 同面——KD-SV-197）。
@@ -273,7 +273,7 @@ HostConfig:
 | 档 | 行数 | 职责 |
 |---|---|---|
 | `thincoder-server/src/sandbox/box.mjs`（已落） | **652/653** | 盒生命周期动作链 ∥ 建盒参数集 ∥ 放置与补放置 ∥ 卷目录准备 ∥ 定时器（空闲/墙钟/周期快照） |
-| `thincoder-server/src/sandbox/quota.mjs`（已落） | **285/286** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 读回核）——`chattr` 项目标记 = 目录/文件分治（目录 `-type d … +P {} +` ∥ 文件 `-type f … {} +`，复合一句、单一步标签）；本批落地后复读同值（Δ 0） |
+| `thincoder-server/src/sandbox/quota.mjs`（已落） | **285/286** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 读回核）——`chattr` 项目标记 = 目录/文件分治（目录 `-type d … +P {} +` ∥ 文件 `-type f … {} +`，**两句各自成步**、同一步标签）；本批落地后复读同值（Δ 0） |
 | `thincoder-server/src/sandbox/workspace-routes.mjs`（已落） | **306/307** | 工作区面四路由 + 快照列表（自 `routes.mjs` 拆出——拆案首选执行 + 重写为直调） |
 | `thincoder-server/src/sandbox/derive.mjs`（已落——本增补） | **243/244** | 底座可换：派生 tag 计算 ∥ Dockerfile 生成 ∥ 上下文 tar ∥ 镜像就位四步 ∥ 构建流解析（§8 底座可换块） |
 | `thincoder-server/src/sandbox/registry-creds.mjs`（已落——本增补） | **174/175** | 私有仓凭据：形校验 ∥ 主机归一/判据 ∥ 加密 CRUD（复用 `credential-crypto.mjs`）∥ `X-Registry-Auth` 组装 |

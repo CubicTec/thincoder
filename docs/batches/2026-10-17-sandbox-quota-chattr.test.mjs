@@ -15,8 +15,9 @@ const { openDatabase } = await import(new URL("thincoder-server/src/store/db.mjs
 const PATH = "/ws/12"
 const IMAGE = `${PATH}.loop.img`
 const PROJECT = 100012
-/** 设计 §4 ② 精确命令（逐字——`<path>`/`<id>` 插值后；目录半句含 `+P`，文件半句不含）。 */
-const CHATTR = `find ${PATH} -type d -exec chattr -p ${PROJECT} +P {} + && find ${PATH} -type f -exec chattr -p ${PROJECT} {} +`
+/** 设计 §4 ② 精确命令（逐字——`<path>`/`<id>` 插值后；目录半句含 `+P`，文件半句不含；**两句各自成步**——提权前缀只盖首条命令）。 */
+const CHATTR_DIR = `find ${PATH} -type d -exec chattr -p ${PROJECT} +P {} +`
+const CHATTR_FILE = `find ${PATH} -type f -exec chattr -p ${PROJECT} {} +`
 const STEP = "ext4 项目标记"
 const CHATTR_RE = /^find .* -exec chattr/
 
@@ -118,14 +119,14 @@ test("用例 1：ext4 径项目标记 = 目录半句（含 +P）+ 文件半句�
   const host = fakeExec([findmnt(PATH, "/dev/vda3", "ext4", "rw,relatime,prjquota"), ok(CHATTR_RE), ok(/^setquota /), repquota])
   const applied = await quota.applyDiskQuota({ exec: host.exec, workspaceId: 12, path: PATH, diskMb: 4096 })
   const marked = chattrCalls(host.calls)
-  assert.equal(marked.length, 1) // 复合一句 ⇒ 一次调用（步标签不裂）
-  assert.equal(marked[0].command, CHATTR) // 逐字：`-type d … +P` + `&&` + `-type f …`
-  assert.equal(marked[0].label, STEP) // 单一步标签（降级腿判据面）
-  assert.equal(host.calls.filter((item) => item.label === STEP).length, 1)
-  assert.equal((marked[0].command.match(/\+P/g) ?? []).length, 1) // `+P` 仅目录半句
-  assert.ok(marked[0].command.indexOf("+P") < marked[0].command.indexOf("-type f")) // 目录句在前、文件句不含
-  assert.equal((marked[0].command.match(/-p 100012/g) ?? []).length, 2) // 两半皆赋号（`-p` 不得丢）
-  assert.ok(!marked[0].command.includes("-R")) // 递归形退场
+  assert.equal(marked.length, 2) // 分治两句各自成步（提权前缀只盖首条——合句则文件半句失 root）
+  assert.deepEqual(marked.map((item) => item.command), [CHATTR_DIR, CHATTR_FILE]) // 逐字：`-type d … +P` / `-type f …`
+  assert.deepEqual(marked.map((item) => item.label), [STEP, STEP]) // 同一步标签（降级腿判据面）
+  assert.equal(host.calls.filter((item) => item.label === STEP).length, 2)
+  assert.equal((CHATTR_DIR.match(/\+P/g) ?? []).length, 1) // `+P` 仅目录半句
+  assert.ok(!CHATTR_FILE.includes("+P")) // 文件半句不含 `+P`
+  assert.ok(CHATTR_DIR.includes("-p 100012") && CHATTR_FILE.includes("-p 100012")) // 两句皆赋号（`-p` 不得丢）
+  assert.ok(!CHATTR_DIR.includes("-R") && !CHATTR_FILE.includes("-R")) // 递归形退场
   assert.equal(applied.mechanism, "ext4-project")
   assert.equal(applied.recovery, null)
   assert.deepEqual(applied.readback, { hardBlocks: 4194304, blockSize: 1024, expectedBlocks: 4194304 })
@@ -153,11 +154,11 @@ test("用例 2（B77）：陈旧挂载 ⇒ 重接；序列尾 = 分治标记步 
   assert.equal(applied.recovery, "reconnect")
   assert.equal(applied.mechanism, "loopback")
   const cmds = host.calls.map((item) => item.command)
-  const at = cmds.indexOf(CHATTR)
+  const at = cmds.indexOf(CHATTR_DIR)
   assert.equal(at, cmds.indexOf(`chown 1000:1000 ${PATH}`) + 1) // 标记步紧随属主步（§13 B77 序列尾）
-  assert.deepEqual(cmds.slice(at, at + 2), [CHATTR, `setquota -P ${PROJECT} 4194304 4194304 0 0 ${PATH} 2>/dev/null || setquota -P ${PROJECT} 4194304 4194304 0 0 ${PATH}`])
+  assert.deepEqual(cmds.slice(at, at + 3), [CHATTR_DIR, CHATTR_FILE, `setquota -P ${PROJECT} 4194304 4194304 0 0 ${PATH}`])
   assert.equal(cmds.at(-1), `repquota -P -n ${PATH}`)
-  assert.deepEqual(chattrCalls(host.calls).map((item) => item.label), [STEP])
+  assert.deepEqual(chattrCalls(host.calls).map((item) => item.label), [STEP, STEP])
 })
 
 test("用例 3（B78）：镜像缺 project ⇒ 重建（mkfs 在场）+ 分治标记步续走（recovery = rebuild）", async () => {
@@ -181,7 +182,7 @@ test("用例 3（B78）：镜像缺 project ⇒ 重建（mkfs 在场）+ 分治�
   const applied = await quota.applyDiskQuota({ exec: host.exec, workspaceId: 12, path: PATH, diskMb: 4096 })
   assert.equal(applied.recovery, "rebuild")
   assert.ok(host.calls.some((item) => item.command === `mkfs.ext4 -q -O project,quota -F ${IMAGE}`))
-  assert.deepEqual(chattrCalls(host.calls).map((item) => item.label), [STEP])
+  assert.deepEqual(chattrCalls(host.calls).map((item) => item.label), [STEP, STEP])
 })
 
 // ── 用例 4/5：降级腿（demote）与再失败 ⇒ 停（判据 = 步标签，零随动）──────────────
@@ -204,9 +205,9 @@ test("用例 4（B80）：ext4 径标记步失败 ⇒ 降 loopback 径；两径�
   assert.equal(applied.recovery, "demote")
   assert.equal(applied.mechanism, "loopback")
   const marked = chattrCalls(host.calls)
-  assert.equal(marked.length, 2) // ext4-project 径一次 + loopback 径一次
-  assert.deepEqual(marked.map((item) => item.command), [CHATTR, CHATTR])
-  assert.deepEqual(marked.map((item) => item.label), [STEP, STEP]) // 两径复用同一步标签（守卫判据零随动）
+  assert.equal(marked.length, 3) // ext4-project 径 = 目录句（失败）+ loopback 径 = 目录句 + 文件句
+  assert.deepEqual(marked.map((item) => item.command), [CHATTR_DIR, CHATTR_DIR, CHATTR_FILE])
+  assert.deepEqual(marked.map((item) => item.label), [STEP, STEP, STEP]) // 两径复用同一步标签（守卫判据零随动）
 })
 
 test("用例 5（E60）：降级后标记步再失败 ⇒ 停（恰两次尝试、零第二次降级；留痕两行）", async () => {
@@ -239,7 +240,7 @@ test("用例 6：非标记步失败（读回核）不触发降级——守卫判
     { match: /^repquota /, exitCode: 1, stderr: "repquota: Cannot stat() mounted device\n" },
   ])
   await assert.rejects(() => quota.applyDiskQuota({ exec: host.exec, workspaceId: 12, path: PATH, diskMb: 4096 }), /ext4 读回核失败/)
-  assert.equal(chattrCalls(host.calls).length, 1)
+  assert.equal(chattrCalls(host.calls).length, 2) // 分治两句（皆成功后才到读回核）
   assert.ok(mutating(host.calls).length === 0) // 零降级动作（六族全扫——非只三族）
 })
 
@@ -265,8 +266,8 @@ test("用例 8：建盒链 ext4-project 径 ⇒ 零 quota_recovered 行（留痕
   const created = await box.createWorkspaceBox(db, WORKSPACE, RUNNER, deps)
   assert.equal(created.path, PATH)
   assert.deepEqual(auditKinds(db).map((row) => row.kind), ["workspace_create"])
-  assert.equal(chattrCalls(deps.calls).length, 1)
-  assert.equal(chattrCalls(deps.calls)[0].command, CHATTR)
+  assert.equal(chattrCalls(deps.calls).length, 2)
+  assert.deepEqual(chattrCalls(deps.calls).map((item) => item.command), [CHATTR_DIR, CHATTR_FILE])
   db.close()
 })
 
@@ -289,7 +290,7 @@ test("用例 9（B81）：外来挂载 ⇒ umount + 重接、零 losetup -d；�
   assert.equal(applied.recovery, "reconnect")
   assert.ok(!host.calls.some((item) => item.command.startsWith("losetup"))) // 归属判据外 ⇒ 零 detach
   assert.deepEqual(mutating(host.calls), [`umount ${PATH}`, `mount -o loop,prjquota ${IMAGE} ${PATH}`, `chown 1000:1000 ${PATH}`])
-  assert.deepEqual(chattrCalls(host.calls).map((item) => item.command), [CHATTR])
+  assert.deepEqual(chattrCalls(host.calls).map((item) => item.command), [CHATTR_DIR, CHATTR_FILE])
 })
 
 test("用例 10（B83）：裸径 + 镜像在场缺 project ⇒ 抹既有镜像 + 分治标记步续走（recovery = rebuild）", async () => {
@@ -310,13 +311,13 @@ test("用例 10（B83）：裸径 + 镜像在场缺 project ⇒ 抹既有镜像 
   assert.equal(applied.recovery, "rebuild")
   assert.equal(applied.mechanism, "loopback")
   const cmds = host.calls.map((item) => item.command)
-  const at = cmds.indexOf(`truncate -s 4160M ${IMAGE} 2>/dev/null || fallocate -l 4160M ${IMAGE}`)
+  const at = cmds.indexOf(`truncate -s 4160M ${IMAGE}`)
   assert.deepEqual(cmds.slice(at, at + 3), [
-    `truncate -s 4160M ${IMAGE} 2>/dev/null || fallocate -l 4160M ${IMAGE}`,
+    `truncate -s 4160M ${IMAGE}`,
     `mkfs.ext4 -q -O project,quota -F ${IMAGE}`,
     `mount -o loop,prjquota ${IMAGE} ${PATH}`,
   ])
-  assert.ok(cmds.indexOf(CHATTR) > cmds.indexOf(`chown 1000:1000 ${PATH}`)) // 分治标记步在属主步后
+  assert.ok(cmds.indexOf(CHATTR_DIR) > cmds.indexOf(`chown 1000:1000 ${PATH}`)) // 分治标记步在属主步后
   assert.ok(!cmds.some((command) => command.startsWith("umount") || command.startsWith("losetup"))) // 裸路径 ⇒ 零卸除
 })
 
@@ -342,10 +343,10 @@ test("用例 11（B84）：陈旧挂载 + 镜像不在 ⇒ 卸 + 重建 + 分治
   assert.deepEqual(mutating(host.calls).slice(0, 4), [
     `umount ${PATH}`,
     "losetup -d /dev/loop40",
-    `truncate -s 4160M ${IMAGE} 2>/dev/null || fallocate -l 4160M ${IMAGE}`,
+    `truncate -s 4160M ${IMAGE}`,
     `mkfs.ext4 -q -O project,quota -F ${IMAGE}`,
   ])
-  assert.equal(chattrCalls(host.calls).length, 1)
+  assert.equal(chattrCalls(host.calls).length, 2)
 })
 
 test("用例 12（E59）：重建后标记步失败 ⇒ 停（已在 loopback 径——零降级）；留痕 rebuild + failed 双行", async () => {

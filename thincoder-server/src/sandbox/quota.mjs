@@ -177,9 +177,16 @@ async function applyXfs({ exec, mount, path, projectId, diskMb }) {
 /** ext4 项目配额径（项目标记分治（目录＋`+P`／文件只赋号） + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
 async function applyExt4({ exec, mount, path, projectId, diskMb, mechanism }) {
   // 赋号不得丢——裸 `+P` 只打继承标记、不赋项目号；`+P` 只对目录有效（落文件恒拒 `Operation not supported`——真机实测 2026-10-17）⇒ 目录/文件分治（精确句 = `sandbox/EXECUTION.md` §4）
-  await step(exec, EXT4_PROJECT_STEP, `find ${path} -type d -exec chattr -p ${projectId} +P {} + && find ${path} -type f -exec chattr -p ${projectId} {} +`)
+  // 提权口径（真机实测 2026-10-17）：host 命令面只在**首条命令**前加 `sudo -S`（`box.mjs` `call`）——`&&`／`||` 串联时后继命令落回普通用户
+  // ⇒ 文件半句无 root 赋号必 `EPERM`（`Operation not permitted while setting flags`）。故分治两句各自成步；`||` 兜底同理改 try/catch。
+  await step(exec, EXT4_PROJECT_STEP, `find ${path} -type d -exec chattr -p ${projectId} +P {} +`)
+  await step(exec, EXT4_PROJECT_STEP, `find ${path} -type f -exec chattr -p ${projectId} {} +`)
   const blocks = Number(diskMb) * 1024 // 千字节块（repquota/setquota 单位）
-  await step(exec, "ext4 限额设置", `setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${mount} 2>/dev/null || setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${path}`)
+  try {
+    await step(exec, "ext4 限额设置", `setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${mount}`)
+  } catch {
+    await step(exec, "ext4 限额设置", `setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${path}`)
+  }
   const report = await step(exec, "ext4 读回核", `repquota -P -n ${mount}`)
   const row = String(report.stdout).split("\n").map((item) => item.trim()).find((item) => item.startsWith(`#${projectId}`))
   if (!row) throw new Error(`ext4 读回核失败：项目 ${projectId} 不在 repquota 读数面（配额未生效）`)
@@ -207,7 +214,12 @@ async function applyLoopback({ exec, path, projectId, diskMb }) {
     const missing = probe.imageExists !== true
     const lackingProject = readable(probe.imageFeatures) && !hasProjectFeature(probe.imageFeatures)
     if (missing || lackingProject) {
-      await step(exec, "loopback 镜像创建", `truncate -s ${Number(diskMb) + LOOP_IMAGE_SLACK_MB}M ${image} 2>/dev/null || fallocate -l ${Number(diskMb) + LOOP_IMAGE_SLACK_MB}M ${image}`)
+      const imageSize = `${Number(diskMb) + LOOP_IMAGE_SLACK_MB}M`
+      try {
+        await step(exec, "loopback 镜像创建", `truncate -s ${imageSize} ${image}`)
+      } catch {
+        await step(exec, "loopback 镜像创建", `fallocate -l ${imageSize} ${image}`)
+      }
       await step(exec, "loopback 格式化", `mkfs.ext4 -q -O project,quota -F ${image}`)
       if (verdict === "stale" || !missing) recovery = "rebuild" // 抹掉既有内容 ⇒ 留痕（KD-SV-200：`stale` 两态 ∥ `absent` ∧ 重建前镜像在场；`null` 径 = 无抹：`absent` ∧ 重建前镜像不在（首建）∥ `absent` ∧ 镜像在场且具 `project`（只挂载、零 `mkfs`）∥ `ready`）
     }

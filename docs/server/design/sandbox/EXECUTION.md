@@ -9,6 +9,11 @@
 > ② **主机凭据面**（实现 = `thincoder-server/src/sandbox/hosts.mjs` ∥ `thincoder-server/src/store/credential-crypto.mjs`；设计 = `sandbox/SANDBOX.md` §3 主机凭据块）——**对齐** = 加密复用 `credential-crypto.mjs` ∥ 密列零回显 ∥ 成事才审计；
 > **偏离** = 键 = 注册表主机（非 SSH 主机）∥ 注入点 = 拉取头 `X-Registry-Auth`（非 exec 通道；理由 = Docker 按注册表主机寻址同口径，KD-SV-188）。
 > ③ **节点侧构建流**（实现 = `thincoder-server/src/sandbox/docker.mjs:8`（头注：拉取同步 10 分钟 ∥ 失败两形 ∥ `findStreamError`）；设计 = 本档 §8 派生构建流）——**对齐** = 流内错误两形逐帧扫描 ∥ 同步长超时常量；**偏离** = `POST /build` = 新增动作面（镜像族此前只读 + 拉取；理由 = 离线纪律下节点侧取件，KD-SV-185）。
+> ④ **项目标记分治**（实现 = `thincoder-server/src/sandbox/quota.mjs`（项目标记步——`EXT4_PROJECT_STEP`）；设计 = 本档 §4 ②）——**对齐** = 单一步标签 ∥ 降级判据零随动（KD-SV-198）；**偏离** = 前形单命令（`chattr -R … +P`）→ 目录/文件分治（理由 = `+P` 只对目录有效——`-p` 赋号不得丢；落文件恒拒 `Operation not supported`——§4 ②）。
+> ⑤ **壳更新面**（实现 = `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs`（拟新增）∥ `thincoder-server/deploy/pack-box-shell.mjs`（拟新增）∥ `thincoder-server/deploy/sandbox/member-shell/index.mjs:339`（`main()`——本批改）；设计 = 本档 §8 壳更新面块）——**对齐** = 内容寻址（沿 KD-SV-185 风）∥ 静态面单源分发（`src/webui/static.mjs` 零改）；
+> **偏离** = 容器内运行时件自判/自取/自换——既有面之外的新形（无先例；理由 = 壳与镜像生命周期解耦，KD-SV-229）。
+> **抽查（本批收正——公共源文档）**：`docs/README.md`（档目）∥ `docs/server/requirements/PROJECT.md` §5 沙盒块（「磁盘配额」= 上限条）∥ `sandbox/SANDBOX.md` ∥ `docs/TEST-ENV-ECS.md`（后两档 `chattr` 零命中——查过，无相关）∥ e2fsprogs `misc/chattr.c`（`-p` 无模式形合法 ∥ `+P` 落非目录 = EOPNOTSUPP）——结论 = 在档文档无相关约束（需求侧「磁盘配额」上限条不抵命令形）；e2fsprogs 读件 = 本收正依据。
+> **抽查（box-shell-update 批——公共源文档）**：`docs/README.md`（档目）∥ `desktop/design/PACKAGING.md` §2.8（桌面自动更新 = electron-updater + generic feed）∥ 壳源树 + `deploy/sandbox/Dockerfile`（助手登记形）实读——结论 = 查过，无相关（唯一近形 = 宿主应用面自动更新——不可搬；容器内运行时件自更新 = 新形，偏离记档头⑤）。
 
 ## 1. 形态与三证（零驻留）
 
@@ -95,9 +100,9 @@ HostConfig:
 - **机制（项目配额优先 ∥ loopback 备选——KD-SV-74）**：探明工作区根的文件系统与挂载选项 ⇒
   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
   ② ext4（`prjquota` 挂载）⇒ **项目标记分治**（`+P` 只对目录有效——`-p` 赋号不得丢） + `setquota -P`：
-     `find <path> -type d -exec chattr -p <id> +P {} + && find <path> ! -type d -exec chattr -p <id> {} +`
-     ——目录（含 `<path>` 自身）= 赋号＋继承（`+P`）∥ 文件/其余（`! -type d`）= 只赋号（不设 `+P`）；复合一句一行 ⇒ **单一步标签** `ext4 项目标记`（实施面常量 `EXT4_PROJECT_STEP`；`&&` 串联——任一半非零 ⇒ 该步非零）
-     降级腿判据零随动（本档 §4 ② 降级腿——步标签集无变）；判据成对：**绿** = 含文件的工作区上该步 `exit=0` ∥ **红** = `+P` 落非目录 ⇒ `exit=1` + `Operation not supported`（真机实测 2026-10-17）
+     `find <path> -type d -exec chattr -p <id> +P {} + && find <path> -type f -exec chattr -p <id> {} +`
+     ——目录（含 `<path>` 自身）= 赋号＋继承（`+P`）∥ 普通文件（`-type f`）= 只赋号（不设 `+P`）——符号链接 / 特殊文件承载数据近零（残余未量），且其 `chattr` 行为未实测 ⇒ 不收（主因 = 行为未实测；`-p` 赋号口径 = 目录 + 普通文件）；复合一句一行 ⇒ **单一步标签** `ext4 项目标记`（实施面常量 `EXT4_PROJECT_STEP`；`&&` 串联——任一半非零 ⇒ 该步非零）
+     降级腿判据零随动（本档 §4 ② 降级腿——步标签集无变）；判据成对：**绿** = 含文件的工作区上该步 `exit=0` ∥ **红** = `+P` 落非目录 ⇒ 该步 `exit≠0`（机检面 = 步标签 + 非零；非错误文本——locale 不稳）∥ 参考读数 = `Operation not supported`（来源 = runner 真机实测 2026-10-17）
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 `<path>.loop.img` + `mkfs.ext4 -O project,quota` + 挂载到工作区路径——备选）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **② 降级腿**（KD-SV-198）：`ext4`+`prjquota` 径的**项目标记步**（`chattr`）失败 ⇒ 降 loopback 径一次——**守卫 = 仅 `ext4-project` 径的该次调用降**（两径复用同一步标签）；降级后 loopback 径的项目标记**再失败 ⇒ 停**（零第二次降级）。判据 = 该步**步标签**（非错误文本——locale 不稳）。**披露**：降级落 loopback ⇒ 新 fs 盖住工作区路径 ⇒ 原目录内容从盒视角不可达（与 `rebuild` 同面——KD-SV-197）。
@@ -116,7 +121,7 @@ HostConfig:
   ② 重建 = 镜像可用（具 `project`）⇒ **只重接**（保盘上镜像内容）∥ 镜像缺失 ∥ 正面缺 `project` ⇒ `truncate` + `mkfs.ext4 -q -O project,quota -F`；
   ③ 落位 = `mount -o loop,prjquota <image> <path>` ⇒ `chown 1000:1000` ⇒ 复用 ext4 径。重挂身份由挂载命令自身保证（挂的就是当前镜像）——不另设挂后复验读。
 - **读回核**：应用后读回配额读数（xfs = `report -p -b` + `xfs_info` bsize；ext4 = `repquota -P` 千字节块）；读数不符 ⇒ 同停。
-- **幂等**：重复应用同结果（就绪 ⇒ 零动；project 已在 ⇒ 改限）；应用失败零残留（项目 id 与路径的绑定失败即报）。
+- **幂等**：重复应用 = **重跑、同结果**（`ext4 项目标记` 步恒重跑——已标记工作区亦然（不跳过）；同号同旗重打 = 同结果；loopback 就绪 ⇒ 零修复动作、标记步照跑；`setquota` 重设 = 改限）；应用失败零残留（项目 id 与路径的绑定失败即报）。
 - **健康径口径（零回归判据）**：**变更性命令零增**（`umount` ∥ `losetup -d` ∥ `truncate` ∥ `mkfs` ∥ `mount` ∥ `chown` 六族）+ **审计行零增**；新增唯只读读件（上列——探明旗形补 `SOURCE` 列 ∥ loopback 腿另加 `mountpoint`/`test -f`/`dumpe2fs`（镜像侧 + 挂载侧两读）；**`losetup -a` 不在健康径**——仅卸除阶段读（自愈卸除 ∥ 销毁卸除件））。
 - **留痕**（KD-SV-200）：命中 `reconnect` ∥ `rebuild` ∥ `demote` ⇒ 一行 `sandbox_event/quota_recovered`（detail = `kind`+`workspaceId`+`runnerId`+`recovery`+`path`；健康径零行——`accounts/ACCOUNTS.md` §2.1）。**绑定物理动作**：卷已重建/重接 ⇒ 行必落——成功返回时由返回值携 `recovery`；**重建/重接后下游步失败时由错误携 `err.recovery`**（写入点 = `box.mjs` `stepQuota` 两径皆落行）——重建不因后续失败丢痕。**`rebuild` 的判据 = 是否抹掉既有内容**（既有内容不可再达即是）：`mkfs` 抹掉既有镜像内容（重建前镜像在场）⇒ 行必落（`rebuild`）——裁决 `absent` ∥ `stale` 皆然；`stale` ∧ 镜像不在（判据③旧 inode 挂载——旧内容不可再达）⇒ 亦 `rebuild`；**无抹 ⇒ 非 `rebuild`**——`stale` ∧ 镜像可用（具 `project`）⇒ 只重接，`recovery = "reconnect"`（行由主句「命中 `reconnect`」规约）。`null` 径 = 无既有内容被抹：`absent` ∧ 重建前镜像不在（首建——无内容可抹）∥ `absent` ∧ 镜像在场且具 `project`（只挂载既有镜像，零 `mkfs`）∥ `ready`（健康径）。
 - **卸除件（销毁径调用——KD-SV-199）**：`releaseLoopbackVolume`——① 在挂则 `umount`（**未挂 ⇒ 零动作、不抛**——xfs/ext4 径常态）② `losetup -a -O NAME,BACK-FILE -n` 读数按 back-file 归属（剥 ` (deleted)`）逐条 detach 本工作区镜像——**归属判据 = back-file 等于本工作区镜像路径**，外来挂载 ∥ 他工作区 loop 零 detach；`umount` ∥ `losetup -d` 失败 ⇒ 抛。③ **删目录与镜像不在卸除件内**——落 `box.mjs` 销毁步（`rm -rf <path> <path>.loop.img` 走 `host.run`，失败 ⇒ 抛；§3 销毁行）；卸除件（①②，`quota.mjs`）与删除件（③，`box.mjs`）两档共成销毁全程 fail-closed（KD-SV-199）。
@@ -133,7 +138,7 @@ HostConfig:
 
 - **镜像**（契约）：基座 `node:24-slim`（既有）∥ **核件同件**：构建期本地安装 `@thincoder/core`（构建上下文 = 仓根——离线可构建；核版本与 server 同源钉住）∥ 壳件 COPY 入镜像（`deploy/sandbox/member-shell/**`）∥ `USER 1000:1000` ∥ `WORKDIR /workspace` ∥ `CMD` = 壳起（容器起即连）。
 - **env 契约**（建盒注入——§3 参数集）：`OPENAI_BASE_URL` = `<server>/v1` ∥ `OPENAI_API_KEY` = 工作区 key ∥ `TC_SERVER_URL` = `<server>` 基址 ∥ `HOME=/workspace/home`（核会话落卷——盒活则在）∥ 工作目录 `/workspace`。
-- **进程形**：壳 = 单进程最小件（起核 agent ∥ 接 server 会话流 ∥ 带 server 域工具扩展）；**零第二循环**（能力面一律取核——16:36 硬口径；判据 = 凡「盒内另有一套」即违规）。
+- **进程形**：壳运行时 = 单进程最小件（起核 agent ∥ 接 server 会话流 ∥ 带 server 域工具扩展）——引导父进程（仅换执行径在场：取件/换执行与退出码回传）不携能力面；**零第二循环**（能力面一律取核——16:36 硬口径；判据 = 凡「盒内另有一套」即违规）。
 - **会话读写面（零回灌——题一裁定「会话真源在盒内」）**：壳 → 核 = **核既有导出件**（列表/读/存/删——`thincoder-core/session*.mjs`；保底坐标在册 = `agent/MEMBER-AGENT.md` §3.2；本档不复制坐标形）；壳零核文件直读写。**读写面本形即实施径**（核码零改）；原回灌缝随题一裁定消解（服务器零会话落库 ⇒ 零回灌需求）。
 - **底座可换（用户 21:32「底座那个做完整功能吧」；决策 = KD-SV-184…191，§15）**：
   - **底座指定形**（KD-SV-184）：**工作区级绑定** = `sandbox_workspaces.base_image`（NULL = 标准镜像 = `settings.image`——缺省零行为）；形 = `名[:标签]`（`parseImageRef` 同判——**实现 = `thincoder-server/src/sandbox/docker.mjs:163`**；`@` 拒 ∥ ≤ 200 字符），存归一形（缺标签补 `latest` 显式）；
@@ -154,6 +159,32 @@ HostConfig:
     **注入点 = 拉取**（底座预拉 ∥ 手动拉取命中也携 `X-Registry-Auth`——Hub 特例 `serveraddress` = `https://index.docker.io/v1/`；未命中 ⇒ 匿名——现状零改）；**构建零网络**（底座/标准镜像皆本地——不携）；源目录/标签读取仍匿名（私有源 ⇒ `auth_required` 如实——登记余项）。
   - **零行为变化腿**（判据）：无绑定 ⇒ ① 参数集 `Image` = `settings.image` 逐值不变；② 建盒链零新增调用（假件调用计数 = 现状序列）；③ 零新审计行；④ 迁移后存量行 `base_image=NULL`。
   - **边界**：构建进度流（同步请求——零 SSE/轮询）∥ 构建排期/并发闸（引擎自身排队）∥ 底座内容治理/扫描 ∥ 派生镜像源自动寻源（底座须已在节点 ∥ 经既有拉取面）∥ 派生镜像的跨节点分发（逐节点各自派生——tag 内容寻址保证同源）。
+- **壳更新面（版本化壳件 + 启动自取/自换——box-shell-update 批；用户 2026-10-17 00:31「那盒内的 agent 以后更新怎么办？」）**：壳件（`deploy/sandbox/member-shell/**`——件位 `/opt/thincoder/app/shell`）成**版本化工件**：发布侧打包 ⇒ 落 server 静态面；盒壳**启动时**自判 / 自取 / 自验 / 自换——判据 = **发布一个新壳版本 ⇒ 盒子下次启动跟到该版本（零镜像重建）**。
+  - **三案对照（自含——判据：① 发布即跟·零镜像重建 ② 校验+回退不 brick ③ 版本可查 ④ 与既有机制关系不另起炉灶）**：
+    **A 重建式** = 改壳 ⇒ 重建标准镜像 ⇒ 逐节点重拉 ⇒ 派生像重建（既有链交点 = KD-SV-186 标准镜像重建链）⇒ 逐盒重建/轮换——失败判据 = 发布与生效脱钩（无自动触发；盒不重建 = 永旧壳）：「零镜像重建」条款不满足 ⇒ **① ✗**；
+    **B 宿主机 bind** = 建盒加第二 bind（主机目录 ⇒ `/opt/thincoder/app/shell`；既有链交点 = 「唯一可写挂载」KD-SV-162 ∥ 「机器上不驻留」§1）——失败判据 = 主机件缺/坏 ⇒ 容器起不来（**brick**）⇒ **② ✗** ∥ 逐节点手工放件无内容寻址 ⇒ **③ ✗** ∥ 两纪律相抵 ⇒ **④ ✗**；
+    **C（本块）** = 版本化壳件 + 盒启动自取/自换——①–④ 全 ✓（选定；记 KD-SV-229）。
+  - **件源单源**：内建（`deploy/sandbox/Dockerfile` COPY）与工件（打包）读**同一源树** `deploy/sandbox/member-shell/**`（物化纪律「一律源自源树」不破）；打包 = `thincoder-server/package.json` `prepack` 挂钩 ⇒ `deploy/pack-box-shell.mjs` ⇒ 产物 `public/box-shell/`（构建产物——不进 git；留 3 件 = 回退窗）。
+  - **版本身份 = 内容寻址（树哈希）**：`sha256(逐件「相对路径 \0 sha256(件字节) \n」按名序串接)`——**覆盖集 = 源树逐件**（材料化产物在覆盖集外——排除：`node_modules/**` ∥ `state.json` ∥ `git-credential-thincoder` 登记链接；`git-cred.mjs` 在覆盖集内）；规则单源 = `deploy/sandbox/member-shell/bootstrap.mjs`（打包脚本 import 同一件——零漂移）；显示形 = 前 12 hex（hash12——沿 KD-SV-185 风）。
+    **不变式**：槽内副本（材料化后）重算树哈希 == 槽名版本 == manifest 版本——承接进程 ③ 腿因而命中（自版本 == 目标）⇒ 零自旋（启动链长 ≤1——spawn 计数 ≤1）。
+  - **传输面 = server 静态面复用（`thincoder-server/src/webui/static.mjs` 零改）**：manifest = `public/box-shell/manifest.json`（形 = `{"version":"<64 hex>"}`——多键忽略 ∥ 形非法 = 不可达类）；工件 = `public/box-shell/<版本>.tar`（不压缩 tar——件名 = 版本全哈希）；取件址 = `<TC_SERVER_URL>/box-shell/*`（与 SSE 同源——零新网络面；零鉴权——披露在案）。
+    **锚点信任域（披露）**：完整性锚点 = server 自身可信（与模型流量同信任域）——校验只证「件与同次 manifest 相符」，不防伪 manifest（能改静态面者即可授权任意壳）；签名/分级分发不做。
+    被否（传输候选）：OSS/官网（外部基础设施 ∥ 发布链跨仓 ∥ 可用性外依）∥ git 仓（克隆重 ∥ 凭据入盒 ∥ 与凭据最小化相抵）∥ 盒协议新端点（新端点族 + 协议文档随动——静态面已足）。
+  - **启动引导序**（`bootstrap.mjs`——`index.mjs` `main()` 先于核装载调用；DI 面同壳族）：① 自版本 = 树哈希（自跑树——覆盖集 = 源树逐件，材料化产物集外）；② 取 manifest（超时 10s）——不可达/形非法 ⇒ 目标 = 缓存副本（槽集内最新）∥ 内建（零取件）；
+    ③ 目标 == 自版本 ⇒ 本进程就地跑（零取件 ∥ 零换执行——**链终止腿**：承接进程必落此腿 ⇒ 换执行链长 ≤1）；④ 目标在缓存（槽在场 ∧ `state.json` 一致 ∧ 复用前复验过）⇒ 换执行；复验不过 ⇒ 槽失效（清、不复用）——manifest 可达 ⇒ 落 ⑤ 重取；不可达 ⇒ 目标 = 内建；
+    ⑤ 否 ⇒ 取工件（超时 30s）⇒ 解包至暂存 ⇒ **逐件重算树哈希 == 版本** ⇒ 就位（缓存槽 `<HOME>/.tc-shell/<版本>/`：落件 + 材料化 + `state.json`；清理留当刻与自跑目录）⇒ 换执行；取件/校验失败 ⇒ 丢弃暂存（不触缓存）⇒ 目标 = 缓存 ∥ 内建。
+  - **换执行**：`spawn(node, [目标入口])`（stdio ∥ env 透传 ∥ SIGTERM/SIGINT 转发；父镜像子退出码）；子非零退出 ∧ 未收终止信号 ⇒ **回退内建壳一次**（携「跳过引导」env 旗标——终态、零递归）+ **该槽失效（清）**——防下次启动复用坏槽。
+    崩后再取件策略：下次启动按常序重试（manifest 可达 ⇒ 重取一次；不可达 ⇒ 内建）；持续崩（如壳↔核不符——见关系⑤）⇒ 每启动一次复现（单启动有界：≤1 换执行 + ≤1 回退）——披露：人工清 `<HOME>/.tc-shell/` 或镜像重建（根治 = 发修复版本）。
+    槽就位 = 解包件 + **材料化三步（皆落覆盖集外——树哈希稳定性要件）**：① `git-credential-thincoder` 登记链接（同镜像形——源树无此名）+ 置执行位 + 目录前置于进程 `PATH`（git 助手解析到取件件）；② `node_modules/@thincoder/core` 链回镜像件位（核仍取镜像内同源件——零第二核源）；③ `state.json`。
+    `state.json` 形 = `{"version":"<64 hex>","materialized":true}`（多键忽略）；**「一致」** = 可解析 ∧ `version` == 槽名版本；**复用前复验** = 一致 ∧ 重算树哈希（覆盖集口径）== 槽名版本——复验不过 ⇒ 槽失效（清、不复用）。
+  - **回退层序（不得 brick——三失败各一步行动）**：取件副本（已验 ∧ 复用前复验——缓存槽）⇒ 内建壳（镜像恒在 = 地板）。① 取件不可达 ⇒ 缓存/内建顶上（零阻塞、本启动零重试）；② 校验不过 ⇒ 丢弃暂存（缓存零变）⇒ 缓存/内建顶上；③ 换执行后崩 ⇒ 回退内建一次 + 该槽失效（见上）。
+  - **版本读音**：版本行 = **承接进程**（运行壳的进程）启动即落一行 `[shell] 壳版本 <hash12>（源=取件|缓存|内建）`（先于核装载——核装载失败亦可读）；引导父进程不落行——正常径每次启动恰一行 ∥ 崩回退径两行（判读取末行）。
+    `源` 判定 = 引导传递的本次落点：本次启动取入并换执行 ⇒ 取件 ∥ 命中既有缓存槽换执行 ⇒ 缓存 ∥ 本进程即内建树（就地跑 ∥ 回退内建）⇒ 内建。盒内直查 = `cat <HOME>/.tc-shell/<版本>/state.json`（槽内状态件）。
+    **触发 = 启动时**（容器 `start` ⇒ `CMD` 重跑）：每会话不做——在途换壳断会话、收益仅一个回合；即时跟版 = 手动重启盒（既有动作）。
+  - **与既有机制的关系**：① 静态面复用零改（既有唯一文件分发面）；② 内容寻址沿 KD-SV-185 风（同风非同一物）；③ 派生镜像**正交**——取件在容器内，任意内建壳（含派生像 `COPY --from` 所得）皆被覆盖；④ 件位契约（`CMD` ∥ `/opt/thincoder/app`）不变；
+    ⑤ 核件零涉（`@thincoder/core` 不随壳取件）——**壳↔核相容纪律**：壳件只承诺镜像内核既有导出面；破坏性核面变更 ⇒ 换执行崩 ⇒ 回退内建（E65）——该盒跟版停于该版本直至镜像重建（披露）；
+    ⑥ 引导协议（取件路径 ∥ manifest 形 ∥ 树哈希规则）= 稳定契约——演进须镜像重建（引导件 = 内建；罕见，披露）；⑦ manifest 恒为目标源（含降级）：镜像重建未同拍重发工件 ⇒ 目标 = 旧工件壳（版本行如实显旧 hash12——静默降级明记；处置 = 重发工件）。
+  - **边界**：运行中盒子不改壳（生效窗 = 下次启动——≤ 墙钟 TTL）∥ 服务器零壳版本台账（读数 = 盒日志；静态面零审计）∥ 管理面选版/回钉不做 ∥ 签名/分级分发不做。
 
 ## 9. 存储（v22 段 ∥ 拆案）
 
@@ -190,6 +221,7 @@ HostConfig:
 | 16:36 硬口径（盒内必用 `@thincoder/core` + 最小壳） | §8 镜像/契约/进程形（零第二循环） | 单元测试档（契约面）+ 收口轮 |
 | **底座可换**（用户 21:32——管理面选底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起；缺省 = 标准镜像零行为变化） | §8 底座可换块（绑定 ∥ 件位契约 ∥ 派生四步 ∥ 缓存/重建 ∥ 前提（乙——Node 随包带） ∥ 凭据注入 ∥ 零变化腿）+ §3 参数集/建盒链 ③ | 单元测试档 + 收口轮（真机） |
 | **连接面 TLS 档**（本增补 #2——用户 22:43「让用户可选」；功能点 53 ∥ AC-53——拟入册） | §2.1 传输落点（适配件逐值 ∥ 两参透传 ∥ 明文路径零行为变化）+ `sandbox/SANDBOX.md` §3 连接方式块（形态/材料/写面/不变量/审计）；用例 = §13（N73 ∥ B76） | 单元测试档 + 收口轮（真机） |
+| **壳更新面**（box-shell-update 批——**拟入册**：建议功能点 57 ∥ AC-57，承 AC-56 顺序〔编号先后 = 主 agent 定〕；用户 2026-10-17 00:31「那盒内的 agent 以后更新怎么办？」） | §8 壳更新面块（件源单源 ∥ 版本身份 ∥ 三案对照 ∥ 传输面 ∥ 启动引导序 ∥ 换执行 ∥ 回退层序 ∥ 版本读音 ∥ 关系 ∥ 边界）+ §13 用例（N89 ∥ B85–B88 ∥ E65） | 单元测试档 + 收口轮（真机——新壳发布 ⇒ 停机盒重启跟版；断网/坏件回退腿；镜像 Id 零重建核读） |
 
 ## 13. 用例（本档——执行面）
 
@@ -217,25 +249,31 @@ HostConfig:
 | E57 | 错误 | 执行面（底座可换） | 构建流内 `error`（假件）∥ 构建超时（假件不结） | 400 人话含日志尾 ∥ 502 + 如实句（引擎侧可能仍在跑——重试幂等：tag 在场即采用） |
 | N73 | 正常 | 执行面（连接面 TLS 档） | 假件 https 请求件（记 `requestImpl` 选项）：添加节点携 `connection:"tls"` + 三件（CA/证书/私钥）⇒ 自检三呼（引导步 → 协商 → 复读）⇒ 落行 ⇒ 探活复用适配件 | `https.request` 选项 `ca`/`cert`/`key` 逐值（= 提交值——加密往返后解密同值）∥ URL 逐值（`https://` + `v<ver>` 前缀形）；行 `tls_updated_at` 在场 ∧ `tls_key_cipher` ≠ 明文（回读库断言）；响应行形含 `connection:"tls"` + `tls.state:"sealed"`（**零材料字段**——响应键面扫描）；审计 `runner_add` detail `tls:true`；`PUT …/connection` 切回明文 ⇒ 三列零化 + 审计 `runner_connection`（`tls:false`） |
 | B76 | 边界 | 执行面（连接面 TLS 档） | **明文档零行为变化腿**：不携 `connection`/`tls` 键的添加（既有调用形）⇒ 全链 | 归一地址逐值同现状（`http://` + 2375）∥ 传输 = 注入 `fetchImpl`（**零适配件构造**——调用计数）∥ 行 `tls` 三列全 NULL（`tls.state:"none"`）∥ 审计 `runner_add` detail `tls:false` ∥ v22 升库后存量行读面逐值（零回填） |
-| N74 | 正常 | 执行面（配额步） | 健康径三腿（假件）：`xfs`+`pquota` ∥ `ext4`+`prjquota` ∥ 裸路径 + 镜像不在 | 三腿**变更性命令**序列逐条 = 现状（`xfs_quota` 三句 ∥ `chattr`（目录/文件分治——§4）+`setquota`+`repquota` ∥ `truncate`+`mkfs`+`mount`+`chown`+`chattr`（目录/文件分治——§4））+ 只读读件在场（探明旗形含 `SOURCE` 列；loopback 腿另读 `mountpoint`/`test -f`/`dumpe2fs`）；三腿零 `umount`/`losetup -d`/`mkfs`（xfs/ext4 两腿）∥ `recovery = null` ∥ 零 `quota_recovered` 行（裸径腿 = **镜像不在**的首建——无内容可抹；裸径 ∧ 镜像在场缺 `project` 者见 B83） |
-| B77 | 边界 | 执行面（配额步） | 陈旧挂载（假件）——源 `/dev/loop32`、挂载 UUID ≠ 镜像 UUID、镜像具 `project` | `umount` → `losetup -d /dev/loop32` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；**无** `mkfs`；`recovery = "reconnect"` |
+| N74 | 正常 | 执行面（配额步） | 健康径三腿（假件）：`xfs`+`pquota` ∥ `ext4`+`prjquota` ∥ 裸路径 + 镜像不在 | 三腿**变更性命令**序列逐条 = §4 分治形（`xfs_quota` 三句 ∥ `chattr`（目录/文件分治——§4）+`setquota`+`repquota` ∥ `truncate`+`mkfs`+`mount`+`chown`+`chattr`（目录/文件分治——§4）——后续复用 ext4 径尾）+ 只读读件在场（探明旗形含 `SOURCE` 列；loopback 腿另读 `mountpoint`/`test -f`/`dumpe2fs`）；三腿零 `umount`/`losetup -d`/`mkfs`（xfs/ext4 两腿）∥ `recovery = null` ∥ 零 `quota_recovered` 行（裸径腿 = **镜像不在**的首建——无内容可抹；裸径 ∧ 镜像在场缺 `project` 者见 B83） |
+| B77 | 边界 | 执行面（配额步） | 陈旧挂载（假件）——源 `/dev/loop32`、挂载 UUID ≠ 镜像 UUID、镜像具 `project` | `umount` → `losetup -d /dev/loop32` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）——后续复用 ext4 径尾；**无** `mkfs`；`recovery = "reconnect"` |
 | B78 | 边界 | 执行面（配额步） | 镜像失能（假件）——镜像在场、特性可读且无 `project` | 序列含 `mkfs.ext4 -q -O project,quota -F`；`recovery = "rebuild"` |
 | B79 | 边界 | 执行面（配额步） | 就绪（UUID 同 + 具 `project`）∥ 读数不可得（`dumpe2fs` 空输出） | 两例序列皆**零** `umount`/`losetup -d`/`mkfs`/`mount`；`recovery = null`（安全性质：读数不可得不重建） |
-| B80 | 边界 | 执行面（配额步） | `ext4`+`prjquota` 径、项目标记步 `exit≠0`（假件） | 降 loopback 径续走：探 → 建/挂 → `chattr`（目录/文件分治——§4）；`recovery = "demote"` |
+| B80 | 边界 | 执行面（配额步） | `ext4`+`prjquota` 径、项目标记步 `exit≠0`（假件） | 降 loopback 径续走：探 → 建/挂 → `chattr`（目录/文件分治——§4）——后续复用 ext4 径尾；`recovery = "demote"` |
 | E58 | 错误 | 执行面（销毁） | 在挂 + `losetup -a` 含本工作区两条（一在场一 `(deleted)`）+ 他人一条 | 序列 = `umount` + detach 本工作区两条（**不含他人**）+ `rm -rf` 两项；实机口径 = 该工作区零残留行 |
-| B81 | 边界 | 执行面（配额步） | 外来挂载（假件）——挂载源非 `/dev/loop<n>`（如 `/dev/sdb1`），镜像在场且具 `project` | 序列 = `umount` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；**零 `losetup -d`**（归属判据外）；`recovery = "reconnect"` |
+| B81 | 边界 | 执行面（配额步） | 外来挂载（假件）——挂载源非 `/dev/loop<n>`（如 `/dev/sdb1`），镜像在场且具 `project` | 序列 = `umount` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）——后续复用 ext4 径尾；**零 `losetup -d`**（归属判据外）；`recovery = "reconnect"` |
 | B82 | 边界 | 执行面（销毁） | 销毁 + 工作区路径**未挂**（xfs/ext4 径常态——`mountpoint` 非零） | 序列 = 零 `umount`/零 `losetup -d`（未挂 ⇒ 过、不抛）+ `rm -rf` 两项；终态 `destroyed` |
-| B83 | 边界 | 执行面（配额步） | 裸路径 + 镜像在场、正面缺 `project`（假件——判据① ⇒ `absent`） | 抹掉既有镜像：`truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（**抹掉既有内容 ⇒ 行必落**；与 N74 裸径腿「镜像不在 ⇒ `null`」为两条径） |
-| B84 | 边界 | 执行面（配额步） | 陈旧挂载 + 盘上镜像**不在**（假件——判据③旧 inode 挂载） | `umount` → `losetup -d /dev/loop32` → `truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（旧 inode 内容不可再达 ⇒ 有抹 ⇒ 行必落） |
+| B83 | 边界 | 执行面（配额步） | 裸路径 + 镜像在场、正面缺 `project`（假件——判据① ⇒ `absent`） | 抹掉既有镜像：`truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）——后续复用 ext4 径尾；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（**抹掉既有内容 ⇒ 行必落**；与 N74 裸径腿「镜像不在 ⇒ `null`」为两条径） |
+| B84 | 边界 | 执行面（配额步） | 陈旧挂载 + 盘上镜像**不在**（假件——判据③旧 inode 挂载） | `umount` → `losetup -d /dev/loop32` → `truncate` → `mkfs.ext4 -q -O project,quota -F` → `mount -o loop,prjquota` → `chown` → `chattr`（目录/文件分治——§4）——后续复用 ext4 径尾；`recovery = "rebuild"` ∥ `quota_recovered` 行在场（旧 inode 内容不可再达 ⇒ 有抹 ⇒ 行必落） |
 | E59 | 错误 | 执行面（配额步） | 陈旧挂载 ⇒ 重建（`mkfs`）后项目标记步 `exit≠0`（假件） | 审计 `quota_recovered`（`recovery = "rebuild"`）**在场**（重建即留痕）+ `quota_apply_failed` 在场；错误上抛（建盒停） |
 | E60 | 错误 | 执行面（配额步） | 降级腿（`ext4-project` 项目标记失败 ⇒ loopback 径）后 loopback 径项目标记**再失败**（假件） | **停**（零第二次降级）；`quota_recovered`（`recovery = "demote"`）在场 + `quota_apply_failed` 在场 |
+| N89 | 正常 | 执行面（壳更新面） | 假件（假 fetch/假 spawn/假 fs 根）：内建树 v=H1；manifest v=H2；工件 = 真 tar（树哈希 H2） | 序 = manifest ⇒ 工件 ⇒ 解包 ⇒ 树哈希 == H2 ⇒ 就位（槽：落件 + 材料化 + `state.json`）⇒ 换执行（spawn 参数 = `node <HOME>/.tc-shell/<H2>/index.mjs`——恰一次）；版本行恰一行 `源=取件`（承接进程落——子回 ③ 腿就地跑、零自旋）；镜像面/控制面零调用 |
+| B85 | 边界 | 执行面（壳更新面） | 三腿：manifest 不可达 ∥ 工件 404 ∥ 无缓存副本 | 逐腿回退：缓存副本 ∥ 内建顶上；零重试；引导不抛（进程续走）；版本行恰一行逐腿如实（`源=缓存` ∥ `源=内建`）；盒照起 |
+| B86 | 边界 | 执行面（壳更新面） | 工件字节被改（解包后树哈希 ≠ manifest.version） | 丢弃暂存（缓存零变——`state.json` 与既有副本照旧）；回退 = 缓存 ∥ 内建；零换入 |
+| B87 | 边界 | 执行面（壳更新面） | 零行为变化腿：内建树 == manifest（新鲜镜像） | 零工件取件调用（调用计数）；单行版本行 `源=内建`；本进程就地跑（零 spawn） |
+| B88 | 边界 | 执行面（壳更新面） | 缓存槽复用复验（假件——假 fs 根）：① 槽 <H2> 在场且材料化（登记 ∥ 链 ∥ `state.json`）⇒ 复验过 ② 槽内源件被改（复验 ≠） ③ 槽内材料化产物被改（覆盖集外） | ① ④ 腿命中 ⇒ 换执行恰一次（spawn 计数 1 ∥ 零取件——承接进程就地跑、零自旋） ② 槽失效（清）⇒ 不得复用（重取件 ∥ 内建顶上） ③ 复验照过（判据稳定——④ 腿不受材料化影响） |
+| E65 | 错误 | 执行面（壳更新面） | 换执行后崩：子进程非零退出、未收终止信号 | 回退内建一次（跳过引导旗标 ⇒ 零递归）+ 该槽失效（清——防复用）；版本行两行（首 = 取件/缓存子 ∥ 末 = 回退内建——判读取末行）；子正常退出 ∥ 收 SIGTERM ⇒ 零回退 + 槽留（镜像退出码） |
 
 ## 14. 本域文件与行数预算（执行面）
 
 | 档 | 行数 | 职责 |
 |---|---|---|
 | `thincoder-server/src/sandbox/box.mjs`（已落） | **652/653** | 盒生命周期动作链 ∥ 建盒参数集 ∥ 放置与补放置 ∥ 卷目录准备 ∥ 定时器（空闲/墙钟/周期快照） |
-| `thincoder-server/src/sandbox/quota.mjs`（已落） | **285/286** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 读回核） |
+| `thincoder-server/src/sandbox/quota.mjs`（已落） | **285/286** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 读回核）——`chattr` 项目标记 = 目录/文件分治（目录 `-type d … +P {} +` ∥ 文件 `-type f … {} +`，复合一句、单一步标签）；本批落地后复读同值（Δ 0） |
 | `thincoder-server/src/sandbox/workspace-routes.mjs`（已落） | **306/307** | 工作区面四路由 + 快照列表（自 `routes.mjs` 拆出——拆案首选执行 + 重写为直调） |
 | `thincoder-server/src/sandbox/derive.mjs`（已落——本增补） | **243/244** | 底座可换：派生 tag 计算 ∥ Dockerfile 生成 ∥ 上下文 tar ∥ 镜像就位四步 ∥ 构建流解析（§8 底座可换块） |
 | `thincoder-server/src/sandbox/registry-creds.mjs`（已落——本增补） | **174/175** | 私有仓凭据：形校验 ∥ 主机归一/判据 ∥ 加密 CRUD（复用 `credential-crypto.mjs`）∥ `X-Registry-Auth` 组装 |
@@ -255,9 +293,15 @@ HostConfig:
 | `thincoder-server/src/store/db.mjs` | **36/37**（迁移段已外拆 `src/store/migrations.mjs`（已落）**795/796**） | 开库/PRAGMA/语句封装 |
 | `thincoder-server/deploy/sandbox-probe.mjs`（已落） | **537/538**（越 500 软线在册） | 探针执行器（余腿驱动 ∥ 一次性容器径 ∥ PASS/FAIL/SKIP/退出码） |
 | `thincoder-server/bin/thincoder-server.mjs` | **241/242** | 装配 |
-| `thincoder-server/deploy/sandbox/Dockerfile` | **46/47**（本档定义契约） | 盒镜像 |
+| `thincoder-server/deploy/sandbox/Dockerfile` | **46/47**（本档定义契约）⇒ 本批随正：档头死指针（`sandbox/RUNNER.md §3`）收正 **≤±2 行 ∥ 结构零变** | 盒镜像 |
+| `thincoder-server/deploy/pack-box-shell.mjs`（本批——拟新增） | ≈**90** | 壳工件打包（树哈希（引 `bootstrap.mjs` 单源） ∥ tar 写 ∥ manifest ∥ 打包自检（回读复算） ∥ 旧件留 3 修剪）——§8 壳更新面块 |
+| `thincoder-server/package.json`（本批——拟改） | **31** ⇒ +1 | `prepack` 挂钩（⇒ `deploy/pack-box-shell.mjs`——§8 壳更新面块） |
+| `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs`（本批——拟新增；档账随正 = `agent/MEMBER-AGENT.md` §5） | ≈**180** | 盒内壳引导（树哈希单源 ∥ manifest/工件取件 ∥ 解包校验 ∥ 缓存槽 ∥ 换执行与回退） |
+| `thincoder-server/deploy/sandbox/member-shell/index.mjs`（本批——拟改） | **362** ⇒ +≈10 | `main()` 引导接线（先于核装载）+ 版本行 |
+| `docs/batches/2026-10-17-box-shell-update.test.mjs`（本批——拟新增） | ≈**250**（不越 500 软线） | N89 ∥ B85–B88 ∥ E65（随批档存——收口随批删） |
+| `.gitignore`（仓根——本批拟改） | **41** ⇒ +1 | `thincoder-server/public/box-shell/`（构建产物不进 git） |
 | **小计** | **≈ +2221** ∥ **≈ −1117** | —— |
-| **单元测试档** | **主体 795**（动作链 ∥ 参数集 ∥ 放置 ∥ 定时器 ∥ 实时门 ∥ v22 迁移 ∥ #1351 事务 ∥ 拆案读判）∥ `-base` **543**（派生 tag/Dockerfile 逐行 ∥ 镜像就位四步 ∥ 凭据 CRUD/注入 ∥ 绑定 PATCH ∥ 零变化腿）∥ `-base-ui` **437**（两卡渲染 ∥ 弹窗 ∥ i18n 键集）∥ `-tls` **711**（三件形校验/加密往返 ∥ 适配件选项逐值（假 `https.request`）∥ 连接端点两腿 ∥ 明文零行为变化腿）∥ `-tls-ui` **378**（添加窗连接段 ∥ 行「连接」钮 ∥ 编辑窗 ∥ i18n 键集）——**越 500 软线在册 = 主体 ∥ `-base` ∥ `-tls`** | 随批档存 |
+| **单元测试档** | **主体 795**（动作链 ∥ 参数集 ∥ 放置 ∥ 定时器 ∥ 实时门 ∥ v22 迁移 ∥ #1351 事务 ∥ 拆案读判）∥ `-base` **543**（派生 tag/Dockerfile 逐行 ∥ 镜像就位四步 ∥ 凭据 CRUD/注入 ∥ 绑定 PATCH ∥ 零变化腿）∥ `-base-ui` **437**（两卡渲染 ∥ 弹窗 ∥ i18n 键集）∥ `-tls` **711**（三件形校验/加密往返 ∥ 适配件选项逐值（假 `https.request`）∥ 连接端点两腿 ∥ 明文零行为变化腿）∥ `-tls-ui` **378**（添加窗连接段 ∥ 行「连接」钮 ∥ 编辑窗 ∥ i18n 键集）——**越 500 软线在册 = 主体 ∥ `-base` ∥ `-tls`**；本批新增一件 `docs/batches/2026-10-17-sandbox-quota-chattr.test.mjs`（`chattr` 分治命令串断言——恢复/降级/读回核腿不破）：**既列五档结构零变**（新档规模以实施当刻实读为准）；**上列五读数 = 收正前读数**（实施后复读随正） | 随批档存 |
 
 （**行数读数**（口径 = `\n` 换行计数；总行 = 换行数 +1——±1 级差在案）：`box` 652/653 ∥ `quota` 285/286 ∥ `workspace-routes` 306/307 ∥ `derive` 243/244 ∥ `registry-creds` 174/175 ∥ `registry-cred-routes` 95/96 ∥ `docker-tls` 133/134 ∥ `docker` 425/426 ∥
   `registry` 419/420 ∥ `routes` 304/305 ∥ `image-routes` 144/145 ∥ `container-routes` 324/325 ∥ `volume-routes` 103/104 ∥ `terminal-routes` 362/363 ∥ `chat-tools` 562/563 ∥ `chat` 736/737 ∥ `hosts` 134/135 ∥ `ssh` 226/227 ∥
@@ -297,6 +341,10 @@ HostConfig:
 | KD-SV-198 | **ext4 径被拒 ⇒ 降 loopback 径**（判 = 项目标记步的**步标签**，非错误文本；**守卫 = 仅 `ext4-project` 径的该次调用降**——降级后 loopback 径再失败 ⇒ 停，零第二次降级） | 能力缺/赋号被拒时 loopback 自带 `project,quota` 的新 fs 可承载；错误文本判法随 locale 漂——步标签是自持判据；披露 = 降级落 loopback ⇒ 新 fs 盖住路径内容（原目录内容从盒视角不可达） |
 | KD-SV-199 | **销毁卷清理 = 显式卸挂载 + detach loop（back-file 属本工作区者）+ 删目录与镜像；失败 ⇒ 抛**（停 + 行留 + 重试续链）；未挂 ⇒ 零动作、不抛；外来挂载零 detach（归属判据单源 = §4 卸除件） | 静默失败正是 7 处 `(deleted)` 残留的成因（`rm -rf` 在前、detach 缺位）；fail-closed 让残留可见可重试 |
 | KD-SV-200 | **自愈留痕 = 一枚 `quota_recovered`**（`reconnect` ∥ `rebuild` ∥ `demote`；健康径零行）；**绑定物理动作**——重建/重接即留痕（成功返回携 `recovery`；重建/重接后下游失败由 `err.recovery` 携）；**`rebuild` 判据 = 是否抹掉既有内容**（既有内容不可再达即是）——`mkfs` 抹掉既有镜像（重建前在场）⇒ `rebuild`（裁决 `absent` ∥ `stale` 皆然）；`stale` ∧ 镜像不在 ⇒ 亦 `rebuild`；**无抹 ⇒ 非 `rebuild`**（`stale` ∧ 镜像可用 ⇒ `reconnect`）；`null` 径 = `absent`（首建 ∥ 镜像在场的只挂载）∥ `ready` | 本 bug 痛点是「不可见」（同一墙撞多次、零迹象）；重建涉卷内容 ⇒ 必留痕；健康径零行 ⇒ 零噪声 |
+| KD-SV-229 | **壳更新面 = 版本化壳件 + 盒启动自取/自换**（身份 = 内容寻址树哈希 ∥ 引导序 = 自判→取件→校验→换执行 ∥ 回退层序 = 缓存副本 → 内建 ∥ 引导协议 = 稳定契约） | 诱发实证 = 壳与盒子生命周期脱钩（10-16 审批接线源码、盒内壳 10-14）；三案对照（自含）= §8 块首：A 重建式不满足「零镜像重建」条款（判据① ✗）∥ B 宿主机挂载 brick/漂移/相抵（②③④ ✗）∥ C ①–④ 全 ✓（选定） |
+| KD-SV-230 | **传输 = server 静态面复用 + 构建期打包**（`public/box-shell/`——manifest.json + `<版本>.tar`；`prepack` ⇒ `deploy/pack-box-shell.mjs`——工件 = 构建产物不进 git；留 3 件回退窗） | 唯一既有文件分发面（`src/webui/static.mjs` 零改）；与盒必达 server 同源（同 SSE 一址）；被否 = OSS/官网 ∥ git 仓 ∥ 盒协议新端点（静态面已足） |
+| KD-SV-231 | **校验与回退 = 树哈希整件校验 + 回退层序（缓存副本 → 内建）+ 三失败各一步**（取件不可达 ⇒ 顶上 ∥ 校验不过 ⇒ 丢弃暂存 ⇒ 顶上 ∥ 换执行崩 ⇒ 回退内建一次） | 校验 = 内容身份（tar 信封不参与）+ 槽复用前复验 ∥ 崩后槽失效（§8）；brick 禁止（内建 = 恒在地板）；失败不中断盒启动（fail-safe） |
+| KD-SV-232 | **版本读音 = 承接进程启动行 + 槽内状态件**（`[shell] 壳版本 <hash12>（源=取件|缓存|内建）`——先于核装载；`state.json` 槽内直查）；**触发 = 启动时**（每会话不做） | 核装载失败亦可读（诊断）；判据③ 可机检形；启动触发与容器生命周期对齐（`CMD` 重跑）、在途零中断；即时跟版 = 手动重启盒（既有动作） |
 
 ## 16. 边界（不做）
 
@@ -307,11 +355,13 @@ HostConfig:
 - **连接面 TLS 余项（本增补 #2 不做——§2.1 ∥ `sandbox/SANDBOX.md` §3 连接方式块）**：材料轮换/续期机制 ∥ 材料查看/导出（只进不出）∥ 节点侧 TLS 服务端配置（dockerd 侧——在机）∥ **任务式装机（托管接入）不做**（承接 = 手工登记 + 管理面 chat 内动作——`sandbox/SANDBOX.md` §3 接入面）。
 - **卷族余项**（带数据重建等——沿 SANDBOX §15 卷族行；工作区卷已由 KD-SV-162 定形 = 并存不代管）。
 - **配额/销毁余项（不做——§4）**：既有 `(deleted)` loop 残留的自动回收（工作区行已删 ⇒ 无从触达——人工 `losetup -d`）∥ 旧镜像留档副本（免残留面扩大；留档 = 用户侧手工 `cp -a`）∥ `quota.mjs`/`box.mjs` 拆案 ∥ 外来挂载（非本工作区 loop 件）的设备释放（归属判据外 ⇒ 只卸挂载）。
+- **壳更新面余项（box-shell-update 批不做——§8 壳更新面块）**：运行中热更（生效 = 下次启动）∥ 管理面选版/回钉 ∥ 服务器侧壳版本台账/审计（读数 = 盒日志）∥ 工件签名/分级分发（CDN 族）∥ 服务器侧旧版留存策略（打包件留 3——非版本管理语义）。
 
 ## 17. 上抛/余项（本域——执行面）
 
 | # | 项 | 类型 | 处置建议 |
 |---|---|---|---|
-| R74 | **需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 沙盒块——「执行通道 = exec 指令面（非 root ∥ 超时 10 分钟 ∥ 输出截断 1 MiB）」句与 19:52 口径相抵（执行面 = Docker API 直调 + 盒内壳自持；`exec` 指令面无对应实现面）⇒ 请收正；同块「控制链 = runner 长轮询/心跳/指令队列」史句（16:30 行）现状 = 已废，如仍在活面请随正；新增设置键两枚（`maxBoxesPerRunner` ∥ `workspaceRoot`——资源与 TTL 卡写入口随沙盒余面批）宜在 §5 资源行登记；**「底座可换」入册**（用户 21:32 范围增补——建议功能点 52 ∥ AC-52，承 AC-51 顺序；判据全文 = `sandbox/EXECUTION.md` §8 底座可换块 ∥ §13 用例 ∥ `sandbox/SANDBOX.md` §3 块）；写法/计数 = 主 agent 定 ∥ ② 随正件（父侧/实施轮，以当刻盘面实读为准）：`docs/TEST-ENV-ECS.md`（节点前置 = dockerd 监听 TCP + 工作区根目录 + **派生前置 = 标准镜像件位契约（`/opt/thincoder/app`——member-face 批落地）就绪 + 底座镜像来源**；沿 R52②）∥ `docs/README.md`/`design/PROJECT.md` 档目（sandbox 域 1 档 ⇒ 2 档）∥ 旧单元测试档中引用 `sandbox_tasks`/队列者随实施随正（运行期读判决，非门禁）∥ 档目/键集断言件随正（`2026-10-08-server-public-structure.test.mjs`：+1 名——`views-sandbox-base.mjs` ∥ i18n 键集指纹——以实施当刻盘面复读为准）∥ ③ 披露（不阻塞）：快照全量存档（配额内大小）∥ 定时器 30s 粒度 ∥ 探针 SKIP 假报零容忍（如实登记）∥ **底座可换五件**（派生真机可用依赖标准镜像件位契约落地——member-face 批；落地前机检不受阻 ∥ 底座 tag 移动 ⇒ 节点本地旧像被采用（追新 = 重拉后派生——引擎缺省）∥ 派生同步请求（最坏 ≈20 分钟 = 拉取 10 + 构建 10；超时后引擎侧可能仍在跑——重试幂等）∥ 逐节点各自派生（tag 内容寻址保证同源）∥ 凭据只及拉取注入——目录/标签读取仍匿名）∥ ④ 真机收口（父侧执行）：ECS `.5`/`.6` 复跑探针套件 + 建盒/快照/恢复全链实走 + **底座可换全链**（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起——前置 = 标准镜像件位契约就绪）∥ **增补 #2（连接面 TLS 档——用户 22:43「让用户可选」）：① 需求档回笔（主 agent 笔——建议功能点 53 ∥ AC-53，承 AC-52 顺序；判据全文 = `sandbox/EXECUTION.md` §2.1/§12/§13 ∥ `sandbox/SANDBOX.md` §3 连接方式块；写法/计数 = 主 agent 定）∥ ② 随正件（同类逐件 = `sandbox/SANDBOX.md` §16 R74——本行不重列）：`…-runner-admin-console.test.mjs`（E34 语义 + 列面断言 +四列）∥ `…-runner-admin-console-ui.test.mjs`（形体 `connection` ∥ 键集）∥ `…-server-public-structure.test.mjs`（档目 +2 名：`docker-tls.mjs` ∥ `views-sandbox-connection.mjs`）∥ `docs/TEST-ENV-ECS.md`（节点侧 dockerd TLS 配置步骤）∥ ③ 披露（不阻塞）：材料只进不出 ∥ 切换/编辑自检为门（离线节点改不动——如实报）∥ 客户端证书认证 = 节点 dockerd 侧配置（我方面只做客户端）∥ 缺省明文保持（零行为变化）∥ ④ 真机收口（父侧执行）：ECS `.6` 节点 dockerd TLS 就位 ⇒ 自签三件 ⇒ 切档 ⇒ 自检过 ⇒ 全谱可用 ⇒ 切回明文（材料清零） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+| R74 | **需求档回笔 + 随正件 + 披露**：① 需求档回笔（主 agent 笔）：`docs/server/requirements/PROJECT.md` §5 沙盒块——「执行通道 = exec 指令面（非 root ∥ 超时 10 分钟 ∥ 输出截断 1 MiB）」句与 19:52 口径相抵（执行面 = Docker API 直调 + 盒内壳自持；`exec` 指令面无对应实现面）⇒ 请收正；同块「控制链 = runner 长轮询/心跳/指令队列」史句（16:30 行）现状 = 已废，如仍在活面请随正；新增设置键两枚（`maxBoxesPerRunner` ∥ `workspaceRoot`——资源与 TTL 卡写入口随沙盒余面批）宜在 §5 资源行登记；**「底座可换」入册**（用户 21:32 范围增补——建议功能点 52 ∥ AC-52，承 AC-51 顺序；判据全文 = `sandbox/EXECUTION.md` §8 底座可换块 ∥ §13 用例 ∥ `sandbox/SANDBOX.md` §3 块）；写法/计数 = 主 agent 定 ∥ ② 随正件（父侧/实施轮，以当刻盘面实读为准）：`docs/TEST-ENV-ECS.md`（节点前置 = dockerd 监听 TCP + 工作区根目录 + **派生前置 = 标准镜像件位契约（`/opt/thincoder/app`——member-face 批落地）就绪 + 底座镜像来源**；沿 R52②）∥ `docs/README.md`/`design/PROJECT.md` 档目（sandbox 域 1 档 ⇒ 2 档）∥ 旧单元测试档中引用 `sandbox_tasks`/队列者随实施随正（运行期读判决，非门禁）∥ 档目/键集断言件随正（`2026-10-08-server-public-structure.test.mjs`：+1 名——`views-sandbox-base.mjs` ∥ i18n 键集指纹——以实施当刻盘面复读为准）∥ ③ 披露（不阻塞）：快照全量存档（配额内大小）∥ 定时器 30s 粒度 ∥ 探针 SKIP 假报零容忍（如实登记）∥ **底座可换五件**（派生真机可用依赖标准镜像件位契约落地——member-face 批；落地前机检不受阻 ∥ 底座 tag 移动 ⇒ 节点本地旧像被采用（追新 = 重拉后派生——引擎缺省）∥ 派生同步请求（最坏 ≈20 分钟 = 拉取 10 + 构建 10；超时后引擎侧可能仍在跑——重试幂等）∥ 逐节点各自派生（tag 内容寻址保证同源）∥ 凭据只及拉取注入——目录/标签读取仍匿名）∥ ④ 真机收口（父侧执行）：ECS `.5`/`.6` 复跑探针套件 + 建盒/快照/恢复全链实走 + **配额收正绿腿**（ext4+`prjquota` 节点 + 含文件的工作区 ⇒ `ext4 项目标记` 步 `exit=0` ∧ 零 `quota_recovered`（`demote`）行——核 = §4 判据成对 ∥ 留痕绑定；**造态** = 建盒前预置 `<path>` 内文件 ∥ 既有含文件工作区（本批 = ws-12）走启动确保链——该步每次应用**恒重跑**（§4 幂等；`-type f` 半句随真跑）；**读数取法** = 链完成（盒 running）∧ 零 `demote` 行 ⇒ 该步直通、未降级（健康径零留痕）∥ 精确读数 = 节点手工复跑该步命令读 `$?`）+ **底座可换全链**（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起——前置 = 标准镜像件位契约就绪）∥ **增补 #2（连接面 TLS 档——用户 22:43「让用户可选」）：① 需求档回笔（主 agent 笔——建议功能点 53 ∥ AC-53，承 AC-52 顺序；判据全文 = `sandbox/EXECUTION.md` §2.1/§12/§13 ∥ `sandbox/SANDBOX.md` §3 连接方式块；写法/计数 = 主 agent 定）∥ ② 随正件（同类逐件 = `sandbox/SANDBOX.md` §16 R74——本行不重列）：`…-runner-admin-console.test.mjs`（E34 语义 + 列面断言 +四列）∥ `…-runner-admin-console-ui.test.mjs`（形体 `connection` ∥ 键集）∥ `…-server-public-structure.test.mjs`（档目 +2 名：`docker-tls.mjs` ∥ `views-sandbox-connection.mjs`）∥ `docs/TEST-ENV-ECS.md`（节点侧 dockerd TLS 配置步骤）∥ ③ 披露（不阻塞）：材料只进不出 ∥ 切换/编辑自检为门（离线节点改不动——如实报）∥ 客户端证书认证 = 节点 dockerd 侧配置（我方面只做客户端）∥ 缺省明文保持（零行为变化）∥ ④ 真机收口（父侧执行）：ECS `.6` 节点 dockerd TLS 就位 ⇒ 自签三件 ⇒ 切档 ⇒ 自检过 ⇒ 全谱可用 ⇒ 切回明文（材料清零） | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+| R92 | **box-shell-update（需求档回笔 + 随正件 + 披露 + 真机收口）**：① 需求档回笔（主 agent 笔）：建议入册（判据 = 本档 §8/§12/§13）∥ ② 随正件：`.gitignore`（+`public/box-shell/`）∥ `Dockerfile` 档头死指针收正 ∥ `MEMBER-AGENT.md` §5 档账随正 ∥ ③ 披露：工件公开可读 ∥ 运行中不换壳 ∥ 缓存落卷 ∥ 引导协议演进须镜像重建 ∥ ④ 真机收口：新壳发布 ⇒ 停机盒重启跟版（版本行对 manifest）∥ 断网回退腿 | 披露 | 评审/用户复核 |
 
 - **排序约束（在册）**：底座可换真机闭环（选定底座 ⇒ 派生 ⇒ 建盒 ⇒ 壳起）**前置 = `deploy/sandbox/Dockerfile` 件位契约就绪**（契约 = 本档 §8 件位 `/opt/thincoder/app`）；件位契约未就绪 ⇒ 收口轮该腿如实 SKIP（零假 PASS——探针整套同口径），机检腿（假件）不受阻。

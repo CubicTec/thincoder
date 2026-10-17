@@ -3,7 +3,7 @@
  *
  * 机制（探明 ⇒ 三径择一 ⇒ 读回核）：探明工作区根的文件系统与挂载选项 ⇒
  *   ① xfs（`pquota`）⇒ `xfs_quota` 项目配额（项目 id = `100000 + ws_id`——`project -s -p` + `limit -p bhard=<diskMb>m`）；
- *   ② ext4（`prjquota` 挂载）⇒ `chattr -R -p <id> +P`（**赋号＋继承同句**） + `setquota -P`；
+ *   ② ext4（`prjquota` 挂载）⇒ 项目标记分治（目录 = `chattr -p <id> +P` ∥ 文件 = `chattr -p <id>`——`+P` 只对目录有效） + `setquota -P`；
  *   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 + `mkfs.ext4` + 挂载到工作区路径 + chown 1000:1000——备选；落法细节以真机探明为准）；
  *   ④ 三者皆不可 ⇒ **抛（建盒停）**——人话 + 处置句（节点需 xfs/ext4 项目配额或 loop 设备）。
  * 就位判据（KD-SV-196）：判「挂载身份（fs UUID）+ 能力（`project` 特性）」，非「是否挂载点」——`classifyLoopbackMount` 逐序判：
@@ -174,10 +174,10 @@ async function applyXfs({ exec, mount, path, projectId, diskMb }) {
   return { mechanism: "xfs-project", readback: { hardBlocks: hard, blockSize: bsize, expectedBlocks: expected } }
 }
 
-/** ext4 项目配额径（`chattr -R -p <id> +P`（赋号＋继承同句） + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
+/** ext4 项目配额径（项目标记分治（目录＋`+P`／文件只赋号） + `setquota -P` + `repquota` 读回核；loopback 复用本径）。 */
 async function applyExt4({ exec, mount, path, projectId, diskMb, mechanism }) {
-  // 赋号＋继承同句（"chattr -R +P" 裸形恒成功——只打继承标记不赋项目号 ⇒ 赋号句必须直接在场；真机实证 2026-10-14）
-  await step(exec, EXT4_PROJECT_STEP, `chattr -R -p ${projectId} +P ${path}`)
+  // 赋号不得丢——裸 `+P` 只打继承标记、不赋项目号；`+P` 只对目录有效（落文件恒拒 `Operation not supported`——真机实测 2026-10-17）⇒ 目录/文件分治（精确句 = `sandbox/EXECUTION.md` §4）
+  await step(exec, EXT4_PROJECT_STEP, `find ${path} -type d -exec chattr -p ${projectId} +P {} + && find ${path} -type f -exec chattr -p ${projectId} {} +`)
   const blocks = Number(diskMb) * 1024 // 千字节块（repquota/setquota 单位）
   await step(exec, "ext4 限额设置", `setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${mount} 2>/dev/null || setquota -P ${projectId} ${blocks} ${blocks} 0 0 ${path}`)
   const report = await step(exec, "ext4 读回核", `repquota -P -n ${mount}`)

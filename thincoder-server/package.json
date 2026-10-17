@@ -10,6 +10,7 @@
     "start": "node bin/thincoder-server.mjs --config config.json",
     "dev": "node --watch bin/thincoder-server.mjs --config config.json",
     "admin": "node src/ops/cli.mjs --config config.json",
+    "prepack": "node deploy/pack-box-shell.mjs",
     "prepublishOnly": "node --check bin/thincoder-server.mjs && node --check src/ops/update.mjs && node --check deploy/converge.mjs"
   },
   "dependencies": {

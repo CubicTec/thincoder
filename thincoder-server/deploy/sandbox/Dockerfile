@@ -1,4 +1,4 @@
-# deploy/sandbox/Dockerfile — 盒镜像（缺省 tag `thincoder-sandbox:1`——sandbox/RUNNER.md §3；KD-SV-73）
+# deploy/sandbox/Dockerfile — 盒镜像（缺省 tag `thincoder-sandbox:1`——sandbox/EXECUTION.md §8 件位契约；KD-SV-73）
 #
 # 构建（**上下文 = 仓根**——member-face-chat 批 · `sandbox/EXECUTION.md` §8 件位契约；核/壳离线取件）：
 #   docker build -f thincoder-server/deploy/sandbox/Dockerfile -t thincoder-sandbox:1 .

@@ -22,6 +22,7 @@
  */
 import { realpathSync } from "node:fs"
 import { pathToFileURL } from "node:url"
+import { runBootstrap, versionLine } from "./bootstrap.mjs"
 import { createCoreRun, loadCore, slotOf } from "./core-run.mjs"
 import { createPull } from "./pull.mjs"
 import { beginFrame, createSseParser, encodeFrame, endFrame } from "./protocol.mjs"
@@ -344,6 +345,14 @@ async function main() {
     process.exitCode = 1
     return
   }
+  // 启动引导（§8 壳更新面块——先于核装载）：自判 / 自取 / 自验 / 自换；换执行径本进程 = 引导父进程
+  // （只回传退出码，不落版本行——版本行由承接进程落）。
+  const boot = await runBootstrap({ env })
+  if (boot.mode === "parent") {
+    process.exitCode = boot.exitCode
+    return
+  }
+  console.log(versionLine(boot)) // 版本读音——先于核装载（核装载失败亦可读）
   const core = await loadCore()
   const shell = createShell({ env, coreRun: createCoreRun({ env, core }) })
   const shutdown = () => {

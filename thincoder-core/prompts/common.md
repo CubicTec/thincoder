@@ -132,6 +132,12 @@ repo_outline → doc_search → code_search. Structure → intent → details.
 ### 并行调用原则
 Batch independent read-only tool calls into a single reply (they run concurrently) — calling them one by one wastes turns.
 
+### 上下文自掌舵（Steering your own context）
+**Your context is yours to steer.** ① To see the usage and composition, and how far you are from the compaction line, check any time (`context`);
+  ② when you feel the context needs tidying (the direction changed / too noisy), **start the compaction yourself** and say what the **upcoming work needs** (focus) —
+  what gets compacted is **retrievable** (the receipt carries the anchor).
+  ③ At the compaction line, compaction happens automatically — that is **only a fallback**, not a signal to wrap up: once tidied, keep working until the task is actually done.
+
 ## 工具路由表（Tool routing——写类场景按表路由，不用 bash）
 | Tool | Use it for | Not (use the dedicated tool instead) |
 |---|---|---|

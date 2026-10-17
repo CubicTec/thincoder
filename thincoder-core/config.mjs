@@ -111,20 +111,22 @@ import { specForModel, providerSpec, specMatch, assistantToolCallMessage } from 
 export { specForModel, providerSpec, specMatch, assistantToolCallMessage }
 
 
-// Window utilization threshold: compacts at 60% of the USABLE window (window − output
-// reservation — providers require input + max_tokens ≤ window; 2026-10-06 user ruling:
-// the reservation folds into the budget so compaction fires first, never a provider
-// rejection), the remaining 40% stays as headroom for injected context (directory tree,
-// git context, outline, project instructions, memory/doc search results — 30-50K tokens
-// per turn).
-const COMPACT_RATIO = 0.6
+// Window utilization threshold (CONTEXT-COMPACTION.md §6.2 / D-CC30): auto = min(usable window,
+// floor(window × COMPACT_RATIO)) — every spec row lands in 75–80% of the window (reservation capped
+// at a quarter ⇒ 75%; capped reservation below 20% ⇒ 80%; the 20–25% band ⇒ window − reservation).
+// The remaining 20–25% is headroom for injected context (directory tree, git context, outline,
+// project instructions, memory/doc search results — 30–50K tokens per turn).
+const COMPACT_RATIO = 0.8
 
 /** Output reservation the request counts against the window: explicit `provider.maxTokens`
- *  (the value actually sent — `provider/core.mjs`) when set, else the spec `maxOutput`, else 0. */
+ *  (the value actually sent — `provider/core.mjs`) when set, else the spec `maxOutput`, else 0 —
+ *  capped at a quarter of the window (§6.2 / D-CC30: an output budget above 25% would drag the
+ *  compaction line far below the 75–80% target; the residual band between the cap and the real
+ *  output budget is accepted, see the overflow argument in §6.2). */
 export function outputReserve(provider, spec) {
   const explicit = provider?.maxTokens
-  if (Number.isFinite(explicit) && explicit > 0) return explicit
-  return spec?.maxOutput ?? 0
+  const reserve = Number.isFinite(explicit) && explicit > 0 ? explicit : spec?.maxOutput ?? 0
+  return Math.min(reserve, Math.floor((spec?.context ?? 0) * 0.25))
 }
 
 /** Usable input window = window − output reservation. Degenerate guard: a reservation
@@ -140,6 +142,7 @@ export function usableWindow(context, reserve) {
 }
 
 /** Derive compaction threshold; explicit is the value explicitly set in config file (takes priority), otherwise auto-computed from model.
+ *  auto = min(usable window, floor(window × COMPACT_RATIO)) — §6.2 / D-CC30 target band 75–80%.
  *  Second param accepts EITHER a model name string (pure spec lookup — legacy caller:
  *  first-run wizard) OR a provider object (providerSpec — the providers[].context
  *  override in K units is honored, PROVIDER.md §15 T-C2). */
@@ -148,7 +151,7 @@ export function resolveCompactThreshold(explicit, modelOrProvider) {
   const provider = typeof modelOrProvider === "string" ? { model: modelOrProvider } : (modelOrProvider ?? {})
   const spec = providerSpec(provider)
   const usable = usableWindow(spec.context, outputReserve(provider, spec))
-  const value = Math.floor(usable * COMPACT_RATIO)
+  const value = Math.min(usable, Math.floor(spec.context * COMPACT_RATIO))
   return { value, auto: true }
 }
 

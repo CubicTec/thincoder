@@ -156,7 +156,12 @@ export async function createEnvTools({ coreTools = null } = {}) {
     }
   }
 
-  return { names: ENV_TOOL_NAMES, schemas, invoke }
+  /** 判类维（KD-SV-225——环境族 = 核工具 `readonly` 旗逐字：`true` = 读类零弹 ∥ `false`/缺旗 = 写类弹卡）。 */
+  function readonlyOf(name) {
+    return toolOf[name]?.readonly === true
+  }
+
+  return { names: ENV_TOOL_NAMES, schemas, readonlyOf, invoke }
 }
 
 /** 端池参数处置（§14.2/§16.1）：`read_history.path` 拒（本会话作用域）∥ `bash` 超时取值校验（仅拒非有限值/小于 1——无上限）；过 ⇒ `null`。 */

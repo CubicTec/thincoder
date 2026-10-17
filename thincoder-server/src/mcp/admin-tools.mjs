@@ -32,6 +32,11 @@ export const MCP_ADMIN_TOOL_NAMES = Object.freeze(["mcp"])
 /** 动词五（命名沿 providers 族；`probe` = 与端点 `POST /probe` ∥ 核 `probeMcpServer` 同词单源）。 */
 export const MCP_ADMIN_OPS = Object.freeze(["list", "add", "update", "remove", "probe"])
 
+/** 判类维（KD-SV-225——`mcp.list` 免（读类）；余四动词问（写类）；工具面单源）。 */
+export function readonlyOf(name, args = {}) {
+  return name === "mcp" && String(args?.op ?? "") === "list"
+}
+
 /** 十字段（`store.mjs` 单源——本档只做取舍搬运，零再校验）。 */
 const MCP_FIELDS = Object.freeze(["name", "transport", "command", "args", "url", "wsUrl", "headers", "token", "env", "enabled"])
 
@@ -218,5 +223,5 @@ export function createMcpAdminTools({ db, deps = {}, log = null, now = Date.now,
     },
   }
 
-  return { names: MCP_ADMIN_TOOL_NAMES, ops: MCP_ADMIN_OPS, schemas: [schema], invoke }
+  return { names: MCP_ADMIN_TOOL_NAMES, ops: MCP_ADMIN_OPS, schemas: [schema], readonlyOf, invoke }
 }

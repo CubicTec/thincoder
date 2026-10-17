@@ -739,6 +739,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_events(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_type_ts ON audit_events(type, ts);
 `
 
+/** v25 增段（`agent_chats.auto_approve` 增列——审批卡面 `always` 槽；store/STORE.md §2 v25 段逐字；列级 ALTER = 表不重建；0 = 缺省（问）∥ 1 = 免问（`always` 置真 ∥ PATCH 可清）；语义 = agent/ADMIN-AGENT.md §11.5。 */
+const DDL_V25 = `ALTER TABLE agent_chats ADD COLUMN auto_approve INTEGER NOT NULL DEFAULT 0;`
+
 /** 迁移链：每段 = `{ v, up(db) }`（v = 目标结构版本，自 1 起递增）；结构每变一次追一段（+1）。 */
 export const MIGRATIONS = [
   { v: 1, up: (db) => db.exec(DDL_V1) },
@@ -765,6 +768,7 @@ export const MIGRATIONS = [
   { v: 22, up: (db) => db.exec(DDL_V22) }, // v22：沙盒收正（工作区表重建 + `sandbox_tasks` 删表 + `registry_credentials` 建表 + 连接材料四列——列面/语义单源 = store/STORE.md §2 v22 段）
   { v: 23, up: (db) => db.exec(DDL_V23) }, // v23：成员 git 凭据表 + 审计 CHECK 重建（十六型：+ member_event——会话两表不建；语义单源 = store/STORE.md §2 v23 段）
   { v: 24, up: (db) => db.exec(DDL_V24) }, // v24：`mcp_servers` 建表 + 审计 CHECK 重建（十七型：+ mcp_event；语义单源 = store/STORE.md §2 v24 段）
+  { v: 25, up: (db) => db.exec(DDL_V25) }, // v25：`agent_chats.auto_approve` 增列（审批免问旗——KD-SV-226；语义单源 = store/STORE.md §2 v25 段）
 ]
 
 /** 当前结构版本（= 链尾段号——store/STORE.md §1）。 */

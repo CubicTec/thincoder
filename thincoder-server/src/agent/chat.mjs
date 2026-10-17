@@ -44,6 +44,7 @@ import { HttpError } from "../gateway/errors.mjs"
 import { levelsOf, noteDegraded } from "../gateway/reasoning-levels.mjs"
 import { createMcpAdminTools } from "../mcp/admin-tools.mjs"
 import { createMcpToolFace, noteMcpDegraded } from "../mcp/face.mjs"
+import { createChatAskHost, settleChatAsks } from "./chat-asks.mjs"
 import { assistantTurnOf, COMPACTION_KIND, compactTurnHistory, repairTurnHistory, specOfRef } from "./chat-compact.mjs"
 import { buildEnvLines, CHAT_LIMITS_BLOCK } from "./chat-env.mjs"
 import { createEnvTools, deliverPending, discardAbortedChatTasks, loadCoreTurnDomains, noteEnvToolsDegraded, timerPadOf } from "./chat-env-tools.mjs"
@@ -121,6 +122,7 @@ export function requestChatAbort(id) {
   const key = Number(id)
   abortRequests.add(key)
   abortSignals.get(key)?.abort()
+  settleChatAsks(key) // 在决 ask 同拍拒值（KD-SV-227 兜底三径之二——回合环下一检查点收「aborted」）
 }
 
 /** 中止是否已登记（环内两检查点读面）。 */
@@ -331,6 +333,7 @@ function mergeToolFaces(base, extras) {
   return {
     names,
     schemas,
+    readonlyOf: (name, args) => (route.get(name) ?? base).readonlyOf?.(name, args) !== false, // 判类缝（KD-SV-225——缺席面 ⇒ 读类）
     invoke: (name, args, ctx) => {
       const face = route.get(name)
       return face ? face.invoke(name, args, ctx) : base.invoke(name, args, ctx) // 管理族同携 `ctx`（§12.1②——`models.test` 消费 `ctx.signal`；承 model-test-tool 批 §5 语义）
@@ -492,6 +495,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
       ts: now(),
     })
 
+  let askHost = null // 审批 ask 宿主（§11.5——回合环装配面开、`finally` 关）
   try {
     if (wake === null) {
       appendMessage(db, chat.id, { role: "user", content, data: imagePartsOf(images), now }) // 逐条增量落库（本轮消息先落——断连亦留痕；图片轮携 parts 形）
@@ -584,6 +588,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
     const messages = [{ role: "system", content: CHAT_SYSTEM_BRIEF }, ...compacted.history]
     if (wakeLine !== null) messages.push(wakeLine)
     for (const line of envLines) messages.push(line)
+    askHost = createChatAskHost({ db, chatId: chat.id, emit: emitFrame, stream: emit, hasStream: typeof emit === "function", autoApprove: chat.auto_approve === 1, tools, parseArgs: parseToolArgs, argsOf: argsTextOf, isAborted: () => isChatAbortRequested(chat.id), auditCall: auditChatCall, textNames, now, log })
 
     let modelCalls = 0
     for (;;) {
@@ -629,6 +634,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
       }
       // 有工具调用：assistant 行 + 回灌形（§17.3 A1——核件构造；回声族携 `reasoning_content`；签名在场才带；落库 ⇔ 回放逐值）
       const pending = toolCalls.map((call) => ({ ...call, args: argsFullOf(call.arguments) })) // 落库/回放 = 掩蔽原文（JSON 有效——2026-10-14 缺陷修；帧/审计摘要面另取 `argsTextOf`）
+      await askHost.preflight(pending) // 写类门挡（单件 ∥ 批——同批次 >1 写类恰一卡；§11.5）
       const assistantTurn = await assistantTurnOf({
         text,
         toolCalls: pending.map((call) => ({ id: call.id, name: call.name, arguments: call.args, extraContent: call.extraContent })),
@@ -655,13 +661,15 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
             : `预算超限（时长 ${Math.round((now() - started) / 1000)}s > 上限 ${Math.round(budget.maxDurationMs / 1000)}s）——停`
           return closeFailed("budget", detail, "")
         }
-        if (isChatAbortRequested(chat.id)) return closeFailed("aborted", null, "") // 检查点②（工具调用前）
+        if (isChatAbortRequested(chat.id)) { askHost.rejectRest(pending.slice(index)); return closeFailed("aborted", null, "") } // 检查点②（工具调用前）——在决拒行/审计随中止径落（B83）
+        const admission = await askHost.admit(call) // 逐调用放行判（`oneByOne` 在此依序弹卡；拒 ⇒ 不执行——B82）
         calls += 1
         emitFrame({ type: "call", id: call.id, name: call.name, args: argsTextOf(call.arguments) }) // 帧面 = 摘要 ≤500（§11.3——落库面已改全文）
         const args = parseToolArgs(call.arguments)
         const secrets = args === null ? [] : secretValuesOf(args)
         turnSecrets.push(...secrets)
-        const result = args === null ? { ok: false, message: "工具入参非 JSON 对象" } : await tools.invoke(call.name, args, envCtx)
+        const rejected = admission.allow === false ? { ok: false, message: admission.message } : null // 拒执行形（工具行/`result` 帧/`chat_call` 三面同值）
+        const result = rejected ?? (args === null ? { ok: false, message: "工具入参非 JSON 对象" } : await tools.invoke(call.name, args, envCtx))
         const summary = summaryOfResult(result, secrets)
         emitFrame({ type: "result", id: call.id, ok: result?.ok === true, summary })
         // 模型可见形：文本面族（环境 ∥ MCP）= 核件文本原文（`output`——非 JSON 壳，KD-SV-113 被否栏）；管理族 = 结构化结果（既有形零变）
@@ -683,6 +691,7 @@ export async function runChatTurn({ db, chatId, content, images = [], emit = nul
       }
     }
   } finally {
+    askHost?.close() // 审批 ask 宿主收尾（未决全拒——KD-SV-227 兜底三径之一）
     // 中止面（§15.1——非 interrupt 全停：池条目控制器已中止 ⇒ 杀树 + 丢弃提醒入汇 + 墓碑；判据内建于核件）
     await discardAbortedChatTasks(chat.id, { log, coreTools: deps.coreTools ?? null })
     clearChatAbort(chat.id) // 登记表随回合生命周期（单源——零残留）

@@ -38,7 +38,8 @@ export const DEFAULTS = {
     subagentModel: null,  // default subagent model: "provider:model" | model name (parent provider); null = inherit parent provider
     subagentModels: {},   // per-type override: { explore, plan, coder, "eng-coder" } — priority: subagent tool model arg > this[role] > subagentModel > parent provider
     goalTurns: 200,
-    compactThreshold: 100000,
+    // compactThreshold: 键缺省 = auto（CONTEXT-COMPACTION.md §6.17 三档落值）——无默认值：留着默认值
+    // 会让每份配置看着都像显式。派生线只进 agent.compactThresholdResolved（内存面，不落盘）。
     verifyGuard: false,  // push model back to verify when files were mutated but verify not run (opt-in)
     // Multi-model consultation ("会诊") + escalate ("飞刀") — CLI parity with the VS Code plugin.
     // consultModels: candidate pool for BOTH consult and escalate ({ provider, model, effort? }, up to 5).
@@ -115,22 +116,24 @@ import { specForModel, providerSpec, specMatch, assistantToolCallMessage } from 
 export { specForModel, providerSpec, specMatch, assistantToolCallMessage }
 
 
-// Window utilization threshold (CONTEXT-COMPACTION.md §6.2 / D-CC30): auto = min(usable window,
-// floor(window × COMPACT_RATIO)) — every spec row lands in 75–80% of the window (reservation capped
-// at a quarter ⇒ 75%; capped reservation below 20% ⇒ 80%; the 20–25% band ⇒ window − reservation).
-// The remaining 20–25% is headroom for injected context (directory tree, git context, outline,
-// project instructions, memory/doc search results — 30–50K tokens per turn).
+// Window utilization ratio (CONTEXT-COMPACTION.md §6.2 / D-CC30 / §6.17 / D-CC32): auto threshold =
+// min(usableWindow(window, reserve), ⌊window × COMPACT_RATIO⌋) — reserve is the output budget
+// ACTUALLY sent as max_tokens (uncapped; §6.17 requestBudget is the single source). Rows with
+// reserve ≤ 20% of the window land on the ratio term; larger reservations pull the line down to
+// window − reserve — overflow-free outranks the 75–80% band (mathematically exclusive there, §6.2).
+// Headroom above the line absorbs injected context (directory tree, git context, outline, project
+// instructions, memory/doc search results — 30–50K tokens per turn).
 const COMPACT_RATIO = 0.8
 
-/** Output reservation the request counts against the window: explicit `provider.maxTokens`
- *  (the value actually sent — `provider/core.mjs`) when set, else the spec `maxOutput`, else 0 —
- *  capped at a quarter of the window (§6.2 / D-CC30: an output budget above 25% would drag the
- *  compaction line far below the 75–80% target; the residual band between the cap and the real
- *  output budget is accepted, see the overflow argument in §6.2). */
+/** Output reservation counted against the window: the value ACTUALLY sent as max_tokens —
+ *  explicit `provider.maxTokens` when set (the transport faces send it verbatim), else the spec
+ *  `maxOutput`, else 0. NOT capped: the old 25% cap reopened a residual band between the counted
+ *  reservation and the real output budget — messages could cross the true window while still below
+ *  the compaction line (2026-10-18 overflow 400: budget counted 250_000, 393_216 actually sent).
+ *  Single source = §6.17 requestBudget; this is its reserve face (advisor budget reuses it). */
 export function outputReserve(provider, spec) {
   const explicit = provider?.maxTokens
-  const reserve = Number.isFinite(explicit) && explicit > 0 ? explicit : spec?.maxOutput ?? 0
-  return Math.min(reserve, Math.floor((spec?.context ?? 0) * 0.25))
+  return Number.isFinite(explicit) && explicit > 0 ? explicit : spec?.maxOutput ?? 0
 }
 
 /** Usable input window = window − output reservation. Degenerate guard: a reservation
@@ -145,18 +148,50 @@ export function usableWindow(context, reserve) {
   return usable > 0 ? usable : Math.floor(ctx / 2)
 }
 
-/** Derive compaction threshold; explicit is the value explicitly set in config file (takes priority), otherwise auto-computed from model.
- *  auto = min(usable window, floor(window × COMPACT_RATIO)) — §6.2 / D-CC30 target band 75–80%.
- *  Second param accepts EITHER a model name string (pure spec lookup — legacy caller:
- *  first-run wizard) OR a provider object (providerSpec — the providers[].context
+/** Request budget — single source for window ∥ actually-sent max_tokens ∥ compaction threshold ∥
+ *  overflow guard (CONTEXT-COMPACTION.md §6.17 / D-CC32). One formula, four consumer faces:
+ *  threshold (resolveCompactThreshold / per-run setup), the four transport faces (read ONLY
+ *  maxTokens), the stats budget line (agent-tools/context.mjs), the pre-send guard
+ *  (agent/run-stages.mjs). transport derives from provider.format ("anthropic" | "google" |
+ *  "responses" | default = OpenAI-compatible). Fields:
+ *  - window / windowSource: spec.context (providers[].context K override already merged by
+ *    providerSpec); source = "provider-override" when the override is present, else "spec".
+ *  - maxTokens / maxTokensSource: the value THIS transport writes into the request body —
+ *    anthropic always sends it (explicit ?? spec.maxOutput); the other three faces send only an
+ *    explicit provider.maxTokens, absent ⇒ undefined / "absent". Never a guard criterion
+ *    (undefined ⇒ NaN — §6.17 guard); the guard reads limit instead.
+ *  - reserve: maxTokens ?? spec.maxOutput — uncapped, always a number.
+ *  - usable: usableWindow(window, reserve) (degenerate half-window guard).
+ *  - threshold: min(usable, ⌊window × COMPACT_RATIO⌋) — the compaction trigger line.
+ *  - limit: window − reserve — hard prompt ceiling; the guard's ONLY numeric criterion field
+ *    (always a number; negative = any prompt overflows). */
+export function requestBudget(provider, spec = providerSpec(provider)) {
+  const window = spec?.context ?? 0
+  const k = Number(provider?.context)
+  const windowSource = Number.isInteger(k) && k > 0 ? "provider-override" : "spec"
+  const explicitRaw = Number(provider?.maxTokens)
+  const explicit = Number.isFinite(explicitRaw) && explicitRaw > 0 ? explicitRaw : undefined
+  const anthropicAlwaysSends = provider?.format === "anthropic"
+  const maxTokens = explicit ?? (anthropicAlwaysSends ? spec?.maxOutput ?? 0 : undefined)
+  const maxTokensSource = explicit != null ? "explicit" : anthropicAlwaysSends ? "spec" : "absent"
+  const reserve = maxTokens ?? spec?.maxOutput ?? 0
+  const usable = usableWindow(window, reserve)
+  return {
+    window, windowSource, maxTokens, maxTokensSource, reserve, usable,
+    threshold: Math.min(usable, Math.floor(window * COMPACT_RATIO)),
+    limit: window - reserve,
+  }
+}
+
+/** Derive compaction threshold; explicit is the value explicitly set in config file (takes priority),
+ *  otherwise auto = requestBudget().threshold (§6.17 single source — min(usable, ⌊window × 0.8⌋),
+ *  reserve uncapped). Second param accepts EITHER a model name string (pure spec lookup — compat shape,
+ *  no caller passes a string today) OR a provider object (providerSpec — the providers[].context
  *  override in K units is honored, PROVIDER.md §15 T-C2). */
 export function resolveCompactThreshold(explicit, modelOrProvider) {
   if (explicit != null) return { value: explicit, auto: false }
   const provider = typeof modelOrProvider === "string" ? { model: modelOrProvider } : (modelOrProvider ?? {})
-  const spec = providerSpec(provider)
-  const usable = usableWindow(spec.context, outputReserve(provider, spec))
-  const value = Math.min(usable, Math.floor(spec.context * COMPACT_RATIO))
-  return { value, auto: true }
+  return { value: requestBudget(provider).threshold, auto: true }
 }
 
 /**
@@ -185,6 +220,11 @@ export function resolveEnableThinking(provider, spec) {
   const model = (typeof raw === "string" ? raw : "").toLowerCase()
   if (!model.startsWith("qwen") || model.startsWith("qwen3-coder")) return undefined
   if (!isBailianHost(provider?.baseURL)) return undefined
+  // 一致性分支（#1659）：effort 档位有值且非 "none" ⇒ effort 赢（thinking on）。
+  // 百炼约束：enable_thinking:false 时 reasoning_effort 必须为 "none"，互斥即 400。
+  // 压缩下行（context.mjs:203）显式 thinking:null 但继承 effort（v3 同源裁定）——
+  // 无此分支则发出 {enable_thinking:false, reasoning_effort:"medium"} ⇒ 400 ⇒ 压缩三连败。
+  if (provider.reasoningEffort && provider.reasoningEffort !== "none") return true
   if (provider.thinking === null) return false
   if (provider.reasoningEffort) return true
   return undefined
@@ -425,11 +465,18 @@ export function loadConfig() {
     ? null
     : plan.reason ?? defaultModelReason(merged.providers, merged.defaultModel)
 
-  // Compaction threshold follows the model (provider-level context override honored — providerSpec)
+  // Compaction threshold 三档落值（CONTEXT-COMPACTION.md §6.17）：数值在场 = 显式（原样，不猜来源）；
+  // 不在场 = auto——派生值只进 compactThresholdResolved，永不写 agent.compactThreshold、不落盘。
   const explicitThreshold = config.agent?.compactThreshold
-  const { value, auto } = resolveCompactThreshold(explicitThreshold, merged.provider)
-  merged.agent.compactThreshold = value
-  merged.agent.compactThresholdAuto = auto
+  if (explicitThreshold != null) {
+    merged.agent.compactThreshold = explicitThreshold
+    merged.agent.compactThresholdResolved = explicitThreshold
+    merged.agent.compactThresholdAuto = false
+  } else {
+    merged.agent.compactThreshold = undefined
+    merged.agent.compactThresholdResolved = resolveCompactThreshold(null, merged.provider).value
+    merged.agent.compactThresholdAuto = true
+  }
 
   // Write back to merged for convenient access by upper layers
   // fetch 超时可配置（2026-09-01：agent.fetchTimeoutMs——provider/core.mjs effectiveFetchTimeoutMs 消费）

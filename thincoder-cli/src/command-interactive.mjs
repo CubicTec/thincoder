@@ -136,7 +136,8 @@ export async function tuiCommand(ctx) {
   if (agent.config?.providerState === "invalid") agent.provider = null
   const config = loadConfig()
   if (data) {
-    // applySession 内部已按槽复合重算 compactThreshold（auto 时）——不再需要 switched 分支
+    // applySession 内部已按槽复合刷新显示面 compactThresholdResolved（auto 时）——判定阈值由
+    // setup.mjs 每 run 现算（§6.17），此处不再需要 switched 分支
     // TUI-OOM-ROOTCAUSE（SESSION.md §6.14）：传 slot → 绑定记录存储（身份核验 + 对账）
     // ——人读线 = 尾窗（磁盘为准）；未传 = 模式 F（全量数组）
     applySession(agent, data, { slot })

@@ -180,6 +180,12 @@ export async function runTurnLoop(agent, {
 
     if (response.usage) {
       callbacks.onUsage?.(response.usage)
+      // Core-side cumulative cache tally (batch 2026-10-18-context-cache-visibility):
+      // every agent (parent or child) keeps its own hit/miss so `context` can report
+      // cache efficiency instead of the terminal faces being the only tally holders.
+      agent._cacheHitTokens = (agent._cacheHitTokens ?? 0) + (response.usage.prompt_cache_hit_tokens ?? 0)
+      agent._cacheMissTokens = (agent._cacheMissTokens ?? 0) + (response.usage.prompt_cache_miss_tokens ?? 0)
+      agent._usageTurns = (agent._usageTurns ?? 0) + 1
       if (response.usage.prompt_tokens != null) {
         agent._lastPromptTokens = response.usage.prompt_tokens
         agent._usageAtLen = agent.history.length

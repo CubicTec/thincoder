@@ -94,9 +94,11 @@ export async function handleConfigCommand(ctx, args = []) {
     }
     // 运行时重建后同步注入结果（cfg.provider 系 loadConfig 内建——injectProxy 后建）
     agent.provider.proxyUri = cfg.providersList.find((p) => p.name === agent.activeProvider)?.proxyUri
+    // §6.17：auto 派生值永不回写 agent.compactThreshold——只刷新显示面 compactThresholdResolved
+    // （每 run 的判定阈值由 setup.mjs 现算，本处只管 /config 显示面与显式键隔离）
     if (agent.config?.agent?.compactThresholdAuto) {
       const { resolveCompactThreshold } = await import("@thincoder/core/config.mjs")
-      agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+      agent.config.agent.compactThresholdResolved = resolveCompactThreshold(null, agent.provider).value
     }
   }
 
@@ -348,12 +350,18 @@ export async function handleConfigCommand(ctx, args = []) {
     const consultCount = (ac.consultModels ?? []).length
     const pl = ac.poolLimits ?? {}
     const cur = poolCur(pl, DEFAULTS)
+    // §6.17 显示面（一处助手，四处共用）：数值 = compactThresholdResolved（缺场 ⇒ `(unavailable)`——
+    // 链尾不产数、不回落任何默认数——回落 100000 会造一条 10% 假线；该支不可达，纯护栏）；
+    // auto 旗 ⇒ 缀 ` (auto)`。写入数值 = 固定为显式阈值（保存回显明示）。
+    const ctResolved = ac.compactThresholdResolved
+    const ctDisplay = ctResolved === undefined ? "(unavailable)" : String(ctResolved)
+    const ctSuffix = ac.compactThresholdAuto ? " (auto)" : ""
     const mainEntries = [
-      { type: "header", text: `proxy=${proxySummary()} | maxTurns=${ac.maxTurns ?? 200} | compactThreshold=${ac.compactThreshold ?? 100000} | verifyGuard=${ac.verifyGuard === true ? "on" : "off"} | consult=${consultCount} model(s) | embedding=${agent.memory?.embedder ? "on" : "off"} | traces=${tc.enabled === false ? "off" : "on"}` },
+      { type: "header", text: `proxy=${proxySummary()} | maxTurns=${ac.maxTurns ?? 200} | compactThreshold=${ctDisplay}${ctSuffix} | verifyGuard=${ac.verifyGuard === true ? "on" : "off"} | consult=${consultCount} model(s) | embedding=${agent.memory?.embedder ? "on" : "off"} | traces=${tc.enabled === false ? "off" : "on"}` },
       { type: "item", text: `agent.maxTurns = ${ac.maxTurns ?? 200}`, action: "agent.maxTurns" },
       { type: "item", text: `agent.subagentTurns = ${ac.subagentTurns ?? 100}`, action: "agent.subagentTurns" },
       { type: "item", text: `并发池 agent.poolLimits = engCoder ${cur("engCoder")} / other ${cur("other")} / advisor ${cur("advisor")}（async 分域上限）`, action: "pool" },
-      { type: "item", text: `agent.compactThreshold = ${ac.compactThreshold ?? 100000}${agent.config?.agent?.compactThresholdAuto ? " (auto)" : ""}`, action: "agent.compactThreshold" },
+      { type: "item", text: `agent.compactThreshold = ${ctDisplay}${ctSuffix}`, action: "agent.compactThreshold" },
       { type: "item", text: `config.defaultModel = ${agent.config?.defaultModel ?? "(未设置 — 新会话起点)"}`, action: "defaultModel" },
       { type: "item", text: `agent.verifyGuard = ${ac.verifyGuard === true ? "on" : "off"}`, action: "agent.verifyGuard" },
       { type: "item", text: `traces.enabled = ${tc.enabled === false ? "off" : "on"}（轨迹存档——发布默认关——隐私）`, action: "traces.enabled" },
@@ -381,7 +389,7 @@ export async function handleConfigCommand(ctx, args = []) {
       pushLine(`Key:    ${maskKey(agent.provider.apiKey)}`, C.dim)
       pushLine(`agent.maxTurns: ${ac.maxTurns ?? 200}`, C.dim)
       pushLine(`agent.subagentTurns: ${ac.subagentTurns ?? 100}`, C.dim)
-      pushLine(`agent.compactThreshold: ${ac.compactThreshold ?? 100000}${agent.config?.agent?.compactThresholdAuto ? " (auto)" : ""}`, C.dim)
+      pushLine(`agent.compactThreshold: ${ctDisplay}${ctSuffix}`, C.dim)
       pushLine(`agent.verifyGuard: ${ac.verifyGuard === true ? "on" : "off"}`, C.dim)
       pushLine(`traces.enabled: ${tc.enabled === false ? "off" : "on"}（默认 off——发布隐私——本地分析可开）`, C.dim)
       pushLine(`traces.retentionHours: ${tc.retentionHours ?? 24}（超期文件启动清理——D-TR10）`, C.dim)
@@ -485,12 +493,13 @@ export async function handleConfigCommand(ctx, args = []) {
     const isTimeout = label === "agent.consultTimeoutMs"
     const current = label === "agent.maxTurns" ? (ac.maxTurns ?? 200)
       : label === "agent.subagentTurns" ? (ac.subagentTurns ?? 100)
-      : label === "agent.compactThreshold" ? (ac.compactThreshold ?? 100000)
+      // §6.17 编辑初值 = 同一数值（resolved 缺场 ⇒ 留空——不预填任何默认数）
+      : label === "agent.compactThreshold" ? (ctResolved ?? "")
       : label === "agent.consultTurns" ? (ac.consultTurns ?? 40)
       : label === "traces.retentionHours" ? (tc.retentionHours ?? 24)
       : isTimeout ? Math.round((ac.consultTimeoutMs ?? 600000) / 60000)
       : ""
-    const val = await askQuestion(`${label} (current: ${current}${isTimeout ? " min" : ""}):`)
+    const val = await askQuestion(`${label} (current: ${current}${isTimeout ? " min" : ""}${label === "agent.compactThreshold" && ac.compactThresholdAuto ? " — 输入数值即固定为显式阈值（auto 派生线不再生效）" : ""}):`)
     if (!val) continue
     try {
       const num = Number(val)
@@ -504,6 +513,7 @@ export async function handleConfigCommand(ctx, args = []) {
       })
       pushLabel("❯ Config", ansi.bold + C.tool)
       pushLine(`${label} = ${isTimeout ? `${val} min (${stored} ms)` : val}`, C.tool)
+      if (label === "agent.compactThreshold") pushLine("显式阈值——auto 派生线不再生效（压缩线改按该显式值判定）", C.dim)
       pushLine("(restart to apply)", C.dim)
     } catch (error) { pushLine(`Save failed: ${error.message}`, C.error) }
     // 回主菜单（Esc 退出）——数值输入 Enter 空值也已 continue 于此

@@ -22,8 +22,8 @@ import { assembleFamilyTools } from "./family-tools.mjs"
 import { normalizeOrigin } from "../memory/origin.mjs"
 import { searchOrigins } from "../memory/code-search.mjs"
 import { INDEX_ORIGIN_ROW_WARN } from "../memory/schema.mjs"
+import { resolveCompactThreshold } from "../config.mjs"
 
-const DEFAULT_COMPACT_THRESHOLD = 100_000
 const DOC_SEARCH_LIMIT = 5
 const DOC_CHUNK_PREVIEW_LEN = 300
 /** UTF-16 安全截断（2026-09-02 deepseek 400 根因）：slice(0, N) 按码元切会把 emoji 代理对切成孤立
@@ -51,7 +51,9 @@ export async function prepareRun(agent, input, callbacks, {
   injections = null, toolDecorate = undefined,
 } = {}) {
   const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_TURNS
-  const threshold = agent.config?.agent?.compactThreshold ?? DEFAULT_COMPACT_THRESHOLD
+  // §6.17 每 run 现算：数值在场 = 显式原样；不在场 = auto 现算（按在用 provider——切模型后下一 run 跟手）。
+  // 派生值不落 agent.compactThreshold（显式键永不被改写）。
+  const threshold = resolveCompactThreshold(agent.config?.agent?.compactThreshold, agent.provider).value
   // 注入开关（PROMPT-SYSTEM.md §6.24 · 台账 #1420）：判据 `!== false`（缺省 = 现行为零变）——
   // 逐 run 现读 `agent.config` ⇒ `settings` 工具 ∕ `/config` 写入后本会话下一次组装即生效。
   const injectDocs = agent.config?.agent?.injectDocs !== false
@@ -62,6 +64,12 @@ export async function prepareRun(agent, input, callbacks, {
 
   agent._lastPromptTokens = null
   agent._usageAtLen = null
+  // Cumulative provider cache accounting (batch 2026-10-18-context-cache-visibility):
+  // the service reports prompt_cache_hit/miss per response; the terminal faces each kept
+  // their own tally, so the CORE had none and `context` could not report cache efficiency.
+  agent._cacheHitTokens = 0
+  agent._cacheMissTokens = 0
+  agent._usageTurns = 0
   agent.history = repairHistory(agent.history)
 
   if (!resume) {

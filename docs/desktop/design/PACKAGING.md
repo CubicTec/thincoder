@@ -311,7 +311,7 @@
     更新节补句「Linux：AppImage 自动更新；deb 走系统包管理器手动升级。」
   - `desktop.html`：安装节补 **Linux 节**（与 Windows 块同构）——**AppImage**：下载后置执行位（`chmod +x ThinCoder-Setup-<号>.AppImage`；或文件管理器「属性 → 允许执行」放行）⇒ 双击运行（需 FUSE）；
     **deb**：`sudo apt install ./ThinCoder-Setup-<号>.deb`（或双击安装）；自动更新面句 = AppImage 自动（同 Windows 句）∥ deb 手动（系统包管理器升级）；系统要求节补 Linux 条（AppImage（需 FUSE）∥ deb（Ubuntu ∥ Debian 系））。
-  - `about.html` ∥ `changelog.html`：版本面同号（桌面 = 源树——§6.1 口径）；changelog 桌面节条目随 `CHANGELOG.md` 句（§6.4 半自动沿）。
+  - `about.html` ∥ `changelog.html`：版本面同号（桌面 = 源树——§6.1 口径）；changelog 桌面节条目随 `thincoder-desktop/CHANGELOG.md` 句（§6.4 半自动沿）。
   - 部署 = `deploy-oss.mjs` 全量（随 §5.8 阶段 5）。
 
 **2.11.6 失败面（Linux 链）**
@@ -392,7 +392,7 @@
 
 | 行 | 内容 | 状态 | 单源 |
 |---|---|---|---|
-| DE | **上抛四件**：① **图标资产复用建议**——`build/icon.ico` 的源生成器可顺产 PNG（站点 OG ∕ 下载页卡面用）——站点轮可选采（跨仓 = 主 agent 轮）② **`deploy-oss.mjs` prune 加固**（站点仓）：`OSS_DELETE=1` 时 prune 面 = 全桶键 − 本地 `www/` 键（该脚本 prune 段——跨仓行号不引）⇒ 桶内 `downloads/**` 会被判陈旧一并删除——建议 prune 面加 `downloads/` 前缀豁免（或维持 `OSS_DELETE` 恒关——现缺省）③ **签名时间戳 URL 实测选定**（GlobalSign RFC3161——实施期实测；落档 = 本档 §2.3）④ **站点仓 changelog 生成器（`gen-changelog.mjs`）desktop 分支**：现只含 cli ∥ vsc（`--side` 两值）；`docs/RELEASE.md` §6.4 档面已含桌面 `CHANGELOG.md` 输入（随动已落）⇒ 余动作 = 该脚本增 desktop 分支（站点轮随动） | 上抛（①③④随站点 ∥ 实施轮；②站点仓加固） | 单源 = 本档 §1 **KD-64** ∥ §2；站点面 = §2.11.5 |
+| DE | **上抛四件**：① **图标资产复用建议**——`build/icon.ico` 的源生成器可顺产 PNG（站点 OG ∕ 下载页卡面用）——站点轮可选采（跨仓 = 主 agent 轮）② **`deploy-oss.mjs` prune 加固**（站点仓）：`OSS_DELETE=1` 时 prune 面 = 全桶键 − 本地 `www/` 键（该脚本 prune 段——跨仓行号不引）⇒ 桶内 `downloads/**` 会被判陈旧一并删除——建议 prune 面加 `downloads/` 前缀豁免（或维持 `OSS_DELETE` 恒关——现缺省）③ **签名时间戳 URL 实测选定**（GlobalSign RFC3161——实施期实测；落档 = 本档 §2.3）④ **站点仓 changelog 生成器（`gen-changelog.mjs`）desktop 分支**：现只含 cli ∥ vsc（`--side` 两值）；`docs/RELEASE.md` §6.4 档面已含桌面 `thincoder-desktop/CHANGELOG.md` 输入（随动已落）⇒ 余动作 = 该脚本增 desktop 分支（站点轮随动） | 上抛（①③④随站点 ∥ 实施轮；②站点仓加固） | 单源 = 本档 §1 **KD-64** ∥ §2；站点面 = §2.11.5 |
 
 | DK | **`T-DSK60` 用例号自铸披露 + 披露五件**（沿 T-DSK37–T-DSK59 先例——自铸；若实施批 ∥ 并行批占用同号 ⇒ 请父侧并号裁定）：① 用例行随测试文件修加——不进设计面条目；② **`electron-updater` = 首个第三方运行依赖**（声明面三处收正：`package.json` description ∥ `AGENTS.md` ∥ 本档——「零第三方」旧句作废；由 = 差分更新 ∥ 安装器生命周期 ∥ 验签链均为库面能力，手搓 = 重造块图算法）；③ **桌面下载卡图标收正**（阶段一前案 `</>` ⇒ 🖥️——emoji 先例；`</>` 系品牌位形）；④ **RELEASE.md 指针代际**（`docs/desktop/design/PROJECT.md` §5 已迁 `docs/desktop/design/PACKAGING.md` §2——重组后死指针，已收正；同族：CHANGELOG「拟新增」四标）；⑤ **需求卷侧已收正**（主 agent 笔面——已落）：**D40**（自动更新）∥ **D41**（官网桌面面）已入需求卷——引 `docs/desktop/requirements/PACKAGING.md:3` ∥ `:14-15` ∥ `:20` | 登记（自铸披露 + 四处披露；⑤ 已收正） | 单源 = 本档 §1 **KD-71** ∥ **KD-72** |
 

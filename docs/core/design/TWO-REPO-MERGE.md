@@ -54,7 +54,7 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | 仓根 `.gitattributes` / `.gitignore` | 仓根建一份（两产品共用）；各产品子目录内可保留自有规则 |
 | 产品级 `.gitignore` | `thincoder-cli/.gitignore` 存在（目录锚定形态 `/.thincoder/index/` · `/.thincoder/tmp/`）——**依据**：仓根 `.gitignore` 的含斜杠规则锚定在仓根，产品内 `.thincoder/` 产物会脱保 |
 | `.thincoder/` | 各产品子目录内各留一份（同名不同内容不复用）；仓根如需另行建 |
-| `LICENSE` / `CHANGELOG.md` | 两产品各自保留（版本线与许可各自独立） |
+| `LICENSE` / 各产品 `CHANGELOG`（`thincoder-cli/CHANGELOG.md` ∥ `thincoder-vscode/CHANGELOG.md`） | 两产品各自保留（版本线与许可各自独立） |
 | 未跟踪临时产物 | 不入版本控制；迁入前已清理 |
 
 ### 2.5 项目台账单仓化

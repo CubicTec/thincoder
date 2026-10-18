@@ -14,7 +14,7 @@
 | **Consult & Advisor** | 会诊行（modelMenu + effort 档 + ✕）+ **添加弹窗**（`#consult-add-dialog`——provider ∥ model 两字段 + 提交；§2.17 ②）+ Advisor（guard + provider/model + effort） | `thincoder-vscode/webview/settings-agent.js` · `thincoder-vscode/webview/settings-consult-dialog.js` |
 | **Tools & Services** | MCP servers（列表 + **添加/编辑弹窗**（stdio/http/ws 表单；env ∥ headers = 行式键值——§2.4；§2.17 ①）+ 连接状态 ●/○ + Reconnect）+ Web Search key + Semantic Index（key + Build） | `thincoder-vscode/webview/settings-tools.js`（卡壳 ∥ 键行族 ∥ 索引）+ `thincoder-vscode/webview/settings-mcp.js`（MCP 列表面——§2.10 拆档产出）+ `thincoder-vscode/webview/settings-mcp-dialog.js`（MCP 弹窗体——§2.17 ①） |
 | **Environment** | Proxy（URI / web / Test）+ Shell（平台感知候选） | `thincoder-vscode/webview/settings-env.js` |
-| **团队** | 管理面：端标签 + 详情（server ∥ member ∥ label）+ 未登录提示句 = 「未登录——登录后可用」（三端逐字同句——`docs/core/design/TEAM.md` §2.5）；零登/退控件（登/退 = 首启板团队卡 ∥ 状态栏 item + 命令 `thincoder.team`——§2.20 条 6） | `thincoder-vscode/webview/settings-team.js`（已落） |
+| **团队** | 管理面：端标签 + 详情（server ∥ member ∥ label）+ 未登录提示句 = 「未登录——登录后可用」（三端逐字同句——`docs/core/design/TEAM.md` §2.5）；零登/退控件（登/退 = 首启板团队卡 ∥ 状态栏 item + 命令 `thincoder.team`——§2.20 条 6）；**「轮换」控件**（已登录在场——确认一步 + 结果行；机制单源 = `docs/core/design/TEAM.md` §2.7） | `thincoder-vscode/webview/settings-team.js`（已落） |
 
 ## 2. 面板 ↔ config 契约
 
@@ -35,16 +35,20 @@
 
 ### 2.3 Agent 运行参数（写盘链与合并语义）
 
-- 写入链：面板 → `saveAgentSettingsFromPanel`（**单写通道**，`thincoder-vscode/src/extension/settings.mjs:162` 转出；现体 = 核 `thincoder-core/config-io.mjs`）→ config.json `agent.*`。**载荷面 = `agent.*` 键域**（旧 `defaultModel` 支退场——设置面零模型选择控件 ⇒ 消费面归零；`defaultModel` 写入面 = 会话选定写回 ∥ 迁移；决策单源 = `docs/desktop/design/SETTINGS.md` §1 **KD-80** ①）。
+- 写入链：面板 → `saveAgentSettingsFromPanel`（**单写通道**，`thincoder-vscode/src/extension/settings.mjs:162` 转出；现体 = 核 `thincoder-core/config-io.mjs`）→ config.json `agent.*`。
+  **载荷面 = `agent.*` 键域**（旧 `defaultModel` 支退场——设置面零模型选择控件 ⇒ 消费面归零；`defaultModel` 写入面 = 会话选定写回 ∥ 迁移；决策单源 = `docs/desktop/design/SETTINGS.md` §1 **KD-80** ①）。
 - **advisor 字段级合并**：payload 缺键**从磁盘回填**（对端写入的 provider / model / thinking / reasoningEffort 在面板保存后存活）；显式 `null` / `''` = 清空删除；wire 层空槽位必须发 `null` 而非 `undefined`（postMessage JSON 会丢弃 `undefined` 键——**缺失与清空必须可区分**）。`timeoutMs` 透传保留手写值。
 - 面板打开即拉新：`openSettings` → `getAgentSettings`（webview → extension）→ extension 重读盘推送 `agentSettings`（extension → webview）→ 收到后渲染（250ms 超时回退快照）。对端写盘后打开面板即可见。
 - `subagentModels` 优先级：工具 model 参数 > `subagentModels[role]` > `subagentModel` > 父 provider。
 - **autoThink 档位开关**（Auto 组对齐桌面 ∕ CLI `/think` 同键）：键 = `agent.autoThink`（默认 false）。**读链**：`loadAgentSettings()`（`thincoder-vscode/src/extension/settings.mjs:42`）→ 快照 `agentSettings()` 携键（`:137`）→
   agent 卡两态渲染；**写链**：`saveAgentSettingsFromPanel`（`thincoder-vscode/src/extension/settings-panel-write.mjs:80`）显式布尔写（false 亦写——同 verifyGuard 式）；
   **控件**：`#ag-autothink` switch（`thincoder-vscode/webview/settings-agent.js:26-27`——verifyGuard 后位）+ 载荷 `autoThink: chk("ag-autothink")`（`:123`）。词面 = `settings.agent.autoThink`（两语 = 桌面同值）。
-- **注入开关三键**（PROMPT-SYSTEM.md §6.24 §6.27）：键 = `agent.injectProjectRules` ∥ `agent.injectDocs` ∥ `agent.injectMemories`（默认 true——判据 `!== false`；全局粒度）。**职责切分**（用户裁定）——项目指令（① `AGENTS.md` / `project_rules.md`）∣ 相关文档（② 自动检索）∣ 相关记忆（③）三块各受各键，**三键互不影响**（§6.27）。**读链**：`loadAgentSettings()`（`thincoder-vscode/src/extension/settings.mjs:45-46`）→ 快照 `agentSettings()` 携键（`:165-166`）→
+- **注入开关三键**（PROMPT-SYSTEM.md §6.24 §6.27）：键 = `agent.injectProjectRules` ∥ `agent.injectDocs` ∥ `agent.injectMemories`（默认 true——判据 `!== false`；全局粒度）。
+  **职责切分**（用户裁定）——项目指令（① `AGENTS.md` / `project_rules.md`）∣ 相关文档（② 自动检索）∣ 相关记忆（③）三块各受各键，**三键互不影响**（§6.27）。
+  **读链**：`loadAgentSettings()`（`thincoder-vscode/src/extension/settings.mjs:45-46`）→ 快照 `agentSettings()` 携键（`:165-166`）→
   agent 卡两态渲染（`!== false` 判勾）；**写链**：`saveAgentSettingsFromPanel`（`thincoder-vscode/src/extension/settings-panel-write.mjs:84-85`）显式布尔写（false 亦写——同 autoThink 式）；
-  **控件**：`#ag-injectprojectrules` ∥ `#ag-injectdocs` ∥ `#ag-injectmemories` switch（`thincoder-vscode/webview/settings-agent.js:29-30`——autoThink 后位）+ 载荷三键（`:128-129`）+ `EDIT_FIELDS` 登记（`:153`）。词面 = `settings.injectProjectRules` ∥ `settings.injectDocs` ∥ `settings.injectMemories` + 悬浮说明 `…Help`（两语 = 桌面同值）。
+  **控件**：`#ag-injectprojectrules` ∥ `#ag-injectdocs` ∥ `#ag-injectmemories` switch（`thincoder-vscode/webview/settings-agent.js:29-30`——autoThink 后位）+ 载荷三键（`:128-129`）+ `EDIT_FIELDS` 登记（`:153`）。
+  词面 = `settings.injectProjectRules` ∥ `settings.injectDocs` ∥ `settings.injectMemories` + 悬浮说明 `…Help`（两语 = 桌面同值）。
   **agent 装配三处穿透**（timer-wake 先例——缺一 ⇒ config.json 对该键关不掉）：`thincoder-vscode/src/agent/setup.mjs` 默认种 `:132` ∥ raw 读 `:162` ∥ `agentFields` `:182`。生效时点 = **下一条消息**（`hydrateRun` 每轮重读——UI 腿非会话内即热，同 `docs/core/design/PROMPT-SYSTEM.md` §6.24 偏离句）。
 - Shell 为 config.json **顶层字段**（不在 `agent` 下），走独立消息通道；平台感知候选（System default / pwsh / Git Bash / WSL）。写面契约（控件接线 / 空值语义）= §2.9。
 
@@ -615,7 +619,7 @@ webview：agentSettings 到达 ⇒ 打开等待器触发 buildSettings ⇒ 建�
   `thincoder-vscode/src/extension/panel-settings-push.mjs` 两条推送链调用（快照族拍：light 档中置 `agentSettings` 前 ∥ full 档中置 `shellCandidates` 后）；
   上行恰 `teamLogin` ∥ `teamLogout` 两条（读面纯推送——无第三上行）；模型候选面唯一来源 = `fullStatus` 的 `models` 载荷——登录成拍补齐（成支 `panel._pushStatus()` ⇒ `panel._pushSettings()`，同拍发 `models`；机制单源 = `docs/core/design/TEAM.md` §2.8）；重绘两门 = 变更门（JSON 比对，镜像 `updateProviderStatus`）∥ 聚焦跳绘门（U-S10 同判）——面板未开 ⇒ 零动作。
 6. **卡 = 管理面**——登录表单与退出钮不在卡内（登/退 = 首启板团队卡 ∥ 状态栏团队 item + 命令 `thincoder.team`——`docs/vsc/design/WEBVIEW.md` §4.11 ∥ §4.12）；
-  卡面保留 = 端标签 + 详情（server ∥ member ∥ label）+ 未登录句；「轮换」= 另裁项（服务端无 client rotate 端点——零控件）；读面 `{ loggedIn, server, member, label }` 形零改（`verify` 态住宿主 item——零出站）；写面消息面（`teamLogin` ∥ `teamLogout`）零改（命令流复用同一核链）。
+  卡面保留 = 端标签 + 详情（server ∥ member ∥ label）+ 未登录句；「轮换」在卡内（已登录在场——确认一步 + 结果行；机制单源 = `docs/core/design/TEAM.md` §2.7）；读面 `{ loggedIn, server, member, label }` 形零改（`verify` 态住宿主 item——零出站）；写面消息面（`teamLogin` ∥ `teamLogout`）零改（命令流复用同一核链）。
 
 ## 3. 已知待办与已知限制
 

@@ -183,7 +183,7 @@
 
 ### 5.5 `/team` 命令族（会话内登录入口 · F20 边界句）
 
-> 需求 = `docs/cli/requirements/TUI.md` F20 范围边界（入口 = `/team` 命令族）；机制单源 = `docs/core/design/TEAM.md` §2。**与 argv 命令族同名同序**（login ∥ logout ∥ status——一词一事）。
+> 需求 = `docs/cli/requirements/TUI.md` F20 范围边界（入口 = `/team` 命令族）；机制单源 = `docs/core/design/TEAM.md` §2。**与 argv 命令族同名同序**（login ∥ logout ∥ status ∥ rotate——一词一事）。
 
 - **登记**：`SLASH_COMMANDS` + `HANDLERS` + 新档 `thincoder-cli/src/tui/cmd-team.mjs`（各命令实现独立成档：§1 同族先例）。
 - **子命令面**：
@@ -191,8 +191,9 @@
   - `/team login` —— 三问步（地址 → 账号 → 密码；**掩码回显**——同 §3.1 团队步）+ 核 `teamLogin`；成 ⇒ 结果行（argv 同形——同名冲突 `notice` ⇒ 就地提示·逐字同句）
     + **两复读**（`state.team` 复读 ∥ `syncProvidersFromDisk`——`agent.providers` 换盘面 ⇒ 模型 picker 候选当刻含 `team` 派生条目：`TEAM.md` §2.8）+（`defaultModel` 未设 ⇒ 追开模型 picker——「登录成即用」兜现；已设 ⇒ 零打断）；败 ⇒ **四句逐字**（`TEAM.md` §2.5）。
   - `/team logout` —— 未登录 ⇒ 未登录句（幂等——零动作）；已登录 ⇒ 核 `teamLogout`；成 ⇒ 结果行 + 一次性提示（吊销未达 ⇒ 「服务端吊销未达」逐字）+ `state.team` 复读。
+  - `/team rotate` —— 未登录 ⇒ 未登录句（幂等——零动作）；已登录 ⇒ 确认一步（后果句 + 确认 ∥ 取消；默认取消）——取消 ∥ 未确认 ⇒ 零请求零写盘 ⇒ 核 `teamRotate`（写盘单源 = 核）；成 ⇒ 结果行 + 两复读（`syncProvidersFromDisk` ∥ `refreshTeamState`）+ `verify` 清；败（`invalid`）⇒ 当场置「已失效」。机制单源 = `docs/core/design/TEAM.md` §2.7。
   - 表外子命令 ⇒ 用法行（fail-closed——沿 argv 同口径）。
 - **问句载体**：模态族第三支（团队问句面在场 ⇒ 键路由至问句步——Esc 取消 ∥ Enter 提交）；**第四支 = SSH 凭据窗**（面体 `thincoder-cli/src/tui/secret-prompt.mjs` ∥ 键面序 2c）；步进机制 = `ask-steps.mjs` 共享小件（§1——wizard 文本步与 `/team login` 共用；含掩码位）。
-- **可机判**：单元测试档直驱——`/team` 注册面（两表各含 team 行）；三层子命令行为（临时 config + HTTP 桩：成/败四句/未登录句/吊销未达句）；`/team login` 掩码位；状态段切片随动。
+- **可机判**：单元测试档直驱——`/team` 注册面（两表各含 team 行）；四子命令行为（临时 config + HTTP 桩：成/败四句/未登录句/吊销未达句/轮换确认 ∥ 成句）；`/team login` 掩码位；状态段切片随动。
 - **登录入口逐径（本批零改的适用范围）**：argv `team login`（`thincoder-cli/src/cli/team-command.mjs`——进程即止、无会话内存 ⇒ 零随动对象：候选面取数 = 下次启动）∥ 首启向导团队路（`thincoder-cli/src/tui/wizard.mjs:311` 调 `completeTeamLogin`——与会话内**同件** ⇒ 两复读随拍）∥ 会话内 `/team login`（`:192` 两复读）。三径本批零改（机制单源 = `docs/core/design/TEAM.md` §2.8）。
 - **边界**：不做团队面板；不改 argv `team` 命令面（零变）；登/退不经设置面（无设置卡——命令族即管理面）。

@@ -39,7 +39,7 @@
 - **修法**：consume-design 删内存槽后**当场同步落盘删除**（写空槽）——`thincoder-core/agent-tools/design-slots.mjs:150`（`removeDesignTokenSlot`）→ `:152`（`persistEngTokens`）。落盘失败 ⇒ 回滚内存槽 + 抛错可重试（不留半消费态）。
 - **消耗语义**：消费后同 designId 再 spawn = `resolveDesignSlot` not found 机械拒（消费核 `thincoder-core/agent-tools/design-slots.mjs:110`–`:135` 即此契约）。**批量清点 / 选择器面 = §9**。
 
-**用例**（`thincoder-cli/test/design-token-settlement.test.mjs` · 9 例）：
+**用例**（当批定向单测 `docs/batches/<batch>-<topic>.test.mjs`——收口随批删；常驻测试档不存在——既有缺口，另账）：
 
 | 类 | 场景 | 期望 |
 |---|---|---|
@@ -68,7 +68,7 @@
 | 镜像零写 | `thincoder-core/agent.mjs:69`–`:71` · `thincoder-core/session.mjs:437`–`:438` | 无字段初始化 |
 | 轮转守卫（拆分产物） | `thincoder-core/session-guard.mjs:35` | 与 `saveSession` 共用 |
 | 凭证工具组（拆分产物） | `thincoder-core/agent-tools/design-token.mjs` | 签发 / 校验 / 结算纯函数 |
-| 测试 | `thincoder-cli/test/design-token-settlement.test.mjs` | 9 例 |
+| 测试 | 当批定向单测（`docs/batches/<batch>-<topic>.test.mjs`——收口随批删） | 常驻测试档不存在（既有缺口，另账） |
 
 ### 6.2 双端与依赖方向
 
@@ -93,7 +93,7 @@
 | 会话内回合从槽新读（D3——快照已删） | 端壳 hydrate 面：`thincoder-vscode/src/agent/setup.mjs`（`hydrateRun` 每轮 `loadSlot` → `applySlotSessionState`）+ `thincoder-vscode/src/agent/agent-state.mjs:56`（`reconcileEngDesignTokens` 槽源合入——同 id 冲突**内存优先**〔状态词 = §6.2 ①〕；内存项永不清空——「槽 = 权威」仅指门禁读源 = D-S3） |
 | 单值镜像退役（D5） | `_engDesignToken` 单值镜像**零运行时读写**（dispatch 写门资格问「任一活槽存在」——核 `resolveDesignSlot`（`thincoder-core/agent-tools/subagent-spawn.mjs:115`））；仅 `thincoder-vscode/src/agent/agent-state.mjs:70-71` 一次性迁移读（legacy 残留——`ENG-TOKEN-BINDING.md` §6.3 已列） |
 | 消费落盘对称（consume 后不复活） | **W12/W13 已迁核**——现体 = 核 `thincoder-core/agent-tools/design-slots.mjs:110`（`executeConsumeDesignAction`——删内存槽 + `persistEngTokens` 当场同步落盘 + 失败回滚 `:153-156`） |
-| 测试覆盖 | `thincoder-vscode/test/eng-settlement.test.mjs`（14 用例——settle 落盘 / union 忙时 / restore / consume 不复活） |
+| 测试覆盖 | 当批定向单测（`docs/batches/<batch>-<topic>.test.mjs`——settle 落盘 / union 忙时 / restore / consume 不复活；收口随批删）。常驻测试档不存在（既有缺口，另账） |
 
 **VSC 侧差异**：① `engTokensMergeForSave` 同 key 冲突「**expiresAt 大者胜**（新 mint）」——**已消解**（W11 转口后同一实现：端壳 = 核 `mergeEngTokensForSave` re-export；
   「新铸者胜」与「expiresAt 大者胜」= 同一规则——核档 `thincoder-core/session-slot-write.mjs:172-173`）；② `reconcileEngTokensFromSlot` 同 id 冲突以槽为准（VSC 版内存优先）——**消解路径 + 到期条件在册**（A9 核查与处置 = §6.2 ①）。
@@ -135,68 +135,122 @@
 
 **边界（本增量不做）**：不做评审判据本身（advisor 内部——继承）；不做凭证格式改造（`uuid:expiresAt` 继承 v1，不重设 HMAC/签名层）。
 
-## 9. 槽位清点、批量消费与回收读口
+## 9. 槽位清点（令牌直读）与批量消费
 
-**背景（本设计因何而立）**：链终消费（§5 / §8 F2）只有逐枚通道、无清点面——已批准未消费槽只能从门禁拒文（`designId not found … held design ids`）反查。已闭链批的活 token 滞留 = 复用漏洞 ⇒ 本设计补**清点面**与**批量消费**；**签发链行为零改**（mint / settle / TTL / persist 语义与存储形零动——#868 可靠性面另论）。
+**背景**：链终消费（§5 / §8 F2）只有逐枚通道、无清点面——已批准未消费槽只能从门禁拒文（`designId not found … held design ids`）反查。已闭链批的活 token 滞留 = 复用漏洞 ⇒ 本节补**清点面**与**批量消费**；**签发链行为零改**（mint / settle / TTL / persist 语义与存储形零动——#868 可靠性面另论）。
+
+**在位 / 增量分界**：F-SL1 清点面 ∥ F-SL2 批量消费 = 在位零改（清点核 `design-slots.mjs:102` ∥ 消费核 `:149`）；本节增量 = 清点行恒携 `designToken` + 删 reveal ∥ 掩蔽 ∥ 一次一槽（删除面见下）。
 
 **F-SL1 清点面（`subagent` action:`design-slots`——只读）**：
 
-- **动作面**：`subagent` 工具新只读 action `design-slots`（第九动作——动作表 = `AGENT-LOOP-SUBAGENT.md` §6.7.2）；工程模式父侧（depth-0）限定（与 consume-design 同门）；分类 = 只读（planMode 放行 / 免审批 / digest 放行——同 `status` / `observe`）。
+- **动作面**：`subagent` 工具只读 action `design-slots`（第九动作——动作表 = `AGENT-LOOP-SUBAGENT.md` §6.7.2）；工程模式父侧（depth-0）限定（与 consume-design 同门）；分类 = 只读（planMode 放行 / 免审批 / digest 放行——同 `status` / `observe`）。
 - **数据源**：槽文件权威表（`readEngTokensFromSlot`——无 TTL 过滤原样）∪ 内存 Map（并集去重，冲突以槽为准——D-S3 同源）；**零写**（不 reconcile 回写、不落盘）。
-- **列表面（逐槽一行；龄升序——最老在前）**：`designId`（全串）∥ 状态（`live` / `expired`——`tokenExpired` 单源）∥ 时龄 `ageDays`（= now − (expiresAt − `effectiveTokenTtlMs`) 派生；TTL 配置曾改时为近似——如实注）∥ `expiresAt`（精确）∥ 批（下条）。尾行 = 计数行（总数 ∥ live ∥ expired）。
+- **列表面（逐槽一行；龄升序——最老在前）**：`designId`（全串）∥ 状态（`live` / `expired`——`tokenExpired` 单源）∥ 时龄 `ageDays`（= now − (expiresAt − `effectiveTokenTtlMs`) 派生；TTL 配置曾改时为近似——如实注）∥ `expiresAt`（精确）∥ 批 ∥ `designToken`（末位——见「令牌直读」）；尾行 = 计数行（总数 ∥ live ∥ expired）。
 - **「批」列来源**：会话内评审实例注册表（`_advisorRuns`——`advisor-async.mjs` `advisorRuns`）按 designId 命中 run ⇒ `docSetKey`（= 被审文档绝对路径集 JSON）中 `batches/` 段档取 basename；不可得（跨重启 / 模式重进 / 注册表回收）⇒ `—`。**零新存储**（不向槽表加元数据）。
 - **输出形**：行文本（紧凑——同 consume 面风格）；字段 / 序 / 降级标记 = 契约，行内措辞 = 实现面。
 
-**F-SL1 回收读口扩展（reveal）**：
+**F-SL1 令牌直读（token 不藏）——需求 F-SL3**：
 
-- **背景**：令牌一直落盘（D1——槽文件 = 权威台账），缺的只是读口——令牌随上下文压缩 / 重启从父侧窗口丢失后，此前只能考古会话档案（实证 ≈10 分钟）。本扩展 = **只读取回面**：按槽取回令牌，零授权语义变更。
-- **最相近先例**：F-SL1 清点面（:172–178）+ `consume-design` 选择器严格判定（`thincoder-core/agent-tools/design-slots.mjs:185`——`expired !== true` 即拒）；对齐 = 同读源（`unionSlots` 并集）∥ 同 fail-closed 形；偏差 = ① 新揭值概念（清点面零凭据外吐）② 掩蔽规则（只揭活槽——清点面仅列状态）③ 单槽限（必携 `designId`——不吐批量凭据）。
-- **参数面**：`designId`（可选——过滤到单槽；trim 后精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）∥ `reveal`（可选 boolean；仅 `true` 揭值）。**`reveal:true` 必须携 `designId`**（一次一槽——不吐批量凭据、不做全量 dump）；两参皆缺 = 现行清点面**逐字零变**；`reveal:null` 视同缺省（沿 `consume-design` 选择器先例——零揭值）；其余非 boolean ⇒ 拒（fail-closed——同 `consume-design` 对 `expired` 的严格判定先例）。
-- **输出形**：`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；`reveal:true` 且槽活 ⇒ 槽行尾追加 `designToken=<全串>` + 回收行（「`designId` + `designToken` 原样入 eng-coder spawn——门禁严格相等校验」）。
-- **掩蔽口径**：只揭**活槽**（格式合法 ∧ 未过期）——过期 / 畸形槽 ⇒ `designToken=—`（如实注因，不揭值：两态在任何门禁都过不了，揭值零收益）；**口面「活」判据 = 格式合法 ∧ 未过期——与列表 `status` 判据（`tokenExpired` 单源）不同：畸形槽列表记 `live`、口面照掩蔽（同一调用可现 `status=live` + `designToken=—`）**；`designId` 非凭据（门禁拒文即照列 designId 清单），**token 值才是凭据**。
-- **日志互作（核清在案——读口结果不得经日志面二次泄露）**：工具结果前 200 字符经 `agent/dispatch-run.mjs` 的 `tool:done` 事件 `head` 字段落盘；`log.mjs` `SECRET_FORM` 现有三形均不匹配 `uuid:epoch` 值形（**实证缺口**）。
-  处置 = **`thincoder-core/log.mjs` `SECRET_FORM` 增 token 值形**（`[0-9a-f]{8}-…-[0-9a-f]{12}:\d{10,16}`——与 `batch.mjs` 凭据第三形同判据），内容级「截断到形态前」（宁可丢信息不漏密钥）；字段名黑名单（`designToken` / `token`）与 `batch.mjs` 写入剥离面**零改**。实施 = 实施轮。
+- **决策与理由**：清点行**恒携** `designToken` 全串值——用户 2026-10-17 裁定「没必要把 token 藏起来，agent 要就告诉他」。理由：值不列时 agent 取用仍要绕回台账找回，而分层取用（开关 / 值形态取舍 / 单槽限）只增机制、不减取用成本 ⇒ 收为一条行契约：照列（用户同日 19:22 同裁「不希望让机制进一步复杂化」）。
+- **最相近先例**：同节 F-SL1 清点面（同一行契约 ∥ 同一并集视图 `unionSlots` ∥ 同一 fail-closed 拒形）；实现坐标（现行）= `thincoder-core/agent-tools/design-slots.mjs:102`（清点核）∥ `:131`（行拼装）；先例批号 = 未在档内可考；对齐 = 令牌列 = 行契约的末位字段，不新立参数 / 动作 / 存储；偏差 = 无。
+- **公开源核查**：项目声明 `PROJECT-MANIFEST.json` 的 `index.publicRepos` = 空 ⇒ 无公开源档可查；核内最近先例 = `consume-design` 回执（照列 designId，无值形态取舍）——「按形态取舍后恒显」查无既有先例，以用户裁定为准。
+- **参数面**：唯一参数 `designId`（可选——过滤到单槽；trim 后精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）。
+- **畸形口径**：槽值不可解析（`tokenExpiryMs` = null）⇒ `designToken=—`，`ageDays` / `expiresAt` 同 `—`；过期槽**照列值**——`status=expired` 已标态，且过期 token 在任何门禁都过不了，值本身不构成授权。
+- **日志互作（在案——工具输出恒含令牌，日志面单点剥离）**：工具结果前 200 字符经 `agent/dispatch-run.mjs` 的 `tool:done` 事件 `head` 字段落盘；`thincoder-core/log.mjs` `SECRET_FORM` 含 token 值形（`[0-9a-f]{8}-…-[0-9a-f]{12}:\d{10,16}`）⇒ `sanitizeString` 在形态前截断，字段名黑名单含 `designtoken`。**日志面零改**；令牌列置行尾 ⇒ 截断只吃掉值本身，其余列在日志里仍完整。
+- **日志面已知代价（如实登记）**：多槽清单在日志 `head` 只保留首行（token 之后内容被截断）——日志面不再保有清单完整性；令牌值本身仍不入日志。
 - **边界**：零写（不 reconcile 回写、不落盘——`unionSlots` 同源）；不改 spawn 门显式令牌语义（见下「自动解析取舍」）；不动 TTL / 消费机制；端面（VSC / 桌面）零改（只读动作级分类已覆盖）；跨重启可用（并集视图含槽文件）。
-- **边界注（揭示源 ↔ spawn 门分叉——登记备查、非阻断）**：揭示源 = 槽为准（`unionSlots`），spawn 门 = 内存优先、miss 回读槽（§3 D2——`thincoder-core/agent-tools/subagent-spawn.mjs:104`）——同 id 两载体分叉时（低可达——常态同步）揭示值可能被门「严格相等」校验拒；不改两侧判序。
+- **边界注（列值来源 ↔ spawn 门分叉——登记备查、非阻断）**：列值来源 = 槽为准（`unionSlots`），spawn 门 = 内存优先、miss 回读槽（§3 D2——`thincoder-core/agent-tools/subagent-spawn.mjs:104`）——同 id 两载体分叉时（低可达——常态同步）列出的值可能被门「严格相等」校验拒；不改两侧判序。
 
-**回收程序（用法——运行态；值不落文档、不贴用户面）**：
+**描述面 / 提示面（建议文本——落笔归各面笔主，D1）**：
 
-1. 清点：`subagent` `action:'design-slots'`——按「批」列 / designId 认出目标槽；
-2. 取回：同 action + `designId` + `reveal:true` ⇒ 全串 `designToken`；
-3. 派发：`designId` + `designToken` **原样**入 eng-coder spawn（门禁严格相等）；
-4. 纪律照旧：及时使用 / 链终 `consume-design`（§5 ∥ §8 F2——本扩展零改；**恢复面 ≠ 囤积许可**）；**「设计令牌不许放到过期」**（用户 2026-10-13 裁）——令牌 = 短命运行态：签发即尽快派单落地、链收口即消费；放任过期 ⇒ 该枚授权作废（门禁照拒、须重走评审），未消费活槽滞留 = 复用漏洞。
+| 面 | 建议文本 |
+|---|---|
+| `thincoder-core/tool-docs/subagent.md` `:10` | `- action:'design-slots' (engineering mode, parent side): READ-ONLY inventory of this session's approved design token slots — one line per slot (designId, live\|expired, ageDays, expiresAt, batch, designToken), oldest first, ending with a total/live/expired count line. Nothing is written. Use it to see what still holds a slot before consuming; the expired / olderThanDays selectors act on the same set.` |
+| 同档 `:11-12`（并两行为一） | `  Every row carries its designToken value (expired ones included — status marks them; a malformed record shows designToken=—). Pass designId to filter to a single slot (trimmed exact match; unknown = refused with the held id list; empty string = no filter). Take designId + designToken verbatim onto the eng-coder spawn — the gate checks exact equality.` |
+| `thincoder-core/agent-tools/subagent.mjs` `:148`（`designId` 描述） | `role='eng-coder'`: the designId echoed with the approved token — required to pick between concurrent designs (optional for one). `action:'consume-design'`: the single-slot selector (required to pick between several; the gate refuses to guess); see designIds / expired / olderThanDays for batch consumption. `action:'design-slots'`: filter the inventory to one slot (trimmed exact match; an empty string means no filter; an unknown id is refused with the held id list).` |
+| 中文评审面 `docs/core/design/prompts/persona-engineering.md` `:141` | `**在飞令牌取回**：掉出上下文的 token（或其 designId）——压缩、重启——没丢：会话槽台账保留每一枚已签发令牌。经 `subagent` `action:'design-slots'` 只读清点——逐槽行直接含全串 `designToken`（过期槽照列，`status` 自标态；记录畸形 ⇒ `—`；可按 `designId` 过滤到单槽）。`designId` + `designToken` 原样入 eng-coder spawn（门禁严格相等校验）——取回不改任何纪律：令牌仍是短命运行态，链终照常消费。` |
+| 英文运行期 `thincoder-core/prompts/persona-engineering.md` `:141` | `- **In-flight token recovery**: a token (or its designId) dropped from your context — compaction, restart — is not lost: the slot ledger keeps every issued token. `subagent` `action:'design-slots'` lists every slot with its full `designToken` on the row (expired slots included — status marks them; a malformed record shows `designToken=—`; pass designId to filter to one slot). Pass both values verbatim on the eng-coder spawn (the gate checks exact equality) — recovery changes no discipline: tokens stay short-lived runtime state, consumed at chain terminal.` |
+| 动作表 `docs/core/design/AGENT-LOOP-SUBAGENT.md` `:50` | 参数列 `designId?`；返回列 = 槽位清单（designId ∥ live/expired ∥ 时龄 ∥ `expiresAt` ∥ 批 ∥ `designToken`——龄升序）+ 计数尾行；`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；token 恒列（过期照列；畸形 ⇒ `—`）；两值原样入 eng-coder spawn。阻塞列照旧（同步 · 父侧 · 工程模式 · 只读） |
+
+**取用程序（用法——运行态；值不落文档、不贴用户面）**：
+
+1. 清点：`subagent` `action:'design-slots'`——行内即含 `designToken`，按「批」列 / `designId` 认出目标槽；
+2. 派发：`designId` + `designToken` **原样**入 eng-coder spawn（门禁严格相等）；
+3. 纪律照旧：及时使用 / 链终 `consume-design`（§5 ∥ §8 F2——本节零改；**直读 ≠ 囤积许可**）；**「设计令牌不许放到过期」**（用户 2026-10-13 裁）——令牌 = 短命运行态：签发即尽快派单落地、链收口即消费；放任过期 ⇒ 该枚授权作废（门禁照拒、须重走评审），未消费活槽滞留 = 复用漏洞。
 
 **自动解析取舍（designId-only spawn 为何不做）**：**不做**（现状显式门 = 默认保持）。理由：token 值 = 凭据；**designId 非凭据**（清点面 / 拒文均照列）——门内按 designId 自动取槽 = 把授权退化为「知道 id 即可写码」，「评审通过 → 签发凭证 → 显式持凭证」链条在门面断掉。
-回收读口补的是**「取不回」**，不是「不用取」——恢复成本由读口消解（≈10 分钟考古 ⇒ 一次只读调用），门的显式性保留；如有反证（自动解析仍能保住凭证语义）⇒ 出案另裁（动门 = 凭证语义变更，须全链设计 + 用户裁）。
+直读消除的是**「取不回」**，不是**「不用取」**——取用成本由清点行消解（一次只读调用即见全串），门的显式性保留；如有反证（自动解析仍能保住凭证语义）⇒ 出案另裁（动门 = 凭证语义变更，须全链设计 + 用户裁）。
 
 **F-SL2 批量消费（`consume-design` 选择器扩展）**：
 
-- **选择器（恰一）**：`designId`（现行——单枚）∥ `designIds: string[]`（显式清单——非空）∥ `expired: true`（全部过期项）∥ `olderThanDays: number`（`ageDays > N`）。多选择器同给 / 选择器缺失且多槽 ⇒ 拒（fail-closed——不猜）。
+- **选择器（恰一）**：`designId`（单枚）∥ `designIds: string[]`（显式清单——非空）∥ `expired: true`（全部过期项）∥ `olderThanDays: number`（`ageDays > N`）。多选择器同给 / 选择器缺失且多槽 ⇒ 拒（fail-closed——不猜）。
 - **语义**：按选择器解析目标集 → 逐枚移出（内存 + 权威表口径，`removeDesignTokenSlot` 同款 token 值守护）→ **单次 `persistEngTokens` 落盘**（§5 D-S6 单点）；落盘失败 ⇒ 内存快照整体回滚 + 抛（不留半消费态）。未知 / 已消费 id = 逐枚 no-op 提示（幂等——§5 语义不变）。
-- **落盘携带（如实）**：persist 写内存 Map（现行序列化形）⇒ 过期项随本次落盘一并出清（D2 惰性清理既有语义——非本次引入）。
+- **落盘携带（如实）**：persist 写内存 Map（现行序列化形）⇒ 过期项随本次落盘一并出清（D2 惰性清理既有语义——非本节引入）。
 - **回执**：逐枚行 + 计数行（`consumed N`）；单枚形态回执 = 现行逐字不变。
 - **同 id 再 spawn 机械拒**（§8 F2）与多槽隔离（消费 A 不动 B）**不变**。
 - **边界（不做）**：不做 `all` 无选择器形态；不做按批名选择（批名非索引键——清点面读出后逐枚 / 按龄定夺）；**签发链（mint / settle / TTL / persist 形）零改**。
 
-**落点**：
+**落点（现行 → 改后）**：
 
-| 面 | 落点 | 说明 |
-|---|---|---|
-| 新档 | `thincoder-core/agent-tools/design-slots.mjs`（233 行） | 清点 ∥ 批量选择 / 消费核（解拆分：设计时 `subagent-spawn.mjs` 439 行加本面必越 500 硬限） |
-| 动作面 | `thincoder-core/agent-tools/subagent.mjs`（402 ⇒ ≈415） | 第九 action 分派 + 参数（designIds / expired / olderThanDays）+ 拒文清单随动 |
-| 消费壳 | `thincoder-core/agent-tools/subagent-spawn.mjs`（399 行） | `executeConsumeDesignAction` 改委托本档；单枚拒文等零变 |
-| 分类面 | `thincoder-core/agent/dispatch-gates.mjs`（141 ⇒ ≈143） | `design-slots` 入 `isSubagentReadonlyAction` |
-| 描述面 | `thincoder-core/tool-docs/subagent.md`（41 ⇒ ≈44） | 九动作头 + design-slots 条目 + consume-design 选择器句 |
-| 端面 | `thincoder-vscode/src/agent/tool-table.mjs`（188 ⇒ ≈190） | `vscSubagentFace`：`design-slots` 入 readonly 谓词（panel 滤行机制自动携新行） |
-| 动作表 | `docs/core/design/AGENT-LOOP-SUBAGENT.md` §6.7.2 | 七 ⇒ 九（补 consume-design——存量漂移就地收正 ∥ design-slots 行） |
+| 面 | 落点 | 现行 | 改后 |
+|---|---|---|---|
+| 清点 / 消费核 | `thincoder-core/agent-tools/design-slots.mjs`（271 行） | `executeDesignSlotsAction` `:102` ∥ 消费核 `:149` ∥ 并集视图 `:32` ∥ 批列派生 `:44` ∥ reveal 面 `:86-91` / `:111-121` / `:130-137` | 清点 / 消费 / 并集 / 批列零改；reveal 面删净（删除面 D1–D8）；行拼装 = 单行 `map` + 行末恒携 `designToken` |
+| 动作分派 + 参数 schema | `thincoder-core/agent-tools/subagent.mjs`（416 行） | 九动作分派 `:200` · `designId` 参数 `:148` · `reveal` schema 键 `:152` · 档头回收句 `:8` | 分派零改；`:152` 删行 · `:8` 删行 · `:148` 删末句（删除面 D9–D11） |
+| 分类面 | `thincoder-core/agent/dispatch-gates.mjs`（151 行） | `design-slots` ∈ `isSubagentReadonlyAction` | ±0（参数面变化不动只读分类） |
+| 描述面 | `thincoder-core/tool-docs/subagent.md`（44 行） | design-slots 条目 `:10-12` | 逐字 = 「描述面 / 提示面」表 tool-docs 两行建议文本（`:11-12` 并一；`:10` 行契约补 `designToken`） |
+| 端面 | `thincoder-vscode/src/agent/tool-table.mjs`（187 行） | `vscSubagentFace` readonly 谓词 `:85` | ±0 |
+| 动作表 | `docs/core/design/AGENT-LOOP-SUBAGENT.md` §6.7.2（673 行） | design-slots 行 `:50` | 逐字 = 「描述面 / 提示面」表动作表行建议文本（参数列 `designId?`；返回列含 `expiresAt`） |
+| 中文评审面 | `docs/core/design/prompts/persona-engineering.md`（222 行） | 在飞令牌句 `:141` | 逐字 = 同表中文评审面行建议文本 |
+| 英文运行期面 | `thincoder-core/prompts/persona-engineering.md`（220 行） | 同源句 `:141` | 逐字 = 同表英文运行期面行建议文本 |
+
+行数口径 = 末行行号（文件末换行不计额外行）；本节坐标 = 设计读数时的现行行号——删行后行号随动，判据以删除面 + U-SL14 的内容机检为准。
+
+**删除面（改前 → 改后——删净为机制本体；落定后由 U-SL14 机检）**：
+
+| # | 文件 / 坐标（改前） | 改前（实读） | 改后 |
+|---|---|---|---|
+| D1 | `thincoder-core/agent-tools/design-slots.mjs:113-116` | `const revealArg = args?.reveal` + 非 boolean 拒值分支（`reveal must be a boolean …`） | 删净（无 reveal 参数面） |
+| D2 | 同档 `:119-121` | `reveal:true` 缺 `designId` ⇒ 拒「one slot at a time (no bulk dump)」（一次一槽） | 删净（`designId` 过滤不附前置条件） |
+| D3 | 同档 `:130` | `const reveal = revealArg === true`（分支开关） | 删净 |
+| D4 | 同档 `:131-137` | `flatMap` 三分支：`!reveal` 原行 ∥ `liveSlot` 揭值 + `RECOVERY_LINE` ∥ 掩蔽行（`masked; passes no gate`） | 收为单行 `map`：`base` + ` designToken=${e.expiresAt === null ? "—" : e.token}`（恒携；畸形 ⇒ `—`） |
+| D5 | 同档 `:90-91` | `RECOVERY_LINE` 常量（「pass designId + designToken verbatim …」取用提示行） | 删净（取用归描述面单点——KD-SL7） |
+| D6 | 同档 `:86-88` | `liveSlot` 掩蔽判据（`e.expiresAt !== null && !e.expired`）+ 注 | 删净（值恒列，态由 `status` 表达——无「揭值 / 掩蔽」二分） |
+| D7 | 同档 `:111-112` | 参数面注释（`reveal` 仅 boolean ∥ 一次一槽） | 删净；`designId` 过滤注释保留 |
+| D8 | 同档 `:11-13` ∥ `:97-100` | 档头 / 函数注的「回收读口」段（reveal 揭值 ∥ 掩蔽） | 收正为「`designId` 过滤单槽；缺省 = 现行清点面逐字零变；零写」 |
+| D9 | `thincoder-core/agent-tools/subagent.mjs:152` | `reveal` schema 键（`true = reveal … one slot at a time … masked`） | 删净（参数 schema 无 `reveal` 键） |
+| D10 | 同档 `:8` | 档头「design-slots 回收读口——`designId` 过滤 + `reveal:true` 单槽揭值」句 | 删行（历史归 git——D8） |
+| D11 | 同档 `:148` | `designId` 描述末句「— REQUIRED with reveal:true」 | 删末句（描述 = 「描述面 / 提示面」表 `subagent.mjs:148` 行建议文本） |
+
+**受影响文件清单（行数口径 = 末行行号）**：
+
+| # | 文件 | 现行行数 | 预计 Δ | 500 软线 | 拆分结论 |
+|---|---|---|---|---|---|
+| 1 | `thincoder-core/agent-tools/design-slots.mjs` | **271** | −**26**（→ **245** 实读；删净 19 行 + 注块 / 空行收束） | 未触 | 不拆 |
+| 2 | `thincoder-core/agent-tools/subagent.mjs` | **416** | −2（→ **414** 实读；`:152` ∥ `:8` 各删一行；`:148` 行内改） | 未触 | 不拆 |
+| 3 | `thincoder-core/tool-docs/subagent.md` | **44** | −1（→ **43** 实读；`:11-12` 并一；`:10` 行内改） | 不适用（工具描述档） | 不拆 |
+| 4 | `thincoder-core/agent/dispatch-gates.mjs` | 151 | 0 | 未触 | 不拆 |
+| 5 | `thincoder-vscode/src/agent/tool-table.mjs` | 187 | 0 | 未触 | 不拆 |
+| 6 | `docs/core/design/AGENT-LOOP-SUBAGENT.md` | 673 | ±0（`:50` / `:350` / `:400` 行内改） | 文档·不适用 | 不拆 |
+| 7 | `docs/core/design/prompts/persona-engineering.md` | 222 | ±0（`:141` 行内改） | 文档·不适用 | 不拆 |
+| 8 | `thincoder-core/prompts/persona-engineering.md` | 220 | ±0（`:141` 行内改） | 文档·不适用 | 不拆 |
+| 9 | `docs/batches/2026-10-17-token-visibility-simplify.test.mjs`（U-SL1–U-SL14 宿主——批档同目录） | 0（未建） | 新建 **274** 实读 | 不适用（测试档） | 单档 |
+| 10 | `thincoder-core/log.mjs` | **214** | ±0（`:21-22` 注释收正——去掉以 reveal 为主体的表述；`SECRET_FORM` ∥ 字段黑名单零动） | 未触 | 不拆 |
+
+测试宿主口径：单元测试档随批档存放（`docs/batches/<batch>-<topic>.test.mjs`），收口删、零留存；U-SL1–U-SL9（清点 / 消费回归）+ U-SL10–U-SL13（直读面）+ U-SL14（删除面机检）同宿一档。
 
 **用例（单元测试档）**：
 U-SL1 清点全列（live/expired 双态 + 龄序）∥ U-SL2 批列派生（run 命中 ⇒ basename；缺失 ⇒ `—`）∥ U-SL3 `designIds` 批量（含未知 id no-op 幂等）∥ U-SL4 expired / olderThanDays 选择器。
 U-SL5 多选择器 / 空清单 ⇒ 拒 ∥ U-SL6 落盘失败 ⇒ 整体回滚（持久化注入错）∥ U-SL7 消费后同 id spawn 机械拒（不复活——槽文件已删）∥ U-SL8 多槽隔离（消费 A 不动 B）∥ U-SL9 工程模式门外拒。
 
-**回收读口用例（增补——单元测试档）**：
-U-SL10 `reveal` 活槽 ⇒ 全串 token ∥ U-SL11 `reveal` 缺 `designId` / 非 boolean（`null` 视同缺省）⇒ 拒 ∥ U-SL12 过期 / 畸形槽 ⇒ 掩蔽（值零出现）∥ U-SL13 未知 `designId` ⇒ 拒 + 在场 id 列。
-U-SL14 缺省三态（无参 ∥ `designId` 过滤 ∥ `designId:''` 空串视同缺省）零揭值（默认面回归）∥ U-SL15 日志面（`logEvent` + 测试缝）：含 token 值形串 ⇒ 落盘零 token 值。
+**直读面 / 删除面用例（需求 F-SL3 回指）**：
+
+| # | 类 | 输入 | 期望 |
+|---|---|---|---|
+| U-SL10 | 正常 | 无参 ∥ `designId` 过滤 ∥ `designId:''` | 三态逐槽行均含 `designToken=<全串>`（live ∥ expired 同显）；过滤态尾行注 `(filtered by designId)` |
+| U-SL11 | 边界 | 槽值不可解析（非 `uuid:epoch` 形） | 该行 `designToken=—`（`ageDays` / `expiresAt` 同 `—`）；其余槽照常出值 |
+| U-SL12 | 错误 | `designId` 不在并集视图 | 拒；错误串列在场 designId 全集（空账本 ⇒ `(none)`） |
+| U-SL13 | 边界 | `logEvent` + 测试缝：`head` 含 token 值形串 | 落盘内容在值形前截断——日志零 token 值（`log.mjs` `SECRET_FORM` 在案，零改） |
+| U-SL14 | 机检（删除面） | 实现落定后的两档全文 | 两档 `grep -c reveal` = **0**（`grep -c reveal thincoder-core/agent-tools/design-slots.mjs` ⇒ `0`；`grep -c reveal thincoder-core/agent-tools/subagent.mjs` ⇒ `0`）∧ 参数 schema 无 `reveal` 键（同上 = 0 即证）；仓库根跑 |
 
 **关键决策**：
 
@@ -206,8 +260,6 @@ U-SL14 缺省三态（无参 ∥ `designId` 过滤 ∥ `designId:''` 空串视�
 | KD-SL2 | 「批」= `_advisorRuns.docSetKey` 反查（零新存储） |
 | KD-SL3 | 批量选择器恰一 / fail-closed |
 | KD-SL4 | 消费 = 单 persist / 整体回滚 |
-| KD-SL5 | 回收读口 = **F-SL1 扩展**（`designId` 过滤 + `reveal` 单槽揭值；掩蔽 = 只揭活槽） |
-
-**编号注记（按批分述）**：
-- 2026-10-07 批——U-SL1–U-SL9；对应面 = 该批 §2 验收对照 ⑤；需求侧 = `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md:27-28`（F-SL1 / F-SL2）+ `:94` 变更行。
-- 2026-10-14 批——U-SL10–U-SL15；对应面 = 该批 §2 受影响文件表测试行（该批 §2 验收对照 ⑤ = doc-check——非编号面）；需求侧 = **F-SL3 已落**（reveal 面——需求档 `docs/core/requirements/DESIGN-TOKEN-SETTLEMENT.md:29` + 变更行 `:95`；主 agent 笔——2026-10-14 父侧直接执行）。
+| KD-SL5 | 清点行**恒携** `designToken`（直读；畸形 ⇒ `—`；过期照列）——不设取用开关 ∥ 不按值形态取舍 ∥ 不限单槽（用户 2026-10-17 裁「没必要把 token 藏起来，agent 要就告诉他」） |
+| KD-SL6 | 令牌列置行尾——日志 `head` 在值形处截断 ⇒ 其余列在日志里仍完整、令牌值不入日志；多槽清单在日志只余首行（已知代价） |
+| KD-SL7 | 取用提示不入槽行输出（用法归描述面单点——D2） |

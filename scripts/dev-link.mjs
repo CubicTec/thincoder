@@ -153,7 +153,11 @@ export function main(argv = process.argv.slice(2), { log = console.log, errorLog
   if (readonly && flags.has("--force")) { errorLog("dev-link: --force 仅 apply 面；--check ∕ --json 为只读判定。"); errorLog(USAGE); return 2; }
   // `--win32-only` 平台门：非 win32 ⇒ 跳过 + exit 0 + 零 fs 动作（判在 `repoRoot()` 之前——链操作面零触）。
   if (flags.has("--win32-only") && platform !== "win32") {
-    log(`dev-link：平台 = ${platform}（非 win32）—— --win32-only ⇒ 跳过（零 fs 动作；退出 0）`);
+    const skipped = `dev-link：平台 = ${platform}（非 win32）—— --win32-only ⇒ 跳过（零 fs 动作；退出 0）`;
+    if (!flags.has("--json")) { log(skipped); return 0; }
+    // `--json` = 只读契约面（stdout 恰一段 JSON——`:26`）：跳过行属诊断 ⇒ stderr；stdout 出跳过投影（零链 + ok:true——不改契约形）。
+    errorLog(skipped);
+    log(JSON.stringify({ links: [], ok: true }));
     return 0;
   }
   const root = repoRoot();

@@ -919,7 +919,7 @@ v2.5 两行（改值面；其余字段零改）：
 
 | 消费点 | 读什么 | 三新款变化（数据驱动） |
 |---|---|---|
-| 压缩阈值 / 上下文占比 | `context` · `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.6；核侧 `thincoder-core/config.mjs:137-144`（`resolveCompactThreshold`）· `thincoder-core/token-window.mjs:152`（窗口与占比）· `:161`；面板 `thincoder-vscode/src/specs.mjs:73` · `:87`；CLI 帧 `thincoder-cli/src/tui/render-frame.mjs:393`） | 128K → 1M（长会话截断面解除） |
+| 压缩阈值 / 上下文占比 | `context` · `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.8；核侧 `thincoder-core/config.mjs:153-159`（`resolveCompactThreshold`）· `thincoder-core/token-window.mjs:152`（窗口与占比）· `:161`；面板 `thincoder-vscode/src/specs.mjs:73` · `:87`；CLI 帧 `thincoder-cli/src/tui/render-frame.mjs:393`） | 128K → 1M（长会话截断面解除） |
 | 温度钳位 | `tempRange`（`thincoder-core/provider/core.mjs:187-188`） | 不钳位 → 钳至 [0, 1.5]（越界值不再打到服务端吃 400） |
 | 视觉门（**8** 处） | `multimodal`（坐标 = §2.7 第 1 项） | 无视觉 → `read_image` 注册 + 贴图注入生效 |
 | 工具轮回声构造 | `reasoningEcho`（`thincoder-core/model-specs.mjs:288-290`） | 无字段 → 工具轮 assistant 消息恒带 `reasoning_content`（缺值 ⇒ `""`；三形态全 200 实测支撑） |
@@ -1790,8 +1790,8 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 
 | 字段 | 消费点 | 行为变化 |
 |---|---|---|
-| `context` | `providerSpec` → 压缩阈值（`thincoder-core/config.mjs:139-146`；`COMPACT_RATIO = 0.6` `:113`）· 上下文占比显示（`thincoder-vscode/src/specs.mjs:82` / `:96`）· advisor 预算（`thincoder-core/advisor/compaction.mjs:35-36`） | 压缩阈值按 1M 窗口重算——预设渠（`maxTokens: 8192`，`thincoder-core/config-presets.mjs:30`）：≈ 71 884 ⇒ **624 230**；无显式 `maxTokens` 渠：**589 824**（= floor((1 048 576 − 65 536) × 0.6)）；长会话不再被 128K 档提前压缩 |
-| `maxOutput` | `outputReserve`（`thincoder-core/config.mjs:117-121`）——仅无显式 `provider.maxTokens` 时生效 | 预留 32 000 ⇒ 65 536（计入上式）；显式 `maxTokens` 渠零变化（预设主导）。**发送面**：spec 值不达 google 请求（`thincoder-core/provider/google.mjs:86` 发 `maxOutputTokens` 仅取 `provider.maxTokens`） |
+| `context` | `providerSpec` → 压缩阈值（`thincoder-core/config.mjs:153-159`（`resolveCompactThreshold`）；`COMPACT_RATIO = 0.8` `:123`）· 上下文占比显示（`thincoder-vscode/src/specs.mjs:82` / `:96`）· advisor 预算（`thincoder-core/advisor/compaction.mjs:35-36`） | 压缩阈值按 1M 窗口重算——预设渠（`maxTokens: 8192`，`thincoder-core/config-presets.mjs:30`）：≈ 71 884 ⇒ **838 860**；无显式 `maxTokens` 渠：**838 860**（= min(1 048 576 − 65 536, floor(1 048 576 × 0.8))）；长会话不再被 128K 档提前压缩 |
+| `maxOutput` | `outputReserve`（`thincoder-core/config.mjs:130-134`）——仅无显式 `provider.maxTokens` 时生效 | 预留 32 000 ⇒ 65 536（计入上式）；显式 `maxTokens` 渠零变化（预设主导）。**发送面**：spec 值不达 google 请求（`thincoder-core/provider/google.mjs:86` 发 `maxOutputTokens` 仅取 `provider.maxTokens`） |
 | `multimodal` | 图像门族（清单与语义单源 = §2.7 第 1 项：`thincoder-core/attachments.mjs:54` 入列（第八处）∥ `thincoder-vscode/src/agent/setup-tooltable.mjs:305` ⇒ `thincoder-vscode/src/agent/tool-table.mjs:177` ∥ `thincoder-vscode/src/extension/image-handler.mjs:110` ⇒ `:43`） | 两档由「非多模态」（`true` 之外一切）转「多模态」：`read_image` 注册门（`thincoder-core/tools/index.mjs:66`——读点 `specForModel(model)?.multimodal`；注册表达式 `:69`）、贴图 / 读图 / 注入门放行；google 侧 `inlineData` 通路既有（`thincoder-core/provider/google.mjs:54-59`） |
 | `thinking` | `effortEnumForModel` 读取点：`spec.thinking` 直接读点 = `thincoder-vscode/src/specs.mjs:72`（读形 `s.reasoningEffortEnum || (s.thinking ? ["enabled"] : ["high","max"])`）此一处；消费面（调用点）= `thincoder-vscode/src/extension/provider-probe-window.mjs:66` | 该两档 VSC 档位面落 `["enabled"]` 单档（思考开关族既有形；选档归一落中性档、零 patch——§16.6-⑴）；其余面零变 |
 | `thinkAlwaysOn` | `thinkOffPath`（`thincoder-core/think-off.mjs:22-26`）→ 既有条件分支族 | ①CLI `/think`：无 Thinking 开关项 ∧ `/think off` 拒绝（§16.4 两菜单面落点）；②`/advisor`：Disabled 项不渲染；③生成标题零发禁用形（`thincoder-core/generate-title.mjs:46` / `:74`——「无有效 off 路径 ⇒ 不发禁用形」；判据单源 = §16.4）；④auto-think 无枚率先行 `return null`（`thincoder-core/auto-think.mjs:73-74`，先于恒思考守卫）；⑤桌面模型菜单 `thinkOff: false` ∧ `effortEnum: []`（`thincoder-desktop/src/main/settings.mjs:96-99`） |

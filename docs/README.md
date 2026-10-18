@@ -11,7 +11,7 @@
 |---|---|---|
 | 发布流程 · 需求（统一面） | `docs/RELEASE.md` | 2026-09-20 用户裁定迁根（原 `core/requirements/`）+ **三端合一**（23:23「把各端的 release.md 整合成一个」⇒ CLI 链设计档并回 ✗ 单档承载）——**总发布计划**（**四发布单元**：核 / CLI / VSC / 桌面〔阶段一：Windows 安装包 ∥ 官网托管——2026-10-01 入主线；**阶段二：自动更新 feed ∥ 官网桌面面——2026-10-02**〕· 顺序 = 核 → CLI → VSC → 桌面〔桌面按需〕） |
 | 测试环境运维（内部机器） | `TEST-ENV-ECS.md` | 2026-10-10 建（用户令「每次这么盲人摸象摸一遍不是个办法」）——ECS 测试箱（ha-proxy · `10.0.0.5`）的访问 ∥ 布局 ∥ 更新部署 ∥ 自检探针 ∥ 回滚 ∥ 坑；与产品侧部署档的分工见该档头 |
-| 台账（项目级唯一真相） | SQLite——用户数据目录键控库 `~/.thincoder/ledger/<sha1(项目根)>.db`（2026-09-17 落点裁定：不在项目目录） | ✅ 唯一台账面 = SQLite（`/ledger` 查询）；`TODO.md` · `TODO-archive.md` = 退役历史（md 形态，无机械校验） |
+| 台账（项目级唯一真相） | SQLite——用户数据目录键控库 `~/.thincoder/ledger/<sha1(项目根)>.db`（2026-09-17 落点裁定：不在项目目录） | ✅ 唯一台账面 = SQLite（`/ledger` 查询）；`TODO.md` · `TODO-archive.md` = 退役历史（md 形态；**已排除在锚检查之外**——`PROJECT-MANIFEST.json` 的 `checkConfig.anchors.exclude`） |
 | 板块档（需求 / 设计） | `core/requirements/` · `core/design/` | ✅ 核心统一已迁入（2026-09-13）；后续新板块档直接落此。**子系统档（设计 / 需求各 15 档）见 §4** |
 | 批次档 | `batches/` | ✅ 核心统一已迁入（2026-09-13） |
 | 部分档（各端面） | `cli/requirements/` · `cli/design/` · `vsc/requirements/` · `vsc/design/` · `desktop/requirements/` · `desktop/design/` · `render-core/design/` | ✅ **五部分**落点齐（`core/` · `cli/` · `vsc/` · `desktop/` · `render-core/`）——**53 档**（`cli/` 16 = design 10 + requirements 6 · `vsc/` 11 = design 8 + requirements 3 · `desktop/` 25 = design 15 + requirements 10 · `render-core/` 1 = design 1；2026-09-15 建 · desktop 部分 2026-09-25 随桌面端立项建 · render-core 部分 2026-09-27 随渲染核立项建（模块镜像裁定）；实盘对账 as-of 2026-09-27；2026-10-01 随 web 快筛档增补；2026-10-02 文档体系重组（DOC-MIGRATION）· 波 1 增两档（desktop 设计 7 ⇒ 9）· **波 2a 增三档**（desktop 设计 9 ⇒ 12——渲染族迁移：对话流 / 输入区 / 活动池三域出档）· **波 2b 增两档**（desktop 设计 12 ⇒ 14——会话域 / 设置域出档）· **波 3 增九档**（desktop 需求 1 ⇒ 10——需求分卷：D1–D37 出九域卷））；desktop 设计**十五档** = `PROJECT.md`（产品面总览）/ `SHELL.md` / `IPC.md` / `UI.md` / `RENDERER.md` / `E2E-TESTING.md`（E2E 测试基建 · 2026-09-26 增）/ `WEB-QUICKCHECK.md`（web 快筛 · 2026-10-01 增）/ `MENU.md`（菜单体系 · 2026-10-02 增）/ `PACKAGING.md`（打包与发行 · 2026-10-02 增）/ `CHAT.md`（对话流域 · 2026-10-02 增）/ `COMPOSER.md`（输入区域 · 2026-10-02 增）/ `ACTIVITY.md`（活动池与消化面域 · 2026-10-02 增）· `SESSIONS.md`（会话域——会话端标识 ∥ 控制面 ∥ 列表读面 ∥ 标题链 ∥ 重启自动重开 · 2026-10-02 波 2b 增）· `SETTINGS.md`（设置域——设置面板七段 ∥ 首启向导 ∥ 样式收正 D37 · 2026-10-02 波 2b 增）· `PANEL-READBACK.md`（子代理面板实况回读与归还补口——㈠ 渲染面回读 ∥ 归还补口 ∥ 回收阀 · 2026-10-04 增）（按板块拆分 · 非迁移档）；desktop 需求**十档** = `PROJECT.md`（总览 ∥ D 表索引）+ 九域卷（`SESSIONS` ∥ `CHAT` ∥ `COMPOSER` ∥ `ACTIVITY` ∥ `SETTINGS` ∥ `MENU` ∥ `PACKAGING` ∥ `UI` ∥ `SHELL`——D1–D37 按域分卷 · 2026-10-02 波 3）；render-core 设计**一档** = `RENDER-CORE.md`（共享渲染核面单源 · 2026-09-27 落）；**2026-10-03 read-data-interface 收正**——`cli/` 14 ⇒ 16（设计 9 ⇒ 10 ∥ 需求 5 ⇒ 6——同名档 `READ-DATA-INTERFACE.md` 两笔：需求档（父侧笔）+ 设计档），全档总数 **50 ⇒ 52**；**2026-10-04 panel-readback 增一档**——desktop 设计 **14 ⇒ 15**（+ `PANEL-READBACK.md`——子代理面板实况回读与归还补口，2026-10-04 新建），全档总数 **52 ⇒ 53**（对账 as-of 2026-10-04）；**server 部分**（2026-10 建档 · 拆分轮）**26 档** = 设计 25（十一域档 + webui 面十二档 + `PROJECT` ∥ `EVOLUTION`）+ 需求 1——**六部分总档数 53 ⇒ 76 ⇒ 79 ⇒ 80**（2026-10-13 sandbox-exec-rebuild：+ `sandbox/EXECUTION.md`——sandbox 域执行面档）（2026-10-13 二次补登：+ `ledger/LEDGER.md` ∥ + `webui/LEDGER.md`——server 设计 +2 ∥ + `core/design/TEAM-LEDGER.md`——core +1）**⇒ 81**（2026-10-13 sandbox-container-terminal：+ `webui/TERMINAL.md`——终端核面——webui 全档 12 ⇒ **13**）**⇒ 82**（2026-10-13 member-face-chat：+ `agent/MEMBER-AGENT.md`——成员面 agent 档；修复轮补登），本行终值：**server 部分 28 档 = 设计 27（板 2——`PROJECT` ∥ `EVOLUTION`；域 **13**——十一域，其中 `sandbox` ∥ `agent` 两域各 2 档：+ `sandbox/EXECUTION.md` ∥ `agent/MEMBER-AGENT.md`；webui 域另含面档 **12**）+ 需求 1** |
@@ -34,12 +34,12 @@
 
 | 档 | 现址 | 状态 |
 |---|---|---|
-| 核心统一（phase 2）· 需求 / 设计 / 批次 | 原 `thincoder-cli/docs/{requirements,design,batches}/` → 现 **`docs/core/{requirements,design}/` · `docs/batches/`** | ✅ **已迁入**（2026-09-13——`git mv` 三档 + 17 处引用改写；三机检绿；2026-09-14 板块档再迁入 `docs/core/`） |
+| 核心统一（phase 2）· 需求 / 设计 / 批次 | 原 `thincoder-cli/docs/{requirements,design,batches}/` → 现 **`docs/core/{requirements,design}/` · `docs/batches/`** | ✅ **已迁入**（2026-09-13——`git mv` 三档 + 17 处引用改写；源面核过；2026-09-14 板块档再迁入 `docs/core/`） |
 | 两仓合并（phase 1）· 需求 / 设计 / 批次 | `thincoder-cli/docs/{requirements,design,batches}/TWO-REPO-MERGE*` | **参照**——已闭环；引用面大（约 40 处，含两产品文档树与脚本头注），**暂留原地**，被触碰时再议 |
 
 ## 4. 子系统设计档（核心统一拆分——2026-09-13）
 
-**依据** = 用户 2026-09-13 裁定（「不是，我们不是让它拆开的吗？！怎么还是写在一个文件里？！」「以后维护怎么办？」——批次档 `batches/2026-09-13-CORE-UNIFICATION.md` §1）。
+**依据** = 用户 2026-09-13 裁定（「不是，我们不是让它拆开的吗？！怎么还是写在一个文件里？！」「以后维护怎么办？」）。
 **命名与落点** = 板块镜像形态（`core/requirements/<板块>.md` ↔ `core/design/<板块>.md`，**同板块名**）：本节各档 = `core/design/` 侧；`core/requirements/` 侧（同名）**已建齐**（15 档——2026-09-13 需求侧拆分轮，与本节各档**逐一同名成对**；登记表见 `core/requirements/CORE-UNIFICATION.md` §5）。
 
 | 子系统 | 设计档（`core/design/`） | 覆盖裁决行 | 行数 |
@@ -69,7 +69,7 @@
 - `cli/` **14 档**——设计 9：`ACP-CLIENT.md` · `CRASH-REPORTS.md` · `TUI-COMMANDS.md` · `TUI-INPUT-BOX.md` · `TUI-SESSION-VIEW.md` · `TUI-TOOL-OUTPUT.md` · `TUI.md` · `CLI-DEBT.md`
   （**2026-09-25 新建**——非迁移档；台账 #340 CLI 档位登记载体收口）· `CLI-ENTRY.md`（**2026-09-25 新建**——非迁移档；同批 · 台账 #350 命令入口面载体收口）；
   需求 5：`ACP-CLIENT.md` · `CRASH-REPORTS.md` · `FEATURES.md` · `TUI-TOOL-OUTPUT.md` · `TUI.md`（P2——2026-09-15 首迁 2 档后历批续迁；`design/RELEASE.md` 已随三端合一迁根 = `docs/RELEASE.md`——2026-09-20）；
-- `vsc/` **11 档**：`design/` = `VSC-MIGRATION.md` · `SETTINGS.md` · `PROJECT-SWITCHER.md` · `WEBVIEW.md` · `WEBVIEW-PROTOCOL.md` · `WEBVIEW-INPUT.md` · `VSC-DEBT.md` · `VSC-MIGRATION-INVENTORY.md`；`requirements/` = `VSC-MIGRATION.md` · `WEBVIEW.md` · `PROJECT.md`。
+- `vsc/` **10 档**：`design/` = `VSC-MIGRATION.md` · `SETTINGS.md` · `PROJECT-SWITCHER.md` · `WEBVIEW.md` · `WEBVIEW-PROTOCOL.md` · `WEBVIEW-INPUT.md` · `VSC-DEBT.md`；`requirements/` = `VSC-MIGRATION.md` · `WEBVIEW.md` · `PROJECT.md`。
 
 **`core/design/` 其余 39 档（工具 · 机制 · 流程面——批 11 补登 · 2026-10-07 补登记一档 · 2026-10-10 补登记一档 · 2026-10-13 补登记一档（`TEAM-LEDGER.md`——团队客户端面） · 判据 = `core/design/DOC-MIGRATION.md` §9.3 A21 · 计数随批收正 2026-10-13）**：
 - 文件 / 编辑 / 执行工具面 **8 档**：`APPLY-PATCH.md` · `EDIT.md` · `EDIT-HELPERS.md` · `HASHLINE-EDIT.md` · `INSERT-AFTER.md` · `TOOL-OUTPUT-LIMITS.md` · `WRITE.md` · `BASH-EXECUTOR-FACE.md`（bash 执行器语义面——运行时探测与声明单源；2026-10-04 建档，2026-10-07 补登记）；
@@ -78,7 +78,7 @@
 - 令牌 / 参数 / 设置面 **5 档**：`AGENT-PARAMS.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `ENG-TOKEN-BINDING.md` · `SETTINGS-TOOL.md` · `VERIFY-REDESIGN.md`；
 - 流程 / 文档机制面 **12 档**：`ANCHOR-DEBT-REPAIR.md` · `BATCH-RECORD.md` · `DOC-CODE-RECONCILE.md` · `DOC-DISCIPLINE.md` · `ENGINEERING-MODE-V2.md` · `LEDGER.md` · `LEDGER-SELF-CONTAINED.md` · `LIGHT-CHANNEL.md`（轻通道机制——细节面 ∥ 收敛面受控旁路设计；2026-09-30 建档 · 2026-10-02 扩容）·
   `MANIFEST.md` · `TESTING.md` · `TURN-CAP-CONTINUE.md` · `API-CONTRACT.md`（核接口按需索引——生成区 ∥ 语义区两区制；2026-09-29 建档）；
-- 基准测试 **2 档**：`MODEL-BENCH.md`（模型基准测试套件——仓级 `bench/` 工具的设计面；2026-09-23 建档）· `MODEL-SPECS.md`（模型规格表设计档——bench 名单面规格行承载；2026-09-24 建行）；
+- 基准测试 **2 档**：`MODEL-BENCH.md`（模型基准测试套件——独立评估面的设计档：对外部 provider 做性能评估，产物 = `bench/results/` 评估报告 = 产品输出，不打包进三端；2026-09-23 建档）· `MODEL-SPECS.md`（模型规格表设计档——bench 名单面规格行承载；2026-09-24 建行）；
 - 团队客户端面 **2 档**：`TEAM.md`（团队客户端——登录与接入：`team` 段 ∥ 派生 provider 条目 ∥ 三端同构 ∥ 决策 D-TM1–6；2026-10-10 B1 建档）· `TEAM-LEDGER.md`（团队台账客户端面——核工具 `team_ledger` 端侧面单源；2026-10-13 建档）；
 - **计数核对（复跑 as-of 2026-10-13 · 按名对账）**：`core/design/` 实档 **61** = 本图登记 **61** + **待补登 0**（逐名相等；2026-10-10 基线 60 ⇒ + `TEAM-LEDGER.md`——2026-10-13 建档）。
   （前值 **51 = 51** 为 as-of 2026-09-17 读数；此后实增五档：`MODEL-SPECS.md`（他批）+ `AGENT-LOOP-ASYNC-POOL.md` · `AGENT-LOOP-UPSTREAM.md`（structure-debt 同批登记）+ `MODEL-BENCH.md`（model-bench 同批登记）+ `LIGHT-CHANNEL.md`（轻通道机制 · 2026-09-30）。）

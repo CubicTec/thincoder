@@ -5,7 +5,6 @@
  * 2026-10-07 批 ledger-tool（#927 并入）：+action: design-slots（只读清点面——
  * DESIGN-TOKEN-SETTLEMENT.md §9 F-SL1）+ consume-design 选择器扩展（designIds / expired /
  * olderThanDays）——实现在 `design-slots.mjs`（subagent-spawn.mjs re-export 保 import 面）。
- * 2026-10-14 批 design-token-recovery（#1384 并入）：design-slots 回收读口——`designId` 过滤 + `reveal:true` 单槽揭值（必携 designId；掩蔽 = 只揭活槽）——实现随动在 `design-slots.mjs`。
  *
  * 2026-09-03 拆分轮: subagent.mjs 超 500 硬顶——async 常量、共享 post-spawn 管线
  *（runChildPipeline）与队列/注入/并账机械迁至 ./subagent-async.mjs。execute
@@ -37,7 +36,7 @@ import { executeStatusAction, executeEscalateAction, executePanelAction, execute
 import { prepareScheduling, buildSpawnChild, executeConsumeDesignAction } from "./subagent-spawn.mjs"
 import { executeDesignSlotsAction } from "./design-slots.mjs"
 import { executeAsyncSpawn } from "./subagent-run.mjs"
-import { ROUND_VALUES } from "./spawn-gates.mjs"
+import { ROUND_VALUES, composeTaskBookBrief } from "./spawn-gates.mjs"
 // #15 描述外置：描述文本单点 = tool-docs/subagent.md（DESC 单解析面，缺档抛错语义不变）
 import { DESC } from "../tools/shared.mjs"
 
@@ -140,18 +139,22 @@ export const subagentTool = {
       action: { type: "string", enum: ["spawn", "status", "escalate", "cancel", "panel", "consume-design", "observe", "send", "design-slots"], description: "Which action — spawn (default) / status / observe / send / escalate / cancel / panel / consume-design / design-slots; semantics per action in the tool description." },
       view: { type: "boolean", description: "action:'panel' only: true (default) = the live panel blocks as the user sees them; false without freeze = error. Mutually exclusive with freeze (freeze wins)." },
       freeze: { type: "string", description: "action:'panel' only: block key of a digested-stuck block — reclaims it into the conversation; refused for running/done/unknown blocks or a still-pending report; works on the CLI TUI panel and on the desktop renderer panel (live readback of the blocks as the user sees them)." },
-      task: { type: "string", description: "Required for action:'spawn' (the self-contained task brief) and action:'escalate' (goal, constraints, entry files, acceptance criteria)." },
+      task: { type: "string", description: "For action:'spawn' (any role) the brief is either the five structured task-book parameters (goal / knownFacts / designPoints / acceptance / reportFormat) or a free-text task — the five parameters satisfy the brief for every role, and task is then an optional supplement (explore/plan/coder normally use task alone; eng-coder/eng-designer must carry the five). For action:'escalate': goal, constraints, entry files, acceptance criteria." },
       context: { type: "string", description: "Optional background the sub-agent needs (it cannot see this conversation); action:'spawn' only." },
       role: { type: "string", enum: ["explore", "plan", "coder", "eng-coder", "eng-designer"], description: "The sub-agent role — see the role matrix in the tool description. Exact spelling required. action:'spawn' only (escalate spawns its own expert internally)." },
       model: { type: "string", description: "action:'spawn': provider/model override ('provider:model', a provider, or a model name on the parent's provider) — defaults config.agent.subagentModels[role] → config.agent.subagentModel → the parent's provider; \"default\" inherits. action:'escalate': a consult candidate (default = the first)." },
       designToken: { type: "string", description: "Required when role='eng-coder': the token from advisor(type='design') after the review passed — without it, eng-coder cannot modify files." },
-      designId: { type: "string", description: "role='eng-coder': the designId echoed with the approved token — required to pick between concurrent designs (optional for one). action:'consume-design': the single-slot selector (required to pick between several; the gate refuses to guess); see designIds / expired / olderThanDays for batch consumption. action:'design-slots': filter the inventory to one slot (trimmed exact match; an empty string means no filter; an unknown id is refused with the held id list) — REQUIRED with reveal:true." },
+      designId: { type: "string", description: "role='eng-coder': the designId echoed with the approved token — required to pick between concurrent designs (optional for one). action:'consume-design': the single-slot selector (required to pick between several; the gate refuses to guess); see designIds / expired / olderThanDays for batch consumption. action:'design-slots': filter the inventory to one slot (trimmed exact match; an empty string means no filter; an unknown id is refused with the held id list)." },
       designIds: { type: "array", items: { type: "string" }, description: "action:'consume-design' (batch): an explicit non-empty list of design ids to close out — pass exactly ONE selector per call (designId / designIds / expired / olderThanDays)." },
       expired: { type: "boolean", description: "action:'consume-design' (batch): true = close out every expired slot (exactly ONE selector per call)." },
       olderThanDays: { type: "number", description: "action:'consume-design' (batch): close out every slot older than N days (age > N; exactly ONE selector per call)." },
-      reveal: { type: "boolean", description: "action:'design-slots' only: true = reveal the selected slot's full designToken — REQUIRES designId (one slot at a time, never a bulk dump); an expired or malformed slot is masked (designToken=—); a non-boolean value is refused. After a token drops from your context (compaction, restart), read it back this way and pass designId + designToken verbatim on the eng-coder spawn — the gate checks exact equality." },
       batchDoc: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer': the batch record path (e.g. <repo>/docs/batches/<batch>-<topic>.md; relative paths resolve against the session cwd first, then candidate project roots — or absolute) — the task book this spawn implements/writes. Refused when absent or when the path does not resolve to a readable file; the content is never validated. role='coder' (normal mode): optional — binds this spawn's §5 record-write channel (unbound ⇒ the main agent records §5 on its behalf); when provided the path must resolve to a readable file." },
       round: { type: "string", enum: ROUND_VALUES, description: "REQUIRED for role='eng-coder'/'eng-designer': initial (first round for this design) or fix (a correction round reusing the same designId+designToken; docs FIRST). No default — missing = refused." },
+      goal: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the task book's goal & why — the problem this solves and the cost chain (content only, no label — the runtime composes the labels)." },
+      knownFacts: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the facts and file paths the parent already verified — the child must not re-explore them." },
+      designPoints: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: design points & forbidden scope — what to land and what must not be touched." },
+      acceptance: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: acceptance criteria — machine-verifiable (commands / thresholds / assertion counts)." },
+      reportFormat: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the delivery-report format the child must produce." },
       async: { type: "boolean", description: "action:'spawn'/'escalate': default at depth 0 = true (async; the report arrives automatically); depth>0 always sync. async:false forces the blocking flight." },
       files: { type: "array", items: { type: "string" }, description: "action:'spawn' only: the file write-domain this task declares — file-level paths only (cwd-relative or absolute; directories rejected — they bypass the conflict detector). Overlapping-file tasks serialize automatically. Omit = no conflict detection." },
       dependsOn: { type: "array", items: { type: "string" }, description: "action:'spawn' only: ids from prior async returns whose outcome this task needs — queues until every dependency settles, then starts. Consumed ids count as satisfied; a cancelled/failed dependency stays queued marked 'dependency cancelled' until you decide (AUTO sessions auto-start). Unknown ids error." },
@@ -218,8 +221,10 @@ export const subagentTool = {
     // Spawn requires a task brief — schema `required` is advisory (multi-action
     // schema), so the mechanical check lives here: an absent task would otherwise
     // flow downstream as `content: undefined` and surface as an obscure error.
-    if (typeof args.task !== "string" || !args.task.trim()) {
-      throw new Error("subagent action:'spawn' requires a task (the self-contained task brief).")
+    // 任务书载体二选一：五项结构化参数（拼装后非空）或 task 自由文本——两者皆缺 ⇒ 拒。
+    // （工程角色另有五项必带门 = spawn-gates.validateTaskBookParams，落 buildSpawnChild。）
+    if (!composeTaskBookBrief(args) && (typeof args.task !== "string" || !args.task.trim())) {
+      throw new Error("subagent action:'spawn' requires a task (the self-contained task brief) or the five structured task-book parameters.")
     }
     // §18 D-E1a depth-gated async default (2026-09-06 需求池 R12): depth-0 spawns
     // default to async for EVERY role (the old role-level default — eng-coder only —

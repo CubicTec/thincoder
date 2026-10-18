@@ -95,7 +95,7 @@
 - **键盘面（接线第二口径）**：挂载面可自挂 `keydown`（既有 = 审批卡根（`thincoder-desktop/renderer/views/approval.mjs`）；设置面 Esc 关闭 = `docs/desktop/design/UI.md` §1「批注（对齐第三批 · 小修族）」F-Esc；会话控制面选择器 = `thincoder-desktop/renderer/views/session-control.mjs`）——**命中才** `preventDefault`；形态单源 = `docs/desktop/design/UI.md` §1 交互行。
 - **页生命周期（接线第三口径）**：页键写者**单源** = `openSession`（`thincoder-desktop/renderer/events.mjs`：键 `null` ⇒ 关页 · 开页清本键 `done` 位标）；开页路 = `openPage` / `activateSession` / `createSession`（`thincoder-desktop/renderer/mount-sessions.mjs`——共用尾 `openResult`）——会话键（`String(slot)`）与页键 `activeSession` **同刻随动**。
 - **删会话 ⇒ 页随动（零新路）**：出口**共用尾** —— 删**活动**会话 ⇒ **邻位接管**（同位置行，越界取末行 ⇒ `session:switch` 同一路）；
-  列表空 ⇒ `openSession(state, null)` 关页（中区 `none` 态 = **零块节点**〔不新造空态视觉〕+ 引导节点（`data-guide`——形态单源 = `docs/desktop/design/UI.md` §1 批 B 追加注项 1））；删**非活动** / 拒收（末项门 ∕ 槽缺）⇒ **零动作**（键未变 ⇒ 页不动）。
+  列表空 ⇒ `openSession(state, null)` 关页（中区 `none` 态 = **零块节点**〔不新造空态视觉〕+ 引导节点（`data-guide`——形态单源 = `docs/desktop/design/UI.md` §1「首启空白态引导注」项 1））；删**非活动** / 拒收（末项门 ∕ 槽缺）⇒ **零动作**（键未变 ⇒ 页不动）。
 - **删除会话（左列行控件）⇒ 同源出口**：`session:delete` 回执 `ok` ⇒ 键面 `closeTab(本键)` + 上条关闭尾（活动 ⇒ 邻位接管 · 唯一 ⇒ 关页）；`ok:false`（核拒）⇒ 零动作（**不造死标签**——已删键的 `session:switch` 必拒）。
 - **幽灵更新（已覆盖 · 零新增机制）**：块面 / 页写既有键过滤（`ev.key === state.activeSession`）⇒ 关页后已关会话的到达事件零入块面；`sessionMeta` / `tabBadges` 仍写已关键，而标签条只遍历 `tabs` ⇒ 零可见影响（登记为观察，不新增过滤）。
 - **页窗暂留（登记 · 非新增）**：页键变更至邻位页回执落之间，屏上暂留前页块（既有口径：页数据随 `history:page` 回执整置）；消解需第三态「载入中」= 新词键 / 新形态 ⇒ 新需求面，不落。
@@ -130,7 +130,7 @@
 - **引导节点（非块节点）**：无活动会话 ∥ 零块 ⇒ 引导节点 `div.chat-empty[data-guide]`——`none` 帧 = 根**唯一子** · `empty` 帧 = **首子**（在块序列 / 卡序列之前）· `flow` 帧 = 不在场；零 `data-block-id` ⇒ **不入块序**（上条根子序与 `data-blocks` 不变式不受其影响）。
   判据（模型 `guide` 字段）= 无活动会话 ⇒ `cwd` 缺 ? `no-project` : `no-session`；有活动会话 ∧ 可见块 0 ⇒ `no-message`；否则 `null`。
   构树 = `thincoder-desktop/renderer/views/chat-guide.mjs`（流内非块节点构树）；**动作控件在场 ⟺ 句柄在场**（`onOpenDir` / `onNewSession` 缺 ⇒ 整控件缺席——比接线形通则更严：零假按钮）；
-  引导面随项目变（**`project` 键承接 = 刷面**——单源 = 本档 §1.1「建」条；零重挂）；形态单源 = `docs/desktop/design/UI.md` §1 批 B 追加注项 1 / 2。
+  引导面随项目变（**`project` 键承接 = 刷面**——单源 = 本档 §1.1「建」条；零重挂）；形态单源 = `docs/desktop/design/UI.md` §1「首启空白态引导注」项 1 / 2。
 - **卡面在场与随动（帧尾态刷）**：卡节点 `[data-card="approval"]` / `[data-card="question"]` / `[data-card="task"]` / `[data-card="goal"]` 的在场与文本随帧内判据刷（形态单源 = `docs/desktop/design/UI.md` §1 审批呈现 / 提问呈现 / 计划面 / 目标面板四行）；`question` 卡**退场非乐观**（回执 `ok` 真 ⇒ 清除；失败 ⇒ 卡留可重试 + `console.error`——出口口径见该行；
   **中断径** = `msg:interrupt` ⇒ 本键各门按取消结算 ⇒ 终局 `stopped` ⇒ **事件面摘本键提问项** + 清位标（**清码判据 = 全族皆清**（审批 ∥ 提问 ∥ 凭据三族）——单源 = `docs/desktop/design/UI.md` §2 项 2）——判据 = 终局事件面，非回执（单源 = 本档「回合尾三径」条））；
   **四卡**皆**非块节点** ⇒ 不入块序不变式（本档 §2），块面比较对与 `data-blocks` 语义不受其影响。

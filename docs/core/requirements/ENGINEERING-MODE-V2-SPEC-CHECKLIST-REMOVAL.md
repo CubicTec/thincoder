@@ -15,7 +15,7 @@
 3. **移除上下文注入（核 + VSC）**：
    - 核 `thincoder-core/agent/setup.mjs:128-139`（动态 import + `pendingItems` + system reminder 注入）；
    - VSC `thincoder-vscode/src/agent/context-injections.mjs`（`pushChecklist` `:178` · 调用 `:205` · `_deps.pendingItems` `:217`）。
-4. **删约定**：`.thincoder/checklist.md` 约定废除。
+4. **删约定**：checklist 约定废除（项目内 md 清单档形态不再存在）。
 5. **删门禁**：`thincoder-core/agent-tools/subagent-scheduler.mjs:38,56` 的 `checklist*` 前缀禁用路径族。
 6. **死指针改指台账**：`thincoder-core/agent-tools/task.mjs:36`「use checklist」· `thincoder-vscode/src/memory-tool.mjs:37`「use checklist」→ 改指台账（`/ledger` 查询）。
 7. **语义承接**：checklist 三态（pending / in_progress / done）由台账六态承接（待讨论 / 待设计 / 在途 / 待核销 / 已核销 / 已废弃）。

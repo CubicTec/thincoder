@@ -46,7 +46,7 @@ VSC 侧同名面多为拆档（`execute-tools` · `tool-gates` · `run-helpers` 
 
 | # | 条目 | 内容 |
 |---|---|---|
-| 1 | 工具描述三锚 | question.md / VS Code question.mjs 对齐：每调用一问；单问简短（背景 / 分析放正文回复不放 question）；routine confirmations 走普通回复（仅真决策用工具） |
+| 1 | 工具描述三锚 | `thincoder-core/tool-docs/question.md` / VS Code question.mjs 对齐：每调用一问；单问简短（背景 / 分析放正文回复不放 question）；routine confirmations 走普通回复（仅真决策用工具） |
 | 2 | 提示词 | discipline-engineering 的 Questioning Style 语义 + common 确认门段 + discipline-normal 工具表反模式列 |
 | 3 | 机械限制 | question 长度 ≤100 字符、options ≤4 条——超限返回错误串，不弹卡、不调 onQuestion |
 | 4 | VS Code 渲染 | `.question-text` 加 `white-space: pre-wrap` + max-height 兜底滚动 |

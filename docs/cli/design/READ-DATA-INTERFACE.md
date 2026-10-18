@@ -67,6 +67,7 @@
   - 观察器 = 轮询指纹：台账 = 库文件 `(exists, mtimeMs, size)`；批次 = `*.md` 集逐档 `(path, mtimeMs, size)`（文件集经 `listBatchRecords` 同源）；
   - 首查立基线（静默）；此后差分 ⇒ 对应通知；默认周期 `WATCH_INTERVAL_MS = 5000`（注入面 `intervalMs`；`unref` 定时器——先例 `thincoder-core/ledger-surface.mjs:62-85`）；
   - 起停 = `runAcpServer` 启、进程终灭；测试直驱 `watcher.check()`（零定时器依赖）。
+  - **观察器失败面**：`check()` 失败经 `ctx.log` 报一行（`[acp]` 前缀——通道 = stderr，协议面零触）；同因连续失败不重复（比较键 = `e.code` 优先、无则 `e.message`、再无则 `String(e)`）；成功即复位（下次失败照报）；失败不崩宿主——正常路径零诊断，失败路径恒 ≥1 行。
 
 ### 2.7 命令面接线（FR1）
 

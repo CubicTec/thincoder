@@ -9,7 +9,7 @@
  · 用计数器 / 上限替代「有结论 + 停下上报」 · 把纪律句机械化成机检 · 以「拦截」代替「让正确的路更好走」。核心承诺三条：① 代码必须先有**被评审过的设计**；② 评审对象**由任务定义**、不靠遍历猜测；③ 评审循环在**实现者内部闭环**（不依赖父代理持有凭证）。
 >
 > **与普通模式的唯一差别 = 流程强度**（反向锚 = `NORMAL-MODE.md` §5.1）：工程模式 = **强流程**（约束靠结构实现）；普通模式 = **纪律驱动**（无结构约束）。工程模式的**结构化约束点**（流程里绕不过的关口）= **写权凭证**（designToken）· **设计先过评审再写码** · **批次档 /
- 任务书必备**（spawn 六字段 + `batchDoc` 体检）· **`verify` 收尾门** · 需求 / 设计 / 测试三档逐条可机判。共享面 = 三观（`PHILOSOPHY.md`）· 公共层提示词 · 方法论判据（`METHODOLOGY.md`）· 工具面——**差别只在流程强度，不在「要不要认真」**。
+ 任务书必备**（五个结构化参数 + `round` + `batchDoc` 体检）· **`verify` 收尾门** · 需求 / 设计 / 测试三档逐条可机判。共享面 = 三观（`PHILOSOPHY.md`）· 公共层提示词 · 方法论判据（`METHODOLOGY.md`）· 工具面——**差别只在流程强度，不在「要不要认真」**。
 > 细节单源 = 本档 §13 继承机制与 `ENGINEERING-MODE-V2-SPEC-*` 系列（D2——本段只承「总体定义」一职，不重述机制）。
 
 ## 1. 定位与灵魂
@@ -220,16 +220,16 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 | 文档 | 命名规则 | 例子 |
 |---|---|---|
 | 项目状态档 | `PROJECT-MANIFEST.json`（固定） | — |
-| 项目需求 | `PROJECT-REQUIREMENTS.md`（固定） | — |
+| 项目需求 | `PROJECT-REQUIREMENTS`（固定名 + `.md` 扩展名） | — |
 | 架构设计 | `ARCHITECTURE.md`（固定） | — |
-| 功能规格 | `spec-<模块名>.md` | `spec-user-mgmt.md` |
-| 模块设计 | `design-<模块名>.md` | `design-user-mgmt.md` |
-| 批次档 | `<YYYY-MM-DD>-<topic>.md` | `2026-09-17-engine-mode-v2-arch.md` |
+| 功能规格 | `spec-<模块名>.md` | 模块名代入 `user-mgmt` |
+| 模块设计 | `design-<模块名>.md` | 模块名代入 `user-mgmt` |
+| 批次档 | `<YYYY-MM-DD>-<topic>.md` | 日期 2026-09-17 · 主题 `engine-mode-v2-arch` |
 | 台账 | `ledger.db`（固定） | — |
-| 日报 | `daily-<YYYY-MM-DD>.md` | `daily-2026-09-17.md` |
-| 测试报告 | `test-report-<里程碑>.md` | `test-report-m1.md` |
+| 日报 | `daily-<YYYY-MM-DD>.md` | 日期 2026-09-17 |
+| 测试报告 | `test-report-<里程碑>.md` | 里程碑 `m1` |
 | 集成测试报告 | `integration-test-report-<里程碑>.md` | — |
-| 交付物清单 | `deliverables.md`（固定） | — |
+| 交付物清单 | `deliverables`（固定名 + `.md` 扩展名） | — |
 
 **原则**：类型用**前缀**表达（spec / design / daily / test-report...）；全局唯一文档用固定名；按模块的用「前缀 + 模块名」；按时间的用「前缀 + 日期」。**模块名 = 小写连字符**（如 `user-mgmt`、`order-mgmt`）。
 
@@ -427,10 +427,10 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 
 ### 8.2 委派治理
 
-「该不该派 / 派什么 / 派出去怎么干」有门槛：小改父侧自做（判据句）· 派单模板强制字段（目标/已知事实/禁止范围/验收/报告格式——缺字段即拒）· 禁「全量扫 X」。**结构**：门槛 + 强制字段。
+「该不该派 / 派什么 / 派出去怎么干」有门槛：小改父侧自做（判据句）· 派单任务书五项 = 结构化 spawn 参数（`goal`/`knownFacts`/`designPoints`/`acceptance`/`reportFormat`——缺任一即拒）· 机械校五项 + `round` · 禁「全量扫 X」。**结构**：门槛 + 结构化参数。
 
 **工具面自解释**：结构化的约束要「用之前就能看到」，不能靠撞门来学。
-- **六字段要可见**：派单任务书的六个字段（目标与理由、round、已知事实、设计要点与禁止范围、验收标准、交付报告格式）必须在 `tool-docs/subagent.md` 里写明，中文标签或英文等价形都行。门禁自己不动。
+- **五项参数 + `round` 要可见**：派单任务书的五个结构化参数（`goal`/`knownFacts`/`designPoints`/`acceptance`/`reportFormat`）与 `round` 必须在 `thincoder-core/tool-docs/subagent.md` 里写明，中文标签或英文等价形都行。机械门按 `TASK_BOOK_PARAMS` 逐项判存在 / 类型 / 非空——不读内容。
 - **档头要能填**：`batch` create 增加两个可选参数，`ledger`（台账编号）和 `board`（板块），建档时就把 `> 台账 = …` 这行填上；没给的话，回执里说清楚怎么补。
 - **占位要能辨**：死占位扫描要分得清「占位没填」和「正文里引用了占位」。这条是自己踩出来的，讨论正文引到字面就被误杀。判据由设计定，不许放松成泛扫。
 - 边界：只补可见性、可填性、可辨性这三样；门禁的标记集字面不动，判据修改只限「怎么区分没填和引用」；不加新工具。
@@ -501,8 +501,8 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 - 不重写 eng-coder / advisor 已验证可靠的核心（只微调）；
 - 不改 thincoder 产品其余部分（只工程模式机制）；
 - 不立即删 v1 老档——v2 确定后 v1 才归档退役；
-- 不把「修 bug」当方向——`ENGINEERING-MODE-ISSUES.md` 是参考资料，不是 v2 需求。
-- 废除 checklist 工具 + `.thincoder/checklist.md`（待办跟踪统一到台账，用户 2026-09-17 裁定）。
+- 不把「修 bug」当方向——`docs/core/requirements/_archive/ENGINEERING-MODE-ISSUES.md` 是参考资料，不是 v2 需求。
+- 废除 checklist 工具与 checklist 约定（待办跟踪统一到台账，用户 2026-09-17 裁定）。
 
 ### 10.2 落地分期
 
@@ -532,9 +532,9 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 | 档 | 判定 | 去向 |
 |---|---|---|
-| `ENGINEERING-MODE-MECHANISM.md` | 退役 ✅ | 12 机制 = 5 替代 + 7 继承搬 v2 §13 |
-| `ENGINEERING-MODE.md` | 退役 | 角色/工作流 → v2 §7/§8 |
-| `ENGINEERING-MODE-ISSUES.md` | 退役 | 已并入 v2 |
+| `docs/core/requirements/_archive/ENGINEERING-MODE-MECHANISM.md` | 退役 ✅ | 12 机制 = 5 替代 + 7 继承搬 v2 §13 |
+| `docs/core/requirements/_archive/ENGINEERING-MODE.md` | 退役 | 角色/工作流 → v2 §7/§8 |
+| `docs/core/requirements/_archive/ENGINEERING-MODE-ISSUES.md` | 退役 | 已并入 v2 |
 
 **设计层（反向退役——旁路档，另起炉灶的）**：
 
@@ -548,7 +548,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 | `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-MACHINE-CHECK.md` | 反向退役 | `DOC-DISCIPLINE.md` + `DOC-CODE-RECONCILE.md` |
 | `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-PROMPT-PIPELINE.md` | 反向退役 | `PROMPT-SYSTEM.md` |
 | `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-TEST-DISCIPLINE.md` | 反向退役 | `TESTING.md` |
-| `ENGINEERING-MODE.md` | 退役 | v2 架构设计替代 |
+| `docs/core/requirements/_archive/ENGINEERING-MODE.md` | 退役 | v2 架构设计替代 |
 
 **设计层（不退 · 就地更新为 v2 设计）**：
 
@@ -591,7 +591,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 ## 13. 继承机制（自 v1 MECHANISM 语义继承——权威转移）
 
-> 退役批第 ② 步：7 个机制自 `ENGINEERING-MODE-MECHANISM.md` **语义继承**（v2 不重写，但以 v2 表述收录完整语义——MECHANISM 退役后本节 = 唯一权威源）。逐条语义与判据保留，组织归 v2 结构。
+> 退役批第 ② 步：7 个机制自 `docs/core/requirements/_archive/ENGINEERING-MODE-MECHANISM.md` **语义继承**（v2 不重写，但以 v2 表述收录完整语义——MECHANISM 退役后本节 = 唯一权威源）。逐条语义与判据保留，组织归 v2 结构。
 
 ### 13.1 文档更新纪律 D1–D9（FR21）
 
@@ -613,7 +613,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 ### 13.2 VSC 端镜像（FR23）
 
-工程模式机制**两端同一套、各自实现**：batchDoc 门 / eng-designer 角色 / 行为纪律 / batch 工具 / V1–V3 机检 / 提示词双源——**语义同源·原文自持**（不共用代码）；逐字一致的段在设计档定稿、实现面照抄不得自行解释；验收两层 = 机械面全绿 + **用户手动重载扩展后自验**（源码改动需重载才生效——「文件在了」≠「机制活了」）。
+工程模式机制**两端同一套、各自实现**：batchDoc 门 / eng-designer 角色 / 行为纪律 / batch 工具 / V1–V3 机检 / 提示词两侧（中文设计文档 → 英文代码）——**语义同源于设计、原文自持**（不共用代码）；逐字一致的段在设计档定稿、实现面照抄不得自行解释；验收两层 = 机械面全绿 + **用户手动重载扩展后自验**（源码改动需重载才生效——「文件在了」≠「机制活了」）。
 
 ### 13.3 台账提醒与可见面（FR24）
 

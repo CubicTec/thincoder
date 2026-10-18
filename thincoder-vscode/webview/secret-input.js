@@ -4,7 +4,7 @@
  * 回焦输入框 + append 到 `#messages` + `scrollIntoView` + 首输入框初始聚焦。
  *
  * 载荷 = 核注入缝 `ctx.onSecretInput(payload)`（设计单源 = `docs/core/design/TOOLS.md` §6.22 ⑧）：
- *   `{ kind, sessionId, host, user, port, fields: [{ name, masked, required, prefill }],
+ *   `{ kind, sessionId, host, user, port, fields: [{ name, masked, required, prefill, checkbox? }],
  *      keys: { title, prompt } }`
  * 词面 = i18n 键（端投影走本端字典——渲染期以载荷 host / user / port 作 `${…}` 插值）；
  * 字段标签 = 词键 `ssh.field.<name>`，缺键回退字段原名（不空标）。
@@ -61,11 +61,13 @@ export function showSecretInput(ctx, payload, promptId) {
     label.textContent = fieldWord(field.name)
     const input = document.createElement("input")
     input.className = "secret-input"
-    input.type = field.masked === true ? "password" : "text"
+    // 勾选字段（`save`——§6.22 ⑪）：原生复选框；值 = 布尔（`checked`）；缺省不勾（opt-in）。
+    input.type = field.checkbox === true ? "checkbox" : field.masked === true ? "password" : "text"
     input.autocomplete = "off"
-    // 预填 = 仅非密字段（设计 ⑨「密码零预填 ∥ 零记忆」；三端同判据 = CLI `secret-prompt.mjs`
+    // 预填 = 仅非密非勾选字段（设计 ⑨「密码零预填 ∥ 零记忆」；三端同判据 = CLI `secret-prompt.mjs`
     // `field?.masked === true ? "" : …` ∥ 桌面 `secret-prompt.mjs`「非密预填，密码零预填」）。
-    input.value = field.masked === true ? "" : String(field.prefill ?? "")
+    if (field.checkbox === true) input.checked = field.prefill === true
+    else input.value = field.masked === true ? "" : String(field.prefill ?? "")
     input.addEventListener("keydown", (e) => {
       // IME 组字门（同族先例 = 核卡 `cards/question.mjs` 的作答控件）：组合期回车 = 选字确认 ⇒ 零提交
       if (e.isComposing || e.keyCode === 229) return
@@ -92,13 +94,16 @@ export function showSecretInput(ctx, payload, promptId) {
   /** 两径共出口（提交 / 取消）：出站 → 摘卡 → 回焦输入框。 */
   const done = (values) => { respond(values, promptId); el.remove(); ctx.inputEl.focus() }
 
-  /** 提交：必填门（载荷字段语义）——首个空必填字段 ⇒ 聚焦该字段、零出站；否则收集全字段值。 */
+  /** 提交：必填门（载荷字段语义）——首个空必填字段 ⇒ 聚焦该字段、零出站；否则收集全字段值。
+   *  勾选字段 ⇒ 布尔（`checked === true`）。 */
   function submit() {
     for (const { field, input } of rows) {
-      if (field.required === true && input.value === "") { input.focus(); return }
+      if (field.checkbox !== true && field.required === true && input.value === "") { input.focus(); return }
     }
     const values = {}
-    for (const { field, input } of rows) values[String(field.name ?? "")] = input.value
+    for (const { field, input } of rows) {
+      values[String(field.name ?? "")] = field.checkbox === true ? input.checked === true : input.value
+    }
     done(values)
   }
   submitBtn.addEventListener("click", submit)

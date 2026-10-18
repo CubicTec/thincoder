@@ -178,7 +178,9 @@ may hold a `${env:VAR}` reference, resolved at use time — the value is then ta
     // optional: Tavily structured search (stable JSON API, no HTML scraping).
     // Empty apiKey → silently falls back to Bing HTML extraction (zero-config).
     "apiKey": "tvly-...", // https://tavily.com — has a free monthly tier
+    "backend": "auto", // "auto" = DeepSeek when a DeepSeek provider is configured; "local" = skip DeepSeek
   },
+  "fetch": { "backend": "auto" }, // same values — "local" = fetch locally (skip DeepSeek)
 }
 ```
 

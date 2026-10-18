@@ -174,7 +174,7 @@
 | 7 | `thincoder-desktop/renderer/events.mjs` | **264** |
 | 8 | 单元测试档 | digest 对位族（306 行；随批留存 · 不进集成测试树） |
 
-**复制面对齐 VSC 行**（机制 ∕ 判据单源 = `docs/desktop/design/UI.md` §1「批注（复制面对齐 VSC）」；决策 = `docs/desktop/design/SHELL.md` §1 **KD-43** + 本档 §1 KD-22）：
+**复制面对齐 VSC 行**（机制 ∕ 判据单源 = 本档 §2「批注（复制面对齐 VSC）」；决策 = `docs/desktop/design/PROJECT.md` §2 **KD-43** + 本档 §1 KD-22）：
 
 | 文件 | 预期（构成） | 批 |
 |---|---|---|

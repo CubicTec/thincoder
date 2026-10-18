@@ -18,8 +18,8 @@
  *      → 整个字段丢弃；
  *   ② 内容只扫密钥形态（sk-xxx / Bearer xxx / key=… / token 值形等）→ 截断到形态之前
  *      ——宁可丢信息不漏密钥。
- *      token 值形（`uuid:epoch`——2026-10-14 design-token-recovery 批并入）：design-slots
- *      reveal 结果经 `tool:done` head 落盘时不落值（与 batch.mjs 凭据第三形同判据）。
+ *      token 值形（`uuid:epoch`——2026-10-14 批并入）：工具结果经 `tool:done` head 落盘
+ *      时在形态前截断、不落值（与 batch.mjs 凭据第三形同判据）。
  *   工具事件不记 args；URL 不入事件（llm/tool 事件从不携带 URL；err 文本经形态扫描）。
  * - 摘要截断（B 方案，2026-09-03 用户裁定）：截断处带 "…" 标记（截后仍 ≤上限）。
  * - 测试隔离：node --test 进程（NODE_TEST_CONTEXT）默认不写盘——防测试事件污染真实

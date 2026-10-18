@@ -12,7 +12,7 @@
 
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { CASES, CLASS_LABELS, MANUAL, SUITE_VERSION } from "../cases/index.mjs"
+import { CASES, CLASS_LABELS, MANUAL, SUITE_VERSION } from "../suites/index.mjs"
 import { effectiveDims, loadRoster, selectEntries } from "./roster.mjs"
 import { applyPricesToResult, loadPrices, pricesPath } from "./prices.mjs"
 import { runMetrics } from "./metrics.mjs"

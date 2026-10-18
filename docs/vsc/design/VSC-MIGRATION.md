@@ -52,8 +52,8 @@
 | **批 2** | `WEBVIEW（VSC 侧）`（1867 行）拆分 + 实迁 | 1（→3 档） | `docs/vsc/design/{WEBVIEW,WEBVIEW-PROTOCOL,WEBVIEW-INPUT}.md` | `docs/vsc/**` | **已落** |
 | **批 3** | 统一面（P1）64 档**复判** + 纯新建第一批（3 板块设计 / 需求成对） | 6 | `docs/core/{design,requirements}/{TURN-CAP-CONTINUE,SEND-STALL-DISTILL,ESCALATE}.md` | `docs/core/**` | **已落** |
 | **批 4** | 统一面**纯新建**（落笔时核层无同话题档者） | 6 | `docs/core/{design,requirements}/{DOC-CODE-RECONCILE,AGENT-PARAMS,NORMAL-MODE,MULTI-INSTANCE-COLLAB,SETTINGS-TOOL,STRUCTURE-DEBT}.md` | `docs/core/**` | **已落** |
-| **批 5** | §8A 剩余纯新建（5 档——ADVISOR-CONVERGENCE 翻转跳过 · PROJECT 拆分双落）+ 本档拆分 | 6 | `docs/core/requirements/{DESIGN-TOKEN-SETTLEMENT,ENG-TOKEN-BINDING,PORTABILITY,VERIFY-REDESIGN,PROJECT}.md` · `docs/vsc/requirements/PROJECT.md` · `docs/vsc/design/VSC-MIGRATION-INVENTORY.md` | 新建 core 需求档 + `docs/vsc/**` | **已落** |
-| **批 6+** | §8B 并入清单 **26 条**（转并入既有面）+ 待裁 D1–D3 定判后处置 | 26+ | INVENTORY §8B 逐条给定 | `docs/core/**`（+ 待裁项 `docs/vsc/**`） | **已落**（INVENTORY §8B） |
+| **批 5** | §8A 剩余纯新建（5 档——ADVISOR-CONVERGENCE 翻转跳过 · PROJECT 拆分双落）+ 本档拆分 | 6 | `docs/core/requirements/{DESIGN-TOKEN-SETTLEMENT,ENG-TOKEN-BINDING,PORTABILITY,VERIFY-REDESIGN,PROJECT}.md` · `docs/vsc/requirements/PROJECT.md` | 新建 core 需求档 + `docs/vsc/**` | **已落** |
+| **批 6+** | §8B 并入清单 **26 条**（转并入既有面）+ 待裁 D1–D3 定判后处置 | 26+ | 逐条给定（清单面已收口） | `docs/core/**`（+ 待裁项 `docs/vsc/**`） | **已落** |
 | **收尾批** | 产品树两份地图（`design/README.md` · `requirements/README.md`）随树降格处置 | 2 | —— | 父侧 | 待排（地图处置仍待父侧） |
 
 ## 3. 判据缺口（登记）

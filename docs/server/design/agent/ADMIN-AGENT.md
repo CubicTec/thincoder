@@ -10,15 +10,16 @@
 - **一句话**：管理面 agent = **server 进程内的 LLM agent**——以**会话**为单位接收管理动作（管理面 chat），经工具面（管理面九件 ∥ 环境六族八件 ∥ MCP）执行、验证、报告。
 - **唯一一个**：不为管理面另立第二个 agent；其余管理面能力（成员 ∥ provider ∥ 模型选择 ∥ 用量/配额 ∥ 审计 ∥ 沙盒各面）陆续入其工具面——「通过 agent 完成 thincoder server 的完整管理」（需求 §5 后续议题行）。
 - **载体**：server 进程内模块 `thincoder-server/src/agent/`（不做独立进程/通道）；执行面（runner）机器上零驻留。
-- **核 = `@thincoder/core`**（KD-SV-78：依赖声明形照 CLI——钉版本；**无人值守档面裁剪 = 本档 §5**）。
+- **核 = `@thincoder/core`**（KD-SV-78：依赖声明形照 CLI——钉版本；**档面裁剪 = 本档 §5**）。
 - **驱动器 = 聊天式（唯一形态——§11）**：管理面 chat 会话（§11；需求 §5「两个 chat 界面」④）——同一审计面、同一模型出口面（§5——管理会话出口实现 = §16.2）。
 - **与成员面 agent 的关系**：成员面 chat = 开发壳（用户裁「成员资源管理 = 同一个 chat 界面 + 开放工具」）——其 server 域工具与本体同源、面不同；**独立档 `agent/MEMBER-AGENT.md`（第四壳——盒内核同件 + 最小壳；机制全文 = 该档 §3）；工具面归属 = 下行句。**
 - **成员面 agent 的 server 域工具面归属** = `agent/MEMBER-AGENT.md` §2 KD-SV-159：范围 = 成员本人资源；动作集 = 写面同集——单源（创建 ∥ 启动 ∥ 停止 ∥ 销毁 + 拉仓）；管理面运维件（docker/主机/exec/provider）不入成员面；逐件清单与实施 = 实施批从实需反推。
 
 ## 5. 核复用与对话面裁剪（KD-SV-78 落实）
 
-- **保留（取核面——件级）**：多轮工具循环语义 ∥ **工具调用协议（回灌形——§17.3 A1）** ∥ **上下文压缩（§17.3 A3）** ∥ provider 客户端（模型出口）∥ 审计挂钩；**环体（回合骨架）= 服务端自持**（宿主语义：DB 单源 ∥ NDJSON 帧 ∥ 无人值守裁剪 ∥ 网关记账出口——核内无对应缝；取核形全文 = §17，开放点 = §17.4）。
-- **裁剪**：交互审批/问询面（无人值守——工具不弹问、不自锁）∥ TTY 假面 ∥ 与运维任务无关族（记忆 ∥ 台账 ∥ 子代理 ∥ 浏览器——按任务需要再逐族接）。
+- **保留（取核面——件级）**：多轮工具循环语义 ∥ **工具调用协议（回灌形——§17.3 A1）** ∥ **上下文压缩（§17.3 A3）** ∥ provider 客户端（模型出口）∥ 审计挂钩；**环体（回合骨架）= 服务端自持**（宿主语义：DB 单源 ∥ NDJSON 帧 ∥ 档面裁剪（§5） ∥ 网关记账出口——核内无对应缝；取核形全文 = §17，开放点 = §17.4）。
+- **裁剪**：TTY 假面 ∥ 与运维任务无关族（记忆 ∥ 台账 ∥ 子代理 ∥ 浏览器——按任务需要再逐族接）。
+- **审批卡面（本批落——§11.5 ∥ KD-SV-224–227；用户 2026-10-17 裁「必须上审批卡」）**：写类工具逐调用经审批门挡——单件 ∥ 批卡（`permission`/`batch` kind）；`always` ⇒ 会话行 `auto_approve`；问询/秘密面不接（无源——§11.5 收窄条）。
 - **MCP 面**：**管理会话（chat）挂载**（服务器级清单 ⇒ 工具随回合并入——机制全文 = `mcp/MCP.md`）。
 - **模型出口**：**管理会话（chat）** = **本 server 网关链的进程内客户端**（loopback——本机监听地址 + 管理面 sk〔`admin-agent`〕；鉴权/派发/准入/记账全链逐字复用，零第二份——机制全文 = §16.2/§16.3）。
   出口代理旗随 provider 条目（复核点——`sandbox/SANDBOX.md` §16 R53③）。
@@ -27,14 +28,15 @@
 
 | 档 | 行数（设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/src/agent/run.mjs`（已落盘） | ≈**90**（保留 = 预算常量 ∥ `loadCoreChat` ∥ `providerModelRefs`——chat 面复用） | 核装载共用件（chat 会话装配 ∥ 预算常量 ∥ `providerModelRefs`） |
+| `thincoder-server/src/agent/run.mjs`（已落盘） | 实读 **33** ⇒ ≈**34**（本批删 `TRIMMED_FACES` 之 `"approval"`——KD-SV-224；保留 = 预算常量 ∥ `loadCoreChat` ∥ `providerModelRefs`） | 核装载共用件（chat 会话装配 ∥ 预算常量 ∥ `providerModelRefs` ∥ 裁剪面清单） |
 | `thincoder-server/src/agent/tools.mjs`（已落盘） | ≈**20**（**保留 = `maskSecrets`**——掩蔽单源（chat `exec` ∥ 主机凭据面共用）） | 掩蔽单源（`maskSecrets`——KD-SV-136 同件） |
-| `thincoder-server/src/agent/chat.mjs`（已落盘） | 实读 **736/737**（口径 = `\n` 换行计数/总行——文末换行即末行；拆档评估 = §9 KD-SV-208） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（五形 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
-| `thincoder-server/src/agent/chat-routes.mjs`（已落盘） | 实读 **196** | 会话面**六**端点（§11——契约 = `gateway/API.md` §2.8）∥ 判权 ∥ 在途门 ∥ 重启恢复钩（running ⇒ idle + notice） |
-| `thincoder-server/src/agent/chat-tools.mjs`（已落盘） | 实读 **563**（越 500 软线——判 = 维持 + 上限 700〔先例 = `store/STORE.md` §4〕：触发 = 实读 >700 ⇒ 起拆档审查）∥ `mcp` 第九件 = 独立面 `thincoder-server/src/mcp/admin-tools.mjs`（拟新增），§12.2 | 管理面**九件**（§12——九中之八在本档；`mcp` = 独立面，§12.2）：members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec——参数校验 ∥ 结果结构化 ∥ 审计包装（进程内直取域件） |
+| `thincoder-server/src/agent/chat.mjs`（已落盘） | 实读 **736**（口径 = `split("\n").length − 1`；本批 +门挡装配 Δ ≤15——拆档评估 = §9 KD-SV-208/228） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（七型 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
+| `thincoder-server/src/agent/chat-routes.mjs`（已落盘） | 实读 **223** ⇒ **224**（本轮 `#1617` +1；结构不变） | 会话面**七**端点（§11——契约 = `gateway/API.md` §2.8；+ask 应答 = KD-SV-224）∥ 判权 ∥ 在途门 ∥ 重启恢复钩（running ⇒ idle + notice） |
+| `thincoder-server/src/agent/chat-asks.mjs`（已落盘） | 实读 **242**（口径 = `split("\n").length − 1`——沿 chat.mjs 行） | 审批 ask 宿主（§11.5——KD-SV-224）：写类调用 ⇒ `ask` 帧构造 ∥ 应答 ⇒ 结算续跑 ∥ 拒值三径（回合收 ∥ 中止 ∥ 流断）∥ 置库（`auto_approve`） |
+| `thincoder-server/src/agent/chat-tools.mjs`（已落盘） | 实读 **562**（口径 = `split("\n").length − 1`——沿 chat.mjs 行） ⇒ ≈**590**（越 500 软线——上限 700：触发 = 实读 >700 ⇒ 起拆档审查；本批 +只读判类表/`readonlyOf` = KD-SV-225）∥ `mcp` 第九件 = 独立面 `thincoder-server/src/mcp/admin-tools.mjs`（已落盘——实读 **222**），§12.2 | 管理面**九件**（§12——九中之八在本档；`mcp` = 独立面，§12.2）：members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec——参数校验 ∥ 结果结构化 ∥ 审计包装（进程内直取域件） |
 | `thincoder-server/src/agent/docker-ops.mjs`（已落盘） | 实读 **91** | Docker 十动词执行器（任务面/聊天面两驱动单源；客户端 = `sandbox/docker.mjs`） |
 | `thincoder-server/src/agent/chat-env.mjs`（已落盘） | ≈**97**（能力段行：`bash.async` 可用 ∥ timer 空闲唤醒；管理族句含 `exec`） | 环境块装配（§14.1）：时空 ∥ 所在/身份 ∥ 所管现况一行（三活体——块级降级）∥ 能力与边界段（`CHAT_LIMITS_BLOCK`——系统简报第四块） |
-| `thincoder-server/src/agent/chat-env-tools.mjs`（已落盘） | 实读 **318** | 环境工具面六族八件（§14.2/§14.3）：核件动载 ∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（超时 ∥ 输出 ∥ 工作目录）∥ timer/后台任务垫片与投递汇（§15——唤醒器接线 ∥ 投递落库 ∥ 异步池宿主） |
+| `thincoder-server/src/agent/chat-env-tools.mjs`（已落盘） | 实读 **328** ⇒ ≈**336**（+ `readonlyOf`（核旗逐字）——KD-SV-225） | 环境工具面六族八件（§14.2/§14.3）：核件动载 ∥ ctx 适配 ∥ 结果归一 `{ ok, subject, summary, output }` ∥ `bash` 限幅（超时 ∥ 输出 ∥ 工作目录）∥ timer/后台任务垫片与投递汇（§15——唤醒器接线 ∥ 投递落库 ∥ 异步池宿主） |
 | `thincoder-server/src/agent/chat-store.mjs`（已落盘） | 实读 **155** | 库面单源（库面段 + `parseJson` + `CHAT_ROLES`/`CHAT_EXCERPT_MAX` 抽出；11 名重导出同引用 ∥ 零反引 `chat.mjs`） |
 | `thincoder-server/src/agent/chat-wake.mjs`（已落盘） | 实读 **141** | 唤醒器（§15.1）：会话键面闩表（核 `createTimerWatch` 复用——零第二套闩）∥ 空闲判定（会话行 `status` 单源）∥ 火策略（核 `fireTimerWake`）∥ 结算钩子（`_asyncWaiters`——先自再武装再评估）∥ 再武装三链尾 ∥ 零轮询 |
 
@@ -45,14 +47,14 @@
 
 | 判据 | 载体 |
 |---|---|
-| 聊天式驱动：六端点判权三态（`user` ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）∥ 流帧逐帧序（`delta`/`call`/`result`/`end`——假模型出口 ∥ 假工具）∥ 会话落库与重放（逐行在场 ∥ notice 回放滤除 ∥ 工具结果截断口径一致；压缩会话以标记行代覆盖段——§17.3 A3）∥ 在途门（`running` ⇒ 400 人话）∥ 重启收尾（`running` ⇒ `idle` + notice + `chat_stop` 行）∥ 管理面九件逐件（§12——假件下断言动词面与参数校验）∥ 每工具调用一条 `agent_event` 行（逐调用 ∥ 掩蔽）∥ chat 重置 ⇒ 既有域型零增（`password_reset` 零行——只 `chat_call` 行；§12 重置链助手边界）∥ 异常终态落库（模型错误 ∥ 预算超限）：已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致）；notice 行独立落行（回放滤除）；零文本 ⇒ 零 `assistant` 行 | 单元测试档（`…-admin-agent-chat.test.mjs` ∥ `…-admin-agent-chat-tools.test.mjs`） |
+| 聊天式驱动：七端点判权三态（`user` ⇒ 403 ∥ 无会话 ⇒ 401 ∥ admin 200）∥ 流帧逐帧序（`delta`/`call`/`result`/`end`——假模型出口 ∥ 假工具）∥ 会话落库与重放（逐行在场 ∥ notice 回放滤除 ∥ 工具结果截断口径一致；压缩会话以标记行代覆盖段——§17.3 A3）∥ 在途门（`running` ⇒ 400 人话）∥ 重启收尾（`running` ⇒ `idle` + notice + `chat_stop` 行）∥ 管理面九件逐件（§12——假件下断言动词面与参数校验）∥ 每工具调用一条 `agent_event` 行（逐调用 ∥ 掩蔽）∥ chat 重置 ⇒ 既有域型零增（`password_reset` 零行——只 `chat_call` 行；§12 重置链助手边界）∥ 异常终态落库（模型错误 ∥ 预算超限）：已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致）；notice 行独立落行（回放滤除）；零文本 ⇒ 零 `assistant` 行 | 单元测试档（`…-admin-agent-chat.test.mjs` ∥ `…-admin-agent-chat-tools.test.mjs`） |
 | 输入区四件后端 + 帧面：PATCH 换模型（idle/running 两态——下回合生效 ∥ 在途零触；非法/不存在 ⇒ 400/404 库零变）∥ `images` 三门（非数组 ∥ 非栅格 ∥ 超单图阈 ⇒ 400；非视觉模型 ⇒ 400——库零变）∥ user 行 `imageParts` 逐值 + 回放 content 数组（模型出口入参断言）+ 详情仅 `imageCount` ∥ abort（在途 ⇒ 200 + 收尾三件（notice `"aborted"` ∥ `chat_stop` ∥ `end` failed）；idle ⇒ 400；两中止窗（调用间 ∥ 在途 signal）∥ 登记表清零）∥ 帧序 = `turn(n)` 前 ∥ `usage` 后（缺 usage ⇒ 零帧）∥ `end` 携 `durationMs`/`calls`（可字段——旧消费零破） | 单元测试档（`…-admin-agent-chat.test.mjs` 续——**716** 行；越 500 软线：预案 = 用例段随拆档审查；硬限 800 未越） |
 | 会话级思考档位：`GET /api/admin/providers` 行携 `modelReasoning`（稀疏 ∥ 键 = 上游真名 ∥ 值 = 核枚举；假 specLookup 注入）∥ `PATCH …/:id { reasoning }`（枚举内 ⇒ 200 落库 + 回执携值；表外/非串/同携 model ⇒ 400 库零变；判权三态）∥ 换模型 ⇒ `reasoning` 清 NULL（口径②）∥ 装配（行值 ∈ 当刻模型枚举 ⇒ 出口 `reasoningEffort`；未设 ∥ 表外 ⇒ 零键——假出口入参断言）∥ 结构（v16 零迁移：空库直落 16 ∥ 列面在场 ∥ 存量行 NULL） | 单元测试档（`…-console-reasoning-levels.test.mjs`） |
 
-| 环境感知与环境工具面（功能点 43 ∥ AC-43 ①–⑥） | ① 四块装配在场（三实况行逐值——注入 now ∥ 假 db ∥ 注入 cwd；简报含能力边界段——**对位断言** = 每件注册工具名 ∈ 能力段字面）∥ ② 值随实况（读源变更 ⇒ 下回合行变）＋ 块级降级（读败 ⇒ 该行缺席、回合 `succeeded`）∥ ③ 零新端点（两新档源零 `routes.add(` ∥ `chat-routes.mjs` 计数不变）∥ ④ 行形 = `[System reminder: ` 族前缀（三端同形——坐标逐块 = §14.1 表）∥ ⑤ 工具面六族八件在场（names/schemas——核真件〔仓内核直引〕）＋ `get_current_time` 一次调用读数 ＋ `bash` 限幅三件（取值校验：仅拒非有限值/小于 1 ∥ cwd 生效）∥ ⑥ 每调用一审计行（逐调用——既有）＋ 详情扩字段（`subject` = 命令原文/路径 ∥ 成败 ∥ `truncated`）＋ 审计页按型渲染（agent 行模板——三文案键两表同步） | 单元测试档（`…-admin-agent-awareness.test.mjs`）＋ 收口轮（浏览器实走——问「现在几点/你管着几个节点」各一 ＋ 时间工具一次调用 ＋ 审计页一行） |
+| 环境感知与环境工具面（功能点 43 ∥ AC-43 ①–⑥） | ① 四块装配在场（三实况行逐值——注入 now ∥ 假 db ∥ 注入 cwd；简报含能力边界段——**对位断言** = 每件注册工具名 ∈ 能力段字面）∥ ② 值随实况（读源变更 ⇒ 下回合行变）＋ 块级降级（读败 ⇒ 该行缺席、回合 `succeeded`）∥ ③ 零新端点（两新档源零 `routes.add(` ∥ `chat-routes.mjs` 计数不变——现 = 七端点）∥ ④ 行形 = `[System reminder: ` 族前缀（三端同形——坐标逐块 = §14.1 表）∥ ⑤ 工具面六族八件在场（names/schemas——核真件〔仓内核直引〕）＋ `get_current_time` 一次调用读数 ＋ `bash` 限幅三件（取值校验：仅拒非有限值/小于 1 ∥ cwd 生效）∥ ⑥ 每调用一审计行（逐调用——既有）＋ 详情扩字段（`subject` = 命令原文/路径 ∥ 成败 ∥ `truncated`）＋ 审计页按型渲染（agent 行模板——三文案键两表同步） | 单元测试档（`…-admin-agent-awareness.test.mjs`）＋ 收口轮（浏览器实走——问「现在几点/你管着几个节点」各一 ＋ 时间工具一次调用 ＋ 审计页一行） |
 
-| 唤醒与投递面 | ① **唤醒链**：设 timer ⇒ 到期（注入钟）⇒ 会话空闲 ⇒ 唤醒器 fire ⇒ 送达行**落库**（`user` 行 + `data.kind="reminder"`——行文 = 核件单源逐字）＋ **自动开一轮**（模型出口调用一次；域文本 = 核 `TIMER_TURN_DOMAIN` 逐字）＋ 助手回复落库 ∥ 出列幂等（不二投）∥ 未到期 ⇒ 零行零轮 ∥ 在途回合（`status = running`）⇒ 零动作（链尾再武装）∥ 零交付 ⇒ 零开轮 ∥ ② **异步链**：`bash.async:true` ⇒ 回执 `bash#N started (running) — log: …`（核件原文 ⇒ `tool` 行）∥ 结算 ⇒ 钩子触发唤醒轮 ⇒ 摘要行落库（`[System reminder: background bash#N finished …` 核件原文）∥ 帽 4（第 5 件 ⇒ 工具级错误人话）∥ `process action="kill" id:N` 两态（在途 ⇒ 杀树 + 确认；未知/已完成 ⇒ 人话）∥ ③ **中止面**：非 interrupt 中止 ⇒ 本回合在途后台任务杀树 + 丢弃提醒入汇（核件原文）+ 墓碑 ⇒ 零摘要投递 ∥ ④ **结构面**：零新端点（六端点计数不变）∥ 三 kind 审计面不扩 ∥ 唤醒器零轮询（源扫描零 `setInterval`）∥ 同源断言（导入面 = 核 `timers.mjs` 四件） | 单元测试档（`…-server-wake-face.test.mjs`）＋ 收口轮（部署实走） |
-| 会话历史与出口改道（需求 43⑤ 扩 ∥ 46⑤ ∥ AC-46⑥） | ① 登录发面（admin ⇒ `admin-agent` 在册携明文 ∥ 幂等 ∥ `user` 零行 ∥ 审计 `surface`）∥ ② 出口入参（外标 ∥ selfBase ∥ sk 明文——**不携** provider 凭据）∥ ③ 全链出账（真网关链 + 假上游：`usage` 行在场且可归因）∥ ④ `read_history` 本会话逐形（含 `path` 拒）＋ 审计 subject ∥ ⑤ 结构（六端点 ∥ 三 kind ∥ 核件零改 ∥ 能力段八件对位）——机检口径全文 = §16.4 | 单元测试档（`…-server-wake-face.test.mjs` 续）＋ 收口轮（浏览器实走） |
+| 唤醒与投递面 | ① **唤醒链**：设 timer ⇒ 到期（注入钟）⇒ 会话空闲 ⇒ 唤醒器 fire ⇒ 送达行**落库**（`user` 行 + `data.kind="reminder"`——行文 = 核件单源逐字）＋ **自动开一轮**（模型出口调用一次；域文本 = 核 `TIMER_TURN_DOMAIN` 逐字）＋ 助手回复落库 ∥ 出列幂等（不二投）∥ 未到期 ⇒ 零行零轮 ∥ 在途回合（`status = running`）⇒ 零动作（链尾再武装）∥ 零交付 ⇒ 零开轮 ∥ ② **异步链**：`bash.async:true` ⇒ 回执 `bash#N started (running) — log: …`（核件原文 ⇒ `tool` 行）∥ 结算 ⇒ 钩子触发唤醒轮 ⇒ 摘要行落库（`[System reminder: background bash#N finished …` 核件原文）∥ 帽 4（第 5 件 ⇒ 工具级错误人话）∥ `process action="kill" id:N` 两态（在途 ⇒ 杀树 + 确认；未知/已完成 ⇒ 人话）∥ ③ **中止面**：非 interrupt 中止 ⇒ 本回合在途后台任务杀树 + 丢弃提醒入汇（核件原文）+ 墓碑 ⇒ 零摘要投递 ∥ ④ **结构面**：零新端点（端点计数不变；现 = 七端点）∥ 三 kind 审计面不扩 ∥ 唤醒器零轮询（源扫描零 `setInterval`）∥ 同源断言（导入面 = 核 `timers.mjs` 四件） | 单元测试档（`…-server-wake-face.test.mjs`）＋ 收口轮（部署实走） |
+| 会话历史与出口改道（需求 43⑤ 扩 ∥ 46⑤ ∥ AC-46⑥） | ① 登录发面（admin ⇒ `admin-agent` 在册携明文 ∥ 幂等 ∥ `user` 零行 ∥ 审计 `surface`）∥ ② 出口入参（外标 ∥ selfBase ∥ sk 明文——**不携** provider 凭据）∥ ③ 全链出账（真网关链 + 假上游：`usage` 行在场且可归因）∥ ④ `read_history` 本会话逐形（含 `path` 拒）＋ 审计 subject ∥ ⑤ 结构（七端点 ∥ 三 kind ∥ 核件零改 ∥ 能力段八件对位）——机检口径全文 = §16.4 | 单元测试档（`…-server-wake-face.test.mjs` 续）＋ 收口轮（浏览器实走） |
 | `exec`（SSH）进 chat | ① 工具在场（第八件——名/schema；绑定 = 主机表行：名 ∥ 地址两形命中；未在册 ⇒ 工具级错误）∥ ② 一轮 `exec`（假模型 + 假 ssh `execImpl`）：`call`/`result` 帧逐值 ∥ 结果**含四字段** `{ ok, exitCode, stdout, stderr }`（形全文 = §12 表）∥ 审计 `chat_call`（tool=`exec` ∥ subject=命令原文 ∥ resultCode=exitCode）；命令非零退出 ⇒ `ok:true`（退出码在结果内）∥ ③ 缺凭据/解密失败 ⇒ 工具级错误（回合不停、零 notice）∥ ④ 掩蔽：行凭据值（`secret`/`sudoSecret`）零入结果文本/摘要/subject/帧/审计（含 stdout 含秘密的构造用例）∥ ⑤ 临时私钥文件用毕即删（假件断零残留）∥ ⑥ 结构：工具面八件（能力段对位断言）∥ `runners` 动词 + `revoke_credential`（撤销两径同效；**chat 径审计两行** = `chat_call` + `host_credential_revoke`——凭据类例外，KD-SV-91）；用例 = §8（N83 ∥ B79 ∥ E61）＋ `sandbox/SANDBOX.md` §12（N80 ∥ N82〔撤销两径用例〕 ∥ B77/B78） | 单元测试档（`…-admin-chat-creds-merge.test.mjs`）＋ 收口轮（浏览器实走——对话页录凭据 ⇒ `exec` 一条） |
 
 | 与核取核形（机制 = §17） | ① 件清单在场（§17.2——file 级逐件）∥ ② A1 回灌形（tool 轮 assistant 消息 = 核件构造：回声族携 `reasoning_content`〔缺值 ⇒ `""`〕∥ 非回声族零字段；`extra_content` 在场才带；落库 ∥ 回放逐值）∥ ③ A2 历史修复（断链 pair 注入 ⇒ 修复成对；常态零改）∥ ④ A3 压缩（阈值触发 ⇒ 标记行落库 ＋ 回放以标记代覆盖段 ＋ 压缩后上下文缩；3 连败〔= 核常量 `COMPRESS_FAILURE_LIMIT`——取件 = `@thincoder/core/context.mjs`〕⇒ 降级；摘要调用经出口——`usage` 行可归因）∥ ⑤ 缺核降级不阻断（环境族不注册 ∥ 档位退中性）∥ ⑥ 核面零改（核侧文件零动——git 面判） | 单元测试档（`…-server-core-unification.test.mjs`） |
@@ -60,6 +62,7 @@
 | 模型测试（机制 = §12.1） | ① 工具在场（`models` 动词 +1——`test`；名集八件不变 ∥ 能力段对位不破）∥ ② 通路（假自环出口 ＋ 假 fetch：请求形 = `POST <selfBase>/v1/chat/completions` ∥ `stream: true` ∥ sk 明文 Authorization；真链用例 ⇒ `usage` 行在场——member = 本回合发送者 ∥ key = `admin-agent`）∥ ③ 读数五件逐值（假 SSE 流注入时刻——注入钟〔§12.1③〕 ⇒ `status`／`totalMs`／`ttfbMs`／`tps`／`error`；`ttfbMs` = 首个非空内容增量——流首空壳块不计；`tps` = `usage.completion_tokens` ÷ 生成窗——usage 缺 ⇒ null）∥ ④ 分类五支（假出口逐形 ⇒ `ok`〔含空答——零内容增量亦归 ⇒ `ttfbMs:null`〕／`timeout`（携 `phase`）／`http_error`（携 HTTP 码 ＋ 原文原样）／`bad_response`／`broken_stream`〔含首内容增量前中断——零部分读数〕）∥ ⑤ 未配/草稿 ∥ 入参校验（`prompt` 逾 2000 字 ∥ `timeoutS` 非正/非数/越界〔>600〕）⇒ 工具级错误人话（零外呼 ∥ 除逐调用 `chat_call` 行外库零变——与「测试连接」草稿面（AC-18）划界句在）∥ ⑥ 结构（零新端点——路由计数不变 ∥ 零新审计型/kind——`chat_call` 逐调用一行 ∥ 零迁移） | 单元测试档 |
 
 | MCP 管理工具（机制 = §12.2） | ① 工具面在册（第九件 `mcp`——五动词名/schema 在场 ∥ 寻址 `id`∥`name` 两形 ∥ 未知动词/缺 op ⇒ 工具级错误人话）∥ ② 零第二实现（引件表 = `store.mjs` 六导出 ＋ `face.mjs` 三导出——源扫断言；假件用例 = U2–U5）∥ ③ 凭据三面零秘密（结果 = 视图（`hasSecrets` 布尔）∥ `mcp_event` detail 零值（`keys` 只顶层键名）∥ 日志零值——假 log 扫描；`token` 入参 = 只写）——掩蔽 = 键名表 `SENSITIVE_KEYS` 单源（列名键零值——§12.2③）；袋内非列名键值 = 残余披露类（不入本腿断言）∥ ④ 能力叙述认 MCP（`CHAT_LIMITS_BLOCK` 管理族行含 `mcp` token ＋「已配服务器工具随回合可用」句 ＋ schema 描述——对位断言）∥ ⑤ 审计（add/update/remove ⇒ `mcp_event` 三 kind 逐值（同 routes 形——含 `keys` 无值）＋ 驱动层逐调用 `chat_call`（两行）；list/probe ⇒ 仅 `chat_call`；零新 kind/型）∥ ⑥ 结构（零新端点——routes 五端点计数不变 ∥ 零迁移 ∥ 成员面零涉 ∥ `chat-tools.mjs`/`store.mjs`/`face.mjs`/`routes.mjs` 逐件零改——源扫） | 单元测试档 ＋ 收口轮（会话实走——列/探/增一条真实服务器） |
+| 审批卡面（机制 = §11.5） | 判类（写类 ⇒ 门 ∥ 读类零弹）∥ 单件 ∥ 批（三值）∥ 拒 ⇒ 不执行 + 行 + 审计 + 续跑 ∥ 兜底三径（回合收 ∥ 中止 ∥ 流断）⇒ 拒值 ∥ 应答端点（三态 ∥ 400 零副作用）∥ `always` ⇒ 行 `auto_approve`（v25）+ PATCH 键 ∥ 收窄（question/secret 无源）∥ 结构（七端点 ∥ 零新审计面 ∥ 核零改） | 单元测试档（`…-admin-approval-cards.test.mjs`——已落盘，实读 **635** 行）＋ 收口轮（浏览器实走：写类一次弹卡 ⇒ 批 ⇒ 执行 ∥ 拒一次） |
 
 ## 8. 用例（本域）
 
@@ -113,13 +116,21 @@
 | B81 | 边界 | probe 失败（假件抛）∥ 缺核（无注入）∥ 编辑三态（字段缺席 ∥ 显式 `null` ∥ 敏感键空串）∥ 寻址两形（`id` ∥ `name`；`update` 缺 `id`） | probe ⇒ 工具面 `ok:true` ＋ `probe.ok:false` ＋ error 人话（自含读数——沿 routes 口径）；三态 ⇒ 库逐值（不变 ∥ 清 ∥ 不变）；寻址两形命中同行 ∥ `update` 缺 `id` ⇒ 工具级错误人话 |
 | E63 | 错误 | 形错/未命中六形：名空 ∥ 传输表外 ∥ 必填缺（stdio 无 `command`）∥ 重名 ∥ 未命中（`remove`/`probe`）∥ 未知动词/缺 op | 逐形 ⇒ 工具级错误人话（`{ ok:false, message }`——回合不停）；库零变 ∥ 零外呼 ∥ 零 `mcp_event` 行 |
 
+| N86 | 正常 | 假模型出口（一轮：一次写类调用 `bash`）＋ 真装配 | `ask` 帧（`permission`——promptId/tool/args 在场）⇒ 应答 `{ verdict: "once" }` ⇒ 200 ⇒ `call`/`result` 帧 ⇒ 执行成（假件断命令原文）；`chat_call` 一行（resultCode 0） |
+| N87 | 正常 | 同回合两写类调用（`bash` ＋ `members.create`） | 恰一 `ask`（`batch`——count=2 ∥ tools 两件）；`approveAll` ⇒ 两调用执行（先序）；`oneByOne` ⇒ 单件卡依序两弹 |
+| N88 | 正常 | `always` 一答 | 行 `auto_approve` = 1（v25 列在场）；同回合后续写类零弹（直执行）；下回合起跑读行 ⇒ 零弹；`PATCH { autoApprove:false }` ⇒ 复位（下回合弹回） |
+| B82 | 边界 | `reject` 一答 | 调用零执行（假件断零调用）∥ 工具行 `{ ok:false, message:"用户拒绝——未执行" }` ∥ `call`/`result` 帧在场 ∥ `chat_call` resultCode −1 ∥ 回合并续跑（下条 assistant 文本在场） |
+| B83 | 边界 | ① 应答前流断（res close）∥ ② 应答前 `…/abort` ∥ ③ 唤醒轮（无流）写类 | 三径 ⇒ 拒值收口（工具行/审计同 B82）；② 另沿既有中止收尾（notice `"aborted"`）；③ 即时拒（无卡——「无问面」口径） |
+| B84 | 边界 | 读类逐件（`ls`/`read`/`grep`/`get_current_time`/`usage.summary`/`audit.query`/`models.list`/`mcp.list`） | 零 `ask` 帧、零卡、直执行（判类逐件断） |
+| E64 | 错误 | 应答四错形：未知 promptId ∥ 已了结（后到应答）∥ 体与 kind 不符（值表外 ∥ `{ answer }` 对 `permission`）∥ 非 admin / 无会话 | 400/403/401 人话（零副作用——在决表零动 ∥ 回合不受扰） |
+
 ## 9. 关键决策（本域）
 
 | # | 决策 | 理由 |
 |---|---|---|
 | KD-SV-82 | **管理面 agent = server 进程内（核 `@thincoder/core` + 最小壳）+ 对话面裁剪（§5）+ 无白名单围栏；唯一一个 agent；驱动器 = 聊天式（§11 ∥ KD-SV-88）** | 用户口径 + KD-SV-78（从核引）；进程内 = 直取 server 域件（库/registry/docker 客户端）零 HTTP 回环；执行面机器零驻留延续用户口径 |
 | KD-SV-87 | **模型选择 = 会话级（建会话时选定——下拉源 = provider 注册表现有模型；不可用 ⇒ 建会话 400 人话）；会话内可换（明选即换 ∥ 下回合生效——KD-SV-108）** | 显式可见（零隐藏缺省）∥ 零新配置项（免「每配置项有 UI 写入口」新面）；会话内可换 = 用户「补后端一件不藏」直推（模型钮面原子已在——后端补齐） |
-| KD-SV-88 | **聊天式驱动 = 管理面 chat 会话（§11）**：① 会话（chat）= 模型选定（建会话时——KD-SV-87 同口径）× 消息序（库两表——KD-SV-89）；② 回合（turn）= 用户发一条 ⇒ agent 环跑到自然结束/预算封顶——**执行不依赖浏览器连接**（流 = 视图；断连照跑）；③ 流式通路 = `POST …/messages` 单请求 + `application/x-ndjson` 帧流（`delta` ∥ `call` ∥ `result` ∥ `end` ∥ `turn` ∥ `usage` + `end` 两可字段——§11.3：浏览器 fetch + `ReadableStream` 逐行读）；④ 预算 = 每回合独立（20 分钟 ∥ 60 调用——`DEFAULT_MAX_CALLS`/`DEFAULT_MAX_DURATION_MS` 常量复用）；⑤ 判权 = `requireAdmin` 全族 | 需求 §5「两个 chat 界面」④ + 用户「浏览器流式会话通路」点名；单请求 POST = 写入与执行同跳（零孤儿流 ∥ 判权一次）；NDJSON = 每行一帧零壳（较 SSE `data:` + 空行双层无增益）；执行不依赖连接 = 与「读时单源」先例同拍（刷新/换设备不丢回合）；预算常量复用 = 同一环保险丝（常量单源 = 预算常量件） |
+| KD-SV-88 | **聊天式驱动 = 管理面 chat 会话（§11）**：① 会话（chat）= 模型选定（建会话时——KD-SV-87 同口径）× 消息序（库两表——KD-SV-89）；② 回合（turn）= 用户发一条 ⇒ agent 环跑到自然结束/预算封顶——**执行不依赖浏览器连接**（流 = 视图；断连照跑）；③ 流式通路 = `POST …/messages` 单请求 + `application/x-ndjson` 帧流（`delta` ∥ `call` ∥ `result` ∥ `ask` ∥ `end` ∥ `turn` ∥ `usage` + `end` 两可字段——§11.3：浏览器 fetch + `ReadableStream` 逐行读）；④ 预算 = 每回合独立（20 分钟 ∥ 60 调用——`DEFAULT_MAX_CALLS`/`DEFAULT_MAX_DURATION_MS` 常量复用）；⑤ 判权 = `requireAdmin` 全族 | 需求 §5「两个 chat 界面」④ + 用户「浏览器流式会话通路」点名；单请求 POST = 写入与执行同跳（零孤儿流 ∥ 判权一次）；NDJSON = 每行一帧零壳（较 SSE `data:` + 空行双层无增益）；执行不依赖连接 = 与「读时单源」先例同拍（刷新/换设备不丢回合）；预算常量复用 = 同一环保险丝（常量单源 = 预算常量件） |
 | KD-SV-89 | **会话持久化 = v14 两表 + OpenAI 消息形 + notice 行 + `status` 在途标记（重启如实收尾）**：`agent_chats`（`status` = `idle`/`running`——在途标记） + `agent_chat_messages`（`role` = `user`/`assistant`/`tool`/`notice` ∥ `content`（工具结果 = 模型可见形——按 chat 工具面口径截断 ≤4000 字（`CHAT_TOOL_CONTENT_MAX`）：回放逐字一致）∥ `data_json`（`toolCalls` ∥ `toolCallId`/名/`args`（调用参数原文——回读卡参数与活流帧同字）/摘要）∥ 序）；消息**逐条增量落库**；回放 = 库行装配为模型消息数组（notice 滤除；压缩会话以标记行代覆盖段——§17.3 A3）；**重启** ⇒ `running` ⇒ `idle` + notice 行 + `chat_stop` 审计（重启如实收尾口径） | 聊天上下文 = 长消息序（单列 JSON 每回合全量重写——写放大）；行式 = 逐条增量 + 读面直取；`role` 枚举落 CHECK（形单源）；在途标记落库 = 刷新/多标签页一致（进程内存态不作判据——KD-SV-80/86） |
 | KD-SV-90 | **工具面扩展（管理面八件——§12）**：`members`（六动词）∥ `providers`（五）∥ `models`（五）∥ `usage`（`summary` ∥ `rows`）∥ `audit`（`query`）∥ `runners`（`list` ∥ `add` ∥ `remove` ∥ `revoke_credential`——KD-SV-136）∥ `docker`（十动词——**绑定 = 注册节点**：名∥地址经 `sandbox_runners` 查行；未在册 ⇒ 工具级错误回灌）；逐面回指控制台功能点（§12 表）；**进程内直取域件**（KD-SV-82 口径延续——零 HTTP 回环）；写链与路由**同函数**（provider/成员路由内联体提取共享助手——两调用点单源）；`exec`（SSH）**入 chat**（**绑定 = 主机表行**——凭据经录入弹窗录入，文本非通道；KD-SV-136）；节点排空/禁用随控制台同批长（不发明） | 需求 §5「工具面 = 覆盖控制台既有全部管理面……能力逐步长」+ 用户 22:28「server 的管理能力也应该托管给 agent，比如成员管理，provider 管理，模型选择，用量等等」；「控制台与 agent 走同一套调用」口径镜像（docker 面）；进程内直取 = 判权/校验/审计单源（HTTP 回环 = 双判权 + 凭据面重造） |
 | KD-SV-91 | **审计型面 = 新 `agent_event`（v14 CHECK 扩型——十三型）**：kind = `chat_start`（会话创建）∥ `chat_call`（每工具调用——逐调用：工具名 ∥ 调用摘要 ∥ 结果码 ∥ 摘要；**读动作同落行**）∥ `chat_stop`（异常收尾：预算超限 ∥ 模型错误 ∥ 空回合 ∥ 重启中断 ∥ 手动中止）；正常回合终 = 无附加行（调用行 + 会话档已足）；**不双记**既有域型（agent 建成员 ⇒ 只 `chat_call` 行）；**凭据类例外（两例）**：① `runners.revoke_credential`（chat 径）⇒ 域行照落（`host_credential_revoke`——凭据生命周期 = 安全面域审计，跨径不得缺）+ `chat_call` 行（**两行**；N82 用例）；② **MCP 配置写径**（`mcp` 工具 add/update/remove——凭据承载配置）⇒ `mcp_event` 三 kind 照落 + `chat_call` 行（**两行**；§12.2⑤ ∥ KD-SV-207①）；detail 掩蔽口径 = 沿任务面（秘密掩蔽 + 摘要截断） | 跨域动作面（members/providers/models/usage/audit/runners 六域）——单一型 + kind 区分（既有型面逐域枚举扩不动）；「每次动作落审计行」= 用户口径（含读动作——沿任务面沙盒先例）；不双记 = 一动作一行（审计页可读性 + 计数诚实） |
@@ -142,9 +153,15 @@
 
 | KD-SV-205 | **模型测试 = `models` 第六动词（`test`）——经网关链 loopback 单请求 ＋ 五读数**（用户提 ＋ 两句厘定）：① **形** = 面内动词（第六动词；工具名集八件不变——沿 KD-SV-90「每动作一工具」口径）；对象 = **已配渠道点名**（`provider` ＋ `model`（上游名 ∥ 别名）——解析 → 对外标识）；② **通路** = 单次 `POST <selfBase>/v1/chat/completions`（本回合发送者的 `admin-agent` sk——装配同源 = `chatProviderOf`；§16.2/§16.3 ∥ `thincoder-server/src/agent/chat.mjs:360`）；经网关链全链 ⇒ **记账自动**（usage 行——member = 发送者 ∥ key = `admin-agent`；零第二份）；③ **读数五件** = `status`（闭集五支：`ok` ∥ `timeout`（携阶段）∥ `http_error`（携 HTTP 码）∥ `bad_response` ∥ `broken_stream`）∥ `error`（原文摘录——原样、帽 500 字）∥ `totalMs` ∥ `ttfbMs`（首个**非空内容增量**——流首空壳块不计）∥ `tps`（`usage.completion_tokens` ÷ 生成窗——usage 缺 ⇒ null，不估）；④ **预算** = `timeoutS`（缺省 60 ∥ 上界 600——值域形沿 `exec` 同面先例；非正/非数/越界 ⇒ 工具级错误人话；界值依据 = §12.1①；`AbortSignal.timeout` ＋ 回合中止信号透传）；⑤ **审计** = 既有 `chat_call`（零新 kind/型——KD-SV-91 面不扩）；⑥ **边界** = 不做草稿值试连（未配 ⇒ 工具级错误——与 AC-18「测试连接」草稿面划界）∥ 无控制台对位面 ∥ 成员面不做 ∥ 零新端点 ∥ 零迁移 | 用户定案（「走网关链，记账」「首字节延迟和吞吐也需要」）；账只能对在网关链（KD-SV-129 同判）；读数五件逐条可机检（假 SSE 流注时刻）；面内动词 = 八件口径不破 |
 
-| KD-SV-206 | **MCP 管理 = 管理面第九件工具 `mcp`（五动词）——复用 `mcp/` 域件零第二实现**（功能点 56 ∥ AC-56）：① **形** = 新工具 `mcp`（工具名集**九件**）：动词 `list ∥ add ∥ update ∥ remove ∥ probe`（命名沿 providers 族；`probe` 与端点 `POST /probe` ∥ 核 `probeMcpServer` 同词单源）；② **寻址** = `update` 以 `id`（`name` 键 = 改名——providers.update 同形）；`remove`/`probe` = `id` ∥ `name` 两形（名唯一——docker/exec 按名寻址先例）；③ **复用面（零第二实现）** = `store.mjs`（`listMcpServers` ∥ `insertMcpServer` ∥ `updateMcpServer` ∥ `removeMcpServer` ∥ `resolveProbeConfig` ∥ `mcpServerView`——形校验/编辑口径/密文列/探活体解析全在件）＋ `face.mjs`（`closeMcpServer` ∥ `loadCoreMcp` ∥ `clearMcpCooldown`）——新档零自造 SQL/零第二加密/零第二探活；**同形重复（不可共享——如实登记）** = `routes.mjs` 两处内联形体（探活调用 ＋ 读数归一：`104-134` ∥ `mcp_event` detail 三写入点：`43-49`/`64-70`/`84-90`）——不抽共享件（抽件须动 routes——与 ±0 声明相抵）⇒ 新档同形自建 ＋ 源扫腿限定引件面（§12.2②）；④ **执行器落点** = 新档 `thincoder-server/src/mcp/admin-tools.mjs`（拟新增）——并面点 = `chat.mjs` `buildChatToolFace`（第四面——与 envTools/mcpFace 同形；面名 `mcp` 入 MCP 用面重名防御基线 `reservedNames`）；⑤ **探活** = 零副作用（不进会话 ∥ 不动库 ∥ 不落 `mcp_event`——沿 routes 口径；成 ⇒ 清冷却）；对象 = 库内行（草稿试连 = 控制台新建窗面——§12.2⑥）；⑥ **结果形** = 管理族 `{ ok, … }` JSON（文本面零涉——`textNames` 不含；读数产出恒 `ok:true`——探活不可达 = 读数 ≠ 工具失败，沿 `models.test` 同判） | 用户「另外，mcp配置工具也开始落地。」；诉求 = 与 provider/member 管理族同形（AC-56①）；域件已交付（五端点 ∥ 存储 ∥ 探活全链）⇒ 复用 = 零第二实现（AC-56②）；执行器独立成档 = 500 软线 ＋ `chat-tools.mjs` 上限 700 不越 |
+| KD-SV-206 | **MCP 管理 = 管理面第九件工具 `mcp`（五动词）——复用 `mcp/` 域件零第二实现**（功能点 56 ∥ AC-56）：① **形** = 新工具 `mcp`（工具名集**九件**）：动词 `list ∥ add ∥ update ∥ remove ∥ probe`（命名沿 providers 族；`probe` 与端点 `POST /probe` ∥ 核 `probeMcpServer` 同词单源）；② **寻址** = `update` 以 `id`（`name` 键 = 改名——providers.update 同形）；`remove`/`probe` = `id` ∥ `name` 两形（名唯一——docker/exec 按名寻址先例）；③ **复用面（零第二实现）** = `store.mjs`（`listMcpServers` ∥ `insertMcpServer` ∥ `updateMcpServer` ∥ `removeMcpServer` ∥ `resolveProbeConfig` ∥ `mcpServerView`——形校验/编辑口径/密文列/探活体解析全在件）＋ `face.mjs`（`closeMcpServer` ∥ `loadCoreMcp` ∥ `clearMcpCooldown`）——新档零自造 SQL/零第二加密/零第二探活；**同形重复（不可共享——如实登记）** = `routes.mjs` 两处内联形体（探活调用 ＋ 读数归一：`104-134` ∥ `mcp_event` detail 三写入点：`43-49`/`64-70`/`84-90`）——不抽共享件（抽件须动 routes——与 ±0 声明相抵）⇒ 新档同形自建 ＋ 源扫腿限定引件面（§12.2②）；④ **执行器落点** = `thincoder-server/src/mcp/admin-tools.mjs`（已落盘——实读 **222**）——并面点 = `chat.mjs` `buildChatToolFace`（第四面——与 envTools/mcpFace 同形；面名 `mcp` 入 MCP 用面重名防御基线 `reservedNames`）；⑤ **探活** = 零副作用（不进会话 ∥ 不动库 ∥ 不落 `mcp_event`——沿 routes 口径；成 ⇒ 清冷却）；对象 = 库内行（草稿试连 = 控制台新建窗面——§12.2⑥）；⑥ **结果形** = 管理族 `{ ok, … }` JSON（文本面零涉——`textNames` 不含；读数产出恒 `ok:true`——探活不可达 = 读数 ≠ 工具失败，沿 `models.test` 同判） | 用户「另外，mcp配置工具也开始落地。」；诉求 = 与 provider/member 管理族同形（AC-56①）；域件已交付（五端点 ∥ 存储 ∥ 探活全链）⇒ 复用 = 零第二实现（AC-56②）；执行器独立成档 = 500 软线 ＋ `chat-tools.mjs` 上限 700 不越 |
 | KD-SV-207 | **MCP 管面审计 = `mcp_event` 三 kind 照落 ＋ 驱动层 `chat_call` 逐调用（两行）；凭据 = 只写零回显**：① **审计** = 写动作（add/update/remove）经工具径 ⇒ `mcp_event`（`server_add` ∥ `server_update`（携 `keys`——值永不入）∥ `server_remove`——**detail 形与 routes 逐值同构**；actor/actorId = 会话 actor）＋ 驱动层 `chat_call` 一行（＝两行；**凭据承载配置跨径不得缺**——KD-SV-91 凭据类例外同精神；AC-56⑤「三 kind 复用」字面）；`list`/`probe` ⇒ 仅 `chat_call`（读/诊断——探活零落库零审计沿 `mcp/MCP.md` §3.3）；零新 kind/型；② **凭据** = `token`/`headers`/`env` 可入参（**只写**——对齐 providers `apiKey` 先例）：结果面零秘密（视图 `hasSecrets` 布尔——单源 = `mcpServerView`）∥ 审计 detail 零值（`keys` 只顶层键名）∥ 日志零值（新档零携值日志点）——AC-56③ 三面零回显；`args` 落库/帧面 = 既有掩蔽链（键名表单源 = `SENSITIVE_KEYS`——`thincoder-server/src/agent/chat.mjs:230`；`token` 等列名键 ⇒ `***`；`headers`/`env` 袋内非列名键值 = 残余暴露（随 `args` 落库/帧面 `call` 可见）——如实披露；实证 = `thincoder-server/` 全树零 `SECRET_FORM`——掩蔽单源 = 键名表）；`${env:VAR}` 引用透传（核建连期解析）；③ **错报治理** = 能力叙述认 MCP（`CHAT_LIMITS_BLOCK` 管理族行 ＋ schema 描述——「可管清单 ∥ 已配服务器工具随回合可用」两义同叙） | AC-56⑤ 字面（三 kind 复用 ＋ 动作可归因）；KD-SV-200 理由栏（凭据/命令类配置变更从不静默）——跨径一致；探活零副作用 = routes 既定口径 |
 | KD-SV-208 | **`chat.mjs` 736/737 越拆档线的处置 = 微触（净 ≈+10）不拆档**：① 越线事实 = 实读 **736/737**（`\n`/总行）＞ 720；② 触面 = 并面四处（import ∥ 建面块 ∥ 合并表 ∥ 预留名——净 ≈+10，**预估 ≤15 ⇒ 微触**）；③ 不拆理由 = 拆档对象（唤醒径整段抽 `chat-wake-turn.mjs`）与本题无关 ∥ 唤醒径零触 ∥ 单批混装「工具新增 ＋ 结构重构」= 验收/复核面翻倍；④ 触发 = 实施轮实落净增 >15 行 ⇒ 先拆后落；⑤ 拆档预案维持原判（对象/先例在案） | 父侧知会（越线 ＋ 纪律「下一触碰批动工前先审拆分」：审拆分 ∥ 微触＋理由 二择一）；本面净增局部、加性、与唤醒径零交集 |
+
+| KD-SV-224 | **管理面审批卡面 = 写类门挡 + ask 回路（用户 2026-10-17 裁「必须上审批卡」；形同成员面）**：① 落点 = 回合环门挡 + 新档 `chat-asks.mjs` + 应答端点（七端点）+ 页卡；② 词表/帧形/卡件单源 = 成员面（两裁决表与 `askAnswerBodyOf` 导入复用；卡 = 核两件）；③ 收窄 = question/secret 不接（无源）；④ `TRIMMED_FACES` 删 `"approval"`；全形 = §11.5 | 词表导入零第二份；收窄带实证 |
+| KD-SV-225 | **判类单源 = 工具面 `readonlyOf` 扩缝**：环境族 = 核 `readonly` 旗逐字 ∥ 管理族 = 逐动词只读表（免 = 各读类动词——全表 = §11.5）∥ MCP 件恒写类（核 `readonly:false`）∥ 未声明面（注入口/假件）⇒ 读类（既有消费零破） | 单源（零第二判 ∥ 假件零破 ∥ 同核旗语义）；未声明面取旧行为 = 回退保守 |
+| KD-SV-226 | **`always` ⇒ 会话行 `auto_approve`（v25 增列）+ PATCH 第三键**：`always` 结算 ⇒ 置真（当回合即时免问）；`PATCH …/:id { autoApprove }`（一次一件第三键——下回合生效）；行形四面（建/列表/详情/PATCH 回执）同源携键；零审计行（三 kind 不扩——会话设置面沿例） | 槽语义同成员面（跨重启存续）；`#auto-btn` 留隐（钮位面出列——§13 R91③） |
+| KD-SV-227 | **兜底三径（回合收 ∥ 中止 ∥ 流断）⇒ 拒值；问面 = 活体流**：无流（唤醒轮）⇒ 写类即时拒（`{ ok:false, message:"无问面（无人值守轮）——未执行" }`）；拒执行面 = `call`+`result` 帧 + 工具行 + `chat_call`（resultCode −1）；未决卡 = 回合挂起（中止/重启可解——同成员面判） | 「执行不依赖连接」对写执行不破；无流断重挂面 ⇒ 断即拒（拒挂起吊死回合）；拒必可见（帧+行+审计三面） |
+| KD-SV-228 | **`chat.mjs` 越线处置 = 门挡全逻辑外置（Δ ≤15；超出 ⇒ 先拆后落）**：触发续 KD-SV-208④；拆案对象 = 回合收尾段（终态五形收尾 ∥ notice ∥ 审计）⇒ `chat-turn-end.mjs`（拟） | KD-SV-208 纪律承接（>15 ⇒ 先拆）；外置 = 触面最小化；`migrations.mjs` 795 ⇒ ≈804 同判（拆案 = DDL 段常量外拆 `migrations-ddl.mjs`——纯搬迁零语义） |
 
 ## 10. 本域边界（不做的面）
 
@@ -159,8 +176,9 @@
 - **MCP 管面不做（§12.2）**：草稿试连（未落库全量体——控制台新建窗面）∥ 逐服务器工具开关/白名单（沿 `mcp/MCP.md` §7）∥ 成员面 MCP（沿 `mcp/MCP.md` §6）；改名 = 仅 `update` 的 `id` 径（按名寻址时不可改名——防寻址/改名同键歧义）。
 - **文件编辑族工具（write/edit/apply_patch）**（不入册——写入仍可经 `bash` 抵达，工具面如实；核 `bash` 描述指向 edit 族的指引在本面落空 = 核文案面发现项，§13 R62③）。
 - **成员面 agent 的 server 域工具面归属** = `agent/MEMBER-AGENT.md` §2 KD-SV-159：范围 = 成员本人资源；动作集 = 写面同集——单源（创建 ∥ 启动 ∥ 停止 ∥ 销毁 + 拉仓）；管理面运维件（docker/主机/exec/provider）不入成员面；逐件清单与实施 = 实施批从实需反推。
+- **审批卡面不做（§11.5）**：question/secret 两 kind（无源——收窄条在册）∥ `#auto-btn` 钮位面（留隐——模式位三段另批）∥ 在决 ask 读数段（状态行零增）∥ 卡面 diff 预览（工具面无文件编辑族）。
 - **chat 面不做（§11/§12）**：SSH 凭据经 chat **文本**输入（凭据入口 = 结构化弹窗——沙盒页节点行动作 ∥ 对话页钮，同一弹窗件；**文本非通道**：秘密零入消息行/模型上下文）∥ 会话删除/重命名/归档 ∥ 会话自动清理（不设清零）∥
-  工具面机制确认门（破坏性动作先说明 = 提示词级纪律）∥ 沙盒工作区/设置各面工具（随沙盒余面批同批长）∥ 节点排空/禁用工具（不发明）∥ **思考档位的逐条覆写/状态行段**（口径③④恒会话级；`✦reasoning` 零引用）。
+  沙盒工作区/设置各面工具（随沙盒余面批同批长）∥ 节点排空/禁用工具（不发明）∥ **思考档位的逐条覆写/状态行段**（口径③④恒会话级；`✦reasoning` 零引用）。
 - **多任务编排/队列**（任务式面已退场；独立编排器不加 ∥ 定时/事件触发 = chat 面 timer/唤醒——§15）。
 
 ## 11. 聊天式驱动（管理面 chat）
@@ -171,18 +189,19 @@
   终止**五形**：① 模型无工具调用（自然结束——`succeeded`）；② 预算超限（20 分钟 ∥ 60 调用——**每回合独立计**）；③ 模型出口抛错；④ 空回合（无文本无调用）；⑤ 手动中止（`"aborted"`；KD-SV-107）。
   ②③④⑤ ⇒ notice 行（人话；`data.reason` 各点名：② `"budget"` ∥ ③ `"model_error"` ∥ ④ `"empty_turn"` ∥ ⑤ `"aborted"`；人话文本 = `content` 面）+ `chat_stop` 审计 + `end` 帧 `failed`；②③⑤ 下已生成文本 ⇒ `assistant` 行如实落库（部分文本——回放逐字一致；与 notice 行各自一行），零文本 ⇒ 零 `assistant` 行。
 - **流式通路**（KD-SV-88）：`POST /api/admin/agent/chats/:id/messages` 单请求；响应 = `application/x-ndjson` 帧流（每行一帧）：`{"type":"delta","text"}`（模型文本增量——核 `onToken`）∥
-  `{"type":"call","id","name","args"}`（工具调用开始——`args` = **字符串**（参数摘要——JSON 序列化 ⇒ 掩蔽后截断 ≤500 字；恒为字符串，非对象））∥ `{"type":"result","id","ok","summary"}`（结果摘要 ≤300 字）∥ `{"type":"end","status","reason"?}`（回合终态）∥ `turn` ∥ `usage` ∥ `end` 两可字段——**帧形全文 = §11.3**。
+  `{"type":"call","id","name","args"}`（工具调用开始——`args` = **字符串**（参数摘要——JSON 序列化 ⇒ 掩蔽后截断 ≤500 字；恒为字符串，非对象））∥
+  `{"type":"result","id","ok","summary"}`（结果摘要 ≤300 字）∥ `{"type":"ask","kind","promptId",…}`（审批卡——§11.5）∥ `{"type":"end","status","reason"?}`（回合终态）∥ `turn` ∥ `usage` ∥ `end` 两可字段——**帧形全文 = §11.3**。
   **执行不依赖连接**（断连照跑——落库单源；页刷新/重开重读会话详情形即全量）。流前错误（判权/形/在途/不存在）= 统一信封；流中失败 = `end` 帧（headers 已发——不再走信封）。
 - **在途门**：同会话 `status = running` 期间再发 ⇒ 400 人话（「本会话正在执行——等它结束」）；跨会话并发不设限（不发明）。
 - **重启恢复**（重启如实收尾口径）：启动装配期 `running` ⇒ `idle` + notice 行（「server 重启——本轮中断」；`data.reason` = "restart"）+ `chat_stop` 审计行；已落库消息零动。
-- **判权与审计**：六端点全 `requireAdmin`（界面显隐非判据）；审计 = `agent_event`（KD-SV-91——`chat_start` ∥ `chat_call` 逐调用 ∥ `chat_stop` 异常收尾）。
+- **判权与审计**：七端点全 `requireAdmin`（界面显隐非判据）；审计 = `agent_event`（KD-SV-91——`chat_start` ∥ `chat_call` 逐调用 ∥ `chat_stop` 异常收尾）。
 - **行动纪律句（系统简报内——提示词级，非机制门）**：先查后动（读数先于动作）∥ 结果用逐句人话 ∥ 破坏性动作（删节点 ∥ 吊销凭据 ∥ 重置密码 ∥ 删 provider ∥ 停模型）先说明将做什么、再执行 ∥ 凭据请求 = 指向主机凭据弹窗（**不要请用户把凭据发在聊天里**） ∥ 不确定 ⇒ 问用户。
 - **测试注入缝**（§7 单元测试档判据依托）：模型出口 ∥ 工具面 = 模块级注入（setter ∥ 参数覆盖——默认 `null` ⇒ `??` 回落真件，生产行为不变；沿 `sandbox/SANDBOX.md` §13 `fetchImpl`/`execImpl` 注入面先例）；控制台面假流桩 = `webui/WEBUI.md` §6 行。
 
 ### 11.1 呈现面
 
 - **渲染面 = 复用渲染核**（本域零新增机制；用户指出「第四套 chat」+「改」）：管理面 chat 的呈现面（markdown ∥ 代码块高亮 ∥ 工具卡 ∥ 流式增量 ∥ 滚动行为）由 `thincoder-render-core` 承载（取件形 = 控制台静态面第二根 `/rc/*`）；对齐集与做/不做逐项 = `webui/CHAT.md` §2.1 ∥ 决策 = 该档 KD-SV-101。
-- **本域零变化**：会话 ∥ 回合 ∥ 帧流四形 ∥ 消息 role 四值 ∥ 工具面 ∥ 审计面均不动（呈现面 = 控制台侧消费面）；**帧面/落库面无 reasoning 文本通道**（例外 = 落库面 tool 轮回声道——§17.3 A1；思考块 = 模型思考文本——与思考档位 `reasoningEffort`（请求参）无关，后者 = KD-SV-110） = 呈现面不做思考块的根因（加文本字段 = 本域面——余项，不在射程）。
+- **本域零变化**：会话 ∥ 回合 ∥ 帧流七型 ∥ 消息 role 四值 ∥ 工具面 ∥ 审计面均不动（呈现面 = 控制台侧消费面）；**帧面/落库面无 reasoning 文本通道**（例外 = 落库面 tool 轮回声道——§17.3 A1；思考块 = 模型思考文本——与思考档位 `reasoningEffort`（请求参）无关，后者 = KD-SV-110） = 呈现面不做思考块的根因（加文本字段 = 本域面——余项，不在射程）。
 - 工具卡呈现 = 核件 `renderToolCard` ∥ `finishToolCard`（失败判定 = 核 `isToolFailure`）；工具行语义面（§12 表）不变。
 - **输入区全件翻做**：面板 ∥ 控件行 ∥ 附件 ∥ 斜杠 ∥ 模型菜单五件均入呈现面；适配层与无源钮收窄 = `webui/CHAT.md` §2.1③；四件控件后端 = 本档 §11.2。
 
@@ -206,6 +225,7 @@
   - `{ "type": "turn", "n": 1 }`——每模型调用前发（n = 本回合第 n 次调用）；**双职帧**：控制台状态行轮次 ＋ **活流分步界**（每到达 ⇒ 上一步收束、新步起——一步一块；消费面 = `webui/CHAT.md` §2.1——KD-SV-132）；
   - `{ "type": "usage", "prompt": N, "completion": N, "cacheHit": N, "cacheMiss": N }`——每次模型调用返回且 `turn.usage` 在场（缺 ⇒ 零帧——**有源才发**）；
     值 = 核 `usage.{prompt_tokens, completion_tokens, prompt_cache_hit_tokens, prompt_cache_miss_tokens}`（`thincoder-core/provider/core.mjs:306-312` 聚合形；核 usage 无 reasoning 计数 ⇒ 状态行 ✦ 段不做）；
+  - `{ "type": "ask", "kind": "permission", "promptId": "…", "tool": "…", "args": "…" }` ∥ `{ "type": "ask", "kind": "batch", "promptId": "…", "count": N, "tools": ["…"] }`——审批卡（写类门挡——`args` = 掩蔽截断串 ≤500；机制/应答 = §11.5）；
   - `end` 帧 + `durationMs`（回合耗时）∥ `calls`（工具调用数）——可字段。
 - **零落库**：帧面 = 视图面（读时单源 = 消息行不变——刷新后状态行清空重算）；状态行读数项表 = `webui/CHAT.md` §2.1④（消费面单源）。
 
@@ -219,6 +239,28 @@
 - **回合装配**：`runChatTurn` 起跑读行（与 `chat.model` 同点——在途回合零触；沿 KD-SV-108 口径）⇒ 行值 ∈ 当刻模型枚举 ⇒ `buildChatExit` 出口 provider 配置携 `reasoningEffort`（核 `thincoder-core/provider/core.mjs` 载荷门/枚举门/路由形守门单源消费）；**未设 ∥ 表外 ⇒ 零字段**（与今日行为逐字同）；表外 = 读侧容忍（不炸、不改行——沿核会话槽「表外串不动」先例）。
 - **控制台面**（源下发消费 ∥ 钮面启用 ∥ 无档模型中性）= `webui/CHAT.md` §2.1③⑤（KD-SV-111）；**不做** = 本档 §10（逐条覆写 ∥ 状态行段）。
 
+### 11.5 审批卡面（写类门挡——KD-SV-224–227；用户 2026-10-17 裁「必须上审批卡」）
+
+- **口径**：管理面写类工具逐调用弹审批卡（机制同成员面——词表/帧形/卡件全单源）；提示词级纪律句（破坏性先动作说明）不动——卡面 = 机制+提示词双层。
+- **最近先例**（对齐 ∥ 偏离）：先例 = 成员面审批批（`ask` 帧四类 ⇒ 页卡 ⇒ 应答端点 ⇒ 下行 `answer` ⇒ 盒壳结算——`agent/MEMBER-AGENT.md` §3.11(2) ∥ KD-SV-217）＋ `thincoder-server/src/agent/ask-vocab.mjs`（词表单源）+ `member-relay.mjs`（帧面/卡件复用品）；对齐 = 机制同形（`ask` 帧 ⇒ 页卡 ⇒ 应答 ⇒ 结算续跑）∥ 词表/卡件/帧面单源导入（零第二份）；**偏离** = 三条（差异表 ①∥②∥③：兜底口径 ∥ 收窄 ∥ 免问轨载体）。
+- **公开源档核查**：本批未查外部（公开）源档——「无相关」（机制面单源 = 仓内成员面先例 ＋ 核件，零外部源）；仓内核查面 = `agent/MEMBER-AGENT.md` §3.11(2) ∥ `member-relay.mjs` ∥ 核 `thincoder-core/agent/dispatch.mjs:177-231`（门挡）。
+- **判类（单源，KD-SV-225）**：`tools.readonlyOf(name, args)`（工具面扩缝）：环境族 = 核工具 `readonly` 旗逐字（免 = `get_current_time`/`ls`/`read`/`grep`/`timer`/`read_history`；问 = `bash`/`process`）；
+  管理族 = 逐动词只读表（免 = `members.list`/`providers.list`/`models.list`/`usage.summary|rows`/`audit.query`/`runners.list`/`mcp.list`；余问）；
+  MCP 件恒写类（核 `readonly:false`——逐件同成员面）∥ `readonlyOf` 缺席（注入口/假件）⇒ 读类（既有消费零变）。
+- **ask 回路（形同成员面）**：写类调用 ⇒ `ask` 帧（`permission`：`{ promptId, tool, args }`——args = 掩蔽截断串 ≤500，掩蔽链同 `call` 帧）⇒ 页卡 ⇒ 应答端点 ⇒ 结算续跑；同回合 >1 写类 ⇒ 一卡 `batch`（`{ promptId, count, tools }`）；裁决词表 = `once`/`always`/`reject` ∥ `approveAll`/`deny`/`oneByOne`（两表自 `ask-vocab.mjs` 导入；`member-relay` 仅重导出——零第二份）。
+- **应答端点（七端点）**：`POST /api/admin/agent/chats/:id/asks/:promptId`（体按 kind——`askAnswerBodyOf` 同源校验）⇒ 命中在途 ⇒ 200 `{ ok: true }`；未知 ∥ 已了结 ∥ 体不合 ⇒ 400 人话（零副作用）；契约 = `gateway/API.md` §2.8。
+- **结算**：`once` ⇒ 放行执行；`reject` ⇒ 拒（不执行——工具行 `{ ok:false, message:"用户拒绝——未执行" }` ＋ `call`/`result` 帧 ＋ `chat_call` 行 resultCode −1；回合续跑）；`always` ⇒ 置行 `auto_approve`（KD-SV-226）＋ 当回合即时免问。
+- **兜底三径（KD-SV-227）**：回合收尾（`finally` 关宿主）∥ 中止（`requestChatAbort` 同拍结算）∥ 流断（`res` close ⇒ 结算）⇒ 未决卡全量拒值；无问面（唤醒轮——无流）⇒ 写类即时拒。
+- **起跑窗流断（宿主未登记）**：装配段内有 MCP 建连 / 压缩等 await ⇒ `res` close 可先于宿主登记；按**流 token**（本请求 `emit`）落 `closedStreams`（`Map<chatId, token>`——每会话至多一枚，异流残留不生效），建宿主时按 token 对位消费并删：同流 ⇒ `streamAlive = false`（生为无问面）。
+- **起跑窗守卫与清理**：无问面下弹卡口（`askPermission` / `askBatch`）与逐件径同拍零卡即时拒；正常收尾不登记（`res.writableEnded` 判）；清理 = 同会话下次建宿主（消费即删）。坐标 = `thincoder-server/src/agent/chat-asks.mjs:38` · `:65` · `:82`–`:85` · `:115` / `:125` · `:150` · `:226`。
+- **免问轨**：行 `auto_approve` = 1（回合起跑读行；`always` 当回合即时置真）⇒ 写类不过门直执行；PATCH 键为唯一人工清径（下回合生效）。
+- **收窄条（两 kind 不接——理由）**：`question` = 管理面无 ask 源（工具面无 `question` 件）⇒ 无卡可弹；`secret` = 凭据口径 = 结构弹窗（KD-SV-136「文本非通道」）⇒ 聊天面永不承载秘密；应答词表仍四 kind 全集（校验单源不缩——收窄只在弹出侧）。
+- **结构件**：判类扩缝（`chat-tools.mjs` ∥ `chat-env-tools.mjs` ∥ `mcp/face.mjs` ∥ `mcp/admin-tools.mjs` 各 + `readonlyOf`）∥ 新档 `chat-asks.mjs`（宿主 ∥ 帧构造 ∥ 结算 ∥ 置库）∥ `run.mjs` `TRIMMED_FACES` 删 `"approval"` ∥ `chat.mjs` 触面 = 开宿主/关宿主 + `preflight`/`admit` 两调用（Δ ≤15——超出先拆，KD-SV-228）。
+- **与成员面差异表（逐条实证——宿主差异保留；无实证即改）**：① 无盒壳：管理面 = 进程内直执行（成员面 = 盒协议转发——在途表 = relay 内存，`agent/MEMBER-AGENT.md` §3.11(2)）⇒ 兜底口径不同：流断 ⇒ 立即拒值（成员面 = 挂起待重挂——即**流断重挂面**；管理面零**流断重挂面**；页内**卡面重挂**（remount）两面对有——见 ⑥；KD-SV-227）；
+  ② 收窄：唯二 kind（`permission`/`batch`；成员面四 kind——question/secret 无源）；③ 免问轨载体：会话行 `auto_approve`（成员面 = 盒会话槽——`MEMBER-AGENT.md` §3.11(2)）；
+  ④ 卡件/词表单源：全导入（本面零第二份）；⑤ 在决读数段：不做（成员面有——状态行段）；⑥ 壳面挂法：卡挂消息流尾（成员面 = 卡挂 `#messages`（`.chat-thread`）尾——`agent/MEMBER-AGENT.md` §3.11(2)「页面去留」；各自宿主，形态同源）。
+- **不做（本面边界）**：question/secret 卡（无源）∥ `#auto-btn` 钮位面（模式位读出/写/推送三段另批）∥ 在决 ask 状态行段（零增）∥ 卡面 diff 预览（工具面无文件编辑族）。
+
 ## 12. 工具面扩展（管理面九件）
 
 **口径**（KD-SV-90）：逐面回指控制台功能点 ∥ 进程内直取域件（零 HTTP 回环——KD-SV-82 延续）∥ 写链与路由同函数（单源）∥ 每次动作落审计行（读动作同落）∥ 无白名单围栏（KD-SV-82 口径不破）。
@@ -227,13 +269,13 @@
 |---|---|---|---|
 | `members(op, …)` | `list` ∥ `create` ⟮username/name/role⟯ ∥ `reset_password` ⟮member⟯ ∥ `revoke_key` ⟮member/keyId⟯ ∥ `set_quota` ⟮member/quotas 键级合并⟯ ∥ `set_disables` ⟮member/disables 键级合并⟯ | `accounts/members.mjs`（`createMember` ∥ `setMemberPassword` ∥ `mergeMemberModelQuotas` ∥ `mergeMemberModelDisables`）∥ `accounts/keys.mjs`（`revokeKey`）∥ 重置链 = 改密 + 清计（`guard.clearUsername`——装配面注入 ∥ 与路由同效：共享助手边界 = **改密 + 清计**两件；审计写不随迁——`recordAudit` 各留调用侧既有面（路由侧 = `password_reset`（`accounts/ACCOUNTS.md` §2.1）∥ chat 侧 = 只 `chat_call` 行——KD-SV-91）） | 成员页/弹窗（功能点 15④ ∥ 23②）；端点 = `gateway/API.md` §3 |
 | `providers(op, …)` | `list` ∥ `add` ⟮全字段⟯ ∥ `update` ⟮字段级（`settings` 键级合并）⟯ ∥ `remove` ⟮id⟯ ∥ `discover` ⟮baseURL/apiKey/providerId/proxy⟯ | `thincoder-server/src/gateway/provider-admin.mjs`（校验单源 `validateProviderEntry` ∥ 候选注册表 ∥ `runtime` 换表）——路由内联写链提取共享写函数（两调用点单源）；发现 = 同探针件 | Provider 页（功能点 18/AC-11；端点 = §2.2） |
-| `models(op, …)` | `list` ∥ `enable` ⟮provider/model——加开放⟯ ∥ `disable` ⟮减项（退役可停）⟯ ∥ `settings` ⟮rpm/tpm/costIn/costOut/note/quotaTokens 键级合并⟯ ∥ `alias` ⟮设置/清除（含唯一性校验）⟯ ∥ **`test` ⟮provider/model/prompt?/timeoutS?——真实调用 ＋ 五读数（机制 = §12.1）⟯** | 同上写链 + `settings` 合并件（`mergeProviderSettings`） ∥ `agent/model-test.mjs`（拟新增——模型测试执行器） | 服务模型页（功能点 17/29——A/C/D/E/F/G 面）；`test` 无控制台对位面（会话面专属——§12.1⑤） |
+| `models(op, …)` | `list` ∥ `enable` ⟮provider/model——加开放⟯ ∥ `disable` ⟮减项（退役可停）⟯ ∥ `settings` ⟮rpm/tpm/costIn/costOut/note/quotaTokens 键级合并⟯ ∥ `alias` ⟮设置/清除（含唯一性校验）⟯ ∥ **`test` ⟮provider/model/prompt?/timeoutS?——真实调用 ＋ 五读数（机制 = §12.1）⟯** | 同上写链 + `settings` 合并件（`mergeProviderSettings`） ∥ `agent/model-test.mjs`（已落盘——模型测试执行器） | 服务模型页（功能点 17/29——A/C/D/E/F/G 面）；`test` 无控制台对位面（会话面专属——§12.1⑤） |
 | `usage(op, …)` | `summary` ⟮member/model/endpoint/from/to⟯ ∥ `rows` ⟮同上 + limit ≤100⟯ | `thincoder-server/src/metering/report.mjs`（`usageSummary`）∥ `metering/usage.mjs`（`queryUsage`——与端点同过滤构建器） | 管理·用量页（功能点 15②；端点 = §3） |
 | `audit(op, …)` | `query` ⟮type/member/from/to/limit⟯ | `accounts/audit.mjs`（`queryAudit`——与审计页同过滤件） | 审计页（功能点 15④——`accounts/ACCOUNTS.md` §2.1） |
 | `runners(op, …)` | `list` ∥ `add` ⟮name/address——连通自检 + 落行⟯ ∥ `remove` ⟮id/containers（keep∥remove）/confirm⟯ ∥ `revoke_credential` ⟮id——主机表凭据零化 + 审计 `host_credential_revoke`；**凭据类例外**：域行 + `chat_call` 两行（KD-SV-91）⟯（`list` 行携 `ssh` 元数据——主机表；`sandbox/SANDBOX.md` §3） | `sandbox/registry.mjs`（`insertRunner` ∥ 读行）+ 删除链（容器处置 ∥ 承载确认 ∥ 工作区解绑 + 续放置——与控制台同函数同效） | 沙盒页·运行面（`webui/SANDBOX.md` §2.1①——最小切片；端点 = §2.5） |
 | `docker(host, op, args?)` | 同任务面十动词（version ∥ info ∥ ps ∥ images ∥ pull ∥ create ∥ start ∥ stop ∥ rm ∥ logs）——**绑定 = 注册节点**（名 ∥ 地址经 `sandbox_runners` 查行；未在册 ⇒ 工具级错误回灌） | `sandbox/docker.mjs`（`createDockerClient`——与控制台容器面同一客户端）+ `thincoder-server/src/agent/docker-ops.mjs`（已落盘——admin-agent-chat 批；十动词执行器——两驱动单源） | 沙盒页·容器区（`webui/SANDBOX.md` §2.1①） |
 | `exec(host, command, timeoutS?)` | **绑定 = 主机表行**（名 ∥ 地址——`registry.runnerByRef` 单源，与 `docker` 同判；未在册 ⇒ 工具级错误）；凭据 = 行密列（缺 ⇒ 工具级错误人话——指向主机凭据弹窗）；`timeoutS` = 正数秒数（缺省 = `SSH_COMMAND_TIMEOUT_S`——`thincoder-server/src/sandbox/ssh.mjs` 单源常量，60 s）；上界 **86 400**（24 小时；父侧裁）——越界 ⇒ 工具级错误人话「超时上限 24 小时」（回合不停 ∥ 零 ssh 调用 ∥ 库零变）；非正/非数 ⇒ 工具级错误（E61）。上界依据 = 86 400 000 ms ≪ Node 计时器量程 2 147 483 647 ms（逾量程被归 1 ms——即刻假超时）；单命令 24 h 以上超出本工具用途；结果 = `{ ok, exitCode, stdout, stderr, summary, subject }`（命令非零退出 ⇒ `ok:true`——退出码在结果内；传输级失败 ⇒ `ok:false` + 人话） | `sandbox/hosts.mjs`（已落——`execOnHost`——解密 + `thincoder-server/src/sandbox/ssh.mjs` 传输 + 临时私钥用毕即删）+ `thincoder-server/src/agent/tools.mjs` `maskSecrets`（行凭据值入掩蔽面——同任务面口径） | 沙盒页·运行面（凭据弹窗录入——`gateway/API.md` §2.5 两端点）；对话页（同一弹窗件挂载） |
-| `mcp(op, …)` | `list` ∥ `add` ⟮name, transport, command?/args? ∥ url? ∥ wsUrl?, headers?, token?, env?, enabled?⟯ ∥ `update` ⟮id ＋ 字段级（`name` = 改名；字段缺席 = 不变 ∥ 显式 `null` = 清 ∥ 敏感键空串 = 不变——`store.mjs` 单源）⟯ ∥ `remove` ⟮id ∥ name⟯ ∥ `probe` ⟮id ∥ name——库内行；零副作用⟯ | `thincoder-server/src/mcp/admin-tools.mjs`（拟新增——执行器）＋ 复用 `mcp/store.mjs`（CRUD ∥ 探活体解析 ∥ 视图）∥ `mcp/face.mjs`（关闭 ∥ 核装载 ∥ 冷却）——**零第二实现**（机制 = §12.2） | MCP 页（`webui/MCP.md`——功能点 54/AC-54；端点 = `gateway/API.md` §2.13） |
+| `mcp(op, …)` | `list` ∥ `add` ⟮name, transport, command?/args? ∥ url? ∥ wsUrl?, headers?, token?, env?, enabled?⟯ ∥ `update` ⟮id ＋ 字段级（`name` = 改名；字段缺席 = 不变 ∥ 显式 `null` = 清 ∥ 敏感键空串 = 不变——`store.mjs` 单源）⟯ ∥ `remove` ⟮id ∥ name⟯ ∥ `probe` ⟮id ∥ name——库内行；零副作用⟯ | `thincoder-server/src/mcp/admin-tools.mjs`（已落盘——执行器，实读 **222**）＋ 复用 `mcp/store.mjs`（CRUD ∥ 探活体解析 ∥ 视图）∥ `mcp/face.mjs`（关闭 ∥ 核装载 ∥ 冷却）——**零第二实现**（机制 = §12.2） | MCP 页（`webui/MCP.md`——功能点 54/AC-54；端点 = `gateway/API.md` §2.13） |
 
 - **不入 chat 面**：任务面装机三件（`register`/`verify`/`report`）已随任务式退场删净；**装机（新主机）= chat 内动作**（`runners.add` 登记 + `exec` 装运行时/开监听——主机表凭据经弹窗录入；KD-SV-135）；chat 侧可读机队（`runners.list` ∥ `docker` 读数）。
 - **随控制台同批长**（不发明）：节点排空/禁用 ∥ 沙盒工作区/设置各面工具（随沙盒余面批；出站规则/待批两件随退场删）。
@@ -252,7 +294,7 @@
 - `prompt?` = 探针输入（缺省 = 内置探针句 `ping`——常量 `MODEL_TEST_PROBE_TEXT`，沿向量探针 `EMBEDDING_PROBE_TEXT` 同字面；帽 2000 字——逾 ⇒ 工具级错误人话）。
 - `timeoutS?` = 探针预算（正数秒——非正/非数/越界〔>600〕 ⇒ 工具级错误人话；缺省 **60** ∥ 上界 **600**——**值域形**沿 `exec` 同面先例〔该先例上界 86 400 依据 = Node 计时器量程——与本值无涉〕；界值依据 = 单请求探针 10 分钟窗口——先于回合预算 20 min 收尾，超时读数可得）。
 - 返回 = 结构化读数（§③）；**读数产出恒 `ok:true`**（服务坏 ≠ 工具失败——沿 `exec` 非零退出判例）；结果携 `subject`（= 对外标识——审计消费）＋ `summary`（人话一行）。判权 = 管理面 chat 全族（零新判权）。
-- 落档两处：`thincoder-server/src/agent/model-test.mjs`（拟新增——执行器）∥ `thincoder-server/src/agent/chat-tools.mjs`（薄接线：动词分派 ＋ schema 描述）。
+- 落档两处：`thincoder-server/src/agent/model-test.mjs`（已落盘——执行器）∥ `thincoder-server/src/agent/chat-tools.mjs`（薄接线：动词分派 ＋ schema 描述）。
 
 **② 计量落点（走链自动——零第二份）**：
 - 通路 = 单次 `POST <selfBase>/v1/chat/completions`（`stream: true`）；出口装配**同源** = `chatProviderOf`（§16.2/§16.3——sk = 本回合发送者的 `admin-agent` 明文；谁用谁）。
@@ -273,7 +315,7 @@
 **④ 审计** = 既有 `chat_call`（逐调用一行——tool = `models` ∥ `subject` = 对外标识 ∥ `call` = 入参串；成败沿既有口径）：**零新 kind/型**（KD-SV-91 三 kind 不扩 ∥ 审计型面十七型不扩）；读数为结果面（tool 行 ＋ `result` 帧），审计零新字段；测试非纯读（耗真 token）但沿「读动作同落行」口径——零双记、零域行。
 
 **⑤ 边界（不做）**：草稿值试连（= AC-18 面）∥ 控制台页/钮（无 UI 对位面——会话面专属）∥ 成员面（不入成员面工具面）∥ 批量/全量巡检 ∥ 新端点/新契约（复用 `/v1/chat/completions`）。
-机检口径 = §7 行；用例 = §8（N84 ∥ B80 ∥ E62）；单元测试档（拟新增；不入任何门）。
+机检口径 = §7 行；用例 = §8（N84 ∥ B80 ∥ E62）；单元测试档（批内定向单测——收口随批删；不入任何门）。
 
 ### 12.2 MCP 管理（`mcp` 第九件——功能点 56 ∥ AC-56）
 
@@ -291,7 +333,7 @@
   **按名解析步（单一落法）** = 经 `listMcpServers(db)` 视图按 `name` 取 `id`（视图行携 `id`/`name`——`thincoder-server/src/mcp/store.mjs:146-163`）⇒ 之后全走既有导出（`updateMcpServer`/`removeMcpServer`/`resolveProbeConfig`——id 形）——零自造 SQL ∥ `store.mjs` ±0 声明不破。
 - 参数校验转 `store.mjs` 单源（形错/重名 ⇒ store 人话 ⇒ 工具级错误、库零变）；工具零再校验（不复制第二份）。
 - 未配 ⇒ 空清单（非错误）；`probe` 对象 = 库内行（草稿试连 = 控制台新建窗面——⑥）。
-- 落档 = `thincoder-server/src/mcp/admin-tools.mjs`（拟新增——约 180 行）＋ 并面点 = `chat.mjs` `buildChatToolFace`（第四面：`mergeToolFaces(chatTools, [envTools, mcpFace, mcpAdmin])`；面名 `mcp` 入 MCP 用面重名防御基线 `reservedNames`）。
+- 落档 = `thincoder-server/src/mcp/admin-tools.mjs`（已落盘——实读 **222**）＋ 并面点 = `chat.mjs` `buildChatToolFace`（第四面：`mergeToolFaces(chatTools, [envTools, mcpFace, mcpAdmin])`；面名 `mcp` 入 MCP 用面重名防御基线 `reservedNames`）。
 
 **② 零第二实现（引件表——AC-56②）**：
 
@@ -327,7 +369,7 @@
 - 零新 kind/型（审计型十七型不扩 ∥ `agent_event` 三 kind 不扩）。
 
 **⑥ 边界**：草稿试连（= 控制台新建窗面）∥ 逐服务器工具开关/白名单（沿 `mcp/MCP.md` §7）∥ 成员面 MCP（沿 `mcp/MCP.md` §6）∥ 改名 = 仅 `update` 的 `id` 径（按名寻址时不可改名——防寻址/改名同键歧义）∥ 零新端点 ∥ 零迁移。
-机检口径 = §7 行；用例 = §8（N85 ∥ B81 ∥ E63）；单元测试档（拟新增；不入任何门；腿 = U1–U9）。
+机检口径 = §7 行；用例 = §8（N85 ∥ B81 ∥ E63）；单元测试档（批内定向单测——收口随批删；不入任何门；腿 = U1–U9）。
 
 ## 13. 上抛/余项（本域）
 
@@ -345,9 +387,11 @@
 | R73 | **开放点 ＋ 需求档回笔建议 ＋ 随正件 ＋ 披露**：① **开放点三条**（§17.4——环体取核〔含宿主缝设计草案，供配套核批〕∥ 提示词场景槽 ∥ 会话面；均附路径与触发）∥ ② 需求档回笔建议（主 agent 笔）：§5 已裁口径（`:601`）补落地形句（件级取核 ∥ 环体自持 ∥ 核缝承接——设计 = 本档 §17）——是否入册 = 主 agent 择 ∥ ③ 随正件：`thincoder-server/README.md:13`「零依赖 ⇒ 装机无 install 步」句已失效（实读依赖两包——registry 核 ＋ `file:` 渲染核）——产品文案随正（实施轮 ∥ 发布面轮）∥ ④ 披露：环体自持 = 目标态未闭（配套核批承接）；压缩改写会话历史视图（标记行形——原行原文留存；控制台详情随观） | 披露 | 评审/用户复核 |
 | R86 | **agent 域面**：chat 工具面并 MCP 面（文本面路由 ∥ ctx 透传 ∥ 失败冷却）∥ `thincoder-server/src/agent/run.mjs:22` `TRIMMED_FACES` 收正（删 `"mcp"`）∥ 任务面维持不挂载；**全文 = `mcp/MCP.md` §12**（需求档回笔建议 ∥ 随正件 ∥ 披露 ∥ 部署收尾） | 披露 | 评审/用户复核 |
 
-| R87 | **需求档回笔 ＋ 随正件 ＋ 披露 ＋ 部署收尾**：① 需求档回笔（主 agent 笔）——**已入册**：功能点 55 = `docs/server/requirements/PROJECT.md` §2（`:372–379`）∥ AC-55 = 验收表（`:456`）∥ §5 行（`:563–565`）；AC-12/AC-28 链零动（无控制台页 ∥ 零新审计型）∥ ② 随正件（父侧落——实施轮同拍）：**零**（无门禁链；档目/计数件零涉——零新档 ∥ 零新端点 ∥ i18n 零涉）；单元测试档 1 档（拟新增——随批留存、不入任何门）∥ ③ 披露（不阻塞）：测试耗真 token（计入发送者用量 × `admin-agent`——用户 00:50「记账」口径）∥ 读数含网关链全链耗时（loopback 一跳 ＋ 网关处理——如实，不复算分拆）∥ 网关自产错误与上游透传错误不可区分（如实一类 `http_error`——转发面「原样透传」设计事实）∥ `models.test` 无控制台对位面（回指口径例外——会话面专属）∥ SSE 流形假设（OpenAI 兼容——上游非 SSE 2xx ⇒ `bad_response`）∥ ④ 部署收尾（父侧执行）：镜像重建 ＋ 重收敛 ＋ 会话实走（点名一个已配模型 ⇒ `test` ⇒ 四读数在场 ⇒ 用量面见一行） | 披露 | 评审/用户复核 |
+| R87 | **需求档回笔 ＋ 随正件 ＋ 披露 ＋ 部署收尾**：① 需求档回笔（主 agent 笔）——**已入册**：功能点 55 = `docs/server/requirements/PROJECT.md` §2（`:372–379`）∥ AC-55 = 验收表（`:456`）∥ §5 行（`:563–565`）；AC-12/AC-28 链零动（无控制台页 ∥ 零新审计型）∥ ② 随正件（父侧落——实施轮同拍）：**零**（无门禁链；档目/计数件零涉——零新档 ∥ 零新端点 ∥ i18n 零涉）；单元测试档 1 档（批内定向单测——收口随批删、不入任何门）∥ ③ 披露（不阻塞）：测试耗真 token（计入发送者用量 × `admin-agent`——用户 00:50「记账」口径）∥ 读数含网关链全链耗时（loopback 一跳 ＋ 网关处理——如实，不复算分拆）∥ 网关自产错误与上游透传错误不可区分（如实一类 `http_error`——转发面「原样透传」设计事实）∥ `models.test` 无控制台对位面（回指口径例外——会话面专属）∥ SSE 流形假设（OpenAI 兼容——上游非 SSE 2xx ⇒ `bad_response`）∥ ④ 部署收尾（父侧执行）：镜像重建 ＋ 重收敛 ＋ 会话实走（点名一个已配模型 ⇒ `test` ⇒ 四读数在场 ⇒ 用量面见一行） | 披露 | 评审/用户复核 |
 
 | R88 | **需求档回笔建议 ＋ 随正件 ＋ 披露 ＋ 部署收尾**：① 需求档回笔（主 agent 笔）——**已办**：§2 条目块在册（`docs/server/requirements/PROJECT.md:381`——五要素成块；三链同源：本档 §12.2 ∥ §7 行 ∥ §8（N85 ∥ B81 ∥ E63））＋ AC-56 行（`:457`）＋ §5 立案行（`:566`）（回笔 = 需求档变更记录 `:793`）；**余项** = §5 行计数**已随正**（工具面九件）∥ ② 随正件（父侧落——实施轮同拍）：**零门禁链**（`thincoder-server` 无 test 脚本；`prepublishOnly` = 三档 `node --check`——零涉）；旧批批内件名集断言 = 旧快照（八件口径——非门禁面，不追改）∥ ③ 披露（不阻塞）：token 明文经聊天文本来往（用户消息行原文——沿 providers `apiKey` 既态；工具面三面掩蔽在册）∥ `headers`/`env` 袋内非列名键值 = 掩蔽面残余（键名表 `SENSITIVE_KEYS` 单源——§12.2③） ∥ 探活 = 库内行（草稿试连 = 控制台面）∥ 探活不落 `mcp_event`（诊断零审计——routes 同口径）∥ `chat.mjs` 733 越 720 拆档线——微触 ≈+10（评估 = §9 KD-SV-208）∥ ④ 部署收尾（父侧执行）：镜像重建 ＋ 重收敛 ＋ 会话实走（列/探/增一条真实服务器——AC-56 收口腿） | 披露 | 评审/用户复核 |
+
+| R91 | **审批卡面批（2026-10-17）——需求回笔 ＋ 随正件 ＋ 披露 ＋ 部署收尾**：① 需求回笔 = 主 agent 笔（用户裁「必须上审批卡」在册）∥ ② 随正件（实施轮实读为准）：结构版本断言 = **25** ∥ `agent_chats` 列面 = **8 列**（含 `auto_approve`） ∥ 门禁件数 ∥ 静态档目链 + `views-chat-cards.mjs` ∥ ③ 披露：`#auto-btn` 留隐（钮位面出列）∥ 断线/未决卡 ⇒ 拒值（中止可解）∥ 拒行落审计（−1）∥ ④ 部署收尾 = 父侧（镜像 + 实走：写类弹卡 ⇒ 批 ⇒ 执行 ∥ always ∥ 拒） | 披露 | 评审/用户复核 |
 
 ## 14. 环境感知与环境工具面（功能点 43 ∥ AC-43 ①–⑥）
 
@@ -476,7 +520,7 @@
 - **唤醒链**（假模型 + 假钟 + timer 真件）：到期 ⇒ 落库行（`user` + `kind`）∥ 自动开轮（域文本逐字）∥ 出列幂等 ∥ 未到期零行零轮 ∥ 忙零动作 ∥ 零交付零轮。
 - **异步链**（假模型 + bash 真件 + 即退命令）：回执逐字（`bash#N started (running) — log: …`）∥ 结算 ⇒ 摘要行落库（核件原文前缀 `[System reminder: background bash#N finished`）∥ 帽 4 ∥ `process kill id` 两态。
 - **中止面**：非 interrupt 中止 ⇒ 杀树 + 丢弃提醒（核件原文）+ 墓碑 ⇒ 零摘要投递。
-- **结构面**：六端点计数不变 ∥ 三 kind 不扩 ∥ `chat-wake.mjs` 源零 `setInterval` ∥ 导入面（`@thincoder/core/agent/timers.mjs` 四件——同源断言）。
+- **结构面**：七端点计数不变（+ask 应答——KD-SV-224） ∥ 三 kind 不扩 ∥ `chat-wake.mjs` 源零 `setInterval` ∥ 导入面（`@thincoder/core/agent/timers.mjs` 四件——同源断言）。
 - **出口用例**：管理登录 ⇒ sk 在册 ∥ 管理会话一轮 ⇒ usage 行在场且可归因 ∥ `read_history` 本会话逐形——全文 = §16.4。
 
 ## 16. 会话历史查询与模型出口改道
@@ -520,7 +564,7 @@
 - **出口入参**（假出口 ∥ 真装配）：一轮 ⇒ 出口配置携 `{ baseURL: "<selfBase>/v1", apiKey: "<本回合发送者的 admin-agent 明文>", model: <外标> }`——**不携** provider `baseURL`/`apiKey`（结构用例）。
 - **全链出账**（真网关链 + 假上游 + 本机自环）：管理会话一轮 ⇒ 帧序零变 + `usage` 行在场（member = 本回合发送者〔缺位 ⇒ 会话 owner〕∥ key = `admin-agent` ∥ endpoint = `chat`）。
 - **历史面**：会话内（`user` ∥ `assistant`+`tool_calls` ∥ `tool` ∥ `notice` 行）⇒ `read_history` 逐过滤形（role/keyword/tool/since-until/limit/direction）＋ `ts` = `created_at` 毫秒；`path` 传参 ⇒ 工具级错误人话；审计 `chat_call`（`tool = read_history`、`subject` = 过滤摘要）。
-- **结构用例**：六端点计数不变 ∥ 三 kind 不扩 ∥ `read-history.mjs` 零改（核件原文——导入即用）∥ 能力段对位（八件名 ∈ 段字面）。
+- **结构用例**：七端点计数不变 ∥ 三 kind 不扩 ∥ `read-history.mjs` 零改（核件原文——导入即用）∥ 能力段对位（八件名 ∈ 段字面）。
 
 
 ## 17. 与核的取核形
@@ -530,7 +574,7 @@
 
 ### 17.1 取核形（一句话）
 
-- **件级取核**：共有机制取核**单件**（工具件 ∥ 计时与唤醒件 ∥ 会话历史件 ∥ provider 客户端 ∥ 模型规格件 ∥ 压缩件——逐件 = §17.2）；**环体（回合骨架）自持**——宿主语义（DB 单源 ∥ NDJSON 帧 ∥ 无人值守裁剪 ∥ 网关记账出口）在核内无对应缝（§17.4 ①）。
+- **件级取核**：共有机制取核**单件**（工具件 ∥ 计时与唤醒件 ∥ 会话历史件 ∥ provider 客户端 ∥ 模型规格件 ∥ 压缩件——逐件 = §17.2）；**环体（回合骨架）自持**——宿主语义（DB 单源 ∥ NDJSON 帧 ∥ 档面裁剪（§5） ∥ 网关记账出口）在核内无对应缝（§17.4 ①）。
 - **消费面接法**（沿既有先例）：动载（`import()` 懒载 + 缓存）+ 注入口（单元测试档替身）+ 缺核降级（环境族不注册 ∥ 档位退中性——回合不阻断）；**垫片即宿主**（核件以既有 `ctx`/`agent` 读面为准——§14.2/§15.1）。
 - **最近先例**（对齐 ∥ 偏离）：先例 = 件级核件复用既有形（本档 §14.2 环境工具面六族八件 ∥ §16.1 `read_history` 核件原样 ＋ `recordStoreOf` 库面适配）；对齐 = 同法（动载 ∥ 注入口 ∥ 结果归一）；偏离 = A1 替换自建回灌形（理由 = §17.3 A1）∥ A3 标记行落法（理由 = §17.3 A3）。
 - **核件原文复用**：实现 ∥ schema ∥ 描述三面同源——不收窄 schema、不二次包装（KD-SV-113 口径）。
@@ -561,7 +605,7 @@
 
 | 核件 | 取用面（导出） | 服务面消费坐标 |
 |---|---|---|
-| `@thincoder/core/mcp.mjs` | `connectMcpServer` ∥ `probeMcpServer` ∥ `closeAllMcp` ∥ `removeMcpTools` | 新档 `thincoder-server/src/mcp/face.mjs`（拟新增——工具面装配）∥ `thincoder-server/src/mcp/routes.mjs`（拟新增——探活 ∥ 删行关闭）∥ `bin/thincoder-server.mjs`（停机收尾） |
+| `@thincoder/core/mcp.mjs` | `connectMcpServer` ∥ `probeMcpServer` ∥ `closeAllMcp` ∥ `removeMcpTools` | 新档 `thincoder-server/src/mcp/face.mjs`（已落盘——工具面装配）∥ `thincoder-server/src/mcp/routes.mjs`（已落盘——探活 ∥ 删行关闭）∥ `bin/thincoder-server.mjs`（停机收尾） |
 
 **新增（3 面——零核改可采纳件）**：
 
@@ -577,7 +621,7 @@
 核件自动携带 `reasoning_content` 回声（`reasoningEcho:"required"` 族——deepseek/kimi/mimo；缺值回 `""`）与 `tool_calls[].extra_content`（思考签名——在场才带）。
 配套三件：① **回声道落库**（tool 轮 assistant 行 `data.reasoning`——回放回插 `reasoning_content`）∥ ② **签名落库**（`data.toolCalls[].extraContent`——回放重建）∥ ③ **`args` 落库 = 掩蔽原文**（JSON 有效——不截断；`≤500` 摘要只落 `call` 帧/审计面——截断残 JSON 回放撞严校验上游〔dashscope code 系〕400 实证；存量坏行 = 回放面净化兜底：非 JSON ⇒ `{}`，合法原样逐字）；
 **非对象根（数组/标量）∥ 非法入参 ⇒ 落库 `{}`**（同判）∥ **体量披露**：落库/详情 `args` 自此无 500 上限（随模型输出增长；帧/审计面仍 ≤500）。
-理由 = 跨端语义单源（三端经核件同判）；被否 = 维持自建形（as-of 设计轮实证：`thincoder-server/src/agent/chat.mjs:591-595` ∥ `thincoder-server/src/agent/run.mjs:106-110` 两处自建形零携回声/签名——回声族「首个工具调用后思考断流」症状的复现面；**实施后读数**：该两处已改经核件构造，自建形现存 = `chat-compact.mjs:149-158`〔缺核回落位〕）。
+理由 = 跨端语义单源（三端经核件同判）；被否 = 维持自建形（自建形零携回声/签名——回声族「首个工具调用后思考断流」症状的复现面；实施后读数：`chat.mjs` 工具轮已改经核件构造（`chat-compact.mjs` `assistantTurnOf` 承接——`chat.mjs:632`）∥ `run.mjs` 任务环已随任务式退场删净（该档现读 **33** 行——零自建形）；自建形现存 = `chat-compact.mjs:149-158`〔缺核回落位〕）。
 
 **A2 历史修复（取核）**：回合装配期对回放段施用核 `repairHistory`——修断链 `tool_calls` ∥ 孤儿 `tool` 行（中止/重启窗病态形）；常态输入原样（零改）。
 落点（实施落定）= 回放面（`replayEntriesOf`/`replayMessages`/`messageOfRow`——标记解析 `compactionCoversOf`）自 `chat.mjs` **迁入** `chat-store.mjs`；`chat.mjs` 装配点施用（`repairTurnHistory`——缺核 ⇒ 原样）。被否 = 自修（第二份）。
@@ -600,8 +644,8 @@
   **宿主缝设计草案（供配套核批——只设计不实施）**：候选 a）`assembleFamilyTools`/`prepareRun` 增**宿主面入参**（`hostFaces = { familyTools: false | [名单], injections: { git: false, tree: false, memory: false, skills: false } }`——缺省不改 ⇒ 三端逐字零变）；候选 b）宿主函子缝（`host = { familyTools(), reminders() }`——空 ⇒ 核默认）。**推荐 = a**（纯参数化 ∥ 面最小）。
   **切换判据** = 核批落地后：服务面 `chat.mjs` 环体替换（帧面 ∥ 落库 ∥ 中止面三适配）＋ 三端回归（零改）。触发 = 配套核批开批。
 - **② 提示词装配（场景槽）**：核 `prompt-overlays.mjs` 场景表无管理面场景；简报内容 = 服务端产品文案（自持——「壳自持增量」形）。触发 = 需跨端提示词机制（槽 ∥ 降级链）复用的实需出现（届时核批增场景）。
-- **③ 会话面（核 session-store）**：服务端 DB 单源（审计 ∥ 六端点 ∥ 控制台 ∥ 计量）⇒ 自持；核会话存储 = 文件面（`~/.thincoder/sessions`——改根仅测试缝，非生产面）。触发 = 核开会话存储正式注入缝 ＋ 产品理由出现。
-- **审批腿（目标态四腿之一——已处置，非开放点）**：交互审批/问询面随无人值守裁剪（§5——工具不弹问、不自锁）。
+- **③ 会话面（核 session-store）**：服务端 DB 单源（审计 ∥ 七端点 ∥ 控制台 ∥ 计量）⇒ 自持；核会话存储 = 文件面（`~/.thincoder/sessions`——改根仅测试缝，非生产面）。触发 = 核开会话存储正式注入缝 ＋ 产品理由出现。
+- **审批腿（目标态四腿之一——本批落，非开放点）**：写类工具审批卡面 = §11.5（KD-SV-224–227；2026-10-17 用户裁）——四腿中审批一腿由此闭合，余三腿 = ①②③（开放点如旧）。
 
 ### 17.5 核面零改声明
 

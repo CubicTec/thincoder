@@ -21,7 +21,7 @@ CLI 装配 = `thincoder-cli/src/cli/make-agent.mjs`（baseTools）。dispatch �
 
 ### 2.2 键寻址与展平
 
-- `resolvePath(obj, "a.b.0.c")`（`:146`）逐段下钻（数组数字段支持）；get 缺失段返回 `{ ok:false, reached, missing, depth }`，报错含就近提示；
+- `resolvePath(obj, "a.b.0.c")`（`settings.mjs:162`）逐段下钻（数组数字段支持）；get 缺失段返回 `{ ok:false, reached, missing, depth }`，报错含就近提示；
 - `setKeyPath` 自动建中间对象；返回旧值；
 - list 递归展平当前 `agent.config` 实值（含数组下标段——`providers.0.model` 形态），按 path 排序。
 
@@ -35,35 +35,35 @@ CLI 装配 = `thincoder-cli/src/cli/make-agent.mjs`（baseTools）。dispatch �
 
 `isSensitiveKey(path)` 对完整点分键路径做**段级**测试（**完整段名**命中才算——段界 = 串首 / 串尾 / `.` / `_` / `-`），两句取或（同文件相邻两常量——落点 `thincoder-core/agent-tools/settings.mjs`）：
 
-- **词表句**（`:15`）：`/(^|[._-])(api[_-]?key|key|token|secret|password|authorization|auth|cookie|credential)($|[._-])/i`
+- **词表句**（`settings.mjs:22`）：`/(^|[._-]|[a-z0-9])(api[_-]?key|key|token|secret|password|authorization|auth|cookie|credential)($|[._-])/i`
   ——段名命中即敏感（`-` 为段界，`X-Auth-Token` 类经 `token` 词命中）；
-- **开口键族句**（`:16`）：`/(^|[._-])(headers|env)($|[._-])/i`
+- **开口键族句**（`settings.mjs:24`）：`/(^|[._-])(headers|env)($|[._-])/i`
   ——段名 `headers` 或 `env` 命中 ⇒ **其下全部子键整族遮罩**——HTTP 头名与环境变量名由对端 / 用户任意取，词表**永远漏**。
 - **段内复合段名 = 已裁采纳**（D-ST17）：段内复合敏感名（`refreshToken` / `clientSecret` / `privateKey` 类 camelCase / 前缀复合）⇒ 谓词扩**段内边界**（**先红夹具格**）；假阳取舍 = 方向安全（只丢值、键名仍可见）；理由与裁定 = D-ST13 ∕ D-ST17。
 
-命中 ⇒ **值位一律 `••••（masked）`、键名保留可见**；四处调用单点同一谓词：list 行 `formatLine:187` · get 行（同函数 `:189`）· set 回显 `:260-261` · **错误文案**值位 `_shownValue:88`（D-ST8）。
-`get` 打在敏感**父对象**上（如 `mcp.servers.0.headers`）⇒ 回显 `••••（masked） (object)`；非敏感父对象 ⇒ **`JSON.stringify` 化渲染**（`thincoder-core/agent-tools/settings.mjs:189`）。
+命中 ⇒ **值位一律 `••••（masked）`、键名保留可见**；四处调用单点同一谓词：list 行 `formatLine:210` · get 行（同函数 `:263`）· set 回显 `:283-288` · **错误文案**值位 `_shownValue:99`（D-ST8）。
+`get` 打在敏感**父对象**上（如 `mcp.servers.0.headers`）⇒ 回显 `••••（masked） (object)`；非敏感父对象 ⇒ **`JSON.stringify` 化渲染**（`thincoder-core/agent-tools/settings.mjs:210-213`）。
 判据 = 夹具键集**逐键**断言（敏感族全遮 ∧ 非敏感键不误遮 ∧ 明文零出现）。
-**DEFAULTS 实核**：`flatten(DEFAULTS)` 共 24 叶子，新谓词（两句取或）命中面 = **仅 `websearch.apiKey`**（族句命中 0——DEFAULTS 无 `headers` / `env` 段）
+**DEFAULTS 实核**：`flatten(DEFAULTS)` 叶子数 = **33**（`flatten` 本体实测——本批两键落键后；`TOOLS.md` §6.23 同拍），新谓词（两句取或）命中面 = **仅 `websearch.apiKey`**（族句命中 0——DEFAULTS 无 `headers` / `env` 段）
 ⇒「除 `websearch.apiKey` 外零 masked」前提成立。
 
 ### 2.5 值解析（parseValue——引号语义 = 用户裁定 ① 去引号）
 
-`parseValue(raw)`（`:188`）：JSON.parse 成功且为顶层标量 / 对象 / 数组 → 采用解析结果；**JSON 解析成功但结果为字符串 → 解析值（去引号——`:196` `return v`）**；
-parse 失败 → 字符串字面（`:198` `return s`——裸 `abc`）。两端语义统一（去引号 = ① 选定分支；引号 = JSON 语法、可表达「字符串数字」）。
+`parseValue(raw)`（`:216`）：JSON.parse 成功且为顶层标量 / 对象 / 数组 → 采用解析结果；**JSON 解析成功但结果为字符串 → 解析值（去引号——`:224` `return v`）**；
+parse 失败 → 字符串字面（`:226` `return s`——裸 `abc`）。两端语义统一（去引号 = ① 选定分支；引号 = JSON 语法、可表达「字符串数字」）。
 
 ### 2.6 已知键类型护栏（自动派生 + null 叶子形状表）
 
 - **非 null 叶子**：遍历 `DEFAULTS` 递归生成「键路径 → typeof」映射（模块加载一次构建）——set 校验用；数组不递归、未知键跳过校验（全量域契约）。
 - **null 叶子走显式形状表**：
-  - **`_NULL_LEAF_SHAPES`**（`:29`——相等面：键集 == `_nullLeafPaths(DEFAULTS)`；CLI 4 键 = `defaultModel` / `agent.subagentModel` / `memory.team` / `shell`）；
-  - **`_SIBLING_SHAPES`**（`:38`——存在性面，不参与集合相等；`agent.subagentModels` 等同族键——默认 `{}` ⇒ 派生表零条目零约束，单列于此）；
-  - **完备性机械锁**：`_checkShapeCompleteness(DEFAULTS)` 装载自检（`:72-81`——漂移即一次性警告列键名）+ 测试断言（集合相等）。
+  - **`_NULL_LEAF_SHAPES`**（`:40`——相等面：键集 == `_nullLeafPaths(DEFAULTS)`；CLI 4 键 = `defaultModel` / `agent.subagentModel` / `memory.team` / `shell`）；
+  - **`_SIBLING_SHAPES`**（`:49`——存在性面，不参与集合相等；`agent.subagentModels` 等同族键——默认 `{}` ⇒ 派生表零条目零约束，单列于此）；
+  - **完备性机械锁**：`_checkShapeCompleteness(DEFAULTS)` 装载自检（`:87-95`——漂移即一次性警告列键名）+ 测试断言（集合相等）。
 - **校验语义**（`_checkKnownKeyValue`）：未知键原样通过；非 null 叶子 typeof 语义逐字保留；形状表命中键 = `null` 放行（显式清除——消费面均有「未设置」态）+
   不可消费形态抛错（字符串类键拒空串 / 纯空白，`defaultModel` 另需 `provider:model` 形态；`memory.team` 须 `repo` 非空串、额外键放行；`agent.subagentModels` 值须非空串、角色名不校验）；
   错误消息模板值位在敏感键命中时替换为 `••••（masked）`。
 - **加键流程**：核 `config.mjs` DEFAULTS 一处 → 护栏自动跟随（消除手写漂移——W16：双源面收单）。
-- **测试缝导出**（`_` 前缀——`:265`）：`_buildShapeTable` / `_nullLeafPaths` / `_NULL_LEAF_SHAPES` / `_SIBLING_SHAPES` / `_checkKnownKeyValue` / `_checkShapeCompleteness`。
+- **测试缝导出**（`_` 前缀——`:297`）：`_buildShapeTable` / `_nullLeafPaths` / `_NULL_LEAF_SHAPES` / `_SIBLING_SHAPES` / `_checkKnownKeyValue` / `_checkShapeCompleteness`。
 - **测试缝双缝纪律**：写侧假体（`settingsTool({ configPath })`）+ 读侧 `_setConfigPathForTest` **必须同指临时文件**——防用例读写真实用户配置（`config.mjs` 默认 `configPath`）；两端单元测试档（CLI / VSC）同守此规。
 
 ### 2.7 输出契约
@@ -76,8 +76,8 @@ parse 失败 → 字符串字面（`:198` `return s`——裸 `abc`）。两端�
 W16：VSC 端 = **同一核工具实例化**（`thincoder-vscode/src/agent/setup.mjs` 取 `settingsTool(opts)` 工厂；写盘 = 核 `writeConfigAtomic`）；热应用 = `ctx.agent.config` 内存对象；注册于 depth-0 agentTools（动作级只读分类同款机制，`isReadonlyAction` 端面）。
 键空间 = 核 `DEFAULTS` 全量（A5 已裁「以 CLI 为准（全量类型校验）」；
 VSC 端测试坐标 = `thincoder-vscode/test/settings-tool.test.mjs`（9 例——双缝并用：写侧 `settingsTool({ configPath })` + 读侧 `_setConfigPathForTest`）——单元测试树重建时回迁。
-**端差（W16 登记——热应用载体键面）**：热应用落点 = 端 `ctx.agent.config` 载体，而 VSC 载体键面 = `{advisor, agent, proxy, shell, providersList, websearch, traces}`
-（`thincoder-vscode/src/agent/agent-state.mjs` `:96-107`）——无 `providers` / `memory` / `embedding` / `mcp` 段 ⇒ 这些键在 VSC 端的「运行中已生效」回显不落端侧运行读取源
+**端差（W16 登记——热应用载体键面）**：热应用落点 = 端 `ctx.agent.config` 载体，而 VSC 载体键面 = `{advisor, agent, hooks, proxy, shell, providersList, websearch, fetch, traces}`
+（`thincoder-vscode/src/agent/agent-state.mjs` `:98-112`）——无 `providers` / `memory` / `embedding` / `mcp` 段 ⇒ 这些键在 VSC 端的「运行中已生效」回显不落端侧运行读取源
 （端侧运行读盘面 `loadRaw()`，如 `resolveProviders`）；该面以「写盘为准」（持久化生效，进程内热应用仅限上列键面）。
 
 ### 2.9 无静默论证（判据形式——要点）
@@ -117,13 +117,13 @@ VSC 端测试坐标 = `thincoder-vscode/test/settings-tool.test.mjs`（9 例—�
 - **`${env:VAR}` 引用形态**（配置内放引用而非真值）：已受理做——机制单源 = `doc:CONFIG.md:§6.3`；本档谓词与读面零改（引用串同值位 ⇒ 族遮罩内；解析产物不回显）。
 - 不改其它写面 / TUI 面：`/mcp` 表单输入提示、`/config` 菜单、VSC 面板各自遮蔽面**不复用本谓词**（各自的坐标与判定归各自板块——不动）。
 - 不校验角色名合法性；不做跨端配置迁移（用户既有值不动）；
-- UI/交互：无 UI 面变更——唯一模型可见文案面 = 工具 description（语义判据：含 null 默认值键按真实消费形态校验 + 不可消费形态被拒 + **敏感键按 §2.4 谓词回显遮罩**；逐字文案 = 产品代码，驻 `thincoder-core/tool-docs/settings.md`（`DESC()` 单一解析面——接线 `thincoder-core/agent-tools/settings.mjs:231`；句内词表 / 族词与 §2.4 同源）。
+- UI/交互：无 UI 面变更——唯一模型可见文案面 = 工具 description（语义判据：含 null 默认值键按真实消费形态校验 + 不可消费形态被拒 + **敏感键按 §2.4 谓词回显遮罩**；逐字文案 = 产品代码，驻 `thincoder-core/tool-docs/settings.md`（`DESC()` 单一解析面——接线 `thincoder-core/agent-tools/settings.mjs:235`；句内词表 / 族词与 §2.4 同源）。
 
 ## 5. 机制面坐标（核 / CLI）
 
 | 面 | 落点 |
 |---|---|
-| 工具实现 | `thincoder-core/agent-tools/settings.mjs`（敏感判定词表句 `:15` + 开口键族句 `:16` · 形状表 `:29` / `:38` · `_nullLeafPaths:61` · 完备性锁 `:72-81` · 键寻址 `:146` · 值解析 `:188-198` · description 文本 = `tool-docs/settings.md`（`DESC()`——接线 `:231`）· 测试缝导出 `:265`） |
+| 工具实现 | `thincoder-core/agent-tools/settings.mjs`（敏感判定词表句 `:22` + 开口键族句 `:24` · 形状表 `:40` / `:49` · `_nullLeafPaths:76` · 完备性锁 `:87-95` · 键寻址 `:162` · 值解析 `:216-228` · description 文本 = `thincoder-core/tool-docs/settings.md`（`DESC()`——接线 `:235`）· 测试缝导出 `:297`） |
 | 原子写盘 | `thincoder-core/config.mjs`（`writeConfigAtomic`——`:29` export；DEFAULTS / configPath 同档） |
 | CLI 装配 | 核 `thincoder-core/agent/assemble.mjs` 装配 + `thincoder-cli/src/cli/make-agent.mjs` 留面（MCP ∕ 剔除经 `toolsFinalize` 缝）；dispatch 动作级只读分类（list/get 放行） |
 | 读取器判据点 | `thincoder-core/config.mjs:257`（defaultModel 非串→null）· 核 `thincoder-core/agent/assemble.mjs:31`（`!team?.repo`）· `thincoder-core/agent-tools/subagent-spawn.mjs:82`（subagentModels 回落）· `thincoder-core/tools/bash.mjs:120`（`shell ?? true`） |

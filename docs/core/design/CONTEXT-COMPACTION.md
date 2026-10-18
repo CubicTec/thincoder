@@ -54,7 +54,8 @@
 ### 6.2 触发：仅安全点（D1）与阈值链（D2）——目标 75–80%
 
 - **仅安全点检查**：history 末尾消息 role ∈ {user, tool} 时才检查压缩——压缩是结构性 splice（head + 摘要 + tail），在 assistant 半截切会破坏 tool 配对语境；安全点检查零成本。
-- **阈值链**：显式 `config.agent.compactThreshold` 优先；否则 auto = **min(可用窗口, ⌊窗口 × 0.8⌋)**——可用窗口 = 窗口 − 完成预留，预留 = **min(显式 `provider.maxTokens` 否则规格 `maxOutput`, ⌊窗口 × 0.25⌋)**（`COMPACT_RATIO = 0.8`；单源 = `config.mjs` `outputReserve` / `usableWindow` / `resolveCompactThreshold`）。**判定对象 = 完整 prompt 估算**（system + tools + history）≥ 阈值即触发。
+- **阈值链**：显式 `config.agent.compactThreshold` 优先；否则 auto = **min(可用窗口, ⌊窗口 × 0.8⌋)**——可用窗口 = 窗口 − 完成预留，预留 = **min(显式 `provider.maxTokens` 否则规格 `maxOutput`, ⌊窗口 × 0.25⌋)**（`COMPACT_RATIO = 0.8`；单源 = `config.mjs` `outputReserve` / `usableWindow` / `resolveCompactThreshold`）。
+  **判定对象 = 完整 prompt 估算**（system + tools + history）≥ 阈值即触发。
 - **目标口径两式**（= 下行定式的分支读法）：触发线目标 = 窗口 **~70–80%**（用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」）——设计取严区间 **[75%, 80%]**（可达域：封顶档 75%、上限项 80%）。**可用窗口支**（预留 ≥ 窗口 20% 档）⇒ 阈值 = 窗口 − min(预留, ⌊窗口 × 0.25⌋)（「输入 + max_tokens ≤ 窗口」保真）；**上限支**（预留 < 窗口 20% 档）⇒ 阈值 = ⌊窗口 × 0.8⌋（80% 端）。余量 = 窗口 20–25%（覆盖注入——实测每轮 30–50K）。
 - **先例行（②）**：先例 = 评审面压缩机器的 0.8 比值（`thincoder-core/advisor/compaction.mjs:28-39`——判死线 = 可用窗口 × 0.8）——对齐（同以可用窗口为预算基、经 `outputReserve` 单源随动）；偏离 = 0.8 乘位不同（主链乘**窗口** = `⌊窗口 × 0.8⌋` 上限项；评审面乘**可用窗口** = 宿主自限）——目标不同（防越窗 ∥ 防拒答），两式各自保留。
 - **逐档推算（`model-specs.mjs` 全表 76 行 / 22 档——规格视图；预置 `config-presets.mjs` 取值 ≤ 规格行 ⇒ 本表为保守视图）**：现阈值 = `floor((窗口 − 预留) × 0.6)`（现行公式逐字复算）；新阈值 = `min(窗口 − min(预留, ⌊窗口 × 0.25⌋), ⌊窗口 × 0.8⌋)`；`*` = 预留封顶档。
@@ -112,8 +113,12 @@
   - **机判用例（实施轮单测 = `docs/batches/2026-10-16-context-perception.test.mjs`）**：① 无显式（kimi-k3 档）⇒ 800_000；② 显式小值（8_192 于 1M 窗——上限支）⇒ 800_000；③ 封顶档（deepseek 显式 384_000）⇒ 750_000；④ 守卫档（规格 `maxOutput` ≥ 窗口——doubao-2-1）⇒ 192_000（守卫零触发）；⑤ 可用窗口支（显式 32_000 于 128_000 窗——预留 25%）⇒ 96_000（= 窗口 − 预留）。
 - **溢出风险论证（三件）**：
   1. **真溢出的后果**——「输入 + 请求的 max_tokens > 窗口」时若服务端硬校验 ⇒ 请求被拒（4xx 非 429 不重试——`provider/retry.mjs:51-52` 逐字抛）；run 以可读错误收束（fail-loud），会话盘面与人读线完好、可续跑；无静默损坏。
-  2. **兜底接法**——DeepSeek 口径（一手源 = `api-docs.deepseek.com` Chat Completions 页，2026-10-17 实取）：「**输入 token 和输出 token 的总长度受模型的上下文长度的限制**」，触达限制以 `finish_reason:"length"` 收束（该页定义逐字：输出长度达到了模型上下文长度限制）⇒ 带宽内请求不丢；应用侧既有续写协议（`prefixMode` / `partialMode`——`provider/core.mjs:277-290`）与响应提醒（`agent/run-stages.mjs:58-69`）接手。其余渠道未逐族取证（**登记**）；最坏形 = 硬拒 ⇒ 后果如 ①。主链**无**「超限自动压缩」兜底（不新增——边界）；既有 `context_limit` 机器 = 评审面（`advisor/compaction.mjs:28-39,98`：判死线 = 可用窗口 × 0.8、压缩触发 = 判死线 × 0.8）——**机制零改、随本式随动**（deepseek 判死线 492_800 → 600_000、压缩触发 394_240 → 480_000）。
-  3. **高风险档清单**（显式 / 预置输出预算 > 窗口 25% ⇒ 残余带 = (窗口 − 输出预算, 压缩线]，带宽 = 输出预算 − 窗口 25%）：deepseek 族（384_000 / 1M——带宽 134_000 ≈ 13.4% 窗口）· doubao 族（预置 131_072 / 256_000——67_072 ≈ 26.2%）· MiniMax-M2.7 / minimax-m1 / hy3 / hy3-preview / hy4-preview（预置 128_000 / 256_000——64_000 = 25.0%）· kimi-for-coding-highspeed / k3-256k / qwen3.8-27b（预置 131_072 / 262_144——65_536 = 25.0%）。带内请求照发；下一安全点压缩在 75% 线处置。
+  2. **兜底接法**——DeepSeek 口径（一手源 = `api-docs.deepseek.com` Chat Completions 页，2026-10-17 实取）：「**输入 token 和输出 token 的总长度受模型的上下文长度的限制**」，触达限制以 `finish_reason:"length"` 收束（该页定义逐字：输出长度达到了模型上下文长度限制）⇒ 带宽内请求不丢；
+  应用侧既有续写协议（`prefixMode` / `partialMode`——`provider/core.mjs:277-290`）与响应提醒（`agent/run-stages.mjs:58-69`）接手。其余渠道未逐族取证（**登记**）；最坏形 = 硬拒 ⇒ 后果如 ①。
+  主链**无**「超限自动压缩」兜底（不新增——边界）；既有 `context_limit` 机器 = 评审面（`advisor/compaction.mjs:28-39,98`：判死线 = 可用窗口 × 0.8、压缩触发 = 判死线 × 0.8）——**机制零改、随本式随动**（deepseek 判死线 492_800 → 600_000、压缩触发 394_240 → 480_000）。
+  3. **高风险档清单**（显式 / 预置输出预算 > 窗口 25% ⇒ 残余带 = (窗口 − 输出预算, 压缩线]，带宽 = 输出预算 − 窗口 25%）：deepseek 族（384_000 / 1M——带宽 134_000 ≈ 13.4% 窗口）· doubao 族（预置 131_072 / 256_000——67_072 ≈ 26.2%）·
+  MiniMax-M2.7 / minimax-m1 / hy3 / hy3-preview / hy4-preview（预置 128_000 / 256_000——64_000 = 25.0%）· kimi-for-coding-highspeed / k3-256k / qwen3.8-27b（预置 131_072 / 262_144——65_536 = 25.0%）。
+  带内请求照发；下一安全点压缩在 75% 线处置。
 - **provider 级覆盖**：`providers[].context`（K 单位）覆盖 MODEL_SPECS 的 context 后，阈值与 tail 公式跟随覆盖值（公式权威 → 本层 `PROVIDER.md` §6.15）。
 
 ### 6.3 token 判定（D3）——实测优先 + 增量估算
@@ -212,7 +217,7 @@
    归并 = **核内单一纯函数**（`thincoder-core/` 导出）；各端**独立接线**（多实现面纪律——语义同源、断言各自驻留）——调用点：CLI `thincoder-core/session.mjs` `applySession` `:293/:296`（`machine` 定线后、`agent.history = [...machine]` 前）·
    VSC `thincoder-vscode/src/extension/panel-session.mjs` `activeLines` `:54-55`（`contextHistory` 定线后、`:56` 返回前——VSC **不经核 `applySession`**，槽直读组装，`panel-chat.mjs:251` 消费）。恢复后首请求不再携带病态形态（不推用户、不改会话档）。
    边界：前条带 `tool_calls` 的变体（孤儿 `tool_result` 面）**不并**——配对安全优先（登记上抛）；干净输入返回**同一数组引用**（零拷贝 / 零回归）。
-   判据锚：`applySession` 线 `thincoder-core/test/compaction-echo.test.mjs`（形态计数 0 + 文本 / `tool_calls` 守恒）；VSC 面 `thincoder-vscode/test/**` 同形名用例（各面自持）。
+   判据锚：恢复面两条线各持**批内定向单测**（收口随批删——形态计数 0 + 文本 / `tool_calls` 守恒；VSC 面同形判据、各面自持）。
 
 9. **活体推入面回声恒带（D-CC22）**：`reasoningEcho:"required"` 族（`thincoder-core/model-specs.mjs:33/35/38/40/42` deepseek · `:44/46/48` kimi · `:75/76` mimo）的**工具轮** assistant 消息经核单点构造 `assistantToolCallMessage(response, spec)`（`thincoder-core/model-specs.mjs`）推入 ⇒ **恒带**
  `reasoning_content`；本轮无推理 ⇒ **空串**（不省略字段——「必须回传」按字段在场判定）。真机三连（`deepseek-flash` · 带 `tools` · 同形历史）：空串 **200**（服务端仍回 `reasoning` 63 字符）/ 缺字段 **200**（`reasoning` 帧 **0**）/ 真值 **200**（104 字符）⇒
@@ -232,19 +237,19 @@
 
 | 机制 | CLI | VS Code |
 |---|---|---|
-| 压缩 / 预算 / tail / 截断 / 摘要主体（`applyCompression` / `splitHistory` / `compressIfNeeded` / `compressFallback` / `shrinkOversized` / `summarizeRunExplorations` / `tightenTailByBudget` / `tailBudgetTokens`） | `thincoder-core/context.mjs`（`applyCompression` / `compressIfNeeded` / `compressFallback`）· `thincoder-core/token-window.mjs`（`splitHistory` / `tightenTailByBudget` / `repairedTailStart` / `tailBudgetTokens`）· `thincoder-core/context-degrade.mjs`（`shrinkOversized`）· `thincoder-core/explore-distill.mjs`（`summarizeRunExplorations`）——后三者经 `context.mjs` 转口可达 | 端侧判定点封装 = `thincoder-vscode/src/agent/run-stages.mjs` |
+| 压缩 / 预算 / tail / 截断 / 摘要主体（`applyCompression` / `splitHistory` / `compressIfNeeded` / `compressFallback` / `shrinkOversized` / `summarizeRunExplorations` / `tightenTailByBudget` / `tailBudgetTokens`） | `thincoder-core/context.mjs`（`applyCompression` / `compressIfNeeded` / `compressFallback`）· `thincoder-core/token-window.mjs`（`splitHistory` / `tightenTailByBudget` / `repairedTailStart` / `tailBudgetTokens`）· `thincoder-core/context-degrade.mjs`（`shrinkOversized`）· `thincoder-core/explore-distill.mjs`（`summarizeRunExplorations`）——后三者经 `context.mjs` 转口可达 | 端侧判定点封装 = 核 `thincoder-core/agent/run-stages.mjs`（两端同调——零端侧重复） |
 | 常量（`IMAGE_TOKEN_ESTIMATE` / `TAIL_BUDGET_FRACTION` / `SUMMARY_TOKEN_ESTIMATE = 1000` / `TAIL_FLOOR_MESSAGES`） | `thincoder-core/token-window.mjs` | 单源 = 核列常量 |
-| run 钩子（`_compressFailures` 重置 / `_runStartHistoryLen` / onCompress* 接线） | `thincoder-core/agent/run-start.mjs`（复位块 ∕ `_runStartHistoryLen`）+ `thincoder-core/agent/turn-loop.mjs`（压缩检查调用点）+ `thincoder-cli/src/tui/agent-turn.mjs` | `thincoder-vscode/src/agent/run-stages.mjs`（判定点转发）+ `thincoder-vscode/src/agent.mjs`（安全点调用） |
+| run 钩子（`_compressFailures` 重置 / `_runStartHistoryLen` / onCompress* 接线） | `thincoder-core/agent/run-start.mjs`（复位块 ∕ `_runStartHistoryLen`）+ `thincoder-core/agent/turn-loop.mjs`（压缩检查调用点）+ `thincoder-cli/src/tui/agent-turn.mjs` | 核 `thincoder-core/agent/run-stages.mjs`（判定点单源）+ 核 `thincoder-core/agent/turn-loop.mjs`（安全点调用）——VSC 经核 `runAgent` 同链 |
 | 压缩面板渲染 | `thincoder-cli/src/tui/tool-events.mjs` + `thincoder-cli/src/tui/subagent-blocks.mjs` | webview 会话状态渲染 |
 | SUMMARIZE_PROMPT / EXPLORE_SUMMARY_PROMPT | `thincoder-core/context.mjs`（`SUMMARIZE_PROMPT` export——`:20`）；`EXPLORE_SUMMARY_PROMPT` = `thincoder-core/explore-distill.mjs`——经 `context.mjs` 转口 export | `thincoder-vscode/src/explore-distill.mjs` = **调用期适配器**（只 import 核面） |
 
 ### 6.13 VS Code 端接线面
 
 
-- **判定点封装（端侧接线 · §2.13.4 #56 类）**：`checkAndCompact(agent, ctx)` 住 `thincoder-vscode/src/agent/run-stages.mjs`——循环骨架只留检查调用（`thincoder-vscode/src/agent.mjs` 主循环 LLM 调用前；
+- **判定点封装（两端同调 · §2.13.4 #56 类）**：`runCompactionCheck(agent, ctx)` 住核 `thincoder-core/agent/run-stages.mjs:80`——循环骨架只留检查调用（核 `thincoder-core/agent/turn-loop.mjs:118-120`，LLM 调用前；
   安全点判定 = `history.at(-1)?.role` 为 `user` / `tool`）。封装体内驱动核 `compressIfNeeded` / `compressFallback`（触发 / 摘要 / 降级截断 / 尾部预算 / task+plan 回注 / 重建边界 / 基线失效全归核）。与 CLI 语义一致（D1）。
 - **阈值档位（核面）**：`resolveCompactThreshold(cfgCompactThreshold, provider)`（核 `config.mjs`——显式优先 / auto = **阈值链（§6.2——`min(可用窗口, ⌊窗口 × 0.8⌋)`）**——可用窗口 = `usableWindow(context, outputReserve(provider, spec))`）——阈值随回合模型（档位跟随窗口，PROVIDER §15 T-C2）。
-- **端差适配（调用期）**：核压缩面读 CLI 载体字段名 `provider` / `tasks` / `planMode`——本端 agent 载体为 provider 入参（`ctx.provider`）/ `_tasks` / `_planMode` ⇒ `checkAndCompact` 调用期同指三键（核只读此三键）；核以新数组替换 `agent.history`（applyCompression / shrinkOversized 均 copy-on-write）⇒ 端侧回收共享数组（面板持有同一引用；数组自定义属性随原位回收保留）。
+- **端差适配（调用期）**：核压缩面读 CLI 载体字段名 `provider` / `tasks` / `planMode`——本端 agent 载体为 provider 入参（`ctx.provider`）/ `_tasks` / `_planMode` ⇒ 核 `runCompactionCheck` 调用期同指三键（核只读此三键）；核以新数组替换 `agent.history`（applyCompression / shrinkOversized 均 copy-on-write）⇒ 端侧回收共享数组（面板持有同一引用；数组自定义属性随原位回收保留）。
 - **预算常量**：单源 = 核 `SUMMARY_TOKEN_ESTIMATE = 1000`；`IMAGE_TOKEN_ESTIMATE = 2000`/part 两端同值。
 - **REVERSE 配对保护（回植候选登记）**：现体核面无本判据（§6.11 口径：CLI 不需要——`repairHistory` 在 run 起点保证顺序）。VSC 侧倒序来源若仍可达 ⇒ **回植候选 = 核内笔**。
 - **webview 压缩状态四态（现状登记 · 不变）**：`thincoder-vscode/src/extension/panel-callbacks.mjs` → postMessage `compress` 消息：
@@ -253,7 +258,8 @@
   `webview/chat-status.js showCompressStatus` 原地更新 `#compress-status`；摘要正文永不进前端（D11 静默纪律）。
   回调链（onCompressStart / onCompress / onCompressFail）由端侧判定点转发——语义同 §6.8（D-C3）。
 - **摘要段形状**：压缩 note + 摘要 + assistant 占位（tail 首条为 assistant 时占位并入该条——§6.10 #7）——现体 = 核段落形状（§6.7 文案族；两端非 byte-identical 注见 §6.11）。
-- **失败可见化（Q3）**：`run-stages.mjs` catch → console.error + `onCompressFail` → webview 渲染错误文本；`_compressFailures` 连续 3 次（核 `COMPRESS_FAILURE_LIMIT`）后 `compressFallback` 确定性截断；无 middle 可切 → `shrinkOversized` 单消息截断（核内承载——边界重置 2（并入分支 1）/ 基线失效由核 applyCompression / shrinkOversized 自理）。
+- **失败可见化（Q3）**：核 `thincoder-core/agent/run-stages.mjs` catch → `onCompressFail` → 端侧回调 → webview 渲染错误文本（回调装配 = `thincoder-vscode/src/extension/panel-callbacks.mjs:221`）；
+  `_compressFailures` 连续 3 次（核 `COMPRESS_FAILURE_LIMIT`）后 `compressFallback` 确定性截断；无 middle 可切 → `shrinkOversized` 单消息截断（核内承载——边界重置 2（并入分支 1）/ 基线失效由核 applyCompression / shrinkOversized 自理）。
 - **非压缩职责边界**：repo outline → `repomap.mjs`（repoOutlineTool——按需工具，非回合自动注入）；git 富注入 → `agent/setup-reminders.mjs`（`collectGitContext` = `:145` / `pushGitContext` = `:163`；async）；editor / 机器注入 → `extension/editor-context.mjs` + `pushInjections`（`:194`）。
 
 ### 6.14 压缩调用形态 · 会话续写（前缀复用）
@@ -262,7 +268,7 @@
 
 **v2 修法——声明面对齐（`tools`）**：
 
-- **形态**：压缩请求随带**与回合请求同一**的 tools 声明（`extras.tools` 原样）——两消费点均以 `tools` 键透传 `toolSchemas`（CLI `thincoder-core/agent.mjs:86-93`、VSC `thincoder-vscode/src/agent/run-stages.mjs:195-197`），与回合调用同数组（`thincoder-core/agent.mjs:241` / `thincoder-vscode/src/agent.mjs:262`）⇒ 声明面无第二构造点、无字节漂移。
+- **形态**：压缩请求随带**与回合请求同一**的 tools 声明（`extras.tools` 原样）——开销量单源 = 核 `thincoder-core/agent/turn-loop.mjs:39-45`（`compactionOverhead.tools = toolSchemas`），与回合调用同数组 ⇒ 两端同调、声明面无第二构造点、无字节漂移。
 - **抑制 tool 调用**：同调用随带 `toolChoice: "none"`——**仅在有 tools 声明时发**（无声明面时该参数在部分服务端作 400）。
 - **可行性核（仓内可核 · 零 provider 层改动）**：`toolChoice` 能力层四 transport 全支持——OpenAI 通路 `thincoder-core/provider/core.mjs:214`（`body.tool_choice`）·
   Anthropic `thincoder-core/provider/anthropic.mjs:62`（`{type:"none"}`——`:20`）· Gemini `thincoder-core/provider/google.mjs:101-102`（`{mode:"NONE"}`——`:16`）·
@@ -281,7 +287,7 @@ messages = [ { role: "system", content: extras.systemPrompt },  // 与回合请�
 tools    = extras.tools（与回合请求同一声明面；**不随 tool_choice**——实测该参数致服务端丢弃 tools 区）
 ```
 
-- **状态**：消息序 v1 **已落**（`thincoder-core/compress-form.mjs` + `context.mjs` 接线）；`tools` 行 = **v2 已实施**（`context.mjs` 落盘 **495**）——
+- **状态**：消息序 v1 **已落**（`thincoder-core/compress-form.mjs` + `context.mjs` 接线）；`tools` 行 = **v2 已实施**（`context.mjs` 接线已落——行数读数 = §6.16.9 单源）——
   **落该形**（带 tools、**不随 `tool_choice`**：该参数实测致服务端丢弃 tools 区 ⇒ 该形落定）；
   `reasoningEffort` 行 = **v3 已实施**（**同源随带**：与回合同一字段；不硬编码 · 无配置 ⇒ 缺省）——**真机生产口径首现命中 92.86% / 93.65%**（两次独立运行）；
   派生差两则（百炼 qwen 族 / autoThink 窗口）⇒ **认账**：压缩侧**不设思考**（`thinking:null` = 需求 N1 字面 · 本档 D9）——
@@ -290,10 +296,10 @@ tools    = extras.tools（与回合请求同一声明面；**不随 tool_choice*
 - **摘要输入域（选中面）不变 / 表示面改变**：只喂中段（尾部不进摘要输入）⇒ **选中范围不变**；中段的**表示面** = 真身消息（不截断）。
 - **前缀对齐前提**：切点须是配对安全边界（`repairedTailStart` 保证中段自足）——否则发送期配对归一（`thincoder-core/provider/normalize.mjs`）会在压缩请求合成 `[Tool result missing: …]` 占位而回合请求不会，前缀自此分叉。
 - **单一真值**：请求前缀切点与摘要段切点同源（同一个 `tailStart`），不新增第二处切割判据。
-- **落地形态（模块拆分 · 行数预算）**：纯函数 `buildCompressMessages` 落核档 `thincoder-core/compress-form.mjs`（落盘 **21 行**（`wc -l`）——零 import 依赖：指令文本由实参传入，不与 `context.mjs` 成环）。
-  `thincoder-core/context.mjs` 只留接线（import `:15` + 调用 `:400` + 空白摘要守卫 `:414`）——**行数口径 = `wc -l`**（= 机检 `thincoder-core/test/core-hygiene.test.mjs` 硬限用例 `:136` · `wc -l` 口径 `:141` · `>500` 断言 `:145` 的判定口径·>500 硬红）。
-  落盘 **492 行**（预算上限 495 · 硬限 500）；新单元测试档 `thincoder-core/test/compress-form.test.mjs` 落盘 **213 行**（≤300 软线 ⇒ 免登记）。
-  先例 = 同档 `thincoder-core/context.mjs:437-440`（524 > 500 ⇒ 拆分 `explore-distill.mjs`）。
+- **落地形态（模块拆分 · 行数预算）**：纯函数 `buildCompressMessages` 落核档 `thincoder-core/compress-form.mjs`（落盘 **24 行**（`wc -l`）——零 import 依赖：指令文本由实参传入，不与 `context.mjs` 成环）。
+  `thincoder-core/context.mjs` 只留接线（import `:15` + `buildCompressMessages` 调用 `:198` + 空白摘要守卫 `:219`）——**行数口径 = `wc -l`**（≤500）。
+  现盘 **261 行**（`wc -l`；≤500）；单测档 = `docs/batches/2026-10-16-context-perception.test.mjs`（284 行——随批档存放、不进产品树）。
+  先例 = `explore-distill.mjs`（自 `context.mjs` 拆分——当日 524 > 500）。
 
 **退化面**：
 
@@ -356,11 +362,11 @@ provider = { ...agent.provider, thinking: null }   // **不覆盖** reasoningEff
 **判定句与取证（预注册 · 与压缩线同口径）**：真机蒸馏调用 `cached / prompt ≥ 0.9`；取证路径 = `~/.thincoder/traces/<date>/*.jsonl` 中 `"stage":"distill"` 行的 usage；前置闸 = 同会话回合调用命中 ≥0.9（同 §6.14）。
 **判定格口径**：判定格取**中大型前缀会话**（前缀占请求主体）——命中率结构上限 ≈ 前缀 /（前缀 + 未命中面），未命中面 = 尾部指令一条 + ≤255 块对齐残余；小前缀会话不作判定格（够不到 0.9 属结构性，非机制未生效），如需折算按 `(prompt − 未命中面) / prompt` 口径。
 
-**先红方案（离线可判）**：新用例文件 `thincoder-core/test/explore-distill-form.test.mjs`（`globalThis.fetch` 桩——先例 `thincoder-core/test/compress-form.test.mjs:114-151`）——修前形态 = `messages[0].role === "user"` ⇒ 形态断言（首条 = system / 末条 = 指令 / 前 N 条 = 回合前缀切片）**必红**；修后转绿。
+**先红方案（离线可判）**：新用例 = 批内定向单测（`docs/batches/<batch>-<topic>.test.mjs`——收口随批删；`globalThis.fetch` 桩）——修前形态 = `messages[0].role === "user"` ⇒ 形态断言（首条 = system / 末条 = 指令 / 前 N 条 = 回合前缀切片）**必红**；修后转绿。
 
 
 本 § 的落点族（设计侧速览）：核 `thincoder-core/explore-distill.mjs`（调用形态改会话续写 + 序列化面退役）· 核 `thincoder-core/compress-form.mjs`（头注声明第二消费点——行数读数见 §6.14 落地形态）。
-两处调用点 `extras` 透传（核 `thincoder-core/agent/turn-loop.mjs` · VSC `thincoder-vscode/src/agent.mjs` + `thincoder-vscode/src/agent/run-stages.mjs`）· VSC 适配器（**端形向后兼容**——增形参 `extras`）。
+两处调用点 `extras` 透传（核 `thincoder-core/agent/run-stages.mjs`（压缩）· 核 `thincoder-core/agent/turn-loop.mjs:205-207`（蒸馏））· VSC 适配器（`thincoder-vscode/src/explore-distill.mjs`——**端形向后兼容**，增形参 `extras`）。
 
 **边界（本 § 不改）**：压缩面 · provider 面（`chat` 签名与发送面）· 提示词文本 · 替换面（§6.9 H1）——范围与逐处核实以本档内口径为单源。
 
@@ -422,7 +428,7 @@ export const contextTool = {
 | 面 | 判定 |
 |---|---|
 | **回合中途怎么落** | `compact` 工具**只登记不执行**：写 `agent._pendingCompact = { focus, at }`（**单槽**——重复调用后者覆盖前者，回执明示），返回回执；**历史零改、不发 LLM**。真正执行发生在**下一个安全点**（`agent.history.at(-1)?.role ∈ {user, tool}`——工具结果落盘后的天然边界），即既有检查点的同一处；此刻全部 tool 结果已配对落盘 ⇒ 不产生孤儿 `tool_call` 结果（回合中途压缩的本体风险由此消） |
-| **消费点** | 核 `thincoder-core/agent/run-stages.mjs` `runCompactionCheck`（`:63-87`）——先取 `pending = agent._pendingCompact`，随即**清槽**（失败不重放；重发由模型再调）；`pending` 在场 ⇒ 以 `{ ...compactionOverhead, force: true, focus }` 调核 `compressIfNeeded`。VSC 对位 = `thincoder-vscode/src/agent/run-stages.mjs` `checkAndCompact`（`:186-250`）同构接线（两端各自接线、语义同源——先例 D-CC19） |
+| **消费点** | 核 `thincoder-core/agent/run-stages.mjs` `runCompactionCheck`（`:80`）——先取 `pending = agent._pendingCompact`，随即**清槽**（失败不重放；重发由模型再调）；`pending` 在场 ⇒ 以 `{ ...compactionOverhead, force: true, focus }` 调核 `compressIfNeeded`。两端同调（VSC 经核 `runAgent` 同链，零端侧重复） |
 | **与回合尾 / 阈值面（互斥还是排队）** | **阈值面排队承接、互斥于「同点一次压缩」**：强制面**成功（摘要路）** ⇒ 本次安全点的阈值检查自然不被消费（历史已重建）；强制面**成功（有损收缩路——`!split` 且 `shrinkOversized` 命中）** ⇒ 同按「一次成功压缩」记账（**不落 no-op 注记 / 不跑阈值面**——见下「第三去向」）；强制面**无可压**（`!split` 且 `shrinkOversized` 未命中）⇒ 记 no-op 注记后**照常**跑阈值检查（阈值面不因模型请求而让位）；同一安全点至多发生**一次成功压缩**（重建后的 tail 不得当轮再摘要） |
 | **阈值面语义零改** | `force` 只跳过 `tokens <= threshold` 这一条早退（模型判定优先于阈值），其余全同：同 `splitHistory` / 同尾部预算 / 同摘要链 / 同 `applyCompression` 回注 / 同 `_lastPromptTokens` 失效；**无 focus 时请求体逐字节同修前**（`compress-form.test.mjs` 零回归） |
 | **失败路径复用** | 摘要在途失败 ⇒ 既有失败链原样（`_compressFailures++` → `onCompressFail` → 连续 3 次 `compressFallback`）；AbortError 照旧透传（不落注记）；模型面另落**失败注记一行**（旧式无人告知的缺口在本面补齐——见下）。`context compact` **不另起**任何失败 / 降级 / 面板机制 |
@@ -476,7 +482,7 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
   - 实测优先 = `_lastPromptTokens + 增量`；无实测 = `estimateTokens(history) + system + tools`。
   - `threshold` = 该回合检查用的同一值（`agent._ctxBasis.threshold`）；缺省回退 `resolveCompactThreshold(agent.config?.agent?.compactThreshold, agent.provider).value`。
   - `window` = `providerSpec(agent.provider).context`；`stale` / `tailCount` = 6.16.3 的同一合格集函数。
-- **阈值单源接线**：核 `thincoder-core/agent/turn-loop.mjs:48`（`compactionOverhead` 构造 ∕ `_ctxBasis` 暂存）与 VSC `checkAndCompact`（`:190-199`）各补一行 `agent._ctxBasis = { threshold, overhead }`——stats 因此报**该回合实际判定所用的阈值**，不自行重算第二口径。
+- **阈值单源接线**：核 `thincoder-core/agent/turn-loop.mjs:48`（`compactionOverhead` 构造 ∕ `_ctxBasis` 暂存）——两端同调、零端侧第二处——stats 因此报**该回合实际判定所用的阈值**，不自行重算第二口径。
 - **与状态行 ctx% 的单源关系**：状态行口径 = `estimateTokens(history) / providerSpec(provider).context`（CLI `thincoder-cli/src/tui/render-frame.mjs:394-397` + `thincoder-cli/src/tui/render-loop.mjs:89-90`；VSC `ctxPercentForHistory`）——两端已由 `context-percent-parity.test.mjs` 钉死。
   stats **不新增第三口径**：**两口径 = 窗口占用（首行——`total / window`）∥ 状态行（第 4 行——`historyPercent`，用户看到的那个）**；阈值 = 具名数值（`compaction line … ({toGo} to the line)`），**不再作百分比分母**——全份输出零「无名百分比」（两处百分比各带分子分母，见 §6.16.4 首行定稿）。
   **状态行实现零改**（其字面被该测试组①「对端源锚」机判锁定——改字面即红）。
@@ -505,7 +511,7 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 - **VSC 宿主工具让名（D-CC26）**：VSC 宿主工具（IDE 快照）现档 = `thincoder-vscode/src/tools/ide.mjs`（**改名已落**；`name: "ide"`，让出 `context` 名给核新工具），
   登记于 VSC 手写 `builtinTools:181`，且被核测试 `HOST_ONLY = ["ide","focus"]`（现行值）钉为「不得入核」；让名缘由 = 与核新工具 `context` **同名撞车**。
   生产后果 = 请求体工具名重复（provider 逐字 400 `Tool names must be unique.`；机判面 = `thincoder-vscode/test/integration/host-shape-spawn.test.mjs:102-110`）⇒ **宿主工具改名为 `ide`**——**档改名**：
-  `thincoder-vscode/src/tools/ide.mjs`（自 `context.mjs` 改名 · 实测 **144** 行；行为面零改）。
+  `thincoder-vscode/src/tools/ide.mjs`（自 `context.mjs` 改名 · 实测 **144** 行（`wc -l`；`read` 面 145 = 含末尾空段）；行为面零改）。
   行为面零改：`readonly`、描述语义、`what` 参数、四段采集全不动；仅名字与引用面随改。
 - **子代理面裁定（裁令 D）——不给（depth-0 only）**：
   1. **回查面事实**：depth-0 会话的记录面 = 槽文件（`session-slots.mjs` `slotPath(cwd, agent._slot)`）+ 记录存储（sidecar 段）——恒在盘上、从不压缩、可经 `read_history path=` 取回（`read-history.mjs:192-222`）。
@@ -526,30 +532,30 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 
 - **接的既有单源**：取回面 = `read_history` 的 `path=` 参数（`read-history.mjs:192-222` 单文件深查 + `:202-219` `cwd:` 发现面）——本工具**不新建**取回通道，只把「全史所在」补进回执（现尾注「full text is in the session file」不给路径 ⇒ 不可行动；本面补此闭环）。
 - **边界**：不写盘 / 不改会话档 / 不代模型取回——回执只给坐标与调用形。
-- **VSC 端差——消**：面板槽位恒绑定 agent（`thincoder-vscode/src/agent/setup.mjs:296` `agent._slot = bind?.slot ?? null`；回合入口认领先于后续任何 await——`thincoder-vscode/src/extension/panel-chat.mjs:128-129`）⇒ VSC 端走**直接路径回执**（两端同式）；验证 = I11 机检两项（装配链锁 + 回执两分支——未绑定支为构造态）。
+- **VSC 端差——消**：面板槽位恒绑定 agent（`thincoder-vscode/src/agent/setup.mjs:299` `agent._slot = bind?.slot ?? null`；回合入口认领先于后续任何 await——`thincoder-vscode/src/extension/panel-chat.mjs:128-129`）⇒ VSC 端走**直接路径回执**（两端同式）；验证 = I11 机检两项（装配链锁 + 回执两分支——未绑定支为构造态）。
 - **`cwd` 缺省态（登记 · 降级形）**：`_slot` 在场而 `cwd` 缺省 ⇒ 落**未绑定分支**（判据 = 上表未绑定行**析取**），`cwd` 字面取 `undefined`（回执形 `read_history path="cwd:undefined"`）——工具内**不抛**（fail-soft 守卫 = `thincoder-core/agent-tools/context.mjs:107`）。
   该态在两端生产链**不可达**（建链面恒带 `cwd`：核 `thincoder-core/agent/assemble.mjs:106`（`createAgent` 携 `cwd`）+ CLI 值源 `thincoder-cli/src/cli/make-agent.mjs:32`；VSC `thincoder-vscode/src/agent/setup.mjs:244` 每轮重指 `agent.cwd`），仅直调 / 退化夹具可达 ⇒ 不另设分支、不改形（登记入降级面）。
 
-**6.16.8 模块拆分与行数预算（`context.mjs` 495 行 · 硬限 500）**
+**6.16.8 模块拆分与行数预算（`context.mjs` 261 行（`wc -l`）· 硬限 500）**
 
-- **新档 `thincoder-core/token-window.mjs`**（**已落** · 实测 **189** 行 ≈ 迁入 110 + 新增族 ≈78）：自 `context.mjs` **逐字迁出**计量 / 窗口 / 边界族，**迁出 = 110 行**（三区间逐段可核算）：
+- **新档 `thincoder-core/token-window.mjs`**（**已落** · 实测 **188** 行（`wc -l`）≈ 迁入 110 + 新增族 ≈78）：自 `context.mjs` **逐字迁出**计量 / 窗口 / 边界族，**迁出 = 110 行**（三区间逐段可核算）：
   ① 计量面 `:17-36`（20 行——IMAGE_TOKEN_ESTIMATE + `estimateTokens`）；
   ② 尾族 `:38-59`（22 行——KEEP_HEAD 头注 + `TAIL_BUDGET_FRACTION` / `SUMMARY_TOKEN_ESTIMATE` / `TAIL_FLOOR_MESSAGES` + `keepTailSize` + `tailBudgetTokens`）；
   ③ 切分与配对修复族 `:95-162`（68 行——`splitHistory` 头注 + `splitHistory` + `repairedTailStart` + `tightenTailByBudget`）——三区间和 = 20 + 22 + 68 = **110**（`wc -l` 语义）。
   **新增族 ≈78**：上下文用量单源函数（6.16.4）· 陈旧工具输出合格集（6.16.3——含门槛常量 `PRUNE_MIN_TOKENS`，与合格集同住本档）· 状态行百分比（与状态行同式）。**零 import 环 / 零回指**（只依赖 `provider/rate.mjs` 与 `config.mjs`——`context.mjs` 单向消费）。
 - **`context.mjs` 收缩后新增 ≈43 行**（分项：estimateTokens 再导出 1 · force / focus 接线 ≈6 · 焦点块构造 ≈8 · anchor 取值 ≈8 · `pruneStaleToolOutputs` 应用面（stub 文案 + 原位替换 + 回执）≈20）。
-  ⇒ **核算式：495 − 110 + 43 ≈ 428 行**（净 ≈ **−67**；≤500 ✓；软线 300 之上 = 既有事实，非新增面）。**不拆则 ≈495 + 121（= 43 + 78）≈ 616 > 500 ⇒ 硬红**（`core-hygiene.test.mjs:145`）。
-  estimateTokens 再导出保 **import 面**（`thincoder-cli/scripts/verify-compress.mjs:7`、`thincoder-vscode/test/context-percent-parity.test.mjs:20`、TUI 均经本档取；先例 = explore-distill 再导出）。
-- **新档 `thincoder-core/agent-tools/context.mjs`**（**已落** · 实测 **159** 行）= 工具对象 + 三操作 + 轻推助手 + 注记文案；**新单元测试档 = `docs/batches/2026-10-16-context-perception.test.mjs`**（零留存口径——随批档存放、不进产品树；实施后实测 285 行）。
+  ⇒ **现盘实读 = 261 行**（`wc -l`；≤500 ✓；软线 300 之上 = 既有事实，非新增面）。**不拆则 ≈495 + 121（= 43 + 78）≈ 616 > 500 ⇒ 越硬限**（拆分决策即由此触发）。
+  estimateTokens 再导出保 **import 面**（`thincoder-cli/scripts/verify-compress.mjs:7`、端侧批内定向单测、TUI 均经本档取；先例 = explore-distill 再导出）。
+- **新档 `thincoder-core/agent-tools/context.mjs`**（**已落** · 实测 **158** 行（`wc -l`））= 工具对象 + 三操作 + 轻推助手 + 注记文案；**新单元测试档 = `docs/batches/2026-10-16-context-perception.test.mjs`**（零留存口径——随批档存放、不进产品树；现盘 284 行）。
 
 **6.16.9 受影响文件表**
 
 逐文件现况行数 / Δ / 尺寸档状态注 /「零改动」逐处核实——本档不重复（D2；§6.15 曾因两处逐行重复出现读数分叉，本面取同一纪律）。
-- **本批三笔逐档**（`read` 口径——实施后实测）：`thincoder-core/config.mjs` **520**（Δ +3——阈值链 + 注释）· `thincoder-core/agent-tools/context.mjs` **159**（Δ 0——stats 格式串 + 回执面注释随正）· `thincoder-core/token-window.mjs` **189**（Δ 0——注释随正）· 单测档 `docs/batches/2026-10-16-context-perception.test.mjs`（新建 285 行——随批档存放、不进产品树）。
+- **本批三笔逐档**（`wc -l` 口径——现盘实读）：`thincoder-core/config.mjs` **523**（Δ +3——阈值链 + 注释）· `thincoder-core/agent-tools/context.mjs` **158**（Δ 0——stats 格式串 + 回执面注释随正）· `thincoder-core/token-window.mjs` **188**（Δ 0——注释随正）· 单测档 `docs/batches/2026-10-16-context-perception.test.mjs`（284 行——随批档存放、不进产品树）。
 - **`config.mjs` 过 500 咨询线（既有事实、非本批引入）——拆分立场 = 不因本批拆**（Δ 非结构性）；消解触发 = 该档下次实质改动 ∥ 越 800 硬限前。
 
-- **体量档（结构性结论，非读数副本）**：`thincoder-core/context.mjs`（现况 495）——**必须拆分**（6.16.8；不拆则 ≈495 + 121 ≈ 616 > 500 硬限——`thincoder-core/test/core-hygiene.test.mjs:136` 硬限用例 · `:145` `>500` 断言 硬红）。
-  `thincoder-core/token-window.mjs`（**已落**）、`thincoder-core/agent-tools/context.mjs`（**已落**）与新单元测试档均落 ≤500 软线内；其余涉及档——`thincoder-core/agent.mjs`（**106** 行）与 `thincoder-core/agent/run-stages.mjs`（**297** 行；VSC 侧同构件已并入核，端侧引用同指本档）——本批**零触**；逐档档位与拆分立场以本档内口径为单源（不复制读数，D2）。
+- **体量档（结构性结论，非读数副本）**：`thincoder-core/context.mjs`（现况 **261** 行（`wc -l`）——拆分已落，6.16.8）。
+  `thincoder-core/token-window.mjs`（**已落**）、`thincoder-core/agent-tools/context.mjs`（**已落**）与新单元测试档均落 ≤500 软线内；其余涉及档——`thincoder-core/agent.mjs`（**105** 行）与 `thincoder-core/agent/run-stages.mjs`（**296** 行（`wc -l`）；VSC 侧同构件已并入核，端侧引用同指本档）——本批**零触**；逐档档位与拆分立场以本档内口径为单源（不复制读数，D2）。
 - **CLI 侧零代码改动**（核装配面自动生效）；未新增 `tool-docs/` 档（24 档族计数零动）。
 - **不触面**：`docs/core/requirements/**`（需求档 = 主 agent 笔）· `docs/TODO.md` / 台账（主 agent 笔）· 提示词档（`prompts/**`、`tool-docs/**` 内容权 = 主 agent）· 版本号 / 发布面。
 
@@ -587,7 +593,7 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 | R1 | 注册单源（core） | `assembleFamilyTools({depth:0})` / `{depth:1, role:'explore'}` | depth-0 含 `context` **恰一次**；depth>0 各角色零含（含 consult） | 判定⑤ / 裁令 D |
 | R2 | 双端表（VSC） | `hydrateRun` 生产形状 | `toolByName.has("context")` ∧ 表内名唯一（宿主工具已名 `ide`）∧ `context` 唯一来源 = 核家族段 | 判定⑤ |
 | R3 | 三操作可达 | schema + 逐 action 调用 | enum = `["stats","prune","compact"]` 三项 ∧ 各返回确定回执（无 `unknown action`） | 判定⑤ |
-| R4 | 零回归 | `assembleBuiltinTools` 名集 / `tool-docs` 计数 / `compress-form.test.mjs` / `compaction-echo.test.mjs` | 名集 = 24+8 不变；`tool-docs` 24 档不变；两既有单元测试档全绿（无 focus ⇒ 请求体逐字节不退） | 边界 |
+| R4 | 零回归 | `assembleBuiltinTools` 名集 / `tool-docs` 计数 / 压缩形态与回声两面的批内定向单测（收口随批删） | 名集 = 24+8 不变；`tool-docs` 24 档不变；两面用例全绿（无 focus ⇒ 请求体逐字节不退） | 边界 |
 
 **6.16.11 边界（本面不改）与退化面**
 
@@ -629,10 +635,10 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 | D-CC21 | 蒸馏调用改**会话续写形态**（前缀复用）：`system`（同回合）+ 中段真身消息（`[0, lastBlockEnd)`）+ 尾部指令（`EXPLORE_SUMMARY_PROMPT`）+ **与回合同声明面的 `tools`**（不随 `tool_choice`）+ **`reasoningEffort` 同源**——与 D-CC20 逐件同构（§6.15） | 修前形态与回合请求共享前缀 0（轨迹 18/18 = 0%，prompt 1.5–11.7K 全价）；命中机制（`tools` 声明分区 / effort 同值）已由 §6.14 受控实测确立（84–98% · 92.86/93.65%）⇒ 本面 = 同式复制、不重造。**否决**：① 保留序列化正文 + 前缀拼接（重复段全价且不在命中面）② 全量 history + 指令（末块之后尾部入摘要输入域，且全价新面）③ 指令前置于正文（插入点之后的真身消息全落入未命中面 ⇒ 命中 ≈ 0）④ 维持修前单条 `user` 形态（0%）⑤ 改提示词文本以适配尾部位置（内容权 = 主 agent——登记上抛，不做） |
 | D-CC22 | 活体推入面回声恒带：`required` 族的**工具轮** assistant 消息恒带 `reasoning_content`（本轮无推理 ⇒ **空串**）——核单点构造 `assistantToolCallMessage(response, spec)`（`thincoder-core/model-specs.mjs`），**主循环 / advisor 循环 / VSC 端壳自有循环（`thincoder-vscode/src/agent.mjs:387-397`）三站点共用** | 与 D-CC18 / D-CC19 **同判据**（required 族机读线不得缺该字段）的**第三面**：前两者治压缩注入 / 恢复读取，本面治**活体推入**（前两者不覆盖）。真机实证（deepseek-flash · 带 `tools` · 同形历史三连）：带空串 **200**（服务端仍回 `reasoning`）· 缺字段 **200** 但 `reasoning` 帧 = **0** · 带真值 **200** ⇒ 空串合法，且缺字段轮服务端不再回推理（与 `advisor/loop.mjs:201-206` 自述同向，n=1）。**形状限定**：上列读数为**设计轮形状（请求尾 = user）**；**活体形状（尾 = tool）**实测 = 三形态全 **200**（kimi / mimo 同证）。**否决**：① 维持条件式省略（族内形态不齐 + 症状持续）② 伪造 / 借用别轮推理文本（污染 + 与「回声 = 服务端原文」语义冲突——承 D-CC18 否决③）③ 改 provider 序列化面统一补字段（跨族越权：glm / optional 族行为将改）④ 落点选 `context.mjs` · ⑤ 各推入点内联同式（多构造点——违 D2 单源） |
 | D-CC23 | `context` 单工具三操作（stats / prune / compact），落**家族登记册**（`agent-tools.mjs`）+ `family-tools.mjs` **depth-0 段** | 用户定形（原话级「收在一个 `context` 工具里 ✗ 用操作区分」）。**落家族段而非 `tools/` 静态表**：VSC 不消费 `assembleBuiltinTools`（手写 30 项表）——家族段两端同调核单源 ⇒ **双端一致零端侧重复**；内联 description（**不新增 tool-docs 档**）⇒ 24 档族计数零动。**否决**：① `tools/` 静态表落点（VSC 须手加两条 = 重复面复活）② 三工具分开（违用户定形）③ 扩既有工具（`read_history` 是查询面，语义不可混）④ 新增 tool-doc 档（触发 24→25 计数链 ~17 处文档面 + 4 处测试断言，零收益） |
-| D-CC24 | 模型发起压缩 = **排队 + 下一安全点落**（`agent._pendingCompact` 单槽），**不回合中途执行**；阈值面**排队承接**、同安全点至多一次压缩；`force` 只跳过阈值早退 | 回合中途执行须重建 `agent.history`——核循环逐处重读（安全），但 **VSC 主循环持共享数组**（`thincoder-vscode/src/agent.mjs:106` 局部 `history` + `checkAndCompact:203-207` 原位回收）⇒ 工具内换数组会令同批 tool 结果落进陈旧数组（孤儿 `tool_call_id` / 结果丢失）。排队落点 = 既有安全点（工具结果落盘后、下一 `chat()` 前——`thincoder-core/agent/turn-loop.mjs:87-93`）⇒ tool 结果配对完整，且**复用**既有检查点 / 面板 / 失败链 / 双端回收逻辑。**否决**：① 工具内同步压缩（VSC 共享数组契约破 + 同批其余工具等待摘要 30s）② 立即压缩但强制把在飞 assistant 拉进 tail（核可、端不可；两实现分叉）③ 等到回合尾才压（回合尾可能不再回模型——安全点已足够近）④ 阈值⊓请求才压（用户目标 = 阈值之外的自选时点，交集合 = 罕见） |
+| D-CC24 | 模型发起压缩 = **排队 + 下一安全点落**（`agent._pendingCompact` 单槽），**不回合中途执行**；阈值面**排队承接**、同安全点至多一次压缩；`force` 只跳过阈值早退 | 回合中途执行须重建 `agent.history`——核循环逐处重读（安全），但 **VSC 主循环持共享数组**（主循环归核后 = 核 `agent.history` 共享面 + 既有压缩检查点原位回收）⇒ 工具内换数组会令同批 tool 结果落进陈旧数组（孤儿 `tool_call_id` / 结果丢失）。排队落点 = 既有安全点（工具结果落盘后、下一 `chat()` 前——`thincoder-core/agent/turn-loop.mjs:87-93`）⇒ tool 结果配对完整，且**复用**既有检查点 / 面板 / 失败链 / 双端回收逻辑。**否决**：① 工具内同步压缩（VSC 共享数组契约破 + 同批其余工具等待摘要 30s）② 立即压缩但强制把在飞 assistant 拉进 tail（核可、端不可；两实现分叉）③ 等到回合尾才压（回合尾可能不再回模型——安全点已足够近）④ 阈值⊓请求才压（用户目标 = 阈值之外的自选时点，交集合 = 罕见） |
 | D-CC25 | prune = **保结构换内容**（`history[i] = { ...m, content: stub }` 原位）+ 合格集 = 保护尾外 ∧ `role:"tool"` ∧ ≥200 tok；记录面不变；基线失效；**无 target 参数** | 配对安全**结构上不可能被拆**（数组引用 / 长度 / 索引 / `tool_call_id` 全不变——不设 owner 拉回逻辑）。合格边界**复用** `splitHistory` 的 `tailStart`（=「压缩会摘要掉的那段」）⇒ 不新增第二处切割判据。原位换对象满足 VSC 共享数组契约（vs `shrinkOversized` 的换数组——那是安全点外调用）。基线失效同 `shrinkOversized` 先例。**否决**：① 整对删除（连 assistant 文本 / 推理一起丢——损失面大于收益）② 按 id 指定目标（模型需自记账 id，无用例支撑）③ 无门槛（stub 比短输出长——净增）④ 摘要式清理（= 压缩面，语义正交才是本操作的价值） |
 | D-CC26 | VSC 宿主工具 `context`（IDE 快照）**改名 `ide`**，让出 `context` 名给核心新工具 | 同名撞车 ⇒ provider 逐字 400（`Tool names must be unique.`——`host-shape-spawn.test.mjs:102-110` 机判面）+ `toolByName` Map 后写覆盖。用户定形名（F-CC5）= `context`，不可改 ⇒ 让名方必为宿主工具。行为面零改（名字 + 引用面）。**否决**：① 新工具改名（违用户原话级定形）② 合并语义（IDE 快照 = 宿主能力，与上下文治理不同职责；且核工具须跨端）③ 只在 CLI 注册（违「双端一致」判定⑤） |
-| D-CC27 | `compact` 回执带**可回查锚**：`agent._slot` 在场 ⇒ 逐字给出槽文件路径 + `read_history path="…"` 调用形；否则给 `cwd:` 发现面（等效取回） | 裁令 A（用户批准）。现尾注「full text is in the session file」不给路径 ⇒ 不可行动；取回通道**复用** `read_history` 既有 `path=`（不新建通道）。VSC 面板槽位恒绑定 agent（§6.16.7）⇒ 两端同式走**直接路径回执**。**否决**：① 只给「会话档」模糊指称（不可行动 = 本裁定要修的缺口）② 由工具代取回 / 内联全文（越权 + 上下文膨胀）③ VSC 端强接槽位（面板→agent 管道 = 新接线面，非前提，收益低） |
+| D-CC27 | `compact` 回执带**可回查锚**：`agent._slot` 在场 ⇒ 逐字给出槽文件路径 + `read_history path="…"` 调用形；否则给 `cwd:` 发现面（等效取回） | 裁令 A（用户批准）。现尾注「full text is in the session file」不给路径 ⇒ 不可行动；取回通道**复用** `read_history` 既有 `path=`（不新建通道）。VSC 面板槽位恒绑定 agent（§6.16.7）⇒ 两端同式走**直接路径回执**。**否决**：① 只给「会话档」模糊指称（不可行动 = 本裁定要修的缺口）② 由工具代取回 / 内联全文（越权 + 上下文膨胀）③ VSC 端另起接线强接槽位（现装已恒绑定——`setup.mjs:299`，无需新增接线面；收益低） |
 | D-CC28 | **子代理面 = 不给**（`context` 入 `depthOnly` 段，depth>0 结构性不可达） | 裁令 D：depth>0 **无回查面**——`read_history` depth-0 only（`family-tools.mjs:141/150-151`）+ 不绑记录存储（`bindRecordStore` 调用点全在 depth-0 会话路径）+ 不落会话档 ⇒ 被压中段 settle 后无面可达。给 = 新增一条**不可回查**的模型可触发路径，与「记录面不死」（判令②）及裁令 A 的承诺冲突。depth>0 仍由既有阈值压缩治理（不改变既有事实）。代价（子代理失 stats/prune）登记，替代 = 任务粒度 + 阈值兜底。**否决**：① 全深度给（承诺不了可回查）② 给 stats/prune 不给 compact（prune 同样是不可回查的删——半给仍违口径；且须两套装配面）③ 给但回执声明「子代理面不可回查」（把缺陷写进提示词 = 教模型接受损失） |
 | D-CC29 | stats 首行**两名分明**：主口径 = 窗口占用（`({pct}% of {window} window)`，pct = total / window）；触发线降**具名备注**（`compaction line {threshold} ({toGo} to the line)`） | 用户实报「明明才占用一点点」——原首行 pct = total / threshold（41%）而真窗口占用 ≈15%，同行第 4 行又报 8% ⇒ 一份输出两个无名百分比并存。F-CC1 载荷全保（总量 / 距压缩阈值 = {toGo} / 各段占比 = 第 2–3 行不变——该两行为绝对 token 量、占比可由段值推得）；口径单源 = 恰一个百分比配对分母（窗口）。**否决**：① 保留阈值分母（误导即症状源）② 删阈值信息（F-CC1 载荷不得改薄）③ 双百分比并报（无名并存复活） |
 | D-CC30 | **阈值链再平衡**：`COMPACT_RATIO = 0.8` + 预留封顶 = 窗口 25%（`outputReserve` 取 min 式）；阈值 = `min(窗口 − 预留封顶后值, ⌊窗口 × 0.8⌋)` ⇒ 全档 75–80%（22 档 76 行，§6.2 表） | 用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」。现行双保守（预留 = 整个 maxOutput ∧ 0.6）：deepseek 线 ≈ 37% 窗口——白扔 ~60%、压缩非免费（摘要调用 + 不可逆信息损失 + 长会话逐层放大）、更伤行为（agent 在真余量 2/3 时开始收敛）。**给足剂量**：预留不再等于整个 maxOutput ∧ 比例上调（两杠杆并施）。**溢出论证（三件）= §6.2**（后果 fail-loud ∥ 兜底 = DeepSeek 官方口径「输入 + 输出总长受上下文限制」+ 续写协议接手、其余渠道未逐族取证（登记）、主链无自动兜底（如实登记、不新增）∥ 高风险档 = 输出预算 > 窗口 25% 者：deepseek 族 / doubao 族 / MiniMax 系 / kimi-for-coding-highspeed 等）。`usableWindow` 退化守卫零改（保留；封顶后常规不再触发）。**否决**：① 只上调比例（deepseek 上限 = 61.6% < 70%——目标不可达）② 只封顶不调比例（全档 ≤ 60%——目标不可达）③ 逐请求钳 `max_tokens`（消残余带；须动 4 个 transport 装配面 = 机制，超本批「只调口径与参数」边界——登记备选） |

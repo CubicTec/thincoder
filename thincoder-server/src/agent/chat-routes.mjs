@@ -114,6 +114,19 @@ export function registerChatRoutes(routes, { db, log = null, deps = {}, now = Da
     } catch (e) {
       throw new HttpError("invalid_request_error", e.message) // 模型不可用 ⇒ 400（流未起——信封形）
     }
+    // 流出口 + 流断监听必须在**回合装配的任一 await 之前**挂上（KD-SV-227 兜底三径之三；`stream` = 本请求流 token）——`readJsonBody` 之类请求期 await 不在此列（此时尚无回合、无卡可结算）：
+    // 携图请求的首个 await（`assertChatImages` 装载核件）期间断流同样要落集——起跑窗与装载窗共用同一判定：
+    // 断流后任意时刻的写类调用都不等一张无人应答的卡。正常收尾（`res.end` 后的 close）不登记：回合已尽、无卡可结算
+    // （异流残留不生效——建宿主时按 token 对位消费并删）；400 信封路径同理（`sendJson` 已 `end` ⇒ `writableEnded` 为真 ⇒ 零登记）。
+    res.on("error", () => {}) // 断连不炸（回合照跑——执行不依赖连接）
+    const emit = (frame) => {
+      if (res.writableEnded || res.destroyed) return
+      res.write(`${JSON.stringify(frame)}\n`)
+    }
+    res.on("close", () => {
+      if (res.writableEnded !== true) closeChatAskStream(row.id, { stream: emit })
+    })
+
     const images = await assertChatImages(row.model, body?.images, deps) // 图片门（KD-SV-109——流未起：信封形）
     claimChatTurn(db, row.id, { now }) // 置在途（同步段——零竞态）
 
@@ -121,17 +134,6 @@ export function registerChatRoutes(routes, { db, log = null, deps = {}, now = Da
     res.writeHead(200, {
       "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-store",
-    })
-    res.on("error", () => {}) // 断连不炸（回合照跑——执行不依赖连接）
-    const emit = (frame) => {
-      if (res.writableEnded || res.destroyed) return
-      res.write(`${JSON.stringify(frame)}\n`)
-    }
-    // 流断 ⇒ 落「无问面」态 + 在决 ask 全量拒值（KD-SV-227 兜底三径之三）；`stream` = 本请求流 token
-    // （宿主登记前的起跑窗断流按 token 落集——建宿主时消费，防首个写类调用等一张无人应答的卡）。
-    // 正常收尾（`res.end` 后的 close）不登记：回合已尽、无卡可结算（异流残留会误伤下一回合且白留条目）。
-    res.on("close", () => {
-      if (res.writableEnded !== true) closeChatAskStream(row.id, { stream: emit })
     })
     try {
       await runChatTurn({ db, chatId: row.id, content, images, emit, deps, now, log, senderId: admin.id })

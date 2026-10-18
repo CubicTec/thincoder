@@ -23,9 +23,11 @@
  */
 export function summarizeEngTaskBook(taskInput) {
   if (!taskInput) return "(unavailable)"
+  // 五项拼装形下，`designPoints` 一段同时承载「设计档落点」与「受影响文件清单」——
+  // 前两段同取该块是有意的（语义都在其中）；代价 = 摘要里该块出现两次，不是抽取失败。
   const SECTIONS = [
-    { name: "Design docs involved", markers: [/Docs? involved/i, /涉及文档/] },
-    { name: "Affected-file list", markers: [/Files? (?:list|to (?:modify|change)|modified)/i, /受影响文件/, /文件清单/, /涉及文件/] },
+    { name: "Design docs involved", markers: [/Docs? involved/i, /涉及文档/, /^Design points/i] },
+    { name: "Affected-file list", markers: [/Files? (?:list|to (?:modify|change)|modified)/i, /受影响文件/, /文件清单/, /涉及文件/, /^Design points/i] },
     { name: "Acceptance criteria", markers: [/Acceptance(?: criteria)?/i, /验收标准/] },
   ]
   const lines = taskInput.split("\n")

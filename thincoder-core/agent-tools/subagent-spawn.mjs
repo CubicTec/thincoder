@@ -26,9 +26,9 @@ import { nextSubagentId } from "./subagent-scheduler.mjs"
 import {
   normalizeFileList, describeBlockers, assertNoDepCycle, depInfo,
 } from "./subagent-scheduler.mjs"
-// M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.3）：任务书六强制字段校验本体落
+// M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.3）：任务书 round 枚举 + 五项结构化参数校验/拼装本体落
 // spawn-gates.mjs（纯谓词零依赖）——本处只加 import 调用。
-import { validateTaskBookFields } from "./spawn-gates.mjs"
+import { validateRoundParam, validateTaskBookParams, composeTaskBookBrief } from "./spawn-gates.mjs"
 // 台账 #23（AGENT-LOOP-SUBAGENT.md §6.26 · D23-3）：审计块构造器外提（`summarizeEngTaskBook`
 // + `buildAuditBlock` 纯函数）——spawn 档只做「收集 + 绑定」；块文本逐字搬移（D23-4）。
 import { buildAuditBlock } from "./audit-block.mjs"
@@ -37,6 +37,14 @@ import { buildAuditBlock } from "./audit-block.mjs"
 import { resolveBatchReadPath, batchDocBases } from "./batch-paths.mjs"
 // LOGGING（LOGGING.md）：#309 形三观测留痕走同一事件通道。
 import { logEvent } from "../log.mjs"
+
+/** 任务书播报文本：五项参数拼装 + 可选 task 自由文本（无五项 ⇒ 原 task 逐字——旧形零变）。 */
+function taskBriefOf(args) {
+  const composed = composeTaskBookBrief(args)
+  if (!composed) return args.task
+  const extra = typeof args.task === "string" ? args.task.trim() : ""
+  return extra ? `${composed}\n\n${extra}` : composed
+}
 
 /** #309 任务书 token 判据（`AGENT-LOOP-SUBAGENT.md` §6.29.3）：`.md` 结尾的连续路径型字面
  *  （含盘符形态——裸名 `AGENTS.md` 无分隔符且非绝对，见调用点过滤）。 */
@@ -211,7 +219,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
     batchDocAbs = resolveBatchReadPath(parent.cwd ?? process.cwd(), given)
     if (!batchDocAbs) throw refusal(" (given path is not a readable file)")
     // #309 形三：任务书中的他批批次档引用观测留痕（不阻断——放行不受影响）。
-    logBatchDocRefs(parent, role, args.task, batchDocAbs)
+    logBatchDocRefs(parent, role, taskBriefOf(args), batchDocAbs)
   } else if (role === "coder") {
     const given = typeof args.batchDoc === "string" ? args.batchDoc.trim() : ""
     if (given) {
@@ -222,12 +230,13 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
     }
   }
 
-  // M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：任务书六强制字段门——
-  // 工程角色（eng-coder/eng-designer）必带 round（initial|fix）+ 五段任务书字段；
-  // 落点 = batchDoc 门之后、token 门之前（§2.2 数据流契约同序）。判据只到「字段在场」——
-  // 内容够不够由执行者拒收兜底（需求 §1.14 #9 行为面）。explore/plan/coder 豁免。
+  // M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：round 枚举 + 任务书五项参数门——
+  // 工程角色必带（round ∈ initial|fix；五项存在 / string / trim 非空，缺 / 空白 / 非字符串 ⇒ 拒并
+  // 点名该参数——判据不读内容，无正则 / 无标题匹配）。落点 = batchDoc 门之后、token 门之前。
+  // explore/plan/coder 豁免。
   if (role === "eng-coder" || role === "eng-designer") {
-    validateTaskBookFields(args)
+    validateRoundParam(args)
+    validateTaskBookParams(args)
   }
 
   // eng-coder token gate: the design review must have passed and the caller must
@@ -345,7 +354,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   // 审计/探索（"status 里这个文件算不算超清单？"）。注入分支整体删除（B 方案
   // git 只读变体亦随裁定废弃——D-AG5）。顶层主 agent 注入保留（§3 prepareRun——
   // setup.mjs depth===0——D-AG7 范围边界）。
-  let input = args.context ? `Context:\n${args.context}\n\nTask:\n${args.task}` : args.task
+  let input = args.context ? `Context:\n${args.context}\n\nTask:\n${taskBriefOf(args)}` : taskBriefOf(args)
   // 台账 #23（AGENT-LOOP-SUBAGENT.md §6.26 · D23-1）：**spawn 级固定机制性指令改走 system 固块**——
   // 两处（批次档路径行 + 审计模板块）原随 user 首条下发，压缩把首条并入摘要即丢（长任务中后期
   // 既看不到批次档路径、也看不到审计模板 ⇒ 过度勘察的真病根）；固块值在 child 生命周期内恒定

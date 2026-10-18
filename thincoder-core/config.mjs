@@ -90,7 +90,11 @@ export const DEFAULTS = {
   websearch: {
     // Structured search via Tavily when a key is set — empty apiKey → Bing RSS/HTML fallback (zero-config).
     apiKey: "",          // Tavily key (tvly-...) — optional
+    // WEB-BACKEND-DEEPSEEK（CONFIG.md §6.5）：`auto` = a configured DeepSeek provider wins（TOOLS.md §6.23）；`local` = skip it.
+    backend: "auto",
   },
+  // fetch 工具的后端选择（CONFIG.md §6.5）——语义同 `websearch.backend`（`local` = 本地直取）。
+  fetch: { backend: "auto" },
   // 浏览器工具（BROWSER-TOOL.md §3.2）：非空 ⇒ navigate 目标 host ∥ click/evaluate/type 的当前页 host 须命中
   //（全等（大小写不敏感）∥ `*.` 前缀 = 子域通配）——收束面非沙箱；缺省空 = 不设限。
   browser: { allowDomains: [] },

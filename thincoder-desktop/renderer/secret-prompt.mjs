@@ -80,13 +80,15 @@ function fieldWord(name) {
   return word === `ssh.field.${raw}` ? raw : word
 }
 
-/** 字段行（`label` + 输入 —— 复用设置面字段族样式）；`masked` ⇒ 密码输入；`prefill` ⇒ 初值（**仅非密字段** ——
- *  掩码字段忽略载荷预填 = NS4 纵深防线：切片 ∥ DOM 初值两面皆零值）。 */
+/** 字段行（`label` + 输入 —— 复用设置面字段族样式）；`masked` ⇒ 密码输入；`checkbox` ⇒ 原生复选框
+ *  （值 = 布尔；缺省不勾——§6.22 ⑪）；`prefill` ⇒ 初值（**仅非密非勾选字段** —— 掩码字段忽略载荷预填 =
+ *  NS4 纵深防线：切片 ∥ DOM 初值两面皆零值）。 */
 function fieldRow(field) {
   const name = String(field?.name ?? "")
   const masked = field?.masked === true
-  const required = field?.required === true
-  const prefill = masked || field?.prefill === null || field?.prefill === undefined ? null : String(field.prefill)
+  const checkbox = field?.checkbox === true
+  const required = field?.required === true && !checkbox
+  const prefill = masked || checkbox || field?.prefill === null || field?.prefill === undefined ? null : String(field.prefill)
   const label = fieldWord(name)
   return {
     tag: "label",
@@ -96,10 +98,11 @@ function fieldRow(field) {
       {
         tag: "input",
         props: {
-          class: "settings-field", type: masked ? "password" : "text",
+          class: "settings-field", type: checkbox ? "checkbox" : masked ? "password" : "text",
           name, "data-secret-input": name, "aria-label": label,
           autocomplete: "off", spellcheck: "false",
           ...(required ? { required: true } : {}),
+          ...(checkbox ? (field?.prefill === true ? { checked: true } : {}) : {}),
           ...(prefill === null ? {} : { value: prefill }),
         },
         children: [],
@@ -154,9 +157,9 @@ export function secretPromptTree(item, handlers = {}) {
 
 // ─── ③ 值面读取（纯 —— 类 DOM 节点注入；值只在返回路）────────────────────────
 
-/** 读值（节点注入面）：返回 `{ values: { <name>: <串> }, missing: [<name>…] }` —— `missing` = 必填且空
- *  （原值空串 —— **不 trim**）字段名表；节点缺 `querySelectorAll` 面 ⇒ `{ values: {}, missing: [] }`（零抛）。
- *  **零写**：不落切片 / 不记日志（值只作返回值交调用面）。 */
+/** 读值（节点注入面）：返回 `{ values: { <name>: <串|布尔> }, missing: [<name>…] }` —— `missing` = 必填且空
+ *  （原值空串 —— **不 trim**）字段名表；勾选字段 ⇒ 布尔（`checked === true`——§6.22 ⑧）；节点缺
+ *  `querySelectorAll` 面 ⇒ `{ values: {}, missing: [] }`（零抛）。**零写**：不落切片 / 不记日志（值只作返回值交调用面）。 */
 export function readSecretValues(card) {
   const inputs = typeof card?.querySelectorAll === "function" ? [...(card.querySelectorAll("[data-secret-input]") ?? [])] : []
   const values = {}
@@ -164,6 +167,8 @@ export function readSecretValues(card) {
   for (const input of inputs) {
     const name = input?.getAttribute?.("data-secret-input") ?? null
     if (name === null || name === "") continue
+    const checkbox = (input?.type ?? input?.getAttribute?.("type")) === "checkbox"
+    if (checkbox) { values[name] = input?.checked === true; continue }
     const value = typeof input.value === "string" ? input.value : String(input?.value ?? "")
     values[name] = value
     const required = typeof input.hasAttribute === "function" ? input.hasAttribute("required") : input.required === true

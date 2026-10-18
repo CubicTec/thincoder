@@ -141,6 +141,6 @@ curl -s http://127.0.0.1:2375/version
 
 ## 8. 相关档
 
-- 测试环境首部署批（来源 ∥ 授权 ∥ 安全组开放过程）= `batches/2026-10-09-server-test-env-ecs.md` §1。
+- 测试环境首部署的来源 ∥ 授权 ∥ 安全组开放过程 = 见该次部署执行记录（过程面，不入本档）。
 - 产品侧部署设计 = `server/design/ops/OPS.md` §5 ∥ `thincoder-server/README.md` §3。
 - 三端发布流程 = `RELEASE.md`。

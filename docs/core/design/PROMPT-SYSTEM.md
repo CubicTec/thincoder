@@ -168,6 +168,8 @@
   **跨仓勘察义务三句落四处**（义务〔工程纪律层设计步〕∥ 形态〔设计席人格 8 项 item 1〕∥ 派单〔主 agent 人格层「派发与收尾纪律」〕∥ 核查〔设计评审标准第 10 条〕——既有节内增列 / 就地扩条 ⇒ 零 `##` 块计数连带；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9；→ §6.26 · §7 D-PS37）。
   **联网查证指导（何时必查 · 够没够 · 查不到）落 `common.md`「工具观」节内新增 `###` 子节**（既有节内增列 ⇒ 零 `##` 块计数连带 / 标题节点 22 ⇒ 23——§8.2 行 5 随正；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9；→ §6.28 · §7 D-PS39）。
   **上下文自掌舵（工具观新子节）落 `common.md`「工具观」节内新增 `###` 子节**（既有节内增列 ⇒ 零 `##` 块计数连带 / 标题节点 23 ⇒ 24——§8.2 行 5 随正；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9；→ §6.29 · §7 D-PS40）。
+  **发起权口径补定义（整批令定义 ∥ 推进句条件化）落 `persona-engineering.md` 两节内**（§发起权边界 节内增列 ∥ §推进与叫停 既有条就地改写 ⇒ 零 `##` 块计数连带；同一概念一律称「发起」〔`开火` ∥ `发火令` 两名归一〕；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9 精确翻译回写）。
+  **异步并发认知与 `wait_for` 判断落三档四处**（① ② `common.md` 两节内增列 ∥ ③ `discipline-engineering.md` 既有条就地改写 ∥ ④ `persona-engineering.md` 节内增列 ⇒ **零 `##` 块计数连带 ∥ 零标题节点连带**；同一事实三层各点一次 = 关键锚点重复〔先例 §6.7 · D-PS7——各层须能独立阅读〕；CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9 精确翻译回写；→ §6 末紧凑登记 · §7 D-PS41）。
 - **变更流**：改中文正本 → 精确翻译写入英文代码（复用存量词句、语义对等；**无同步脚本、无硬一致门**）。提示词档免档位判定（`.md` 结构尺度）。生成流程本体（设计→实现流程 / 路径取法与落地面 / 结构级复核）见 **§8**（本处不重述——D2）。
 - **批次收尾核对（内容漂移防线）**：提示词面批次收尾加一步**一次性**比对——**落地档 ↔ 当批设计围栏块**（逐行）；**零常驻锁、零新增断言**（内容在场判据 = 散文锚，禁新增）。合法改档以**当批**围栏块为新基线——本步守「当批一致性」，不冻结演进。
 - **提示词零维护者注**（编写纪律 #15）：出处 / 日期 / 批次名 / 评审号一律进设计档不进提示词（语义生效边界除外——保语义去日期注）。
@@ -315,7 +317,7 @@
 | 当前 | **129,766** 字符（= **1.253 × 基线**） |
 | 目标 | ≤ 0.75 × 基线——**未达 · 报告态**（依「准比短重要 · 信息完整优先于字数」不硬削，读数上抛父侧裁） |
 | 单档帽 | ≤ 8,000 字符——超限 = `subagent` **15,808**（契约事实保真下限；由在册（报告态））∥ `browser` **11,959**（交互面契约保真下限——16 动作族 + 引用/回执语义 + 权限门 + 错误面逐条在册；收身即丢模型可操作细节） |
-| 面专属帽 | `tool-docs/manifest.md` 面专属读数——帽值与算式住 `docs/core/design/MANIFEST.md` §2.10 尾「字段语义达用点」块；本表只挂指针，不载数值（D2） |
+| 面专属帽 | `thincoder-core/tool-docs/manifest.md` 面专属读数——帽值与算式住 `docs/core/design/MANIFEST.md` §2.10 尾「字段语义达用点」块；本表只挂指针，不载数值（D2） |
 | top5 | `subagent` **15,808** ∥ `browser` **11,959** ∥ `git` 7,894 ∥ `batch` **5,421** ∥ `edit` 5,411 |
 | 机检 | `node scripts/tool-schema-size.mjs`（报告态 v1——只读读数，不入闸；复测 = 同式读数对读数） |
 
@@ -399,7 +401,7 @@
 
 **分层归属（四问）**：① 公共层——「两模式逐句都要的协作基础」：结构性常识，受众 = 两模式 + 全部子代理（用户明示「这是常识，每个模式和角色都该知道」）；② 非纪律层——非「该模式下怎么干活」的流程 / 规则，是任何角色建结构时都该知道的常识；③ 非人格层——非身份 / 边界；④ 通用层内容（零项目实例）。
 
-**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（档末第 15 节）∥ 英文代码 `thincoder-core/prompts/common.md`（第 15 节）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（档末第 17 节）∥ 英文代码 `thincoder-core/prompts/common.md`（第 17 节）。
 同族条 = `docs/core/design/prompts/discipline-engineering.md`「按域分界」节 + 「板块归属」条 ∥ `thincoder-core/prompts/discipline-engineering.md` 同两处。逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 
 **机检**：**不新增断言**——在盘核 = 一次性比对（落地档 ↔ 设计围栏块，批次收尾核对步）；`scripts/prompt-refs-check.mjs` 复跑零命中；CN 新行守行宽 ≤300。
@@ -568,7 +570,8 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **来源**：用户提出（迁移项目「旧文档干扰行为」应急阀）+「办」点火 + 两裁定（原话「文档和记忆分开开关，做成全局控制就行」）+ 追加（原话「几个客户端都要能在配置界面上配置，同时也开放工具给agent让agent也能自己控制开关」）；需求登记 = `docs/core/requirements/PROMPT-SYSTEM.md` §2.6。
 
-**键面（口径单源 = 核 `config.json`）**：`agent.injectDocs` ∥ `agent.injectMemories`——布尔，默认 `true`（DEFAULTS.agent 声明）；判据 `!== false`（只有显式 `false` 阻断；缺省 = 现行为零变；同族先例 = `agent.timerWake`——`thincoder-core/config.mjs`）。**族面现状 = 三键**——① 项目指令块 的开关已拆至 `agent.injectProjectRules`（§6.27），`injectDocs` 只余 ② 相关文档块（见下行阻断点表）。
+**键面（口径单源 = 核 `config.json`）**：`agent.injectDocs` ∥ `agent.injectMemories`——布尔，默认 `true`（DEFAULTS.agent 声明）；判据 `!== false`（只有显式 `false` 阻断；缺省 = 现行为零变；同族先例 = `agent.timerWake`——`thincoder-core/config.mjs`）。
+**族面现状 = 三键**——① 项目指令块 的开关已拆至 `agent.injectProjectRules`（§6.27），`injectDocs` 只余 ② 相关文档块（见下行阻断点表）。
 
 **阻断点（三处——判点均逐 run 现读 `agent.config`）**：
 
@@ -678,7 +681,8 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 三键**互不影响**（正交——关任一方另一方照常）；① 与 ② 的职责切分详见 §6.27。
 **本表 ① 行以 §6.27 为准（落定后态）。**
 
-**判点同址判定（设计问题 2 的答复）**：① 判点**仍落 `setup.mjs` 调用侧**（不新开第二处）——新键只替换该处判读的变量名，条件形（三元 + `loadProjectInstructions` 调用面）逐字不变。**坐标随动**：已在 `:57-60` 新增消费点变量 3 行 ⇒ 判点 = **`:281`**（语义零变，条件形逐字同）。理由 = `loadProjectInstructions` 是公开导出面（`config.mjs` 派生表 + `API-CONTRACT.md` 在册）⇒ 判点留调用侧 = 最小爆炸半径（承 D-PS35 判由）；换址（如移入 helper）须动公开导出面语义，否决。
+**判点同址判定（设计问题 2 的答复）**：① 判点**仍落 `setup.mjs` 调用侧**（不新开第二处）——新键只替换该处判读的变量名，条件形（三元 + `loadProjectInstructions` 调用面）逐字不变。**坐标随动**：已在 `:57-60` 新增消费点变量 3 行 ⇒ 判点 = **`:281`**（语义零变，条件形逐字同）。
+理由 = `loadProjectInstructions` 是公开导出面（`config.mjs` 派生表 + `API-CONTRACT.md` 在册）⇒ 判点留调用侧 = 最小爆炸半径（承 D-PS35 判由）；换址（如移入 helper）须动公开导出面语义，否决。
 
 **默认零行为变（设计问题 4 · 可机判证明）**：
 
@@ -696,7 +700,8 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 - **关于告知**：不设——该键 2026-10-14 落地、尚未正式使用，无依赖旧语义的用户（用户裁定：不加运行期提示 / 不加检测代码 / 不加文档告示）。
 - **老用户自助路径**：三端界面 + `settings` 工具均可写 `agent.injectProjectRules`——用户在原位（配置界面）即可看到拆后两键、自选。
 
-**热应用（照 §6.24 既有链，零新机制）**：判点逐 run 现读 `agent.config` ⇒ 写入落活 `agent.config` 即**本会话下一次组装生效**——`settings` 工具 = 直写内存即热（工具热应用链零改）∥ CLI `/config` = `saveProxy` + `reloadConfig` 换新 `agent.config`（即热）∥ VSC 设置面板 = `hydrateRun` 每轮重读 ⇒ 下一条消息 ∥ 桌面 = 下次 agent 装配（`thincoder-desktop/src/main/agent-host.mjs:183-185` `assembleAndLoad` → `assemble`，装配表同键复用）。
+**热应用（照 §6.24 既有链，零新机制）**：判点逐 run 现读 `agent.config` ⇒ 写入落活 `agent.config` 即**本会话下一次组装生效**——`settings` 工具 = 直写内存即热（工具热应用链零改）
+∥ CLI `/config` = `saveProxy` + `reloadConfig` 换新 `agent.config`（即热）∥ VSC 设置面板 = `hydrateRun` 每轮重读 ⇒ 下一条消息 ∥ 桌面 = 下次 agent 装配（`thincoder-desktop/src/main/agent-host.mjs:183-185` `assembleAndLoad` → `assemble`，装配表同键复用）。
 
 **三端配置面落点（承 §6.24 既有面 · 零新造 UI 机制 · VSC 分「穿透面」∥「UI 链」两行列）**：
 
@@ -707,9 +712,11 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 | VSC 设置面板（**UI 链**） | 读链 `thincoder-vscode/src/extension/settings.mjs:45-46`（新增 `injectProjectRules` 归一）+ `:165-166`（快照携键）∥ 写链 `thincoder-vscode/src/extension/settings-panel-write.mjs:84-85`（新增布尔写）∥ 控件 `thincoder-vscode/webview/settings-agent.js:29-30`（新增 `#ag-injectprojectrules` switch + 载荷 `:128-129` + `EDIT_FIELDS` `:153`）∥ 词面 `locales/zh.json:144-145` + `en.json:144-145`（新增键两语 + 改述 `injectDocs` 词面）+ `…Help` 悬浮两语 `:237-238`（新增 `injectProjectRulesHelp`） |
 | 桌面设置界面 | `thincoder-desktop/renderer/views/settings-agent.mjs:63-64`（`NAMED_FIELDS` 新增一行 `agent.injectProjectRules` + 表注释「二十键 ⇒ 二十一键」）∥ 词面 `thincoder-desktop/renderer/i18n-views.mjs:208-209`（英文）+ `:398-399`（中文）——新增键两语 + 改述 `injectDocs` 词面 |
 
-**VSC 三处穿透补齐（timer-wake 阶段 2 先例——§5.15）**：`agent.injectProjectRules` 在 VSC 侧的**真穿透面** = `thincoder-vscode/src/agent/setup.mjs`（非 `extension/settings.mjs`）——默认种 ∥ raw 读 ∥ `agentFields` 白名单三处必须齐，缺一则该键在 `config.json` 关不掉（timer-wake 旧疾复现）。**逐行坐标 = 上表「穿透面」行**（`extension/settings.mjs` ∥ `settings-panel-write.mjs` ∥ `webview/settings-agent.js` = **界面链路**，与穿透面分列，勿混为一处）。
+**VSC 三处穿透补齐（timer-wake 阶段 2 先例——§5.15）**：`agent.injectProjectRules` 在 VSC 侧的**真穿透面** = `thincoder-vscode/src/agent/setup.mjs`（非 `extension/settings.mjs`）——默认种 ∥ raw 读 ∥ `agentFields` 白名单三处必须齐，缺一则该键在 `config.json` 关不掉（timer-wake 旧疾复现）。
+**逐行坐标 = 上表「穿透面」行**（`extension/settings.mjs` ∥ `settings-panel-write.mjs` ∥ `webview/settings-agent.js` = **界面链路**，与穿透面分列，勿混为一处）。
 
-**`settings` 工具面（DEFAULTS 自动派生——零手写校验）**：`thincoder-core/config.mjs:69-70` 邻位新增 `injectProjectRules: true` ⇒ 装载期经 `_deriveTypes(DEFAULTS)`（`thincoder-core/agent-tools/settings.mjs:55-69`）自动进 `TYPE_MAP`（`boolean`）⇒ `settings` 工具 list/set 面**可见可写 + 布尔类型护栏自动跟随**，实现面**零改码**（承 `CONFIG.md:157` 「派生消费面」同族）。三键（含既有两键）在 `settings` 工具 list 面自动成列。
+**`settings` 工具面（DEFAULTS 自动派生——零手写校验）**：`thincoder-core/config.mjs:69-70` 邻位新增 `injectProjectRules: true` ⇒ 装载期经 `_deriveTypes(DEFAULTS)`（`thincoder-core/agent-tools/settings.mjs:55-69`）自动进 `TYPE_MAP`（`boolean`）
+⇒ `settings` 工具 list/set 面**可见可写 + 布尔类型护栏自动跟随**，实现面**零改码**（承 `CONFIG.md:157` 「派生消费面」同族）。三键（含既有两键）在 `settings` 工具 list 面自动成列。
 
 **不变式**：① 工程模式不吃这面（纪律走提示词本体——三键只断自动注入三块，槽位装配 `assemblePrompt` ∥ 工程模式提醒 ∥ 批档 / 台账机制零触 ⇒ 关不破工程流程）；② 子代理 config 继承父（`thincoder-core/agent-tools/subagent-spawn.mjs:300-302`）⇒ 子代理装配同受三开关；③ 需求「边界（不做）」零越（不改检索机制本体：`doc_search` / `memory search` 按需工具零影响；不删数据；全局粒度；零新机制）。
 
@@ -771,7 +778,8 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 
 **形态（与 §6.1 落点口径的关系）**：**既有节内增列**——`## 工具观` 内新增 `###` 子节 ⇒ **零 `##` 块计数连带**；标题节点（层级 2+）**23 ⇒ 24** ⇒ §8.2 行 5 随正。先例 = D-PS39（同节 `### 何时必须联网查证`）。
 
-**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（「工具观」节内、`### 并行调用原则` 之后新 `###` 子节）∥ 英文代码 `thincoder-core/prompts/common.md`（同节位——`### 并行调用原则` 之后、`## 工具路由表` 之前）。**译锚**：压缩线 = compaction line（与 `context` 报面同词——口径单源）· 兜底 = fallback · 可取回 = retrievable（回执带锚 = the receipt carries the anchor）。
+**落点（中文设计文档 + 英文代码）**：中文正本 `docs/core/design/prompts/common.md`（「工具观」节内、`### 并行调用原则` 之后新 `###` 子节）∥ 英文代码 `thincoder-core/prompts/common.md`（同节位——`### 并行调用原则` 之后、`## 工具路由表` 之前）。
+**译锚**：压缩线 = compaction line（与 `context` 报面同词——口径单源）· 兜底 = fallback · 可取回 = retrievable（回执带锚 = the receipt carries the anchor）。
 **落笔安排**：**CN 正本 = 本设计轮直落**（§6.1 默认——中文设计文档随设计轮直落）∥ **EN 代码 = 实施轮**（按 M9 精确翻译回写，非 cp）。
 **CN↔EN 对拍时点**：EN 落地轮做四轴对拍（同裁定 ∥ 同判据 ∥ 同形边界 ∥ 差异如实登记），读数入落地轮记录面。
 
@@ -780,6 +788,28 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 **机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；CN 新行守行宽 ≤300；`##` 块计数可机判（逐档数）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
 **边界**：零机械门 · `thincoder-core/**` 英文面 = 实施轮 coder 笔 · tool-docs 描述面 = 本面零触、随动 = 主 agent 内容权另笔（建议文案随设计上抛）· 不改「工具观」既有四子节 · 需求档零笔（父侧）。
+
+**紧凑机制登记（无独立 `§6.N` 编号）：异步并发认知与 `wait_for` 判断**
+
+**来源**：用户 2026-10-17 23:43（原话「我们的提示词里是不是没有告诉模型 thincoder 支持异步并发？如果模型不清楚的话，就会把任务捏在手里排队，而且还会使用 wait_for 阻塞会话」）；台账 = #1629。
+**为什么需要（两缺口）**：① 引擎全异步高并发的事实若不进公共层，纪律层读者与子代理就取不到——任务被捏在手里逐枚等、并行排成串行；
+② `wait_for` 若只有工具路由一行提名，模型就不清楚它等的是「没有送达通道的状态」，会拿它等子代理报告——阻塞会话，而报告本来会自己送达。
+
+**机制（四处——事实 + 后果，无禁令句）**：① 公共层「并行调用原则」节内 +2 行——本引擎全异步高并发（顶层 spawn 立即返回、报告在会话空闲时自动到达、文件冲突与 `dependsOn` 由调度器排队排序）+ 派出后两种走法（要报告 ⇒ 结束回合；不要 ⇒ 接着做别的）；
+② 公共层「工具路由」节内 +2 行——`wait_for` 用于**没有送达通道**的状态（端口打开 / 文件出现：不查不知道，阻塞着等才划算）；异步子代理的报告相反（自己到达；`wait_for` 等到的只是「它结束了」信号，报告内容仍走送达）且 `wait_for` 是**阻塞**调用——拿它等报告 = 会话挂住原地；
+③ 工程纪律层 `discipline-engineering.md:206`（CN 正本）旁注整行扩写——并发是常态；攥在手里逐枚等，只会把并行的活排成串行；④ 工程人格层「并行委派与多任务」节内 +1 bullet——父侧等待姿势：等报告的动作 = 结束回合；进度用 status/observe 非阻塞瞄。
+
+**分层归属**：① ② 公共层（恒第二位 = 两模式 + 全部子代理共读——引擎事实与工具判断是全角色知识）· ③ 工程纪律层（该模式怎么干活）· ④ 工程人格层（父侧写权独属行为）。
+**同一事实三层各点一次 = 关键锚点重复**（先例 = §6.7「不可裁决」本地出口 · D-PS7——「本地只加出口边界句 + 最短动作锚」；承编写纪律「关键锚点重复」）——各层须能独立阅读：删任一层的句子，该层读者（纪律层读者不重读公共层 / 人格层读者在派单现场取用）即缺句。
+
+**形态（与 §6.1 落点口径的关系）**：**既有节内增列 / 既有条就地改写**——四处零新增节、新增文本全为散文行零标题 ⇒ **零 `##` 块计数连带 ∥ 零标题节点连带**（`common.md` 标题节点 24 不变——§8.2 行 5 不随动）；本登记为**紧凑形**，不新增 `§6.N` 编号（先例 = §6.1 落点清单 `:164` 紧凑登记）。
+
+**落点（中文设计文档 + 英文代码）**：CN 正本 = `docs/core/design/prompts/` 三档四处（`common.md` 两处 ∥ `discipline-engineering.md` ∥ `persona-engineering.md`）——**设计轮直落**（§6.1 面分述默认）；
+EN 代码 = `thincoder-core/prompts/` 同四处——**实施轮**按 M9 精确翻译回写（非 cp）；逐字文本 = 该批设计围栏块（一次性材料不混入本档——D2）。
+
+**机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用）；CN 新行守行宽 ≤300；`##` 块计数可机判（三档 19 ∥ 17 ∥ 10 改前 = 改后）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
+
+**边界**：零机械门 · `wait_for` 工具本体与其描述面零触（描述面口径 = 主 agent 内容权，另笔议）· `discipline-normal.md` 零触（普通侧已载 async 默认 / 自动到达 / 无需轮询）· `common.md` 既有「禁空转等待、禁轮询」条零动（射程 = 在途提问的答复等待，语义自足）· 需求档零笔（父侧）。
 
 ## 7. 关键决策记录
 
@@ -825,6 +855,7 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 | D-PS38 | **职责关系 = (乙) 完全正交**：`agent.injectProjectRules`（新）管 ① 项目指令块 ∥ `agent.injectDocs`（**职责收窄**——改既有键已落语义）只管 ② 相关文档块；两键互不影响（关任一方另一方照常）；① 判点落 `setup.mjs` 调用侧同址、只换判变量（现盘 `:281`） | **用户拍板**（需求 §2.6 已定行）——**已知代价：改 `injectDocs` 已落行为**（拆键前它管 ①②；老用户显式 `injectDocs:false` 且未设新键 ⇒ ① 重新注入）。用户选乙后已知情接受语义变更 |
 | D-PS39 | **联网查证指导 = 落 `common.md`「工具观」节内新增 `###` 子节**（`### 何时必须联网查证`——三件〔情形 / 算够 / 查不到〕+ 边界）；**CN 正本 = 本设计轮直落 ∥ EN 代码 = 实施轮按 M9**；零 `##` 块计数连带（标题节点 22 ⇒ 23 ⇒ §8.2 行 5 随正） | 受众 = 全角色（两模式 + 全部子代理）⇒ 公共层恒第二位 = 唯一全覆盖；工具观族 = 操作形聚集地（同族相邻 ⇒ 就近落）；`###` = 零 `##` 块计数连带（D3 不被牵动）；被否 = 新增 `##` 节（块计数连带 + 公共层节表受需求档锁定） |
 | D-PS40 | **上下文自掌舵 = 落 `common.md`「工具观」节内新增 `###` 子节**（`### 上下文自掌舵`——查（含距压缩线）∥ 自压携 focus · 可取回 ∥ 到压缩线自动压缩 = 兜底非收工令）；**CN 正本 = 本设计轮直落 ∥ EN 代码 = 实施轮按 M9**；零 `##` 块计数连带（标题节点 23 ⇒ 24 ⇒ §8.2 行 5 随正） | 用户 2026-10-16 23:57 逐字批准；受众 = 两模式主会话主面 + 全角色（③）⇒ 公共层恒第二位；`###` = 零 `##` 连带（同 D-PS39）；被否 = 新增 `##` 节（块计数连带 + 需求档节表锁定）∥ 两模式纪律档分落（跨模式同文 = 双份零收益——D-PS36 判据）∥ 人格层（内容非身份 / 边界） |
+| D-PS41 | **异步并发认知与 `wait_for` 判断 = 三档四处既有节内增列 / 就地改写**（① `common.md`「并行调用原则」+2 行〔引擎全异步高并发 + 派出后两种走法〕∥ ② `common.md`「工具路由」+2 行〔`wait_for` 等无送达通道的状态；等报告 = 阻塞且只拿到 settle 信号〕∥ ③ `discipline-engineering.md` `:206` 整行扩写〔并发是常态；攥着逐枚等 = 把并行排成串行〕∥ ④ `persona-engineering.md`「并行委派与多任务」+1 bullet〔父侧等待姿势〕）；**零 `##` 块计数连带 ∥ 零标题节点连带**；**CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9** | 受众分层：① ② 公共层（恒第二位 = 两模式 + 全部子代理共读）∥ ③ 工程纪律层（该模式怎么干活）∥ ④ 父侧写权独属行为；**同一事实三层各点一次 = 关键锚点重复**（先例 = D-PS7「本地只加出口边界句 + 最短动作锚」——各层须能独立阅读：删任一层的句子，该层读者即缺句）；被否 = 只落公共层（层内自足性丢失）∥ 新增 `##` 节（块计数连带 + 公共层节表受需求档锁定） |
 
 ## 8. 提示词设计→实现流程（M9 落点）
 

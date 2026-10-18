@@ -84,6 +84,8 @@ export const CORE_MESSAGES = Object.freeze({
   "ssh.field.user": { en: "Username", zh: "用户名" },
   "ssh.field.password": { en: "Password", zh: "密码" },
   "ssh.field.secret": { en: "Secret", zh: "密文" },
+  // 保存面（用户裁定 A+B · 台账 #1602 · §6.22 ⑪）：窗内勾选标签（三端 `ssh.field.<name>` 投影自动命中）
+  "ssh.field.save": { en: "Save credential (encrypted, this user account)", zh: "保存凭据（加密，本机用户账户）" },
   // 无 UI 失败句（E6；三端投影单源）：en 侧 = CLI 端 `SECRET_NO_UI_TEXT` 逐字（端常量收正为核键）。
   "ssh.no_ui": { en: "ssh credential input requires an interactive UI (none in this context) - use key-based auth or ssh-agent", zh: "ssh 凭据输入需要交互界面（当前场合没有）——请改用密钥认证或 ssh-agent" },
 })

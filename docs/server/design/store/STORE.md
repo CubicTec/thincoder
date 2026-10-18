@@ -7,7 +7,7 @@
 
 - 单库单连接（`DatabaseSync`）；PRAGMA：WAL ∥ `synchronous=NORMAL` ∥ `busy_timeout=5000` ∥ `foreign_keys=ON`。
 - 库文件默认 = `thincoder-server/data/gateway.db`（运行期生成，不入 git）。
-- 结构版本 = `PRAGMA user_version`（当前 = **24**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
+- 结构版本 = `PRAGMA user_version`（当前 = **25**——v2 增 `providers` ∥ v3 增 `audit_events` 与三索引 ∥ v4 增 `providers.settings_json`（模型设置——服务模型配置面） ∥
   v5 增模型标识两字段拆列 + 派生两表 + 成员配额列 ∥ v6 增成员模型禁用列（详见 §2 v5/v6 段） ∥ v7 增 provider 模型元数据留存列 ∥ **v8 增 key 名称列（`api_keys.name`）**（详见 §2 v7/v8/v9 段） ∥
   v9 增 provider 上游代理旗（`providers.proxy`） ∥ **v10 增审计型 `config_update`（`audit_events` 重建——CHECK 扩型）**（详见 §2 v10 段） ∥ **v11 增沙盒七表 + 审计 CHECK 再扩（十二型）**（详见 §2 v11 段） ∥
    **v12 `sandbox_runners` 表重建（Docker 节点形态）**（详见 §2 v12 段） ∥ **v13 增 `sandbox_onboarding` 表（托管接入；停机留史——数据不删 ∥ 零写入零读面）**（详见 §2 v13 段） ∥
@@ -18,11 +18,12 @@
   ∥ **v21 增 `git_sources.scope_kind` 列 + 存量回填（gitee 范围三态）**（详见 §2 v21 段）；
   ∥ **v22 收正段（`sandbox_workspaces` 表重建（去 `required_labels_json` ∥ 增 `stop_reason` ∥ 增 `base_image`）+ 增建 `registry_credentials` 表 + `sandbox_tasks` 删表 + 增 `sandbox_runners` 连接材料四列（TLS 档）——sandbox 域）**（详见 §2 v22 段）
   ∥ **v23 增成员 git 凭据表 + 审计 CHECK 再扩（十六型；会话两表不建——题一裁定会话真源在盒内）**（详见 §2 v23 段）；
-  ∥ **v24 增 `mcp_servers` 表 + 审计 CHECK 再扩（十七型——mcp 域）**（详见 §2 v24 段）；
+  ∥ **v24 增 `mcp_servers` 表 + 审计 CHECK 再扩（十七型——mcp 域）**（详见 §2 v24 段）
+  ∥ **v25 增 `agent_chats.auto_approve` 列（审批卡面 `always` 槽——agent 域）**（详见 §2 v25 段）；
   未发布期连续演进，无历史库迁移包袱——旧库启动自动升；迁移链机制自 v1 起备）。
-- **零结构变更**（别名落 `models_json` 元素——JSON 文本内演进；无新列/新表/新段——结构版本保持 **10**）。
+- **零结构变更（model-alias 批）**：别名落 `models_json` 元素——JSON 文本内演进；无新列/新表/新段。
 
-## 2. DDL（v1 基线四表 + v2–v23 增段）
+## 2. DDL（v1 基线四表 + v2–v25 增段）
 
 ### v1 基线（四表——逐字）
 
@@ -421,7 +422,7 @@ ALTER TABLE agent_chats ADD COLUMN reasoning TEXT;
 
 - 语义/机制 = `agent/ADMIN-AGENT.md` §11.4（单源）；端点 = `gateway/API.md` §2.8（会话设置面 + 会话行形）；控制台面 = `webui/CHAT.md` §2.1⑤。
 - 圈界：**零迁移**——存量行保持 NULL（= 未设 = 今日行为逐字同；无回填 ∥ 无改写）；**档位词表不入库**（核单源——列只存该模型枚举内的串）；NULL 与字面 `off` 不等价（缺省 ≠ 原子档位哨兵——`off` = 核件**显示**哨兵，写面不收）。
-- **判据（单元测试档）**：空库直落 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ `agent_chats` 列面六列在场（`pragma_table_info`——`reasoning` 尾插）∥ 存量行 `reasoning IS NULL` 零变 ∥ 存量其余列逐值保形。
+- **判据（单元测试档）**：空库直落 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ `agent_chats` 列面**七列**在场（`pragma_table_info`——`reasoning` 尾插）∥ 存量行 `reasoning IS NULL` 零变 ∥ 存量其余列逐值保形。
 
 ### v17 增段（git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型）——project 域）
 
@@ -645,6 +646,18 @@ CREATE TABLE IF NOT EXISTS mcp_servers (
 - 圈界：无 FK（沿先例）；`name` 唯一（UNIQUE 自携索引——工具前缀须稳定可辨）；`transport` CHECK 三值；三传输列互斥 = 应用层校验（列 NULL 放行）；`secret_cipher` 单密列（三敏感面合一——读写单点）；审计 CHECK 扩型 = 十七型（重建同构）。
 - **判据（单元测试档）**：空库直落 **24** ∥ v23 库升后读数 **24** ∥ v24 段幂等（再开零变）∥ `mcp_servers` 列面十一行在场（`pragma_table_info`）∥ `name` 唯一（重复插入 ⇒ 拒）∥ `transport` 枚举逐值（表外 ⇒ 拒）∥ 存量审计行逐值保形 + 两索引在场 ∥ `mcp_event` 型可写（CHECK 放行）。
 
+### v25 增段（`agent_chats.auto_approve` 增列——agent 域）
+
+```sql
+-- 审批卡面 `always` 槽（KD-SV-226——admin-approval-cards 批 ∥ 用户 2026-10-17 裁「必须上审批卡」）；
+-- 列级 ALTER = 表不重建；0 = 缺省（问）∥ 1 = 免问（`always` 置真 ∥ PATCH 可清）；语义 = agent/ADMIN-AGENT.md §11.5。
+ALTER TABLE agent_chats ADD COLUMN auto_approve INTEGER NOT NULL DEFAULT 0;
+```
+
+- 语义/机制 = `agent/ADMIN-AGENT.md` §11.5（写类门挡 ∥ `always` ⇒ 置真 ∥ `PATCH …/:id { autoApprove }` 人工清/置径）；端点 = `gateway/API.md` §2.8；控制台面 = `webui/CHAT.md` §2.1。
+- 圈界：整型 0/1（沿 `providers.proxy`/`mcp_servers.enabled` 先例——无布尔列）；存量行即刻得 `0`（= 问——与列前行为读侧等价）；零 CHECK 重建（不触碰审计表）。
+- **判据（单元测试档）**：空库直落 **25** ∥ v24 库升后读数 **25** ∥ v25 段幂等（再开零变）∥ 列面含 `auto_approve`（`pragma_table_info('agent_chats')`）∥ 存量行 `0` 零变 ∥ 置真/清往返逐值（1 ⇒ 0）。
+
 ## 3. 迁移链（`user_version` 逐版升）
 
 - `thincoder-server/src/store/db.mjs`（已落盘）持 `MIGRATIONS` 数组——每段 = `{ v, up(db) }`（v = 目标 `user_version`，自 1 起递增；v1 = 基线段 = §2 全量 DDL）。
@@ -668,7 +681,7 @@ CREATE TABLE IF NOT EXISTS mcp_servers (
 - v13 = `sandbox_onboarding` 建表（托管接入任务 + 凭据）：**加表**（零重建——见 §2 v13 段）；旧库（v1–v12）启动自动升 ∥ 空库直落 v13；判据（单元测试档）= 空库读数 13 ∥ v12 库升后读数 13 ∥ v13 段幂等（再开零变）∥ 列面十八列在场 ∥ 凭据读写往返（密文 ≠ 明文 ∥ 零化后 NULL）∥ 存量表零变。
 - v14 = agent chat 两表 + 审计 CHECK 再扩（十三型）：**加两表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11 同构；见 §2 v14 段）；旧库（v1–v13）启动自动升 ∥ 空库直落 v14；判据（单元测试档）= 空库读数 14 ∥ v13 库升后读数 14 ∥ v14 段幂等（再开零变）∥ 两表列面在场 + `(chat_id, seq)` 索引在场 ∥ 存量审计行逐值保形 + 两索引在场 ∥ `agent_event` 型可写。
 - v15 = `image_sources` 建表（镜像源清单）：**加表**（零重建——见 §2 v15 段）；旧库（v1–v14）启动自动升 ∥ 空库直落 v15；判据（单元测试档）= 空库读数 15 ∥ v14 库升后读数 15 ∥ v15 段幂等（再开零变）∥ 列面五列在场 ∥ 重名/重址插入拒（UNIQUE 两枚）∥ 存量表零变。
-- v16 = `agent_chats.reasoning` 增列（会话级思考档位）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v16 段）；旧库（v1–v15）启动自动升 ∥ 空库直落 v16；判据（单元测试档）= 空库读数 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ 列面六列在场 ∥ 存量行 NULL 零变。
+- v16 = `agent_chats.reasoning` 增列（会话级思考档位）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v16 段）；旧库（v1–v15）启动自动升 ∥ 空库直落 v16；判据（单元测试档）= 空库读数 16 ∥ v15 库升后读数 16 ∥ v16 段幂等（再开零变）∥ 列面**七列**在场 ∥ 存量行 NULL 零变。
 - v17 = git 源/项目/项目成员三表 + 审计 CHECK 再扩（十四型）：**加三表 + 表重建**（SQLite 不可改 CHECK——步序与 v10/v11/v14 同构；见 §2 v17 段）；旧库（v1–v16）启动自动升 ∥ 空库直落 v17；判据（单元测试档）= 空库读数 17 ∥ v16 库升后读数 17 ∥ v17 段幂等（再开零变）∥ 三表列面（含 `hook_secret_cipher`）与索引在场 ∥ 存量审计行逐值保形 ∥ `project_event` 型可写。
 - v18 = 主机表七列 + `sandbox_onboarding` 凭据态四值（`'moved'`）+ 回填移交：**加列 + 表重建**（列级 `ALTER`——表不重建；CHECK 重建步序与 v10/v12 同构；见 §2 v18 段）；旧库（v1–v17）启动自动升 ∥ 空库直落 v18；
 
@@ -684,12 +697,14 @@ CREATE TABLE IF NOT EXISTS mcp_servers (
      判据（单元测试档）= 空库读数 23 ∥ v22 库升后读数 23 ∥ v23 段幂等（再开零变）∥ 凭据表列面七行与 `(member_id, host)` 唯一在场 ∥ `member_sessions` 表不在 ∥ 存量审计行逐值保形 ∥ `member_event` 型可写。
 - v24 = `mcp_servers` 建表 + 审计 CHECK 重建（十七型）：**加表 + 表重建**（步序与 v10/v11/v14/v17/v20/v23 同构；见 §2 v24 段）；旧库（v1–v23）启动自动升 ∥ 空库直落 v24；
     判据（单元测试档）= 空库读数 24 ∥ v23 库升后读数 24 ∥ v24 段幂等（再开零变）∥ 表列面十一行 + `name` 唯一 + `transport` CHECK ∥ 存量审计行逐值保形 ∥ `mcp_event` 型可写。
+- v25 = `agent_chats.auto_approve` 增列（审批卡面 `always` 槽）：**加列**（`ALTER TABLE … ADD COLUMN`——表不重建；见 §2 v25 段）；旧库（v1–v24）启动自动升 ∥ 空库直落 v25；
+    判据（单元测试档）= 空库读数 25 ∥ v24 库升后读数 25 ∥ v25 段幂等（再开零变）∥ 列面 **8 列**在场 ∥ 存量行 `0` 零变。
 
 ## 4. 本域文件与行数预算（本域族行）
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/src/store/db.mjs`（已落盘） | 实读 **37**（迁移段已外拆）；DDL/迁移链 = `migrations.mjs` 实读 **795/796** | 开库 ∥ PRAGMA ∥ 语句封装（DDL/迁移链 = `migrations.mjs`） |
+| `thincoder-server/src/store/db.mjs`（已落盘） | 实读 **37**（迁移段已外拆）；DDL/迁移链 = `migrations.mjs` 实读 **795** ⇒ ≈**804**（本批 +v25 段 ≈+9——**越 800 硬限** ⇒ 先拆后落：拆案 = DDL 段常量外拆 `migrations-ddl.mjs`（纯数据搬迁零语义）∥ 或 v25 段压缩 ≤5 行；触发 = 实读 >800） | 开库 ∥ PRAGMA ∥ 语句封装（DDL/迁移链 = `migrations.mjs`） |
 | `thincoder-server/src/store/credential-crypto.mjs`（已落——KD-SV-119） | ≈65（设计估——凭据三件（`loadOrCreateCredentialKey` ∥ `encryptSecret` ∥ `decryptSecret`）自 `thincoder-server/src/sandbox/onboarding.mjs` 逐字抽出 + **键路径派生 `credentialKeyPath(config)` 同件收口**（单一出处——两域同址；消第二份路径规则）——sandbox ∥ project 两域共享） | 凭据加解密（AES-256-GCM + `data/credentials.key`——首用生成 ∥ 0600 ∥ 不落库） |
 
 ## 5. 关键决策（本域）

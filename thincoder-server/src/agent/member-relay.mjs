@@ -22,6 +22,10 @@ import { HttpError } from "../gateway/errors.mjs"
 import { createRelayScope, relayEventToSubPatch } from "@thincoder/render-core/subblocks/relay.mjs"
 import { argsTextOf, capSummary, parseToolArgs, secretValuesOf } from "./chat.mjs"
 import { maskSecrets } from "./tools.mjs"
+import { ASK_KINDS, ITEM_VERDICTS, BATCH_VERDICTS, askAnswerBodyOf } from "./ask-vocab.mjs"
+
+/** 词表公共面重导出（同一绑定——公共面零变，非第二份；单源 = `ask-vocab.mjs`，处方同 `ledger-db.mjs:137-139`）。 */
+export { ASK_KINDS, ITEM_VERDICTS, BATCH_VERDICTS, askAnswerBodyOf } from "./ask-vocab.mjs"
 
 /** 会话级在途门报文（§3.4/KD-SV-223——**同会话**二回合 ⇒ 发消息 400 人话；跨会话并行放开）。 */
 export const SESSION_BUSY_MESSAGE = "该会话正在执行另一回合"
@@ -30,41 +34,9 @@ export const BOX_LOST_NOTICE = "工作区连接已断开——本轮已中断（
 /** 掉线命令收尾报文（#1403——命令径与回合径同款；拉取面 `reason` ∥ 指令面 400 人话同源）。 */
 export const BOX_LOST_CMD_MESSAGE = "工作区连接已断开——命令未完成（工作区恢复后重试）"
 
-/** ask kind 四值（§3.11(2) 表——注册与应答校验面）。 */
-export const ASK_KINDS = Object.freeze(["permission", "batch", "question", "secret"])
-/** 裁决词表（请求体校验——逐值同桌面 `thincoder-desktop/src/main/suspensions.mjs` 的 `ITEM_VERDICTS`/`BATCH_VERDICTS`；盒壳映射单点 =
- *  `deploy/sandbox/member-shell/protocol.mjs` `answerSettlementOf`）。 */
-export const ITEM_VERDICTS = Object.freeze(["once", "always", "reject"])
-export const BATCH_VERDICTS = Object.freeze(["approveAll", "deny", "oneByOne"])
-
 /** SSE 帧编码（`event: <名>` + `data: <JSON>`——下行面单源）。 */
 export function sseFrame(event, data) {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
-}
-
-/** 应答体校验（体与 kind 相符 ⇒ 下行载荷；不合 ⇒ null——调用侧 400 零副作用）：
- *  单件 `verdict ∈ ITEM_VERDICTS` ∥ 批门 `verdict ∈ BATCH_VERDICTS` ∥ 问询 `answer` 键在场（串 ∥ null）∥
- *  秘密 `values` 键在场（对象 ∥ null）。 */
-export function askAnswerBodyOf(kind, payload = {}) {
-  if (kind === "permission" || kind === "batch") {
-    const verdict = payload?.verdict
-    const table = kind === "permission" ? ITEM_VERDICTS : BATCH_VERDICTS
-    if (typeof verdict !== "string" || !table.includes(verdict)) return null
-    return { verdict }
-  }
-  if (kind === "question") {
-    if (!Object.hasOwn(payload ?? {}, "answer")) return null
-    const answer = payload.answer
-    if (answer !== null && typeof answer !== "string") return null
-    return { answer }
-  }
-  if (kind === "secret") {
-    if (!Object.hasOwn(payload ?? {}, "values")) return null
-    const values = payload.values
-    if (values !== null && (typeof values !== "object" || Array.isArray(values))) return null
-    return { values }
-  }
-  return null
 }
 
 /** 会话键（回合表键——工作区 + 会话双维：跨会话并行放开，同会话单发）。 */

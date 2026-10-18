@@ -89,7 +89,9 @@
   - **详情**（`GET …/containers/:containerId`）：`GET <base>/v<ver>/containers/{id}/json`（读类 3s）⇒ `{ container: { id, name, image, state, status, created, startedAt, finishedAt, restartCount, command: { entrypoint, cmd }, env, mounts, ports } }`
     ——挂载 = `Mounts[]`（type/source/destination/mode/rw）∥ 端口 = `NetworkSettings.Ports` 展开（`{ port, hostIp, hostPort }`——未映射 ⇒ hostIp/hostPort = null）∥ 环境 = `Config.Env` 原文 ∥ 命令 = `Config.Entrypoint`/`Config.Cmd`；**零审计**（读动作）。
   - **日志**（`GET …/containers/:containerId/logs?tail=N`）：`GET <base>/v<ver>/containers/{id}/logs?stdout=1&stderr=1&tail=<N>`（读类 3s）⇒ `{ logs, truncated, tail }`
-    ——**tail 有界**（缺省 200，范围 1–2000；越界/非数 ⇒ 400）；**非 TTY 容器 = 8 字节帧头多路复用流 ⇒ 解复用后输出**（判据 = 首字节 ∈ {0,1,2} ∧ 1–3 字节零 ∧ 帧长 ≤ 余量；判不出 ⇒ 原样透传——TTY 容器）；**引擎读数携 `timestamps=1`**（行首时标——日志窗与操作记录并流的排序单源）；**该时标为并流排序的解析前提**——无时标行 ∥ 时标不可解的行不入时间参照、不参与排序（退化为到达序——宁可局部不序，不臆造时间）；文本截断 256 KiB（截断 ⇒ `truncated: true` + 尾句标记）；**零审计**（读动作）。
+  - **日志**（`GET …/containers/:containerId/logs?tail=N`）：`GET <base>/v<ver>/containers/{id}/logs?stdout=1&stderr=1&tail=<N>`（读类 3s）⇒ `{ logs, truncated, tail }`
+    ——**tail 有界**（缺省 200，范围 1–2000；越界/非数 ⇒ 400）；**非 TTY 容器 = 8 字节帧头多路复用流 ⇒ 解复用后输出**（判据 = 首字节 ∈ {0,1,2} ∧ 1–3 字节零 ∧ 帧长 ≤ 余量；判不出 ⇒ 原样透传——TTY 容器）；
+    **引擎读数携 `timestamps=1`**（行首时标——日志窗与操作记录并流的排序单源）；**该时标为并流排序的解析前提**——无时标行 ∥ 时标不可解的行不入时间参照、不参与排序（退化为到达序——宁可局部不序，不臆造时间）；文本截断 256 KiB（截断 ⇒ `truncated: true` + 尾句标记）；**零审计**（读动作）。
   - **重启**（`POST …/containers/:containerId/restart`）：`POST <base>/v<ver>/containers/{id}/restart`（动作类 15s；`t` 不带 = 引擎缺省 10s）——204 ⇒ 200；404 ⇒ 404 `not_found`；余 ⇒ 502；审计 `container_restart`。
   - **强杀**（`POST …/containers/:containerId/kill`）：`POST <base>/v<ver>/containers/{id}/kill`（SIGKILL——信号可选不做）——204 ⇒ 200；**引擎 409（未运行）⇒ 400 人话**（「容器未在运行——无需强杀」——≠ stop 的 304 幂等语义）；404 ⇒ 404；余 ⇒ 502；审计 `container_kill`。
   - **用量**（`GET …/containers/:containerId/stats`）：并发两读——`GET <base>/v<ver>/containers/{id}/stats?stream=false&one-shot=true`（CPU/内存）+ `GET …/containers/{id}/json?size=1`（磁盘）⇒ `{ usage: { cpuPercent, memUsed, memLimit, diskRw, diskRoot, sampledAt } }`
@@ -120,6 +122,10 @@
   **新增** = 派生构建（`derive.mjs`——节点侧 `POST /build`：上下文 = 单 Dockerfile tar ∥ 多阶段 `COPY --from=<标准镜像>` 取件 ∥ 构建零网络）∥ 私有仓凭据面（`registry_credentials` 表 + 四端点 + 拉取注入）∥ `base_image` 列与绑定写面 ∥ 控制台两卡（`webui/SANDBOX.md` §2.1①——标签②）。
   **审计** = 四 kind（`workspace_base` ∥ `image_derive` ∥ `registry_credential_set` ∥ `registry_credential_revoke`）+ `image_pull` 增 `auth` 键（成事才落——缓存命中/失败不落）；键集单源 = `accounts/ACCOUNTS.md` §2.1。
   **披露**：派生真机可用依赖标准镜像件位契约（`/opt/thincoder/app`——成员面落地）∥ 底座 tag 移动 ⇒ 节点本地旧像采用（追新 = 重拉后派生）∥ 派生同步请求（最坏 ≈20 分钟 = 拉取 10 + 构建 10）∥ 逐节点各自派生（tag 内容寻址保证同源）∥ 凭据只及拉取（目录/标签读取仍匿名）。
+- **壳更新面（盒内壳件版本化 + 启动自取/自换——box-shell-update 批；机制全文 = `sandbox/EXECUTION.md` §8 壳更新面块）**：壳件成**版本化工件**（内容寻址树哈希——覆盖集 = 源树逐件，材料化产物集外；工件 = `thincoder-server/public/box-shell/`——构建期打包）⇒ 盒壳**启动时**自判/自取/自验/自换
+  ⇒ **发布一个新壳版本 ⇒ 盒子下次启动跟到（零镜像重建）**；回退层序 = 取件副本（已验 ∧ 复用前复验）⇒ 内建壳（不 brick）；缓存槽复验不过 ∥ 换执行后崩 ⇒ 该槽失效（清）。
+  **与镜像面正交**：取件在容器内——任意内建壳（含派生像 `COPY --from` 所得）皆被启动期取件覆盖；读数 = 盒日志版本行 `[shell] 壳版本 <hash12>（源=取件|缓存|内建）`。
+  **调研留痕（本批）**：查过 `docs/README.md` ∥ `desktop/design/PACKAGING.md` §2.8 ∥ 本域两档——结论 = 查过，无相关（对照详条 = `sandbox/EXECUTION.md` §8 壳更新面块）。
 
 - **镜像源族**：控制台管**远程镜像源清单**（增/删/改/列 + 常用源预选）∥ 对可达源列镜像目录（仓库 ∥ 标签）∥ 关键词过滤（本地镜像表 ∥ 源目录清单）。
   **拉取行为零改**（仍由节点引擎拉取——源不写节点 dockerd 配置 ∥ 系统零隐式注入（引用组装仅随选定态——见下「拉取认源」块） ∥ 零自动选源）；端点七条 = `gateway/API.md` §2.5（镜像源七行）；存储 = `image_sources`（v15——`store/STORE.md` §2 v15 段）；
@@ -400,6 +406,7 @@
 | **卷族**（用户令；AC-40） | ① 卷列表（`GET …/volumes` 逐值——名/驱动/创建时间；读败 ⇒ 人话；零审计）∥ ② 建容器卷字段 = 选单（节点已有卷 + 「新建卷（手输）」——选定回填可再改；读败/空 ⇒ 手输照常；提交 = 输入框当刻文本 ⇒ `Binds` 逐值零改 ∥ **零隐式建卷**——首用即建归引擎）∥ ③ 删卷（确认窗 + 后果句——非原生 `confirm`；引擎 404 ⇒ 404 ∥ **409 在用 ⇒ 400 人话 + 处置句**（零新码）∥ 204 ⇒ 200 + 审计 `volume_delete`）∥ ④ 带数据重建（加挂）= 不做（边界句——用户裁）；判据全文 = §3 卷族块 ∥ §12（N62/N63 ∥ B63–B65 ∥ E48/E49）∥ §14 KD-SV-104/105 ∥ `gateway/API.md` §2.5 两行 ∥ `webui/SANDBOX.md` §2.1①；**真机**（收口轮——ECS `.6`：在用卷拒删如实呈（`test-data` 类场景）∥ 建容器选卷/手输两用例 ∥ 卷表列/删全链） | 单元测试档 + 收口轮（浏览器实走 + 真机） |
 | **容器终端 v1**（用户三句；功能点 51 ∥ AC-51——已入册） | ① 入口/门（容器行第七钮「终端」——门 = 运行中；非运行禁用）∥ ② 会话链三步逐值（读容器（运行态 ∥ locale 判据）⇒ 建 exec（`Attach*` 三旗 ∥ `Tty` ∥ `Env` 两键 ∥ `Cmd` 常量）⇒ 升级 start（`101` + 裸双工））∥ ③ 帧协议（二进制 = pty 字节双向 ∥ 文本 = JSON 控制）∥ ④ 心跳（30s ping / 60s 判死——两向）∥ ⑤ 收口三件 + 幂等（停机全收口 `server_stop`）∥ ⑥ 判权/同源门先于 101 + in-band 四码 + 协议错 1002 ∥ ⑦ 审计两 kind（pty 内容零留痕）∥ ⑧ 尺寸（就绪前挂起 ∥ 就绪后施加 ∥ 越界忽略）∥ ⑨ 前端核（`webui/TERMINAL.md` §2/§4——`vim`/`top`/中文达效）；判据全文 = §3 容器终端块 ∥ §12（N83–N85 ∥ B79–B81 ∥ E61–E63）∥ §14 KD-SV-175…180；**真机**（收口轮——ECS `.6`：非运行门 + 直连拒 + 关窗后零残留） | 单元测试档 + 收口轮（浏览器实走 + 真机） |
 | **连接面 TLS 档**（用户裁「让用户可选」；功能点 53 ∥ AC-53——拟入册） | ① 形态（地址 scheme 单源：`http`=明文缺省 ∥ `https`=TLS；裸 host 按档补 scheme/端口 2375·2376；显式相抵 ⇒ 400）∥ ② 材料（三件自备 ∥ 私钥加密落库 ∥ **零回显/零回填**（响应键面扫描）∥ 不变量 `https` ⇔ 三件齐）∥ ③ 传输（`node:https` 适配件——`ca`/`cert`/`key` 逐值入选项；`fetchImpl` 缝内插；**明文路径零行为变化**——归一/自检/落库/传输逐值同现状）∥ ④ 写面两端点（添加体扩 ∥ `PUT …/connection` 全列覆写——**先自检后落库，失败 ⇒ 库零变**；关 TLS = 原子）∥ ⑤ 生效面全谱（自检/读数/容器/镜像/卷/终端/盒链/chat `docker`）∥ ⑥ 审计（`runner_add` + `tls` 键 ∥ `runner_connection` 一枚——零秘密）；判据全文 = §3 连接方式块 ∥ `sandbox/EXECUTION.md` §2.1/§13（N73 ∥ B76）∥ §15 KD-SV-192…195 ∥ `gateway/API.md` §2.5 ∥ `webui/SANDBOX.md` §2.1①/§4；**真机**（收口轮——ECS `.6`：节点侧 dockerd TLS 配置（`docs/TEST-ENV-ECS.md` 随正件）⇒ 自签材料 ⇒ 切档 ⇒ 自检过 ⇒ 全谱可用 ∥ 切回明文 ⇒ 材料清零） | 单元测试档 + 收口轮（浏览器实走 + 真机） |
+| **壳更新面**（功能点 57 ∥ AC-57——拟入册） | ① 工件（`prepack` ⇒ `public/box-shell/`：manifest + `<版本>.tar`；覆盖集 = 源树逐件）∥ ② 引导序（自版本 ⇒ manifest ⇒ 取件/校验/换执行；回退 = 缓存 ⇒ 内建）∥ ③ 读音（承接进程恰一行）；④ 槽复验 + 崩后失效；判据全文 = §3 块 ∥ `sandbox/EXECUTION.md` §8 块 ∥ §13（N89 ∥ B85–B88 ∥ E65）；**真机**（发布 ⇒ 再启跟版 ∥ 断网回退） | 单元测试档 + 收口轮（真机） |
 
 **红队探针套件（余腿 P1 ∥ P5–P10 ∥ P13 ∥ P14）——判据表（P2–P4 ∥ P11/P12 五腿已退场删，编号留空档）**
 
@@ -612,6 +619,7 @@
 | KD-SV-175…180 | **容器终端 v1（用户三句）——全形 = §3 容器终端块**：KD-SV-175 会话链 = 升级连接（`node:http` 劫持——`fetch` 面不可达流式 stdin，实测）∥ KD-SV-176 帧协议 = 二进制 pty 字节 ∥ 文本 JSON 控制 ∥ KD-SV-177 心跳 = 服务端 30s WS ping / 客户端 30s 文本 ping、60s 判死 ∥ KD-SV-178 断线收口 = `\x04` + 关流（不追捕前台进程 ∥ 无会话持久化）∥ KD-SV-179 会话环境 = `TERM` 恒注 + `LANG` 条件注入 ∥ shell = `bash` 优选 `sh` 兜底 ∥ KD-SV-180 审计两 kind + `requireAdmin` + 同源门 | —— |
 | KD-SV-184…191 | ⇒ `sandbox/EXECUTION.md` §15（**底座可换**——8 条：绑定形 ∥ 派生构建 ∥ 缓存/重建 ∥ 前提（乙——Node 随包带） ∥ 凭据 ∥ 镜像就位步 ∥ 控制台面 ∥ 审计；本域不复制） | —— |
 | KD-SV-192…195 | ⇒ `sandbox/EXECUTION.md` §15（**连接面 TLS 档**——4 条：形态（地址 scheme 单源） ∥ 传输（`node:https` 适配件） ∥ 材料（三件自备 + 零回显） ∥ 审计（`runner_connection`）；本域不复制） | —— |
+| KD-SV-229…232 | ⇒ `sandbox/EXECUTION.md` §15（**壳更新面**——4 条：版本化壳件 + 启动自取/自换 ∥ 传输 = 静态面复用 + 构建期打包 ∥ 校验与回退 = 树哈希 + 三层 + 三失败 ∥ 版本读音 + 触发；本域不复制） | —— |
 
 ## 15. 本域边界（不做）
 
@@ -657,3 +665,5 @@
 | R85 | **sandbox-container-terminal（需求档回笔 + 随正件 + 披露）**：① 需求档回笔（主 agent 笔——**已落**：`docs/server/requirements/PROJECT.md` 增**功能点 51 ∥ AC-51**（承 AC-50 顺序））；判据全文 = `sandbox/SANDBOX.md` §11 终端行 ∥ §12（N83–N85 ∥ B79–B81 ∥ E61–E63） ∥ ② 随正件（父侧/实施轮——以当刻盘面实读为准）：档目断言件（档目断言 **+6 名**——`terminal-core.mjs` ∥ `terminal-vt.mjs`（实拆） ∥ `terminal-codec.mjs`（实拆） ∥ `terminal-render.mjs` ∥ `terminal-link.mjs` ∥ `views-sandbox-terminal.mjs` ∥ 键集/键数指纹**已随正**——**1033 ∥ 1038**）∥ 同族指纹件（i18n 键数）随实施当刻复读 ∥ ③ 披露（不阻塞）：**前台进程不追捕**（断开时在跑的程序可能续存至自身退出——Docker exec 无情 kill 面；容器一次性沙盒兜底）∥ **pty 内容零留痕**（终端字节不落库不落日志——审计只记「谁何时进了哪台容器」）∥ 会话无持久化（重连 = 新会话）∥ 会话数无上限（内部自用）∥ `LANG` 条件注入（容器自带 locale 时零覆盖）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（容器行开终端 ⇒ `vim`/`top` ⇒ 中文输入 ⇒ 关窗收口 ⇒ 审计两行在册）+ 真机（ECS `.6`：非运行容器门 + 直连拒；关窗后 `docker exec` 进程零残留） | 披露 | 评审/用户复核 |
 
 | R87 | **sandbox-onboarding-removal（需求档回笔 + 随正件 + 披露 + 部署收尾）**：① 需求档回笔（主 agent 笔——**文本已拟**：§5「接入两径」块改写为终态（手工登记 + 管理面 chat 承接；删「执行者」条与三态句）∥ AC-36 ⑨ 收正（⑩ 删）∥ §5 管理面用途行去「托管接入（装机）」∥ 功能点 47④ 合并方向句收正「已达成」；写法/计数 = 主 agent 定）∥ ② **删码清单（服务件——归并一处）＋随正件（父侧/实施轮——以当刻盘面实读为准）**：**删（已办）= 服务件两档（`onboarding` ∥ `onboarding-routes`）整档删 ∥ `thincoder-server/src/sandbox/routes.mjs`（**409**——托管接入四端点注册段删）**；随正件 = `runner-admin-console 托管接入件单测档`（**整档删**——任务面五工具/托管接入全链用例）∥ `…-runner-admin-console.test.mjs`（**复扫 = 档内零 onboarding/任务面引用 ⇒ 净变 ±0**——表/列面断言留；**491**）∥ `…-runner-admin-console-ui.test.mjs`（⑤ 弹窗 ∥ ⑥ 任务区用例删 + 首读断言改；**527** ⇒ 净变 ≤±40）∥ `…-console-tabs-component.test.mjs`（任务区/两钮/首读断言逐处；**493** ⇒ 净变 ≤±20）∥ `2026-10-12-team-projects-permissions.test.mjs`（`onboarding.mjs` 导入与用途删；**693** ⇒ 净变 ≤±20）∥ `2026-10-12-admin-chat-creds-merge.test.mjs`（N81 用例删——移交机制随件退场；CHECK/回填两用例留；**606** ⇒ 净变 ≤±20）∥ 键集/键数指纹件（`2026-10-08-server-public-structure.test.mjs` 等——键删后复读为准；**169** ⇒ 净变 ≤±20）∥ `2026-10-06-server-gateway.test.mjs`（表在场断言**留**——表存续；**496** ⇒ 净变 ±0）∥ ③ 披露（不阻塞）：**历史 `running` 残留行 = 永久静止**（重启恢复面消失——零改写）∥ 历史审计行五 kind 以原值可读（label 面已收——原值兜底）∥ 表零写入零读面（历史经库直读）∥ ④ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走（运行面/任务区零残留 ∥ 添加/删除节点照常） | 披露 | 评审/用户复核 |
+
+| R92 | → `sandbox/EXECUTION.md` §17（壳更新面——需求档回笔建议 ∥ 随正件 ∥ 披露 ∥ 真机收口；本域不重列） | 披露 | 评审/用户复核 |

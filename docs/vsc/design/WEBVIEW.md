@@ -244,7 +244,7 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
   ① 未登录 ⇒ 文本「登录团队服务器」（入口）② 已登录 ⇒ 成员名（`member.name ?? member.username`；**tooltip = 服务器 + 端标签**——服务器形（host），不搬 URL 全串）③ 已失效（`verify === invalid`）⇒ 文本「已失效——重新登录」+ `backgroundColor`（`warning` 族——沿 VS Code 警示面）；命令 = `thincoder.team`（点击即流）。
 - **登/退直达流（命令 `thincoder.team`）**：起手 = 活校验（`teamVerify`——触发点制）；态分流：未登录 / 已失效 ⇒ 登录流（`showInputBox` 三问：server（预填留存值）→ username → password（`password: true`））
   ⇒ `teamLogin`（核）⇒ 成 ⇒ 复读 + 刷新 item + 推 `teamStatus`/`providerStatus`（设置面板随动——既有推送链）；`notice`（同名冲突）⇒ `showWarningMessage` 提示（逐字同句；一次性事件）；已登录 ⇒ QuickPick（「退出登录」）⇒ `teamLogout` ⇒ 刷新 + 推送 + 吊销未达提示（逐字）；失败 = 四句逐字（`showErrorMessage`——词表复用）。
-- **登/退不再经设置面板**：面板团队卡 = 管理面（label ∥ 详情——`docs/vsc/design/SETTINGS.md` §2.20）；「轮换」= 另裁项（服务端无 client rotate 端点——零控件）。
+- **登/退不再经设置面板**：面板团队卡 = 管理面（label ∥ 详情——`docs/vsc/design/SETTINGS.md` §2.20）；「轮换」在卡内（已登录在场——确认一步 + 结果行；机制单源 = `docs/core/design/TEAM.md` §2.7）。
 - **接线**：`thincoder-vscode/extension.mjs`（+`registerCommand('thincoder.team')` + 初始化/销毁 item）+ `thincoder-vscode/package.json` contributes.commands（+1）+ `thincoder-vscode/locales/en.json ∥ zh.json`（+键）
   + 复用 `thincoder-vscode/src/extension/team.mjs`（teamStatus/teamLogin/teamLogout + **`teamVerify` 转口**——转口四件；`team-surface.mjs` 经转口取核，与桌面 `thincoder-desktop/src/main/team.mjs` 同拍）∥ `thincoder-vscode/src/extension/settings.mjs` `pushTeamStatus`（既有——单一实现）；**零新 webview 协议**。
 - **判据（机检 ∥ 真机）**：机检 = 单元测试档（item 三态文本 ∥ tooltip 含 host ∥ 命令注册 ∥ 流：桩 `showInputBox` 三连 ⇒ `teamLogin` 调用序 ∥ 已登录 QuickPick ⇒ `teamLogout` ∥ 失败四句）；真机 = 收口轮（命令面板 → 登录 → item 变名 → 点击 → 退出 → item 回入口）。

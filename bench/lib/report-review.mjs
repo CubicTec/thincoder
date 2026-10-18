@@ -2,11 +2,11 @@
  * lib/report-review.mjs — 报告面判官 / 复核渲染（设计 §2.3；`report-tables.mjs` 行数超线 ⇒ 按设计档 §3 拆分）。
  *
  * 本档 = 叶子件：只吃结果对象做纯字符串 / 数字拼接（不 import 报告层其它档 ⇒ 无环）；
- * 判官面成员资格直接 import 题集单源 `cases/index.mjs` 的 `JUDGE_FACE`（不重建派生谓词——§2.6 导出落点）。
+ * 判官面成员资格直接 import 题集单源 `suites/index.mjs` 的 `JUDGE_FACE`（不重建派生谓词——§2.6 导出落点）。
  * 内容 = 判定标记（`⇄` 分歧 / `⟲` 翻案）+ 分歧面计数 + 《判官分歧》/《复核翻案》两小节。
  */
 
-import { JUDGE_FACE } from "../cases/index.mjs"
+import { JUDGE_FACE } from "../suites/index.mjs"
 
 /** 判官面用例集（题集代际声明单源——渲染面 import，不自行重建）。 */
 const JUDGE_FACE_IDS = new Set(JUDGE_FACE)

@@ -729,7 +729,7 @@ VSC 自持点 = `thincoder-vscode/src/extension/timer-watch.mjs:33-35`（判据�
 
 **时区 ∥ 跨日 ∥ 重启口径（AC-45③ 明示）**：时区 = **宿主本地**（先例 = METERING KD-SV-6 服务器本地）——`at`/`daily` 皆按设点宿主本地时钟解释；同机四端同时区（服务面 = 服务器本地）。跨日 = `Date` 日历运算承载（如 `daily: "00:01"` 于 23:59 设 ⇒ 明日 00:01）——无跨日特例代码。重启 = **周期项随进程消失**（D-TW3 进程内存语义——与一次性同命，非新增缺口；重启存续 = 不做，见边界）。
 
-**工具面（`thincoder-core/agent-tools/timer.mjs` · 46 行）——参数 ∥ 互斥 ∥ 校验 ∥ 返回**：
+**工具面（`thincoder-core/agent-tools/timer.mjs` · 226 行）——参数 ∥ 互斥 ∥ 校验 ∥ 返回**：
 
 - 新参：`at`（`YYYY-MM-DDTHH:MM[:SS]`——严格正则＋日历回读校验（如 `2026-02-30` 拒）· 本地时区）∥ `every`（秒数 · ≥ `TIMER_MIN_EVERY_MS`）∥ `daily`（`HH:MM` 严格正则）∥ `cancel`（id——`String` 宽松比对）∥ `list`（布尔）。
 - 互斥：`{ seconds, at, every, daily }` 至多一；`cancel` ∥ `list` 与一切设置式互斥、与彼此互斥。
@@ -746,6 +746,7 @@ VSC 自持点 = `thincoder-vscode/src/extension/timer-watch.mjs:33-35`（判据�
   - `at`（已过）⇒ `Timer set (id <id>) for <YYYY-MM-DD HH:MM> local — that time has passed, so the reminder appears immediately.`
   - `cancel` ⇒ `Timer cancelled (id <id>).`；`list` 空 ⇒ `No pending timers.`
   - `list`（非空）⇒ 逐行 `<id> · <kind> · next <dur> · <message 首行>`（kind 判形 = `at` 在场 ⇒ `at <YYYY-MM-DD HH:MM>`；`everyMs` ⇒ `every <N>s`；`daily` ⇒ `daily <HH:MM>`；三者皆无 ⇒ `one-shot`；`<dur>` = `<mm:ss>`（< 1h）∥ `<h:mm:ss>`（≥ 1h——h 不补零；`daily` ∥ `at` 长时长同形；与 `/timers` 行同判）；到期未投 ⇒ `due now`）。
+  - **非有限 `expiresAt`（`NaN` ∥ `±Infinity`）⇒ `at` 段不插、落 `one-shot · due now`**（守卫 = `thincoder-core/agent-tools/timer.mjs:53`/`:60`）。
   - **一次性式逐字零变**（`Timer set for <N> seconds. A reminder will appear when time is up.`）且不携 id（零回归口径；其取消可经 `list` 寻址）。
 
 **默认 `message`（`message` 未传时——逐式 · 评审轮 1 #4 收正）**：`⏰ Time's up (<槽>). Have you tried running the code, adding a console.log, or checking the output? Thinking more without data is guessing.`

@@ -92,7 +92,7 @@ _electron.launch({
 
 ### 3.4 接口面小结
 
-本档**不新增产品接口**：E2E 只读既有契约面（IPC 面见 `docs/desktop/design/IPC.md`；DOM 面 = 上述 `data-*` 锚）。实施期若某步断言必须产品补锚 / 补缝 ⇒ **停下上抛**（§8-6），不得就地改产品码。**（`T-DSK32`）同径**：**零新通道**；断言只读既有契约面（`data-action` / 输入框 `disabled`）+ **登记锚** `data-guide`（登记面 = `docs/desktop/design/UI.md` §1 批 B 追加注项 1）；判据单源 = 同上。
+本档**不新增产品接口**：E2E 只读既有契约面（IPC 面见 `docs/desktop/design/IPC.md`；DOM 面 = 上述 `data-*` 锚）。实施期若某步断言必须产品补锚 / 补缝 ⇒ **停下上抛**（§8-6），不得就地改产品码。**（`T-DSK32`）同径**：**零新通道**；断言只读既有契约面（`data-action` / 输入框 `disabled`）+ **登记锚** `data-guide`（登记面 = `docs/desktop/design/UI.md` §1「首启空白态引导注」项 1）；判据单源 = 同上。
 
 ### 3.5 首启空态引导冒烟序（即用例 2 的执行序 · 十序）
 
@@ -219,7 +219,7 @@ _electron.launch({
 6. **不改三端测试**：cli / core / vscode 的用例与 runner 不因本档变动。
 7. **`.gitignore` 的边界判断**（KD-10）：运行期产物目录不进 git 的管线文件 —— 非产品码、非产品文本面；若复核判定其属产品面 ⇒ 撤销该档、改由父侧登记。
 8. **不做并行度调参**：`node --test` 并发度用内建缺省，不引 `--test-concurrency` 之类硬参数。
-9. **无产品 UI / 交互决策**：本档只驱动**既有** DOM 契约面（§3.3），不改任何产品界面与交互；首启引导面 UI / 交互决策的单源 = `docs/desktop/design/UI.md` §1「批 B 追加注」（四项：引导节点 · 分态 · 动作控件在场律 · 判据保留）——本档只落用例与断言形。
+9. **无产品 UI / 交互决策**：本档只驱动**既有** DOM 契约面（§3.3），不改任何产品界面与交互；首启引导面 UI / 交互决策的单源 = `docs/desktop/design/UI.md` §1「首启空白态引导注」（四项：引导节点 · 分态 · 动作控件在场律 · 判据保留）——本档只落用例与断言形。
 
 ## 8. 上抛与报告项
 
@@ -229,9 +229,9 @@ _electron.launch({
 4. **`docs/core/design/TESTING.md` 多实现面枚举**：首部多实现面行含**桌面面**（单入口 · 集成域 `thincoder-desktop/test/integration/`）。
 5. **`docs/core/design/TESTING.md` §10 边界口径**：边界行为「**运行期零第三方依赖（守）∥ 测试覆盖 `devDependencies` 不在此限（放开）**」；`playwright-core` = 测试驱动（判据⑥）。
 6. **产品缝 = 停手上抛**：实施期若出现「必须改产品码才能断言」的项 ⇒ 停下报父侧裁定。
-7. **`docs/desktop/design/PROJECT.md` 随动**：档头档数 · 需求侧行 `D1–D42` · §4.1（`package.json` 值 `21` + `files.mjs` 值 `15` + 两新行）· §7 **T-DSK27** · §8 不做行；行数读数见 §8-9。
+7. **`docs/desktop/design/PROJECT.md` 随动**：档头档数 · 需求侧行 `D1–D42` · §4.1（两档指针行——值单源 = `PACKAGING.md` §3.1 ∥ 本档 §9.1）· §7 **T-DSK27** · §8 不做行；行数读数见 §8-9。
 8. **`docs/README.md` 地图随动**（桌面板块现记档数与总档数口径）⇒ 新档入册属父侧。
-9. **计数面口径**：两表各自面、非矛盾——`docs/desktop/design/PROJECT.md` §4.1 `thincoder-desktop/test/files.mjs` 值 = **登记行数**（现 12 + 批 A 两行 + 集成用例文件一行 ⇒ **15**）；同表「二十七档」= **单元用例模块枚举**（实读 25 + 批 A 两档；集成用例文件单列、不入该枚举）；口径 = 内容行数（文末换行不计）。
+9. **计数面口径**：行数面值单源 = 各域文件账（`docs/desktop/design/PROJECT.md` §4.1 = 指针索引、不持值）；`thincoder-desktop/test/files.mjs` = 显式清单（现为空——重建随批登记）；口径 = 内容行数（文末换行不计）。
 10. **`thincoder-desktop/test/run.mjs` 注释随改**：注释须与「集成域 `thincoder-desktop/test/integration/` 已建」同实 ⇒ 已并入（§4 表在册）；runner 逻辑零改动（walk 递归 + 反向自检天然覆盖新档）。
 11. **实施期实证点**：家目录重定向被 Node `os.homedir()` 采纳——**已实证**（fixture 家内预设生效）；**userData 面 = env 改向不达**（Chromium 不采信 `APPDATA`）⇒ 生效面 = §3.2 `--user-data-dir`（落 `<临时家>/userData` · 两况俱过）
   · `thincoder-desktop/test/integration/` 档被 `thincoder-desktop/test/run.mjs` walk 正常收——**已实证**（单入口覆盖）；Electron 二进制缺盘时 electron 包入口会自下载（CI 接入前须预装）。

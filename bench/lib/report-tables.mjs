@@ -5,7 +5,7 @@
  * 成本 = Σ 成功返回的 call 成本；`—` 一律表示「不在该模型面 / 数据缺失」，绝不编码为 0。
  */
 
-import { DIMENSIONS, DIM_LABELS } from "../cases/index.mjs"
+import { DIMENSIONS, DIM_LABELS } from "../suites/index.mjs"
 import { aggregateVerdict, speedMedians, sumPresent } from "./metrics.mjs"
 import { head } from "./output.mjs"
 import { MIXED_NOTE, isMixedOverturn, judgeMark, reviewMark } from "./report-review.mjs"

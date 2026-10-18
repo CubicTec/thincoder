@@ -50,14 +50,14 @@ function kindText(t) {
   if (typeof everyMs === "number" && Number.isFinite(everyMs) && everyMs > 0) return `every ${everyMs / 1000}s`
   const daily = t?.daily
   if (typeof daily === "string" && DAILY_RE.test(daily)) return `daily ${daily}`
-  if (t?.at === true) return `at ${localText(t.expiresAt)}`
+  if (t?.at === true && Number.isFinite(t.expiresAt)) return `at ${localText(t.expiresAt)}`
   return "one-shot"
 }
 
 /** `list` 行第三槽：到期未投 ⇒ `due now`；否则 `next <dur>`（剩余现算）。 */
 function nextText(t, now) {
   const at = Number(t?.expiresAt)
-  return at > now ? `next ${durText(at - now)}` : "due now"
+  return Number.isFinite(at) && at > now ? `next ${durText(at - now)}` : "due now"
 }
 
 /** `message` 首行（`list` 行第四槽——逐字原样，不截断）。 */

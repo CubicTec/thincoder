@@ -90,6 +90,7 @@ export function createReadDataHandlers(ctx, { intervalMs = WATCH_INTERVAL_MS } =
   let last = null
   let timer = null
   let inflight = false // 重叠防衛（先例 = 核 ledger-surface.mjs）：上一拍未落定 ⇒ 跳过本拍
+  let lastError = null // 上次失败比较键（同因连续 ⇒ 不重复；`check()` resolve 当拍复位）
 
   async function check() {
     if (inflight) return []
@@ -112,11 +113,25 @@ export function createReadDataHandlers(ctx, { intervalMs = WATCH_INTERVAL_MS } =
     } finally { inflight = false }
   }
 
+  /** 拍包装（失败可见——同因不刷屏）：`check()` reject ⇒ 比较键（`code` 优先、无则 `message`、再无则 `String(e)`）；
+   *  与上次同键 ⇒ 不重复，异键 ⇒ 记键 + `ctx.log` 一行（`acp.mjs` 注入口 = stderr——协议面零触）；resolve ⇒ 复位。 */
+  function runCheck() {
+    return check().then(
+      () => { lastError = null },
+      (e) => {
+        const key = String(e?.code ?? e?.message ?? e)
+        if (key === lastError) return
+        lastError = key
+        ctx.log?.("[acp] read-data watcher check failed:", key)
+      },
+    )
+  }
+
   /** 启动：立即首查（立基线——静默）+ 周期轮询；unref 定时器（不阻塞进程退出）。 */
   function start() {
     if (timer) return
-    void check().catch(() => {})
-    timer = setInterval(() => { void check().catch(() => {}) }, intervalMs)
+    void runCheck()
+    timer = setInterval(() => { void runCheck() }, intervalMs)
     timer.unref?.()
   }
 

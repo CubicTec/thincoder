@@ -5,7 +5,7 @@
 > 对位档 = **无**（VSC 端无 argv 命令面——结构性不对称，P2 产品面 ⇒ 落 `docs/cli/`）。
 > 论域文件 = `thincoder-cli/bin/thincoder.mjs`（壳：argv 预处理 + `USAGE` 常量装配 + 分发入口；**188**）· `thincoder-cli/src/command-table.mjs`（命令分发表：分发骨架 + 八薄命令族 + help ∕ version；**192**）
 > · `thincoder-cli/src/command-interactive.mjs`（交互长驻三命令 chat ∕ tui ∕ acp；**205**）· `thincoder-cli/src/completions.mjs`（三套补全脚本发射）。
-> · `thincoder-cli/src/cli/team-command.mjs`（team 命令族：`team login` ∥ `logout` ∥ `status`）。
+> · `thincoder-cli/src/cli/team-command.mjs`（team 命令族：`team login` ∥ `logout` ∥ `status` ∥ `rotate`）。
 > 行数口径 = `wc -l`。
 
 ## 1. 定位与边界
@@ -55,7 +55,7 @@
 | | `list` | `--json`（必需）· `--full` · `--family` · `--cwd <dir>`（空格形） | `thincoder-core/ledger-read.mjs` |
 | `upgrade` | —— | —— | `bin/thincoder.mjs` |
 | `completion` | —— | 位置参 shell（`bash` / `zsh` / `fish`） | `src/completions.mjs` |
-| `team` | `login` / `logout` / `status` | `--server <url>`（地址；缺 ⇒ 问句）· `--user <name>`（用户名；缺 ⇒ 问句）；密码 = 隐藏回显问句（TTY）∥ stdin 行（非 TTY） | `src/cli/team-command.mjs` |
+| `team` | `login` / `logout` / `status` / `rotate` | `--server <url>`（地址；缺 ⇒ 问句）· `--user <name>`（用户名；缺 ⇒ 问句）；密码 = 隐藏回显问句（TTY）∥ stdin 行（非 TTY） | `src/cli/team-command.mjs` |
 | `-h` / `--help` · `-v` / `--version` | —— | —— | `bin/thincoder.mjs` |
 
 **核侧实现 = 壳侧只分发**（`session` / `ledger` 两族）——旗标语义（互斥 / fail-closed 面）住核档。

@@ -172,14 +172,14 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 - **（设置面样式收正 · D37）不做**：交互语义 ∥ 功能增删（渠道四动作 ∥ masked 钥 ∥ 当前标全保留——无新增动作）· 七段信息架构（段集 ∥ 段序）· 布局面（48rem 居中列）· 圆角（非卡余域）∥ 600 字重 ∥ 标上行表单（端差登记——沿 D24 ∥ D29 ∥ 扁平化基线）· 主题变量表 ∥ 断点（零新变量 ∥ 零新断点）· 核 ∥ `thincoder-render-core` ∥ CLI ∥ VSC 零触。
 
 - **不做**需求档 §5 所列：文件视图 / 编辑器本体 / 内置 diff（暂缓三件——「打开」已由 D19 ∕ KD-39 解） · 常驻多项目面板 / 项目切换器 · 云服务 / 工作流引擎 · 复制核机制 · 另立存储格式 · ACP 面之外的新协议面 · 通用编辑器 / IDE。
-- **贯穿不做**：改核**机制语义**（批 B 纯加法三处，授权在案）；**留档批例外（在案）**：`thincoder-core/history-window.mjs` 记录直通 opt-in 一条——纯加法 ∥ 默认径逐字等价）· 需求档与提示词面。
+- **贯穿不做**：改核**机制语义**（纯加法三处，授权在案）；**留档批例外（在案）**：`thincoder-core/history-window.mjs` 记录直通 opt-in 一条——纯加法 ∥ 默认径逐字等价）· 需求档与提示词面。
 - **本轮不做**（设计面明确排除）：更新通道扩展（beta/alpha ∥ 回滚 ∥ 降级安装——自动更新 = **桌面发布·阶段二批落**（`docs/desktop/design/PACKAGING.md` §2.8））· **公证执行**（mac 面——阶段二；**代码签名 = 就绪形**——证书在位即实签、未签版 = 明示测试形——单源 = `docs/desktop/design/PACKAGING.md` §2.3）· 多窗口 · 全局快捷键。
 - **（装配桥批）不做**：`msg:*` 的 UI 输入区与中断键（视图批）· MCP 连接（设置批）· 工程模式 manifest 附着（`docs/desktop/design/SHELL.md` §4 端差注）· 审批卡 `changes` 摘要供给（核侧缺该键 ⇒ 卡面无摘要行——`docs/desktop/design/IPC.md` §1）· 多实例协作面。
-- **（设置面批）不做**：`memory:status` 通道与索引状态面板（`index:build` ∕ `index:status`）· 端侧直读核内表（不授权）· 打包与发行（批 10）· 主题切换面。
-- **（批 B · 会话级偏好 / 档位枚举化 / 占用读数 / 附件与复制）不做**：斜杠命令（需求档 §3.5 边界裁定——需求卷 **D34**）·
+- **（设置面批）不做**：`memory:status` 通道与索引状态面板（`index:build` ∕ `index:status`）· 端侧直读核内表（不授权）· 打包与发行 · 主题切换面。
+- **（会话级偏好 / 档位枚举化 / 占用读数 / 附件与复制）不做**：斜杠命令（需求档 §3.5 边界裁定——需求卷 **D34**）·
   真代码块面（围栏切分 / 语言高亮 / 代码块级出口——`docs/render-core/design/RENDER-CORE.md` §2 KD-RC-4 / §4 行 11）· 端侧自建落盘与图片指针格式（落盘径 = 核）· 主题 / 通知面 · 用量面板（状态栏读数以外）· CI 接线（随三平台 CI 批）。
-- **（批 B · 追加轮）不做**：真实模型回路下的发送成功面（空 fixture 家 ⇒ 无凭据 ⇒ 断言只覆盖失败可见面：文本保留 + `console.error`）· 引导面另立样式档（沿现盘 `.chat-empty`）· 需求档补条目 ⇒ **已落**（需求档 **D16** = 首启空态引导；本档 §6.1 D16 行同源）。
-- **（批 A · 对话面板）不做**：斜杠命令 · 模型 / provider 切换 · 推理档位 · 上下文占用读数 · 附件与导出 · 文件树 / diff / 终端（需求档 §5）——后四项中前四者 = 批 B 面，附件 / 导出同归批 B。
+- **（追加轮）不做**：真实模型回路下的发送成功面（空 fixture 家 ⇒ 无凭据 ⇒ 断言只覆盖失败可见面：文本保留 + `console.error`）· 引导面另立样式档（沿现盘 `.chat-empty`）· 需求档补条目 ⇒ **已落**（需求档 **D16** = 首启空态引导；本档 §6.1 D16 行同源）。
+- **（对话面板）不做**：斜杠命令 · 模型 / provider 切换 · 推理档位 · 上下文占用读数 · 附件与导出 · 文件树 / diff / 终端（需求档 §5）——后四项中前四者与附件 / 导出同归会话面。
 - **（桌面端 E2E 基建批）不做**：web 快筛与 Electron 一致性核（判据④——Electron = 唯一权威面）（**状态注**：web 快筛工具已落形——`docs/desktop/design/WEB-QUICKCHECK.md`（开发期回路 ∥ 不作验收判据）；一致性核维持不做）· CI 接线（随三平台 CI 批）· 第二 runner / 测试框架（`@playwright/test` 等——`node --test` 单入口不变）· 视觉 / 像素回归（只断言 PNG 存在 + magic）
   · 错误 / 边界用例三条（`T-DSK27b` / `T-DSK27c` / `T-DSK27d`）· 产品码改动（`thincoder-desktop/src/**` / `thincoder-desktop/renderer/**` 零改）——单源 = `docs/desktop/design/E2E-TESTING.md` §6 / §7 / §8。
 - **（可见面修复批）不做**：#426 窄窗左列折叠**交互**（**R13 后无对象**——左列裁撤退场；窄窗残留 = 池面窄窗态（本档 §1「open」行））· #440 真代码块面（围栏切分 / 语言高亮——`docs/render-core/design/RENDER-CORE.md` §4 行 11）· 核（`thincoder-core/**`）零触碰。
@@ -192,7 +192,8 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
   跟随系统的 OS 级联动面（`themeSource`）· markdown 排版基线（D29——零动）·
   CLI ∥ VSC 两端零触 · 核 ∥ `thincoder-render-core` ∥ 通道表 ∥ preload 零改。
 - **（斜径命令面 · D34）不做**：补全（Tab——Web 焦点键）· 携参直切（`slash.args` 拒）· CLI 27 条中未落者（不做 9）· VSC 命令面（零接缝）；**命令表归端** ∥ 核共享层缝 = **纯加法可选**（不传 `deps.slash` ⇒ 现行为零变——VSC 零接缝）∥ CLI ∥ VSC ∥ `thincoder-core` 零触。
-- **（桌面打包发布 · 阶段一）不做**：自动更新（升级 = 手动下载覆盖——**桌面发布·阶段二批落** · `docs/desktop/design/PACKAGING.md` §2.8）· 免安装包 ∥ macOS ∥ Linux 产物 ∥ 应用商店（Windows 商店 ∥ Snap）∥ 公证 = 阶段二 · `src/**` ∥ `renderer/**` 产品码零改（打包链 = 构建期面）· 站点仓零写（规格 = `docs/desktop/design/PACKAGING.md` §2.9——执行 = 主 agent 轮）· 未签版不阻断测试形（签名跳过 = 明示非失败——发布版须已签）。
+- **（桌面打包发布 · 阶段一）不做**：自动更新（升级 = 手动下载覆盖——**桌面发布·阶段二批落** · `docs/desktop/design/PACKAGING.md` §2.8）· 免安装包 ∥ macOS ∥ Linux 产物 ∥ 应用商店（Windows 商店 ∥ Snap）∥ 公证 = 阶段二
+  · `src/**` ∥ `renderer/**` 产品码零改（打包链 = 构建期面）· 站点仓零写（规格 = `docs/desktop/design/PACKAGING.md` §2.9——执行 = 主 agent 轮）· 未签版不阻断测试形（签名跳过 = 明示非失败——发布版须已签）。
 - **（菜单体系 · D36）不做**：托盘区 ∥ 自绘菜单 ∥ 全量快捷键体系 ∥ 检查更新（`docs/desktop/design/PACKAGING.md` §2.8）∥ 语言切换进菜单（设置面单源）∥ **菜单项选中态 = 唯主题▸带勾**（命令下行 + 状态回读 `theme:state`——限度 = 报告缓存（零直读）；其余条目零选中态）
   ∥ 窗口组回复（minimize/zoom——按五组枚举退场；如需保留 = 加一组即可）· `context-menu.mjs`（D27）∥ `projects.mjs` ∥ 核 ∥ `thincoder-render-core` ∥ CLI ∥ VSC 零触。
 - **（设置菜单升级 · D38 ∥ D39）不做**：独立设置窗口（B 案——用户明令）∥ 帮助组改动（零动——「关于与快捷键」= 第二入口）∥ 设置页撤除（**保留并存**）∥ 七段值面语义（读写 ∥ 确认 ∥ 失败链全复用）∥ 全量快捷键 ∥ 托盘 ∥ 自绘菜单 · 核 ∥ `thincoder-render-core` ∥ CLI ∥ VSC 零触。
@@ -226,7 +227,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | `thincoder-desktop/src/main/host-floor.mjs` | → `docs/desktop/design/SHELL.md` §5.1 | — |
 | `thincoder-desktop/src/main/window.mjs` | → `docs/desktop/design/SHELL.md` §5.1 | — |
 | `thincoder-desktop/src/main/context-menu.mjs` | → `docs/desktop/design/SHELL.md` §5.1 | — |
-| `thincoder-desktop/src/main/menu-words.mjs`（残余族清账批 · 新档；菜单体系批扩键） | → `docs/desktop/design/MENU.md` §3.1 | — |
+| `thincoder-desktop/src/main/menu-words.mjs`（新档；菜单体系扩键） | → `docs/desktop/design/MENU.md` §3.1 | — |
 | `thincoder-desktop/src/main/app-menu.mjs` | → `docs/desktop/design/MENU.md` §3.1 | — |
 | `thincoder-desktop/renderer/menu-actions.mjs` | → `docs/desktop/design/MENU.md` §3.1 | — |
 | `thincoder-desktop/src/main/protocol.mjs` | → `docs/desktop/design/SHELL.md` §5.1 | — |
@@ -251,7 +252,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | `thincoder-desktop/src/main/providers.mjs` | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/src/main/mcp-servers.mjs` | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/src/main/project-info.mjs` | → `docs/desktop/design/UI.md` §4.1 | — |
-| `thincoder-desktop/src/main/attachments.mjs`（批 B） | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
+| `thincoder-desktop/src/main/attachments.mjs` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
 | `thincoder-desktop/src/main/file-links.mjs`（对齐第三批新档） | → `docs/desktop/design/CHAT.md` §3.1 | — |
 | `thincoder-desktop/src/main/file-refs.mjs`（@ 文件引用对齐批新档） | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
 | `thincoder-desktop/src/main/at-complete.mjs`（R1 输入面板移植新档） | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
@@ -337,16 +338,16 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | `thincoder-desktop/renderer/mount-settings-segments.mjs`（R7 拆档产出） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/renderer/mount-settings-segments-models.mjs`（R7 拆档产出） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/renderer/mount-settings-segments-mcp.mjs` | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
-| `thincoder-desktop/renderer/mount-settings-segments-providers.mjs`（parity-b10 W2 拆出档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
-| `thincoder-desktop/renderer/mount-settings-segments-agent.mjs`（parity-b10 W3 拆出档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
-| `thincoder-desktop/renderer/settings-confirm.mjs`（parity-b10 W2 新档 · S6） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
-| `thincoder-desktop/renderer/mount-onboarding.mjs`（批 B · ⑥ 拆档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
+| `thincoder-desktop/renderer/mount-settings-segments-providers.mjs`（拆出档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
+| `thincoder-desktop/renderer/mount-settings-segments-agent.mjs`（拆出档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
+| `thincoder-desktop/renderer/settings-confirm.mjs`（新档 · 确认门） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
+| `thincoder-desktop/renderer/mount-onboarding.mjs`（拆档） | → `docs/desktop/design/SETTINGS.md` §3.1 | — |
 | `thincoder-desktop/renderer/mount-composer.mjs` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
 | `thincoder-desktop/renderer/composer-wire.mjs` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
 | `thincoder-desktop/renderer/composer-sync.mjs` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
 | `thincoder-desktop/renderer/mount-cards.mjs`（批 A 修正轮） | → `docs/desktop/design/CHAT.md` §3.1 | — |
-| `thincoder-desktop/renderer/attach.mjs`（批 B） | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
-| `thincoder-desktop/renderer/views/chat-guide.mjs`（批 B 追加轮） | → `docs/desktop/design/CHAT.md` §3.1 | — |
+| `thincoder-desktop/renderer/attach.mjs` | → `docs/desktop/design/COMPOSER.md` §3.1 | — |
+| `thincoder-desktop/renderer/views/chat-guide.mjs`（追加轮） | → `docs/desktop/design/CHAT.md` §3.1 | — |
 | `thincoder-desktop/renderer/views/statusline.mjs`（R3a） | → `docs/desktop/design/UI.md` §4.1 | — |
 | `thincoder-desktop/renderer/views/statusline-segments.mjs`（R4 拆档产出） | → `docs/desktop/design/UI.md` §4.1 | — |
 | `thincoder-desktop/renderer/views/statusline-banner.mjs`（状态栏对齐批新档） | → `docs/desktop/design/UI.md` §4.1 | — |
@@ -382,14 +383,14 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
   - 批 6 补两档：`views-chat` 对话流三态与工具卡（U58–U62）· `views-chat-scroll` 滚动面三事纯函数（U63–U67）。
   - 批 7 补两档：`views-approval` 审批卡面两形与降级（U68–U70）· `views-activity` 池面三态与折叠两读数（U72–U73）；`views-chat` / `store` / `host-floor` 三档**原址补例**（U75 / U74）；实施期拆档两档：`views-chat-frame`（U71 帧面自 `views-chat`）· `views-locks`（U52 零回归自 `views-chrome`）。
   - 批 8 补**五档**：`agent-host` 主侧面（装配 / 桥九映射 / 挂起表 / 回合驱动——U76–U86）· `events-reduce` 归约面与值面写者（U87–U89）· `events-page` 页回执与订阅面（U90–U92）· `history-page` 页转口与元（U93–U94）· `session-io` 槽装载与回合尾落盘（U96–U97）；`host-floor` 原址补例（U74 计数随动 13 · U95 显形）。
-  - 批 9 补**六档**：`settings`（设置族——U98–U102）· `providers`（渠道族——U103–U107（含 U107b））· `mcp-servers`（MCP 族——U108–U110）· `project-info`（项目级信息族——U111–U113）；
+  - 设置面补**六档**：`settings`（设置族——U98–U102）· `providers`（渠道族——U103–U107（含 U107b））· `mcp-servers`（MCP 族——U108–U110）· `project-info`（项目级信息族——U111–U113）；
     视图两档 `views-settings` / `views-onboarding` **零 U 号**（档名面入 U51 零 CJK 扫描清单——落 `thincoder-desktop/test/views-chrome.test.mjs`）。
     - **U95 分支（`host-floor`）口径**：判据 `≤500` **含线上**（**284**）——依据 = 规则线本身（「无文件 >500 行」），非余量口径；
-      **覆盖范围** = `fresh` 清单十八档（批 8 十二 + 批 9 六个用例文件）+ 在册例外面（`mount-settings.mjs`）+ `thincoder-desktop/renderer/app.mjs` + 宿主档源面零 `electron`；
-      批 9 其余新档（主进程四源档 · `settings.css` · 视图三档 · `views-harness.mjs`）行数面 = §4.1 值列表（分支清单随动 = 码面池）；
+      **覆盖范围** = `fresh` 清单十八档（十二 + 六个用例文件）+ 在册例外面（`mount-settings.mjs`）+ `thincoder-desktop/renderer/app.mjs` + 宿主档源面零 `electron`；
+      其余新档（主进程四源档 · `settings.css` · 视图三档 · `views-harness.mjs`）行数面 = §4.1 值列表（分支清单随动 = 码面池）；
       批 A 新档七档（`thincoder-desktop/renderer/views/{tabbar,question,plan}.mjs` · `thincoder-desktop/renderer/mount-composer.mjs` · `thincoder-desktop/renderer/mount-cards.mjs`（批 A 修正轮） ·
       `thincoder-desktop/test/{views-question,views-tabbar-close}.test.mjs`）行数面 = 同路（§4.1 值列表 / 分支清单随动 = 码面池）。
-    - **`fresh` 清单口径**：`host-floor` 的 `fresh` 清单只收目录文件名读数——**越层档不入清单**（`mount-settings.mjs` **426** 不入）；批 9 六档补入 = 码面池（父侧分支清单随动项）。
+    - **`fresh` 清单口径**：`host-floor` 的 `fresh` 清单只收目录文件名读数——**越层档不入清单**（`mount-settings.mjs` **426** 不入）；六档补入 = 码面池（父侧分支清单随动项）。
     - **覆盖缺口两件**：① 设置面 **Esc 键**明示不覆盖（零 Esc 绑定 = 裁定项——`docs/desktop/design/UI.md` §1 设置面行）；② `settings:agent` **保存出口判据**挂 T-DSK7 / T-DSK8——真面缺口（保存出口端侧路径判据未单列）。
   - 批 A 拆档一档 + 增档一档：`thincoder-desktop/test/views-tabbar-close.test.mjs`（确认面族 U55 自 `views-tabbar` 拆出）· `thincoder-desktop/test/views-question.test.mjs`；`views-tabbar` 原址**改例**（⑤ 换机制——既有 `inert` 断言件改「两控件 `tabindex` 两态」+ 点按两向——T-DSK20 / T-DSK25）；
     **T-DSK26（关标签页随动）= 第 ⑥ 件机检** = `thincoder-desktop/test/views-tabbar-close.test.mjs`（页随动**五例**：关活动 ⇒ 邻位页 ∕ 关唯一 ⇒ 关页 `none` 态（零块节点 + 引导节点 `data-guide="no-session"`）∕ 关非活动 ⇒ 零动作 ∕ 待确认按取消 ⇒ 零动作 ∕ 已关会话迟到回执零写）
@@ -440,9 +441,9 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | 项 | 本设计与它的关系 |
 |---|---|
 | A1 | §6.1 每行皆机检判据（用例号登记于 §7） |
-| A2 | 三端共享契约零回归：配置 / 会话面全部经核入口（`docs/desktop/design/SHELL.md` §3），端侧只加 `END = "desktop"` 单写者文件（不增跨端共享可变字段——照核 NF1 语义）；`locale`（批 9 首写者）= **端无关偏好键**（任一端写、他端读，非属主型状态 ⇒ 不属本条禁增范围——§2 KD-13） |
+| A2 | 三端共享契约零回归：配置 / 会话面全部经核入口（`docs/desktop/design/SHELL.md` §3），端侧只加 `END = "desktop"` 单写者文件（不增跨端共享可变字段——照核 NF1 语义）；`locale`（首写者）= **端无关偏好键**（任一端写、他端读，非属主型状态 ⇒ 不属本条禁增范围——§2 KD-13） |
 | A3 | 三平台 CI 矩阵 = `docs/desktop/design/PACKAGING.md` §2 CI 行；本机 Windows 实跑 + 另两平台 CI——**分期：阶段一 = 本机 Windows 实跑；另两平台 CI 随阶段二**（同源 = `docs/desktop/design/PACKAGING.md` §2.7「目标（分期）」行） |
-| A4 | 核 / CLI / 扩展三包测试零回归：本端**不改核机制语义**、不触另两端源码（批 B 纯加法三处，授权在案；`docs/desktop/design/SHELL.md` §3「不改核」行 + §8 边界）；**对齐重定位批例外（在案）**：`thincoder-vscode/webview/**` 接核改造 + 核包新增（净 = 换实现不换行为——`docs/render-core/design/RENDER-CORE.md` §8 / §9）；**残余批**：核只读出口（`docs/core/design/SESSION.md` §6.24）；**留档批例外（在案）**：核 `thincoder-core/history-window.mjs` 记录直通 opt-in（`{ records: true }` ∥ `kindOf` 认 `kind` 键——纯加法一条；默认径逐字等价——负控用例） |
+| A4 | 核 / CLI / 扩展三包测试零回归：本端**不改核机制语义**、不触另两端源码（纯加法三处，授权在案；`docs/desktop/design/SHELL.md` §3「不改核」行 + §8 边界）；**对齐重定位批例外（在案）**：`thincoder-vscode/webview/**` 接核改造 + 核包新增（净 = 换实现不换行为——`docs/render-core/design/RENDER-CORE.md` §8 / §9）；**残余项**：核只读出口（`docs/core/design/SESSION.md` §6.24）；**留档批例外（在案）**：核 `thincoder-core/history-window.mjs` 记录直通 opt-in（`{ records: true }` ∥ `kindOf` 认 `kind` 键——纯加法一条；默认径逐字等价——负控用例） |
 | P1 | 落判 = KD-7（下限取 Electron ≥ 44.x，判据 = 启动自检实测）；**Node 24 专属 API 使用面** = 实施批逐点核（本端新增代码不主动用高于宿主内置版本的 API） |
 | P2 | 落定 = §1.2 第 2 条 + KD-3 / KD-4 + `docs/desktop/design/SHELL.md` §1 前端目录形态 + `docs/desktop/design/UI.md` §1 交互决策全落（长会话渲染与回填本注落定——`docs/desktop/design/RENDERER.md` §2 / §3） |
 | P3 | 落定 = `docs/desktop/design/SHELL.md` §4（序 + 团队层取值已上提核件；余端差在册） |
@@ -455,7 +456,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | ① | 四部分落点与命名规则可机检 | `docs/core/design/DOC-SYSTEM.md` §4 部分表 + §8 射程行 |
 | ② | 本档给出可验证验收 | §6.1 / §6.2 / §7 |
 | ③ | 三平台打包链明确形态 | `docs/desktop/design/PACKAGING.md` §2（工具 / 产物 / 验证 / CI 矩阵） |
-| ④ | 与核接口面逐项点名、不改核机制语义（批 B 纯加法三处——授权在案） | `docs/desktop/design/SHELL.md` §3 七面表 + 「不改核」行 |
+| ④ | 与核接口面逐项点名、不改核机制语义（纯加法三处——授权在案） | `docs/desktop/design/SHELL.md` §3 七面表 + 「不改核」行 |
 
 ## 7. 用例表
 
@@ -490,7 +491,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | T-DSK27 | 正常 · E2E 设置面（真 Electron） | 空 fixture 家（唯一预置 `<临时家>/.thincoder/config.json` = `{"locale":"en"}`）· 无项目 | boot `ok`；入口在；点按后面板 `open`；段序 `providers,agent,mcp,env,tools,models,team`（七段）；态 `ready,ready,ready`（前三段夹具定形；后四段随 E2E 重跑补记）；PNG 落固定落点（存在 + magic）；关闭后 `closed` 且子节点 0；机检 = 单元测试档惯例；形态与九步断言单源 = `docs/desktop/design/E2E-TESTING.md` §3.3 / §6 |
 | T-DSK28 | → `docs/desktop/design/COMPOSER.md` §5 | — | — | — |
 | T-DSK29 | 正常 · 状态栏占用读数 | ① 活动会话跑完一回合（核发有效 `ev:usage`）② 核不发 / `ctxPct` ≤ 0 ③ 切标签 | ① 状态栏读数节点在场且值 = 活动会话读数 ② **零读数节点**（禁假造）③ 随活动键取值换读数（非活动会话读数不串场） |
-| T-DSK30 | 正常 · 附件与复制（D13） | ① 输入区粘贴一张图 ⇒ 发送（视觉模型）② 同例换非视觉模型 ③ 清空附件条 ④ 点含围栏代码块内的 Copy 钮 ⑤ 消息块尾 ∕ 输入区尾查控件 | ① 附件条出现缩略图 + 文件名 + 移除控件；`msg:send` 载荷携 `images`（**dataURL 串数组**）；`ok` 真 ⇒ 清条 ② 先落盘 + 降级跑者（parity-b4）：降级成功 ⇒ 用户消息文本携描述注文（`[图片 … 描述: …]`，回执零码）；降级未成（失败 ∥ 落盘 0 件）⇒ 回执携 `degraded:"non-vision"` ⇒ 提示行在场 + 文本尾说明行（不静默丢图）；超限 / 落盘失败项 ⇒ `"partial"` ③ 附件条**零节点** ④ 剪贴板收代码文本逐字（核件 Copy 钮；词两态 `msg.copy` → `msg.copied`；超时自动复位）⑤ **零复制控件** |
+| T-DSK30 | 正常 · 附件与复制（D13） | ① 输入区粘贴一张图 ⇒ 发送（视觉模型）② 同例换非视觉模型 ③ 清空附件条 ④ 点含围栏代码块内的 Copy 钮 ⑤ 消息块尾 ∕ 输入区尾查控件 | ① 附件条出现缩略图 + 文件名 + 移除控件；`msg:send` 载荷携 `images`（**dataURL 串数组**）；`ok` 真 ⇒ 清条 ② 先落盘 + 降级跑者：降级成功 ⇒ 用户消息文本携描述注文（`[图片 … 描述: …]`，回执零码）；降级未成（失败 ∥ 落盘 0 件）⇒ 回执携 `degraded:"non-vision"` ⇒ 提示行在场 + 文本尾说明行（不静默丢图）；超限 / 落盘失败项 ⇒ `"partial"` ③ 附件条**零节点** ④ 剪贴板收代码文本逐字（核件 Copy 钮；词两态 `msg.copy` → `msg.copied`；超时自动复位）⑤ **零复制控件** |
 | T-DSK32 | → `docs/desktop/design/SETTINGS.md` §5 | — | — | — |
 | T-DSK33 | 正常 · 状态行十八段（D17） | 活动会话（另有非活动标签）逐态：忙态（含工具在跑）· 任务有项 · `ev:activity` turn（turn ∕ maxTurns）· 有效 `ev:usage`（`ctxPct` + `usage`）· 计时在途 · 台账超阈 · 队列 ≥1 · 位标含 `approval` | 承载 18 段各节点在场且源正确：banner 四态 / 状态词（两态）/ 当前工具 / 耗时 / ✓n/m / turn N/M / 令牌 / context% / 台账超阈位 / ⏰N / 会话标题 / 输入提示段 / 注意力提示；旁置 1 段（滚动位零节点）· 键位组零节点；未至 / 非正数 ⇒ 对应段零节点（禁假造） | 机检 = 单元测试档惯例 |
 | T-DSK34 | → `docs/desktop/design/SESSIONS.md` §5 | — | — | — |

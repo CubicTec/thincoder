@@ -3,7 +3,7 @@
 > 编制：主 agent · 2026-10-17 · 来源 = 用户 2026-10-17 00:08 报症状「用不了沙盒，工作区起不来」⇒ 父侧在真机（server .5 ∥ runner .6）定位：start 链 ② 配额就位步 `chattr -R -p <id> +P <path>` 失败（`+P` 对文件 EOPNOTSUPP）⇒ 502。
 > 台账 = #1595（sandbox · 归批）。前情 = 无（独立批）。
 ## §1 讨论（主 agent）
-**状态行**：进行中（真机腿 AC-5 暂缓 · 复核条件 = server 部署本批代码后跑 POST /api/me/sandbox/workspaces/12/start ⇒ 200 ∧ 盒 running（挂 #1600））
+**状态行**：已收口（AC-5 真机腿已跑通（stop→start = 200 · 配额步全绿）；途中捕获的提权作用域缺陷同日修复（提交 b99fa52，单测 12/12）；§6 收口完成）
 <§1 模板占位：本批条目 / 关键判据 / 授权口径>
 
 **症状（用户 2026-10-17 00:08 逐字）**：「用不了沙盒，工作区起不来。」
@@ -218,3 +218,17 @@ VERDICT: pass
 **机械收正（父侧直接执行 · 可回退）**：`docs/server/design/sandbox/EXECUTION.md:276` 的「285/286 = 收正前读数（实施后复读随正）」⇒ 实测复读同值（Δ 0）⇒ 收正为现值句。
 
 **遗留（登记不动）**：旧批单测档 `2026-10-16-box-quota-recovery.test.mjs:511` 仍断言旧形 `chattr -R -p … +P` —— 设计已裁「不重跑、不对齐」⇒ 零改（盘面状态如实记录）。
+
+**AC-5 真机腿收口（2026-10-17 19:4x · 父侧，缺陷修 = 轻通道 · 父侧直接执行 · 可回退）**
+
+**第一跑（部署后）**：`POST …/workspaces/12/start`（先 stop）⇒ **502**，错误文本 **新形** = `Operation not permitted while setting flags on …/agent-2026-10-16.log`（昨夜 = `not supported`）⇒ 分治已生效，但**文件半句权限不到位**。
+
+**根因（两级一手证据）**：① 正面 —— runner 上以 root（privileged 容器挂同一工作区）逐条实跑：文件 `chattr -p` = **0** ∥ 目录 `chattr -p +P` = **0** ∥ 新文件同命令 = **0**；fs = `/dev/loop32 ext4 rw,relatime,prjquota` ⇒ fs 与命令形皆无病。② 根因 —— host 命令面提权口径 = `sudo -S ${command}`（`box.mjs:78`），**只盖首条命令**；`&&` 串联 ⇒ 文件半句落回普通用户 ⇒ 赋项目号必 `EPERM`。同族 `||` 兜底同病（`setquota` ∥ `truncate`）。
+
+**修法（三处实现 + 一句设计，零新语义）**：项目标记步 ⇒ 两句各自成步（同一 `EXT4_PROJECT_STEP` 标签）；`setquota` ∥ `loopback 镜像创建` 的 `||` ⇒ `try/catch` 两步；设计档 `sandbox/EXECUTION.md:103-105` + `:276` 同步收正（理由句入档）。
+
+**读数（父侧亲跑）**：`cd thincoder && node --test docs/batches/2026-10-17-sandbox-quota-chattr.test.mjs` ⇒ **tests 12 · pass 12 · fail 0**。
+
+**部署与复跑**：提交 `b99fa52` 推送 ⇒ server 机 pull ⇒ 镜像重建（旧 = `thincoder-server:pre-20261017`）⇒ `compose up -d --force-recreate` ⇒ `Up (healthy)` ∥ `healthz=200` ⇒ **stop → start 工作区 12 = 200 `{"ok":true,"started":true,"noop":false}` · 5.1s** ✓（配额步全绿——该步内含 `repquota` 读回核断言）。
+
+**结论**：AC-5 **已跑通**（`#1600` 已核销）；本批 §6 收口完成，台账 `#1595` → 已核销；批档 → 已收口（冻结）。

@@ -37,7 +37,7 @@
 | B11 | **装载机制（探针实测）** | workspace 假包探针：成员内无本地链接时 `bundledDependencies` **静默跳过**；vsce 于 workspace 成员目录内三失败形态（硬拒 ×2 / 静默无核 vsix）；运行期解析通；缺核产物可「成功」产出 ⇒ 含核断言必需。 |
 | B12 | **仓结构现状（实测）** | **仓根无 `package.json`、无根 lock**（`thincoder-cli/package.json` / `thincoder-vscode/package.json` 各自独立）；两产品各有 `package-lock.json` ⇒ 非 workspace 形态**零仓结构改动** |
 | B13 | **形态键实测** | 假包探针：**npm 不支持 `workspace:` 协议**（`EUNSUPPORTEDPROTOCOL`）· **pack/publish 不重写依赖字段**（tarball manifest 原样 + npm 源码双证）· `*` 声明在消费者侧解析到 **registry latest**（漂移实读）· 非 workspace 形态下 vsce **默认即可把真目录核打进 vsix**（零标志零垫片）· `.vscodeignore` 正解 = 「保留 `node_modules/**` + 反排除核」· `npm link` 零 manifest/lock 污染。逐条读数见 §2.2.1（R1–R8） |
-| B14 | **提示词面逐档读数（自核 · sha256 逐字节）** | `src/prompts/` 两端各 15 档、同名集合相等：**同 8 · 异 7**（`advisor-design.md` · `advisor-round2.md` · `advisor-round3.md` · `discipline-engineering.md` · `discipline-normal.md` · `persona-eng-coder.md` · `persona-engineering.md`）；`src/tools/*.md` 两端各 25 档：**同 20 · 异 5**（`bash.md` · `grep.md` · `lint.md` · `question.md` · `websearch.md`）；`docs/design/prompts/`（**中文设计档**——供人读・非运行期）两端各 15 档：**同 10 · 异 5**（分叉集合与 `src/prompts/` **不重合**）。⇒ 提示词面 40 档同路径对：同 28 · **异 12**；「中位 1.0000」**不代表内容层已同**（中位掩盖同层真分叉） |
+| B14 | **提示词面逐档读数（自核 · sha256 逐字节）** | `src/prompts/` 两端各 15 档、同名集合相等：**同 8 · 异 7**（`advisor-design.md` · `advisor-round2.md` · `advisor-round3.md` · `discipline-engineering.md` · `discipline-normal.md` · `persona-eng-coder.md` · `persona-engineering.md`）；`src/tools/*.md` 两端各 25 档：**同 20 · 异 5**（分叉集合明细——迁移期读数）；`docs/design/prompts/`（**中文设计档**——供人读・非运行期）两端各 15 档：**同 10 · 异 5**（分叉集合与 `src/prompts/` **不重合**）。⇒ 提示词面 40 档同路径对：同 28 · **异 12**；「中位 1.0000」**不代表内容层已同**（中位掩盖同层真分叉） |
 | B15 | **对称面全集与量级（自核——A8 影响面）** | 同路径对 **104**（逐字节同 28 · 分叉 76）；**仅 CLI 独有 148 档 / 27338 行** · **仅 VSC 独有 94 档 / 16751 行**（合计 242 档）。分面中位（升序）：`agent` 0.0532(3) · `provider` **0.1124**(2) · `traces` 0.1869(1) · `agent-tools` **0.2060**(20) · `src 根` 0.5247(15) · `advisor` **0.5665**(7) · `tools` 0.9091(41) · `prompts` 1.0000(15)。**A8 把低相似度对称面从「排除」变为「逐条裁决」⇒ 裁决面显著扩大**——量级与分批建议见 §2.11 A5；⚠ **读数基线注**：本行读数为单一基线读数的输出；需求档 §1 对应行随需求档修订轮同步（非本卷）  |
 | B16 | **点名对称面实读（A8 例 · 两侧各自实读）** | **配置**：CLI `thincoder-cli/src/config.mjs`（496 行）+ `config-migrate.mjs`（70）↔ VSC `thincoder-vscode/src/config.mjs`（190）+ `config-io.mjs`（470）+ `config-migrate.mjs`（185）+ `config-presets.mjs`（40）+ `config-consult.mjs`（78）+ `config-mcp.mjs`（71）+ `embed-config.mjs`（51）+ `extension/config-watch.mjs`（77——纯逻辑现体 = 核 `thincoder-core/config-watch.mjs`）——同路径对 2（j = 0.0471 / 0.0802）⇒ **对称但结构完全不同**。**会话管理**：CLI `thincoder-core/session.mjs`（492）+ `session-slots.mjs`（492）+ `session-store.mjs`（441）+ `session-gc.mjs`（221）+ `session-segments.mjs`（100）+ `session-guard.mjs`（59）+ `session-migrate.mjs`（47）+ `session-rename.mjs`（38）↔ VSC `src/extension/session-io.mjs`（436）+ `session-slots.mjs`（399）+ `panel-session.mjs`（338）+ `session-slot-write.mjs`（178）+ `session-gc.mjs`（142）——**同路径对 = 0** ⇒ 必须靠语义对位遍配对（B9 硬证据）。**记忆**：CLI `thincoder-core/memory.mjs`（21，re-export）+ `src/memory/` 8 档（`core` 300 · `schema` 452 · `docs` 420 · `code-sync` 416 · `delete` 236 · `code-index` 219 · `file-walk` 109 · `scan` 95）↔ VSC `src/memory.mjs`（273）+ `memory-tool.mjs`（386）——同路径对 1（j = 0.0093）⇒ 对称但组织完全不同  |
 | B17 | **结构性不对称面（真端特有候选 · 自核）** | 仅 CLI：`tui/`（67 档 11258 行——TUI 渲染与交互）、`cli/`（5 档 492 行——顶层命令实现）；仅 VSC：`extension/`（38 档 6231 行——宿主 API / webview / chat-panel / 活动栏）。**其余「仅一端」面（CLI `memory/` `provider/` `agent/` `agent-tools/` `tools/` `acp/` `mcp/` `git/` + 根档；VSC `tools/` `provider/` `agent/` `agent-tools/` `mcp/` `advisor/` + 根档）不得直接归端特有**——它们与对端存在语义对位（B16 的会话 / 记忆面即实证），归入 S0 对位遍裁决 |
@@ -548,12 +548,12 @@ D-C1–D-C4 · D-C7–D-C10 **与边界扩张无涉**（形态 / 装载 / 闸口
 #### 2.8.1 核内逐档行数与拆分计划（R24a 补全）
 
 **口径**：本小节 = 核内逐档行数的**设计侧落点**（R24a；T-C14 检查对象）；**设计侧现行登记面 = 本小节子表**（新超线档须入表 + 拆分计划——防回潮）；核内读数侧（机检门）= `thincoder-core/test/core-hygiene.test.mjs` 的 `SOFT_LINE_REGISTRY`——**运行面随测试树全清退场，该门义务随测试体系重建恢复**。行数 = `wc -l`；**>500（软线）档须带拆分计划**。
-**读数 as-of = 2026-09-14**（逐档实跑复核——13 档表 + 拆分计划子表 9 档 + 次优先列表 8 档，与树逐档一致；三块结构现读 = 主表 15 行 + 子表空壳 + 次优先列表已随批清账）；
-`wc -l` 语义 = 核内机检 `thincoder-core/test/core-hygiene.test.mjs:98` 的口径（**file-tier-sweep 批复测刷新——面 = 主表行 4–11 · 14 与子表行 1 · 4–9 · 11 · 14–17；未列行保留各自 as-of**；**文档清账批补登——子表行 23（`wc -l` 实读）**）。
+**读数 as-of = 2026-09-14**（逐档实跑复核，与树逐档一致；三块结构现读 = 主表 **15 行** + 拆分计划子表 **1 行** + 次优先列表已随批清账）；
+`wc -l` 语义 = 核内机检 `thincoder-core/test/core-hygiene.test.mjs:98` 的口径（**file-tier-sweep 批复测刷新——面 = 主表行 4–11 · 14 与子表行 1；未列行保留各自 as-of**）。
 
 | # | 档（`thincoder-core/` 内） | 当前行数 | 来源 / 落点（裁决行） | 拆分计划 |
 |---|---|---|---|---|
-| 1 | `config.mjs` | **466**（`wc -l` 实读——终态） | CONFIG #80 / #128（装载器 + DEFAULTS；S1 并入 VSC 面后 674 行 → 三档拆分产物） | —（软线内） |
+| 1 | `config.mjs` | **523**（末行行号实读——终态） | CONFIG #80 / #128（装载器 + DEFAULTS；S1 并入 VSC 面后 674 行 → 三档拆分产物） | **越 500 软线**——拆分计划见子表 #1 |
 | 2 | `config-io.mjs` | 277 | CONFIG #129 / #131 / #177（单一读写面 + 自写通知 + provider 纯持久化函数） | —（软线内） |
 | 3 | `config-presets.mjs` | 46 | CONFIG #129（`PROVIDER_PRESETS` 取一侧） | —（软线内） |
 | 4 | `index-bin.mjs` | 48 | MEMORY #137（向量编解码——VSC 拆档逐字随迁） | —（软线内） |
@@ -575,6 +575,7 @@ D-C1–D-C4 · D-C7–D-C10 **与边界扩张无涉**（形态 / 装载 / 闸口
 
 | # | 档（`thincoder-core/` 内） | 当前行数 | 拆分计划 |
 |---|---|---|---|
+| 1 | `config.mjs` | **523**（末行行号实读——越 500 软线） | 拆分 = `DEFAULTS` 段 ∥ 归一 helpers 外提（挂结构维护台账 `#1612`）；判据 = 实施后 ≤ 528 读数 + 拆分轮起轮时按盘重判 |
 
 ### 2.9 与既有纪律的冲突点核对
 
@@ -828,7 +829,7 @@ S1 收口暴露的是**消费方缺口**：锚已落在核档里，但「谁在�
    验收：VSC 装配后 `## 收尾验收` 在场，且核内三行对应三句各**恰一份**；CLI 侧该标题不在场。
 4. **`question-ui-face` 注入与在场行重复**（**已定 · 设计面收正**）：核内 `thincoder-core/tool-docs/question.md:11` 已内联 CLI 版 `Availability` 行，锚在其下一行（`:12`）⇒ VSC 侧**同时看到两条** `Availability`（一 CLI 措辞、一 VSC 措辞）。
    **定稿形态**：核内 `:11` 的 CLI 措辞行**移出核内正文**，锚上移到 `:11` 位并改为**替换**该行（非追加）。
-   CLI 值 = 现核内 `:11` 原文（与 `thincoder-cli/src/tools/question.md:11` 逐字同）· VSC 值 = 面板版 `Availability` 行（`thincoder-vscode/src/tools/question.md:11`）。
+   CLI 值 = 现核内 `:11` 原文 · VSC 值 = 面板版 `Availability` 行。
    验收：两端装配后 `Availability` 行各**恰一份**；核内正文零 CLI 措辞 `Availability` 行。
 5. **函数面 ④ 缺位 2 处**：§2.13.4「核内位 = 无」的行（#112 · #172）——**#175 / #143 已移出**（裁定「端侧自有 · 经 provider 字段数据面」⇒「核内位 = 无」为正常落地形态、非缺位——#175 = 推理档位面 · #143 = 模型规格端侧派生面；行内收正见 §2.13.4）。
    已获核内位者不再计缺位（§2.13.4 对应行逐行改判）：**#98 / #113 / #84**（统一守卫 / 提醒并集面 / 记账注入缝）·

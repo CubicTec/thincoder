@@ -314,7 +314,7 @@ ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/upload-download.mjs <exe> <blockma
 
 **前置**：阶段 4 验证已过（三端号与变更已成文）；本次发布的条目 = 提取对象。
 
-**步骤 1 · 提取**（源 = 三端 `CHANGELOG.md`（CLI / VS Code 扩展 / 桌面）+ 核档（取材面——用途 = §6.4））：取本次发布条目（核不入页——§6.1）⇒ 生成站点条目片段（半自动生成 + 人工择要——§6.4）。
+**步骤 1 · 提取**（源 = 三端 `thincoder-cli/CHANGELOG.md`（CLI）∥ `thincoder-vscode/CHANGELOG.md`（VS Code 扩展）∥ `thincoder-desktop/CHANGELOG.md`（桌面）+ 核档（取材面——用途 = §6.4））：取本次发布条目（核不入页——§6.1）⇒ 生成站点条目片段（半自动生成 + 人工择要——§6.4）。
 
 **步骤 2 · 站点更新**：① 版本面（about 页「当前版本」行 · download 页系统要求三行——首行 = 桌面版，单源 = `docs/desktop/design/PACKAGING.md` §2.9.3）；② changelog 页（页头「截至最新发布」句 + 本次条目插到本节顶部）。口径 = §6.1–§6.3。
 
@@ -363,7 +363,9 @@ ALIYUN_KEY=… ALIYUN_SECRET=… node scripts/deploy-oss.mjs    # 实传（凭�
 
 ### 6.4 自动化程度（**半自动** · 生成脚本归站点仓）
 
-**裁定 = 半自动**：站点仓内生成脚本（零依赖 · Node 标准库）——输入 = 三端 `CHANGELOG.md`（CLI ∕ VS Code 扩展 ∕ 桌面 · 工作区兄弟路径，可参数覆盖）+ 核 `thincoder-core/CHANGELOG.md`（**取材面**——核不入页（§6.1）：仅当本次含核依赖升级时，供 CLI 条目内「核依赖升级句」取材）；输出 = changelog 条目片段（**stdout，不写页面**）；人工完成择要 + 号 / 日期核对 + 插页。
+**裁定 = 半自动**：站点仓内生成脚本（零依赖 · Node 标准库）——输入 = 三端 `thincoder-cli/CHANGELOG.md`（CLI）∕ `thincoder-vscode/CHANGELOG.md`（VS Code 扩展）∕ `thincoder-desktop/CHANGELOG.md`（桌面 · 工作区兄弟路径，可参数覆盖）
++ 核 `thincoder-core/CHANGELOG.md`（**取材面**——核不入页（§6.1）：仅当本次含核依赖升级时，供 CLI 条目内「核依赖升级句」取材）；
+输出 = changelog 条目片段（**stdout，不写页面**）；人工完成择要 + 号 / 日期核对 + 插页。
 **归属 = 站点仓 `scripts/`**（与部署脚本同域）：生成物 = 站点 HTML（格式 / 转义 / 缩进属站点面）⇒ 工具随其产物归站点仓；**本仓零新增工具**（对外面改动全部落站点仓轮）。
 **人工门不可省**：生成物 = 骨架 + 原文要点草稿——**未经人读的生成物不得部署**（内部机制 / 行话面须择除）。
 **被否候选**：① **全自动（生成即部署）**——内部面会漏到对外页，且无法保证用户可读（现行页面 = 人工择要形态）；② **纯手工**——本次 70 条追平 + 逐版手抄格式易漂移，且防再次滞后全靠人记性。

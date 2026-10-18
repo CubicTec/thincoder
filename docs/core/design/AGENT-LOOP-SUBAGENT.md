@@ -47,7 +47,7 @@
 | cancel | id（必填——防误全停） | `{ id, status: "cancelled" }` | 立即（定向 abort） |
 | panel | `{ view?, freeze? }`（互斥） | 镜像快照 / 冻结回收确认 | 同步 |
 | consume-design | designId? ∥ designIds? ∥ expired? ∥ olderThanDays?（选择器恰一） | 消费回执（逐枚 ∥ 批量——逐枚行 + 计数） | 同步（父侧 · 工程模式——语义 = `DESIGN-TOKEN-SETTLEMENT.md` §5 / §9） |
-| design-slots | designId? ∥ reveal?（必携 designId） | 槽位清单（designId ∥ live/expired ∥ 时龄 ∥ 批——龄升序）+ 计数尾行；`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；`reveal:true` 且槽活 ⇒ 槽行尾追加 `designToken=<全串>` + 回收行（两值原样入 eng-coder spawn）；过期 / 畸形 ⇒ `designToken=—` | 同步（父侧 · 工程模式 · 只读） |
+| design-slots | designId? | 槽位清单（designId ∥ live/expired ∥ 时龄 ∥ `expiresAt` ∥ 批 ∥ `designToken`——龄升序）+ 计数尾行；`designToken` 恒列（过期照列——`status` 自标态；畸形 ⇒ `—`）；`designId` 过滤 ⇒ 单槽行 + 计数尾行（注 `(filtered by designId)`）；两值原样入 eng-coder spawn | 同步（父侧 · 工程模式 · 只读） |
 
 **depth 可用性（本表 = 锚 `§6.7.2` 的规则住所）**：`status` 与 `observe` / `send` / `escalate` / `cancel` / `panel freeze` **同为 depth 0 专有**——子代（`depth>0`）调用 ⇒ 显式拒（子代无自有异步池）；**`consume-design` / `design-slots` 同属父侧（depth-0）面**（受限变体拒绝清单在案）；
 `spawn` **例外**（depth>0 合法——子代 spawn 恒同步）。拒收文案族与返回形（JSON `status:"error"` 对象形）= §6.25 ①/A1b。
@@ -243,25 +243,26 @@
 
 ## 6.22 委派与 spawn 门（v2——M5 增量）
 
-**定位**：委派治理的**结构承载**——任务书必须带齐字段（尤其「轮次」），files 声明面拦截兜住越界面——瞎下的指令被门拒，而不是被自觉忽略。v1 已有 `batchDoc` 参数门与 token 门，v2 增量 = 任务书强制字段 + files 声明面拦截。
+**定位**：委派治理的**结构承载**——任务书 = **五个结构化 spawn 参数**（`goal` / `knownFacts` / `designPoints` / `acceptance` / `reportFormat`）+ 结构化 `round`；五项由运行时按固定序拼进子代理任务书，`task` 退为可选自由文本补充。缺参的指令被门拒，内容不对的指令由执行者拒收。v1 已有 `batchDoc` 参数门与 token 门，v2 增量 = 五个任务书参数 + `round` + files 声明面拦截。
 
-**门序（spawn 入场判完，调度器只按 files/dependsOn 排队）**：角色 enum 校验（F5）→ batchDoc 门（F1，继承）→ round 字段（F2）→ token 门（继承）→ files 声明面（F6）。
+**门序（spawn 入场判完，调度器只按 files/dependsOn 排队）**：角色 enum 校验（F5）→ batchDoc 门（F1，继承）→ round 参数（F2）→ 任务书五参（F2）→ token 门（继承）→ files 声明面（F6）。
 
 | # | 功能点 | 方案 |
 |---|---|---|
 | F1 | `batchDoc` 参数门 | **继承**（缺参 / 路径不可读 → 机械拒；判据只到「参数在 + 路径可读」，内容由执行者拒收兜底） |
-| F2 | 任务书强制字段（目标与理由 / 轮次 initial\|fix / 已知事实 / 设计要点与禁止范围 / 验收标准 / 交付报告格式） | **新增结构化 spawn 参数 `round`**（enum；必带集合 = eng-coder/eng-designer，explore/advisor 豁免——勘察与评审不带实现轮次语义）；`validateTaskBookFields(args)` 六强制字段 + round 枚举校验 |
+| F2 | 任务书结构化参数 | **`round`**（enum；必带集合 = eng-coder/eng-designer，explore/advisor 豁免——勘察与评审不带实现轮次语义）+ **五项任务书参数**（`TASK_BOOK_PARAMS`：判据 = 存在 ∧ string ∧ `trim()` 非空——缺 / 空白 / 非字符串 ⇒ 拒并点名该参数；不读内容，无正则 / 无标题匹配 / 无双语 marker） |
 | F5 | 角色 enum 校验 | 工程模式 enum = **explore / eng-designer / eng-coder**（advisor 不入——评审走 advisor 工具通道，不入 spawn 通道；`plan` 不入——工程模式无 plan 角色，normal 模式 `plan`/`coder` 不删） |
 | F6 | files 声明语义 | `files` = 预期触碰面（内容产物：源/测试/设计档）；**不列工程工具面（`scripts/*`——层级锚定：仅仓根与直接子层——目录名在深层不携带 face 信息）**、不列过程档（台账/CHANGELOG）；目录声明已被 `normalizeFileList` 拒（继承） |
 
-**落点**：全部新增门禁逻辑统一落 `thincoder-core/agent-tools/spawn-gates.mjs`（`validateTaskBookFields` / `rejectEngineeringFilePaths`）——`buildSpawnChild` / `normalizeFileList` 只加 import 调用（装配点增量 ≤10 行）。
+**落点**：全部门禁逻辑统一落 `thincoder-core/agent-tools/spawn-gates.mjs`（`validateRoundParam` / `validateTaskBookParams` / `rejectEngineeringFilePaths`；任务书拼装 `composeTaskBookBrief` 同档——装配点只 import 调用）。
+**D2 单源**：五项名集只在 `TASK_BOOK_PARAMS` 一处定义；schema 面（`agent-tools/subagent.mjs`）只在 description 作人类可读声明，不复写值集、不进对象级 `required`（多 action 单工具：`required` 会把 `status` / `cancel` 等调用误标缺参）。
 
 **验收（回指 AC-M5）**：
 
 | # | 判据 |
 |---|---|
 | AC-M5-1 | 缺 `batchDoc` 或路径不可读 → 拒 |
-| AC-M5-2 | 任务书缺任一强制字段 → 拒（缺「轮次」→ 期望拒） |
+| AC-M5-2 | 缺 `round` / round 非法 → 拒；缺任一任务书参数 / 空白串 / 非字符串 → 拒并点名该参数；五项齐全 ⇒ 放行（`task` 缺失不影响） |
 | AC-M5-5 | `files` 声明目录 / `scripts/*`（层级锚定：仅仓根与直接子层） / 过程档 → 拒 |
 | AC-M5-6 | 角色 enum 非法 → 拒（工程模式 enum = explore/eng-designer/eng-coder） |
 
@@ -308,7 +309,7 @@
 | U2 | 正常 | `assembleFamilyTools({ depth: 0, engineering: true })` | role enum = `["explore","eng-designer","eng-coder"]` |
 | U3 | 正常 | `assembleFamilyTools`（正常模式） | role enum = `["explore","plan","coder"]`（零回归） |
 | U4 | 正常 | `subagentTool.parameters.properties.round.enum` | **=== `ROUND_VALUES`**（同一引用）且 = `["initial","fix"]` |
-| U5 | 边界 | `validateTaskBookFields({ task: FULL_BOOK, round: r })`，`r` 遍历 `ROUND_VALUES` | 逐一放行（枚举成员与谓词同源的行为面证据） |
+| U5 | 边界 | `validateRoundParam({ round: r })`，`r` 遍历 `ROUND_VALUES` | 逐一放行（枚举成员与谓词同源的行为面证据） |
 | U6 | 错误 | `round: "v2"` / 缺 `round` | 拒；文案 `round ∈ {initial, fix}` / `round (initial\|fix)` 逐字不变 |
 | U7 | 错误 | 工程模式 spawn `role="plan"` | throw（门文案含 `role='plan' is disabled`——门零改） |
 
@@ -347,7 +348,7 @@ if ((ctx.depth ?? 0) > 0) {
 }
 ```
 
-锚点取**现行可解析节号**（`AGENT-LOOP-SUBAGENT.md` §6.7.2 = 七动作面），不照抄 observe/send 的 `AGENT-LOOP.md §7.2`——后者为旧编号、现行两档均不可解析（域外登记，见批档 §2 发现表 F-1）。
+锚点取**现行可解析节号**（`AGENT-LOOP-SUBAGENT.md` §6.7.2 = 九动作面），不照抄 observe/send 的旧编号——旧编号在现行两档均不可解析（域外登记，见批档 §2 发现表 F-1）。
 
 ② `async-discard.mjs` `pruneQueue`：`const queue = parent?.[queueKey]` → `const queue = carrierField(parent, queueKey)`（`carrierField` 随既有 `./async-settle.mjs` import 行补入）。
 
@@ -397,7 +398,7 @@ export function writeTombstone(parent, id, status, role) {
 
 | # | 判据（机判） | 回指 |
 |---|---|---|
-| A1 | `depth:1` ⇒ 上列错误串**逐字相等**；七动作族源码 `only available at depth 0` 命中计数 **5 → 6**（既存五处文案逐字零改 + `status` 新增一处）。命令：`grep -rn "only available at depth 0" thincoder-core/agent-tools/subagent-actions.mjs thincoder-core/agent-tools/subagent-async.mjs thincoder-core/agent-tools/subagent-panel.mjs` ⇒ 逐档 **4 / 1 / 1**（改前 3 / 1 / 1）。**族外不计**：`advisor.mjs:147`（advisor 族另一文案）与单元测试档断言在 `agent-tools/` 全目录 grep 中会额外命中 ⇒ 搜索根 = 上列三档 | — |
+| A1 | `depth:1` ⇒ 上列错误串**逐字相等**；九动作族源码 `only available at depth 0` 命中计数 **5 → 6**（既存五处文案逐字零改 + `status` 新增一处）。命令：`grep -rn "only available at depth 0" thincoder-core/agent-tools/subagent-actions.mjs thincoder-core/agent-tools/subagent-async.mjs thincoder-core/agent-tools/subagent-panel.mjs` ⇒ 逐档 **4 / 1 / 1**（改前 3 / 1 / 1）。**族外不计**：`advisor.mjs:147`（advisor 族另一文案）与单元测试档断言在 `agent-tools/` 全目录 grep 中会额外命中 ⇒ 搜索根 = 上列三档 | — |
 | A1b | 拒返回形 ≡ **observe / send 既存拒形态**（引坐标 `subagent-actions-query.mjs:230` / `:48`）：`JSON.parse(返回)` ⇒ 两键 `{status:"error", error:<A1 串>}`（**对象形**；escalate `:341` 的 `Error:` 字符串形不在同款族） | — |
 | A2 | `depth` 缺省 / 0 路径：CLI 与 VSC 两侧 status 用例全绿、返回体逐字不变 | — |
 | A3 | 部分 parent 夹具（U3）：队列剔除 + `position` 重编号生效 | — |
@@ -407,7 +408,7 @@ export function writeTombstone(parent, id, status, role) {
 | A6 | CLI 形（U6）：`carrierField(parent, "_asyncTombstones") === parent._asyncTombstones` | `AGENT-LOOP.md` §2.3 写回义务 |
 | A6b | 首写用例（U6b）：无自有 Map + `history` 在场 ⇒ 主容器 = 父字段、`history` 侧同一容器 | — |
 
-**边界（本节不做）**：不动 `spawn` 的 depth 语义；不动工具描述 / 提示词面（`subagent` 工具描述 = `thincoder-core/tool-docs/subagent.md`——描述外置面（`DESC("subagent")` 单点加载）；内容权归主 agent）；不做 observe/send/cancel/panel 既有门文案的旧编号收正（`AGENT-LOOP.md §7.2` · `§19.5 D-M6` · `§19.6 D-P2` 在现行两档均不可解析——域外登记）；
+**边界（本节不做）**：不动 `spawn` 的 depth 语义；不动工具描述 / 提示词面（`subagent` 工具描述 = `thincoder-core/tool-docs/subagent.md`——描述外置面（`DESC("subagent")` 单点加载）；内容权归主 agent）；不做 observe/send/cancel/panel 既有门文案的旧编号收正（旧编号在现行两档均不可解析——域外登记）；
 **不执行** `subagent-actions.mjs` 拆分，只登记不执行（§6.20.8-3 = §6.20 的边界声明，非拆分计划本体——措辞收正）。
 
 ## 6.26 机制性指令注入位置：spawn 固块改走 system 面
@@ -447,7 +448,7 @@ if (role === "eng-coder") child._engTaskInput = input
 
 ```js
 // 改后（模板文本逐字搬入 audit-block.mjs；spawn 档只做「收集 + 绑定」）
-let input = args.context ? `Context:\n${args.context}\n\nTask:\n${args.task}` : args.task
+let input = args.context ? `Context:\n${args.context}\n\nTask:\n${taskBriefOf(args)}` : taskBriefOf(args)
 const spawnBlocks = []
 if (engineeringRole) spawnBlocks.push(`Batch record (batchDoc): ${batchDocAbs}`)
 if (engAuditAttempt !== null) spawnBlocks.push(buildAuditBlock(ctx))  // 纯函数：touched 快照 + summarizeEngTaskBook(ctx.agent._engTaskInput) + 模板逐字
@@ -563,8 +564,8 @@ if (agent._spawnSystemBlock) systemPrompt += `\n\n${agent._spawnSystemBlock}`
 - **D-3** `:109` 改走主名 execute 形——`required:["action"]`（`batch.mjs:321`）+ action 分发（`:342`）：
   缺 action = unknown action throw；shim 形 `{segment,text}` 对主名不可达。
 - **D-4** 注释面 = **4 处**（`setup-tooltable.mjs:4/:22` · `thincoder-vscode/src/agent/setup.mjs:5/:325`）。
-- **D-5** 落点 = 本档 §6.28（VSC 装配镜像面 owner 档——§6.24 先例）；不另建 `WEBVIEW-TOOLTABLE.md`
-  （不存在——另建即单一权威源破面）。
+- **D-5** 落点 = 本档 §6.28（VSC 装配镜像面 owner 档——§6.24 先例）；不另建独立档
+  （另建即单一权威源破面）。
 
 **用例表（改后形态——既有用例就地收正，零新增用例）**：
 
@@ -636,7 +637,7 @@ A-3 机检（单行 · cmd.exe · cwd = `thincoder-vscode/`）：
 
 ### 6.29.3 形三 · task↔batchDoc 观测留痕（不阻断）
 
-spawn 门区（`thincoder-core/agent-tools/subagent-spawn.mjs` 的 `batchDoc` 门；扫描对象 = `args.task` 任务书文本）——提取与命中三定：
+spawn 门区（`thincoder-core/agent-tools/subagent-spawn.mjs` 的 `batchDoc` 门；扫描对象 = 拼装后的任务书文本（五项拼装 + 可选 `task`））——提取与命中三定：
 
 - **token 提取判据**：以 `.md` 结尾、且含路径分隔符（`/` / `\`）或为绝对路径的**连续非空白字面**（裸名 `AGENTS.md` 形态不取、纯散文不取）；
 - **解析输入形态**：逐 token 经 `resolveBatchReadPath(parent.cwd ?? process.cwd(), token)` 解析（输入 = token 原值——相对 / 绝对、`\` 与 `/` 混写均可；契约单源 = `thincoder-core/agent-tools/batch-paths.mjs`）；
@@ -652,22 +653,27 @@ spawn 门区（`thincoder-core/agent-tools/subagent-spawn.mjs` 的 `batchDoc` �
 
 「每条目启动消费**自携** payload」以用例固定：同 `files` 域两个 async spawn（任务书文本各异、绑定档各异）⇒ 入队两条；启动序 = 先入者；断言逐条 `_batchDoc` / `_taskSeal` 与 spawn 入参一致、且两条目互不相等（零跨条目文本）。既有调度器用例（同域串行 / 依赖 / 终态守卫）零改。
 
-## 6.30 工具面首用可发现性：spawn 六字段入描述面
+## 6.30 工具面首用可发现性：spawn 任务书参数入描述面
 
-**来源**：用户「几乎每次派单都会出现，感觉提示词面或者工具描述面存在缺口」（派单缺「验收标准」字段标记 ⇒ spawn 被拒）；需求 = `docs/core/requirements/ENGINEERING-MODE-V2.md` §8.2「工具面自解释」①。
+**来源**：用户「几乎每次派单都会出现，感觉提示词面或者工具描述面存在缺口」；需求 = `docs/core/requirements/ENGINEERING-MODE-V2.md` §8.2「工具面自解释」①。
 
-**改法（描述面载明——门零改）**：`thincoder-core/tool-docs/subagent.md` 角色列与 `Mode filtering:` 段之间（`- eng-designer …` 行后）增一段（逐字——按行宽折行展示，实现时 = 单行）：
+**改法（描述面载明）**：`thincoder-core/tool-docs/subagent.md` 角色列与 `Mode filtering:` 段之间（`- eng-designer …` 行后）载一段（逐字——按行宽折行展示，实现时 = 单行）：
 
 ```text
-Task book (eng-coder / eng-designer spawns — six mandatory fields): 目标与理由 (goal & why), round (initial|fix — the structured parameter),
-已知事实 (known facts), 设计要点与禁止范围 (design points & forbidden scope), 验收标准 (acceptance criteria),
-交付报告格式 (delivery-report format). Keep the labels (Chinese or the English equivalents) — the gate matches these markers;
-a missing field is a dispatch defect and the spawn is refused.
+Task book (eng-coder / eng-designer spawns): five structured parameters — goal (goal & why), knownFacts, designPoints (design points & forbidden scope), acceptance (acceptance criteria), reportFormat (delivery-report format) — plus round (initial|fix — the structured parameter). All five are required for engineering roles: a missing, blank or non-string value is refused with the parameter named. They are composed into the child's brief in that order. For any role the brief is either these five parameters or a free-text task; task is then an optional supplement (for explore/plan/coder, task alone is the brief).
+```
+
+**参数骨架（文本骨架退役——参数即骨架）**：
+
+```text
+Pass one parameter per field — contents only (the runtime adds the labels):
+subagent(role="eng-coder", round="initial", goal="…", knownFacts="…", designPoints="…", acceptance="…", reportFormat="…", batchDoc="<batch record>", designToken="…")
 ```
 
 **决策**：
-- **KD-TF1（描述句 = 门的取舍——KD-M5-7 同族）**：清单 = 门标记集逐字回显（`spawn-gates.mjs:18-24` 五文本标记 + `round` 结构化参数）——描述随门走；门侧零改（五标记 ∥ `ROUND_VALUES` ∥ 拒句逐字不动）。
+- **KD-TF1（描述句与门一致——KD-M5-7 同族）**：描述面载明「五项结构化参数 + `round`」——描述随门走；门侧判据 = `TASK_BOOK_PARAMS` 五项（存在 / string / `trim()` 非空）+ `ROUND_VALUES`。描述只作人类可读声明，不复写值集（D2 单源 = `spawn-gates.mjs`）。
 - **KD-TF2（共享块）**：eng-coder / eng-designer 共享一段——两段重复 = 描述面双份字面（D2；改一处漏一处）。
+- **KD-TF3（参数即骨架）**：六行文本骨架退役——「照抄标签写进任务文本」的形不再是门的形（照抄者会漏传五项参数 ⇒ 被门拒）；骨架改为一次带参调用，文本面与门面同形。
 
-**边界（本节不做）**：`spawn-gates.mjs` 零改 · 提示词面（persona ∥ 中文正本）零触 · 其他工具描述零清扫 · 不新增工具。同族两件（batch 档头可填性 ∥ 死占位判据可辨性）= `TOOLS.md` §6.20。
+**边界（本节不做）**：门的判据面归 §6.22 F2 · 提示词面（persona ∥ 中文正本）零触 · 其他工具描述零清扫 · 不新增工具。同族两件（batch 档头可填性 ∥ 死占位判据可辨性）= `TOOLS.md` §6.20。
 

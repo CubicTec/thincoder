@@ -79,25 +79,31 @@ export function secretPromptFaceLines(face) {
     if (typeof v === "string" && v !== "") lines.push({ text: ` ${fieldWord(f.name)}: ${v}`, color: C.dim })
   }
   const field = secretCurrentField(face)
-  if (field) lines.push({ text: ` \u276f ${fieldWord(field.name)}:`, color: ansi.bold + C.text })
+  if (field) {
+    // 勾选字段（`save`）：`(y/N)` 尾缀——Enter = 不勾（缺省不勾，§6.22 ⑪）
+    const suffix = field.checkbox === true ? " (y/N)" : ""
+    lines.push({ text: ` \u276f ${fieldWord(field.name)}${suffix}:`, color: ansi.bold + C.text })
+  }
   lines.push({ text: " (type in input box below)", color: C.dim })
   return lines
 }
 
-/** 步入场：当前字段行 + 输入框预填（**仅非掩码字段**——密码零预填（设计 ⑨）；掩码步恒空）。 */
+/** 步入场：当前字段行 + 输入框预填（**仅非掩码非勾选字段**——密码零预填（设计 ⑨）；掩码步恒空；
+ *  勾选步 = y/n 输入，Enter = 不勾）。 */
 function enterSecretField(ctx, face, index) {
   const { state } = ctx
   const field = face.fields[index]
   face.index = index
   face.lines = secretPromptFaceLines(face)
-  const prefill = field?.masked === true ? "" : String(field?.prefill ?? "")
+  const prefill = field?.masked === true || field?.checkbox === true ? "" : String(field?.prefill ?? "")
   state.input = [...prefill]
   state.cursor = state.input.length
   ctx.render()
 }
 
 /** Enter（键面转口）：当前字段决议。必填且空 ⇒ 驻留（零推进零提交——零新文案）；取值口径同
- *  `/team login`：掩码字段原样（密码零裁剪）∥ 非掩码字段 trim（账号 / 地址同族）。 */
+ *  `/team login`：掩码字段原样（密码零裁剪）∥ 非掩码字段 trim（账号 / 地址同族）∥ **勾选字段 = 布尔**
+ *  （`y` / `yes` ⇒ true；空 Enter ∥ 其他 ⇒ false——缺省不勾，§6.22 ⑪）。 */
 export function secretPromptSubmit(ctx) {
   const { state } = ctx
   const face = state.secretPrompt
@@ -105,7 +111,7 @@ export function secretPromptSubmit(ctx) {
   const resolve = face?._resolveField
   if (field == null || typeof resolve !== "function") return
   const raw = state.input.join("")
-  const value = field.masked === true ? raw : raw.trim()
+  const value = field.checkbox === true ? /^(y|yes|true)$/i.test(raw.trim()) : field.masked === true ? raw : raw.trim()
   if (field.required === true && value === "") return
   face._resolveField = null
   resolve(value)
@@ -173,6 +179,7 @@ function normalizeSecretFields(payload) {
       name: f.name,
       masked: f.masked === true,
       required: f.required === true,
+      checkbox: f.checkbox === true,
       prefill: typeof f.prefill === "string" ? f.prefill : "",
     }))
 }

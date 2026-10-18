@@ -135,7 +135,10 @@
 - **中止**：`POST …/abort` ⇒ 下行 `abort` ⇒ 盒中止该回合 ⇒ 上送 `end { status:"failed", reason:"aborted" }`；非 running ⇒ 400 零副作用（沿管理面）。**体 `{ key? }`**：`key`（`<role>#<id>`）在场 = **停单个子代理**（盒按池条目中止——不终回合；`abort` 下行同携 key；非在跑 key ⇒ 400 零副作用）。
 - **收尾三径**（盒侧在途回合的终结源）：
   ① `end` 帧（正常/失败/中止）；
-  ② **掉线**（SSE 写失败/连接关 ∨ `ping` 应答欠 3 周期）⇒ server 判 `box_lost`：浏览器流补 notice 帧 + `end { failed, box_lost }`（零行可补——无落库面）；**在途命令一并收尾**（单点 = `src/agent/member-relay.mjs` `settleCommands`——三调用点 = 判掉线 ∥ `detach` ∥ 停机 `closeAll`）：拉取件 ⇒ 记录面 `state:"failed"` + `detail.message` = 常量 `BOX_LOST_CMD_MESSAGE`（人话「工作区连接已断开——命令未完成（工作区恢复后重试）」——单一出处 = `src/agent/member-relay.mjs`）并落 `member_event`（`kind:"pull"` ∥ `ok:false` ∥ `reason` = 同常量）；指令件 ⇒ 回呈同形 ⇒ 路由面 `valueOf` 抛 400 人话（盒侧失败同码——零 `valueOf` 改）；收尾后 `hello.redeliver` 不再携该件（防重复执行）；盒侧对称——上行失败即中止本地回合，重连后**零对齐动作**（真源在盒——槽文件即事实）；
+  ② **掉线**（SSE 写失败/连接关 ∨ `ping` 应答欠 3 周期）⇒ server 判 `box_lost`：浏览器流补 notice 帧 + `end { failed, box_lost }`（零行可补——无落库面）；
+  **在途命令一并收尾**（单点 = `src/agent/member-relay.mjs` `settleCommands`——三调用点 = 判掉线 ∥ `detach` ∥ 停机 `closeAll`）：拉取件 ⇒ 记录面 `state:"failed"` + `detail.message` = 常量 `BOX_LOST_CMD_MESSAGE`（人话「工作区连接已断开——命令未完成（工作区恢复后重试）」——单一出处 = `src/agent/member-relay.mjs`）；
+  并落 `member_event`（`kind:"pull"` ∥ `ok:false` ∥ `reason` = 同常量）；指令件 ⇒ 回呈同形 ⇒ 路由面 `valueOf` 抛 400 人话（盒侧失败同码——零 `valueOf` 改）；收尾后 `hello.redeliver` 不再携该件（防重复执行）；
+  盒侧对称——上行失败即中止本地回合，重连后**零对齐动作**（真源在盒——槽文件即事实）；
   ③ **服务端重启**：在途态 = 纯内存（零行可扫）——浏览器流自断重连；重派 = `hello.redeliver`（server 内存清单——重启后清空，如实）；盒内槽文件零损。（`redeliver` = 连接替换窗残余径——非主径；主径 = 活连下行。）
   **无独立看门狗**（回合预算沿核；卡死兜底 = 生命周期动作——停/重启工作区 ⇒ 掉线径收尾）。
 - **落点（零服务器落库）**：user 内容与回合产出 = 盒内槽文件（核保存语义）；帧 = 转发即弃；展示形截断两字段分治（`args` ≤500 ∥ `summary` ≤300 沿用；`content` = 核 `capText` 64 KiB——活流/回读同径，§3.11(6)）；notice = 流内帧（收尾三径② 合成——`reason:"box_lost"`；活流唯一呈现径，重读不含，如实）。
@@ -345,7 +348,8 @@
 
 | 件 | 现读 | 预算 | 角色 |
 |---|---|---|---|
-| `src/agent/member-relay.mjs` | **419** | ≈220（设计） | 盒连接登记 ∥ 下行队列 ∥ 回合状态机（在途门/收尾三径——**内存态**）∥ 在线态 ∥ ask 在途表 |
+| `src/agent/member-relay.mjs` | **410** | ≈220（设计） | 盒连接登记 ∥ 下行队列 ∥ 回合状态机（在途门/收尾三径——**内存态**）∥ 在线态 ∥ ask 在途表 |
+| `src/agent/ask-vocab.mjs` | **37** | ≈30（设计） | 应答词表叶子（**零 import**）：`ASK_KINDS` ∥ `ITEM_VERDICTS` ∥ `BATCH_VERDICTS` ∥ `askAnswerBodyOf`——`member-relay.mjs` 以 import + 重导出同源（公共面零变） |
 | `src/agent/member-routes.mjs` | **557** | ≈250（设计） | 成员面会话端点（读/建/改 = 盒指令转发）+ 工作区扩四端点 + git 凭据三端点（ask/delete/files 三端点 = 已外迁 `member-asks.mjs`） |
 | `src/agent/member-asks.mjs` | **69** | ≈90 | ask/delete/files 三端点（自 `member-routes.mjs` 外迁——越线拆案） |
 | `src/agent/box-routes.mjs` | **172** | ≈220（设计） | 盒三口 + SSE 下行 + 凭据取件口 + MCP 两口 |
@@ -353,7 +357,7 @@
 | `src/agent/member-pull.mjs` | **104** | ≈130（设计） | 拉仓：项目/源解析 ∥ 命令组装与结果对位（凭据不随命令） |
 | `src/store/db.mjs` | **36** | **±0**——v23 段入 `migrations.mjs` | —— |
 | `src/store/migrations.mjs` | **795** | ≈**745**（+≈35——v23 段：凭据表 + 索引 + 审计 CHECK 重建（十六型）+ 迁移段） | 迁移链（v23 = 成员面段） |
-| `deploy/sandbox/member-shell/{index,protocol,core-run,pull,git-cred}.mjs` | **1533**（361 ∥ 318 ∥ 654 ∥ 114 ∥ 86） | ≈730（设计） | 壳：连挂/读指令族 ∥ 帧编解码 ∥ 核回合驱动 ∥ 拉仓执行 ∥ git 凭据助手 |
+| `deploy/sandbox/member-shell/{index,protocol,core-run,pull,git-cred,bootstrap}.mjs` | **1960**（370 ∥ 318 ∥ 654 ∥ 114 ∥ 86 ∥ 418——index ∥ bootstrap 为本轮实测，余三件沿既有读数） | ≈730（设计） | 壳：连挂/读指令族 ∥ 帧编解码 ∥ 核回合驱动 ∥ 拉仓执行 ∥ git 凭据助手 ∥ 版本化引导（自取/自换/回退） |
 | `deploy/sandbox/member-shell/member-tools.mjs` | **125** | ≈180 | 盒内 server 域四件（`workspace_{create,start,stop,destroy}`——KD-SV-222） |
 | `deploy/sandbox/member-shell/mcp-tools.mjs` | **106** | ≈130 | 盒侧 MCP 桩件（取表/建桩/防撞——机制全文 = `mcp/MCP.md` §6.1） |
 | `deploy/sandbox/Dockerfile` | **46** | ≈35（设计） | 核装 + 壳 COPY（含 git 凭据助手）+ 助手登记 + CMD（件位契约 = `/opt/thincoder/app`——`sandbox/EXECUTION.md` §8） |
@@ -388,7 +392,7 @@
 | 机制行（记忆面） | 本机制零新增记忆面件/零新增盒内本地索引接线（断言）：服务端零记忆表/零端点；盒内 = 核默认面随核同件（非本机制件——§2 KD-SV-158 注） |
 | 成员面三端对齐（用户「跟 vsc/desktop 差不多」；功能点 50①） | ① **帧面**：七型 + `usage` 两扩字段 + 下行 `answer`/`abort.key`（假盒桩逐帧形；盒壳 `protocol.mjs` 构造器单点）；② **卡族**：ask 回路端到端（ask 帧 ⇒ 卡 → `POST …/asks/:promptId` ⇒ `answer` ⇒ 结算；单件/批/问询/秘密四形；核件直用断言）；③ **模式旗**：四旗写读（PATCH ⇒ `session.update` ⇒ 槽四字段 ⇒ 行 `flags`）∥ 回合装配生效（核 `applySession`）∥ **钮可见性**两侧同测（成员面四模式钮可见 ∥ 管理面五枚仍隐）；④ **状态行**：段表全段（19 段——源 ⊆ 表）；⑤ **子代理**：`sub` 帧 ⇒ 核栈（归约/效果表）∥ 停单件（`abort { key }`）；⑥ **会话条**：自绘下拉（位标/meta/✎/✕/📁）+ 重命名/删除端形；⑦ 页面小件（搜索/复制降级/@ 菜单/图片/toolOutput/全文/⚙） | 单元测试档 + 收口轮（用户实走对照 VSC/桌面） |
 | ask 回路与收尾兜底（KD-SV-217） | 假盒桩：ask 帧逐形（四 kind）→ 页应答恰一 `POST` → relay `answer` 下行恰一 → 盒侧结算；兜底：`end`/中止/掉线 ⇒ 未决 ask 全量收口（单件拒 ∥ 批 deny ∥ 问询/秘密取消）∥ 后到应答 ⇒ 400 零副作用 ∥ 秘密值零入上下文（消息面扫描）∥ 非本人会话 ⇒ 404 不辨 | 单元测试档 |
-| 成员面 MCP 工具挂载（AC-54⑤；机制全文 = `mcp/MCP.md` §6） | 分面判据：装配面 = §3.7/§3.11(7)（逐回合取表 ⇒ `extraTools` 并面 ∥ 失败降级回合不阻断）∥ 清单面 = 两端点响应零秘密 ∥ 审批面 = `readonly:false` ⇒ 核门挡（对表批 #1 落前全拒 ∥ 落线后 = 卡）∥ 审计面 = `chat_call` 帧源落行 ∥ 命名面 = 核单源 + 盒侧防撞拒挂 + 日志；载体 = `mcp/MCP.md` §11 AC-54⑤ 行 ∥ 用例 N6/B4/E3 | 单元测试档 + 收口轮（成员会话实调一轮——批序：成功调用腿后置） |
+| 成员面 MCP 工具挂载（AC-54⑤；机制全文 = `mcp/MCP.md` §6） | 分面判据：装配面 = §3.7/§3.11(7)（逐回合取表 ⇒ `extraTools` 并面 ∥ 失败降级回合不阻断）∥ 清单面 = 两端点响应零秘密 ∥ 审批面 = `readonly:false` ⇒ 核门挡 ⇒ 审批卡∥ 审计面 = `chat_call` 帧源落行 ∥ 命名面 = 核单源 + 盒侧防撞拒挂 + 日志；载体 = `mcp/MCP.md` §11 AC-54⑤ 行 ∥ 用例 N6/B4/E3 | 单元测试档 + 收口轮（成员会话实调一轮） |
 | 边界行 | 不做面零出现（移动壳/公网化/穿透/三端面——路由与页面核读） |
 
 ## 7. 用例（本域——**成员面用例**：跨面重号以面别限定；同号 = `agent/ADMIN-AGENT.md` §8（管理面）∥ `webui/CHAT.md` §4（壳面）等，各面自持）

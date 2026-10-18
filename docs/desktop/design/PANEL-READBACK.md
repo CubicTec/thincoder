@@ -43,7 +43,7 @@
   ⇒ `ev:subagent {status:"done"}` ⇒ 态机排收 done ⇒ 归档（awaitingDigest 收 done ⇒ `archive atBoundary`）⇒ 归档入流 + **`record:append` 落档**（`thincoder-desktop/renderer/subagent-reduce.mjs:125-138`——trio 缺的正是这份记录）。
   `sub:` 前缀**必须**在发射前剥除（relay 前缀文法 `^([\w-]+)#(\d+)\//` 不吃 `:`——`thincoder-render-core/subblocks/relay.mjs:22`；带前缀发出会漏入内容面）。
 - 幂等：重复 freeze ⇒ 二次 done 命中已归档块 ⇒ 态机 `drop-frozen` 丢弃（`thincoder-render-core/subblocks/state.mjs:236-240`）——零重复归档、零重复记录。
-- 工具描述收正（语义）：`agent-tools/subagent.mjs:135` freeze 参数说明的「requires the CLI TUI panel mirror」随改述（桌面回读源在列）；`tool-docs/subagent.md:10` 的「exactly as the user sees them」句**逐字保留**（把它变成真）。
+- 工具描述收正（语义）：`agent-tools/subagent.mjs:135` freeze 参数说明的「requires the CLI TUI panel mirror」随改述（桌面回读源在列）；`thincoder-core/tool-docs/subagent.md:10` 的「exactly as the user sees them」句**逐字保留**（把它变成真）。
 
 ### 2.4 ④ 对账自愈（宿主自愈扫 + done 帧双痕）
 

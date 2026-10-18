@@ -263,7 +263,7 @@
 | VSC | `design/` | `_archive/design/` | 50 | 13,458 |
 | VSC | `design/prompts/` | `_archive/design/prompts/` | 15 | 1,026 |
 | VSC | `requirements/` | `_archive/requirements/` | 34 | 2,232 |
-| VSC | `docs/` 根（`README.md` · `CAPABILITY_GAP.md` · `COMPETITIVE_ANALYSIS.md`） | `_archive/`（同名） | 3 | 625 |
+| VSC | `docs/` 根（`README.md` · `thincoder-vscode/docs/_archive/CAPABILITY_GAP.md` · `thincoder-vscode/docs/_archive/COMPETITIVE_ANALYSIS.md`） | `_archive/`（同名） | 3 | 625 |
 | VSC | **小计** | —— | **136** | **25,784** |
 | CLI | `batches/` | `_archive/batches/` | 41 | 17,744 |
 | CLI | `design/` | `_archive/design/` | 47 | 19,851 |
@@ -277,7 +277,7 @@
 **清单机核（复跑命令 · 期望输出见 §10.6 AC-1）**：
 `node -e "const fs=require('fs');for(const t of ['thincoder-vscode','thincoder-cli']){let a=0,r=0;const w=d=>{for(const n of fs.readdirSync(d)){const p=d+'/'+n;fs.statSync(p).isDirectory()?w(p):(/\/_archive\//.test(p)?r++:a++)}};w(t+'/docs');console.log(t,a,r)}"`
 
-**phase-1 三档处置（open ③ **已结清：暂留原地 · 生效读数 139 / 50** · 父侧裁定）**：CLI 树清单原含 phase-1 三档 = `batches/2026-09-13-TWO-REPO-MERGE.md` · `design/TWO-REPO-MERGE.md` · `requirements/TWO-REPO-MERGE.md`——依 `docs/README.md` §3 现行政策「**暂留原地**」⇒ **不含**（原地不动；改期 = 两仓合并 phase 1 完成后另议）：
+**phase-1 三档处置（open ③ **已结清：暂留原地 · 生效读数 139 / 50** · 父侧裁定）**：CLI 树清单原含 phase-1 三档（批次档 · `design/TWO-REPO-MERGE.md` · `requirements/TWO-REPO-MERGE.md`）——依 `docs/README.md` §3 现行政策「**暂留原地**」⇒ **不含**（原地不动；改期 = 两仓合并 phase 1 完成后另议）：
 
 - **迁移集口径**：三档自**迁移集**剔除 ⇒ 迁移集 = **139 档**（142 − 3）；归档后 CLI 侧 = 活面 3 档 · 归档面 50 + 139 = 189；
 - 原「迁」分支不取（政策未变；如改期另裁）。
@@ -289,7 +289,7 @@
 **口径**：源域 = 仓根 `docs/**` 扣 `_archive/` 与 `batches/`；读数 = **沙箱实跑引擎**逐行差集。**单位**：引用 = 行内退役树引用条数（同行 2 条计 2）；**52 引用 = 50 行**（差 2 = `AGENT-LOOP.md:43`/`:224` 双引用行）。**分量**（按引用档所在域逐档求和）：`docs/core/**` **37**（行 35）· `docs/vsc/**` **15**（行 15）——全在闸态。
 
 **残类口径（引擎未报红的域内前缀行——登记 · 非本节射程）**：本节改指射程 = **仅引擎红色差集 52 引用**（族 A/B/C）。
-域内（源域同前）**含退役树前缀而不报红**的行（判据 = 逐行含 `thincoder-{vscode,cli}/docs` 子串；`docs/vsc/design/VSC-MIGRATION.md:92` 自承此类 = 「由唯一 basename 索引救回（不红、但为陈旧指针）」）**零动作 + 列报为已知遗留**：
+域内（源域同前）**含退役树前缀而不报红**的行（判据 = 逐行含 `thincoder-{vscode,cli}/docs` 子串；先例 = `docs/vsc/design/VSC-MIGRATION.md` §1.4 归档形态现状）**零动作 + 列报为已知遗留**：
 
 | 面 | 复跑命令（命令 A） |
 |---|---|
@@ -301,16 +301,18 @@
 | 族 | 判据句 | 引用 | 处置 |
 |---|---|---|---|
 | **引-A 史实指针** | 引用对象 = 被退役档**本身**：行含出处 / 来源 / 「自 … 并入 / 切出」/ 变更记录 / 迁移台账清单 / 引用面自述「参照历史」 | **44** | **改指归档形全路径**（`thincoder-{vscode,cli}/docs/_archive/<原相对路径>`）——**措辞零改**（D4 指针纪律：形态更新，非内容改写） |
-| **引-B 现态断言** | 行对 v1 档作**现行效力**断言（「相邻权威」/「判据权威」/「条款住址」等现态语）⇒ 该断言随退役失效 | **4** | **改指 canonical 活档**（`docs/core/**` 同话题档：`ENGINEERING-MODE.md` · `ENG-TOKEN-BINDING.md`）∥ 无同话题活档者 ⇒ 归档形改指 + 行内**退场注记**（语义句，非引擎标记族） |
+| **引-B 现态断言** | 行对 v1 档作**现行效力**断言（「相邻权威」/「判据权威」/「条款住址」等现态语）⇒ 该断言随退役失效 | **4** | **改指 canonical 活档**（`docs/core/**` 同话题档）∥ 无同话题活档者 ⇒ 归档形改指 + 行内**退场注记**（语义句，非引擎标记族） |
 | **引-C 旧形态消歧** | anchor = 迁移前根形态 `docs/design/<X>.md`（无树前缀、本仓任何形态下均不存在） | **4** | 改指归档形**全路径**（按对象所属树补前缀），不得保留歧义形态 |
 | **引-D 台账面** | `docs/TODO.md` · `docs/TODO-archive.md` 内的同类引用（迁后同转悬空） | （≈58 行，口径外） | **零动作**——两档 = 退役历史台账（`docs/README.md` §1），且**不入机检源域**（`scripts/doc-check-targets.mjs:17` `LEDGER_NAMES` 档名判）⇒ 不产闸面红；笔权 = 主 agent |
 | **引-E 口径外引用** | 仓根 `README.md`（5 行 · product-text 面）· 两产品 `AGENTS.md` / `src` / `webview` 注释 · 产品 `test/**` 头注（合计 **35 行 / 20 档**） | 35 行 | **零动作 + 登记**（不在 §2.5 引用面口径；笔权与处置归父侧；产品 `test/**` 头注为注释非断言，零断裂） |
 
 **逐族明细（= 执行轮改指清单 · `file:line` 逐条）**：族 A/C 的 **48 引用** = 下列 **19 档**——
+**坐标注**：下列 `file:line` = 迁移执行前定位；两树退役闭合后所指引用已改指归档形（`thincoder-{vscode,cli}/docs/_archive/**`）或随档收正 ⇒ **现盘行号不再对应**。
+7 处越界：`AGENT-PARAMS.md:138` ∥ `CORE-UNIFICATION.md:1656` ∥ `I18N.md:75` ∥ `SEND-STALL-DISTILL.md:114/:147` ∥ `TOOL-OUTPUT-LIMITS.md:160` ∥ `docs/vsc/design/VSC-MIGRATION.md:126`；现行状态 = `docs/README.md` §2。
 `docs/core/design/AGENT-PARAMS.md:85/:138` · `BATCH-RECORD.md:284` · `CONFIG.md:91/:96/:138/:146` · `CONSULTATION.md:99` · `CORE-UNIFICATION.md:567/:603/:1656` ·
 `DOC-CODE-RECONCILE.md:134` · `DOC-DISCIPLINE.md:505/:902` · `DOC-SYSTEM.md:22` · `ENG-TOKEN-BINDING.md:173` · `I18N.md:75` · `LEDGER.md:187` ·
 `PORTABILITY.md:5/:148` · `SEND-STALL-DISTILL.md:8/:114/:147` · `TOOL-OUTPUT-LIMITS.md:104/:160` · `docs/core/requirements/AGENT-LOOP.md:43×2/:127/:142/:224×2` ·
-`NORMAL-MODE.md:129` · `TWO-REPO-MERGE.md:65` · `docs/vsc/design/VSC-MIGRATION-INVENTORY.md:149/:150/:196/:198/:209/:210/:214/:215` · `docs/vsc/design/VSC-MIGRATION.md:126`。
+`NORMAL-MODE.md:129` · `TWO-REPO-MERGE.md:65` · `docs/vsc/design/VSC-MIGRATION.md:126`。
 族 B 的 **4 引用** = `docs/core/design/DOC-SYSTEM.md:279` · `ENG-TOKEN-BINDING.md:5/:85` · `docs/core/requirements/TWO-REPO-MERGE.md:53`。
 
 **禁出路**：**不得**以行级标记豁免代处置——引用**迁后在位**（可解析 ⇒ 无悬空可列报）；处置 = **改指**（路径可解析、零标记）。

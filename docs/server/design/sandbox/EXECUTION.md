@@ -106,7 +106,8 @@ HostConfig:
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 `<path>.loop.img` + `mkfs.ext4 -O project,quota` + 挂载到工作区路径——备选）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **② 降级腿**（KD-SV-198）：`ext4`+`prjquota` 径的**项目标记步**（`chattr`）失败 ⇒ 降 loopback 径一次——**守卫 = 仅 `ext4-project` 径的该次调用降**（两径复用同一步标签）；降级后 loopback 径的项目标记**再失败 ⇒ 停**（零第二次降级）。判据 = 该步**步标签**（非错误文本——locale 不稳）。**披露**：降级落 loopback ⇒ 新 fs 盖住工作区路径 ⇒ 原目录内容从盒视角不可达（与 `rebuild` 同面——KD-SV-197）。
-- **读件（只读——就位探与卸除件共用）**：`mountpoint -q <path>`（在挂判）∥ `findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -T <path>`（挂载点/源/类型/选项）∥ `test -f <path>.loop.img`（镜像在场）∥ `dumpe2fs -h <path>.loop.img`（镜像 fs UUID + features）∥ `dumpe2fs -h <source>`（**挂载侧** fs UUID——判据⑤取数；仅源为 `/dev/loop<n>` 时读，外来挂载零外读）∥ `losetup -a -O NAME,BACK-FILE -n`（loop 归属读数——**卸除阶段用**：自愈卸除 ∥ 销毁卸除件；健康径零读）。
+- **读件（只读——就位探与卸除件共用）**：`mountpoint -q <path>`（在挂判）∥ `findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -T <path>`（挂载点/源/类型/选项）∥ `test -f <path>.loop.img`（镜像在场）∥ `dumpe2fs -h <path>.loop.img`（镜像 fs UUID + features）∥ `dumpe2fs -h <source>`（**挂载侧** fs UUID——判据⑤取数；仅源为 `/dev/loop<n>` 时读，外来挂载零外读）
+  ∥ `losetup -a -O NAME,BACK-FILE -n`（loop 归属读数——**卸除阶段用**：自愈卸除 ∥ 销毁卸除件；健康径零读）。
   **旗形与字段序**：探明调用 = `findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -T <path>`（`applyDiskQuota` 首步）；`parseFindmnt` 出参序 = `{ mount, source, fstype, options }`（= 旗形逐位 TARGET ∥ SOURCE ∥ FSTYPE ∥ OPTIONS）。
 - **loopback 就位判据（就位探 = 身份 + 能力——KD-SV-196；实现 = 纯函 `classifyLoopbackMount`）**：逐序判——
   ① 未挂在工作区路径上 ⇒ `absent`（建/挂）；
@@ -123,8 +124,12 @@ HostConfig:
 - **读回核**：应用后读回配额读数（xfs = `report -p -b` + `xfs_info` bsize；ext4 = `repquota -P` 千字节块）；读数不符 ⇒ 同停。
 - **幂等**：重复应用 = **重跑、同结果**（`ext4 项目标记` 步恒重跑——已标记工作区亦然（不跳过）；同号同旗重打 = 同结果；loopback 就绪 ⇒ 零修复动作、标记步照跑；`setquota` 重设 = 改限）；应用失败零残留（项目 id 与路径的绑定失败即报）。
 - **健康径口径（零回归判据）**：**变更性命令零增**（`umount` ∥ `losetup -d` ∥ `truncate` ∥ `mkfs` ∥ `mount` ∥ `chown` 六族）+ **审计行零增**；新增唯只读读件（上列——探明旗形补 `SOURCE` 列 ∥ loopback 腿另加 `mountpoint`/`test -f`/`dumpe2fs`（镜像侧 + 挂载侧两读）；**`losetup -a` 不在健康径**——仅卸除阶段读（自愈卸除 ∥ 销毁卸除件））。
-- **留痕**（KD-SV-200）：命中 `reconnect` ∥ `rebuild` ∥ `demote` ⇒ 一行 `sandbox_event/quota_recovered`（detail = `kind`+`workspaceId`+`runnerId`+`recovery`+`path`；健康径零行——`accounts/ACCOUNTS.md` §2.1）。**绑定物理动作**：卷已重建/重接 ⇒ 行必落——成功返回时由返回值携 `recovery`；**重建/重接后下游步失败时由错误携 `err.recovery`**（写入点 = `box.mjs` `stepQuota` 两径皆落行）——重建不因后续失败丢痕。**`rebuild` 的判据 = 是否抹掉既有内容**（既有内容不可再达即是）：`mkfs` 抹掉既有镜像内容（重建前镜像在场）⇒ 行必落（`rebuild`）——裁决 `absent` ∥ `stale` 皆然；`stale` ∧ 镜像不在（判据③旧 inode 挂载——旧内容不可再达）⇒ 亦 `rebuild`；**无抹 ⇒ 非 `rebuild`**——`stale` ∧ 镜像可用（具 `project`）⇒ 只重接，`recovery = "reconnect"`（行由主句「命中 `reconnect`」规约）。`null` 径 = 无既有内容被抹：`absent` ∧ 重建前镜像不在（首建——无内容可抹）∥ `absent` ∧ 镜像在场且具 `project`（只挂载既有镜像，零 `mkfs`）∥ `ready`（健康径）。
-- **卸除件（销毁径调用——KD-SV-199）**：`releaseLoopbackVolume`——① 在挂则 `umount`（**未挂 ⇒ 零动作、不抛**——xfs/ext4 径常态）② `losetup -a -O NAME,BACK-FILE -n` 读数按 back-file 归属（剥 ` (deleted)`）逐条 detach 本工作区镜像——**归属判据 = back-file 等于本工作区镜像路径**，外来挂载 ∥ 他工作区 loop 零 detach；`umount` ∥ `losetup -d` 失败 ⇒ 抛。③ **删目录与镜像不在卸除件内**——落 `box.mjs` 销毁步（`rm -rf <path> <path>.loop.img` 走 `host.run`，失败 ⇒ 抛；§3 销毁行）；卸除件（①②，`quota.mjs`）与删除件（③，`box.mjs`）两档共成销毁全程 fail-closed（KD-SV-199）。
+- **留痕**（KD-SV-200）：命中 `reconnect` ∥ `rebuild` ∥ `demote` ⇒ 一行 `sandbox_event/quota_recovered`（detail = `kind`+`workspaceId`+`runnerId`+`recovery`+`path`；健康径零行——`accounts/ACCOUNTS.md` §2.1）。
+  **绑定物理动作**：卷已重建/重接 ⇒ 行必落——成功返回时由返回值携 `recovery`；**重建/重接后下游步失败时由错误携 `err.recovery`**（写入点 = `box.mjs` `stepQuota` 两径皆落行）——重建不因后续失败丢痕。
+  **`rebuild` 的判据 = 是否抹掉既有内容**（既有内容不可再达即是）：`mkfs` 抹掉既有镜像内容（重建前镜像在场）⇒ 行必落（`rebuild`）——裁决 `absent` ∥ `stale` 皆然；`stale` ∧ 镜像不在（判据③旧 inode 挂载——旧内容不可再达）⇒ 亦 `rebuild`；**无抹 ⇒ 非 `rebuild`**——`stale` ∧ 镜像可用（具 `project`）⇒ 只重接，`recovery = "reconnect"`（行由主句「命中 `reconnect`」规约）。
+  `null` 径 = 无既有内容被抹：`absent` ∧ 重建前镜像不在（首建——无内容可抹）∥ `absent` ∧ 镜像在场且具 `project`（只挂载既有镜像，零 `mkfs`）∥ `ready`（健康径）。
+- **卸除件（销毁径调用——KD-SV-199）**：`releaseLoopbackVolume`——① 在挂则 `umount`（**未挂 ⇒ 零动作、不抛**——xfs/ext4 径常态）② `losetup -a -O NAME,BACK-FILE -n` 读数按 back-file 归属（剥 ` (deleted)`）逐条 detach 本工作区镜像——**归属判据 = back-file 等于本工作区镜像路径**，外来挂载 ∥ 他工作区 loop 零 detach；`umount` ∥ `losetup -d` 失败 ⇒ 抛。
+  ③ **删目录与镜像不在卸除件内**——落 `box.mjs` 销毁步（`rm -rf <path> <path>.loop.img` 走 `host.run`，失败 ⇒ 抛；§3 销毁行）；卸除件（①②，`quota.mjs`）与删除件（③，`box.mjs`）两档共成销毁全程 fail-closed（KD-SV-199）。
 - 判据：盒写超限 ⇒ ENOSPC（应用可见——E33 ∥ 探针 P7）；用例 = §13（N74 ∥ B77–B84 ∥ E58–E60）。
 
 ## 7. 写门实时化（KD-SV-166）
@@ -293,12 +298,12 @@ HostConfig:
 | `thincoder-server/src/store/db.mjs` | **36/37**（迁移段已外拆 `src/store/migrations.mjs`（已落）**795/796**） | 开库/PRAGMA/语句封装 |
 | `thincoder-server/deploy/sandbox-probe.mjs`（已落） | **537/538**（越 500 软线在册） | 探针执行器（余腿驱动 ∥ 一次性容器径 ∥ PASS/FAIL/SKIP/退出码） |
 | `thincoder-server/bin/thincoder-server.mjs` | **241/242** | 装配 |
-| `thincoder-server/deploy/sandbox/Dockerfile` | **46/47**（本档定义契约）⇒ 本批随正：档头死指针（`sandbox/RUNNER.md §3`）收正 **≤±2 行 ∥ 结构零变** | 盒镜像 |
-| `thincoder-server/deploy/pack-box-shell.mjs`（本批——拟新增） | ≈**90** | 壳工件打包（树哈希（引 `bootstrap.mjs` 单源） ∥ tar 写 ∥ manifest ∥ 打包自检（回读复算） ∥ 旧件留 3 修剪）——§8 壳更新面块 |
+| `thincoder-server/deploy/sandbox/Dockerfile` | **46/47**（本档定义契约） | 盒镜像 |
+| `thincoder-server/deploy/pack-box-shell.mjs`（本批） | **72** | 壳工件打包（树哈希（引 `bootstrap.mjs` 单源） ∥ tar 写 ∥ manifest ∥ 打包自检（回读复算） ∥ 旧件留 3 修剪）——§8 壳更新面块 |
 | `thincoder-server/package.json`（本批——拟改） | **31** ⇒ +1 | `prepack` 挂钩（⇒ `deploy/pack-box-shell.mjs`——§8 壳更新面块） |
-| `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs`（本批——拟新增；档账随正 = `agent/MEMBER-AGENT.md` §5） | ≈**180** | 盒内壳引导（树哈希单源 ∥ manifest/工件取件 ∥ 解包校验 ∥ 缓存槽 ∥ 换执行与回退） |
-| `thincoder-server/deploy/sandbox/member-shell/index.mjs`（本批——拟改） | **362** ⇒ +≈10 | `main()` 引导接线（先于核装载）+ 版本行 |
-| `docs/batches/2026-10-17-box-shell-update.test.mjs`（本批——拟新增） | ≈**250**（不越 500 软线） | N89 ∥ B85–B88 ∥ E65（随批档存——收口随批删） |
+| `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs`（本批；档账随正 = `agent/MEMBER-AGENT.md` §5） | **418** | 盒内壳引导（树哈希单源 ∥ manifest/工件取件 ∥ 解包校验 ∥ 缓存槽 ∥ 换执行与回退） |
+| `thincoder-server/deploy/sandbox/member-shell/index.mjs`（本批） | **361** ⇒ +9（实读 **370**） | `main()` 引导接线（先于核装载）+ 版本行 |
+| `docs/batches/2026-10-17-box-shell-update.test.mjs`（本批） | **478**（不越 500 软线） | N89 ∥ B85–B88 ∥ E65（随批档存——收口随批删） |
 | `.gitignore`（仓根——本批拟改） | **41** ⇒ +1 | `thincoder-server/public/box-shell/`（构建产物不进 git） |
 | **小计** | **≈ +2221** ∥ **≈ −1117** | —— |
 | **单元测试档** | **主体 795**（动作链 ∥ 参数集 ∥ 放置 ∥ 定时器 ∥ 实时门 ∥ v22 迁移 ∥ #1351 事务 ∥ 拆案读判）∥ `-base` **543**（派生 tag/Dockerfile 逐行 ∥ 镜像就位四步 ∥ 凭据 CRUD/注入 ∥ 绑定 PATCH ∥ 零变化腿）∥ `-base-ui` **437**（两卡渲染 ∥ 弹窗 ∥ i18n 键集）∥ `-tls` **711**（三件形校验/加密往返 ∥ 适配件选项逐值（假 `https.request`）∥ 连接端点两腿 ∥ 明文零行为变化腿）∥ `-tls-ui` **378**（添加窗连接段 ∥ 行「连接」钮 ∥ 编辑窗 ∥ i18n 键集）——**越 500 软线在册 = 主体 ∥ `-base` ∥ `-tls`**；本批新增一件 `docs/batches/2026-10-17-sandbox-quota-chattr.test.mjs`（`chattr` 分治命令串断言——恢复/降级/读回核腿不破）：**既列五档结构零变**（新档规模以实施当刻实读为准）；**上列五读数 = 收正前读数**（实施后复读随正） | 随批档存 |

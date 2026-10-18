@@ -86,7 +86,7 @@ export function fixtureTransport(script) {
 
 /** 判官 / 复核夹具传输（§5.13 测试策略①：不触网）：按位次（`slot` = A / B / C / review）回放固定裁决脚本。
  *  脚本条目 = `{ text, tokens?, finishReason?, totalMs?, fail?: "throw" }`；逐位独立游标（同一位可多次调用）。
- *  dry-run 夹具与 `bench/test/judge.test.mjs` 桩传输共用本函数。 */
+ *  dry-run 夹具与 `bench/check/judge.check.mjs` 桩传输共用本函数。 */
 export function fixtureSlotTransport(scripts) {
   const cursors = {}
   return {

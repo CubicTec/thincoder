@@ -151,7 +151,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 > 口径：`thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**
 > （**不含** `design/prompts/` 15 档 · `design/_archive/` 50 档 · 批次档 41 档）。
 > **计数收正**：需求池既有条目写「`thincoder-cli/docs/{design,requirements}/**`（86 档）」（`docs/TODO.md` 需求池第 24 条）——
-> 实核 = **84**（含 `design/prompts/` 则 99 = 机检域读数；含 `_archive/` 则 149）。差额登记于报告未决面。
+> 实核 = **84**（含 `design/prompts/` 则 99；含 `_archive/` 则 149）。差额登记于报告未决面。
 
 **逐档二分（活 / 历史）与落点** → 迁移台账 `docs/core/design/DOC-MIGRATION.md`。
 该台账 = 本节的**唯一执行表**：逐档一行（判 · 依据（`file:line` 实核）· 动作 / 落点）+ 对账 / 待核 / 小计闭合 / 后续批分组——本节不复制（D2 单一权威源）。
@@ -180,8 +180,8 @@ thincoder/                                  ← 合并仓根（git 仓）
 
 **零报样例（N2——正向 / 反向夹具）**：正向 = `thincoder-core/agent.mjs:125`（前缀 `thincoder-core/` 实存）· `scripts/doc-check-anchors.mjs`（无前缀 + basename 仓内唯一）——两者收紧后仍零报；
 反向 = `docs/core/design/AGENT-LOOP.md` `:14` 行内 `src/` 前缀引用（尾名 `setup.mjs`）——前缀 `src/` 仓根下不存在 ⇒ 现态经 fail-open 零报（漏报）、收紧后须报。
-**现状影响面（域一口径）**：路径 / 坐标候选 **1626**（含注记豁免 25 ⇒ 判定面 1601）——直命中 **725** · 域内唯一 basename **222** · fail-open 分支 **654**（前缀存在 **53** / 前缀不存在 **601**）· 悬空 **0**；
-⇒ 收紧后仍绿 **1000**、转红 **601**（分布 top5：`CORE-UNIFICATION.md` 283 · `TOOLS.md` 98 · `AGENT-LOOP.md` 39 · `CONSULTATION.md` 36 · `CONFIG.md` 26；共 25 档）⇒ 收紧须与「全路径改指 / 扫替」排序配合（先清面、后收紧——否则迁移批红一片）。
+**现状影响面**：机检读数与红 ∕ 绿判据**不入本档**（用户 2026-10-15 12:10 禁令：不再跑、不再引其读数、不再以其红 ∕ 绿作任何判据）。
+⇒ 收紧须与「全路径改指 / 扫替」排序配合（先清面、后收紧——倒序会让存量与迁移改动一起失败）。
 
 ## 7. 交叉引用形态与机检判据（接口契约 · 二 —— FR4）
 

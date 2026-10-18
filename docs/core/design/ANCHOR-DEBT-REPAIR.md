@@ -103,7 +103,6 @@
 | `docs/core/requirements/AGENT-LOOP.md` | 214 | 2 | 4 | 6 | 12 |
 | `docs/core/design/PROMPT-SYSTEM.md` | 271 | 2 | 0 | 9 | 11 |
 | `docs/core/requirements/METHODOLOGY.md` | 119 | 0 | 11 | 0 | 11 |
-| `docs/vsc/design/VSC-MIGRATION-INVENTORY.md` | 494 | 0 | 0 | 11 | 11 |
 | `docs/core/design/TESTING.md` | 318 | 2 | 0 | 8 | 10 |
 | `docs/core/design/MCP.md` | 214 | 1 | 0 | 8 | 9 |
 | `docs/core/design/SETTINGS-TOOL.md` | 140 | 0 | 8 | 1 | 9 |
@@ -283,7 +282,7 @@
 
 | 码 | 到期条件 | 适用 | 消解路径 |
 |---|---|---|---|
-| E1 | 随档退役 | **档级**：迁移档案 / 已收口批的事实表与读数表（`CORE-UNIFICATION.md` · `DOC-MIGRATION.md` · `VSC-MIGRATION-INVENTORY.md` 的**事实 / 读数 / 登记行**） | 该档退役轮启动 ⇒ 标记随档消失，无需单独收正 |
+| E1 | 随档退役 | **档级**：迁移档案 / 已收口批的事实表与读数表（`CORE-UNIFICATION.md` · `DOC-MIGRATION.md` 的**事实 / 读数 / 登记行**） | 该档退役轮启动 ⇒ 标记随档消失，无需单独收正 |
 | E2 | 随档实质修订 | **活档**正文 / 用例表 / 变更记录 / 登记行（档 ∉ 迁移档案族） | 该档下次实质修订轮逐行复核（改指 / 去锚 / 续留须再登记理由） |
 | E3 | 随宿主面收口 | 引用已退役宿主对象者（死脚本族 / 双引擎收敛） | #54+#42 sweep 与判据轮收口后逐条复核 |
 | E4 | 上抛结案 | 需求档 / 判据 | 父侧裁定后由 owning 轮处置 |

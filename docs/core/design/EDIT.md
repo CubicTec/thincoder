@@ -83,7 +83,7 @@ edit = **按精确区域替换 / 删除文件内容**——主编辑工具。定
 | 描述面（模型可见） | `thincoder-core/tool-docs/edit.md` | 在位（`DESC()` 加载） |
 | VSC 对位实现 | 核 `thincoder-core/tools/{file.mjs, edit-diff.mjs, edit-batch.mjs}` | 同机制 |
 
-**VSC 端差异**：① 描述机制——VSC 无 `DESC()` md 描述（`file-edit.mjs` editTool 对象内嵌 description——与 CLI `tool-docs/edit.md` 语义一致）；
+**VSC 端差异**：① 描述机制——VSC 无 `DESC()` md 描述（`file-edit.mjs` editTool 对象内嵌 description——与 CLI `thincoder-core/tool-docs/edit.md` 语义一致）；
 ② 编辑器路径——doc 已打开 → WorkspaceEdit range 替换（定位偏移与 `doc.positionAt` 同坐标系——`lfOffsetToRaw` 把 LF 域偏移映射回 CRLF 原文，见 `docs/core/design/EDIT-HELPERS.md` §6）。
 
 **同类扫描**：「真值判断后点链」缺陷类——`thincoder-core/tools/**` 全扫仅 `file.mjs` 的 `touchedPaths` 一处（已卫）；其余工具触摸面（`read` / `insert_after` / `hashline_edit` 单参形态；`apply_patch` 有 try/catch 包裹）无一命中。**桥面**（`thincoder-cli/src/acp/bridge.mjs`）：`[null]` / 非对象条目同守卫同文案、跨档文案零副本（同批收——§5 / §8 D-7）。

@@ -320,14 +320,14 @@ manifest `docRoot.batches` 复判（M1 缺键 → M1 默认值 fallback；注入
 **骨架模式化（create ∥ §4.10）**：`batchSkeleton({…, mode})`——普通面作者标签**四处替换**（§4.10 普通变体块）；工程面骨架产出逐字不变。
 **已知边界（骨架取形时点）**：骨架按 create 时模式位取形（建档即固）；模式翻转不回写既有骨架——§2/§5 标签留存原形、新批按新位取形；append / status 白名单 = 执行期实读（翻转即时生效——BR-52），两者解耦。
 
-**描述面处置（模型可见文案——与白名单同步）**：工具描述文案 ∥ 参数描述面（`tool-docs/batch.md` ∥ `batch.mjs` / `subagent.mjs` 描述属性）**换写为模式无关措辞**——两模式分支同列、文本不随会话模式变动（翻转安全）。
+**描述面处置（模型可见文案——与白名单同步）**：工具描述文案 ∥ 参数描述面（`thincoder-core/tool-docs/batch.md` ∥ `batch.mjs` / `subagent.mjs` 描述属性）**换写为模式无关措辞**——两模式分支同列、文本不随会话模式变动（翻转安全）。
 **锚检查**：A8（工具描述文案）换写后仍为逐字锚；A2（工程 persona 写入手段句）零触、锚文本零变。
 
-**VSC 锚检查随动判定（§6.2——A8 族 ∥ 六段作者行族）**：触动文本 = ①`tool-docs/batch.md` + 参数描述面（段白名单模式分支化）②`common.md` 六段全图行（模式分辨换写）③普通侧教学新增文本（`discipline-normal.md` / `persona-normal.md`）；工程侧 persona 六段块（A1 / A2 宿主面）零触。
+**VSC 锚检查随动判定（§6.2——A8 族 ∥ 六段作者行族）**：触动文本 = ①`thincoder-core/tool-docs/batch.md` + 参数描述面（段白名单模式分支化）②`common.md` 六段全图行（模式分辨换写）③普通侧教学新增文本（`discipline-normal.md` / `persona-normal.md`）；工程侧 persona 六段块（A1 / A2 宿主面）零触。
 判定 = **VSC 侧须同步**（语义同源文本——非端特有，不设差异登记）；**落笔归 VSC 轮**（跨仓——本席笔域外；P2 归轮惯例——§9）。理由：① 语义同源·原文自持（§6.1）——锚文本两端逐字一致（差异留存 = 端差缺陷）；② 跨仓写禁——只在 CLI 仓落笔；③ 归轮 = 既有惯例（VSC 实现坐标 P2 归 VSC 轮）。**登记备查**（VSC 轮随该文本同步）。
 
 **零变面**：工程面判定字面（§1/§4/§6 ∥ §1 ∥ `SEGMENT_BY_ROLE` 表 ∥ review→§3）逐字不变；错误文案——工程面逐字零变、`batch_segment:` 迁移面全部串零变（含段白名单括注；普通面新路径另出模式化新串）；create / close 身份判据（depth-0 only）两模式同判；冻结门 / F11 族 / 凭证剥除 / 来源戳 / `MAX_TEXT_CHARS` 零改；§5.1 生命周期 L1–L8 模式无关（两模式同判）。
-**非零变（换写面）**：工具描述文案（`tool-docs/batch.md` ∥ 参数描述面）按「描述面处置」换写——勿按零变面处理；工程 persona 写入手段句（A2）不在换写面（零触）。
+**非零变（换写面）**：工具描述文案（`thincoder-core/tool-docs/batch.md` ∥ 参数描述面）按「描述面处置」换写——勿按零变面处理；工程 persona 写入手段句（A2）不在换写面（零触）。
 
 **常量面（单源 = `thincoder-core/agent-tools/batch-skeleton.mjs`——判定字面与骨架共址）**：`SEGMENT_BY_ROLE_NORMAL = { "coder": 5 }` + depth-0 两集模式键常量（append / status）。
 

@@ -59,7 +59,7 @@
 
 | # | 条目（契约点） | 类 | 归一变更 | 兼容形态（§2.12.1 模板） | 落地物（档:行 / 用例名 / CHANGELOG 条目） | 裁定状态 |
 |---|---|---|---|---|---|---|
-| 11 | **代码索引存储面**（VSC `.thincoder/index/{manifest.json,vectors.bin}` 文件 ↔ CLI `node:sqlite` 库内索引） | 数据面 / 文件格式 | 取 CLI（索引入 sqlite 库；VSC 索引文件面退场） | 旧文件格式**不再写**、**零迁移 / 零兼容**（数据面放弃——**不写导入器**；**重新索引 = 正当路径**——用户裁定）· CHANGELOG | 索引面文档 + 用例 + 两产品 `CHANGELOG.md` | 已裁 · 按建议（承 §2.5.1 A1 / §2.11 A8） |
+| 11 | **代码索引存储面**（VSC `.thincoder/index/{manifest.json,vectors.bin}` 文件 ↔ CLI `node:sqlite` 库内索引） | 数据面 / 文件格式 | 取 CLI（索引入 sqlite 库；VSC 索引文件面退场） | 旧文件格式**不再写**、**零迁移 / 零兼容**（数据面放弃——**不写导入器**；**重新索引 = 正当路径**——用户裁定）· CHANGELOG | 索引面文档 + 用例 + `thincoder-cli/CHANGELOG.md` ∥ `thincoder-vscode/CHANGELOG.md` | 已裁 · 按建议（承 §2.5.1 A1 / §2.11 A8） |
 
 ### 4.1 无法兼容项上抛
 
@@ -643,7 +643,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
 
 **⑤-4 agent 触发通道（F-S13）**：`memory` 工具新增 action `maintain`（六动作）；缺省 = 干跑（计划 + 逐动作读数——零写）；`confirm:true` ⇒ 执行。
 执行序 = 备份先行 ⟶ 鬼行 GC ⟶ 压实（按后读 freelist 判）⟶ 轮转；输出 = 逐动作段（执行 ∥ 跳过 + 理由 + 读数）。
-描述文本（`tool-docs/memory.md`）= 提示词面（主 agent 定稿）；VSC 工具面（`thincoder-vscode/src/memory-tool.mjs`）动作清单同批补 `maintain`（执行委托核面——端区零自持算法）。
+描述文本（`thincoder-core/tool-docs/memory.md`）= 提示词面（主 agent 定稿）；VSC 工具面（`thincoder-vscode/src/memory-tool.mjs`）动作清单同批补 `maintain`（执行委托核面——端区零自持算法）。
 
 **⑤-5 触发接线（启动后低峰窗口 · 幂等）**：核侧调度 `scheduleMemoryMaintenance({ dbPath, delayMs = 3000 })`——**每进程一次** + 延迟拍 + 异步非阻塞 + 失败静默（+ `logEvent`）；库不在盘 ⇒ 零动作（不建库——读面纪律）；测试缝 = `_setMemoryMaintenanceDelayForTest`。**自动拍写姿态 = 非干跑**——计划随行后执行 ∥ 备份先行；干跑默认只辖工具缺省（⑤-4）。
 落点 = ① CLI：`thincoder-cli/src/tui/startup.mjs` `backgroundIndex` 收尾（Ready 置后；home 跳过档不拍——登记接受面）② 桌面：`thincoder-desktop/src/main/main.mjs` 启动拍邻位 + 新档 `memory-maintenance.mjs` 惰性转口（`node:sqlite` 不入端壳静态闭包）③ agent：会话内工具显式（⑤-4）。**VSC 自动拍缺位登记** = 端壳多窗 ∥ 惰性句柄——自动拍不落 VSC；触发经工具面（⑤-4）。

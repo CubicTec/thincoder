@@ -22,7 +22,7 @@
 ### 2.1 解裁形
 
 - **事实核读**：`thincoder-server/src/agent/run.mjs:17` `TRIMMED_FACES`——**该常量全仓零代码消费 ∥ 零测试断言**（实读：唯一命中 = 定义行；另在需求档/设计档数处作文本引用）；挂载真实落点 = **chat 面工具面装配**（`thincoder-server/src/agent/chat.mjs:346` `buildChatToolFace`——并三面：管理面 ＋ 环境族 ＋ MCP 面；§2.2）。
-- **原理由核读（在案）**：裁剪文件对 `mcp` **零命中**；`agent/ADMIN-AGENT.md` §5 裁剪句未点名 mcp（所点族 = 审批/TTY/记忆/台账/子代理/浏览器）⇒ mcp 归入兜底条款「与运维任务无关族……按任务需要再逐族接」（**推定——如实登记**：当时 admin agent = 任务式沙箱装机，MCP 无角色）。
+- **原理由核读（在案）**：裁剪文件对 `mcp` **零命中**；`agent/ADMIN-AGENT.md` §5 裁剪句未点名 mcp（所点族 = TTY/记忆/台账/子代理/浏览器）⇒ mcp 归入兜底条款「与运维任务无关族……按任务需要再逐族接」（**推定——如实登记**：当时 admin agent = 任务式沙箱装机，MCP 无角色）。
 - **解裁落点 = 管理会话（chat）面**：MCP 工具随回合并入 chat 工具面（§2.2）——用户点名的「管理会话 web 搜索」由此兑现。
 - **`TRIMMED_FACES` 收正**：删 `"mcp"`（该常量 = 管理面 agent 裁剪族清单；mcp 经挂载 ⇒ 移出——`thincoder-server/src/agent/run.mjs:17` 一行 + 注释同拍）。
 - **任务面（run）维持不挂载**：任务面 = 沙箱装机专用五件（`thincoder-server/src/agent/tools.mjs`——`thincoder-server/src/sandbox/onboarding.mjs:190` 装配）；环境族同等裁决在先（`agent/ADMIN-AGENT.md` §3 尾句「任务面不含 server 本机族」——同族口径）；且 run 退场路线在册（合并进 chat）。
@@ -48,7 +48,8 @@
 - **清单 = `mcp_servers` 表**（v24 增段——DDL 全文 = `store/STORE.md` §2 v24 段；判据 = 其 §3 v24 行）：**server 全局单份**（非逐用户 ∥ 非逐会话——用户原话「成员侧随后同享」⇒ 单份清单）。
 - 列面：`name`（唯一）∥ `transport`（`stdio`/`http`/`ws` 三值 CHECK）∥ `command`/`args_json`（stdio——`args_json` = 参数字符串数组；**UI 行形 = 每行一条**，提交按行拆分并过空行 ⇒ 数组，空 ⇒ `[]`）∥ `url`（http）/`ws_url`（ws）∥ `secret_cipher`（密文——AES-256-GCM；`{ token?, headers?, env? }` 合一；NULL = 零敏感字段）∥ `enabled` ∥ 两时间列。
 - **存库不落 config.json**：理由 = 服务器存储先例（providers/runners 等皆库单源）＋ 控制台 CRUD 须服务端校验/审计（文件写 = 第二路径）。
-- **凭据形**：`token` ∥ `headers` 值 ∥ `env` 值 = 敏感类 ⇒ 入密文列（`src/store/credential-crypto.mjs` 既有件——沿主机凭据/私有仓凭据先例）；**零回显**（列表/详情响应只携 `hasSecrets` 布尔）；**编辑三态** = 字段缺席 ⇒ 不变 ∥ 显式 `null` ⇒ 清空 ∥ **空串/空对象 ⇒ 不变**（编辑窗「留空」= 未改动；**清空唯一入口 = `null`**——providers「空串 = 清」先例**不沿用**，防控制台空串提交静默清凭据——实作 = `src/mcp/store.mjs` 敏感三键归一段）；`${env:VAR}` 引用透传（核 `env-ref.mjs` 建连期解析——`env` 面 = server 进程环境）。
+- **凭据形**：`token` ∥ `headers` 值 ∥ `env` 值 = 敏感类 ⇒ 入密文列（`src/store/credential-crypto.mjs` 既有件——沿主机凭据/私有仓凭据先例）；**零回显**（列表/详情响应只携 `hasSecrets` 布尔）；
+  **编辑三态** = 字段缺席 ⇒ 不变 ∥ 显式 `null` ⇒ 清空 ∥ **空串/空对象 ⇒ 不变**（编辑窗「留空」= 未改动；**清空唯一入口 = `null`**——providers「空串 = 清」先例**不沿用**，防控制台空串提交静默清凭据——实作 = `src/mcp/store.mjs` 敏感三键归一段）；`${env:VAR}` 引用透传（核 `env-ref.mjs` 建连期解析——`env` 面 = server 进程环境）。
 - **明文列可含秘密的如实边界**：`command`/`args` 明文（如把 key 写进参数——用户自担；指引 = 凭据走 `token`/`env`）——披露项。
 
 ### 3.2 端点（契约 = `gateway/API.md` §2.13）
@@ -74,7 +75,7 @@
   `✓ {toolCount} 个工具：{tools}，{latencyMs}ms`（i18n `admin.mcp.probeOkNamed`）∥ **计数形**回落 `✓ {toolCount} 个工具，{latencyMs}ms`
   （`tools` 缺失/空——零工具 ∥ 旧核响应；i18n `admin.mcp.probeOk`）；败 = `✗ {error}`。CLI `/mcp test` 形 = 计数形来源（`thincoder-cli/src/tui/cmd-mcp.mjs:132-137`）。
 - 探活零落库零审计（诊断面——沿 `proxy/test` ∥ `embedding/test` 先例）。
-- **发行链（补丁入镜径）**：服务器镜像内核 = npm 声明依赖（非仓内副本）⇒ 核侧补丁须随**核发行波**入镜（挂下个常规核发行波——发行钩子 = 核 `CHANGELOG.md` `[Unreleased]` 行）；发行前生产读数 `tools` = 空 ⇒ 显示回落计数形。
+- **发行链（补丁入镜径）**：服务器镜像内核 = npm 声明依赖（非仓内副本）⇒ 核侧补丁须随**核发行波**入镜（挂下个常规核发行波——发行钩子 = `thincoder-core/CHANGELOG.md` `[Unreleased]` 行）；发行前生产读数 `tools` = 空 ⇒ 显示回落计数形。
 
 ### 3.4 控制台落点（一页一职责）
 
@@ -94,9 +95,9 @@
 
 ## 5. 安全 ∥ 审批 ∥ 审计（问题④）
 
-- **审批面 = 不接**（明写）：管理会话 = 无人值守裁剪面（`agent/ADMIN-AGENT.md` §5——不弹问、不自锁）；MCP 工具随调用即执行（与 `bash`/`exec`/`docker` 同姿态）；护栏 = 提示词级行动纪律句（先查后动 ∥ 破坏性先说明）＋ 逐调用审计。
+- **审批面 = 管理面写类门挡覆盖**：MCP 件恒 `readonly:false`（核 `thincoder-core/mcp.mjs:160`）⇒ 管理面逐调用弹审批卡（`permission` kind——机制 = `agent/ADMIN-AGENT.md` §11.5；2026-10-17 用户裁）；与 `bash`/`exec`/`docker` 同姿态（写类 = 问）；护栏双层 = 提示词级纪律句（先查后动 ∥ 破坏性先说明）＋ 卡面机制；逐调用审计不动。
 - **审计（工具调用）**：每调用一 `chat_call` 行（`agent_event`——面不扩 ∥ 零新 kind）：`tool` = 挂载名 ∥ `subject` = 服务器名 ∥ `call` = 参数摘要（掩蔽 ≤500）∥ `resultCode` = 0/-1 ∥ `truncated` ∥ `summary`（≤300）——既有链零改（`thincoder-server/src/agent/chat.mjs:675-682` 逐调用点已覆盖合并面）。
-- **审计（配置变更）**：**新 `mcp_event` 型**（v24 段审计 CHECK 重建——十七型）：kind 三 = `server_add` ∥ `server_update`（`keys` = 变更键名——值永不入）∥ `server_remove`；detail 零秘密；写入点 = `thincoder-server/src/mcp/routes.mjs`（拟新增）三处（成事才落）；
+- **审计（配置变更）**：**新 `mcp_event` 型**（v24 段审计 CHECK 重建——十七型）：kind 三 = `server_add` ∥ `server_update`（`keys` = 变更键名——值永不入）∥ `server_remove`；detail 零秘密；写入点 = `thincoder-server/src/mcp/routes.mjs`（已落盘）三处（成事才落）；
   **agent 径（管面工具）**：写动作 ⇒ 同三 kind 照落（形同构）＋ 驱动层 `chat_call` 逐调用（两行——机制 = `agent/ADMIN-AGENT.md` §12.2⑤）；`list`/`probe` ⇒ 仅 `chat_call`。
 - **秘密面**：密列 ∥ 零回显 ∥ 响应键面扫描（无秘密值）∥ `${env:VAR}` 引用值可入密文列（核建连期解析）；**命令输出/参数可能含秘密 = 不在掩蔽面内**（沿 §14.4 既有披露——如实登记）。
 - **出口网络面**：remote MCP（http/ws）= server 新增**出网目的地**（用户配置——零网络白名单，沿无围栏口径；披露）；stdio MCP = server 同机命令（等价既有 `bash` 能力在册）；
@@ -124,9 +125,9 @@
 - **服务端执行** = `createMcpToolFace`（`thincoder-server/src/mcp/face.mjs`——**复用零改**）：两请求各建面一次（核 `_sessions` 幂等 ⇒ 存活命中直取缓存工具；冷却/重名防御/日志全在件）；桥件 = `thincoder-server/src/mcp/member-bridge.mjs`（已落盘——两处理器 + schema 映射 + 中止接线）；注册 = `thincoder-server/src/agent/box-routes.mjs`（盒族同文件——判权/体读沿族）。
 - **日志零秘密**（参数/输出零入日志——沿 §5 既有纪律）。
 
-### 6.3 审批面（写类门挡——审批接线为前置）
+### 6.3 审批面（写类门挡 ⇒ 审批卡）
 
-- **MCP 件恒 `readonly:false`**（核 `thincoder-core/mcp.mjs:160`）⇒ 逐调用吃核权限门挡（`thincoder-core/agent/dispatch.mjs:177-231`）：**审批接线落前 = 全拒**（`no permission handler configured`——与 bash/git 写同挡）；**落地后 = 审批卡**（`permission` kind；ask 回路 = `agent/MEMBER-AGENT.md` §3.11(2)——本域零专属机制）。
+- **MCP 件恒 `readonly:false`**（核 `thincoder-core/mcp.mjs:160`）⇒ 逐调用吃核权限门挡（`thincoder-core/agent/dispatch.mjs:177-231`）⇒ **审批卡**（`permission` kind；ask 回路 = `agent/MEMBER-AGENT.md` §3.11(2) ∥ KD-SV-217——本域零专属机制）。
 - **零 MCP 专属门**：词表（`once`/`always`/`reject`）、批门、`always` ⇒ 槽 `autoApprove` 短路——全沿核语义；卡面 = 挂载名（`{server}_{tool}`）+ 参数（掩蔽 = 帧面单点）。
 
 ### 6.4 审计面（零新 kind）
@@ -187,24 +188,24 @@
 | KD-SV-198 | **凭据 = 密文列（`token`/`headers`/`env` 合一——AES-256-GCM）＋ 零回显 ＋ `${env:VAR}` 透传**（问题②） | 主机凭据/私有仓凭据同一密列纪律（本 server 多 admin 共享面）；核 `env-ref` 解析在件（零第二实现）；编辑「留空 = 不变」沿 providers 先例 |
 | KD-SV-199 | **挂载形 = 核件原文复用 ＋ 逐回合装配（读时读）＋ 失败冷却 ＋ 文本面路由（ctx 透传）**（问题③） | 核建连/命名/重连/截断全在件（零第二实现——KD-SV-113 同精神）；逐回合 = 常驻进程下清单可热改的读法（零缓存 = 零失效面）；冷却 = 防死服务器每回合拖慢（核 `INIT_TIMEOUT_MS` = 30s）；文本面 = 核 MCP 结果即文本（KD-SV-113 同判） |
 | KD-SV-200 | **审计 = 工具调用走 `chat_call`（零新 kind）＋ 配置变更新 `mcp_event` 型（十七型——三 kind）**（问题④） | 工具调用面 = KD-SV-91 单源（零扩）；配置变更 = 凭据/命令类变更从不静默（主机凭据先例）——`mcp_event` = 域自持型（sandbox/project/ledger 同法） |
-| KD-SV-201 | **成员侧 = 同清单挂载**（问题⑤——落地：形预留三条 ⇒ 落地三条：① 清单位 = 服务器级单份（§3.1 同表）；② 执行侧 = `face.mjs` 单源（复用零改——`{names, schemas, invoke}` 由桥消费）；③ 接线 = 盒内装配点（`extraTools` 并面 ＋ 桥两端点——§6）） | 用户「如果也给成员侧会话用就更好」= 动因（触发已发未承接——清账复核重挂）；秘密零出服务器（密列纪律）；协议/命名/冷却全在 server（零第二实现）；盒零会话态（生命周期归 §2.2 既有链） |
-| KD-SV-214 | **成员侧挂载形 = 桥（server 执行 ＋ 盒并面）**（问题⑤机制全文 = §6）：盒逐回合取工具表（`GET /api/box/mcp`——零秘密）⇒ 桩件 `extraTools` 并面；调用 `POST /api/box/mcp/call`（工作区 key）⇒ `face.mjs` 执行；审批随核门挡（审批接线前置）；审计 = `chat_call` 零新 kind；命名 = 核单源 ＋ 盒侧防撞；子代理不携（顶层径） | 秘密零出服务器（§6.2）；复用零改（连接/冷却/命名全在件）；读时读沿 KD-SV-199；「同一清单」逐字；盒零态（无关闭链） |
+| KD-SV-201 | **成员侧 = 同清单挂载**（问题⑤——落地：形预留三条 ⇒ 落地三条：① 清单位 = 服务器级单份（§3.1 同表）；② 执行侧 = `face.mjs` 单源（复用零改——`{names, schemas, invoke}` 由桥消费）；③ 接线 = 盒内装配点（`extraTools` 并面 ＋ 桥两端点——§6）） | 用户「如果也给成员侧会话用就更好」= 动因（触发已发未承接——清账复核补挂）；秘密零出服务器（密列纪律）；协议/命名/冷却全在 server（零第二实现）；盒零会话态（生命周期归 §2.2 既有链） |
+| KD-SV-214 | **成员侧挂载形 = 桥（server 执行 ＋ 盒并面）**（问题⑤机制全文 = §6）：盒逐回合取工具表（`GET /api/box/mcp`——零秘密）⇒ 桩件 `extraTools` 并面；调用 `POST /api/box/mcp/call`（工作区 key）⇒ `face.mjs` 执行；审批随核门挡；审计 = `chat_call` 零新 kind；命名 = 核单源 ＋ 盒侧防撞；子代理不携（顶层径） | 秘密零出服务器（§6.2）；复用零改（连接/冷却/命名全在件）；读时读沿 KD-SV-199；「同一清单」逐字；盒零态（无关闭链） |
 
 ## 10. 本域文件与行数预算（本域族行）
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
 | `thincoder-server/src/mcp/store.mjs` | 实读 **339** | 行读写（增删改查） ∥ 形校验 ∥ 核 config 形映射（`toCoreConfig`） ∥ 密文列读写（`credential-crypto.mjs`） |
-| `thincoder-server/src/mcp/face.mjs` | 实读 **196** | 工具面装配（逐回合：读行 ⇒ 核建连 ⇒ 归一 `{ ok, subject, summary, output }` ∥ 失败冷却 ∥ 跨面重名防御 ∥ 会话关闭出口——面无关（成员面复用面）） |
+| `thincoder-server/src/mcp/face.mjs` | 实读 **196**（本批 +`readonlyOf` ≈ +1–3） | 工具面装配（逐回合：读行 ⇒ 核建连 ⇒ 归一 `{ ok, subject, summary, output }` ∥ 失败冷却 ∥ 跨面重名防御 ∥ 会话关闭出口——面无关（成员面复用面）） |
 | `thincoder-server/src/mcp/routes.mjs` | 实读 **137** | 五端点（清单四 + 探活一） ∥ 判权 ∥ `mcp_event` 三写入点 |
-| `thincoder-server/src/mcp/admin-tools.mjs`（拟新增） | ≈**180** | 管面工具执行器（`mcp` 五动词）：寻址 ∥ 形校验转 `store.mjs` 单源 ∥ `mcp_event` 三写入点 ∥ 探活（核件装载 ＋ 冷却清理）∥ 关会话（删/停用） |
+| `thincoder-server/src/mcp/admin-tools.mjs` | 实读 **222**（本批 +`readonlyOf` ≈ +1–3） | 管面工具执行器（`mcp` 五动词）：寻址 ∥ 形校验转 `store.mjs` 单源 ∥ `mcp_event` 三写入点 ∥ 探活（核件装载 ＋ 冷却清理）∥ 关会话（删/停用） |
 | `thincoder-server/src/agent/chat.mjs`（已落盘） | 实读 **737**（**拆档线 720 已越**；处置 = `agent/ADMIN-AGENT.md` §9 KD-SV-208） | 聊天式驱动（§11——机制单源 = `agent/ADMIN-AGENT.md`） |
-| `thincoder-server/src/agent/run.mjs`（已落盘） | 实读 **150** | 任务面装配 |
+| `thincoder-server/src/agent/run.mjs`（已落盘） | 实读 **33** | 核装载共用件（预算常量 ∥ `loadCoreChat` ∥ `providerModelRefs` ∥ 裁剪面清单——任务式环已退场删净） |
 | `thincoder-server/src/store/migrations.mjs`（已落盘） | **795/796**（v24 段 +≈20——建表 + 审计 CHECK 重建；越 800 硬限余 ≈4 行——拆案在案，见 `sandbox/SANDBOX.md` §13） | 迁移链（开库/PRAGMA/语句封装 = `db.mjs`——实读 **36/37**，拆案已落） |
 | `thincoder-server/bin/thincoder-server.mjs`（已落盘） | ≈**247**（注册行 + 停机收尾） | 装配/启动/停机 |
 | `thincoder-server/src/accounts/audit.mjs`（已落盘） | ≈**122**（+≈1——`AUDIT_TYPES` += `mcp_event`） | 审计事件目录 ∥ 落库/查询/清理（§5 三写入点必经） |
-| `thincoder-server/public/views-mcp.mjs`（拟新增） | ≈**320**（按页分档线 300 越线——预案 = 弹窗体抽 `views-mcp-modals.mjs`，先例 = providers） | MCP 页（清单表 ∥ 探活读数 ∥ 增/改/删弹窗） |
-| `thincoder-server/public/i18n-zh-mcp.mjs` ∥ `i18n-en-mcp.mjs`（拟新增） | ≈**75** ∥ ≈**75**（`admin.mcp.*` ≈55 键/表 + 档头） | 文案表·mcp 部件（域界 = 键二级前缀） |
+| `thincoder-server/public/views-mcp.mjs`（已落盘） | ≈**320**（按页分档线 300 越线——预案 = 弹窗体抽 `views-mcp-modals.mjs`，先例 = providers） | MCP 页（清单表 ∥ 探活读数 ∥ 增/改/删弹窗） |
+| `thincoder-server/public/i18n-zh-mcp.mjs` ∥ `i18n-en-mcp.mjs`（已落盘） | ≈**75** ∥ ≈**75**（`admin.mcp.*` ≈55 键/表 + 档头） | 文案表·mcp 部件（域界 = 键二级前缀） |
 | `thincoder-server/public/i18n-zh.mjs` ∥ `i18n-en.mjs`（已落盘） | ≈**17**（+1 import——门面展开合体） | 文案表·聚合门面 |
 | `thincoder-server/public/i18n-zh-shell.mjs`（已落盘） | ≈**81**（+1——`nav.page.admin.mcp` 键） | 文案表·zh·shell 部件（导航族） |
 | `thincoder-server/public/i18n-en-shell.mjs`（已落盘） | ≈**79**（+1——同键） | 文案表·en·shell 部件（导航族） |
@@ -215,10 +216,10 @@
 | `thincoder-server/public/app.mjs`（已落盘） | ≈**209**（+1 import + 1 `PAGES` 行） | 入口/路由分派 |
 
 - **小计 ≈ +946**（新增五档 ≈900 ∥ 存量改 ≈+46）。
-- **server-mcp-admin-tools 批 另计 ≈+190（落地实读 **+227** = 223 + 4）**：`thincoder-server/src/mcp/admin-tools.mjs` 实读 **223** ∥ `thincoder-server/src/agent/chat.mjs` 净 **+4**（实读 737——微触；拆档评估 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；零新端点 ∥ 零迁移；
+- **server-mcp-admin-tools 批 另计 ≈+190（落地实读 **+226** = 222 + 4）**：`thincoder-server/src/mcp/admin-tools.mjs` 实读 **222** ∥ `thincoder-server/src/agent/chat.mjs` 净 **+4**（实读 737——微触；拆档评估 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；零新端点 ∥ 零迁移；
   **单元测试档 1 档**（实读 **423** 行；**不入任何门**）。
 - **成员面挂载批 另计 ≈+245 ⇒ 落地实读 +195**：`thincoder-server/src/mcp/member-bridge.mjs`（已落盘｜实读 **70**——取表/调用两处理器 ∥ schema 映射 ∥ 中止接线）∥ `thincoder-server/src/agent/box-routes.mjs`（实读 **172**——+6：单行 import ∥ 两注册行 ∥ 头注/jsdoc 同拍；两处理器在桥件 70 内计）。
-  盒侧：`thincoder-server/deploy/sandbox/member-shell/mcp-tools.mjs`（已落盘｜实读 **106**——取表/建桩/防撞）∥ `thincoder-server/deploy/sandbox/member-shell/core-run.mjs`（实读 **334**——+13：取表并面 + 降级——审批接线批在飞另计）。
+  盒侧：`thincoder-server/deploy/sandbox/member-shell/mcp-tools.mjs`（已落盘｜实读 **106**——取表/建桩/防撞）∥ `thincoder-server/deploy/sandbox/member-shell/core-run.mjs`（实读 **654**——取表并面 + 降级 + 审批接线）。
   **复用零改**：`thincoder-server/src/mcp/face.mjs`（实读 **196**）∥ `thincoder-server/src/mcp/store.mjs`（实读 **339**）；零迁移 ∥ 盒族 +2 端点；部署 = 盒镜像重建。
   **单元测试档 1 档**（已落盘｜实读 **428** 行；**不入任何门**）。
 - >500 软线复核：三新服务端档实读 **339 ∥ 196 ∥ 137**（>500 软线均未越）；`views-mcp.mjs` ≈320（预案在案——§上表）；`chat.mjs` 实读 **737**（**拆档线 720 已越**；处置 = `agent/ADMIN-AGENT.md` §9 KD-SV-208）；
@@ -233,11 +234,11 @@
 
 | AC-56（功能点 56——MCP 管理工具；已入册 2026-10-14——`docs/server/requirements/PROJECT.md` 验收表 `:458`） | 分面判据：工具面 = `agent/ADMIN-AGENT.md` §12.2（五动词 ∥ 寻址 ∥ 引件表 ∥ 结果形）∥ §7 对应判据行 ∥ §8（N85 ∥ B81 ∥ E63） ∥ 复用面 = 本档 §4 管面句（零第二实现——`store.mjs`/`face.mjs` 引件） ∥ 审计面 = 本档 §5（`mcp_event` 三 kind ＋ 驱动层 `chat_call`） ∥ 凭据面 = §3.1 密文列纪律（只写零回显） ∥ 控制台面 = 零触（`webui/MCP.md` 既有） | 单元测试档 + 收口轮（会话实走：列/探/增一条真实服务器） |
 
-| AC-54⑤（成员侧挂载） | 分面判据：装配面 = §6.1（逐回合取表 ⇒ `extraTools` 并面 ∥ 失败降级回合不阻断）∥ 清单面 = §6.2（两端点形——响应零秘密扫描）∥ 审批面 = §6.3（`readonly:false` ⇒ 门挡：接线前全拒 ∥ 接线后 = 卡）∥ 审计面 = §6.4（`chat_call` 帧源落行）∥ 命名面 = §6.5（核单源 + 盒侧防撞拒挂 + 日志） | 单元测试档 + 收口轮（成员会话实调一轮 MCP 工具——新盒；**批序**：成功调用腿后置——审批接线落线后；批前 = 门挡全拒腿，非失败） |
+| AC-54⑤（成员侧挂载） | 分面判据：装配面 = §6.1（逐回合取表 ⇒ `extraTools` 并面 ∥ 失败降级回合不阻断）∥ 清单面 = §6.2（两端点形——响应零秘密扫描）∥ 审批面 = §6.3（`readonly:false` ⇒ 门挡 ⇒ 审批卡）∥ 审计面 = §6.4（`chat_call` 帧源落行）∥ 命名面 = §6.5（核单源 + 盒侧防撞拒挂 + 日志） | 单元测试档 + 收口轮（成员会话实调一轮 MCP 工具——新盒） |
 
 ## 上抛/余项（R86）
 
 | # | 项 | 类型 | 处置建议 |
 |---|---|---|---|
-| R86 | **server-mcp 批 — 需求档回笔建议 ＋ 随正件 ＋ 披露 ＋ 待裁点 ＋ 部署收尾**：① 需求档回笔（主 agent 笔——**已办**）：**功能点 54 ∥ AC-54** 已入册（需求档验收表在册）；**AC-12 管理 10 ⇒ 11**；**AC-28 审计型 十六 ⇒ 十七（`mcp_event`）**（均已随正）；② 随正件（实施轮同拍——以当刻盘面实读为准）：档目/清单断言件族（`readdirSync(PUBLIC_DIR)` 命中 ≈18 件 + nav 计数断言件——新增 `views-mcp.mjs` + i18n 两部件 ⇒ 逐件清单/键集随正）∥ `docs/README.md` 档数（server 设计 +2——父侧笔）∥ ③ 披露（不阻塞）：stdio = server 同机命令（等价 `bash` 在册）∥ 远端 MCP = server 新出网目的地（零白名单）∥ 第三方内容面（描述/输出 = 外部数据）∥ `command`/`args` 明文可含秘密 ∥ 工具数无上限 ∥ 冷却 = 进程内（重启清零）∥ `kill -9` 残留 stdio 子进程 ∥ 探活不落审计 ∥ ④ **待裁点**：机制级确认门（审批）= 本刀不加（无人值守口径）——如需另裁；⑤ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走 | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
-| R87 | **成员面挂载——随正/回笔/披露/部署**：① 随正件（已落）：`agent/MEMBER-AGENT.md`（§3.7 接线 ∥ §3.11(7) 工具面表 ∥ §5 行账 ∥ §6 验收）∥ `gateway/API.md` §2.12（盒族 +2 端点行）∥ 板档 `docs/server/design/PROJECT.md`（档行 ∥ AC-54 行——「成员侧预留」随正为落地五面）；② 需求档回笔（主 agent 笔）：功能点 54 ⑤ 收正（成员侧 ⇒ 同清单落地；判据 = 本档 §11 行）+ AC-54 判据行随正；③ 披露：盒内直连被否（§6.6）∥ 家族段名集盒不核（§2.3F——默认补法在案）∥ 子代理不携 MCP（顶层径）∥ 工具数无上限/无逐件开关 ∥ 取表不审计；④ 部署（父侧）：盒镜像重建（新件入镜）+ 收口轮成员会话实调一轮（**批序**：成功调用腿后置——审批接线落线后；批前 = 门挡全拒腿）；⑤ 单元测试档 1 档 | 随正/部署（收口轮） | 父侧/本席 |
+| R86 | **server-mcp 批 — 需求档回笔建议 ＋ 随正件 ＋ 披露 ＋ 待裁点 ＋ 部署收尾**：① 需求档回笔（主 agent 笔——**已办**）：**功能点 54 ∥ AC-54** 已入册（需求档验收表在册）；**AC-12 管理 10 ⇒ 11**；**AC-28 审计型 十六 ⇒ 十七（`mcp_event`）**（均已随正）；② 随正件（实施轮同拍——以当刻盘面实读为准）：档目/清单断言件族（`readdirSync(PUBLIC_DIR)` 命中 ≈18 件 + nav 计数断言件——新增 `views-mcp.mjs` + i18n 两部件 ⇒ 逐件清单/键集随正）∥ `docs/README.md` 档数（server 设计 +2——父侧笔）∥ ③ 披露（不阻塞）：stdio = server 同机命令（等价 `bash` 在册）∥ 远端 MCP = server 新出网目的地（零白名单）∥ 第三方内容面（描述/输出 = 外部数据）∥ `command`/`args` 明文可含秘密 ∥ 工具数无上限 ∥ 冷却 = 进程内（重启清零）∥ `kill -9` 残留 stdio 子进程 ∥ 探活不落审计 ∥ ④ **待裁点（已裁——已落）**：机制级确认门（审批）= 管理面写类门挡 + 审批卡（2026-10-17 用户裁；`agent/ADMIN-AGENT.md` §11.5）；⑤ 部署收尾（父侧执行）：镜像重建 + 重收敛 + 浏览器实走 | 披露（上抛——如无异议按设计实施；部署收口 = 父侧） | 评审/用户复核 |
+| R87 | **成员面挂载——随正/回笔/披露/部署**：① 随正件（已落）：`agent/MEMBER-AGENT.md`（§3.7 接线 ∥ §3.11(7) 工具面表 ∥ §5 行账 ∥ §6 验收）∥ `gateway/API.md` §2.12（盒族 +2 端点行）∥ 板档 `docs/server/design/PROJECT.md`（档行 ∥ AC-54 行——「成员侧预留」随正为落地五面）；② 需求档回笔（主 agent 笔）：功能点 54 ⑤ 收正（成员侧 ⇒ 同清单落地；判据 = 本档 §11 行）+ AC-54 判据行随正；③ 披露：盒内直连被否（§6.6）∥ 家族段名集盒不核（§2.3F——默认补法在案）∥ 子代理不携 MCP（顶层径）∥ 工具数无上限/无逐件开关 ∥ 取表不审计；④ 部署（父侧）：盒镜像重建（新件入镜）+ 收口轮成员会话实调一轮；⑤ 单元测试档 1 档 | 随正/部署（收口轮） | 父侧/本席 |

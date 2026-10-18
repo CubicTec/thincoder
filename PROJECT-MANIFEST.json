@@ -36,7 +36,9 @@
       "domain": "docs",
       "exclude": [
         "_archive",
-        "batches"
+        "batches",
+        "TODO.md",
+        "TODO-archive.md"
       ]
     },
     "exemptions": []

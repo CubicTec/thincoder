@@ -121,6 +121,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
   // TRACE-STORE-VSC（D-TR6 镜像——核 config.mjs DEFAULTS.traces 合并同语义）：traces 段
   // 默认 OFF（2026-09-05 发布隐私裁定）——agent.config.traces 由此整建——每轮拾取外部变更
   let cfgTraces = { ...DEFAULTS.traces }
+  let cfgFetch = { ...DEFAULTS.fetch } // WEB-BACKEND-DEEPSEEK（CONFIG.md §6.5）：fetch 段随 config 读入——核读点 = `agent.config.fetch.backend`（形同 traces）
   // #175（W15 · a 半）：autoThink 键随 config 归一（默认 false——核 DEFAULTS）；timer-wake 阶段 2：
   // `agent.timerWake` 键随 config 归一（默认 true；消费 = 核 `timers.mjs` `timerWakeEnabled` 活读——VSC 端经 `extension/timer-watch.mjs` 闩装配，B3 收编）——
   // 两者皆「显式键优先、缺省 = 核 DEFAULTS」。
@@ -156,6 +157,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
     cfgWebsearch = raw.websearch ?? { apiKey: "" }
     cfgHooks = raw.hooks ?? null
     cfgTraces = { ...DEFAULTS.traces, ...(raw.traces ?? {}) }
+    cfgFetch = { ...DEFAULTS.fetch, ...(raw.fetch ?? {}) }
     cfgAutoThink = raw.agent?.autoThink ?? cfgAutoThink // #175a：显式键优先（缺省 = 核 DEFAULTS）
     cfgTimerWake = raw.agent?.timerWake ?? cfgTimerWake // 显式键优先（缺省 = 核 DEFAULTS——默认开；判据 `!== false`）
     cfgInjectDocs = raw.agent?.injectDocs ?? cfgInjectDocs // 显式键优先（缺省 = 核 DEFAULTS——默认开；判据 `!== false`）
@@ -186,6 +188,7 @@ export async function hydrateRun(agent, { provider, cwd, input, opts, depth, rol
     proxy: cfgProxy, shell: cfgShell, providersList: cfgProviders, websearch: cfgWebsearch,
     hooks: cfgHooks,
     traces: cfgTraces,
+    fetch: cfgFetch,
   }
   const { engineering, droppedExpired } = applySlotSessionState(agent, {
     slot: sessionData,

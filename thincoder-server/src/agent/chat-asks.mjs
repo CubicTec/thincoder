@@ -1,7 +1,7 @@
 /**
  * chat-asks.mjs — 管理面审批 ask 宿主（`agent/ADMIN-AGENT.md` §11.5 ∥ KD-SV-224–227；admin-approval-cards 批）：
  * 写类门挡（判类单源 = 工具面 `readonlyOf`——KD-SV-225）∥ `ask` 帧构造（`permission` ∥ `batch`——帧形全文 = 机制档 §11.3）∥
- * 应答 ⇒ 结算续跑（裁决词表/体校验自 `member-relay.mjs` **导入复用——零第二份**：`askAnswerBodyOf`）∥
+ * 应答 ⇒ 结算续跑（裁决词表/体校验自 `ask-vocab.mjs` **导入复用——零第二份**：`askAnswerBodyOf`）∥
  * 兜底三径（回合收尾 ∥ 中止 ∥ 流断 ⇒ 未决卡全量拒值；无流唤醒轮 ⇒ 写类即时拒——KD-SV-227）∥ 置库（`auto_approve`——KD-SV-226）。
  *
  * 宿主生命周期（每回合一枚）：`chat.mjs` 回合环装配面 `createChatAskHost`（登记在途宿主表）→ 每模型调用批次
@@ -21,7 +21,7 @@
  */
 
 import { appendMessage } from "./chat-store.mjs"
-import { askAnswerBodyOf } from "./member-relay.mjs"
+import { askAnswerBodyOf } from "./ask-vocab.mjs"
 
 /** 拒执行报文（用户拒 ∥ 兜底三径——工具行/结果帧/审计三面同值）。 */
 export const ASK_REJECTED_MESSAGE = "用户拒绝——未执行"

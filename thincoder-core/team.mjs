@@ -85,7 +85,8 @@ export function teamStatus() {
  * （Bearer = `team.token`）⇒ **三值闭集**：`{ state: "valid" }`（200——token 有效）∥ `{ state: "invalid" }`（401——
  * 被吊销 ∥ 无效）∥ `{ state: "unreachable" }`（网络不可达 ∥ 其他非 401 失败——**不判失效**：离线容忍）。
  * **只读**——零写盘、零状态（调用面持结果）；零周期轮询（触发点制 = 启动一次 ∥ 登/退面开合 ∥ CLI `/team status`）。
- * token ∥ 地址缺席（未登录 ∥ 畸形档）⇒ `unreachable`（无从校验——不假报失效；端侧未登录面零调本函数）。
+ * token ∥ 地址缺席（已登录但缺 token 或缺地址）⇒ `unreachable`（无从校验——不假报失效；端侧未登录面零调本函数）。
+ * **畸形档不到本函数**：`loadConfig()` 畸形即抛，端侧拒绝直传（零 catch 吞）——故本行不列畸形档。
  */
 export async function teamVerify() {
   const team = loadConfig().team

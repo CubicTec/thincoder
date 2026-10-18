@@ -44,9 +44,9 @@
    ④ **流式拼接手感**＝核 `flow/stream.mjs` `createStreamRenderer` + `flow/live-md.mjs`（增量重绘——禁每帧全量重渲；节拍 = 核帧纪律 KD-RC-9/10）；
     ⑤ **滚动行为**＝核 `scroll.mjs`（近底 24px 判据单源；**用户上滚不夺阅读位**——`applyPin`/`createPinWatch`；`end` ⇒ 重读径照旧）；
       作用元素 ⇒ `document.scrollingElement`（文档流——判据不变）；
-    ⑨ **输入区全件**＝核 `thincoder-render-core/composer/panel.mjs`（**翻做**；适配层四面 + 四件控件后端 = 本档 §2.1 ③）。
-  - **不做（逐项理由）**：⑥ **思考块**——服务端帧面/落库面无 reasoning 文本通道（帧四形 ∥ 消息 role 四值）⇒ 无源；加字段 = 后端面（零推翻）⇒ 余项；⑦ **diff 块**——管理面工具八件无文件编辑族 ⇒ 无 diff 源；⑧ **会话内搜索**——**面别限定**：管理面不做（宿主 = 浏览器原生 Ctrl+F 恒在 ⇒ 运维面零增益）；成员面按三端对齐补（核 `createSearch`——`agent/MEMBER-AGENT.md` §3.11(6)）；
-   ⑩ **审批/问询/计划/subagent 卡**——管理面 agent 无人值守裁剪（`agent/ADMIN-AGENT.md` §5）⇒ 面无源；
+    ⑨ **输入区全件**＝核 `thincoder-render-core/composer/panel.mjs`（**翻做**；适配层四面 + 四件控件后端 = 本档 §2.1 ③）；⑩ **审批卡（单件 ∥ 批）**——本批落（源 = 管理面写类门挡 + ask 回路——机制 = `agent/ADMIN-AGENT.md` §11.5；卡面 = 核 `renderApprovalCard`/`renderBatchApprovalCard`）。
+  - **不做（逐项理由）**：⑥ **思考块**——服务端帧面/落库面无 reasoning 文本通道（帧七型 ∥ 消息 role 四值）⇒ 无源；加字段 = 后端面（零推翻）⇒ 余项；⑦ **diff 块**——管理面工具八件无文件编辑族 ⇒ 无 diff 源；⑧ **会话内搜索**——**面别限定**：管理面不做（宿主 = 浏览器原生 Ctrl+F 恒在 ⇒ 运维面零增益）；成员面按三端对齐补（核 `createSearch`——`agent/MEMBER-AGENT.md` §3.11(6)）；
+   ⑩ **问询/计划/subagent 卡**——面无源（管理面无 `question` 件 ∥ 计划模式 ∥ 子代理族裁剪——§11.5 收窄条；审批卡两件 = 已落——见「做」列表）；
    ⑪ **代码块复制钮**——核钮经 `navigator.clipboard`（安全上下文）——http 内网面即装即哑（假控件）⇒ 余项（TLS/公网化批后可接）。
   - **壳面归属（chat-shell-align 批收正）**：**消息块 = 核 `thincoder-render-core/flow/block.mjs`** ∥ **输入区 = 核 `thincoder-render-core/composer/panel.mjs`**（核文档口径「shell = 宿主面」——`docs/render-core/design/RENDER-CORE.md` §5 样式契约——把两处宿主面从自持翻为核件消费）；
     **控制台仍自持** = 会话条 ∥ notice 行 ∥ 状态行（核无状态行族）；核件发射类名族样式 = 控制台补（`webui/STYLE.md` §2.1 新面登记 + §3；类名闭合域随正 = 本档 §4 行）。
@@ -77,7 +77,7 @@
   - ② **变量别名桥**：核壳族变量名 ⇒ 控制台既有变量（`:root` 别名块——零新值；逐键映射 = `webui/STYLE.md` §2.1①）。
   - ③ **注入口桥**：`post(type, payload)` ⇒ 控制台动作映射表（`userMessage` ⇒ 发一条 ∥ `queuedUserMessage` ⇒ 入队 ∥ `interrupt` ⇒ 折法（见下）∥ `abort` ⇒ `POST …/abort` ∥ `selectModel` ⇒ `PATCH …/:id` ∥ `selectReasoning` ⇒ `PATCH …/:id { reasoning }`（KD-SV-111——档位面））；
     `state` 读面（`turnState` ⇒ 在途 ∥ `queue` ⇒ 队列计数 ∥ `models` ⇒ `deriveModels` 行 ∥ `flags` ⇒ 全假 ∥ `workspaceRequired` ⇒ `false`（浏览器面恒有工作区语义——不入会话） ∥ `subscribe` ⇒ 推送口）∥ `hooks`（`onUserEcho` ∥ `onTurnStart` ∥ `onStatusRefresh` ⇒ 状态行重绘 ∥ `confirmRemoveProvider`/`openSettings` ⇒ 无源（钮隐藏——不达））。
-  - ④ **无源钮收窄**（CSS 隐藏——无源实证逐条）：`#auto-btn`/`#advisor-btn`/`#eng-btn`/`#plan-btn`（无人值守裁剪——审批/计划/工程模式面无源）∥ `#settings-btn`（设置面板面 = 开发壳面）——**五枚**（`#reasoning-btn` 经 KD-SV-111 出列：档位通道三段补齐，钮面启用；钮字/选中态/下拉全归核件——`style.css` 零钮面逻辑）。
+  - ④ **无源钮收窄**（CSS 隐藏——无源实证逐条）：`#auto-btn`/`#advisor-btn`/`#eng-btn`/`#plan-btn`（模式位面无源——审批 = 卡内机制（`always` ⇒ 行 `auto_approve`；钮位三段未落——留隐待裁）∥ 计划/工程族裁剪——§11.5 机制档）∥ `#settings-btn`（设置面板面 = 开发壳面）——**五枚**（`#reasoning-btn` 经 KD-SV-111 出列：档位通道三段补齐，钮面启用；钮字/选中态/下拉全归核件——`style.css` 零钮面逻辑）。
     **「不藏」射程读法**（用户 21:55 裁「输入区无后端支撑的控件 = 补后端，一件不藏」）：闭合集 = 会话内换模型 ∥ 附件 ∥ 回合中止 ∥ 斜杠命令表 ∥ **思考档位**（KD-SV-111——后端三段补齐）；核面板其余无源钮（**五枚**）= 收窄（CSS 隐藏）+ 逐条无源实证——非「不藏」对象。
   - **四件控件后端**（逐件形——机制全文 = `agent/ADMIN-AGENT.md` §11.2）：**① 换模型** = 核模型菜单 ⇒ `PATCH …/chats/:id { model }`（会话内可换——**KD-SV-87 收正** = KD-SV-108；下回合生效 ∥ 在途回合零触；斜径 `/model` 同钮同门）；
     **② 附件** = 文本档（核 `attach.mjs` 三限 + `withAttachedFiles` 内联进文本——**零后端**）∥ 图片（核件随 POST 携 `images` 列 ⇒ 服务端核 `parseDataUrl` 校验 + `isNonVisionModel` 视觉门 ⇒ 400 人话；库 = user 行 `data_json.imageParts`；详情响应仅 `imageCount`——KD-SV-109）；
@@ -105,12 +105,15 @@
 
   - **帧面加性扩展**（`gateway/API.md` §2.8 ∥ `agent/ADMIN-AGENT.md` §11.3）：`{ type: "turn", n }`（每次模型调用前——**双职：状态行轮次 ＋ 活流分步界**——§2.1②）∥ `{ type: "usage", prompt, completion, cacheHit, cacheMiss }`（每次模型调用后、有源才发）∥ `end` 帧增 `durationMs`/`calls`（可字段——既有消费零破）。**零落库**（帧面 = 视图面——刷新后状态行清空重算）。
 
-  - **端差异表（逐条实证——宿主差异保留；无实证即改）**：① 文档流页（VSC = 固定视口）⇒ sticky 段定位（宿主页形）∥ ② 核件样式自带过渡/动画（核 `composer.css`——单源零触；控制台自有档零动画不变）∥ ③ `interrupt` 折法（无注入通道——上述）∥ ④ 无源钮隐藏五枚（钮面无源——档位面经 KD-SV-111 出列）∥ ⑤ 控制台零 CSP 头（沿现盘——核件内联状态色同 console-chat-align 在案）∥ ⑥ notice 行 = 控制台自持灰条（VSC 无对应件）。
+  - **端差异表（逐条实证——宿主差异保留；无实证即改）**：① 文档流页（VSC = 固定视口）⇒ sticky 段定位（宿主页形）∥ ② 核件样式自带过渡/动画（核 `composer.css`——单源零触；控制台自有档零动画不变）∥ ③ `interrupt` 折法（无注入通道——上述）∥ ④ 无源钮隐藏五枚（钮面无源——档位面经 KD-SV-111 出列；审批面经审批卡批落为卡内机制、钮位三段未落）∥ ⑤ 控制台零 CSP 头（沿现盘——核件内联状态色同 console-chat-align 在案）∥ ⑥ notice 行 = 控制台自持灰条（VSC 无对应件）。
 - **新建会话**：弹窗（沿用 `modal.mjs`）——模型下拉（源 = `/api/admin/providers` 展平——`deriveModels` 同源；缺省 = 最近一次成功所用（KD-SV-87 同口径——机械读法 = `GET /api/admin/agent/chats` 倒序首行 `model`；该模型不在下拉源 ⇒ 空选；「成功」位 = 数据面无（题设近似——如实登记，不引入新位））∥ 无 ⇒ 空选（提交门））；提交 ⇒ `POST /api/admin/agent/chats` ⇒ 选中新会话。
 - **取数**：列表/详情 = `GET /api/admin/agent/chats` ∥ `.../:id`（读时读——进页取列表 + 选中会话取详情）；发送 = `POST .../:id/messages`（体 = `{ content, images? }`）——**流式读取不走 `ctx.api`**（页面自持 `fetch` + `ReadableStream` 逐行读）；
-  NDJSON 帧 = `agent/ADMIN-AGENT.md` §11.3：`turn` ⇒ **活流分步界**（每到达 ⇒ 上一步收束、新步起——一步一块）＋ 状态行轮次 ∥ `delta` ⇒ 核 `createStreamRenderer` 增量（落当步块气泡）∥ `usage` ⇒ 状态行读数 ∥ `call`/`result` ⇒ 核工具卡（**嵌当步块**——归该模型调用步）∥ `end` ⇒ 状态行耗时冻结 + 重读详情（读时单源——重读与活流同形 ⇒ 置换零位差，notice 行经此呈现）；
-  中止 = `POST .../:id/abort`；换模型 = `PATCH .../:id`；
+  NDJSON 帧 = `agent/ADMIN-AGENT.md` §11.3：`turn` ⇒ **活流分步界**（每到达 ⇒ 上一步收束、新步起——一步一块）＋ 状态行轮次 ∥ `delta` ⇒ 核 `createStreamRenderer` 增量（落当步块气泡）∥ `usage` ⇒ 状态行读数 ∥ `call`/`result` ⇒ 核工具卡（**嵌当步块**——归该模型调用步）∥ `ask` ⇒ 审批卡（挂消息流尾——§2.1 审批卡面条）∥ `end` ⇒ 状态行耗时冻结 + 重读详情（读时单源——重读与活流同形 ⇒ 置换零位差，notice 行经此呈现）；
+  中止 = `POST .../:id/abort`；换模型 = `PATCH .../:id`；ask 应答 = `POST .../:id/asks/:promptId`（体 `{ verdict }`——§2.1 审批卡面条）；
   **断连/离页**：读流中止（回合照跑——落库单源；回来重读即全量）；发送失败/流前错误 ⇒ 就地人话（`mapError`）。
+- **审批卡面（admin-approval-cards 批——机制 = `agent/ADMIN-AGENT.md` §11.5）**：`ask` 帧（`permission`/`batch`）⇒ 卡挂消息流尾（核 `renderApprovalCard`/`renderBatchApprovalCard`——`views-chat-cards.mjs`）；应答 ⇒ `POST …/asks/:promptId`（体 `{ verdict }`——`once`/`always`/`reject` ∥ `approveAll`/`deny`/`oneByOne`）；
+  应答失败 ⇒ 人话 + 卡面重挂（remount——非乐观，桌面同规）；回合 `end`/切会话 ⇒ 残留卡全摘（服务端同拍拒值结算）；重读装配 ⇒ 在决卡重挂（remount）区尾（表不变——旧卡不失答）。
+  收窄：`question`/`secret` 帧不落本面（源不在管理面——机制档收窄条）；键族零增（核卡面键 = core 两表已册）。
 - **notice 行文案映射**：`data.reason` 五值各一键——`"restart"` ⇒ `admin.chat.noticeInterrupted` ∥ `"budget"` ⇒ `admin.chat.noticeBudget` ∥ `"model_error"` ⇒ `admin.chat.noticeModelError` ∥ `"empty_turn"` ⇒ `admin.chat.noticeEmpty` ∥ `"aborted"` ⇒ `admin.chat.noticeAborted`（+1）；
   枚举外/缺位 ⇒ 服务端原文兜底（`content`——零信息丢）。en 面零 CJK 判据 = 枚举命中前提（收口端到端核）。
 - **主机凭据钮**：会话条「主机凭据」钮 ⇒ 选主机（`runners.list` 行——名 ∥ 地址 ∥ `ssh` 元数据）⇒ **主机凭据弹窗**
@@ -150,7 +153,8 @@
 
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
-| `thincoder-server/public/views-chat.mjs` | **440** | 管理面对话页（本档 §2.1）：页四段装配 ∥ 会话条（选择器/新会话/重读）∥ 消息装配（核 `thincoder-render-core/flow/block.mjs`——回读/活流）∥ NDJSON 帧分发（`delta`/`call`/`result`/`turn`/`usage`/`end`）∥ 队列（待发泡/队首发起）∥ 新会话弹窗 ∥ 取数。**chat-shell-align 批**：去自持消息/工具件渲染与输入区（迁 `views-chat-composer.mjs`）∥ 增会话条下拉 ∥ 队列 ∥ `turn`/`usage` 帧分发 ∥ 中止/换模型接线——净 **≈−90 ⇒ ≈330** |
+| `thincoder-server/public/views-chat.mjs` | **440** ⇒ ≈**465**（本批 +ask 帧分发/清卡/重挂钩 ≈+25） | 管理面对话页（本档 §2.1）：页四段装配 ∥ 会话条 ∥ 消息装配（核 `flow/block.mjs`——回读/活流）∥ NDJSON 帧分发（`delta`/`call`/`result`/`turn`/`usage`/`end`/`ask`）∥ 队列 ∥ 新会话弹窗 ∥ 取数 ∥ 审批卡接线（`views-chat-cards.mjs`） |
+| `thincoder-server/public/views-chat-cards.mjs`（拟新增） | ≈**110** | 审批卡族（本档 §2.1 审批卡面条；机制 = `agent/ADMIN-AGENT.md` §11.5）：`createAskCards`（`append`/`clear`/`remount`）+ 核两卡件适配 + 应答单点（非乐观——失败重挂）；键族零增（核卡面键 = core 两表已册） |
 | `thincoder-server/public/views-chat-messages.mjs` | ≈**105** | 消息面（本档 §2.1②）：NDJSON 行/帧纯函数（`splitLines`/`parseFrame`/`argsText`）∥ notice 行文案映射（五值）∥ 工具结果文案（失败判据 = 核 `isToolFailure`）∥ 回读装配（库行 ⇒ 核 `buildUserMessage`/`buildAssistantRestore`/`renderToolHistory`——`messageNodes`）；`views-chat.mjs` 面 `export … from` 兼容重导出（**用例级**：既有纯函数/键消费两用例经重导出零改——文件级改动清单 = 本 § 末段 ∥ §6⑥）；拆档缘由 = `views-chat.mjs` 500 软线已贴满（增行前必须先外拆） |
 | `thincoder-server/public/views-chat-composer.mjs` | ≈**318** | 输入区与状态行（本档 §2.1③④——核件全件消费适配层；拆档缘由 = `views-chat.mjs` 并入后 ≈630——越 500 软线（拆档审查；800 硬限未越）） |
 | `thincoder-server/public/i18n-zh-core.mjs` | ≈**62** | 文案表·zh·核件词面（键 = 核件原名；值逐字同 VSC locales——slash 族源 = 桌面 `thincoder-desktop/renderer/i18n-views.mjs` 同键） |
@@ -165,7 +169,8 @@
 
 **面小计**：≈**754**（设计估）⇒ 实读和 ≈**958**（2026-10-12 盘面实读：`views-chat.mjs` **500** + `views-chat-composer.mjs` **321** + 两 i18n core **70**/**67**——含 console-reasoning-levels 批已落步进，不重计）
   ⇒ ≈**994**（console-chat-live-step 批：≈**+36** = 分项和〔`views-chat.mjs` 净 ≈−69（活流分步 +≈25 ∥ 帧面/回读装配外拆 −≈94） + 新档 ≈105〕）
-  ⇒ ≈**1004**（admin-chat-creds-merge 批：`views-chat.mjs` +≈10——两批在途；**实施次序 = live-step 先 ∥ creds-merge 后**〔先降基数，免 `views-chat.mjs` 先越 500 软线机检〕；以实施当刻实读为准）；域合计 = 各面之和——不单列）。
+  ⇒ ≈**1004**（admin-chat-creds-merge 批：`views-chat.mjs` +≈10——两批在途；**实施次序 = live-step 先 ∥ creds-merge 后**〔先降基数，免 `views-chat.mjs` 先越 500 软线机检〕；以实施当刻实读为准）；域合计 = 各面之和——不单列）
+  ⇒ ≈**1139**（admin-approval-cards 批：+≈135 = `views-chat.mjs` ≈+25（ask 帧分发 + 清卡/重挂钩） + 新档 `views-chat-cards.mjs` ≈110——以实施当刻实读为准）。
 
 **面小计（成员面）**：**1,919**（2026-10-15 实读——七档：`views-me-chat.mjs` 499 ∥ `views-me-chat-composer.mjs` 456 ∥ `views-me-chat-sessions.mjs` 280 ∥ `views-me-chat-pull.mjs` 218 ∥ `views-me-chat-cards.mjs` 180 ∥ `views-me-chat-subs.mjs` 162 ∥ `views-me-chat-messages.mjs` 124）；
 两 i18n me 表就表扩键 `me.chat.*`（零新档——行账 = `webui/ME.md` §3）；shell 两表 +1 键/表。
@@ -200,7 +205,7 @@
 | 需求 | 设计级判据 | 载体 |
 |---|---|---|
 | 管理面 agent 会话页 | 页在册（`#/admin/chat`——单页直测）：会话列表（空态/加载/失败三态）∥ 新会话弹窗（模型下拉 = `deriveModels` 同源 ∥ 空模型 ⇒ 提交门）∥ 对话区（用户/助手/工具行/notice 四形渲染）∥ 输入区（空值不提交 ∥ 在途禁用）∥ 流读取（`fetch` + `ReadableStream`——假流桩：`delta` 追加 ∥ `call`/`result` 工具行 ∥ `end` ⇒ 重读详情——取数序列逐条）∥ 断连（读流中止——零未押异常）∥ i18n 键族（≈33 键两表同步——en 零 CJK）∥ 审计型键 `audit.type.agent_event` 入册（`views-audit` 详情 `summary` 支）∥ `nav.mjs` 管理 11（直测）∥ 非壳页（`SHELL_PAGES` 五路径不动）∥ AC-19 canon 不破（零新变量/零新悬停规则）∥ 档目随正——单源 = `webui/WEBUI.md` §1 | 单元测试档 + 收口轮（浏览器实走） |
-| 管理面 chat 对齐（KD-SV-101） | 呈现面 = 复用 `thincoder-render-core`：静态面第二根 `/rc/*` 在册（`static.mjs` 根表——前缀序/逃逸门逐根 ∥ 桌面双根同形）+ 页面以同源绝对路径取核（`/rc/md.mjs` 等——档面零 `../node_modules` 相对径 ∥ 零拷贝副本 ∥ `package.json` `file:` 声明在册）∥ 对齐集机检：① `md()` 渲助手/用户文本（注入点唯一）② 代码块高亮（`pre.code-block`/`.tk-*`）③ 工具卡三件（`renderToolCard`/`finishToolCard`/`renderToolHistory`——失败判定 `isToolFailure`）④ 流式 = `createStreamRenderer` + `paintLiveMd`（增量——禁每帧全量 `md`/整面 `innerHTML`）⑤ 滚动 = `scroll.*`（24px 判据单源；上滚不夺位）∥ **不做项机检**：档面零 diff/search/卡族引用（本档 §2.1 ⑥⑦⑧⑩⑪）∥ 转义：核 `md()` 单源（页面零手拼 HTML 串——`webui/WEBUI.md` §3 收窄；非文本面 `h`/`textContent`）∥ i18n：`i18n-{zh,en}-core.mjs` 在盘（键 = 核件原名；键首段 ⊆ 核件 `t()` 发射段集——单元测试档扫核件字面量取集（机器可判）；值逐字同 VSC locales——单元测试档断言与 `thincoder-vscode/locales/{zh,en}.json` 逐键相等）+ `setStrings` 注册（装配期 + 每次语言切换重注册——核 `_strings` 模块级态） ∥ 类名闭合域随正（`style.css` 选择器 ⊆ 档面字面类 ∪ **核件发射类清单**——AC-19 canon 随正）∥ 零新 `:root` 变量 ∥ 零新悬停规则 ∥ 单元测试档用例可执行口径 = 自仓根 `node --import ./thincoder-server/test/rc-resolve.mjs --test <对话页对齐单元测试档>`（`--import` 缝——缺则 `/rc/*` 不可解析） ∥ 镜像内双包装（`docker build` 上下文 = 仓根——核包解析可达：容器内 `node -e "import('@thincoder/render-core/md.mjs')"` 冒烟） | 单元测试档 + 收口轮（**ECS 浏览器实走**——走查清单在册） |
+| 管理面 chat 对齐（KD-SV-101） | 呈现面 = 复用 `thincoder-render-core`：静态面第二根 `/rc/*` 在册（`static.mjs` 根表——前缀序/逃逸门逐根 ∥ 桌面双根同形）+ 页面以同源绝对路径取核（`/rc/md.mjs` 等——档面零 `../node_modules` 相对径 ∥ 零拷贝副本 ∥ `package.json` `file:` 声明在册）∥ 对齐集机检：① `md()` 渲助手/用户文本（注入点唯一）② 代码块高亮（`pre.code-block`/`.tk-*`）③ 工具卡三件（`renderToolCard`/`finishToolCard`/`renderToolHistory`——失败判定 `isToolFailure`）④ 流式 = `createStreamRenderer` + `paintLiveMd`（增量——禁每帧全量 `md`/整面 `innerHTML`）⑤ 滚动 = `scroll.*`（24px 判据单源；上滚不夺位）∥ **不做项机检**：档面零 diff/search/问询/计划/subagent 卡引用（本档 §2.1 ⑥⑦⑧⑩⑪）∥ 转义：核 `md()` 单源（页面零手拼 HTML 串——`webui/WEBUI.md` §3 收窄；非文本面 `h`/`textContent`）∥ i18n：`i18n-{zh,en}-core.mjs` 在盘（键 = 核件原名；键首段 ⊆ 核件 `t()` 发射段集——单元测试档扫核件字面量取集（机器可判）；值逐字同 VSC locales——单元测试档断言与 `thincoder-vscode/locales/{zh,en}.json` 逐键相等）+ `setStrings` 注册（装配期 + 每次语言切换重注册——核 `_strings` 模块级态） ∥ 类名闭合域随正（`style.css` 选择器 ⊆ 档面字面类 ∪ **核件发射类清单**——AC-19 canon 随正）∥ 零新 `:root` 变量 ∥ 零新悬停规则 ∥ 单元测试档用例可执行口径 = 自仓根 `node --import ./thincoder-server/test/rc-resolve.mjs --test <对话页对齐单元测试档>`（`--import` 缝——缺则 `/rc/*` 不可解析） ∥ 镜像内双包装（`docker build` 上下文 = 仓根——核包解析可达：容器内 `node -e "import('@thincoder/render-core/md.mjs')"` 冒烟） | 单元测试档 + 收口轮（**ECS 浏览器实走**——走查清单在册） |
 | 对话页壳面对齐（功能点 41 ∥ AC-41；KD-SV-106/107/108/109） | 四轴逐项在册（本档 §2.1）：**① 布局** = 页四段（会话条 sticky 顶 ∥ 消息流文档流 ∥ 状态行 ∥ 输入区 sticky 底——`#toolbar`）∥ 三卡去卡片化 ∥ `SHELL_PAGES` 五路径不动 ∥ 滚动 = `document.scrollingElement`（核 `scroll.mjs` 两判据不变）∥ **② 消息形态** = 核 `thincoder-render-core/flow/block.mjs` 装配（`buildUserMessage`/`renderBlock`/`buildAssistantRestore`/`buildFinishedToolCard`——工具卡嵌助手块内 ∥ 一回合一个助手标签（`turnStart` 恰一次）∥ 无气泡底（`.message`/`.msg-label`/`.msg-time`）∥ 回读块模型：user ⇒ 块 ∥ assistant+tool ⇒ 助手块+嵌套卡 ∥ notice ⇒ 自持灰条）∥ **③ 输入区** = 核 `thincoder-render-core/composer/panel.mjs` 全件（适配层四面：容器自建 + 两 css `<link>`（幂等）∥ 变量别名桥 ∥ 注入口桥（post 映射表/state/hooks）∥ 无源钮收窄——五钮 CSS 隐藏）+ **四件控件后端**（换模型 = `PATCH …/:id`（KD-SV-108）∥ 附件 = 文本档零后端 + 图片随行存（KD-SV-109）∥ 中止 = `POST …/abort`（KD-SV-107）∥ 斜杠 = 三命令表（`/model`/`/new`/`/help`——名 ⊆ CLI 名集））+ 排队面（核容量 8/待发泡/`end` ⇒ 队首）∥ **④ 状态行** = 输入区上方 + 段表 ⊆ 有源（本档 §2.1④；`✦reasoning` 不做 = 无源实证）+ 帧面加性扩展（`turn`/`usage`/`end` 补两字段——`gateway/API.md` §2.8）∥ **端差异表六条**（逐条实证——本档 §2.1）∥ 用例 = 本档 §4 壳面行（N68–N70 ∥ B67/B68 ∥ E52/E53）+ 机制面 = `agent/ADMIN-AGENT.md` §8（N64–N67 ∥ B65/B66 ∥ E50/E51）∥ 收口轮 = 浏览器实走（四轴清单在册） | 单元测试档 + 收口轮（浏览器实走；ECS 走查） |
 | 对话页壳面对齐（续·机检口径） | 单元测试档用例（自仓根 `node --import ./thincoder-server/test/rc-resolve.mjs --test <对话页壳面单元测试档>`）：① 档面零自持渲染（核件调用面在册——零手写 markdown/工具行拼装）② 核件调用面逐件（`block.mjs` 四件 ∥ `thincoder-render-core/composer/panel.mjs` ∥ `scroll.*` ∥ `createStreamRenderer`）③ 状态行段表机检（段 ⊆ §2.1④ 表；`✦` 零引用）④ 无源钮隐藏规则在盘（`style.css` 五 id）∥ 核件词面扫描用例（消费件 `t()` 字面量全集 ⊆ `i18n-{zh,en}-core.mjs` 注册表；与 VSC locales 逐键相等——slash/桌面族按值源表断言）∥ 页面档结构用例：会话条/状态行/输入区在册（`#toolbar`/`#status-line` 各恰一——幂等：两次装配零重注）∥ AC-19 canon 不破（`:root` 别名块 = 零新值（逐键 `var(--既有)`） ∥ 零新悬停规则 ∥ 类名闭合域随正）∥ 档目随正——单源 = `webui/WEBUI.md` §1（+1 档）∥ 服务端用例 = `agent/ADMIN-AGENT.md` §7 本档行（前后端同拍） | 单元测试档 + 收口轮（浏览器实走） |
 | 对话页思考档位选择器（功能点 42 ∥ AC-42；KD-SV-111） | **① 档位源** = `GET /api/admin/providers` 每 provider 行 `modelReasoning`（键 = 上游真名 ∥ 值 = 核 `reasoningEffortEnum`；稀疏——空档零键）⇒ `deriveModels` 行携 `reasoning` ⇒ 核行 `reasoning` 非恒空 ∥ **② 选择生效** = `PATCH …/:id { reasoning }`（值域 = 核同一枚举——表外 ⇒ 400 库零变）⇒ 回合出口 provider 携 `reasoningEffort`（假出口入参断言；未设 ⇒ **零字段**）∥ **③ 界面可用** = `#reasoning-btn` 解隐藏（收窄五钮）+ 点选 ⇒ PATCH 恰一条 + 切会话推送回读（`prefs.reasoning`——各自记住）∥ **④ 默认静默** = 未动 ⇒ 零字段 ∥ 存量行 NULL 零变（v16 零迁移）∥ **⑤ 状态行不做** = `statusSegments` 零改（`✦` 零引用——既有用例续）∥ 机制面 = `agent/ADMIN-AGENT.md` §7 本档行（前后端同拍） | 单元测试档 + 收口轮（浏览器实走——切模型/切会话/选档各一） |
@@ -230,9 +235,16 @@
 | B71 | 边界 | 工具-only 步（`turn` ∥ `call` ∥ `result`——零 delta）∥ `turn` 后即 `end`（零内容步） | 工具-only 步 ⇒ 该块零气泡、卡组在场；零内容步 ⇒ 零空块（不建空 `.message.assistant`） |
 | E56 | 错误 | 步内失败卡（`ok:false`）∥ 中止/失败 `end`（重读置换） | 失败卡红面 + 展开且归当步块；重读后块位与活流一致 + notice 行在场（悬挂卡回读恒绿 = D2 在案） |
 
+| N75 | 正常 | 假流桩（`ask`（permission）⇒ 应答 ⇒ `call`/`result`）＋ 假 api 桩 | 卡挂消息流尾（核 `renderApprovalCard` 类族）；点「批准」⇒ `POST …/asks/:promptId { verdict:"once" }` 恰一条 + 卡摘除；`result` 卡照常结算 |
+| B72 | 边界 | 批卡（`ask`（batch——count=2））三值 ∥ 应答失败（400）∥ `end` 时残留卡 | 三值 ⇒ 应答体逐值；应答失败 ⇒ 人话 + 卡面重挂（非乐观）；`end`/切会话 ⇒ 残留卡全摘 |
+| E57 | 错误 | 应答 400（已了结/未知 promptId）∥ 重读装配时在决卡 | 400 人话（服务端报文直呈——零吞）；重读 ⇒ 在决卡重挂区尾（`remount`——表不变，旧卡不失答） |
+
 ## 5. 边界（本面不做面）
 
-- 管理面 chat 渲染面不做项（理由逐项 = 本档 §2.1 对齐集）：思考块（帧/落库面无 reasoning 文本通道——加字段 = 后端面另轮）∥ diff 块（工具面无文件编辑族）∥ 会话内搜索（浏览器原生 Ctrl+F 已覆盖）∥ 审批/问询/计划/subagent 卡（无人值守裁剪——面无源）∥ 代码块复制钮（核件自带钮——安全上下文依赖，http 内网面点击无效＝在册余项，TLS/公网化后可接）；核件只读消费（不 fork/不改名/不覆写核件语义）；核包 = registry 可发布包（`private` 已撤——#1353；首发 registry = 发布轮）。
+- （admin-approval-cards）已落面 = 审批卡（单件 ∥ 批；做/不做逐条 = 本档 §2.1⑩ + 审批卡面条 ∥ 机制 = `agent/ADMIN-AGENT.md` §11.5）；不做面 = 问询/计划/subagent 卡 ∥ `#auto-btn` 钮位面（留隐——模式位三段另批）∥ 在决 ask 读数段 ∥ 卡面 diff 预览。
+
+- 管理面 chat 渲染面不做项（理由逐项 = 本档 §2.1 对齐集）：思考块（帧/落库面无 reasoning 文本通道——加字段 = 后端面另轮）∥ diff 块（工具面无文件编辑族）∥ 会话内搜索（浏览器原生 Ctrl+F 已覆盖）∥ 问询/计划/subagent 卡（面无源——无 `question` 件 ∥ 计划/子代理族裁剪）∥
+  代码块复制钮（核件自带钮——安全上下文依赖，http 内网面点击无效＝在册余项，TLS/公网化后可接）；核件只读消费（不 fork/不改名/不覆写核件语义）；核包 = registry 可发布包（`private` 已撤——#1353；首发 registry = 发布轮）。
 - （chat-shell-align）不做面：会话删除/重命名（全文 = `agent/ADMIN-AGENT.md` §10）∥ **模式位/设置钮的功能补齐**（无源 = 隐藏，不造机制——推理钮经 KD-SV-111 出列）∥ 图片文件面（缩略图/下载/文件存储——dataURL 随行存，零文件面）∥ 跨会话并发/多标签同步（未裁——不发明）。
 - （console-reasoning-levels）不做面：状态行 `✦reasoning` 段（口径④——`agent/ADMIN-AGENT.md` §10 同拍）∥ 档位/模型清单的**编辑**（只读消费核件单源）∥ 逐条覆写（VSC per-message `reasoning` 参——控制台恒会话级）∥ 其余无源钮（五枚）∥ 核件档位呈现改写（无档面文案 = 核件哨兵逐字——要改属核面另裁）。
 - （console-chat-live-step）不做面：**服务端零改**（零新帧/零新字段——步界帧既有）∥ 悬挂卡回读恒绿（D2 口径）∥ 一步内「逐段交错」不发明（一步内 = 泡在前、卡在后——与终态同构即止）∥ 其它端不改（VSC 为基准先例——只收控制台面）。
@@ -265,4 +277,10 @@
 - **⑨ （member-face-parity）交付项与披露**：
   - **随正件（父侧/实施轮——以当刻盘面实读为准）**：`webui/WEBUI.md` §1（+新档三件——JS 链/档目链随正）∥ 测试链（机制档 §9 R89——六件 + 本批新档；清单单源）∥ `style.css` 新面登记（卡族/下拉/搜索/子代理块类名 + **钮可见性作用域覆写**（成员面四模式钮 + 设置钮解锁）——行账 = `webui/STYLE.md` §3）∥ `i18n-{zh,en}-me` 键族（卡族/下拉/搜索/状态行段/ask 文案——核件词面段与 me 键分登）。
   - **披露（不阻塞）**：① 拆档两步序（拉取件外拆在先——本批三件后落）；② 判定项两枚（台账标记段 ∥ 团队登录态段——机制档 §9 R85/R86，默认补法在案、未裁前不造）；③ 跨回合池/计时态 = 端面约束（R83——回合内可达）；④ 帧面增补七型对旧盒向后兼容（未知帧零处理）。
+- **⑩ （admin-approval-cards）交付项与披露**：
+  - **需求档回笔（主 agent 笔）**：管理面审批卡面条目/AC（用户 2026-10-17 裁「必须上审批卡」——口径 = 现状「零审批卡面」欠账补）。
+  - **随正件（父侧/实施轮——以当刻盘面实读为准）**：`webui/WEBUI.md` §1（+ `views-chat-cards.mjs` 入 JS 链/档目链）∥ 测试链（静态面档目断言件 +1 名 ∥ 键数/指纹就地收正——卡族键零增）∥ 批内定向单测（同下——档目链随正）∥
+   结构版本断言 = **25** ∥ `agent_chats` 列面 = **8 列**（含 `auto_approve`；两件载体 = 批内定向单测 `test/2026-10-17-admin-approval-cards.test.mjs`——17 例，收口随批删）。
+  - **披露（不阻塞）**：`#auto-btn` 留隐（钮位三段未落——出列候裁）；断线 ⇒ 拒值（无流断重挂面）；未决卡 ⇒ 回合挂起（中止可解）；拒执行亦可见（`call`/`result` 帧 + 工具行 + 审计 −1）。
+  - **部署收尾（父侧）**：镜像重建 + 浏览器实走（写类一次弹卡 ⇒ 批 ⇒ 执行 ∥ `always` 一次 ∥ 拒一次）。
 

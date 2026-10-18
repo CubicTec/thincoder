@@ -62,15 +62,15 @@
 
 | # | 条目（契约点） | 类 | 归一变更 | 兼容形态（§2.12.1 模板） | 落地物（档:行 / 用例名 / CHANGELOG 条目） | 裁定状态 |
 |---|---|---|---|---|---|---|
-| 1 | `~/.thincoder/config.json` 键面与默认值（含 CLI-only `agent.goalTurns` / `agent.streamRules`；`agent.compactThreshold` 默认值分叉） | 配置 | 两面 → 核内单一 DEFAULTS | 旧键可读（迁移幂等 + 写回带 `.bak-{ts}`）· CHANGELOG | 两产品 `CHANGELOG.md` + `thincoder-cli/README.md` 键面 + 旧配置读入用例（S2 落） | 已裁 · 按建议（§2.5.1 A4） |
+| 1 | `~/.thincoder/config.json` 键面与默认值（含 CLI-only `agent.goalTurns` / `agent.streamRules`；`agent.compactThreshold` 默认值分叉） | 配置 | 两面 → 核内单一 DEFAULTS | 旧键可读（迁移幂等 + 写回带 `.bak-{ts}`）· CHANGELOG | `thincoder-cli/CHANGELOG.md` ∥ `thincoder-vscode/CHANGELOG.md` + `thincoder-cli/README.md` 键面 + 旧配置读入用例（S2 落） | 已裁 · 按建议（§2.5.1 A4） |
 | 2 | `$schema` 注入与否（VSC 写盘注入 / CLI 不注入） | 配置 | 取一侧 + 登记 | 登记 + README 键面同步 | 同第 1 行 + 配置读写用例 | 已裁 · 按建议（§2.5.1 A4） |
 | 3 | `settings` 工具的类型校验面（错类型是否拒写） | 输出（工具回话） | VSC = 拒绕并报错（同 CLI） | 登记 + CHANGELOG（工具行为条目） | `SETTINGS-TOOL.md` 同步 + VSC 用例 | 已裁 · 按建议（§2.5.1 A5） |
-| 4 | `agent.engineering` 的写盘范围（VSC 双写共享 `config.json`） | 配置 | 取 CLI（只进会话） | 旧行为撤回 ⇒ CHANGELOG + 登记 | `SESSION.md` / `ENGINEERING-MODE.md` 同步 | 已裁 · 按建议（§2.5.1 A6） |
+| 4 | `agent.engineering` 的写盘范围（VSC 双写共享 `config.json`） | 配置 | 取 CLI（只进会话） | 旧行为撤回 ⇒ CHANGELOG + 登记 | `SESSION.md` / `docs/core/design/ENGINEERING-MODE-V2.md` 同步 | 已裁 · 按建议（§2.5.1 A6） |
 
 ## 5. 受影响文件（该子系统）
 
 指针（不复制）→ `CORE-UNIFICATION.md` §2.8 下列行：**产品运行期（S2 改）** · **对外契约兼容面（S0 登记 / S2 落地）**。
-**核内落点行数** → §2.8.1「核内逐档行数与拆分计划」（本子系统面：`thincoder-core/config.mjs`（带拆分计划）· `thincoder-core/config-io.mjs` · `thincoder-core/config-presets.mjs`）。
+**核内落点行数** → §2.8.1「核内逐档行数与拆分计划」（本子系统面：`thincoder-core/config.mjs`（越软线——拆分计划挂结构维护台账 #1612）· `thincoder-core/config-io.mjs` · `thincoder-core/config-presets.mjs`）。
 
 ## 6. 机制面
 
@@ -128,10 +128,10 @@
 | `THINCODER_TEST_CRASH` / `THINCODER_TEST_TUI_ACTIVE` | ④ argv | bin 崩溃钩 `--test-crash` / `--test-tui-active`（生产零路径） |
 | `THINCODER_TEST_CLEANUP_OUT` | ④ argv | bin `--test-cleanup-out=<路径>` → `_setCleanupOutPathForTest`（`thincoder-cli/src/tui/tui-lifecycle.mjs`）（**单半例外**——启动时一次性读点，复位面无消费者） |
 | `BENCH_RESULTS_DIR` | ② 参数 / ③ 缝 | `--results-dir <路径>` + `setResultsDir(dir)`（`bench/lib/output.mjs`——③ 缝；读点 `_resultsDir ?? join(BENCH_DIR,"results")`）（**命名 / 成对例外**——`setResultsDir` 兼具参数应用与测试缝〔非纯测试缝〕· 无 `_reset` 半：复位面无消费者；混合形口径见名录后） |
-| `BENCH_JUDGE` / `BENCH_PRICES` | ② 参数 / ③ 缝 | `--judge-config <路径>` / `--prices <路径>`（子进程调用面——参数名定值）+ `_setJudgeConfigPathForTest` / `_resetJudgeConfigPathForTest`（`bench/lib/judge.mjs`）· `_setPricesPathForTest` / `_resetPricesPathForTest`（`bench/lib/prices.mjs`）——进程内面（③ 缝成对） |
+| `BENCH_JUDGE` / `BENCH_PRICES` | ② 参数 / ③ 缝 | `--judge-config <路径>` / `--prices <路径>`（子进程调用面——参数名定值）+ `_setJudgeConfigPathForCheck` / `_resetJudgeConfigPathForCheck`（`bench/lib/judge.mjs`）· `_setPricesPathForCheck` / `_resetPricesPathForCheck`（`bench/lib/prices.mjs`）——进程内面（③ 缝成对）（命名例外） |
 | `THINCODER_SMOKE` | ④ argv | `node test/smoke-qwen-thinking.mjs --smoke`（缺 ⇒ skip + 退出 0——发版 glob 收集面零花费） |
 
-**混合形（argv 解析 + 进程内缝）**：CLI 面参数（② / ④ 面）经入口解析后落 **③ 缝**——缝面成对规则同 ③；**单半 / 命名例外逐行标于名录**（现存：`--test-cleanup-out` → 单半；结果目录 `setResultsDir` → 命名例外〔参数应用与测试缝共用〕）。
+**混合形（argv 解析 + 进程内缝）**：CLI 面参数（② / ④ 面）经入口解析后落 **③ 缝**——缝面成对规则同 ③；**单半 / 命名例外逐行标于名录**（现存：`--test-cleanup-out` → 单半；结果目录 `setResultsDir` → 命名例外〔参数应用与测试缝共用〕；bench 判官 / 价格表四缝 `…ForCheck` → 命名例外〔评估工具自身的测试代码面〕）。
 
 **派生消费面（登记）**：`diagnostics.heapSnapshot` / `diagnostics.heapWatch` / `agent.timerWake` / `agent.injectDocs` / `agent.injectMemories` 经**全量 DEFAULTS 派生**进入 `settings` 工具类型面（`thincoder-core/agent-tools/settings.mjs:62`——装载期派生）⇒ 双端可见可写键面随配置键扩张，**实现面零改码**。
 
@@ -172,6 +172,21 @@
 - **写面**：唯一写者 = `thincoder-core/team.mjs`（已落——登录/退出流程；`writeConfigAtomic` 一次 mutate；端侧零自写盘）。
 - **登录态判据**：`team.token`（trim 非空）——= 团队功能开关（口径④）；消费面 = 三端 + 后续团队面（各面设计轮）。
 - **边界**：不做 team 段的手工编辑入口（写面 = 登录/退出流程单源）∥ 不做多套登录态并存 ∥ 不写 `DEFAULTS`。
+
+### 6.5 网络工具后端选择键（`websearch.backend` ∥ `fetch.backend`）
+
+**键面**（DEFAULTS 声明 = `thincoder-core/config.mjs`；机制与判据全文 = `TOOLS.md` §6.23——本档只收键面）：
+
+| 键 | 缺省 | 取值 | 消费点 | 回退 |
+|---|---|---|---|---|
+| `websearch.backend` | `"auto"` | `"auto"` ∥ `"local"` | `thincoder-core/tools/web.mjs`（`websearch.execute` → `web-deepseek.mjs` `backendMode(cfg, "websearch")`） | 非 `"local"` 一律按 `auto`（fail-open，含拼写错） |
+| `fetch.backend` | `"auto"` | 同上 | 同上（`fetch.execute` → `backendMode(cfg, "fetch")`） | 同上 |
+
+- **语义**：`local` = 跳过 DeepSeek 后端（`websearch` 仍 Tavily → Bing ∥ `fetch` 仍本地直取——**不是**「只用本地能力」）；`auto` = 有合格 DeepSeek 渠道即优先（资格判据 = `TOOLS.md` §6.23）。
+- **通道归属**：① 配置键通道（§6.2）——入 `DEFAULTS` ⇒ `settings` 工具键面自动派生（§6.2「派生消费面」），类型护栏 = 默认值类型（字符串）。
+- **敏感面**：两键**非敏感**（不命中 §2.4 谓词；`websearch.apiKey` 照旧为族内唯一敏感叶子）。
+- **环境变量面**：零新增（无 env 通道 ∥ 无回退分支——D-CF5 照旧）。
+- **边界**：不设顶层 `deepseek` 段；`websearch.deepseek.baseURL` 槽位保留（另批）。
 
 ## 7. 关键决策记录
 

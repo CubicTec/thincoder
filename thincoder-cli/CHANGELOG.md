@@ -1,3 +1,9 @@
+## [Unreleased]
+
+### Added
+
+- **网络工具接入 DeepSeek 后端**：`websearch` / `fetch` 自动复用 `providers[]` 中 `api.deepseek.com` 渠道的 key（零新增配置）——搜索得结构化结果（date ∥ authority ∥ rerank + 长摘要），抓取得 Markdown 正文；后端失败软着陆（401/402/403/404 熔断 ∥ 408/429/5xx 退避一次 ∥ 工具永不失败）；新增逃生口键 `websearch.backend` ∥ `fetch.backend`（∈ auto/local，缺省 auto；无该渠道的用户行为逐字不变）。
+
 ## [0.12.75] — 2026-10-16
 
 > 0.12.74 → 0.12.75（连续号——发布时定号）

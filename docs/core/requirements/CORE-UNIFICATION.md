@@ -69,7 +69,7 @@ phase 1 的实测（口径与复现命令 = `thincoder-cli/docs/requirements/TWO
 | 面 | 档数（两端各） | 逐字节同 | 不同 | 不同的档 |
 |---|---|---|---|---|
 | `src/prompts/`（运行期槽位提示词） | 15 | **8** | **7** | `advisor-design.md` · `advisor-round2.md` · `advisor-round3.md` · `discipline-engineering.md` · `discipline-normal.md` · `persona-eng-coder.md` · `persona-engineering.md` |
-| `src/tools/*.md`（运行期**工具描述**——同属提示词面，加载面 = `thincoder-core/tools/shared.mjs` 的 `DESC()`） | 25 | **20** | **5** | `bash.md` · `grep.md` · `lint.md` · `question.md` · `websearch.md` |
+| `src/tools/*.md`（运行期**工具描述**——同属提示词面，加载面 = `thincoder-core/tools/shared.mjs` 的 `DESC()`） | 25 | **20** | **5** | 5 档（明细为迁移期读数） |
 | `docs/design/prompts/`（中文设计档——本行分叉读数为**两端镜像历史读数**；层级口径：根仓基准层为唯一权威、产品面 = 迁移期参照历史——D-C14） | 15 | **10** | **5** | `advisor-design.md` · `discipline-engineering.md` · `discipline-normal.md` · `persona-eng-coder.md` · `persona-engineering.md` |
 
 **要点**：

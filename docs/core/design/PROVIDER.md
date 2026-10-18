@@ -202,9 +202,13 @@ qwen-plan 渠道同名模型以 `deepseek-v4.1-flash` 提供（`token-plan.cn-be
 ### 6.12 Qwen 思考关闭（`enable_thinking`）
 
 qwen 系列（百炼**混合思考**模式，默认开启）需能**真正关闭**思考（缺陷：reasoning off 时原请求体不含任何思考控制字段 → 服务端按默认开启 → off 静默失效）。纯函数 `resolveEnableThinking(provider, spec)`（`config.mjs`，两端同构造）：白名单双条件 = 模型名 `qwen` 开头（排除 `qwen3-coder` 前缀）**且** provider 指向百炼 host（`isBailianHost`）；
-`provider.thinking === null` 是两端统一的**显式 off 唯一标记**。**不受 router 门控**（白名单键控模型前缀 + host，非模型 ID 斜杠）。**选档位 / 开 auto = 隐含 thinking on**：清 `thinking: null` off 标记；
+`provider.thinking === null` 是两端统一的**显式 off 唯一标记**（唯一例外 = effort 档位在场且非 `"none"`——见下条一致性分支）。**不受 router 门控**（白名单键控模型前缀 + host，非模型 ID 斜杠）。**选档位 / 开 auto = 隐含 thinking on**：清 `thinking: null` off 标记；
 on 分支默认 effort 契约 = 取 `spec.reasoningEffortEnum` 的**首个非 `"none"` 档**——枚举首项为 `none` 的族（qwen 全族）不得拿首项当 on 默认，否则 = 「开了个关着的思考」；
-`none` 不在枚举时两者等价 ⇒ 对其余族零回归。**现状（待落）**：`thincoder-cli/src/tui/cmd-think.mjs:118` 仍取枚举首项，修法 = 交付项（设计 `doc:MODEL-SPECS.md:§2.8`，A-16 / T-14）。
+`none` 不在枚举时两者等价 ⇒ 对其余族零回归。（`/think on` 取档实现 = `doc:MODEL-SPECS.md:§2.8`，A-16 / T-14。）
+
+**一致性分支（百炼互斥约束——`thincoder-core/config.mjs:183-196`）**：服务端约束 = `enable_thinking:false` 时 `reasoning_effort` 必须为 `"none"`，互斥即 400；
+⇒ `provider.reasoningEffort` 有值且非 `"none"` ⇒ `resolveEnableThinking` 返 `true`（effort 赢），该判**先于** `thinking === null` 的显式 off 判。
+压缩下行（`{...agent.provider, thinking:null}` + 继承 effort——v3 同源，`doc:CONTEXT-COMPACTION.md:§6.14`）因此发 `{enable_thinking:true, reasoning_effort:<档>}` = 合法对（无 effort 档位时仍落 `false`）。
 
 **两机制并存（不混同）**：关思考有两条独立路径——本节的名字 + 主机白名单（管**请求体字段**）
 与 spec 的 `reasoningEffortEnum` 含 `"none"`（管**端侧下拉能选哪些档 + 发送前校验**）。
@@ -212,7 +216,7 @@ on 分支默认 effort 契约 = 取 `spec.reasoningEffortEnum` 的**首个非 `"
 （裁定与链路逐条 = `doc:MODEL-SPECS.md:§2.6`）。
 
 **effort 族渠道的 off 补发（AC-9——本节 = 谓词单源）**：host 白名单只覆盖百炼（`resolveEnableThinking`）；
-**effort 族**（`spec.thinkApi === "effort"`——spec 行自携该位，如 hy3 / doubao-seed / qwen-max）的 `thinking: null` 不能靠
+**effort 族**（`spec.thinkApi === "effort"`——spec 行自携该位，如 hy3 / doubao-seed / qwen3.7-flash）的 `thinking: null` 不能靠
 `enable_thinking` 生效，需在载荷组装层补发 `reasoning_effort: "none"`（实测唯一有效 off 路径：tok=0、`reasoning_content` 消失）。
 **谓词（单源，其余面引用本节）**：`provider.thinking === null` ∧ `spec.thinkApi === "effort"` ∧ `spec.reasoningEffortEnum?.includes("none")` ∧
 `provider.reasoningEffort == null` ∧ `!provider.model.includes("/")`（末款复用 §6.2 router 门）。

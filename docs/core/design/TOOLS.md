@@ -1503,6 +1503,37 @@ Fetch a URL and return its content. With a DeepSeek provider configured the URL 
 - `SETTINGS-TOOL.md` 的叶子计数须与本批键面同步：本批两键落 `DEFAULTS` 后按 `flatten` 本体实测回填（`SETTINGS-TOOL.md` §2.4 与本节同拍——实施轮落键后一次写入；D3 计数随表）。敏感命中面仍 = 仅 `websearch.apiKey`（两新键非敏感）。
 - `thincoder-core/tool-docs/fetch.md:11`「Non-HTML responses … truncated at ~50000 chars」与 `truncate` 实帽（200K，`tools/shared.mjs:22` `MAX_OUTPUT_CHARS`）不符——**非本批面**（英文运行期面），登记不动。
 
+### 6.24 `batch` 收口前置与重开径的文本面（链完整性门 · 带审计重开）
+
+**契约单源 = `BATCH-RECORD.md` §4.18**（判据 / 触发条件 / 不变量在本档不重述；本节 = 模型可见文本面与拒句逐字，承 §6.20 先例）。
+
+**① 三处 schema description 换写（`agent-tools/batch.mjs`）——逐字**：
+
+| 键 | 换写后逐字（只列追加 / 改动分句；其余分句不动） |
+|---|---|
+| `status` | `… prose goes to the separate `note` field, which lands as a parenthetical). Writing §1 已收口 closes the record and runs the closeout-chain gate: §2 / §3 / §4 / §6 must each carry content, or §1 declares it inapplicable with `> 不适用：§N —— <reason>` (§2 / §3 / §4 only; §5 is exempt; §6 never). Reopening a frozen record = §1 → 进行中 with `note` = the reason: the tool rewrites the §1 status line and appends a 「重开记录」 line — no other existing line is touched.` |
+| `note` | `… Omit for a plain value. On the reopen path (a frozen record, §1 → 进行中) `note` is REQUIRED and lands verbatim in the §1 reopen record instead of the status-line parenthetical (it may name the frozen keyword there).` |
+| `close` | `close (depth-0 only — freeze the record: §1 → 「已收口 <date>」, every further write is refused except the reopen conjunction (§4.18-B); runs the same closeout-chain gate as status — an incomplete chain is refused, naming the missing sections)` |
+
+**② 四条拒句（逐字 · 模型可见）**：
+
+| # | 场景 | 逐字 |
+|---|---|---|
+| J1 | 链门（缺段非仅 §6） | `batch: 收口链未跑完（closeout chain gate）— close refuses: the record's closeout chain has not run, and closing would freeze it that way. Missing: <§2 / §3 …>. Each named section must carry content (append it) or be declared inapplicable in §1 as `> 不适用：§N —— <reason>` (§2 / §3 / §4 only). §6 must carry its verification (never declarable) and §5 is exempt (a light-channel round has no implementation section). Nothing was written.` |
+| J2 | §6 为唯一缺段 | **旧串逐字**（`emptySectionSixError()`——零回归）：`batch: §6 收口段为空（non-empty gate）— close refuses: the closeout section (§6) has no content, and closing would freeze the record with that section permanently empty. Write the section first (append §6: the closeout / verification summary), then call close again. Nothing was written.` |
+| J3 | 声明形不合 | `batch: 「不适用」声明形不合（malformed inapplicability declaration）— one line per section: `> 不适用：§N —— <reason>` with a non-empty reason, §N ∈ {2,3,4} (§5 needs no declaration; §6 is never declarable). Offending line: <该行原文>. Nothing was written.` |
+| J4 | 重开缺理由 | `batch: 重开需理由（reopen requires a reason）— reopening a frozen record reverses a recorded decision, so the reason must be stated: pass it as `note` (it lands verbatim in the §1 reopen record). Nothing was written.` |
+
+**③ 两处行字面（逐字——工具写盘形态）**：
+
+| 面 | 逐字 |
+|---|---|
+| 重开后的状态行 | `**状态行**：进行中（重开 <YYYY-MM-DD>）` |
+| §1 尾部追记行 | `**重开记录**：<YYYY-MM-DD> · 原收口 <旧日期> · 理由 = <note> · 操作者 = 主 agent`（**原收口 = 改写前状态行的收口日期字面**；无日期字面 ⇒ 落「未标日期」——重开后首收口时点只在此行保留） |
+| §1 段内的不适用声明（主 agent 经 append §1 落） | `> 不适用：§N —— <理由>` |
+
+**边界（本节不做）**：不新增工具 / action / **schema 参数**（理由走既有 `note`）· 不改 `STATUS_WORDS` 词表 · 不改冻结门对已收口档 append / status 的拒（逐字）· 不改 `close` 的 §6 单段拒串（J2 逐字）· 端面零改（VSC / desktop 消费同一 tool-docs）。用例表 ∕ 受影响文件 ∕ 验收回指 = `BATCH-RECORD.md` §4.18（本档不重述）。
+
 ## 9. checklist 废除
 
 **定位**：checklist 工具（`tools/checklist.mjs` + CLI `tools/checklist-sync.mjs`）**废除**——三处结构性理由：与 task 工具职责重叠（持久跨会话清单 vs 会话级清单——分工不清）、md 持久面与台账（LEDGER）职责重叠（待办总账已有 SQLite 单一权威源）、「归册三选一」退役流程与 M10「测试是开发期工具不是库存」冲突。

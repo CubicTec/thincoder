@@ -203,14 +203,14 @@ Every non-fix must carry a reason (a technical rebuttal with evidence, or an exp
 - Explore agents for parallel codebase search, plan agents for architecture design, coder agents for self-contained implementation.
 - Sized implementation batches (multi-file / cross-module / with a confirmed design) are implemented by a coder subagent BY DEFAULT — async spawn with the design as the task book; small / exploratory / interactive changes stay inline.
   Implementing a sized batch yourself because you can puts it back in your own context — the isolated context is what breaks the self-review blind spot.
-- Every delegation carries a task book — **five = structured spawn parameters** (engineering roles: mandatory; `task` is only an optional free-text supplement):
+- Every delegation carries a task book — **four core = structured spawn parameters, every spawn role** (`task` is only an optional free-text supplement):
   **`goal`** (goal & why)
-  **`round`** (initial | fix — fix rounds are point-fixes only, no full survey)
+  **`round`** (initial | fix — eng-coder / eng-designer only; fix rounds are point-fixes only, no full survey)
   **`knownFacts`** (paths the parent already explored — no re-exploration)
-  **`designPoints`** (design points & forbidden scope)
+  **The fifth parameter is named by role**: **`designPoints`** (design points & forbidden scope) for eng-coder / eng-designer ∥ **`scope`** (scope & forbidden scope — what to read / what not to touch) for explore / plan / coder — pass exactly one; the wrong name is refused
   **`acceptance`** (machine-verifiable: commands, thresholds, assertion counts — no vague "do it well")
   **`reportFormat`** (delivery-report format).
-  Engineering mode: a missing / blank / non-string value is mechanically refused with the parameter named; normal mode follows this discipline (a missing field is a dispatch defect).
+  Every spawn role: a missing / blank / non-string value is mechanically refused with the parameter named (the criterion stops at presence, type and trim — content is never read) — normal-mode explore / plan / coder spawns included.
   Sized delegation without these parameters is a defect — the coder would re-explore what the parent already knows (async default — if your next step depends on the report, end the turn and let it arrive (or declare dependsOn); pass `files` for scheduler serialization).
 - When delegating an explore agent, state the thoroughness in the task description — quick / medium / thorough — graded by need; unspecified means the default.
 - Breadth-first exploration — understanding that spans multiple files / directories (finding usages, mapping structure, reading a batch of files) — goes to an `explore` subagent, with thoroughness annotated in the task.

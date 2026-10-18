@@ -87,16 +87,16 @@
 
 **两产品旧子系统档的处置（建议 · 未代裁）**：按本层 §2 迁移政策「**旧档不批量搬 · 保留原地作参照 · 被触碰时随批迁**」——各子系统于 **S2 迁移该子系统时**逐档 `git mv` 入本层（一次一档 + 引用改写 + 机检），并在产品地图撤登记行。
 
-**`core/requirements/` 登记（逐档 · 48）**：与 design 侧同形，分五组逐档列名（全 48 档）：
+**`core/requirements/` 登记（逐档 · 49）**：与 design 侧同形，分五组逐档列名（全 49 档）：
 
 - 子系统档（与 design 侧同名成对）**15**：`AGENT-LOOP.md` · `CHECKPOINT.md` · `CONFIG.md` · `CONSULTATION.md` · `CONTEXT-COMPACTION.md` · `I18N.md` · `LOGGING.md` · `MCP.md` · `MEMORY.md` · `PROMPT-SYSTEM.md` · `PROVIDER.md` · `SESSION.md` · `TOOLS.md` · `TRACES.md` · `WORKSPACE.md`；
 - 其它板块 / 迁入档 **3**：`DOC-SYSTEM.md` · `PHILOSOPHY.md` · `TWO-REPO-MERGE.md`；
 - 工作流档 **1**：`CORE-UNIFICATION.md`（登记表 · 事实基线 —— 计入实档计数）；
 - 工程模式 V2 面 **11**：`ENGINEERING-MODE-V2.md` + `ENGINEERING-MODE-V2-SPEC-{BATCH-SEGMENT,CHECKLIST-REMOVAL,DELEGATION,LEDGER,MACHINE-CHECK,MANIFEST,PROMPT-PIPELINE,REVIEW-CREDENTIAL,TEST-DISCIPLINE,WRITE-GATE}.md`；
-- 其余机制 / 流程 / 文档面 **18**：`ADVISOR-CONVERGENCE.md` · `AGENT-PARAMS.md` · `BROWSER-TOOL.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `ENG-TOKEN-BINDING.md` · `ESCALATE.md` · `LIGHT-CHANNEL.md` · `METHODOLOGY.md` · `MULTI-INSTANCE-COLLAB.md`
+- 其余机制 / 流程 / 文档面 **19**：`ADVISOR-CONVERGENCE.md` · `AGENT-PARAMS.md` · `BROWSER-TOOL.md` · `DESIGN-TOKEN-SETTLEMENT.md` · `DOC-CHECK.md` · `ENG-TOKEN-BINDING.md` · `ESCALATE.md` · `LIGHT-CHANNEL.md` · `METHODOLOGY.md` · `MULTI-INSTANCE-COLLAB.md`
   · `NORMAL-MODE.md` · `PORTABILITY.md` · `PROJECT.md` · `SEND-STALL-DISTILL.md` · `SETTINGS-TOOL.md` · `STRUCTURE-DEBT.md` · `TESTING.md` · `TURN-CAP-CONTINUE.md` · `VERIFY-REDESIGN.md`。
 
-**计数核对（复跑 as-of 2026-10-16 · 按名对账）**：`core/requirements/` 实档 **48** = 本图登记 **48** + **待补登 0**（逐名相等）。
+**计数核对（复跑 as-of 2026-10-18 · 按名对账）**：`core/requirements/` 实档 **49** = 本图登记 **49** + **待补登 0**（逐名相等）。
 
 ## 5. 与产品文档地图的关系
 

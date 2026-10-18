@@ -166,10 +166,10 @@
    qwen 全族（含四新档）自动覆盖；新增 spec 字段 = 同一语义两处真源（违 D2 单权威源）。
 2. 两条关闭路径职责不同，**不是二义**：`reasoning_effort:"none"` = 服务端参数（枚举内合法值，
    实测）；`enable_thinking:false` = 面板/`/think off` 的显式 off 标记
-   （`provider.thinking === null`）所触发。**但两侧不得互补**：`thincoder-core/config.mjs:137-138` 判据顺序 =
-   `thinking === null` 先判、`reasoningEffort`（truthy）次判 ⇒「标记缺失 + effort = `"none"`」= `true` + `"none"`
-   同携（矛盾载荷，面板显示 `Thinking: ON` 与实际关思考分叉）；在生产端消除该组合（§2.8-2 · A-18），
-   `resolveEnableThinking` 本体零改（§7 边界）。
+   （`provider.thinking === null`）所触发。**但两侧不得互补**：判据序 = ① effort 有值且非 `"none"` ⇒ `true`
+   ② `thinking === null` ⇒ `false` ③ effort truthy ⇒ `true`（机制正文与百炼互斥约束 = `doc:PROVIDER.md:§6.12`；
+   实现 = `thincoder-core/config.mjs:183-196`）⇒「标记缺失 + effort = `"none"`」= `true` + `"none"`
+   同携（矛盾载荷，面板显示 `Thinking: ON` 与实际关思考分叉）；该组合在生产端消除（§2.8-2 · A-18），三条判据之外零改（§7 边界）。
 3. VSC off 链路已验证可达：`thincoder-vscode/webview/model-picker.js:64` → `thincoder-vscode/src/extension/reasoning-mode.mjs:22-24`
    （`{thinking:null, reasoningEffort:null}`）→ `thincoder-core/provider/core.mjs:209` → `enable_thinking:false`。
    qwen 新行不带 `"enabled"` 下拉项（枚举无该值），off 走 `"none"` 一档，AC-7 语义满足。
@@ -217,10 +217,10 @@
 - **枚举形状锚**：T-12 钉「登记顺序 = 服务端原文、首项 `"none"`」（D-5 证据登记忠实性）。
 - **面 2（裁定②）：CLI `/think effort none` ⇒ 关思考**。判据：`e.action === "effort"` ∧ `e.level === "none"`
   ⇒ 终态必须落**显式 off 标记**（`cur.thinking = null`）；终态若为「档位 `"none"` + 标记缺失」则
-  `resolveEnableThinking`（`thincoder-core/config.mjs:137-138`：`thinking === null` 先判、`reasoningEffort` truthy 次判）
-  返 `true` ⇒ 载荷 `enable_thinking:true` + `reasoning_effort:"none"` **同携**（矛盾载荷），面板 `:48-49` 亦显 `Thinking: ON`。
-  该档位随四新档入册进入可达面。修点在**生产端**（`:104`）：
-  `"none"` 落 off 标记，`resolveEnableThinking` 本体零改（§7 边界）。effort 值写法（保留 `"none"` / 清除）
+  `resolveEnableThinking`（判据序 ①②③ = §2.6-2；机制正文 = `doc:PROVIDER.md:§6.12`；
+  实现 = `thincoder-core/config.mjs:183-196`）返 `true` ⇒ 载荷 `enable_thinking:true` + `reasoning_effort:"none"` **同携**（矛盾载荷），
+  面板 `:48-49` 亦显 `Thinking: ON`。该档位随四新档入册进入可达面。修点在**生产端**（`:104`）：
+  `"none"` 落 off 标记，`resolveEnableThinking` 的三条判据零改（§7 边界）。effort 值写法（保留 `"none"` / 清除）
   两形态均落 off（qwen 侧由 `thinking === null` 主导 `enable_thinking:false`；effort 族侧由 §9.6 D-14
   判据补发 `reasoning_effort:"none"`）⇒ 判据不区分两形态（§5 A-18 · 用例 T-16 + T-9 第四态）。
 - **回执面第三处落位**：循环回执公式 `thincoder-cli/src/tui/cmd-think.mjs:86-87` 补 `cur.thinking !== null` 守卫
@@ -327,7 +327,7 @@
   （§2.8-1 / §2.8-2）＋ `applyThink` 具名导出＋ `:86-87` 循环回执守卫（同裁定② 第三处，§2.8 面 2 末条）——CLI 面板 / picker / `:16` 列表语义零触碰（**例外 = 上述回执守卫：交互循环仅此一处公式入册面**）；
   **VSC picker 归一 = 回归修复**（§2.8-3 / A-17，另列；取值式随 §15.4 收正——无注册默认 ⇒ 中性档「—」）。
 - 不给 `specMatch` 的 `matched` 位加第三态；不改 `lookupSpec` 返回形状与热路径。
-- 不新增思考关闭开关：`"none"` 已是枚举成员（四新档首项），`resolveEnableThinking`（`thincoder-core/config.mjs:137`）对显式 off 的既有覆盖即够（§2.6）——该函数现无「effort=none ⇒ `enable_thinking:false`」分支，不加；`"none"` 面的矛盾组合消除在**生产端**（§2.8-2 / A-18），不经该函数。
+- 不新增思考关闭开关：`"none"` 已是枚举成员（四新档首项），`resolveEnableThinking`（`thincoder-core/config.mjs:183-196`）对显式 off 的既有覆盖即够（§2.6）——该函数现无「effort=none ⇒ `enable_thinking:false`」分支，不加；`"none"` 面的矛盾组合消除在**生产端**（§2.8-2 / A-18），不经该函数。
 - 不为 qwen 之外的族新增/删除任何托底或冗余行（`glm` / `mimo` 族泛前缀行为**既有已核验设计**，不碰）。
 - 不扩 `modalities` 结构化字段（§2.7 裁定）；不改 **8** 个 `multimodal` 消费点的任何判据（八处完整坐标 = §2.5 表末行 + §2.7 第 1 项）。
 - 不引入网络探测 / 自动校正；全部字段均**人工登记**。

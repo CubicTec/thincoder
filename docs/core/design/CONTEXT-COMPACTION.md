@@ -51,39 +51,43 @@
 | prompt 估算 | system + tools schema + history（含注入）的 token 近似 |
 | 安全点 | history 末尾消息 role ∈ {user, tool}（完整交换边界） |
 
-### 6.2 触发：仅安全点（D1）与阈值链（D2）——目标 75–80%
+### 6.2 触发：仅安全点（D1）与阈值链（D2）——目标 75–80%（预留 > 25% 窗口的档改以不越窗为准）
 
 - **仅安全点检查**：history 末尾消息 role ∈ {user, tool} 时才检查压缩——压缩是结构性 splice（head + 摘要 + tail），在 assistant 半截切会破坏 tool 配对语境；安全点检查零成本。
-- **阈值链**：显式 `config.agent.compactThreshold` 优先；否则 auto = **min(可用窗口, ⌊窗口 × 0.8⌋)**——可用窗口 = 窗口 − 完成预留，预留 = **min(显式 `provider.maxTokens` 否则规格 `maxOutput`, ⌊窗口 × 0.25⌋)**（`COMPACT_RATIO = 0.8`；单源 = `config.mjs` `outputReserve` / `usableWindow` / `resolveCompactThreshold`）。
+- **阈值链**：显式 `config.agent.compactThreshold` 优先（**数值在场 = 显式**；数值不在场 = auto，按在用 provider 现算——三档落值与迁移判据 = §6.17）；auto = **min(usableWindow(窗口, 完成预留), ⌊窗口 × 0.8⌋)**。
+  - 完成预留 = **该 transport 实际发送的 `max_tokens`（不封顶）**，未发送时按规格 `maxOutput`；窗口 = 规格窗（§6.17）；单源 = `config.mjs` `requestBudget`（与 `outputReserve` / `usableWindow` / `resolveCompactThreshold` 同一算式），四个发送面只读它的 `maxTokens`；auto 值只进显示面（`compactThresholdResolved`），不回写 `agent.compactThreshold`。
   **判定对象 = 完整 prompt 估算**（system + tools + history）≥ 阈值即触发。
-- **目标口径两式**（= 下行定式的分支读法）：触发线目标 = 窗口 **~70–80%**（用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」）——设计取严区间 **[75%, 80%]**（可达域：封顶档 75%、上限项 80%）。**可用窗口支**（预留 ≥ 窗口 20% 档）⇒ 阈值 = 窗口 − min(预留, ⌊窗口 × 0.25⌋)（「输入 + max_tokens ≤ 窗口」保真）；**上限支**（预留 < 窗口 20% 档）⇒ 阈值 = ⌊窗口 × 0.8⌋（80% 端）。余量 = 窗口 20–25%（覆盖注入——实测每轮 30–50K）。
+- **目标口径**：触发线目标 = 窗口 **~70–80%**（用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」）——**线 ≥ 75% ⇔ 预留 ≤ 25% 窗口**（预留 ≤ 20% ⇒ 0.8 项胜出、线落 80%；20% < 预留 ≤ 25% ⇒ 「窗口 − 预留」项胜出、线落 75.0%–80%，恰 25.0% 的两档落 75.0%）。
+  - 预留 > 20% 窗口的 8 档 27 行（显式 `maxTokens` 大者 ∥ 规格 `maxOutput` 大者）项式为线 = 窗口 − 预留（deepseek 显式 393,216 ⇒ 60.7% 窗口；T01 例外——预留 > 窗口 ⇒ 半窗退化接管，线 = 窗口 / 2）；线 < 75% 的 6 档 20 行，其预留均 > 25%。两目标在预留 > 25% 时数学上不可能同时成立（393,216 + 75% × 1,000,000 > 1,000,000），以不越窗优先。
 - **先例行（②）**：先例 = 评审面压缩机器的 0.8 比值（`thincoder-core/advisor/compaction.mjs:28-39`——判死线 = 可用窗口 × 0.8）——对齐（同以可用窗口为预算基、经 `outputReserve` 单源随动）；偏离 = 0.8 乘位不同（主链乘**窗口** = `⌊窗口 × 0.8⌋` 上限项；评审面乘**可用窗口** = 宿主自限）——目标不同（防越窗 ∥ 防拒答），两式各自保留。
-- **逐档推算（`model-specs.mjs` 全表 76 行 / 22 档——规格视图；预置 `config-presets.mjs` 取值 ≤ 规格行 ⇒ 本表为保守视图）**：现阈值 = `floor((窗口 − 预留) × 0.6)`（现行公式逐字复算）；新阈值 = `min(窗口 − min(预留, ⌊窗口 × 0.25⌋), ⌊窗口 × 0.8⌋)`；`*` = 预留封顶档。
+  - **逐档推算（`model-specs.mjs` 全表 76 行 / 22 档——规格视图；预置 `config-presets.mjs` 取值 ≤ 规格行 ⇒ 本表为保守视图）**：阈值 = `min(usableWindow(窗口, maxOutput), ⌊窗口 × 0.8⌋)`（无显式 `maxTokens` 时按规格 `maxOutput` 预留，不封顶；`usableWindow` 只在预留 ≥ 窗口时接管——半窗退化）；`*` = 预留 > 20% 窗口的档（「窗口 − 预留」项胜出）：8 档 27 行，线落 48.8%–75.0%。
 
-| 窗口 | maxOutput | 占窗口 | 现阈值（占比） | 新阈值（占比） | 档数 |
-|---|---|---|---|---|---|
-| 256_000 | 524_288 | 204.8% | 76_800（30.0%） | 192_000（75.0%） * | 3 |
-| 256_000 | 131_072 | 51.2% | 74_956（29.3%） | 192_000（75.0%） * | 2 |
-| 262_144 | 131_072 | 50.0% | 78_643（30.0%） | 196_608（75.0%） * | 3 |
-| 256_000 | 128_000 | 50.0% | 76_800（30.0%） | 192_000（75.0%） * | 5 |
-| 1_000_000 | 384_000 | 38.4% | 369_600（37.0%） | 750_000（75.0%） * | 5 |
-| 128_000 | 32_768 | 25.6% | 57_139（44.6%） | 96_000（75.0%） * | 2 |
-| 128_000 | 32_000 | 25.0% | 57_600（45.0%） | 96_000（75.0%） | 6 |
-| 262_144 | 65_536 | 25.0% | 117_964（45.0%） | 196_608（75.0%） | 1 |
-| 200_000 | 32_000 | 16.0% | 100_800（50.4%） | 160_000（80.0%） | 2 |
-| 1_000_000 | 131_072 | 13.1% | 521_356（52.1%） | 800_000（80.0%） | 16 |
-| 1_000_000 | 128_000 | 12.8% | 523_200（52.3%） | 800_000（80.0%） | 9 |
-| 500_000 | 64_000 | 12.8% | 261_600（52.3%） | 400_000（80.0%） | 3 |
-| 1_048_576 | 131_072 | 12.5% | 550_502（52.5%） | 838_860（80.0%） | 1 |
-| 128_000 | 16_000 | 12.5% | 67_200（52.5%） | 102_400（80.0%） | 2 |
-| 256_000 | 32_000 | 12.5% | 134_400（52.5%） | 204_800（80.0%） | 1 |
-| 262_144 | 32_000 | 12.2% | 138_086（52.7%） | 209_715（80.0%） | 1 |
-| 1_050_000 | 128_000 | 12.2% | 553_200（52.7%） | 840_000（80.0%） | 2 |
-| 1_000_000 | 65_536 | 6.6% | 560_678（56.1%） | 800_000（80.0%） | 5 |
-| 1_000_000 | 64_000 | 6.4% | 561_600（56.2%） | 800_000（80.0%） | 2 |
-| 1_048_576 | 65_536 | 6.3% | 589_824（56.3%） | 838_860（80.0%） | 3 |
-| 200_000 | 8_192 | 4.1% | 115_084（57.5%） | 160_000（80.0%） | 1 |
-| 2_000_000 | 64_000 | 3.2% | 1_161_600（58.1%） | 1_600_000（80.0%） | 1 |
+| 窗口 | maxOutput | 占窗口 | 阈值 | 档数 |
+|---|---|---|---|---|
+| 256_000 | 524_288 | 204.8% | 128_000（50.0%） * 半窗退化 | 3 |
+| 256_000 | 131_072 | 51.2% | 124_928（48.8%） * | 2 |
+| 262_144 | 131_072 | 50.0% | 131_072（50.0%） * | 3 |
+| 256_000 | 128_000 | 50.0% | 128_000（50.0%） * | 5 |
+| 1_000_000 | 384_000 | 38.4% | 616_000（61.6%） * | 5 |
+| 128_000 | 32_768 | 25.6% | 95_232（74.4%） * | 2 |
+| 128_000 | 32_000 | 25.0% | 96_000（75.0%） * | 6 |
+| 262_144 | 65_536 | 25.0% | 196_608（75.0%） * | 1 |
+| 200_000 | 32_000 | 16.0% | 160_000（80.0%） | 2 |
+| 1_000_000 | 131_072 | 13.1% | 800_000（80.0%） | 16 |
+| 1_000_000 | 128_000 | 12.8% | 800_000（80.0%） | 9 |
+| 500_000 | 64_000 | 12.8% | 400_000（80.0%） | 3 |
+| 1_048_576 | 131_072 | 12.5% | 838_860（80.0%） | 1 |
+| 128_000 | 16_000 | 12.5% | 102_400（80.0%） | 2 |
+| 256_000 | 32_000 | 12.5% | 204_800（80.0%） | 1 |
+| 262_144 | 32_000 | 12.2% | 209_715（80.0%） | 1 |
+| 1_050_000 | 128_000 | 12.2% | 840_000（80.0%） | 2 |
+| 1_000_000 | 65_536 | 6.6% | 800_000（80.0%） | 5 |
+| 1_000_000 | 64_000 | 6.4% | 800_000（80.0%） | 2 |
+| 1_048_576 | 65_536 | 6.3% | 838_860（80.0%） | 3 |
+| 200_000 | 8_192 | 4.1% | 160_000（80.0%） | 1 |
+| 2_000_000 | 64_000 | 3.2% | 1_600_000（80.0%） | 1 |
+
+  **合计 76 行 / 22 档**——两种切法各自成立、互不替代：**按线所在区间** = 16 档 56 行 ∈ [75.0%, 80.0%]（其中 14 档 49 行恰 80.0% ∥ T07 / T08 共 7 行恰 75.0%），6 档 20 行 ∈ [48.8%, 74.4%]；**按哪一项胜出** = `*`（预留 > 20%，窗口 − 预留 胜出）8 档 27 行，无标记（0.8 项胜出）14 档 49 行。
 
   档位明细（T01–T22 与上表同序）：
   - **T01**（256_000 / 524_288，3 行）：doubao-seed-2-1-pro-260915 · doubao-seed-2-1-turbo-260628 · doubao-seed-2-1-lite-260915
@@ -109,16 +113,21 @@
   - **T21**（200_000 / 8_192，1 行）：claude-3.5-haiku
   - **T22**（2_000_000 / 64_000，1 行）：gemini-2.5-pro
 
-  - **口径注**：T01 现阈值走 `usableWindow` 退化守卫（规格 `maxOutput` 524_288 ≥ 窗口 256_000 ⇒ 退半窗口——**守卫保留零改；封顶后常规不再触发**）。显式 `provider.maxTokens` 落预留阶梯首位：某 deepseek 配置（显式 393_216）现阈值 = **364_070（36.4%）**、新阈值 = **750_000（75.0%）**。**全 76 行新占比 ∈ [75.0%, 80.0%] ⊂ 目标区间**。
-  - **机判用例（实施轮单测 = `docs/batches/2026-10-16-context-perception.test.mjs`）**：① 无显式（kimi-k3 档）⇒ 800_000；② 显式小值（8_192 于 1M 窗——上限支）⇒ 800_000；③ 封顶档（deepseek 显式 384_000）⇒ 750_000；④ 守卫档（规格 `maxOutput` ≥ 窗口——doubao-2-1）⇒ 192_000（守卫零触发）；⑤ 可用窗口支（显式 32_000 于 128_000 窗——预留 25%）⇒ 96_000（= 窗口 − 预留）。
-- **溢出风险论证（三件）**：
-  1. **真溢出的后果**——「输入 + 请求的 max_tokens > 窗口」时若服务端硬校验 ⇒ 请求被拒（4xx 非 429 不重试——`provider/retry.mjs:51-52` 逐字抛）；run 以可读错误收束（fail-loud），会话盘面与人读线完好、可续跑；无静默损坏。
-  2. **兜底接法**——DeepSeek 口径（一手源 = `api-docs.deepseek.com` Chat Completions 页，2026-10-17 实取）：「**输入 token 和输出 token 的总长度受模型的上下文长度的限制**」，触达限制以 `finish_reason:"length"` 收束（该页定义逐字：输出长度达到了模型上下文长度限制）⇒ 带宽内请求不丢；
-  应用侧既有续写协议（`prefixMode` / `partialMode`——`provider/core.mjs:277-290`）与响应提醒（`agent/run-stages.mjs:58-69`）接手。其余渠道未逐族取证（**登记**）；最坏形 = 硬拒 ⇒ 后果如 ①。
-  主链**无**「超限自动压缩」兜底（不新增——边界）；既有 `context_limit` 机器 = 评审面（`advisor/compaction.mjs:28-39,98`：判死线 = 可用窗口 × 0.8、压缩触发 = 判死线 × 0.8）——**机制零改、随本式随动**（deepseek 判死线 492_800 → 600_000、压缩触发 394_240 → 480_000）。
-  3. **高风险档清单**（显式 / 预置输出预算 > 窗口 25% ⇒ 残余带 = (窗口 − 输出预算, 压缩线]，带宽 = 输出预算 − 窗口 25%）：deepseek 族（384_000 / 1M——带宽 134_000 ≈ 13.4% 窗口）· doubao 族（预置 131_072 / 256_000——67_072 ≈ 26.2%）·
-  MiniMax-M2.7 / minimax-m1 / hy3 / hy3-preview / hy4-preview（预置 128_000 / 256_000——64_000 = 25.0%）· kimi-for-coding-highspeed / k3-256k / qwen3.8-27b（预置 131_072 / 262_144——65_536 = 25.0%）。
-  带内请求照发；下一安全点压缩在 75% 线处置。
+  - **口径注（显式 `provider.maxTokens` 落预留首位）**：某 deepseek 配置（显式 393_216）⇒ 阈值 **606_784（60.7% 窗口）**（线 + 实发 = 1_000_000 恰满）。预留若改回封顶 25%，线会落 750_000 而实发仍是 393_216 ⇒ 750_000 + 393_216 = 1_143_216 > 窗口——2026-10-18 的溢出 400 就是这个算式。
+  - **口径注（未发 `max_tokens` 的渠道）**：预留按规格 `maxOutput`（保守假设：服务端默认输出额度不由我们掌握）。规格 `maxOutput` ≥ 窗口的档（doubao-seed-2-1 三行）预留 > 窗口 ⇒ `usableWindow` 半窗退化生效（128_000）；该档若真把 `maxTokens` 设到 ≥ 窗口，任何 prompt 都发不出去——守卫会带实数报错而非静默发（**未设** `maxTokens` 的同一档守卫不覆盖——客户端未预留，射程见 §6.17「守卫」）。
+  - **机判用例（实施轮单测）**：① 无显式（kimi-k3 档）⇒ 800_000；② 显式小值（8_192 于 1M 窗）⇒ 800_000；③ **deepseek 显式 393_216 ⇒ 606_784**；④ 规格 `maxOutput` ≥ 窗口（doubao-2-1）⇒ 128_000（半窗退化）。
+  - ⑤ 显式 32_000 于 128_000 窗 ⇒ 96_000；
+    ⑥ 盘上有 `agent.compactThreshold: 750_000` ⇒ 按显式原样 750,000（`compactThresholdAuto === false`、`/config` 无 `(auto)`）；该档线 + 实发 393,216 = 1,143,216 > 1,000,000 ⇒ 守卫带三实数报错；
+    ⑦ `providers[].context: 128`（K 覆盖，kimi-k2.6 档）⇒ `windowSource: "provider-override"`、阈值 99_072；⑧ 显式 500_000 ⇒ 500_000（用户显式不被覆盖）。
+- **残余带宽度 = 0**：预留取实发值且不封顶 ⇒ 「线 + 实发 ≤ 窗口」恒成立，messages 永远没有「过了窗却未到线」的区间（2026-10-18 的 400 就落在这个区间：messages 658,972 + 实发 393,216 > 1,048,576，而当时线在 750,000）。任何把预留封顶的做法都会重新打开这个区间——这是本式不封顶的唯一理由。
+- **守卫（兜底，非主修）**：`agent/run-stages.mjs` 压缩阶段之后、发请求之前——判据 = `maxTokensSource !== "absent"` ∧ **`prompt 估算 > limit`**（`limit = window − reserve`；`reserve` = 实发 `max_tokens` ∥ 未发时规格 `maxOutput`）。
+  **判据不用 `maxTokens` 本身**：未发时为 `undefined` ⇒ `total + undefined` = NaN ⇒ 守卫恒不触发。真 ⇒ 先强制压缩；压缩后仍超 ⇒ 抛 `context_overflow` 型错误（带 prompt / max_tokens / 窗口三实数）且**不发请求**。
+  **射程**：`maxTokensSource === "absent"` 的档（客户端未预留输出额度）守卫不覆盖——越窗风险由服务端 400 兜，这类档的线仍按规格 `maxOutput` 保守预留。守卫只兜两件：① 估算漂移；② 规格窗大于服务端实际窗（§6.17 窗口口径）。**不截断、不静默削输出。** 插入缝、再估函数与窗口源 = §6.17「守卫」。
+- **真溢出的后果（不变）**：服务端硬校验 ⇒ 4xx 非 429 不重试（`provider/retry.mjs:51-52` 逐字抛）；run 以可读错误收束，会话盘面与人读线完好、可续跑；无静默损坏。
+  - DeepSeek 口径（一手源 = `api-docs.deepseek.com` Chat Completions 页，2026-10-17 实取）：「输入 token 和输出 token 的总长度受模型的上下文长度的限制」；
+    触达限制以 `finish_reason:"length"` 收束 ⇒ 续写协议（`prefixMode` / `partialMode`——`thincoder-core/provider/core.mjs:277-290`）与响应提醒（`thincoder-core/agent/run-stages.mjs:58-69`）接手。其余渠道未逐族取证（**登记**）。
+- **线处余量**：按规格窗计算时线处恰满（线 + 实发 = 窗口）；服务端广告窗大于规格窗的档（deepseek：1,048,576 vs 1,000,000）自带 48,576 = 4.6% 的漂移余量。
+- **不采纳的兜底**：逐请求钳 `max_tokens`——静默削输出违反「守卫不得静默截断」，须动四个 transport 装配面，且 prompt 本身越窗时钳输出无效；真实案例出现再议（登记）。主链不新增「自动压缩」以外的兜底。
 - **provider 级覆盖**：`providers[].context`（K 单位）覆盖 MODEL_SPECS 的 context 后，阈值与 tail 公式跟随覆盖值（公式权威 → 本层 `PROVIDER.md` §6.15）。
 
 ### 6.3 token 判定（D3）——实测优先 + 增量估算
@@ -156,7 +165,7 @@
 
 ### 6.5 降级链（D6）——三级
 
-1. **LLM 摘要**（`thinking: null` / `reasoningEffort: null`；中段以**真身消息**进请求、逐条**不截断**——§6.14）；
+1. **LLM 摘要**（`thinking: null`；`reasoningEffort` 不覆盖、与回合同源随带——§6.14 v3；中段以**真身消息**进请求、逐条**不截断**）；
 2. **确定性截断**：连续 `COMPRESS_FAILURE_LIMIT = 3` 次失败 → `compressFallback`（FALLBACK_NOTE——丢 middle、不碰网络）；
 3. **单消息截断**：超阈值但无 middle 可切（历史 = 1 条巨型消息）→ `shrinkOversized`：user / tool 体 8000 上限、keepHead 50% / keepTail 25%，不动 reasoning / tool_calls 结构。
 
@@ -170,7 +179,7 @@
 
 ### 6.7 文案与静默（D9 / D11）
 
-- **D9 文案与形状**：摘要调用 `thinking: null` / `reasoningEffort: null`；占位回复固定 `"Understood. I'll continue from these notes, re-verifying anything transient."`；
+- **D9 文案与形状**：摘要调用 `thinking: null`（`reasoningEffort` 同源随带、不覆盖——§6.14 v3）；占位回复固定 `"Understood. I'll continue from these notes, re-verifying anything transient."`；
   （tail 首条为 assistant 时并入该条——回声安全，§6.10 #7 / §7 D-CC18）；COMPACTION_PREFIX 文案两端一致（`[Context was automatically compacted…]`）。
 - **D11 对前端静默**：摘要调用不传 `onToken` / `onReasoning`（CLI 曾透传导致摘要像回复一样流式显示——用户看到非回复陌生文本；VSC 本无此问题）。压缩发生只经既有状态提示（CLI `onCompress` 回调 `"[context] Context too long, auto-compacted…"`）；恢复渲染读人读线、压缩 note 不在其中——天然不显示。
 
@@ -248,7 +257,7 @@
 
 - **判定点封装（两端同调 · §2.13.4 #56 类）**：`runCompactionCheck(agent, ctx)` 住核 `thincoder-core/agent/run-stages.mjs:80`——循环骨架只留检查调用（核 `thincoder-core/agent/turn-loop.mjs:118-120`，LLM 调用前；
   安全点判定 = `history.at(-1)?.role` 为 `user` / `tool`）。封装体内驱动核 `compressIfNeeded` / `compressFallback`（触发 / 摘要 / 降级截断 / 尾部预算 / task+plan 回注 / 重建边界 / 基线失效全归核）。与 CLI 语义一致（D1）。
-- **阈值档位（核面）**：`resolveCompactThreshold(cfgCompactThreshold, provider)`（核 `config.mjs`——显式优先 / auto = **阈值链（§6.2——`min(可用窗口, ⌊窗口 × 0.8⌋)`）**——可用窗口 = `usableWindow(context, outputReserve(provider, spec))`）——阈值随回合模型（档位跟随窗口，PROVIDER §15 T-C2）。
+- **阈值档位（核面）**：`resolveCompactThreshold(cfgCompactThreshold, provider)`（核 `config.mjs`——显式优先 / auto = **阈值链**：`min(usable, ⌊窗口 × 0.8⌋)`，`usable` = `usableWindow(window, reserve)`；窗口 / 预留 / 阈值 / 上限的单源 = `requestBudget`（§6.17），本函数只取它的 `threshold`）——阈值随回合模型（档位跟随窗口，PROVIDER §15 T-C2）。
 - **端差适配（调用期）**：核压缩面读 CLI 载体字段名 `provider` / `tasks` / `planMode`——本端 agent 载体为 provider 入参（`ctx.provider`）/ `_tasks` / `_planMode` ⇒ 核 `runCompactionCheck` 调用期同指三键（核只读此三键）；核以新数组替换 `agent.history`（applyCompression / shrinkOversized 均 copy-on-write）⇒ 端侧回收共享数组（面板持有同一引用；数组自定义属性随原位回收保留）。
 - **预算常量**：单源 = 核 `SUMMARY_TOKEN_ESTIMATE = 1000`；`IMAGE_TOKEN_ESTIMATE = 2000`/part 两端同值。
 - **REVERSE 配对保护（回植候选登记）**：现体核面无本判据（§6.11 口径：CLI 不需要——`repairHistory` 在 run 起点保证顺序）。VSC 侧倒序来源若仍可达 ⇒ **回植候选 = 核内笔**。
@@ -290,15 +299,15 @@ tools    = extras.tools（与回合请求同一声明面；**不随 tool_choice*
 - **状态**：消息序 v1 **已落**（`thincoder-core/compress-form.mjs` + `context.mjs` 接线）；`tools` 行 = **v2 已实施**（`context.mjs` 接线已落——行数读数 = §6.16.9 单源）——
   **落该形**（带 tools、**不随 `tool_choice`**：该参数实测致服务端丢弃 tools 区 ⇒ 该形落定）；
   `reasoningEffort` 行 = **v3 已实施**（**同源随带**：与回合同一字段；不硬编码 · 无配置 ⇒ 缺省）——**真机生产口径首现命中 92.86% / 93.65%**（两次独立运行）；
-  派生差两则（百炼 qwen 族 / autoThink 窗口）⇒ **认账**：压缩侧**不设思考**（`thinking:null` = 需求 N1 字面 · 本档 D9）——
-  ① 百炼 qwen 族压缩侧 `enable_thinking:false` = 该字面的派生结果（`thincoder-core/config.mjs:128` 首判命中；非缺陷）；② autoThink turn-0 窗口（压缩检查先于分类）为**已知边界**（影响有界：仅 turn-0 且长史触阈；其后各轮同源）。
+  派生面两则（百炼 qwen 族 / autoThink 窗口）⇒ **认账**：压缩侧**不设思考标记**（`thinking:null` = 需求 N1 字面 · 本档 D9）——
+  ① 百炼 qwen 族的 `enable_thinking` 取值随 effort 档位（机制单源 = `doc:PROVIDER.md:§6.12` 一致性分支；实现 = `thincoder-core/config.mjs:183-196`）——两种落值都是合法对，非缺陷；② autoThink turn-0 窗口（压缩检查先于分类）为**已知边界**（影响有界：仅 turn-0 且长史触阈；其后各轮同源）。
 - **前缀构成**（= 可复用面）= `tools` 声明 + `system` + 中段；**新增未命中面** = 尾部指令一条（+ ≤255 的块对齐残余）。中段 = `splitHistory` 的 `[headEnd, tailStart)`（KEEP_HEAD = 0 ⇒ head 空；§6.4② / ④）。
 - **摘要输入域（选中面）不变 / 表示面改变**：只喂中段（尾部不进摘要输入）⇒ **选中范围不变**；中段的**表示面** = 真身消息（不截断）。
 - **前缀对齐前提**：切点须是配对安全边界（`repairedTailStart` 保证中段自足）——否则发送期配对归一（`thincoder-core/provider/normalize.mjs`）会在压缩请求合成 `[Tool result missing: …]` 占位而回合请求不会，前缀自此分叉。
 - **单一真值**：请求前缀切点与摘要段切点同源（同一个 `tailStart`），不新增第二处切割判据。
 - **落地形态（模块拆分 · 行数预算）**：纯函数 `buildCompressMessages` 落核档 `thincoder-core/compress-form.mjs`（落盘 **24 行**（`wc -l`）——零 import 依赖：指令文本由实参传入，不与 `context.mjs` 成环）。
   `thincoder-core/context.mjs` 只留接线（import `:15` + `buildCompressMessages` 调用 `:198` + 空白摘要守卫 `:219`）——**行数口径 = `wc -l`**（≤500）。
-  现盘 **261 行**（`wc -l`；≤500）；单测档 = `docs/batches/2026-10-16-context-perception.test.mjs`（284 行——随批档存放、不进产品树）。
+  现盘 **261 行**（`wc -l`；≤500）；单测档随批存放、**收口随批删除**（零留存口径，不进产品树）。
   先例 = `explore-distill.mjs`（自 `context.mjs` 拆分——当日 524 > 500）。
 
 **退化面**：
@@ -429,7 +438,7 @@ export const contextTool = {
 |---|---|
 | **回合中途怎么落** | `compact` 工具**只登记不执行**：写 `agent._pendingCompact = { focus, at }`（**单槽**——重复调用后者覆盖前者，回执明示），返回回执；**历史零改、不发 LLM**。真正执行发生在**下一个安全点**（`agent.history.at(-1)?.role ∈ {user, tool}`——工具结果落盘后的天然边界），即既有检查点的同一处；此刻全部 tool 结果已配对落盘 ⇒ 不产生孤儿 `tool_call` 结果（回合中途压缩的本体风险由此消） |
 | **消费点** | 核 `thincoder-core/agent/run-stages.mjs` `runCompactionCheck`（`:80`）——先取 `pending = agent._pendingCompact`，随即**清槽**（失败不重放；重发由模型再调）；`pending` 在场 ⇒ 以 `{ ...compactionOverhead, force: true, focus }` 调核 `compressIfNeeded`。两端同调（VSC 经核 `runAgent` 同链，零端侧重复） |
-| **与回合尾 / 阈值面（互斥还是排队）** | **阈值面排队承接、互斥于「同点一次压缩」**：强制面**成功（摘要路）** ⇒ 本次安全点的阈值检查自然不被消费（历史已重建）；强制面**成功（有损收缩路——`!split` 且 `shrinkOversized` 命中）** ⇒ 同按「一次成功压缩」记账（**不落 no-op 注记 / 不跑阈值面**——见下「第三去向」）；强制面**无可压**（`!split` 且 `shrinkOversized` 未命中）⇒ 记 no-op 注记后**照常**跑阈值检查（阈值面不因模型请求而让位）；同一安全点至多发生**一次成功压缩**（重建后的 tail 不得当轮再摘要） |
+| **与回合尾 / 阈值面（互斥还是排队）** | **阈值面排队承接、互斥于「同点一次压缩」**：强制面**成功（摘要路）** ⇒ 本次安全点的阈值检查自然不被消费（历史已重建）；强制面**成功（有损收缩路——`!split` 且 `shrinkOversized` 命中）** ⇒ 同按「一次成功压缩」记账（**不落 no-op 注记 / 不跑阈值面**——见下「第三去向」）；强制面**无可压**（`!split` 且 `shrinkOversized` 未命中）⇒ 记 no-op 注记后**照常**跑阈值检查（阈值面不因模型请求而让位）；同一安全点至多发生**一次成功压缩**（重建后的 tail 不得当轮再摘要）。**溢出守卫的紧急强压是唯一例外**（§6.17）：阈值面已压而 prompt 仍越 `limit` 时，守卫再强压**一次**，压后仍超即抛 `context_overflow`——「不越窗」优先于本不变量；守卫**不得在同一安全点连压第二次**。 |
 | **阈值面语义零改** | `force` 只跳过 `tokens <= threshold` 这一条早退（模型判定优先于阈值），其余全同：同 `splitHistory` / 同尾部预算 / 同摘要链 / 同 `applyCompression` 回注 / 同 `_lastPromptTokens` 失效；**无 focus 时请求体逐字节同修前**（`compress-form.test.mjs` 零回归） |
 | **失败路径复用** | 摘要在途失败 ⇒ 既有失败链原样（`_compressFailures++` → `onCompressFail` → 连续 3 次 `compressFallback`）；AbortError 照旧透传（不落注记）；模型面另落**失败注记一行**（旧式无人告知的缺口在本面补齐——见下）。`context compact` **不另起**任何失败 / 降级 / 面板机制 |
 | **回执面** | ① **工具回执**（`compact` 调用当次返回）：排队事实 + focus 回显 + 落点说明 + **可回查锚**（见 6.16.7）；② **结果注记**（机器行一条，`transient: true`，直推 `agent.history`）：仅两种情况落——**no-op**（`nothing to compact right now (no middle section…)`）与**失败**（`context compact failed (attempt N of 3): <msg>`）；**成功不落注记**（压缩注记 + 摘要本身就是结果，重复即噪音） |
@@ -472,23 +481,32 @@ const focusBlock = (focus, anchor) =>
 
 ```
 Context ≈{total} tokens ({pct}% of {window} window); compaction line {threshold} ({toGo} to the line)
+Request budget: window {window} ({spec|provider-override}) · max_tokens {maxTokens|not sent} ({explicit|spec|absent}) · prompt {total} · to compaction line {threshold − total} · to window limit {limit − total}
 Segments ≈: system {system} · tools {tools} · history {history} (basis: {measured|estimated})
 History: tool outputs {toolOut} tokens in {toolCount} msgs · prunable stale {stale} tokens in {staleCount} msgs · protected tail {tailCount} msgs
+Cache: hit {cacheHit} · miss {cacheMiss} tokens ({hitPct}% hit) across {turns} response(s)
 Status line: context {statusPct}% ({history} history estimate / {window} window)
 Compaction so far: {none | last summary freed {freed} tokens | last fallback truncation} · failures {n}/3
 ```
 
+- **`Request budget:` 行读法**（本行 = 该行的**唯一字面**，§6.17 不复制）：`{maxTokens}` = 该 transport 实际写进请求体的值；未发时写 `not sent`、来源写 `absent`（此时预留 = 规格 `maxOutput`，可由 `to window limit` 反推——`limit = window − reserve`；该档守卫不覆盖，射程 = §6.17「守卫」）。
+  `{total}` = `contextUsage` 全量上下文占用（**含 system + tools**），故标 `prompt` 不标 `messages`。两个距离**带符号**（负 = 已越——死区由此可见）；首行 `{toGo}` 仍取 `max(0, threshold − total)`（既有不变量，S5 锁定）。
+- **无读数形态**（会话首轮、尚无 provider usage）：`Cache: no provider usage readings yet (hit/miss arrive with the first response)`——明示占位，不报 `0%`（无分子即无命中率）。
 - **取自哪里（单源）**：`total` = 核新档 `thincoder-core/token-window.mjs`（**已落**）的 `contextUsage(agent, overhead)`——与 `compressIfNeeded` 的 token 判定**同一函数**。
   - 实测优先 = `_lastPromptTokens + 增量`；无实测 = `estimateTokens(history) + system + tools`。
-  - `threshold` = 该回合检查用的同一值（`agent._ctxBasis.threshold`）；缺省回退 `resolveCompactThreshold(agent.config?.agent?.compactThreshold, agent.provider).value`。
+  - `threshold` = 该回合检查用的同一值（`agent._ctxBasis.threshold`）；缺省回退 `resolveCompactThreshold(agent.config.agent.compactThreshold, agent.provider)`（数值不在场 ⇒ auto 现算——§6.17）。
+  - `maxTokens` / `maxTokensSource` / `windowSource` / `limit` 取自同一 `requestBudget`（§6.17）——预算面与发送面同源，stats 不自算第二套。
   - `window` = `providerSpec(agent.provider).context`；`stale` / `tailCount` = 6.16.3 的同一合格集函数。
+  - `cacheHit` / `cacheMiss` / `turns` = 核 agent 累计字段 `_cacheHitTokens` / `_cacheMissTokens` / `_usageTurns`
+    （初始化 `thincoder-core/agent/setup.mjs:63-70`；累计 `thincoder-core/agent/turn-loop.mjs:181-190`——与 `_lastPromptTokens` 同点同源，
+    取自响应 usage 的 `prompt_cache_hit_tokens` / `prompt_cache_miss_tokens`）；`hitPct = Math.round(cacheHit / (cacheHit + cacheMiss) * 100)`。
 - **阈值单源接线**：核 `thincoder-core/agent/turn-loop.mjs:48`（`compactionOverhead` 构造 ∕ `_ctxBasis` 暂存）——两端同调、零端侧第二处——stats 因此报**该回合实际判定所用的阈值**，不自行重算第二口径。
 - **与状态行 ctx% 的单源关系**：状态行口径 = `estimateTokens(history) / providerSpec(provider).context`（CLI `thincoder-cli/src/tui/render-frame.mjs:394-397` + `thincoder-cli/src/tui/render-loop.mjs:89-90`；VSC `ctxPercentForHistory`）——两端已由 `context-percent-parity.test.mjs` 钉死。
-  stats **不新增第三口径**：**两口径 = 窗口占用（首行——`total / window`）∥ 状态行（第 4 行——`historyPercent`，用户看到的那个）**；阈值 = 具名数值（`compaction line … ({toGo} to the line)`），**不再作百分比分母**——全份输出零「无名百分比」（两处百分比各带分子分母，见 §6.16.4 首行定稿）。
+  stats **不新增第三口径**：**两口径 = 窗口占用（首行——`total / window`）∥ 状态行（第 6 行——`historyPercent`，用户看到的那个）**；阈值 = 具名数值（`compaction line … ({toGo} to the line)`），**不再作百分比分母**——全份输出零「无名百分比」（两处百分比各带分子分母，见 §6.16.4 首行定稿）。
   **状态行实现零改**（其字面被该测试组①「对端源锚」机判锁定——改字面即红）。
   **空历史口径（保留分歧 · 登记）**：`historyPercent([])` = **0**（纯公式——分子 0）；两端把「零值不显示」的门放在**端侧显示层**（CLI `thincoder-cli/src/tui/render-frame.mjs:413-415` 以 `ctxPct > 0` 才渲染该段；VSC `thincoder-vscode/src/specs.mjs:84-88` 分子 0 ⇒ 返 `null`）——显示门不入本函数面。
-  stats 恒报数值（报告面须给定值：空历史 = `0%`）。**不收正**：收正须动 VSC `ctxPercentForHistory` 的 `null` 返回，或让核函数返 `null`（后者使 stats 第 4 行无法定值）——两向皆越「状态行实现零改 / VSC 面板零改」边界，且两端同为「零值即不显示」，取形分歧零收益。
-- **先例行（①）**：先例 = 状态行百分比口径（`historyPercent`——分母 = 窗口，第 4 行同款）——对齐（分母同源；两口径并排、各具名）；偏离 = 首行分子 = `total`（全量上下文占用）、状态行分子 = history——状态行实现零改。
+  stats 恒报数值（报告面须给定值：空历史 = `0%`）。**不收正**：收正须动 VSC `ctxPercentForHistory` 的 `null` 返回，或让核函数返 `null`（后者使 stats 第 6 行无法定值）——两向皆越「状态行实现零改 / VSC 面板零改」边界，且两端同为「零值即不显示」，取形分歧零收益。
+- **先例行（①）**：先例 = 状态行百分比口径（`historyPercent`——分母 = 窗口，第 6 行同款）——对齐（分母同源；两口径并排、各具名）；偏离 = 首行分子 = `total`（全量上下文占用）、状态行分子 = history——状态行实现零改。
 
 **6.16.5 轻推（F-CC4）**
 
@@ -536,7 +554,7 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 - **`cwd` 缺省态（登记 · 降级形）**：`_slot` 在场而 `cwd` 缺省 ⇒ 落**未绑定分支**（判据 = 上表未绑定行**析取**），`cwd` 字面取 `undefined`（回执形 `read_history path="cwd:undefined"`）——工具内**不抛**（fail-soft 守卫 = `thincoder-core/agent-tools/context.mjs:107`）。
   该态在两端生产链**不可达**（建链面恒带 `cwd`：核 `thincoder-core/agent/assemble.mjs:106`（`createAgent` 携 `cwd`）+ CLI 值源 `thincoder-cli/src/cli/make-agent.mjs:32`；VSC `thincoder-vscode/src/agent/setup.mjs:244` 每轮重指 `agent.cwd`），仅直调 / 退化夹具可达 ⇒ 不另设分支、不改形（登记入降级面）。
 
-**6.16.8 模块拆分与行数预算（`context.mjs` 261 行（`wc -l`）· 硬限 500）**
+**6.16.8 模块拆分与行数预算（`context.mjs` 261 行（`wc -l`，as of 2026-10-18 19:55）· 硬限 500）**
 
 - **新档 `thincoder-core/token-window.mjs`**（**已落** · 实测 **188** 行（`wc -l`）≈ 迁入 110 + 新增族 ≈78）：自 `context.mjs` **逐字迁出**计量 / 窗口 / 边界族，**迁出 = 110 行**（三区间逐段可核算）：
   ① 计量面 `:17-36`（20 行——IMAGE_TOKEN_ESTIMATE + `estimateTokens`）；
@@ -546,16 +564,17 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 - **`context.mjs` 收缩后新增 ≈43 行**（分项：estimateTokens 再导出 1 · force / focus 接线 ≈6 · 焦点块构造 ≈8 · anchor 取值 ≈8 · `pruneStaleToolOutputs` 应用面（stub 文案 + 原位替换 + 回执）≈20）。
   ⇒ **现盘实读 = 261 行**（`wc -l`；≤500 ✓；软线 300 之上 = 既有事实，非新增面）。**不拆则 ≈495 + 121（= 43 + 78）≈ 616 > 500 ⇒ 越硬限**（拆分决策即由此触发）。
   estimateTokens 再导出保 **import 面**（`thincoder-cli/scripts/verify-compress.mjs:7`、端侧批内定向单测、TUI 均经本档取；先例 = explore-distill 再导出）。
-- **新档 `thincoder-core/agent-tools/context.mjs`**（**已落** · 实测 **158** 行（`wc -l`））= 工具对象 + 三操作 + 轻推助手 + 注记文案；**新单元测试档 = `docs/batches/2026-10-16-context-perception.test.mjs`**（零留存口径——随批档存放、不进产品树；现盘 284 行）。
+- **新档 `thincoder-core/agent-tools/context.mjs`**（**已落** · 实测 **169** 行（`wc -l`））= 工具对象 + 三操作 + 轻推助手 + 注记文案；**新单元测试档随批存放、收口随批删除**（零留存口径——不进产品树）。
 
 **6.16.9 受影响文件表**
 
 逐文件现况行数 / Δ / 尺寸档状态注 /「零改动」逐处核实——本档不重复（D2；§6.15 曾因两处逐行重复出现读数分叉，本面取同一纪律）。
-- **本批三笔逐档**（`wc -l` 口径——现盘实读）：`thincoder-core/config.mjs` **523**（Δ +3——阈值链 + 注释）· `thincoder-core/agent-tools/context.mjs` **158**（Δ 0——stats 格式串 + 回执面注释随正）· `thincoder-core/token-window.mjs` **188**（Δ 0——注释随正）· 单测档 `docs/batches/2026-10-16-context-perception.test.mjs`（284 行——随批档存放、不进产品树）。
-- **`config.mjs` 过 500 咨询线（既有事实、非本批引入）——拆分立场 = 不因本批拆**（Δ 非结构性）；消解触发 = 该档下次实质改动 ∥ 越 800 硬限前。
+- **逐档读数**（`wc -l` 口径——as of 2026-10-18 19:55 实读）：`thincoder-core/config.mjs` **528** ·
+  `thincoder-core/agent-tools/context.mjs` **169** · `thincoder-core/token-window.mjs` **188** ·
+  `thincoder-core/context.mjs` **261** · `thincoder-core/agent/run-stages.mjs` **296** · `thincoder-core/agent.mjs` **105**。
+- **`config.mjs` 过 500 咨询线（既有事实）——拆分立场 = 不拆**：Δ 非结构性，改后 ≈565 < 650 ⇒ 本批不拆；**拆分触发 = 过 650 行**（预案 = `outputReserve` / `usableWindow` / `resolveCompactThreshold` / `requestBudget` 四件迁入 `thincoder-core/` 下新档 **context-budget**（`.mjs`），`config.mjs` 再导出，既有 importer 零改）——单条触发条件。
 
-- **体量档（结构性结论，非读数副本）**：`thincoder-core/context.mjs`（现况 **261** 行（`wc -l`）——拆分已落，6.16.8）。
-  `thincoder-core/token-window.mjs`（**已落**）、`thincoder-core/agent-tools/context.mjs`（**已落**）与新单元测试档均落 ≤500 软线内；其余涉及档——`thincoder-core/agent.mjs`（**105** 行）与 `thincoder-core/agent/run-stages.mjs`（**296** 行（`wc -l`）；VSC 侧同构件已并入核，端侧引用同指本档）——本批**零触**；逐档档位与拆分立场以本档内口径为单源（不复制读数，D2）。
+- **体量档（结构性结论，非读数副本）**：`thincoder-core/context.mjs` 拆分已落（§6.16.8）；`thincoder-core/token-window.mjs` 与 `thincoder-core/agent-tools/context.mjs` 均已落；上述各档与 `thincoder-core/agent/run-stages.mjs`（VSC 侧同构件已并入核，端侧引用同指本档）均落 ≤500 软线内；读数 = 本节上行，档位与拆分立场以本档内口径为单源。
 - **CLI 侧零代码改动**（核装配面自动生效）；未新增 `tool-docs/` 档（24 档族计数零动）。
 - **不触面**：`docs/core/requirements/**`（需求档 = 主 agent 笔）· `docs/TODO.md` / 台账（主 agent 笔）· 提示词档（`prompts/**`、`tool-docs/**` 内容权 = 主 agent）· 版本号 / 发布面。
 
@@ -565,7 +584,7 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 |---|---|---|---|---|
 | S1 | stats 实测口径 | agent 夹具（`_lastPromptTokens` + `_usageAtLen` + `_ctxBasis` 在场） | 首行 total = `_lastPromptTokens + estimateTokens(history.slice(_usageAtLen))`（复算等值）；`basis: measured`；三段数之和 = 复算 | F-CC1 |
 | S2 | stats 估算口径 | 同上但基线为 null | `basis: estimated`；total = `estimateTokens(history) + system + tools`（`contextUsage` 复算等值） | F-CC1 |
-| S3 | stats 状态行单源 | 同一夹具 | 第 4 行 pct = `historyPercent(history, provider)` = CLI 公式复算值（`Math.round(estimateTokens(history)/providerSpec(provider).context*100)`） | F-CC1 |
+| S3 | stats 状态行单源 | 同一夹具 | 第 6 行 pct = `historyPercent(history, provider)` = CLI 公式复算值（`Math.round(estimateTokens(history)/providerSpec(provider).context*100)`） | F-CC1 |
 | S4 | stats 空历史 / 无 `_ctxBasis` | `history: []`；无暂存 | 不抛；总数为 overhead；threshold 走 `resolveCompactThreshold` 兜底 | F-CC1 边界 |
 | S5 | stats 两名分明 | 任一夹具 | 首行 = `Context ≈{total} tokens ({pct}% of {window} window); compaction line {threshold} ({toGo} to the line)`；{pct} = `Math.round(total / window * 100)` 复算等值、{toGo} = `max(0, threshold − total)` 复算等值；全行百分比恰 1 个（具名分母） | F-CC1 |
 | P1 | prune 正常 | 保护尾外 12 条大 tool 输出（≥200 tok/条） | 12 条 content 变 stub；`estimateTokens(history)` 下降；回执计数 = 12；数组引用 / 长度 / 各 `tool_call_id` 索引全等 | 判定③ |
@@ -608,6 +627,78 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 
 无（随下一代发版列车；**发布动作 = 用户门**）。
 
+### 6.17 请求预算单源（窗口 ∥ 实发 max_tokens ∥ 压缩线 ∥ 守卫）
+
+**一条算式，四个消费面**：`requestBudget(provider, spec = providerSpec(provider))`（单源 = `config.mjs`；transport 由 `provider.format` 决定——`"anthropic"` / `"google"` / `"responses"` / 缺省 = OpenAI 兼容）返回 8 字段：
+
+| 字段 | 定义 | 消费面 |
+|---|---|---|
+| `window` | `spec.context`（`providers[].context` K 覆盖已并入 `providerSpec`） | 阈值 ∥ 状态面 |
+| `windowSource` | `"provider-override"`（`providers[].context` 在场）∥ `"spec"` | 状态面标注 |
+| `maxTokens` | 该 transport 实际写进请求体的值：anthropic 恒发 `provider.maxTokens ?? spec.maxOutput`；其余三面仅显式时发 `provider.maxTokens`，未发 ⇒ `undefined` | 四个装配面**只读它**：`thincoder-core/provider/core.mjs` · `thincoder-core/provider/anthropic.mjs` · `thincoder-core/provider/google.mjs` · `thincoder-core/provider/responses-request.mjs`（**不进守卫判据**——未发时 `undefined`，见下「守卫」） |
+| `maxTokensSource` | `"explicit"` ∥ `"spec"` ∥ `"absent"`（= 未发） | 状态面标注 ∥ 守卫**启用条件**（`"absent"` ⇒ 守卫不覆盖） |
+| `reserve` | `maxTokens ?? spec.maxOutput`（未发时保守按规格输出，**不封顶**；恒为数） | 阈值 |
+| `usable` | `usableWindow(window, reserve)`（预留 ≥ 窗口 ⇒ 半窗） | 阈值 |
+| `threshold` | `min(usable, ⌊window × 0.8⌋)` | 压缩触发（`thincoder-core/agent/setup.mjs` 每 run 现算） |
+| `limit` | `window − reserve`（prompt 的硬上限；恒为数 ⇒ 守卫生效时它是**唯一判据字段**）。为负：该档实发 `max_tokens` ⇒ 任何 prompt 都发不出去（守卫必抛）；未发 ⇒ 仅状态面显示负距离，守卫不覆盖 | 状态面 ∥ 守卫（判据字段） |
+
+**装配面不留第二算式**：anthropic 现行 `provider.maxTokens || (spec.maxOutput || 8192)` 的第三级不可达（`specForModel` 恒返 `DEFAULT_SPEC`，`maxOutput` 恒为 32_000）——该 `|| 8192` 随装配面改读 `maxTokens` 一并删净（被取代的表达式不留在文件里）；四个发送面的 `max_tokens` / `maxOutputTokens` / `max_output_tokens` 因此恒等于 `requestBudget().maxTokens`。
+
+**三档落值（`agent` 段）**：
+
+| 配置面（磁盘） | `agent.compactThreshold` | `agent.compactThresholdResolved` | `agent.compactThresholdAuto` | 实际阈值 |
+|---|---|---|---|---|
+| 无该键（auto） | **键不写**（`undefined`） | 派生值（加载时算 + 每 run 现算 + 切模型时刷新） | `true` | `resolved` |
+| 有该键（显式） | 磁盘值原样 | 同值 | `false` | 磁盘值 |
+
+- `DEFAULTS.agent.compactThreshold` **退场**：键缺省 = auto——留着默认值会让每份配置看着都像显式。
+- `compactThresholdAuto` = **加载期派生旗**（`config.mjs` 合并段算出），不是配置键、不落盘；判据唯一 = 数值是否在场。
+- **迁移判据（改后首次加载）**：数值在场 ⇒ 显式（原样用，不猜来源）；数值不在场 ⇒ auto 现算。无迁移分支、无改写。代价：盘上若躺着历史派生值，它按显式生效、该档不享受新线——状态面可辨（`/config` 无 `(auto)` 后缀 ∥ stats 报具名 `compaction line`）。
+  且「线 + 实发 > 窗口」的档由守卫带三实数报错（§6.2；该档须实发 `max_tokens`——`absent` 档守卫不覆盖，见下），不静默发。**在用配置实测（2026-10-18）**：`agent` 段无 `compactThreshold`、无 `compactThresholdAuto` ⇒ 走 auto。
+- auto 派生值只进 `compactThresholdResolved`，永不写 `agent.compactThreshold`、不落盘；模型切换后的刷新职责不变——四处刷新点改写目标字段 = `compactThresholdResolved`（`cmd-config.mjs` · `model-picker.mjs` · `provider-admin.mjs` · `session-lifecycle.mjs`）。
+
+**显示面（CLI `/config`）**：数值 = `agent.config.agent.compactThresholdResolved`；`compactThresholdAuto === true` ⇒ 缀 ` (auto)`；编辑初值 = 同一数值（不预填 100_000）。`resolved` 缺场 ⇒ 显示 `(unavailable)`、编辑初值留空——**不回落任何默认数**（回落 100_000 会在用户面造一条 10% 的假线）；该支不可达（加载期合并段与每 run 现算都必产 `resolved`），纯护栏。
+写入数值 = 固定为显式阈值（保存回显明示「显式阈值——auto 派生线不再生效」）。四处读点 = `thincoder-cli/src/tui/cmd-config.mjs:352`（header）· `:356`（主菜单项）· `:384`（View full config）· `:488`（数值项编辑初值）。
+
+- VSC 设置面板读**原始盘面**（`thincoder-vscode/src/extension/settings.mjs:42`，`null` = auto），本批零改；两端显示口径差（CLI 显数值 + `(auto)` ∥ VSC 空 = auto）登记，统一口径 = 后续项。
+- **open**：CLI `/config` 无「回到 auto」写面（VSC 面板清空即 auto）——现状 = 手改配置文件；本批不开新配置键、不加菜单，待裁。
+
+**窗口口径**：一律按规格窗（`windowSource: "spec"`）。理由 = 全 transport 唯一可知的窗口，且对同一模型是「规格值 ∥ 服务端广告值」中**较小**者（deepseek：1,000,000 < 1,048,576——保守）。服务端广告值（400 报文 `maximum context length is N tokens`）只作注记、不参与计算；把它采集为 provider 级事实并与规格取 min = 后续项。
+
+- **偏离认领（判据③ 字面 = 服务端真值）**：本设计取规格窗 ⇒ deepseek 档的线比「按服务端窗（1,048,576）推」低 **48,576 token**（4.6%），即每次提前这么多压缩；换来的是一条唯一可知、跨 transport 同口径的窗。该偏离随批次档 §2.9 上抛请用户认。
+
+**状态面**：`context` 工具 `stats` 首行之后新增一行——**字面单源 = §6.16.4「报什么数」块**（本处不复制字面）。读法两则：`{total}` = `contextUsage` 全量上下文占用（含 system + tools），故该行标 `prompt`；两个距离带符号（负 = 已越，死区由此可见）。首行不变量（恰一个 `%`、分母 = 窗口）与压缩线的具名数值保持。
+
+**守卫（兜底，非主修）**：落点 = `thincoder-core/agent/run-stages.mjs` 的 `runCompactionCheck` 尾部（`:124` `catch` 块闭合之后、`:125` 返回之前；该函数跨 `:80`–`:125`，`:81-97` 是函数头解构与首个 `compressIfNeeded`，不是阶段尾）。
+判：`usage = contextUsage(agent, ctx.compactionOverhead)`（`thincoder-core/token-window.mjs:134`——压缩后 `_lastPromptTokens` 为 null ⇒ 走 estimated 支）+ `budget = requestBudget(agent.provider)`；
+**判据 = `budget.maxTokensSource !== "absent" && usage.total > budget.limit`**（`limit = window − reserve`）⇒ ① 以 `{ ...compactionOverhead, force: true }` 调 `compressIfNeeded` 一次（先压再判）；
+② 再估一次，仍超 ⇒ 抛 `Error`（`kind = "context_overflow"` · `retryable = false` · message 带 prompt / max_tokens / 窗口 三实数）、**不发请求**。不截断、不静默削输出；成功记账与阈值面共用同一段（`:99-107`）。
+
+- **判据为什么不用 `maxTokens`**：未发 `max_tokens` 的三面该字段 = `undefined` ⇒ `usage.total + maxTokens` = `NaN`，而 `NaN > window` 恒 false ⇒ 守卫在「未设显式 `max_tokens`」的常规配置下永不开火，兜底面静默失效。`limit` 由 `reserve`（`maxTokens ?? spec.maxOutput`）定义 ⇒ 恒为数；该判据与「prompt 估算 + 实发 `max_tokens` > 窗口」等价。
+- **射程（`maxTokensSource === "absent"`）**：该档客户端**未预留**输出额度（不写 `max_tokens`，服务端按其默认输出办）⇒ 守卫**不做数值判、该档不覆盖**；状态面照常显示 `to window limit`。越窗风险由服务端 400 路径兜（`context_overflow` · `retryable: false`）+ 阈值线按规格 `maxOutput` 保守预留（§6.2）。
+  **反向不取**：把规格 `maxOutput` 当实发判 ⇒ doubao-seed-2-1 三行（256,000 窗 / 524,288 规格输出 ⇒ `limit` −268,288）判据恒真、每请求必抛、永久发不出去——把「客户端没预留」判成「客户端预留爆了」。
+
+**先例行（③）**：先例 = 同算式族三件——`outputReserve`（`thincoder-core/config.mjs:130-134`）· `usableWindow`（`:142-146`）· `resolveCompactThreshold`（`:153-160`）；对应设计节 = §6.2（阈值链 / 逐档表）∥ §6.13（阈值档位）∥ §7 D-CC30。
+对齐 = 单一算式族、按 `providerSpec` 随 provider 随动、`usableWindow` 退化守卫原样复用；偏离 = 由「预算面 ∥ 发送面」两条路并成一条 `requestBudget`（发送面只读 `maxTokens`）、预留去 25% 封顶（残余带归零）、auto 派生值不再进显式键。
+
+**用例表（实施轮单测）**：
+
+| # | 情形 | 输入 | 期望（机判） |
+|---|---|---|---|
+| R1 | 正常 · 显式 | `{ model: "deepseek-flash", maxTokens: 393_216 }` | `maxTokens` 393,216（`explicit`）· `reserve` 393,216 · `window` 1,000,000（`spec`）· `usable` 606,784 · `threshold` 606,784 · `limit` 606,784 |
+| R2 | 边界 · 未发 | `{ model: "kimi-k3" }`（无 `maxTokens`） | `maxTokens` `undefined`（`absent`）· `reserve` 131,072 · `threshold` 800,000 · `limit` 868,928 |
+| R3 | 边界 · 未登记模型 | `{ model: "no-such-model" }` | `spec` = DEFAULT_SPEC（128,000 / 32,000）⇒ `threshold` 96,000 · `limit` 96,000 |
+| R4 | 边界 · 半窗退化 | `{ model: "doubao-seed-2-1-pro-260915" }`（256,000 / 524,288） | `reserve` 524,288 ≥ 窗口 ⇒ `usable` 128,000 · `threshold` 128,000 · `limit` −268,288 · `maxTokensSource` `absent` ⇒ **守卫不覆盖**：零压缩、零抛、请求照发（不带 `max_tokens`） |
+| R5 | 边界 · 显式预留 > 窗口 | R4 同档 + `maxTokens: 300_000` | `usable` 128,000 · `threshold` 128,000 · `limit` −44,000 · `maxTokensSource` `explicit` ⇒ 判据 `total > −44,000` 恒真 ⇒ 压缩一次后仍超 ⇒ 抛（三实数）、回合请求零发 |
+| R6 | 正常 · 发送面同源 | 四 transport 各一发（`fetch` 桩） | 请求体的 `max_tokens` / `maxOutputTokens` / `max_output_tokens` === `requestBudget(...).maxTokens`（anthropic 无显式 ⇒ `spec.maxOutput`） |
+| R7 | 正常 · 显示面 auto | 盘上无 `agent.compactThreshold`（deepseek-flash + 393,216） | `compactThresholdAuto` `true` · `compactThreshold` `undefined` · `compactThresholdResolved` 606,784 · `/config` 三处含 `606784 (auto)`、编辑初值 `606784`、全屏**不含** `100000`（旧默认假线退场） |
+| R8 | 边界 · 显示面显式 | 盘上 `agent.compactThreshold: 700_000` | `auto` `false` · `resolved` 700,000 · `/config` 无 `(auto)` 后缀 |
+| R9 | 错误 · 守卫触发 | deepseek-flash + `maxTokens: 393_216`（`limit` 606,784）+ prompt 估 610,000 | 判据 `610,000 > 606,784` 真 ⇒ 强制压缩一次（`fetch` 桩 `stage:"compress"` 一次）；压缩后仍超 ⇒ 抛（三实数）且回合请求零发 |
+| R10 | 正常 · 守卫不误伤 | 同 R9，prompt 估 500,000 | 判据 `500,000 > 606,784` 假 ⇒ 零压缩、零抛、请求照发 |
+| R11 | 正常 · 未发档守卫不误伤 | `{ model: "doubao-seed-2-1-pro-260915" }`（无 `maxTokens`）+ prompt 估 200,000 | `limit` −268,288 但 `maxTokensSource` `absent` ⇒ 零压缩、零抛、请求照发（状态面 `to window limit −468,288`） |
+
+**边界（本 § 不改）**：`estimateRequestTokens` 口径 · `spec.context` 表值 · 压缩摘要本体 · 提示词面 · VSC 设置面板（读原始盘面，`null` = auto）· CLI `/config` 的「回到 auto」写面（`open`，见上）。
+
 ## 7. 并入的关键决策记录
 
 | # | 决策 | 理由 |
@@ -638,9 +729,10 @@ Compaction so far: {none | last summary freed {freed} tokens | last fallback tru
 | D-CC24 | 模型发起压缩 = **排队 + 下一安全点落**（`agent._pendingCompact` 单槽），**不回合中途执行**；阈值面**排队承接**、同安全点至多一次压缩；`force` 只跳过阈值早退 | 回合中途执行须重建 `agent.history`——核循环逐处重读（安全），但 **VSC 主循环持共享数组**（主循环归核后 = 核 `agent.history` 共享面 + 既有压缩检查点原位回收）⇒ 工具内换数组会令同批 tool 结果落进陈旧数组（孤儿 `tool_call_id` / 结果丢失）。排队落点 = 既有安全点（工具结果落盘后、下一 `chat()` 前——`thincoder-core/agent/turn-loop.mjs:87-93`）⇒ tool 结果配对完整，且**复用**既有检查点 / 面板 / 失败链 / 双端回收逻辑。**否决**：① 工具内同步压缩（VSC 共享数组契约破 + 同批其余工具等待摘要 30s）② 立即压缩但强制把在飞 assistant 拉进 tail（核可、端不可；两实现分叉）③ 等到回合尾才压（回合尾可能不再回模型——安全点已足够近）④ 阈值⊓请求才压（用户目标 = 阈值之外的自选时点，交集合 = 罕见） |
 | D-CC25 | prune = **保结构换内容**（`history[i] = { ...m, content: stub }` 原位）+ 合格集 = 保护尾外 ∧ `role:"tool"` ∧ ≥200 tok；记录面不变；基线失效；**无 target 参数** | 配对安全**结构上不可能被拆**（数组引用 / 长度 / 索引 / `tool_call_id` 全不变——不设 owner 拉回逻辑）。合格边界**复用** `splitHistory` 的 `tailStart`（=「压缩会摘要掉的那段」）⇒ 不新增第二处切割判据。原位换对象满足 VSC 共享数组契约（vs `shrinkOversized` 的换数组——那是安全点外调用）。基线失效同 `shrinkOversized` 先例。**否决**：① 整对删除（连 assistant 文本 / 推理一起丢——损失面大于收益）② 按 id 指定目标（模型需自记账 id，无用例支撑）③ 无门槛（stub 比短输出长——净增）④ 摘要式清理（= 压缩面，语义正交才是本操作的价值） |
 | D-CC26 | VSC 宿主工具 `context`（IDE 快照）**改名 `ide`**，让出 `context` 名给核心新工具 | 同名撞车 ⇒ provider 逐字 400（`Tool names must be unique.`——`host-shape-spawn.test.mjs:102-110` 机判面）+ `toolByName` Map 后写覆盖。用户定形名（F-CC5）= `context`，不可改 ⇒ 让名方必为宿主工具。行为面零改（名字 + 引用面）。**否决**：① 新工具改名（违用户原话级定形）② 合并语义（IDE 快照 = 宿主能力，与上下文治理不同职责；且核工具须跨端）③ 只在 CLI 注册（违「双端一致」判定⑤） |
-| D-CC27 | `compact` 回执带**可回查锚**：`agent._slot` 在场 ⇒ 逐字给出槽文件路径 + `read_history path="…"` 调用形；否则给 `cwd:` 发现面（等效取回） | 裁令 A（用户批准）。现尾注「full text is in the session file」不给路径 ⇒ 不可行动；取回通道**复用** `read_history` 既有 `path=`（不新建通道）。VSC 面板槽位恒绑定 agent（§6.16.7）⇒ 两端同式走**直接路径回执**。**否决**：① 只给「会话档」模糊指称（不可行动 = 本裁定要修的缺口）② 由工具代取回 / 内联全文（越权 + 上下文膨胀）③ VSC 端另起接线强接槽位（现装已恒绑定——`setup.mjs:299`，无需新增接线面；收益低） |
+| D-CC27 | `compact` 回执带**可回查锚**：`agent._slot` 在场 ⇒ 逐字给出槽文件路径 + `read_history path="…"` 调用形；否则给 `cwd:` 发现面（等效取回） | 裁令 A（用户批准）。现尾注「full text is in the session file」不给路径 ⇒ 不可行动；取回通道**复用** `read_history` 既有 `path=`（不新建通道）。VSC 面板槽位恒绑定 agent（§6.16.7）⇒ 两端同式走**直接路径回执**。**否决**：① 只给「会话档」模糊指称（不可行动 = 本裁定要修的缺口）② 由工具代取回 / 内联全文（越权 + 上下文膨胀）③ VSC 端另起接线强接槽位（现装已恒绑定——`thincoder-vscode/src/agent/setup.mjs:299`，无需新增接线面；收益低） |
 | D-CC28 | **子代理面 = 不给**（`context` 入 `depthOnly` 段，depth>0 结构性不可达） | 裁令 D：depth>0 **无回查面**——`read_history` depth-0 only（`family-tools.mjs:141/150-151`）+ 不绑记录存储（`bindRecordStore` 调用点全在 depth-0 会话路径）+ 不落会话档 ⇒ 被压中段 settle 后无面可达。给 = 新增一条**不可回查**的模型可触发路径，与「记录面不死」（判令②）及裁令 A 的承诺冲突。depth>0 仍由既有阈值压缩治理（不改变既有事实）。代价（子代理失 stats/prune）登记，替代 = 任务粒度 + 阈值兜底。**否决**：① 全深度给（承诺不了可回查）② 给 stats/prune 不给 compact（prune 同样是不可回查的删——半给仍违口径；且须两套装配面）③ 给但回执声明「子代理面不可回查」（把缺陷写进提示词 = 教模型接受损失） |
-| D-CC29 | stats 首行**两名分明**：主口径 = 窗口占用（`({pct}% of {window} window)`，pct = total / window）；触发线降**具名备注**（`compaction line {threshold} ({toGo} to the line)`） | 用户实报「明明才占用一点点」——原首行 pct = total / threshold（41%）而真窗口占用 ≈15%，同行第 4 行又报 8% ⇒ 一份输出两个无名百分比并存。F-CC1 载荷全保（总量 / 距压缩阈值 = {toGo} / 各段占比 = 第 2–3 行不变——该两行为绝对 token 量、占比可由段值推得）；口径单源 = 恰一个百分比配对分母（窗口）。**否决**：① 保留阈值分母（误导即症状源）② 删阈值信息（F-CC1 载荷不得改薄）③ 双百分比并报（无名并存复活） |
-| D-CC30 | **阈值链再平衡**：`COMPACT_RATIO = 0.8` + 预留封顶 = 窗口 25%（`outputReserve` 取 min 式）；阈值 = `min(窗口 − 预留封顶后值, ⌊窗口 × 0.8⌋)` ⇒ 全档 75–80%（22 档 76 行，§6.2 表） | 用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」。现行双保守（预留 = 整个 maxOutput ∧ 0.6）：deepseek 线 ≈ 37% 窗口——白扔 ~60%、压缩非免费（摘要调用 + 不可逆信息损失 + 长会话逐层放大）、更伤行为（agent 在真余量 2/3 时开始收敛）。**给足剂量**：预留不再等于整个 maxOutput ∧ 比例上调（两杠杆并施）。**溢出论证（三件）= §6.2**（后果 fail-loud ∥ 兜底 = DeepSeek 官方口径「输入 + 输出总长受上下文限制」+ 续写协议接手、其余渠道未逐族取证（登记）、主链无自动兜底（如实登记、不新增）∥ 高风险档 = 输出预算 > 窗口 25% 者：deepseek 族 / doubao 族 / MiniMax 系 / kimi-for-coding-highspeed 等）。`usableWindow` 退化守卫零改（保留；封顶后常规不再触发）。**否决**：① 只上调比例（deepseek 上限 = 61.6% < 70%——目标不可达）② 只封顶不调比例（全档 ≤ 60%——目标不可达）③ 逐请求钳 `max_tokens`（消残余带；须动 4 个 transport 装配面 = 机制，超本批「只调口径与参数」边界——登记备选） |
+| D-CC29 | stats 首行**两名分明**：主口径 = 窗口占用（`({pct}% of {window} window)`，pct = total / window）；触发线降**具名备注**（`compaction line {threshold} ({toGo} to the line)`） | 用户实报「明明才占用一点点」——原首行 pct = total / threshold（41%）而真窗口占用 ≈15%，同行状态行又报 8% ⇒ 一份输出两个无名百分比并存。F-CC1 载荷全保（总量 / 距压缩阈值 = {toGo} / 各段占比 = 第 3–4 行不变——该两行为绝对 token 量、占比可由段值推得）；口径单源 = 恰一个百分比配对分母（窗口）。**否决**：① 保留阈值分母（误导即症状源）② 删阈值信息（F-CC1 载荷不得改薄）③ 双百分比并报（无名并存复活） |
+| D-CC30 | **阈值链**：`COMPACT_RATIO = 0.8`；预留 = 实发 `max_tokens`（不封顶；未发时按规格 `maxOutput`）；阈值 = `min(usableWindow(窗口, 预留), ⌊窗口 × 0.8⌋)` ⇒ 线 ∈ [75%, 80%] = **16 档 56 行**（预留 ≤ 25% 窗口）；`*`（预留 > 20% ⇒ 窗口 − 预留 项胜出）= **8 档 27 行**，线 48.8%–75.0%（§6.2 表） | 用户 2026-10-16 裁定「压缩线 ≈ 窗口 ~70–80%」。旧式（预留 = 整个 maxOutput ∧ 0.6）deepseek 线 ≈ 37% 窗口——白扔 ~60%、压缩非免费（摘要调用 + 不可逆信息损失 + 长会话逐层放大）、更伤行为（agent 在真余量 2/3 时开始收敛）。**给足剂量**：预留不封顶 ∧ 比例上调（两杠杆并施）。**溢出论证 = §6.2**（残余带已消除 ∥ 守卫兜底 ∥ 后果 fail-loud）。`usableWindow` 退化守卫零改（保留；仅「规格 maxOutput ≥ 窗口」档触发）。**否决**：① 只上调比例（deepseek 上限 = 61.6% < 70%——目标不可达）② 只封顶不调比例（全档 ≤ 60%——目标不可达） |
 | D-CC31 | **提示词面落点 = 公共层 `common.md`「工具观」节内新增 `###` 子节「上下文自掌舵」**（CN 正本 = 设计轮直落 ∥ EN 代码 = 实施轮按 M9）；全文记录（四问 / 形态 / 计数连带 / 机检 / 边界）= `PROMPT-SYSTEM.md` §6.29 | 用户 2026-10-16 23:57 逐字批准文案；受众 = 两模式主会话主面（①② 的 `context` = depth-0 only）+ 全角色（③）；工具观族 = 操作形聚集地、`###` = 零 `##` 块计数连带（先例 = D-PS39）。**否决**：① 新增 `##` 节（块计数连带 + 需求档节表锁定）② 两模式纪律档分落（跨模式同文 = 双份、零收益——同 D-PS36 判据）③ 人格层（内容非身份 / 边界；且两模式双份） |
+| D-CC32 | **请求预算单源 + 溢出守卫**：`requestBudget(provider, spec = providerSpec(provider))` 一处算 8 字段 `{window, windowSource, maxTokens, maxTokensSource, reserve, usable, threshold, limit}`（transport 由 `provider.format` 定），四个 transport 装配面只读 `maxTokens`；`outputReserve` 去 25% 封顶、`DEFAULTS.agent.compactThreshold` 退场（键缺省 = auto）；auto 值只进 `compactThresholdResolved`（每 run 现算、四处刷新点改写入它），显式键永不被改写；窗口按规格窗（服务端广告值只作注记）；stats 增 `Request budget:` 行（字面单源 = §6.16.4）；守卫判据 = `maxTokensSource !== "absent"` ∧ `prompt > limit`（不用 `maxTokens`——未发时为 `undefined` ⇒ NaN ⇒ 静默失效）；`absent` 档客户端未预留 ⇒ 守卫不覆盖、由 400 兜；压后仍超 ⇒ 带三实数报错不发（`run-stages.mjs:124` 缝，不截断） | 2026-10-18 溢出 400 实证：messages 658,972 + 请求 max_tokens 393,216 = 1,052,188 > 1,048,576，而压缩线 750,000 未触发——根因 = 预算面预留被 25% 封顶（250,000）、发送面原样发 393,216，死区 143,216（`thincoder-core/config.mjs:125-129` 注释把该带「accepted」——那条「接受」即故障因，随本批删净）。同函数两输入使 stats 报 800,000（qwen3.8-max 档 0.8 项胜出）∥ 加载期派生值在内存面报 750,000（deepseek 档 usable 项胜出）——「两条线」实为一个派生值被当成显式值在三个界面流通。**否决**：① 只改比例（越窗仍在）② 只加守卫不改预算（用户拒：预算 A 发送 B 加守卫兜着）③ 逐请求钳 `max_tokens`（静默削输出 + 须动四装配面 + prompt 越窗时无效） |
 

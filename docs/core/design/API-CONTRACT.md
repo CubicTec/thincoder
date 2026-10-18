@@ -577,7 +577,7 @@
 | `settleAsyncEntry` | `thincoder-core/agent-tools/async-settle.mjs:228` | `fn` |
 | `wakeAsyncWaiters` | `thincoder-core/agent-tools/async-settle.mjs:326` | `fn` |
 | `summarizeEngTaskBook` | `thincoder-core/agent-tools/audit-block.mjs:24` | `fn` |
-| `buildAuditBlock` | `thincoder-core/agent-tools/audit-block.mjs:70` | `fn` |
+| `buildAuditBlock` | `thincoder-core/agent-tools/audit-block.mjs:72` | `fn` |
 | `BG_TASK_MAX` | `thincoder-core/agent-tools/bash-async.mjs:49` | `const` |
 | `_setBgTaskLogDirForTest` | `thincoder-core/agent-tools/bash-async.mjs:61` | `fn` |
 | `bgTaskEntry` | `thincoder-core/agent-tools/bash-async.mjs:76` | `fn` |
@@ -660,7 +660,9 @@
 | `digestBudgetOver` | `thincoder-core/agent-tools/digest-budget.mjs:51` | `fn` |
 | `_setDigestOffloadDirForTest` | `thincoder-core/agent-tools/digest-budget.mjs:60` | `fn` |
 | `persistOverflowReport` | `thincoder-core/agent-tools/digest-budget.mjs:64` | `fn` |
-| `docCheckTool` | `thincoder-core/agent-tools/doc-check.mjs:17` | `const` |
+| `staleEngineFiles` | `thincoder-core/agent-tools/doc-check.mjs:42` | `fn` |
+| `gateEngineError` | `thincoder-core/agent-tools/doc-check.mjs:55` | `fn` |
+| `docCheckTool` | `thincoder-core/agent-tools/doc-check.mjs:65` | `const` |
 | `configureEngMirror` | `thincoder-core/agent-tools/eng.mjs:33` | `fn` |
 | `resetEngMirror` | `thincoder-core/agent-tools/eng.mjs:37` | `fn` |
 | `engTool` | `thincoder-core/agent-tools/eng.mjs:45` | `const` |
@@ -700,12 +702,14 @@
 | `resetSkillLoader` | `thincoder-core/agent-tools/skill.mjs:17` | `fn` |
 | `skillTool` | `thincoder-core/agent-tools/skill.mjs:23` | `const` |
 | `ROUND_VALUES` | `thincoder-core/agent-tools/spawn-gates.mjs:15` | `const` |
-| `ENG_TASK_BOOK_MIN` | `thincoder-core/agent-tools/spawn-gates.mjs:18` | `const` |
-| `validateRoundParam` | `thincoder-core/agent-tools/spawn-gates.mjs:32` | `fn` |
-| `TASK_BOOK_PARAMS` | `thincoder-core/agent-tools/spawn-gates.mjs:53` | `const` |
-| `validateTaskBookParams` | `thincoder-core/agent-tools/spawn-gates.mjs:69` | `fn` |
-| `composeTaskBookBrief` | `thincoder-core/agent-tools/spawn-gates.mjs:87` | `fn` |
-| `rejectEngineeringFilePaths` | `thincoder-core/agent-tools/spawn-gates.mjs:124` | `fn` |
+| `ENG_TASK_BOOK_MIN` | `thincoder-core/agent-tools/spawn-gates.mjs:27` | `const` |
+| `PLAIN_TASK_BOOK_MIN` | `thincoder-core/agent-tools/spawn-gates.mjs:30` | `const` |
+| `validateRoundParam` | `thincoder-core/agent-tools/spawn-gates.mjs:37` | `fn` |
+| `TASK_BOOK_PARAMS` | `thincoder-core/agent-tools/spawn-gates.mjs:59` | `const` |
+| `taskBookParamsFor` | `thincoder-core/agent-tools/spawn-gates.mjs:72` | `fn` |
+| `validateTaskBookParams` | `thincoder-core/agent-tools/spawn-gates.mjs:93` | `fn` |
+| `composeTaskBookBrief` | `thincoder-core/agent-tools/spawn-gates.mjs:119` | `fn` |
+| `rejectEngineeringFilePaths` | `thincoder-core/agent-tools/spawn-gates.mjs:156` | `fn` |
 | `SSH_SESSION_MAX` | `thincoder-core/agent-tools/ssh-session.mjs:40` | `const` |
 | `SSH_IDLE_MS` | `thincoder-core/agent-tools/ssh-session.mjs:42` | `const` |
 | `_setSshTimeoutsForTest` | `thincoder-core/agent-tools/ssh-session.mjs:52` | `fn` |
@@ -814,9 +818,9 @@
 | `armSyncChildAbort` | `thincoder-core/agent-tools/subagent.mjs:77` | `fn` |
 | `buildSyncStoppedReport` | `thincoder-core/agent-tools/subagent.mjs:100` | `fn` |
 | `subagentTool` | `thincoder-core/agent-tools/subagent.mjs:133` | `const` |
-| `ASYNC_POOL_LIMITS, resolveChildProvider, injectAsyncResult, buildChildRunOpts, mergeChildMutations,` | `thincoder-core/agent-tools/subagent.mjs:411` | `named` |
-| `maybeRefillAsync` | `thincoder-core/agent-tools/subagent.mjs:418` | `named` |
-| `effectiveSubagentModel, resolveDesignSlot` | `thincoder-core/agent-tools/subagent.mjs:421` | `named` |
+| `ASYNC_POOL_LIMITS, resolveChildProvider, injectAsyncResult, buildChildRunOpts, mergeChildMutations,` | `thincoder-core/agent-tools/subagent.mjs:412` | `named` |
+| `maybeRefillAsync` | `thincoder-core/agent-tools/subagent.mjs:419` | `named` |
+| `effectiveSubagentModel, resolveDesignSlot` | `thincoder-core/agent-tools/subagent.mjs:422` | `named` |
 | `taskTool` | `thincoder-core/agent-tools/task.mjs:32` | `const` |
 | `timerTool` | `thincoder-core/agent-tools/timer.mjs:88` | `const` |
 | `configureVerifyDiagnostics` | `thincoder-core/agent-tools/verify.mjs:32` | `fn` |
@@ -1137,8 +1141,8 @@
 | `clearDeclarationCache` | `thincoder-core/declaration.mjs:309` | `fn` |
 | `loadProjectDeclaration` | `thincoder-core/declaration.mjs:339` | `fn` |
 | `declarationForTarget` | `thincoder-core/declaration.mjs:374` | `fn` |
-| `checkAnchors` | `thincoder-core/doc-check/anchors.mjs:63` | `fn` |
-| `runDocCheck` | `thincoder-core/doc-check/index.mjs:25` | `fn` |
+| `checkAnchors` | `thincoder-core/doc-check/anchors.mjs:77` | `fn` |
+| `runDocCheck` | `thincoder-core/doc-check/index.mjs:126` | `fn` |
 | `discoverDomains` | `thincoder-core/doc-check/width.mjs:21` | `fn` |
 | `scanDomain` | `thincoder-core/doc-check/width.mjs:52` | `fn` |
 | `isTableRow` | `thincoder-core/doc-check/width.mjs:60` | `const` |
@@ -1148,7 +1152,7 @@
 | `isZoneHead` | `thincoder-core/doc-check/width.mjs:78` | `fn` |
 | `isExecutableLine` | `thincoder-core/doc-check/width.mjs:84` | `fn` |
 | `inCodeSpan` | `thincoder-core/doc-check/width.mjs:93` | `fn` |
-| `checkDocWidths` | `thincoder-core/doc-check/width.mjs:101` | `fn` |
+| `checkDocWidths` | `thincoder-core/doc-check/width.mjs:102` | `fn` |
 | `createEmbedder` | `thincoder-core/embedding.mjs:16` | `fn` |
 | `embed` | `thincoder-core/embedding.mjs:32` | `fn` |
 | `embedTolerant` | `thincoder-core/embedding.mjs:60` | `fn` |
@@ -1496,9 +1500,9 @@
 | `groupSlotSessions` | `thincoder-core/peer-instances.mjs:86` | `fn` |
 | `peerInstances` | `thincoder-core/peer-instances.mjs:114` | `fn` |
 | `peerInstancesTool` | `thincoder-core/peer-instances.mjs:166` | `const` |
-| `summarize` | `thincoder-core/permission.mjs:19` | `fn` |
-| `formatPermission` | `thincoder-core/permission.mjs:26` | `fn` |
-| `askPermission` | `thincoder-core/permission.mjs:112` | `fn` |
+| `summarize` | `thincoder-core/permission.mjs:20` | `fn` |
+| `formatPermission` | `thincoder-core/permission.mjs:27` | `fn` |
+| `askPermission` | `thincoder-core/permission.mjs:113` | `fn` |
 | `_setProcessProbeTestImpl` | `thincoder-core/process-probe-exec.mjs:26` | `fn` |
 | `_resetProcessProbeTestImpl` | `thincoder-core/process-probe-exec.mjs:32` | `fn` |
 | `uniqPids` | `thincoder-core/process-probe-exec.mjs:37` | `fn` |

@@ -1,10 +1,10 @@
 # 文档纪律与机检对账（DOC-DISCIPLINE）· 设计
 
-> 板块：文档体系——**更新纪律（D1–D9）** · **机械校验判据（V1–V6）** · **文档机制边界（跨仓引用形态 / 表格行宽度豁免 / 拆分债 / 机检零落仓 / 坐标尾形态 / 文档行数规则废除 / 死指针 sweep 两分口径 / 死名/旧指针收正二轮 / 尺寸档登记 / 判据行工具形态（中文串） / 旧编号/坐标族 sweep（三族） / 端差措辞族（限定语）复核与防复发 / 拆档判据与板块定义 / 历史区宽度豁免 / 部分内按域拆分（条目 O） / 值行形态（条目 P） / 行宽口径（条目 Q） / 行数声明面退役（条目 R） + 机检内建为产品工具（条目 S））** · **文档↔实装对账三层**。
+> 板块：文档体系——**更新纪律（D1–D9）** · **机械校验判据（V1–V6）** · **文档机制边界（跨仓引用形态 / 表格行宽度豁免 / 拆分债 / 机检零落仓 / 坐标尾形态 / 文档行数规则废除 / 死指针 sweep 两分口径 / 死名/旧指针收正二轮 / 尺寸档登记 / 判据行工具形态（中文串） / 旧编号/坐标族 sweep（三族） / 端差措辞族（限定语）复核与防复发 / 拆档判据与板块定义 / 历史区宽度豁免 / 部分内按域拆分（条目 O） / 值行形态（条目 P） / 行宽口径（条目 Q） / 行数声明面退役（条目 R） + 机检内建为产品工具（条目 S——报告态 ∥ 交付门 gate））** · **文档↔实装对账三层**。
 > 需求层指针 = `requirements/ENGINEERING-MODE-V2.md` §13.1（文档更新纪律 D1–D9 + 机械校验边界）· §13.4（各仓自持）· 本档 §4（V5 对账判据规格）。
 > 兄弟档：`design/DOC-SYSTEM.md`（**落点规划 / 命名规则 / 归属判据 / 交叉引用形态**——本档不重述；该档 §7 明指「锚判据全文」住本档）·
 > `design/ENGINEERING-MODE-V2.md`（工作流本体）· `design/BATCH-RECORD.md`（批次档与段写入）· `design/LEDGER.md`（台账机制 · L1–L3 判据）· `design/LEDGER-SELF-CONTAINED.md`（L4 与形态合规 V4）。
-> 落点：判据面 = **产品内建**（工具 `doc_check`——模型可见描述 = 核包 `thincoder-core/tool-docs/doc_check.md`；§3.20 条目 S）；本仓 `scripts/**` = **零判据角色**的手跑面。
+> 落点：判据面 = **产品内建**（工具 `doc_check`——模型可见描述 = 核包 `thincoder-core/tool-docs/doc_check.md`；§3.20 条目 S：报告态 ∥ 交付门 gate）；本仓 `scripts/**` = **零判据角色**的手跑面。
 
 ## 1. 文档更新纪律（D1–D9——设计侧机制）
 
@@ -776,7 +776,7 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 **实施面归属**：机制 ∕ 声明 ∕ 单元测试档 = 工程工具面（实施轮）；正文清账 = 清账轮（另轮）；本条目 = 判据句与契约落点（设计面——本轮已落）。
 
-**尺寸档登记（行宽清账 · 承 §3.10 先例）**：`scripts/doc-check-width.mjs` **86 → ≈6 行（改缝 · 零逻辑——§3.20 条目 S）** ∥ 谓词实现单源 = 产品档位 `thincoder-core/doc-check/width.mjs`（≈100 行）：**不拆**——理由 = 两者均远低于 500 建议线 + 单档单责（行宽谓词族）；**触发 = 再度增厚**（近 ∕ 越 500 建议线或结构改时另批）。
+**尺寸档登记（行宽清账 · 承 §3.10 先例）**：`scripts/doc-check-width.mjs` **6 行（再出口缝 · 零逻辑——§3.20 条目 S）** ∥ 谓词实现单源 = 产品档位 `thincoder-core/doc-check/width.mjs`（131 行）：**不拆**——理由 = 两者均远低于 500 建议线 + 单档单责（行宽谓词族）；**触发 = 再度增厚**（近 ∕ 越 500 建议线或结构改时另批）。
 
 **边界（本条不做）**：不清账区带内历史行（现状零清）· 不重开基线通道 · 不改锚检查 · 区带名集闭集（扩 = 另轮设计 + 评审）· 不改提示词面。
 
@@ -884,11 +884,11 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 | # | 文件 | 当前行数 | 预计增量 | 改动 |
 |---|---|---|---|---|
 | 1 | `docs/core/design/DOC-DISCIPLINE.md` | — | — | 本节 + §3 标题枚举 + 档头枚举 + §5 A-DD27 + 用例 DD-66–DD-68 + §7 导出清单随动（补 `isZoneHead` + 两新谓词） |
-| 2 | `scripts/doc-check-width.mjs` | 86 | ≈ −80（改缝） | 四类豁免接线（围栏块 / `isExecutableLine` / 引文块）+ 度量改 `[...line].length` **随迁产品档位** `thincoder-core/doc-check/width.mjs`（§3.20 条目 S——谓词单源随迁）；本档改缝为再出口（零逻辑 · 盘上不留第二份实现） |
+| 2 | `scripts/doc-check-width.mjs` | 6 | 0 | 再出口缝（零逻辑 · 逐名再出口）——四类豁免接线 + 度量 `[...line].length` 的实现住产品档位 `thincoder-core/doc-check/width.mjs`（§3.20 条目 S——谓词单源） |
 | 3 | `scripts/doc-check.mjs` | 104 | 0（父侧核） | 汇总面只报这一条口径 |
 | 4 | `docs/batches/<批次档>.test.mjs`（单元测试档惯例——名随批） | 0（新建） | 新建 | 自测护栏载体——用例 DD-66–DD-68（先红 + 修正后绿） |
 
-**尺寸档登记**：`scripts/doc-check-width.mjs` 86 → ≈6 行（改缝 · 零逻辑——§3.20 条目 S）∥ 产品档位 `thincoder-core/doc-check/width.mjs` ≈100 行——两者均远低于 500 建议线、单档单责 ⇒ **不拆**（触发 = 再度增厚；登记口径承 §3.15）。
+**尺寸档登记**：`scripts/doc-check-width.mjs` 6 行（再出口缝 · 零逻辑——§3.20 条目 S）∥ 产品档位 `thincoder-core/doc-check/width.mjs` 131 行——两者均远低于 500 建议线、单档单责 ⇒ **不拆**（触发 = 再度增厚；登记口径承 §3.15）。
 
 **边界（本条不做）**：不折存量超宽行（存量清账 = 另步）；不改锚检查；不重开基线通道；豁免类集与区带名集均闭集（扩 = 设计 + 评审另批）；不改提示词面。
 
@@ -984,11 +984,12 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 | DD-70 | 边界 | 直读 manifest：键在 ∥ 临时把 `lineCounts` 键加回 | 键在 ⇒ `checkConfig` 键集 5（缺键 = `missingKeys` 非拒）；加回 ⇒ 源面零消费点（不读、不报、不入 `CRITERIA_KEYS`——静态可判） |
 | DD-71 | 错误 | 改动集越界（动 `doc-check-anchors.mjs` ∥ `doc-check-width.mjs` ∥ 锚 / 行宽相关件） | 判**违规**——`git diff --stat` 改动集须 ⊆ 本批声明文件清单（A-DD28 ④） |
 
-### 3.20 条目 S：机检内建为产品工具（起步两条判据 + 声明面）
+### 3.20 条目 S：机检内建为产品工具（起步两条判据 + 声明面 + 交付门 gate）
 
 **裁定（目标态）**：文档纪律机检**内建为产品能力**，以 agent 工具 **`doc_check`** 提供给 agent；判据参数由**被开发项目**的 `PROJECT-MANIFEST.json` `checkConfig` 声明（不硬编码任何本仓路径）；**项目自建脚本不在判据链上**。
+**交付时点门（gate）**：一轮设计 / 开发动作结束时，对**本轮改过的档**当场全检，命中**当场打回**——需求 = `docs/core/requirements/DOC-CHECK.md`（F1–F8 / AC-1–AC-6；机制块 = §3.20「交付时点强制」）。
 
-**依据（引，不重述）**：需求 `docs/core/requirements/DOC-SYSTEM.md` **FR10**（六条验收 + 边界）；行宽口径 = 本档 **§3.18 条目 Q**；区带豁免 = 本档 **§3.15 条目 N**；表格行豁免 = 本档 **§3.1 条目 C**；声明面（`checkConfig`）= 本档 **§7 F2** + `docs/core/design/DOC-SYSTEM.md` §8.2。
+**依据（引，不重述）**：需求 `docs/core/requirements/DOC-SYSTEM.md` **FR10**（六条验收 + 边界）；交付门 = 需求 `docs/core/requirements/DOC-CHECK.md` F1–F8；行宽口径 = 本档 **§3.18 条目 Q**；区带豁免 = 本档 **§3.15 条目 N**；表格行豁免 = 本档 **§3.1 条目 C**；声明面（`checkConfig`）= 本档 **§7 F2** + `docs/core/design/DOC-SYSTEM.md` §8.2。
 
 **起步判据（两条 · 闭集）**：
 
@@ -1009,16 +1010,100 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 **工具形（与 `manifest` / `ledger` / `batch` 同级）**：
 
-- **名 / 参数**：`doc_check`（参数 = `target` 可选——显式项目根，缺省 = 会话锚；`target` 指向多项目工作区 ⇒ 报明候选并要求指名，同 `manifest` 工具面）。
-- **标记**：`readonly`（零副作用 · 免审批 · 可并行）；**无 action 参数**（单动作——不预建空枚举）。
+- **名 / 参数**：`doc_check`（参数 = `target` 可选——显式项目根，缺省 = 会话锚；`target` 指向多项目工作区 ⇒ 报明候选并要求指名，同 `manifest` 工具面）；
+  `mode` 可选——`report`（缺省）∥ `gate`（交付门——§3.20「交付时点强制」）；`docs` 可选——**仅 gate 模式**（显式改档清单；report 模式传入 ⇒ 拒，不静默忽略）。
+- **标记**：`readonly`（零副作用 · 免审批 · 可并行）；**无 action 参数**——`mode` 不是动作枚举：它是**同一个判据的两种问法**（全域报告 ∥ 范围化裁定），判据本身只有一条。
 - **装配段**：depth-0 段 + `eng-coder` / `eng-designer` 段（写文档 / 设计档的角色面）；explore / plan / consult / 兜底段不挂。
-- **非门禁（硬）**：报告态；**不阻断、不置退出码、不接 CI**；输出**不得**被读作拒执行的理由（用户令 > 机检——§2 总则族）。
+- **两种问法，一条判据**：`report` = 全域报告态（**不阻断、不置退出码、不接 CI**；输出不得被读作拒执行的理由——用户令 > 机检——§2 总则族）；
+  `gate` = **交付时点的范围化裁定**（首行给 verdict——报面见 §3.20「交付时点强制」）。门禁的强制面住**交付协议 + 批次档 §6 收口前置**，工具本体不阻断任何动作——两种问法的判据与引擎同源，只有射程与落点不同。
+- **描述面射程化（模型可见契约 = 实际行为）**：`thincoder-core/tool-docs/doc_check.md` 的非门禁句射程 = **`report` 模式**——`report` 句加模式限定（「默认 `report` 模式：不阻断 / 不置退出码 / 不作拒执行的理由」），两句绝对句（`It cannot: … gate anything …` ∥ `Do not wire it as a gate or CI step`）同限到 `report`；
+  **gate 段单列**（`mode` / `docs` / verdict 三串 / 引擎版本校验各一句）——gate 的拒绝对象 = **一次交付**，不是用户指令（与「用户令 > 机检」并存）。判据 = A-DD30 ⑧。
 
-**报面（固定句形）**：
+**判据源（唯一——工具面 gate ∥ batch 两机械点共用）**：
+
+- **准据引擎 = 产品核 `thincoder-core/doc-check/**`**（`runDocCheck`）：verdict 只由它产出；调用链 = `agent-tools/doc-check.mjs` / `agent-tools/batch-gate.mjs` → `doc-check/index.mjs`。
+- **非准据源 = `scripts/doc-check.mjs`（91 行）**——仓内 V5 专用面（六键声明面 + V5 三锚：用例号 / 路径坐标 / 符号窄宽），判据集与产品引擎**不同形**（V5 三锚 + 六键 vs 起步两判据：锚 + 行宽）。
+  它的读数不构成 `PASS` / `REFUSED` / `ERROR` 任何一形，也不作交付取证——两引擎同日实跑读数差两百余条，混接即全批假拒。
+- **处置 = 保留在盘 · 从判据链退场**（与「本仓自建脚本的处置」表同口径）；档头「单引擎入口」自述失效 ⇒ 改为「V5 专用面 · 非 gate 判据源」（一行注释 · 机械改 · 实施轮落）。
+  **不转薄壳**：薄壳只对同判据集有意义——判据不同形时，转壳会诱使读者把 V5 读数当 gate 读数。
+- **机械判据**：`thincoder-core/**` 对 `scripts/**` 的 import 点 = 0（A-DD29 ⑤）；`batch-gate.mjs` / `agent-tools/doc-check.mjs` 的引擎 import 只指向 `../doc-check/index.mjs`（A-DD31 ⑦，grep 可判）。
+- **读数纪律**：交付 / 收口 / 验收读数只取**产品引擎新进程**；会话进程缓存的旧模块读数不引——版本 stale 时工具面按「引擎版本一致」给 `ERROR`，不产读数（需求 F8 的取证前提）。
+
+**交付时点强制（`mode:"gate"`——用户 2026-10-18 四轮裁定）**
+
+- **要治的两个病**：① **挂账**——检查结果记一笔就走，等以后再处理时情境已失（这是举例？类名？真指针？），问题从「一眼能改」变成「没人能判」；② **范围跑偏**——检查范围与修改范围脱节，查出别的轮次的问题，把开发思路带偏。
+  修法 = **范围 = 本轮改过的档 · 时点 = 交付当下 · 命中 = 当场打回**（用户原话：「发现问题以后直接打回让 agent 当场修改，不要把问题留到以后」）。
+- **范围（谁改的谁查）**：① `docs` 显式给定 ⇒ 以该清单为准；② 未给 ⇒ **本会话写过的档** = 调用者触达记账（`_touchedFiles`——写 / 编辑 / 插入 / 哈希编辑 / 补丁 / 删除六类写工具逐次记账）∩ 声明域；③ 两种来源都只取**声明域内**（`scanDirs` − `exclude`）、**盘上存在**的 `.md`。
+  - **全文检查**：进入范围的档**整档入判**（不是只查改动行——用户 16:24 明令）；范围外的档**不入报**。
+  - **解析面不缩**：锚的解析基线 = **全域文件名索引**（节判定按需读**被引目标档**）——范围只收窄**被判档**，不收窄解析；否则改过的档引用未改的档会假报 `档缺`（假阳即机制失效）。
+  - **父侧范围 = git（指定 base）**：子代理工具面无 git，交付当下用②；父侧 §6 有 git，用①，清单 = `git diff <批起 sha> --name-only -- docs`——`<批起 sha>` = 本轮开工前的 HEAD（父侧派单前记录）；轮中提交不缩小范围（未提交面为空也不退化到 0 档）。**权威面 = 父侧**：子代理自报的范围是子集，父侧以自查清单为准（自报不构成范围证据）。
+    - **该清单 = 候选集，不是裁定面**：父侧收口判 K 的唯一面 = 本条「结构兜底」的「② 的范围分域」（K = 命中 ∩ 本批笔域集；他批在途命中另列、不阻收口）——**协议面（触发点 3）与结构面（②）同判**，两处互指；他批在途档有问题不致本批收不了口。
+  - **空范围照实说**：范围 0 档 ⇒ 仍给 `PASS（0 档）` + 一行「本会话没有写过声明域内的文档；若确认改过 ⇒ 显式传 docs」——空范围不静默当通过。
+- **裁定面**：首行固定三形 = `DOC-CHECK GATE: PASS` ∥ `DOC-CHECK GATE: REFUSED（命中 K 条）` ∥ `DOC-CHECK GATE: ERROR（原因）`——机器可判串（消费判据 = 首行前缀）；命中逐条给 `档:行` + 类（`档缺` / `节缺` / `行宽`）。
+  - **取参失败 ⇒ ERROR，不产 PASS**：`PROJECT-MANIFEST.json` 不可读 ∥ `checkConfig` 缺 / 不合法 ⇒ 首行 `DOC-CHECK GATE: ERROR（manifest 不可读 —— 原因）`；`target` 指向多项目工作区 ⇒ 首行 `DOC-CHECK GATE: ERROR（多项目工作区：请指名 target）` + 候选清单行。
+  - **ERROR 的消费 = fail-closed**：§6 前置只认 `PASS`——`ERROR` 视同未通过（不提交批准 / 不核销 / 不 close / 不改台账）。**三因 ↔ 三处置**：manifest 不可读 ⇒ 修声明面（`checkConfig`）后复跑；多项目工作区 ⇒ 指名项目根（`target`）后复跑；引擎已更新 ⇒ 重启会话后复跑。
+  - **引擎版本一致（gate 前置 · fail-closed——需求 F8 / AC-5 的取证前提）**：判据跑在**本会话进程加载的引擎模块**上——`thincoder-core/doc-check/**` 是 ESM，进程启动时加载即缓存；引擎档在启动后被改写 ⇒ 本会话仍跑旧模块。后果两种，都让 gate 失效：**假阳**（修好的引擎消不掉旧误报 ⇒ 交付永远过不了）/ **假绿**（引擎变严时旧版放过）。故 gate 在跑判据**之前**先判版本一致。
+    - **判据**：引擎六档 = `thincoder-core/doc-check/index.mjs` · `anchors.mjs` · `width.mjs` · `version.mjs`（版本函数单源）· `thincoder-core/agent-tools/doc-check.mjs` · `thincoder-core/tool-docs/doc_check.md`——按 `version.mjs` 的 `import.meta.url` 解析到产品核根，**不随 `target` 变**。
+    - **比较**：逐档取 `mtimeMs` 与本进程启动时刻（`Date.now() − process.uptime() × 1000`）比较；任一 `mtimeMs > 启动时刻` ⇒ 该档可能晚于模块加载 ⇒ 入 stale 集。不可 `stat` 的档同样入 stale（fail-closed，不静默忽略）。
+    - **裁定**：stale 非空 ⇒ 首行 `DOC-CHECK GATE: ERROR（引擎已更新（<文件> mtime <ISO 8601> > 进程启动 <ISO 8601>），请重启会话后复跑）`——**不产 PASS**。
+    - **多档与路径形**：stale 多档 ⇒ 逐档 `<文件> mtime <时间>` 以 `；` 连列；`<文件>` = 相对 `thincoder-core/` 的正斜杠路径；ERROR 另外给原因行与处置行（旧引擎读数不可信 ∥ 重启会话后复跑）。
+    - **保守方向（如实）**：`mtime ≤ 启动时刻` 一定不比缓存新；`mtime > 启动时刻` 只是**可能**晚于加载（模块加载必在进程启动之后）——取 fail-closed 方向，误判代价 = 一次会话重启；引擎档由开发写入，落在启动后亚秒窗口不构成真实场景。
+    - **只挂 gate**：`report` 模式不查版本、报面逐字不变（报告态不是交付判据，旧引擎的报告不阻断任何东西）；工具描述面的射程化与 gate 段见本条「工具形」（含 gate 前置版本校验一句——模型可见契约 = 实际行为）。
+    - **实现缝（可测）**：版本判定 = 纯函数 `staleEngineFiles({ nowMs, uptimeSec, stat })`（时钟 / stat 可注——DD-91 以假值驱动，不碰产品档 mtime）；报面串 = `gateEngineError({ startMs, stale })`；工具面 `execute` 的 gate 分支**先判版本**（stale ⇒ 直接返回 ERROR 串，不进引擎），`report` 分支零改。
+- **三个触发点（哪一步强制 · 失败怎么办）**：
+  1. **设计轮交付（eng-designer）**：自检步「评审前预检」末位跑一次；`REFUSED` ⇒ 同轮修到 `PASS` 再交回，报告携 `doc_check: PASS（N 档）` 一行。修法不明（举例 / 类名 / 真指针？）⇒ 上抛主 agent 裁决；**主 agent 拿不准 ⇒ 转呈用户**（需求 F7 收件人 = 用户），不自选豁免；改法会与已批设计冲突 ⇒ 停下上报。
+  2. **实施轮交付（eng-coder）**：收尾自审清单末位跑一次；同款 `REFUSED` 处置。命中落在**非本角色笔域**的档（如它碰过的设计档）⇒ 不自行改，报告父侧转派作者——**笔域纪律优先于修绿**。修法不明 ⇒ 上抛主 agent 裁决；主 agent 拿不准 ⇒ 转呈用户（同 F7）。
+  3. **父侧收口（批次档 §6 前置）**：批准 / 核销 / close 之前，父侧对 git 清单跑一次——**清单只是候选集，裁定面 = 本条「结构兜底」的「② 的范围分域」**（K = 命中 ∩ 本批笔域集）；`REFUSED`（K ≥ 1）⇒ **不提交批准、不核销、不 close、不改台账**，按面打回该作者同轮修、复跑到 `PASS`；命中全属他批在途集 ⇒ 放行 + 固定行逐档列出（不计入 K，请其作者在其批修复）；`ERROR` 同判 fail-closed（无 `PASS` 即未见通过）；修法不明 ⇒ 主 agent 裁决，拿不准 ⇒ 转呈用户。
+- **结构兜底（batch 工具两机械点——用户 2026-10-18 17:40 裁定「gate挂到batch工具的机械点可以」）**
+
+触发点 1–3 是协议面（靠纪律）；两个机械点把「不过 gate ⇒ 批档写不进 ∥ 批收不了口」变成结构事实（判据 = `docs/core/design/ENGINEERING-MODE-V2.md:32` N1「结构优先：每块痛点有结构兜底」+ `docs/core/requirements/ENGINEERING-MODE-V2.md:25` 判据句「每条纪律必须能回答『靠哪个结构兜底』」；需求 = `docs/core/requirements/DOC-CHECK.md` F9 / AC-7）。
+
+**同类先例（对齐 ∥ 偏离）**：`batch` 工具既有机械拒族——段白名单（`thincoder-core/agent-tools/batch.mjs:184`–`:189`）· 冻结门（`:208`–`:213`）· F11-C 死占位（`:229`–`:230`）。
+**对齐** = 「写盘前的机械前置，只增不改既有判序」——本门是该族里第一个**追加**在既有拒因之后的拒因（零回归）；**偏离** = 既有族拒**调用者身份 / 载体状态**（谁在写、档冻没冻），本门拒**交付内容**（被判档的机检命中）——同一工具内两种拒绝面，错误串前缀分开（既有 = `batch_segment:`，本门 = `batch:`）。
+
+| # | 机械点 | 门位 | 裁定消费 | 失败形 |
+|---|---|---|---|---|
+| ① | 子代理写批次档段（§2 / §5） | `batch` append 的既有校验全部通过之后、段插入之前 | `REFUSED`（K ≥ 1）⇒ 拒写；`PASS` ⇒ 照写；`ERROR` ⇒ 写 + 回执明示 | throw（串含 verdict + 命中清单 + 同路「失败 ⇒ 勿 close」句）；档字节不变 |
+| ② | 父侧收口（`close` ∥ `status` 值余核 =「已收口」） | 既有校验之后、状态行改写之前 | `REFUSED`（K ≥ 1）∥ `ERROR` ⇒ 拒收口（fail-closed）；命中全属他批在途 ⇒ 放行 + 固定行 | throw；§1 状态行字节不变 |
+
+- **范围（判谁）**：① = 写者触达记账（`_touchedFiles`）的 `.md` ∩ 声明域 ∩ 盘上存在——与工具面 gate 同源（`docsSource="session"`）。
+- **② 的范围分域（按作者归属 · 不设豁免清单）**——两集分开判：
+  - **本批笔域集** = 父侧触达记账（`_touchedFiles`，含 eng-coder 合并账）∪ 本轮提交 diff（`git diff --name-only <批起 sha> HEAD` 中域内 `.md`）。`<批起 sha>` = 本批开工前 HEAD（父侧记入批档 §1）；取不到基 ⇒ 只认触达账 + 回执明示「基 sha 未定」。
+  - **他批在途集** = git 面（`git diff --name-only HEAD` ∪ `git ls-files --others --exclude-standard`，滤 `.md`，域求交归引擎）− 本批笔域集；git 面不可得 ⇒ 只用触达账 + 回执明示「git 面不可得」（不静默）。
+  - **裁定**：首行 `REFUSED（命中 K 条）` 的 K = **命中 ∩ 本批笔域集** 的条数 ⇒ K ≥ 1 拒收口；命中 ⊆ 他批在途集 ⇒ **不阻收口**，另起固定行 `他批在途 b 档（非本批笔域 · 未计入 K · 请其作者在其批修复）：<档>:<行> …` 逐档列出。
+  - **为什么这不是豁免清单**：分界按**作者归属**判（谁写的谁修），不按「逐个放过」；他批命中仍在报面逐档可见、仍要在其本批修掉，只是不由本批代偿。
+    笔域纪律（不许改别人的档）与收口门在此不互锁——此前两者互锁 = **收口死锁**（别的批在途写的档有问题 ⇒ 本批永远收不了口）。
+  - **代价如实**：子代理进程内写的档（如 eng-designer 的设计档）不进父侧触达账，若又未提交 ⇒ 归入他批在途集、不阻本批收口；兜底 = 该档在**写入时**已被 ①（写者触达账）判过，且报面逐档可见。
+  **批档自身不入范围**：载体不是判据对象；且声明域 `anchors.exclude` 含 `batches`（`PROJECT-MANIFEST.json`）——传入只产「跳过域外」行 = 假检查；要检批档 = 改声明面（另事，本机制不另立域）。
+  `<批起 sha>` 的权威清单仍住父侧协议面（工具不知道批起 sha）；轮中提交面由 ① ② 合围。
+  本条即**父侧收口（「交付时点强制」触发点 3）的裁定面**：协议面只给候选清单（git），判 K 按本条——两处同判（互指见该触发点），收口死锁不因他批在途档复发。
+- **① 拒串形（与 append 同路拒因同形）**：throw 串 = `batch:` 前缀 + verdict 首行 + 逐条 `✗` 行 + 处置句 + 同路既有句 `Do NOT close the record after a refused append — nothing landed, and closing freezes the missing section for good (失败 ⇒ 勿 close)`——复用既有错误串字面（`batch.mjs:212` / `:221` 逐字同句），不新造措辞。
+- **引擎版本一致（同挂）**：两机械点与工具面共用同一前置——`staleEngineFiles` / `gateEngineError` 迁住 `thincoder-core/doc-check/version.mjs`（单源；工具面转口，导出面不变）；先判版本、后进引擎。
+- **`ERROR` 消费分野**：② fail-closed（无 PASS 即未见通过）；① **放行 + 回执明示**——F9 只在 ② 点名 ERROR；子代理无法重启会话，卡死写账 = 无账之笔，而 ② 会拒收口 ⇒ 轮次不会被当成已通过。代价写明：引擎在会话中途被改写后，本会话的 ① 只记账、不产检查。
+- **适用面（声明面驱动）**：项目根有可读 `PROJECT-MANIFEST.json` ⇒ 门生效（`checkConfig` 缺 / 不合法 ⇒ `ERROR`，按上条处置）；无 manifest（`missing` ∥ `no-project`）⇒ **不适用** + 回执固定行 `[doc-check gate] 未跑（本项目无声明面）`——判据参数来自 `checkConfig`，无声明面即无判据；这不是豁免清单（豁免清单 = 对有声明面的项目逐个放过）。
+- **零回归（门是新增前置，不是替换）**：既有拒因（段白名单 / 段号 / path 门 / 冻结 / 状态行不可解析 / text 校验 / 骨架保护 / 凭证剥除 / 死占位 / §6 非空 / create-close 身份门）逐字、逐序不变——门插在它们**之后**、写盘**之前**；错误串前缀 = `batch:`（新增错误面）。
+- **不检的面**：① 只挂子代理（depth > 0 且非评审）写 §2 / §5。设计评审写 §3 **不检**——F9 只点名 §2 / §5；评审工具集零写工具（`advisor/loop.mjs` 只读六件 + 绑定 `batch`），触达账恒空 ⇒ 门恒 `PASS（0 档）`，纯形式；§3 是发现记录不是交付；若检，`ERROR` 会卡住评审记录落档（「失败 ⇒ 勿 close」的反向故障）。评审若真改过档，父侧 ② 的 git 面兜住。
+- **性能（本仓实测 · 2026-10-18 新进程）**：空范围 22 ms · 8 档 128 ms · 报告态全域 1084 ms（212 档）。写段一次一跑，**不设缓存**——缓存键（mtime 集）算错即静默放行，正是本机制要关闭的失效模式；128 ms 远低于一次模型回合。
+- **实现面（单源）**：`thincoder-core/agent-tools/batch-gate.mjs`——`runBatchGate({ abs, cwd, agent, scope, clock? })`：根 = `owningProject(abs) ?? batchProjectRoot(cwd)` / 适用面 / 版本前置 / 范围（写者 ∥ 收口）/ 裁定分类（`clock` = 版本判定的测试注入缝）。
+  调用点 = `batch.mjs` append 一处 + `batch-lifecycle.mjs` close ∥ status 两处；版本函数住 `doc-check/version.mjs`。
+- **`scope` 语义**：调用面开关，两个取值、无第三值——`writer`（① 写段：范围 = 写者触达账；`ERROR` / 门自身异常 ⇒ 放行 + 回执明示）∥ `close`（② 收口：范围 = 本批笔域集 ∪ git 面；`ERROR` / 门自身异常 ⇒ fail-closed 拒收口）。取值与调用面一一对应，不由门自行推断。
+- **门自身异常（三因之外）**：`runBatchGate` 抛出的异常若不属三因（manifest 不可读 / 多项目工作区 / 引擎已更新）——① **按 `ERROR` 同判放行** + 回执首行按统一机判形 `[doc-check gate] DOC-CHECK GATE: ERROR（门自身异常：<原因>） · 范围 N 档`（2026-10-18 父侧裁：机判串首行恒同形，异常以括注区分——与 `:1092` 两形分工一致），写账不被环境态卡死（无账之笔）；② **fail-closed 拒收口**（无 `PASS` 即未见通过）。门自身异常既不产 `PASS`，也不静默。
+
+**两形分工（判据串）**：唯一机判串 = 工具首行（`DOC-CHECK GATE:` 前缀）；交付报告行的 `doc_check: PASS（N 档）` = 人读摘要，不作机判——需要取证 ⇒ 报告逐字引 verdict 行。
+- **不挂账（硬）**：命中项**不转台账**、不「记一笔继续走」、不留到下一轮；修正方式 = **改文档**（真指针）∥ **修引擎**（假阳——产品代码，走正常流程）；**不设豁免清单**。
+- **与「用户令 > 机检」的关系**：gate 拒绝的是**一次交付**，不是用户指令——用户明令放行 ⇒ 照办，并在交付里写明命中项。
+
+**同类先例（对齐 ∥ 偏离）**：① `verify`（`design/VERIFY-REDESIGN.md`）——声明 + 机械门 + 打回引导：**对齐**「特定时点给牙、工具本体不阻断」；**偏离** = verify 收模型自述、不代跑，本门**真跑检查**（判据可机判，不需自述）。
+② 报告态 `doc_check`（§3.20 工具形）——同引擎同判据：**对齐**；**偏离** = 射程（全域 ∥ 被判档）与落点（报告 ∥ 交付门）。
+③ 工程模式设计门（`agent/dispatch.mjs` 的 `:69-77` 无 token 拒写）——**对齐**「交付动作前的机械前置」；**偏离** = 那道门的凭据是评审 token，本门的凭据是 verdict 串。
+
+**公共源勘察证据行**：`PROJECT-MANIFEST.json` 的 `index.publicRepos` = `[]`（实读）——工作目录内无独立公共文档仓 ⇒ **已查，无相关公共源可引**。
+
+**报面（固定句形 · 报告态）**：
 
 ```
 文档纪律机检（报告态 · 非门禁）
-射程：<root> · <域集>（N 档）· 阈值 300 字符 · 区带豁免：<名集 ∥ 无> · 排除：<集>
+射程：<root> · <域集>（N 档）· 阈值 <lineWidth> 字符 · 区带豁免：<名集 ∥ 无> · 排除：<集>
 声明：判据参数依据 `PROJECT-MANIFEST.json` `checkConfig`
 命中 K 条（锚 a · 行宽 w）
 ✗ 锚·档缺 <档>:<行> `token`
@@ -1029,15 +1114,33 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 零命中 ⇒ `结论：0 条命中（锚 ∥ 行宽 均清）`。
 
+**报面（固定句形 · 交付门 gate）**：
+
+```text
+DOC-CHECK GATE: PASS
+文档纪律机检（交付门 · gate）
+范围：<来源：本会话写过的文档 ∥ 显式 docs> N 档（声明域 M 档）· 阈值 <lineWidth> 字符（运行时取 checkConfig.lineWidth）· 排除：<集>
+判据：与报告态同源（`PROJECT-MANIFEST.json` `checkConfig`）——范围只收窄被判档，不收窄解析
+结论：0 条命中（N 档全清）
+```
+
+`REFUSED` 首行 = `DOC-CHECK GATE: REFUSED（命中 K 条）`，其余行同报告态（逐条 `✗` 行），尾行固定：
+`处置：同轮修正后复跑（改文档 ∥ 修引擎）；不转台账；拿不准 ⇒ 上抛主 agent 裁决（主 agent 拿不准 ⇒ 转呈用户）`。
+
+空范围 ⇒ 首行 `DOC-CHECK GATE: PASS（0 档）` + 一行 `范围为空：本会话没有写过声明域内的文档——若确认改过 ⇒ 显式传 docs`。
+`docs` 含**域外档** ⇒ 另起一行 `跳过 S 档（不在声明域内，未检）：…`——不是命中，但必须可见。
+
+`ERROR` 首行 = `DOC-CHECK GATE: ERROR（原因）` + 原因行（manifest 不可读 ∥ 多项目工作区候选 ∥ 引擎已更新）——**不产 PASS**，消费面按 fail-closed；引擎已更新形的判据与文案见上「引擎版本一致」。
+
 **产品档位（实现面）**：
 
-- `thincoder-core/doc-check/width.mjs`——谓词 + 域扫描 + 行宽判据（**口径单源 = §3.18 条目 Q**：携四类谓词 + `[...line].length` 度量；本仓 `scripts/doc-check-width.mjs` 的 86 行只含表行谓词 + 区带 ⇒ **非逐字迁**）。
+- `thincoder-core/doc-check/width.mjs`——谓词 + 域扫描 + 行宽判据（**口径单源 = §3.18 条目 Q**：携四类谓词 + `[...line].length` 度量）；本仓 `scripts/doc-check-width.mjs` = 再出口缝（见本条「实装现状」）。
 - `thincoder-core/doc-check/anchors.mjs`——指针抽取 + 解析序 + 节在盘判定（起步判据 ① 的实现面）。
-- `thincoder-core/doc-check/index.mjs`——引擎入口：域扫描 + 声明面读取 + 报面行（纯函数——零门禁、零退出码）。
-- `thincoder-core/agent-tools/doc-check.mjs` + `thincoder-core/tool-docs/doc_check.md`——工具面（描述外置 · `DESC("doc_check")`）。
-- **登记面**：`thincoder-core/agent-tools.mjs`（导出）+ `thincoder-core/agent/family-tools.mjs`（装配段）+ `thincoder-core/package.json` `files` 白名单加 `doc-check/`（**发布闭包**——白名单漏目录曾致装机崩）。
+- `thincoder-core/doc-check/index.mjs`——引擎入口：域扫描 + 声明面读取 + 两种问法的报面行（纯函数——**不阻断、零退出码**；范围收窄面 = `docs` 给定的被判档）。
+- `thincoder-core/agent-tools/doc-check.mjs` + `thincoder-core/tool-docs/doc_check.md`——工具面（描述外置 · `DESC("doc_check")` · gate 前置版本校验 · 描述面射程化「工具形」）。
+- **登记面**：`thincoder-core/agent-tools.mjs`（导出）+ `thincoder-core/agent/family-tools.mjs`（装配段）+ `thincoder-core/package.json` `files` 白名单含 `doc-check/`（`:44`；**发布闭包**——白名单漏目录曾致装机崩）。
 
-**谓词单源随迁**：行宽谓词 / 域扫描 / 行宽判据的**实现单源 = 产品档位**；`scripts/doc-check-width.mjs` 改述为**再出口缝**（薄档 · 零逻辑 · 逐名再出口）。
+**谓词单源**：行宽谓词 / 域扫描 / 行宽判据的**实现单源 = 产品档位**；`scripts/doc-check-width.mjs` = **再出口缝**（6 行 · 零逻辑 · 逐名再出口）。
 **本仓不留第二份谓词实现**——换项目时谓词随产品走，标准不随仓漂移。
 
 **本仓自建脚本的处置（归因）**：
@@ -1045,40 +1148,29 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 | 件 | 处置 | 归因 |
 |---|---|---|
 | `scripts/doc-check{,-anchors,-targets,-linecounts}.mjs` | **保留在盘 · 从判据链退场** | 判据角色由产品工具承接；四档 = 仓内专用面（V5 三类锚 / 用例号 / 符号 / 采集面 / 行数面），**不入产品**（起步两条判据不用） |
-| `scripts/doc-check-width.mjs` | **改缝**（86 → ≈6 行） | 谓词单源随迁（上条）——盘上不留第二份实现；消费面经缝零改 |
+| `scripts/doc-check-width.mjs` | **再出口缝**（6 行 · 零逻辑） | 谓词单源住宽档（上条）——盘上不留第二份实现；消费面经缝零改 |
 | `.github/workflows/test.yml:78-80` | **零触** | 该步已停用（禁调令）；指称对象仍在盘 ⇒ 非死指针 |
 | `thincoder-vscode/package.json:153`（`doc:check`） | **零触** | 同上（对象 `scripts/doc-check.mjs` 仍在盘） |
 | **物理删除（五档）** | 未决 · 另批 | 删后射程 = §4 V5 判据规格（判据句 + 实装坐标）与 §7 契约面整体退场 + 两消费面收正 + `API-CONTRACT.md` 生成区重跑 |
 
 **同类先例（对齐形态——无偏离）**：工具面 = `manifest`（`thincoder-core/agent-tools/manifest.mjs` + `thincoder-core/tool-docs/manifest.md` + 描述外置 + 装配段 + 机制单源档）；声明面驱动 = 本档 §7 F2；只读报告态工具 = `verify` / `repo_outline`；缝形 = 同仓再出口缝先例（`thincoder-core/manifest.mjs` 转口 `manifest-schema.mjs`）。
-本节 = 同族第四条——**对齐（无偏离）**；偏差一处 = **参数面更薄**（无 action 枚举、单可选 `target`）——理由 = 单动作工具不预建空枚举（与 §3.14 条目 M 的「不预建空档」同向）。先例批之名不入本档（D4 方向唯一）。
+本节 = 同族第四条——**对齐（无偏离）**；偏差一处 = **参数面 = `target` / `mode` / `docs` 三参、无动作枚举**（`mode` = 同一判据的两种问法，不是动作枚举）——理由 = 单判据工具不预建空枚举（与 §3.14 条目 M 的「不预建空档」同向）。先例批之名不入本档（D4 方向唯一）。
 
 **公共源勘察证据行**：工作目录内**无独立公共文档仓**（`PROJECT-MANIFEST.json` 的 `index.publicRepos` = `[]`——实读）；参照系 `D:\ref\` 在索引外（只读声明源）⇒ **已查，无相关公共源可引**。
 
-**受影响面表**：
+**实装现状（在盘 ∥ 本轮新建分开写——判据零改；引擎档结构调整 = 迁出 `version.mjs`；装配面零改）**：
 
-| # | 文件 | 当前行数 | 预计增量 | 改动 |
-|---|---|---|---|---|
-| 1 | `thincoder-core/doc-check/width.mjs` | 0（新建） | ≈ +100 | 谓词 + 域扫描 + 行宽判据——**实装携 §3.18 ③ 四类谓词 + 度量 `[...line].length`**（承 §3.18 受影响面表第 2 行；本仓 `scripts/doc-check-width.mjs` 的 86 行只含表行谓词 + 区带 ⇒ 非逐字迁） |
-| 2 | `thincoder-core/doc-check/anchors.mjs` | 0（新建） | ≈ +110 | 指针抽取 / 解析序 / 节在盘（起步判据 ① 实现面） |
-| 3 | `thincoder-core/doc-check/index.mjs` | 0（新建） | ≈ +90 | 声明面读取 + 报面行 |
-| 4 | `thincoder-core/agent-tools/doc-check.mjs` | 0（新建） | ≈ +60 | 工具面（readonly · 单动作 · `DESC`） |
-| 5 | `thincoder-core/tool-docs/doc_check.md` | 0（新建） | ≈ +35 | 模型可见描述（六要素） |
-| 6 | `thincoder-core/agent-tools.mjs` | 30 | +1 | 登记册导出行 |
-| 7 | `thincoder-core/agent/family-tools.mjs` | 198 | +3 | 三处段表各 +1（depth-0 / eng-coder / eng-designer） |
-| 8 | `thincoder-core/package.json` | 54 | +1 | `files` 白名单加 `doc-check/` |
-| 9 | `scripts/doc-check-width.mjs` | 86 | ≈ −80（改缝） | 薄档再出口（零逻辑） |
-| 10 | `docs/core/design/DOC-DISCIPLINE.md` | — | — | 本节 + §3 标题枚举 + **档头枚举（`:3` 条目枚举 + `:7` 落点句）** + §3.18 实现坐标改指 + §5 A-DD29 + 用例 DD-79–DD-83 + §7 三处（`:1790`/`:1809`/`:1813`）+ V1 族落点/机检表述（`:18`/`:88`/`:95`/`:99`/`:1216`/`:1521`）+ 机制标签（`:758`/`:1809`） |
-| 11 | `docs/core/design/TOOLS.md` | — | — | §6.2 元工具清单 + §6.7 逐工具契约各 +1 行 |
-| 12 | `docs/core/design/DOC-SYSTEM.md` | — | — | §8.2 加一行：工具面指针（引本节） |
-| 13 | `docs/batches/<批次档>.test.mjs` | 0（新建） | ≈ +200（夹具驱动——规模随用例 DD-79–DD-83） | 自测护栏载体——用例 DD-79–DD-83（夹具全落系统临时域：零落仓 + 并发免疫，判据 = §3.4 条目 E） |
-| 14 | `docs/core/design/PROMPT-SYSTEM.md` | — | 0（行内改） | §6.11 描述面预算读数随动（新增 1 档 `thincoder-core/tool-docs/doc_check.md` ⇒ 当前 / tool-docs 档数·字符读数）；机检面 = `scripts/tool-schema-size.mjs`（零代码改——动态枚举 `tool-docs/*.md`，其 toolDocs 读数随动） |
+- **在盘**：`thincoder-core/doc-check/width.mjs`（谓词 + 域扫描 + 行宽判据）· `anchors.mjs`（指针抽取 / 解析序 / 节在盘）· `index.mjs`（引擎入口 + 报面行）· `thincoder-core/agent-tools/doc-check.mjs`（工具面 · 只读 · `DESC`）· `thincoder-core/tool-docs/doc_check.md`（模型可见描述）。
+- **本轮新建**：`thincoder-core/doc-check/version.mjs`（版本函数单源——`ENGINE_FILES` / `staleEngineFiles` / `gateEngineError` 从 `agent-tools/doc-check.mjs` 迁出，工具面转口、导出面不变）· `thincoder-core/agent-tools/batch-gate.mjs`（两机械点的单源门）。迁出后 `ENGINE_FILES` 五 → 六档（`version.mjs` 自身入清单）。
+- **登记面三处已装配**：`thincoder-core/agent-tools.mjs:31` 导出 `docCheckTool` · `agent/family-tools.mjs:156` / `:185` / `:187`（depth-0 / eng-coder / eng-designer 三处段表）· `package.json:44` `files` 含 `doc-check/`（发布闭包）。
+- **缝档**：`scripts/doc-check-width.mjs` = 再出口缝（零逻辑 · 逐名再出口）。
+- 交付门（`mode:"gate"`）的增量形态见本条「工具形」「交付时点强制」「报面」——四段即 gate 的完整契约（参数 / 范围 / 裁定 / 引擎版本一致）。
 
 **边界（本条不做）**：不新增纪律条文（两条判据 = FR10 定案，起步只两条）；不加判据、不复活已砍项（行号坐标检查 / 行数读数 / 计数一致性 / 禁词清单）；不删 `scripts/**`（物理删除另批）；不接 CI、不置退出码；不改需求档；不引 `scripts/**` 读数（禁调令）。
 
 **射程分界**：禁调令的对象 = 仓内 `scripts/doc-check*.mjs` 的入口与导出（§2 总则族）；产品 `doc_check` = 用户 2026-10-16 明令内建——两者不同物；本批验收取证仍只取源面 / 静态面（A-DD29 ④ 的读数由**产品引擎**产出，不引 `scripts/**` 读数）。
 
-**用例表（编号 `DD-79`–`DD-83`；`DD-72`–`DD-78` 段避让在册 §4.5 用例表）**：
+**用例表（编号 `DD-79`–`DD-99`；`DD-72`–`DD-78` 段避让在册 §4.5 用例表）**：
 
 | # | 类 | 输入 | 期望 |
 |---|---|---|---|
@@ -1087,8 +1179,24 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 | DD-81 | 错误 | 夹具：指向不存在档的 token · 节指示指向不存在节号 · 行号坐标 `档名:12` | 前两式命中（`档缺` / `节缺`）；第三式**不判**（行号不作引用） |
 | DD-82 | 边界 | 夹具：裸档名域内两档同名（多义）· 未闭合围栏后接长表行 · 可执行行内嵌档 token | 多义不判（列报告面）· 围栏内至档尾免 · 可执行行整行免 |
 | DD-83 | 正常 | 同一夹具跑两遍声明面：`lineWidth` 300 → 80 | 命中集按声明变化（声明面生效的取证法） |
+| DD-84 | 正常 | 报告态回归：同一夹具域改前 ∥ 改后各跑一次（gate 模式上线前后） | 报面逐字同形、命中集不变（gate 不动报告态） |
+| DD-85 | 正常 | gate + 显式 `docs`（域内 2 档，皆零命中） | 首行 `DOC-CHECK GATE: PASS`；范围行 = 2 档；结论 0 条 |
+| DD-86 | 错误 | gate + `docs`：该档改一行，另有一处**存量**悬空指针（改动行之外） | 首行 `REFUSED`；**两处都在报**（整档入判——AC-1 全文检查） |
+| DD-87 | 边界 | gate + `docs` 不含某档，而该档有悬空指针；同域再跑报告态 | gate **不报**（范围外——AC-2）∥ 报告态 **报出**（对照） |
+| DD-88 | 边界 | gate 未给 `docs`、本会话零文档写入 | `PASS（0 档）` + 空范围行；**不静默当通过** |
+| DD-89 | 边界 | gate + `docs` 含域外档（如根 `AGENTS.md`）∥ 含本轮已删档 ∥ 含裸名唯一引用的未改档 | 域外 ⇒ 跳过行（非命中）；已删 ⇒ 跳过行；裸名引用 ⇒ **零 `档缺`**（解析面不缩） |
+| DD-90 | 错误 | gate + 声明面不可读（临时域无 `PROJECT-MANIFEST.json` ∥ `checkConfig` 不合法）· `target` 指向多项目工作区 | 首行 `DOC-CHECK GATE: ERROR（原因）`——**不产 PASS**（消费面 fail-closed）；工作区形另给候选清单 |
+| DD-91 | 错误 | gate 的引擎版本一致性：注入假时钟 / 假 `stat`——引擎档 mtime > 进程启动 ∥ ≤ 进程启动；同刻再跑 report | 前者首行 `DOC-CHECK GATE: ERROR（引擎已更新（…））`——**不产 PASS**（fail-closed）；后者无 ERROR 行、报面逐字不变（report 不查版本）；多档 stale ⇒ `；` 连列 |
+| DD-92 | 正常 | 夹具项目（manifest + 写者触达一清档）· eng-designer append §2 ∥ eng-coder append §5 | 首行 `PASS`；段落盘；回执含 `[doc-check gate] DOC-CHECK GATE: PASS` 行 |
+| DD-93 | 错误 | 同夹具，写者触达档含悬空指针 · append §2 ∥ §5 各一拍 | throw；串含 `REFUSED（命中 K 条）` + `✗ 锚·档缺` 行；档字节与调用前逐字相同 |
+| DD-94 | 错误 | 同夹具 · 父侧 `close` ∥ `status`（值「已收口」） | 两者 throw；§1 状态行仍「进行中」；档字节不变 |
+| DD-95 | 边界 | 同夹具 · `status` 值「设计完成」（非冻结值）且触达账有命中 | 不跑门；写入成功；回执逐字旧形 |
+| DD-96 | 边界 | 夹具无 `PROJECT-MANIFEST.json` ⇒ append ∥ close；夹具有 manifest 而 `checkConfig` 不合法 ⇒ close | 前者成功 + 回执「未跑（本项目无声明面）」；后者 throw（ERROR ⇒ fail-closed） |
+| DD-97 | 错误 | 假时钟注入：引擎档 mtime > 进程启动 ⇒ append §2（写者）∥ close | append **成功** + 回执 ERROR 行（① 不拒）；close throw（② fail-closed） |
+| DD-98 | 边界 | 已收口档 append（既有冻结拒因）· 评审身份 append §3（触达账造命中） | 前者拒串逐字 = 冻结串（门未跑）；后者成功（§3 不检） |
+| DD-99 | 边界 | 同夹具：一档**他批在途**（未提交 git 面 ∧ 不在父侧触达账）含悬空指针；另一档**本批笔域**含悬空指针 | 前者：固定行逐档列出、不计入 K、`close` 放行；后者：K ≥ 1 ⇒ throw（范围分离可机判） |
 
-**验收标准**：见 §5 的 **A-DD29**。
+**验收标准**：工具本体见 §5 的 **A-DD29**；交付门面（gate）见 §5 的 **A-DD30**；结构兜底（batch 两机械点）见 §5 的 **A-DD31**。
 
 ## 4. 文档↔实装对账（V5 判据规格 + 清账 + 防回潮）
 
@@ -1514,6 +1622,8 @@ V5-B: /(?<![A-Za-z0-9-])((?:T-[A-Z]{1,5}\d{1,3}(?:-\d{1,3})?|T-\d{1,3}|T[A-Z]?\d
 | A-DD27 | 条目 Q（行宽口径）判据七条齐（判据 ①–⑦ 见下） | §3.18 条目 Q |
 | A-DD28 | 条目 R（行数声明面退役）判据四条齐（判据 ①–④ 见下） | §3.19 条目 R |
 | A-DD29 | 条目 S（机检内建为产品工具）判据六条齐（判据 ①–⑥ 见下） | FR10 · §3.20 条目 S |
+| A-DD30 | 条目 S 的交付门面（gate）判据八条齐（判据 ①–⑧ 见下） | DOC-CHECK F1–F8 / AC-1–AC-6 · §3.20「交付时点强制」 |
+| A-DD31 | 条目 S 的结构兜底（batch 工具两机械点）判据七条齐（判据 ①–⑦ 见下） | DOC-CHECK F9 / AC-7 · §3.20「结构兜底」 |
 
 **A-DD26 判据（机器可验 · §4.5 批档可删性清账）**：
 
@@ -1718,8 +1828,31 @@ console.log('hits', h.length, '| archive/batches', h.filter(x => x.file.includes
 2. **装配与发布闭包**：`agent/family-tools.mjs` 三处段表含该工具（depth-0 / eng-coder / eng-designer）∧ explore / plan / consult / 兜底段**不含**；`thincoder-core/package.json` `files` 含 `doc-check/`。
 3. **判据两条可跑（正负用例）**：DD-79–DD-82 逐条跑绿——夹具 = 系统临时域，零落仓 + 并发免疫（§3.4 条目 E）。
 4. **声明面生效（取证法）**：DD-83 两读数并列在册（改 `checkConfig` 前 / 后命中集）——读数由**产品引擎**产出（不引 `scripts/**` 读数）。
-5. **判据链自持**：`thincoder-core/doc-check/**` 与 `agent-tools/doc-check.mjs` 对 `scripts/**` 的 import 点 = **0**（`grep` 源面）；workflow 零新增行；`scripts/doc-check-width.mjs` 改缝后 `node --check` 过 ∧ 三消费面（`doc-check-anchors.mjs` / `doc-check-linecounts.mjs` / `doc-impact.mjs`）同过。
-6. **零误伤**：`git diff --stat` 改动集 ⊆ §3.20 受影响面表；`docs/core/requirements/**` 零 diff（需求档 = 主 agent 笔）。
+5. **判据链自持**：`thincoder-core/doc-check/**` 与 `agent-tools/doc-check.mjs` 对 `scripts/**` 的 import 点 = **0**（`grep` 源面）；workflow 零新增行；`scripts/doc-check-width.mjs`（再出口缝）`node --check` 过 ∧ 三消费面（`doc-check-anchors.mjs` / `doc-check-linecounts.mjs` / `doc-impact.mjs`）同过。
+6. **零误伤**：`git diff --stat` 改动集 ⊆ 条目 S 的实现面（引擎五档 + 登记面三处 + `scripts/doc-check-width.mjs` + 相关设计档）；`docs/core/requirements/**` 零 diff（需求档 = 主 agent 笔）。
+
+**A-DD30 判据（机器可验 · 条目 S 的交付门面 = `mode:"gate"`）：**
+
+1. **工具形在册 + 接线在源面**：`agent-tools/doc-check.mjs` 的 schema 含 `mode`（`report` / `gate`）与 `docs`（数组）；gate 首行三串 `DOC-CHECK GATE: PASS` / `: REFUSED` / `: ERROR` 源面在场；**gate 分支在调 `runDocCheck` 之前先调 `staleEngineFiles`**（stale 非空 ⇒ 直接返回 `gateEngineError` 串，不进引擎）——源码行序 `grep` 可判（补 DD-91 只测纯函数留下的接线空缺）；相关档 `node --check` 过。
+2. **范围裁定可跑**：DD-85–DD-91 逐条绿（夹具 = 系统临时域，零落仓 + 并发免疫）。
+3. **报告态零回归**：DD-84 两读数并列在册——报面逐字同形、命中集不变。
+4. **解析面不缩（反证）**：夹具「改过的档以裸名引用未改的档（域内唯一）」⇒ gate 零 `档缺`（与报告态同判）。
+5. **零台账接线**：`thincoder-core/doc-check/**` 与 `agent-tools/doc-check.mjs` 对 `ledger` / `team-ledger` 的 import 点 = **0**（AC-6 的机械面）。
+6. **三触发点在册**：eng-designer ∥ eng-coder ∥ 父侧收口三处各含 gate 句（CN 正本 + EN 运行面 + `BATCH-RECORD.md` §5.3）——`grep` 关键词在盘。
+7. **零误伤**：`git diff --stat` 改动集 ⊆ 本批声明面（`thincoder-core/doc-check/**` · `agent-tools/doc-check.mjs` · `tool-docs/doc_check.md` · 三档 `prompts/persona-*.md` · `PROMPT-SYSTEM.md` · 本档 DOC-DISCIPLINE）；其余档零 diff。
+8. **描述面射程化（模型可见契约 = 实际行为）**：`tool-docs/doc_check.md` **含 gate 段**（`grep "DOC-CHECK GATE:"` ≥1，段内含 `mode` / `docs` / 引擎版本校验）∧ 非门禁绝对句已射程化——`grep "It cannot"` ∥ `grep "Do not wire it as a gate"` 两处命中行的**同句含 `report`**（射程限定在句内，不靠段外补丁）；全文无「本工具不能拒绝」类无射程绝对句。
+
+**A-DD31 判据（机器可验 · 条目 S 的结构兜底 = batch 工具两机械点）：**
+
+1. **门位在源面**：`agent-tools/batch.mjs` 的 append 分支在 `insertIntoSection` / `writeFileSync` **之前**、既有拒因（身份 / path / 冻结 / 占位）**之后**调 `runBatchGate`；`batch-lifecycle.mjs` 的 close 与 status（余核 =「已收口」）在 `updateSectionStatusLine` **之前**调同门——行序 `grep` 可判。
+   **五档 `node --check` 过**：`thincoder-core/agent-tools/batch.mjs` · `batch-lifecycle.mjs` · `batch-gate.mjs` · `doc-check/version.mjs` · `agent-tools/doc-check.mjs`。
+2. **① 拒写可跑（DD-93）**：夹具项目（manifest + 一档含悬空指针且在写者 `_touchedFiles`）⇒ append §2 throw，串含 `DOC-CHECK GATE: REFUSED（命中 K 条）` + 逐条命中行；档字节与调用前逐字相同。
+3. **② 拒收口可跑（DD-94 ∥ DD-95 ∥ DD-97 ∥ DD-99）**：同夹具 ⇒ `close` throw ∧ §1 状态行仍「进行中」；`status` 值「已收口」同拒；`ERROR`（版本 stale）同拒；**命中全属他批在途集（DD-99）⇒ 放行 ∧ 报面固定行逐档列出（不在 K 内）**。
+4. **零命中放行（DD-92）**：清夹具 ⇒ append / close 成功，回执含 `[doc-check gate] DOC-CHECK GATE: PASS` 行；范围 0 档 ⇒ `PASS（0 档）` + 照实行，仍放行。
+5. **适用面与不静默（DD-96）**：无 manifest 的夹具 ⇒ append / close 成功 ∧ 回执含 `[doc-check gate] 未跑（本项目无声明面）`；有 manifest 而 `checkConfig` 不合法 ⇒ `ERROR` ⇒ close 拒（fail-closed）。
+6. **既有拒因零回归 + 不检面（DD-98）**：§4.8 用例 BR-1–BR-56 全绿（拒因串逐字、顺序不变；冻结档 append 门未跑）；评审身份 append §3 不触发门（源面分支判据 + 用例）。
+7. **判据源唯一 + 旧引擎档头改述**：`agent-tools/batch-gate.mjs` 与 `agent-tools/doc-check.mjs` 的引擎 import 只指向 `../doc-check/index.mjs`；`thincoder-core/**` 对 `scripts/**` 的 import 点 = **0**（grep 源面）——`scripts/doc-check.mjs`（V5 专用面）不参与任何 verdict。
+   **档头改述（实施轮 · grep 可判）**：`scripts/doc-check.mjs` 头注含字面 `V5 专用面` ∧ 字面 `非 gate 判据源`，且失效自述 `单引擎入口` 命中 = 0（一行注释 · 结构不变）。
 
 **用例表（正常 / 边界 / 错误）**：
 

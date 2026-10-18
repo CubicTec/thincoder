@@ -7,14 +7,15 @@
  */
 
 import assert from "node:assert/strict"
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { after, check, run } from "./harness.mjs"
 
 import { DRY_RUN_FIXTURE, FIXTURES, FROZEN_FIXTURES, PROBE_VERSION, SANDBOX_BATCH_RECORD, batchDocOf, fixtureFiles, validateFixtures } from "../probe/data.mjs"
 import { FROZEN_FIXTURES as FROZEN_COPY, SANDBOX_BATCH_RECORD as BATCH_COPY } from "./probe-frozen.mjs"
-import { ENG_TASK_BOOK_MIN, TASK_BOOK_PARAMS, validateRoundParam, validateTaskBookParams } from "../../thincoder-core/agent-tools/spawn-gates.mjs"
+import { ENG_TASK_BOOK_MIN, PLAIN_TASK_BOOK_MIN, taskBookParamsFor, validateRoundParam, validateTaskBookParams } from "../../thincoder-core/agent-tools/spawn-gates.mjs"
+import { formatPermission } from "../../thincoder-core/permission.mjs"
 import { summarizeEngTaskBook } from "../../thincoder-core/agent-tools/audit-block.mjs"
 import {
   askFromQueue, assembleProbeChild, assemblyLeg, buildProbeParent, createPhaseTracker, installProbeProvider,
@@ -77,7 +78,10 @@ check("审计摘要抽取：五项拼装形三段均可抽 / 旧自由文本仍�
 
 check("夹具 schema：任务书五项齐备（各为非空串）/ targets ⊆ 树内档 / 路径沙箱内相对形态", () => {
   assert.deepEqual(validateFixtures(), { families: 3 })
-  assert.deepEqual(Object.keys(ENG_TASK_BOOK_MIN).sort(), [...TASK_BOOK_PARAMS].sort(), "样例对象键集 = 名集（防漂移）")
+  assert.deepEqual(Object.keys(ENG_TASK_BOOK_MIN).sort(), [...taskBookParamsFor("eng-designer")].sort(), "工程样例对象键集 = 工程角色名集（防漂移）")
+  assert.deepEqual(Object.keys(PLAIN_TASK_BOOK_MIN).sort(), [...taskBookParamsFor("explore")].sort(), "非工程样例对象键集 = 非工程角色名集（防漂移）")
+  assert.deepEqual(taskBookParamsFor("plan"), taskBookParamsFor("explore"), "plan / explore 名集相等")
+  assert.deepEqual(taskBookParamsFor("coder"), taskBookParamsFor("explore"), "coder / explore 名集相等")
   for (const id of ["p1", "p2", "p3"]) {
     const paths = fixtureFiles(id).map((f) => f.path)
     assert.equal(paths.includes(batchDocOf(id)), true, `${id} 缺沙箱批次档`)
@@ -116,13 +120,29 @@ check("实施轮腿：真 buildSpawnChild 直调——异步形 / 家族段 noti
     // 反例用例②：round 结构化参数缺失 / 非法 ⇒ 机械拒（round 门；五项参数门见下）
     assert.throws(() => validateRoundParam({}), /round/)
     assert.doesNotThrow(() => validateRoundParam({ round: "initial" }))
-    // 任务书五项：齐全放行；缺 / 空白 / 非字符串 ⇒ 机械拒并点名该参数
-    const tb = { goal: "g", knownFacts: "k", designPoints: "d", acceptance: "a", reportFormat: "r" }
-    assert.doesNotThrow(() => validateTaskBookParams(tb))
-    assert.throws(() => validateTaskBookParams({ ...tb, goal: undefined }), /goal/)
-    assert.throws(() => validateTaskBookParams({ ...tb, knownFacts: "   " }), /knownFacts/)
-    assert.throws(() => validateTaskBookParams({ ...tb, acceptance: 42 }), /acceptance/)
+    // 任务书：四项核心 + 角色第五项——齐全放行；缺 / 空白 / 非字符串 ⇒ 机械拒并点名该参数
+    const engTb = { goal: "g", knownFacts: "k", designPoints: "d", acceptance: "a", reportFormat: "r" }
+    const plainTb = { goal: "g", knownFacts: "k", scope: "s", acceptance: "a", reportFormat: "r" }
+    assert.doesNotThrow(() => validateTaskBookParams({ ...engTb, scope: "x" }, "eng-coder"))
+    assert.doesNotThrow(() => validateTaskBookParams({ ...plainTb, designPoints: "x" }, "explore"))
+    for (const [args, role] of [[engTb, "eng-designer"], [plainTb, "coder"]]) {
+      for (const name of taskBookParamsFor(role)) {
+        for (const bad of [undefined, "   ", 42]) assert.throws(() => validateTaskBookParams({ ...args, [name]: bad }, role), new RegExp(name), `role=${role} ${name}=${String(bad)} ⇒ 拒并点名`)
+      }
+    }
+    // 跨角色误填：只给另一个第五项名 ⇒ 仍拒并点名本角色名（两者不互相顶替）
+    assert.throws(() => validateTaskBookParams(plainTb, "eng-coder"), /designPoints — missing.*got scope instead/)
+    assert.throws(() => validateTaskBookParams(engTb, "explore"), /scope — missing.*got designPoints instead/)
   })
+})
+
+check("AC-11 承重句在三处产品面在位（权限预览 / 内部 explore 通道描述 / 非工程参数骨架）", () => {
+  const preview = formatPermission("subagent", { action: "spawn", role: "eng-designer", goal: "g", knownFacts: "k", designPoints: "d", acceptance: "a", reportFormat: "r" })
+  assert.equal(preview.includes("Design points & forbidden scope:"), true, "权限预览须含第五项段（role 未传则丢）")
+  const familySrc = readFileSync(new URL("../../thincoder-core/agent/family-tools.mjs", import.meta.url), "utf8")
+  assert.equal((familySrc.match(/The spawn carries the five task-book parameters[^\n]*scope[^\n]*a task-only spawn is refused/g) ?? []).length, 2, "两条内部 explore 通道描述各含契约句")
+  const docsSrc = readFileSync(new URL("../../thincoder-core/tool-docs/subagent.md", import.meta.url), "utf8")
+  assert.equal(docsSrc.includes('subagent(role="explore"'), true, "非工程参数骨架行在描述面")
 })
 
 check("行为类表逐态（含 skipped）+ 反例信号列 + §10.5 字段在场（含 continuation / landedFiles[].target）", () => {

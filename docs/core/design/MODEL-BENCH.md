@@ -1343,7 +1343,7 @@ v3 重跑（AC-7）实测记档（**v3 对已按 KD-25 出档** · **v4 对出�
    `config` = 用户 config 克隆（`thincoder-core/config.mjs` 的 `loadConfig`）+ `providersList` 逐档覆写（见 ④）+ `agent.subagentTurns = --max-turns`；`autoApprove = true`（child 写权限放行）；`_subAgentCounter = 0`。
 2. **child 装配**：`buildSpawnChild(parent, ctx, args, "eng-designer", true, [], [], null)`（`thincoder-core/agent-tools/subagent-spawn.mjs:201`）——
    `args = {goal, knownFacts, designPoints, acceptance, reportFormat, round: "initial", batchDoc: "docs/batches/probe-fixture-<族>.md"（沙箱内相对形态）, model: "<provider>:<model>"}`；
-   spawn 门照走（`batchDoc` 必带 + 五项任务书参数齐全——`TASK_BOOK_PARAMS`，`thincoder-core/agent-tools/spawn-gates.mjs`）。
+   spawn 门照走（`batchDoc` 必带 + 任务书五项参数齐全——工程角色名集 = `taskBookParamsFor("eng-designer")`（四项核心 + `designPoints`），`thincoder-core/agent-tools/spawn-gates.mjs`）。
    `model` 带 `provider:` 前缀 ⇒ 经 `providersList` 解析、不读父面 `provider`（`thincoder-core/agent-tools/subagent-async.mjs:151-155`）；`batchDoc` 按父面 cwd 解析。
    `wantAsync = true` ⇒ `child._upstream.sync = false`（`subagent-spawn.mjs:431`）——`notify_parent` 返回注取**异步形**（与 depth-0 真实 spawn 一致）；**池不入**（探针自持驱动）。
 3. **child 运行**：`runChildPipeline(child, input, childOpts, childRunOpts, {parent, role: "eng-designer", args, askContinue: () => Promise.resolve(false)})`
@@ -1365,7 +1365,7 @@ v3 重跑（AC-7）实测记档（**v3 对已按 KD-25 出档** · **v4 对出�
 
 ### 10.4 夹具族（逐字冻结 · 3 族）
 
-三族 = `p1` 要求互斥 / `p2` 任务书与设计档相抵 / `p3` 范围相抵；每族 = 一份任务书（**五个结构化参数逐字**：`goal` / `knownFacts` / `designPoints` / `acceptance` / `reportFormat`）+ 一棵沙箱树；`round = "initial"`。运行面副本用 `composeTaskBookBrief` 把五个参数拼成判官输入的「任务书全文」——与子代理实际收到的文本同源（拼装单点 = `spawn-gates.mjs`）。
+三族 = `p1` 要求互斥 / `p2` 任务书与设计档相抵 / `p3` 范围相抵；每族 = 一份任务书（**工程角色名集逐字**：四项核心 `goal` / `knownFacts` / `acceptance` / `reportFormat` + `designPoints`）+ 一棵沙箱树；`round = "initial"`。运行面副本用 `composeTaskBookBrief(params, "eng-designer")` 把五个参数拼成判官输入的「任务书全文」——与子代理实际收到的文本同源（拼装单点 = `spawn-gates.mjs`）。
 
 **p1 · 要求互斥**（冲突在同段内——零勘察即可见）：
 

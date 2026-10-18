@@ -7,7 +7,8 @@
  *
  * 沙箱树 = **沙箱内相对路径**（探针运行时物化到仓外系统临时根——**非本仓文件**，§10.9-②）。
  */
-import { TASK_BOOK_PARAMS, composeTaskBookBrief } from "../../thincoder-core/agent-tools/spawn-gates.mjs"
+import { taskBookParamsFor, composeTaskBookBrief } from "../../thincoder-core/agent-tools/spawn-gates.mjs"
+import { PROBE_ROLE } from "./driver.mjs"
 
 /** 版本轴（§10.2）：夹具字面 / 判据与行为类表 / 停止条件 / 判官 rubric / 参数口径任一变化 ⇒ +1；
  *  呈现面（md 段位 / 列集 / 文案）变化**不 bump**。 */
@@ -113,11 +114,11 @@ export const batchDocOf = (id) => `docs/batches/probe-fixture-${id}.md`
 /** 运行面副本（组装形态：族对象 = 任务书 + 树 + 目标件 + 批次档路径）。 */
 export const FIXTURES = FIXTURE_IDS.map((id) => {
   const f = FROZEN_FIXTURES[id]
-  const taskBookParams = Object.fromEntries(TASK_BOOK_PARAMS.map((k) => [k, f[k]]))
+  const taskBookParams = Object.fromEntries(taskBookParamsFor(PROBE_ROLE).map((k) => [k, f[k]]))
   return {
     id,
     taskBookParams,
-    taskBook: composeTaskBookBrief(taskBookParams),
+    taskBook: composeTaskBookBrief(taskBookParams, PROBE_ROLE),
     targets: [...f.targets],
     sandboxFiles: fixtureFiles(id),
     batchDoc: batchDocOf(id),
@@ -142,7 +143,7 @@ export function validateFixtures() {
   for (const id of FIXTURE_IDS) {
     const f = FROZEN_FIXTURES[id]
     if (!f) throw new Error(`夹具族「${id}」缺失`)
-    for (const name of TASK_BOOK_PARAMS) {
+    for (const name of taskBookParamsFor(PROBE_ROLE)) {
       const v = f[name]
       if (typeof v !== "string" || v.trim() === "") throw new Error(`夹具族「${id}」任务书字段「${name}」缺失或为空`)
     }

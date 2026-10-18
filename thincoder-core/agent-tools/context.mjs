@@ -6,6 +6,7 @@
  * 机械面：`stats` 不新增第三口径（首行主口径 = 窗口占用 total / window，压缩线以具名数值 + 距线呈现；第 4 行走 `historyPercent` 与状态行同式）；`prune` = 合格集（`token-window.mjs` 单源）+「原位换内容」应用面（`context.mjs`）；`compact` **当次零执行**（只登记 `agent._pendingCompact`，由下一安全点消费——§6.16.2）。
  */
 import { contextUsage, estimateTokens, collectStaleToolOutputs, historyPercent, PRUNE_MIN_TOKENS } from "../token-window.mjs"
+import { requestBudget } from "../config.mjs"
 import { pruneStaleToolOutputs, COMPRESS_FAILURE_LIMIT } from "../context.mjs"
 import { slotPath } from "../session-slots.mjs"
 // #15 描述外置：描述文本单点 = tool-docs/context.md（DESC 单解析面，缺档抛错语义不变）
@@ -78,10 +79,32 @@ function statsReport(agent) {
   const compaction = !info ? "none"
     : info.mode === "summary" ? `last summary freed ${info.tokensFreed} tokens`
       : "last fallback truncation"
+  // Cache line (batch 2026-10-18-context-cache-visibility): the provider reports
+  // prompt_cache_hit/miss per response; the core now tallies them so the question
+  // "is the prefix cache actually helping?" is answered by a reading, not a guess.
+  const cacheHit = agent?._cacheHitTokens ?? 0
+  const cacheMiss = agent?._cacheMissTokens ?? 0
+  const cacheTurns = agent?._usageTurns ?? 0
+  const cacheTotal = cacheHit + cacheMiss
+  const cacheLine = cacheTurns === 0
+    ? "Cache: no provider usage readings yet (hit/miss arrive with the first response)"
+    : `Cache: hit ${cacheHit} · miss ${cacheMiss} tokens (${Math.round((cacheHit / cacheTotal) * 100)}% hit) across ${cacheTurns} response(s)`
   return [
     `Context ≈${usage.total} tokens (${pct}% of ${usage.window} window); compaction line ${usage.threshold} (${toGo} to the line)`,
+    // §6.16.4 字面单源（该行为唯一字面，逐字；预算面同源 requestBudget——不自算第二套）:
+    // window {window} ({spec|provider-override}) · max_tokens {maxTokens|not sent} ({explicit|spec|absent})
+    // · prompt {total} · to compaction line {threshold − total} · to window limit {limit − total}
+    // 两距离带符号（负 = 已越）；maxTokens 未发写 not sent、来源写 absent（该档守卫不覆盖——§6.17 射程）。
+    (() => {
+      const budget = requestBudget(agent?.provider)
+      const mt = budget.maxTokens === undefined ? "not sent" : String(budget.maxTokens)
+      return `Request budget: window ${budget.window} (${budget.windowSource}) · max_tokens ${mt} (${budget.maxTokensSource})`
+        + ` · prompt ${usage.total} · to compaction line ${usage.threshold - usage.total}`
+        + ` · to window limit ${budget.limit - usage.total}`
+    })(),
     `Segments ≈: system ${usage.system} · tools ${usage.tools} · history ${usage.history} (basis: ${usage.basis})`,
     `History: tool outputs ${toolOut} tokens in ${toolCount} msgs · prunable stale ${stale.tokens} tokens in ${stale.indexes.length} msgs · protected tail ${stale.tailCount} msgs`,
+    cacheLine,
     `Status line: context ${historyPercent(agent?.history ?? [], agent?.provider)}% (${usage.history} history estimate / ${usage.window} window)`,
     `Compaction so far: ${compaction} · failures ${agent?._compressFailures ?? 0}/${COMPRESS_FAILURE_LIMIT}`,
   ].join("\n")

@@ -139,7 +139,7 @@ export const subagentTool = {
       action: { type: "string", enum: ["spawn", "status", "escalate", "cancel", "panel", "consume-design", "observe", "send", "design-slots"], description: "Which action — spawn (default) / status / observe / send / escalate / cancel / panel / consume-design / design-slots; semantics per action in the tool description." },
       view: { type: "boolean", description: "action:'panel' only: true (default) = the live panel blocks as the user sees them; false without freeze = error. Mutually exclusive with freeze (freeze wins)." },
       freeze: { type: "string", description: "action:'panel' only: block key of a digested-stuck block — reclaims it into the conversation; refused for running/done/unknown blocks or a still-pending report; works on the CLI TUI panel and on the desktop renderer panel (live readback of the blocks as the user sees them)." },
-      task: { type: "string", description: "For action:'spawn' (any role) the brief is either the five structured task-book parameters (goal / knownFacts / designPoints / acceptance / reportFormat) or a free-text task — the five parameters satisfy the brief for every role, and task is then an optional supplement (explore/plan/coder normally use task alone; eng-coder/eng-designer must carry the five). For action:'escalate': goal, constraints, entry files, acceptance criteria." },
+      task: { type: "string", description: "For action:'spawn' (any role): OPTIONAL free-text supplement — the brief itself is the structured task-book parameters (four core: goal / knownFacts / acceptance / reportFormat, plus the role's fifth: designPoints for eng-coder/eng-designer, scope for explore/plan/coder); a task-only spawn is refused. For action:'escalate': the brief (goal, constraints, entry files, acceptance criteria)." },
       context: { type: "string", description: "Optional background the sub-agent needs (it cannot see this conversation); action:'spawn' only." },
       role: { type: "string", enum: ["explore", "plan", "coder", "eng-coder", "eng-designer"], description: "The sub-agent role — see the role matrix in the tool description. Exact spelling required. action:'spawn' only (escalate spawns its own expert internally)." },
       model: { type: "string", description: "action:'spawn': provider/model override ('provider:model', a provider, or a model name on the parent's provider) — defaults config.agent.subagentModels[role] → config.agent.subagentModel → the parent's provider; \"default\" inherits. action:'escalate': a consult candidate (default = the first)." },
@@ -150,11 +150,12 @@ export const subagentTool = {
       olderThanDays: { type: "number", description: "action:'consume-design' (batch): close out every slot older than N days (age > N; exactly ONE selector per call)." },
       batchDoc: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer': the batch record path (e.g. <repo>/docs/batches/<batch>-<topic>.md; relative paths resolve against the session cwd first, then candidate project roots — or absolute) — the task book this spawn implements/writes. Refused when absent or when the path does not resolve to a readable file; the content is never validated. role='coder' (normal mode): optional — binds this spawn's §5 record-write channel (unbound ⇒ the main agent records §5 on its behalf); when provided the path must resolve to a readable file." },
       round: { type: "string", enum: ROUND_VALUES, description: "REQUIRED for role='eng-coder'/'eng-designer': initial (first round for this design) or fix (a correction round reusing the same designId+designToken; docs FIRST). No default — missing = refused." },
-      goal: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the task book's goal & why — the problem this solves and the cost chain (content only, no label — the runtime composes the labels)." },
-      knownFacts: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the facts and file paths the parent already verified — the child must not re-explore them." },
-      designPoints: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: design points & forbidden scope — what to land and what must not be touched." },
-      acceptance: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: acceptance criteria — machine-verifiable (commands / thresholds / assertion counts)." },
-      reportFormat: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' spawns: the delivery-report format the child must produce." },
+      goal: { type: "string", description: "REQUIRED for every spawn role: the task book's goal & why — the problem this solves and the cost chain (content only, no label — the runtime composes the labels)." },
+      knownFacts: { type: "string", description: "REQUIRED for every spawn role: the facts and file paths the parent already verified — the child must not re-explore them." },
+      designPoints: { type: "string", description: "REQUIRED for role='eng-coder'/'eng-designer' (the fifth task-book parameter for engineering roles): design points & forbidden scope — what to land and what must not be touched. Non-engineering roles use `scope` instead — `scope` never substitutes for this one." },
+      scope: { type: "string", description: "REQUIRED for role='explore'/'plan'/'coder' (the fifth task-book parameter for non-engineering roles): scope & forbidden scope — what to read / search and what not to touch. Engineering roles use `designPoints` instead — `designPoints` never substitutes for this one." },
+      acceptance: { type: "string", description: "REQUIRED for every spawn role: acceptance criteria — machine-verifiable (commands / thresholds / assertion counts)." },
+      reportFormat: { type: "string", description: "REQUIRED for every spawn role: the delivery-report format the child must produce." },
       async: { type: "boolean", description: "action:'spawn'/'escalate': default at depth 0 = true (async; the report arrives automatically); depth>0 always sync. async:false forces the blocking flight." },
       files: { type: "array", items: { type: "string" }, description: "action:'spawn' only: the file write-domain this task declares — file-level paths only (cwd-relative or absolute; directories rejected — they bypass the conflict detector). Overlapping-file tasks serialize automatically. Omit = no conflict detection." },
       dependsOn: { type: "array", items: { type: "string" }, description: "action:'spawn' only: ids from prior async returns whose outcome this task needs — queues until every dependency settles, then starts. Consumed ids count as satisfied; a cancelled/failed dependency stays queued marked 'dependency cancelled' until you decide (AUTO sessions auto-start). Unknown ids error." },
@@ -221,10 +222,10 @@ export const subagentTool = {
     // Spawn requires a task brief — schema `required` is advisory (multi-action
     // schema), so the mechanical check lives here: an absent task would otherwise
     // flow downstream as `content: undefined` and surface as an obscure error.
-    // 任务书载体二选一：五项结构化参数（拼装后非空）或 task 自由文本——两者皆缺 ⇒ 拒。
-    // （工程角色另有五项必带门 = spawn-gates.validateTaskBookParams，落 buildSpawnChild。）
-    if (!composeTaskBookBrief(args) && (typeof args.task !== "string" || !args.task.trim())) {
-      throw new Error("subagent action:'spawn' requires a task (the self-contained task brief) or the five structured task-book parameters.")
+    // 任务书载体：结构化参数（拼装后非空）——task 只作补充；两者皆缺 ⇒ 此处先拒。
+    // （五项必带门 = spawn-gates.validateTaskBookParams，覆盖所有 spawn 角色、落 buildSpawnChild——task-only 由该门点名拒。）
+    if (!composeTaskBookBrief(args, args.role) && (typeof args.task !== "string" || !args.task.trim())) {
+      throw new Error("subagent action:'spawn' requires the structured task-book parameters (four core + the role's fifth: designPoints for eng-coder/eng-designer, scope for explore/plan/coder) — a free-text task alone is not the brief.")
     }
     // §18 D-E1a depth-gated async default (2026-09-06 需求池 R12): depth-0 spawns
     // default to async for EVERY role (the old role-level default — eng-coder only —

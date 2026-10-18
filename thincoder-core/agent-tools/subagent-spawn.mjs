@@ -38,9 +38,9 @@ import { resolveBatchReadPath, batchDocBases } from "./batch-paths.mjs"
 // LOGGING（LOGGING.md）：#309 形三观测留痕走同一事件通道。
 import { logEvent } from "../log.mjs"
 
-/** 任务书播报文本：五项参数拼装 + 可选 task 自由文本（无五项 ⇒ 原 task 逐字——旧形零变）。 */
-function taskBriefOf(args) {
-  const composed = composeTaskBookBrief(args)
+/** 任务书播报文本：该角色名集拼装 + 可选 task 自由文本（拼装空 ⇒ 原 task 逐字——旧形零变）。 */
+function taskBriefOf(args, role) {
+  const composed = composeTaskBookBrief(args, role)
   if (!composed) return args.task
   const extra = typeof args.task === "string" ? args.task.trim() : ""
   return extra ? `${composed}\n\n${extra}` : composed
@@ -219,7 +219,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
     batchDocAbs = resolveBatchReadPath(parent.cwd ?? process.cwd(), given)
     if (!batchDocAbs) throw refusal(" (given path is not a readable file)")
     // #309 形三：任务书中的他批批次档引用观测留痕（不阻断——放行不受影响）。
-    logBatchDocRefs(parent, role, taskBriefOf(args), batchDocAbs)
+    logBatchDocRefs(parent, role, taskBriefOf(args, role), batchDocAbs)
   } else if (role === "coder") {
     const given = typeof args.batchDoc === "string" ? args.batchDoc.trim() : ""
     if (given) {
@@ -230,14 +230,12 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
     }
   }
 
-  // M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：round 枚举 + 任务书五项参数门——
-  // 工程角色必带（round ∈ initial|fix；五项存在 / string / trim 非空，缺 / 空白 / 非字符串 ⇒ 拒并
-  // 点名该参数——判据不读内容，无正则 / 无标题匹配）。落点 = batchDoc 门之后、token 门之前。
-  // explore/plan/coder 豁免。
-  if (role === "eng-coder" || role === "eng-designer") {
-    validateRoundParam(args)
-    validateTaskBookParams(args)
-  }
+  // M5 F2（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：任务书参数门——**所有 spawn 角色**。
+  // 工程角色：round 枚举（initial|fix）+ 四项核心 + `designPoints`；explore / plan / coder：
+  // 四项核心 + `scope`。判据三条零改（存在 ∧ string ∧ trim 非空）；落点 = batchDoc 门之后、
+  // token 门之前（门序 = AGENT-LOOP-SUBAGENT.md §6.22）。
+  if (role === "eng-coder" || role === "eng-designer") validateRoundParam(args)
+  validateTaskBookParams(args, role)
 
   // eng-coder token gate: the design review must have passed and the caller must
   // present the exact token advisor issued — otherwise the child is not authorized to code.
@@ -354,7 +352,7 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   // 审计/探索（"status 里这个文件算不算超清单？"）。注入分支整体删除（B 方案
   // git 只读变体亦随裁定废弃——D-AG5）。顶层主 agent 注入保留（§3 prepareRun——
   // setup.mjs depth===0——D-AG7 范围边界）。
-  let input = args.context ? `Context:\n${args.context}\n\nTask:\n${taskBriefOf(args)}` : taskBriefOf(args)
+  let input = args.context ? `Context:\n${args.context}\n\nTask:\n${taskBriefOf(args, role)}` : taskBriefOf(args, role)
   // 台账 #23（AGENT-LOOP-SUBAGENT.md §6.26 · D23-1）：**spawn 级固定机制性指令改走 system 固块**——
   // 两处（批次档路径行 + 审计模板块）原随 user 首条下发，压缩把首条并入摘要即丢（长任务中后期
   // 既看不到批次档路径、也看不到审计模板 ⇒ 过度勘察的真病根）；固块值在 child 生命周期内恒定

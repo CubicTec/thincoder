@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * doc-check.mjs — M8 机检引擎 · 单引擎入口（锚 + 行宽）。
+ * doc-check.mjs — M8 机检引擎 · V5 专用面（非 gate 判据源；gate 只读 `thincoder-core/doc-check/index.mjs`）。
  * 权威设计 = `docs/core/design/DOC-DISCIPLINE.md` §7（机器可检纪律）（2026-09-22 hygiene 批改指旧归档模块名 · 父侧直接执行 · 可 revert）
- * 单引擎：锚检查 + 行宽检查 同一 main 驱动、同一报告；台账一致性不并入（由 M2 SQLite schema 承接，
- * check-ledger* 家族随单引擎作废——无文件）。
+ * 2026-10-18（父侧直接执行 · 可 revert——doc-check-gate 批判据源唯一化）：本脚本与 `thincoder-core/doc-check/`
+ * 判据集不同形（V5 三锚 + 六键 vs 起步两判据），保留在盘但不参与任何 gate verdict，读数不可互换。
  * 声明面：判据全部读 manifest checkConfig（scanDirs / lineWidth / anchors.domain / anchors.exclude /
  * exemptions / widthExemptZones）——无硬编码路径 / 阈值；整档缺失 fail-closed（readManifest 拒，不静默 fallback）。
  * 本档不写 manifest（写门 = M1 writeManifest，writer:'main' 专权——唯一写 manifest 的路径）。

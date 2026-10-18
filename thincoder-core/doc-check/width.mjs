@@ -97,12 +97,13 @@ export function inCodeSpan(line, idx) {
 /** 行宽判据（单判据 = `checkConfig.lineWidth`）：`[...line].length` > 阈值 ∧ 非表格行 ∧ 非 fenced 块内
  *  ∧ 非可执行行 ∧ 非连续引文 ∧ 非区带内 ⇔ 命中（口径逐字 = §3.18 条目 Q）。
  *  单遍扫描携标题栈（`^(#{1,6})\s` 行入栈——同级 ∥ 更高级出栈）：行所属标题链任一为区带头 ⇒ 豁免。
- *  围栏未闭合 ⇒ 至档尾整块免（fail-open 方向——§3.18 残余登记 ①）；`exemptZones` 缺省 ∥ 空集 ⇒ 零豁免。 */
-export function checkDocWidths(base, { lineWidth, scanDirs, exclude, exemptZones = [], files } = {}) {
+ *  围栏未闭合 ⇒ 至档尾整块免（fail-open 方向——§3.18 残余登记 ①）；`exemptZones` 缺省 ∥ 空集 ⇒ 零豁免。
+ *  `checkFiles`（可选）= **被判集**（gate 的范围收窄面）；缺省 ⇒ `files`（全域，报告态遍历面零变）。 */
+export function checkDocWidths(base, { lineWidth, scanDirs, exclude, exemptZones = [], files, checkFiles } = {}) {
   const zones = (Array.isArray(exemptZones) ? exemptZones : []).filter((z) => typeof z === "string" && z !== "")
   const hits = []
-  // `files` 给定时直接用（调用方已扫同一域 ⇒ 域只走一遍、文件集由值保证同一）；缺省自扫（既有调用面不变）。
-  for (const f of files ?? scanDomain(base, { scanDirs, exclude })) {
+  // 被判集优先（范围只收窄被判档）；`files` 给定时直接用（调用方已扫同一域 ⇒ 域只走一遍）；缺省自扫。
+  for (const f of checkFiles ?? files ?? scanDomain(base, { scanDirs, exclude })) {
     let text = ""
     try { text = readFileSync(f, "utf8") } catch { continue }
     const stack = [] // 标题栈 —— { level, exempt }；exempt = 自身 ∥ 祖先命中区带

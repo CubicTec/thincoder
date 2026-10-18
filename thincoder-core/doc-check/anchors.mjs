@@ -19,7 +19,19 @@ import { fenceMark, isExecutableLine } from "./width.mjs"
 
 /** 文档指针 token：`(目录段/)*名.md` + 可选行号坐标尾 + 可选节指示（`§` + 编号）。
  *  左界守卫排除更长 token 的尾段；右界排除后续字母数字（`.md` 之后紧邻 `[\w]` ⇒ 非完整 token）。 */
-const ANCHOR_RE = /(?<![A-Za-z0-9_.\-\\/@])((?:[A-Za-z0-9_.\-]+\/)*[A-Za-z0-9_.\-]+\.md)(?::\d+(?:-\d+)?)?(?:\s*§\s*(\d+(?:\.\d+)*))?(?![\w])/g
+const ANCHOR_RE = /(?<![A-Za-z0-9_.\-\\/@<>])((?:[A-Za-z0-9_.\-]+\/)*[A-Za-z0-9_.\-]+\.md)(?::\d+(?:-\d+)?)?(?:\s*§\s*(\d+(?:\.\d+)*))?(?![\w])/g
+
+/** 约定文件名（**类名**——文档在描述「会读哪些文件」、黑名单名字、`files` 字段值、测试数据）：不抽。
+ *  依据 = 这些名字在仓根 / 兄弟目录不一定存在，它们指的不是「某个仓内档」。 */
+const FILENAME_CLASSES = new Set([
+  "agents.md", "claude.md", "skill.md", "project_rules.md",
+  "changelog.md", "agent.md", "advisor.md", "todo.md", "todo-archive.md",
+])
+
+/** 占位符词干（示例写法 / 反例样本——`X.md` / `file.md` / `docs/batches/x.md` 类）：不抽。 */
+const PLACEHOLDER_STEMS = new Set([
+  "x", "a", "b", "file", "out", "foo", "bar", "example", "sample", "name", "path",
+])
 
 /** 文件存在性（目录 / 读错 ⇒ false）。 */
 function isFile(p) { try { return statSync(p).isFile() } catch { return false } }
@@ -57,10 +69,12 @@ function resolveDoc(token, refFile, base, scanDirs, index) {
 /**
  * 锚判据主行程：域内逐档逐行抽取 + 解析 + 节在盘判定。
  * @param {string} root 项目根（判据参数已由调用方自 `checkConfig` 读出）
- * @param {{scanDirs?:string[], files?:string[]}} o `files` = 域内 `.md` 全集（单源 = `scanDomain`）
+ * @param {{scanDirs?:string[], files?:string[], checkFiles?:string[]}} o `files` = 域内 `.md` 全集（单源 = `scanDomain`）；
+ *   `checkFiles` = **被判集**（gate 的范围收窄面——缺省 ⇒ `files`）：索引仍按 `files` 建（解析基线不缩），
+ *   只把「抽哪几档的行」收窄——否则改过的档引用未改档会假报 `档缺`（假阳即机制失效）。
  * @returns {{hits:Array, reports:Array}} hits = 命中（`档缺` / `节缺`）；reports = 报告面（多义——不作判）
  */
-export function checkAnchors(root, { scanDirs = [], files = [] } = {}) {
+export function checkAnchors(root, { scanDirs = [], files = [], checkFiles } = {}) {
   const base = resolve(root)
   const dirs = Array.isArray(scanDirs) ? scanDirs : []
   const index = new Map()
@@ -71,7 +85,7 @@ export function checkAnchors(root, { scanDirs = [], files = [] } = {}) {
   }
   const hits = []
   const reports = []
-  for (const f of files) {
+  for (const f of checkFiles ?? files) {
     let text = ""
     try { text = readFileSync(f, "utf8") } catch { continue }
     const re = new RegExp(ANCHOR_RE.source, "g") // 每档一份实例（零共享 lastIndex 状态）
@@ -89,6 +103,10 @@ export function checkAnchors(root, { scanDirs = [], files = [] } = {}) {
       while ((m = re.exec(l)) !== null) {
         const token = m[1]
         const num = m[2] ?? null
+        const bn = basename(token).toLowerCase()
+        const stem = bn.replace(/\.md$/, "")
+        // 类名 ∥ 占位符两免：抽取面不把它们当指针（判据 = DOC-DISCIPLINE §3.20 ① 的「档 token」定义面）
+        if (FILENAME_CLASSES.has(bn) || stem.length <= 1 || PLACEHOLDER_STEMS.has(stem)) continue
         const r = resolveDoc(token, f, base, dirs, index)
         if (r.ambiguous) { reports.push({ file: f, line: i + 1, token, candidates: r.candidates }); continue }
         if (!r.ok) { hits.push({ file: f, line: i + 1, token, clazz: "档缺" }); continue }

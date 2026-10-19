@@ -101,7 +101,7 @@
 - **失败面（如实）**：网络败 ⇒ 服务端零变更（旧 token 仍有效——重试即复原）；响应丢失 ∥ `write_failed` ⇒ 本地持已死 token ⇒ 下次 `teamVerify` 触发转「已失效」，恢复径 = 重登。
 - 服务端语义单源 = `docs/server/design/client/CLIENT.md` §2 rotate 行 ∥ §5 KD-SV-63。
 
-### 2.8 登录成拍模型候选面即时刷新（三端）
+### 2.8 登/退成拍模型候选面即时刷新（三端）
 
 **动机**：登录成拍只刷团队态（VSC `teamStatus` ∥ 桌面段态 + 渠道列表）——三端模型候选面的取数面（VSC `models` 载荷 ∥ 桌面 `model:catalog` ∥ CLI `agent.providers`）不在该拍内 ⇒ 用户「登录了，模型列表没变」（须等下一次全状态推送才见 `team` 渠道）。
 
@@ -124,7 +124,13 @@
 **沿既有面（零新增）**：VSC 复用「provider 写成功 ⇒ `panel._pushSettings()`」先例（`thincoder-vscode/src/extension/panel-messages-settings.mjs:94`——登录 = 派生条目入列表，同类动作；`fullStatus` 首行仍发 `providerStatus`，回执序不变）；
 桌面复用「provider 写成功 ⇒ `onProvidersChanged`」先例（`thincoder-desktop/renderer/mount-settings-exits.mjs:123`）；CLI 复用登/退既有两复读之一。
 
-**不动（本批范围外）**：轮换（§2.7）∥ 退出（logout）——既有随动零改；本批只动登录成拍一条路径。
+**登出成拍（同律——三端）**：退出成 ⇒ 同拍刷新本端候选面，落点各端一处（VSC 两径未汇流）——
+VSC webview 径 `thincoder-vscode/src/extension/panel-messages-settings.mjs:283` `panel._pushSettings()`；
+VSC 扩展侧径 `thincoder-vscode/src/extension/team-surface.mjs:152` `_chatPanel?._pushSettings?.()`；
+桌面 `thincoder-desktop/renderer/mount-team.mjs:165` `onProvidersChanged?.()`。
+理由 = 退出摘派生条目 `apiKey` ⇒ `team` 渠失效、候选面整表作废；不推则界面挂着过期候选表。VSC 早退径同拍清簿记（`models: []` + prefs 与 `_lastPushedPrefs` 同源同拍——`thincoder-vscode/src/extension/settings.mjs:397` 早退径），否则下一次复推按旧候选簿记复读。
+
+**不动（本批范围外）**：轮换（§2.7）——既有随动零改（轮换只换 token、渠道集合不变；渠道行由 `pushTeamStatus` + `_pushStatus` 当拍重取）。
 
 ## 3. 关键决策记录
 
@@ -198,7 +204,7 @@
 | ⑦ 常显：已登录 ⇒ 三端常显面可见成员（服务器 = 悬停/tooltip/行内 —— 见 §2.5 常显面行）；未登录 ⇒ 图形端入口段 ∥ CLI 零注入（逐字节等价负控）；已失效 ⇒ 三端「已失效——重新登录」 | 单元测试档 + 收口轮 |
 | ⑧ 直达登/退：登/退不经设置面完成（桌面段面板 ∥ VSC item 流 ∥ CLI `/team`）；设置面团队卡/段 = 管理面（label ∥ 详情；零登/退控件） | 单元测试档 + 收口轮 |
 | ⑨ 轮换可达到位（team-token-rotation 批）：CLI `team rotate`（argv ∥ /team）注册在册 ∥ VSC 卡 ∥ 桌面段控件在场（已登录）；确认句 ∥ 成句 ∥ 失效句「已失效——重新登录」三端逐字同句（CLI = 单语直出）；**确认门：取消 ∥ 未确认 ⇒ 零请求零写盘**；轮换成 ⇒ 本机照常（模型面可用——同 token 两用） | 单元测试档 + 收口轮三端实走 |
-| ⑩ 登录成拍候选面即时刷新（三端）：登录成 ⇒ **成拍推送链内**本端模型候选面即含 `team` 渠道（时点 = 链内到达，非墙钟「当刻」）——CLI = `syncProvidersFromDisk` 返后 `agent.providers` 含 `team` 派生条目 ∥ VSC = 两径皆成拍刷新：webview 径（`handleTeamLogin`）假 sink 收序 `teamStatus` → `providerStatus` → 回执 `teamLoginResult`（同步推送殿后）→ … → `models`（随探针拍异步落；载荷含 `team` 渠）；扩展侧径（状态栏 item ∥ 命令面板——`loginFlow()` 成支 `_chatPanel?._pushSettings?.()`；面板在场）假 sink 收 `teamStatus` → `providerStatus` → … → `models`（零回执——该径不经 webview 消息面） ∥ 桌面 = `composer.refreshCandidates()` 恰一次 ⇒ `model:catalog` 回执含 `team` 渠；**败径**（网络 ∥ 凭据 ∥ 429 ∥ 写盘败）⇒ 三端零刷新（零推送 ∥ 零 `refreshCandidates` 调用 ∥ `agent.providers` 不变）；**同名手工冲突成拍** ⇒ 仍恰一次刷新 ∧ 候选面零 `team` 条目（零假造）；不动 = 轮换 ∥ 退出既有随动 | 单元测试档（三端各面——假 sink ∥ spy）+ 收口轮三端实走 |
+| ⑩ 登/退成拍候选面即时刷新（三端）：登录成 ⇒ **成拍推送链内**本端模型候选面即含 `team` 渠道（时点 = 链内到达，非墙钟「当刻」）——CLI = `syncProvidersFromDisk` 返后 `agent.providers` 含 `team` 派生条目 ∥ VSC = 两径皆成拍刷新：webview 径（`handleTeamLogin`）假 sink 收序 `teamStatus` → `providerStatus` → 回执 `teamLoginResult`（同步推送殿后）→ … → `models`（随探针拍异步落；载荷含 `team` 渠）；扩展侧径（状态栏 item ∥ 命令面板——`loginFlow()` 成支 `_chatPanel?._pushSettings?.()`；面板在场）假 sink 收 `teamStatus` → `providerStatus` → … → `models`（零回执——该径不经 webview 消息面） ∥ 桌面 = `composer.refreshCandidates()` 恰一次 ⇒ `model:catalog` 回执含 `team` 渠；**败径**（网络 ∥ 凭据 ∥ 429 ∥ 写盘败）⇒ 三端零刷新（零推送 ∥ 零 `refreshCandidates` 调用 ∥ `agent.providers` 不变）；**同名手工冲突成拍** ⇒ 仍恰一次刷新 ∧ 候选面零 `team` 条目（零假造）；**退出成拍（同律）** ⇒ VSC 两径（`handleTeamLogout` ∥ `logoutFlow`）各 `_pushSettings` 恰一次 ∥ 桌面 `logout` ⇒ `onProvidersChanged` 恰一次 ⇒ 候选面按空表重取（`models: []` = 已到且空、簿记同拍清）；不动 = 轮换既有随动 | 单元测试档（三端各面——假 sink ∥ spy）+ 收口轮三端实走 |
 
 ## 6. 用例（本域 · 单元测试档）
 

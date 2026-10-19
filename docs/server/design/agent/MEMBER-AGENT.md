@@ -55,7 +55,7 @@
 > **KD-SV-158 注（实施取证 + 裁定）**
 > ① **取证实况（实落码）**：盒内 = 核同件、配置全默认（盒无 config.json）⇒ 核默认记忆面随装配生效——`createMemory` 恒开库建文件（`thincoder-core/memory/schema.mjs:80-82` ⇒
 > `<HOME>/.thincoder/memory.db`；盒内 HOME=/workspace/home ⇒ **落盒卷**）∥ 装配即同步项目层目录（`thincoder-core/agent/assemble.mjs:86-89`）∥ 工具面含 `memory`（六 action）+
-> `code_search`/`doc_search`/`repo_outline`（`thincoder-core/tools/index.mjs:70-74`；盒内装配单点 = `thincoder-server/deploy/sandbox/member-shell/core-run.mjs:233`）∥ 回合装配期注入读本地库（`thincoder-core/agent/setup.mjs:99-159`）。
+> `code_search`/`doc_search`/`repo_outline`（`thincoder-core/tools/index.mjs:70-74`；盒内装配单点 = `thincoder-server/deploy/sandbox/member-shell/core-run.mjs:291`）∥ 回合装配期注入读本地库（`thincoder-core/agent/setup.mjs:99-159`）。
 > ② **裁定（本席——依据 = 用户已裁三句：「不用实现」·「核同件」·「不减项」）= 合规豁免（带理由）**：盒内本地记忆面 = 核件原样携带（**零新增件、零新增接线**）——
 > 不在「实现客户端式本地记忆」之列（范围句：成员面不新增本地记忆设计）；「关面」须改盒侧核行为——与「核默认行为零改造」（KD-SV-152 裁定理由）∥「核家族全件·不减项」（KD-SV-159）两裁相抵 ⇒ 如裁「关」= 另轮另裁。
 > ③ **边界 = 零新增**（§3.9/§6 同拍）；实况边界 = 记忆数据仅随盒卷（销毁随卷去 ∥ 快照随卷回）；服务器侧零记忆面（零表零端点）。
@@ -227,13 +227,17 @@
 
 | 帧 | 形 | 源（核回调——盒壳接线） | 页面消费（核件优先） |
 |---|---|---|---|
-| `reasoning` | `{ type, text }` | `onReasoning`（主面） | 核 `renderReasoning`（推理块——默认折叠）+ `createStreamRenderer`（`markReasoning` ⇒ `paintReasoningTarget`） |
+| `reasoning` | `{ type, text }` | `onReasoning`（主面） | 核 `renderReasoning`（推理块——默认展开；改判条见下）+ `createStreamRenderer`（`markReasoning` ⇒ `paintReasoningTarget`） |
 | `toolOutput` | `{ type, id, name, text, kind? }` | `onToolOutput(name, chunk, id)`（chunk 非串 ⇒ 取 `.text`——VSC 归一同式） | 核 `appendToolOutput(卡结果区, text)`（O(1) 追加原语——核 KD-RC-9） |
 | `sub` | `{ type, token, ev, face?, args?, text? }` | 核 token 面的 relay 前缀 token（`onToken`/`onReasoning`/`onToolCall`/`onToolOutput`——**停止剥离**；`ev` = 事件 token 判位） | `ev:true` ⇒ 核 `relayEventToSubPatch` ⇒ `subBlocksReduce`；内容 ⇒ 核 `relaySubContentChunk` ⇒ `renderSubagentChunk`；块装配 = 核 `renderSubBlock` |
 | `ask` | `{ type, kind, promptId, … }`（kind 四值——表见 (2)） | `onPermissionRequest`/`onBatchPermissionRequest`/`onQuestion`/`onSecretInput` | 卡族（(2) 表）；应答 = `POST …/asks/:promptId` |
 | `tasks` | `{ type, done, inProgress, pending, total }` | `onTaskUpdate` | 状态行「任务」段 |
 | `compress` | `{ type, status, tokensFreed?, elapsedMs?, error? }`（`start`/`done`/`fallback`/`failed`） | `onCompressStart`/`onCompress`/`onCompressFail` | 状态行「压缩」段 |
 | `wait` | `{ type, info }`（相位词单源 = 核 `provider/wait-status.mjs`） | `onWait` | 状态行状态文本段（限流/过载/配额） |
+
+**推理块默认态（2026-10-19 改判）**：`reasoning` 帧的块 = **默认展开**——原判「默认折叠」（#875 · 2026-10-04）推翻。
+理由 = 折叠态在界面上等同「没有活动」，看不出模型在跑还是在卡（用户 2026-10-19 14:23）；同一核件不设无理由的端差——成员面与 VSC ∥ 桌面同默认（用户 2026-10-19 14:26「体验要一致」）。
+机制与消费面 = `docs/render-core/design/RENDER-CORE.md` §5；回读径同拍（核 `buildAssistantRestore` 携 `open`）。
 
 扩字段（既有帧）：`usage` += `reasoning`（核 `usage.reasoning_tokens`——`✦` 段源）+ `timers { count, expired }`（盒内 `agent._pendingTimers` 活读投影——`⏰` 段源）。
 
@@ -344,7 +348,7 @@
 
 ## 5. 本域文件与行数预算（成员面）
 
-> 服务端件拟新增于 `thincoder-server/src/agent/`（域内拆分）；盒壳件于 `thincoder-server/deploy/sandbox/member-shell/`（镜像构建上下文；档账入本档，`sandbox/SANDBOX.md` §13 不重计）。**行数 = 预算（以实施当刻实读为准）**；**实读口径 = 换行计数**（与 read 工具行号一致）。
+> 服务端件拟新增于 `thincoder-server/src/agent/`（域内拆分）；盒壳件于 `thincoder-server/deploy/sandbox/member-shell/`（镜像构建上下文；档账入本档，`sandbox/SANDBOX.md` §13 不重计）。**行数 = 预算（以实施当刻实读为准）**；**实读口径 = 换行计数**（`\n` 个数；带末尾换行的档比 read 工具末行号少 1）。
 
 | 件 | 现读 | 预算 | 角色 |
 |---|---|---|---|
@@ -357,7 +361,9 @@
 | `src/agent/member-pull.mjs` | **104** | ≈130（设计） | 拉仓：项目/源解析 ∥ 命令组装与结果对位（凭据不随命令） |
 | `src/store/db.mjs` | **36** | **±0**——v23 段入 `migrations.mjs` | —— |
 | `src/store/migrations.mjs` | **795** | ≈**745**（+≈35——v23 段：凭据表 + 索引 + 审计 CHECK 重建（十六型）+ 迁移段） | 迁移链（v23 = 成员面段） |
-| `deploy/sandbox/member-shell/{index,protocol,core-run,pull,git-cred,bootstrap}.mjs` | **1960**（370 ∥ 318 ∥ 654 ∥ 114 ∥ 86 ∥ 418——index ∥ bootstrap 为本轮实测，余三件沿既有读数） | ≈730（设计） | 壳：连挂/读指令族 ∥ 帧编解码 ∥ 核回合驱动 ∥ 拉仓执行 ∥ git 凭据助手 ∥ 版本化引导（自取/自换/回退） |
+| `deploy/sandbox/member-shell/{index,protocol,pull,git-cred,bootstrap}.mjs` | **1306**（370 ∥ 318 ∥ 114 ∥ 86 ∥ 418——index ∥ bootstrap 为本轮实测，余三件沿既有读数） | ≈730（设计） | 壳：连挂/读指令族 ∥ 帧编解码 ∥ 拉仓执行 ∥ git 凭据助手 ∥ 版本化引导（自取/自换/回退） |
+| `deploy/sandbox/member-shell/core-run.mjs` | **490** | < 500（咨询线） | 核回合驱动（回合装配 ∥ 十一回调 ∥ 落槽；纯件已外提 `core-run-util.mjs`） |
+| `deploy/sandbox/member-shell/core-run-util.mjs` | **179** | ≈180（设计） | 纯件叶子（八常/类 + 八纯函数；`core-run.mjs` re-export 原 11 名——import 面零改） |
 | `deploy/sandbox/member-shell/member-tools.mjs` | **125** | ≈180 | 盒内 server 域四件（`workspace_{create,start,stop,destroy}`——KD-SV-222） |
 | `deploy/sandbox/member-shell/mcp-tools.mjs` | **106** | ≈130 | 盒侧 MCP 桩件（取表/建桩/防撞——机制全文 = `mcp/MCP.md` §6.1） |
 | `deploy/sandbox/Dockerfile` | **46** | ≈35（设计） | 核装 + 壳 COPY（含 git 凭据助手）+ 助手登记 + CMD（件位契约 = `/opt/thincoder/app`——`sandbox/EXECUTION.md` §8） |
@@ -406,7 +412,7 @@
   **N81** 卡族渲染（核件直用断言：`renderApprovalCard`/`renderBatchApprovalCard`/`renderQuestionCard` 类名序；`view-diff` ⇒ 弹窗全量 patch；秘密卡 masked/prefill/required 三面）。
 - **成员面 N82** 子代理面（`sub` 帧逐形 ⇒ 核 `relayEventToSubPatch`/`subBlocksReduce` 归约 ⇒ 效果表执行；块头审批写点（`owner` ask）；停单件 `abort { key }`）∥ **N83** 模式旗（四旗写读：PATCH ⇒ `session.update` ⇒ 槽四字段 ⇒ 行 `flags`；ENG×PLAN 互斥；回合装配 `applySession` 生效；钮可见性两侧同测——成员面四模式钮可见（作用域覆写命中）∥ 管理面五枚仍隐）。
 - **成员面 N84** 状态行全段（19 段逐源：假帧桩 ⇒ 段集 ⊆ 表；缺源 ⇒ 零段）∥ **N85** 会话条（自绘下拉行形：位标/meta/`count`；✎ 重命名 ⇒ `session.rename`；✕ 确认门 ⇒ `session.delete`）∥ **N86** 页面小件（搜索挂载（核 `createSearch`）∥ 复制降级（`navigator.clipboard` 缺 ⇒ toast）∥ `@` 菜单（`atComplete` ⇒ `GET …/files`）∥ 图片（`images` 体/门））。
-- **成员面 N87** 推理块（`reasoning` 帧 ⇒ 核 `renderReasoning`——默认折叠；无推理 ⇒ 零块）∥ 工具面四件（`workspace_{create,start,stop,destroy}` 在表——假桩断言；拉仓 = 既有 `git` 工具登记——零新工具）∥ 📁 工作区切换（选择 ⇒ 列表范围随 + 新会话预选随；零残留选择）∥ ⚙ 路由（点击 ⇒ `#/me/account`）∥ 自动标题展示（`title` 非空用 `title` ∥ 空 ⇒ excerpt 顶行）。
+- **成员面 N87** 推理块（`reasoning` 帧 ⇒ 核 `renderReasoning`——默认展开（2026-10-19 改判——理由见 §3.11(1)）；无推理 ⇒ 零块）∥ 工具面四件（`workspace_{create,start,stop,destroy}` 在表——假桩断言；拉仓 = 既有 `git` 工具登记——零新工具）∥ 📁 工作区切换（选择 ⇒ 列表范围随 + 新会话预选随；零残留选择）∥ ⚙ 路由（点击 ⇒ `#/me/account`）∥ 自动标题展示（`title` 非空用 `title` ∥ 空 ⇒ excerpt 顶行）。
 - **成员面 B74** ask 兜底（`end`/中止/掉线 ⇒ 未决 ask 全量收口；后到应答 ⇒ 400 零副作用；页残留卡清）∥ **B75** 回合内池态边界（停单件 vs 停整回合；非在跑 key ⇒ 400）∥ **B76** 工具输出边界（`toolOutput` 截断（核 `appendToolOutput` `_capped`）∥ `result.content` 全文/回读 `MAX_TOOL_OUTPUT` 口径）。
 - **成员面 E59** 审批拒（`reject`/`deny` ⇒ 核拒绝径照旧——工具拒执行 + 消息面照旧）∥ **E60** 秘密取消（`values: null` ⇒ 核工具「未提供」径）∥ **E61** 删除/重命名端形（缺 confirm ⇒ 400；`renameSlot` `{ok:false}` ⇒ 400 人话零改）。
 
@@ -429,7 +435,7 @@
 | R79 | **会话管理面删除/重命名露钮**（KD-SV-203——**已收口**）：落钮（行内控件 + 确认门；§3.11(6)） | 已收口 | —— |
 | R80 | **§1 代价句②澄清**（如实呈报——报父侧）：§1「换机/重建 ⇒ 会话不随」与卷/快照机制相抵（快照 = 卷全量存档——含会话 ⇒ 按机制 = 会话随快照回，截至快照时点）；本档 §3.5 按机制落，§1 句面 = 主 agent 笔 | 上抛·待裁 | 父侧/用户 |
 | R81 | **盒镜像随动**（改件 `deploy/sandbox/member-shell/pull.mjs` 住镜像内）：部署 = 盒镜像重建；旧盒在途期旧措辞（行为零差——纯文案面）；收口轮实走以新盒复读为判 | 部署 | 收口轮 |
-| R83 | **跨回合面真端面约束**（呈报——为什么+代价）：盒壳**每回合新装配 agent**（`core-run.mjs:233`）⇒ 池/timer/挂起窗等**回合间态**不可达（VSC/桌面 = 常驻进程）。可达面 = 回合内（帧面七型全在）；跨回合延续 = **默认补法（成本在册）**：盒壳改常驻 agent 或回合间态落盘/内存表——动盒壳生命周期（与「回合驱动 = 核既有」设计相抵）——未裁前不做 | 上抛·呈报 | 父侧/用户 |
+| R83 | **跨回合面真端面约束**（呈报——为什么+代价）：盒壳**每回合新装配 agent**（`core-run.mjs:291`）⇒ 池/timer/挂起窗等**回合间态**不可达（VSC/桌面 = 常驻进程）。可达面 = 回合内（帧面七型全在）；跨回合延续 = **默认补法（成本在册）**：盒壳改常驻 agent 或回合间态落盘/内存表——动盒壳生命周期（与「回合驱动 = 核既有」设计相抵）——未裁前不做 | 上抛·呈报 | 父侧/用户 |
 | R84 | **模式旗 mid-turn 追改**（呈报）：PATCH 口径 = 下回合生效（沿 KD-SV-111/108）；VSC `_autoApprove` = mid-turn live（审批门读当刻值）。默认补法 = 审批门改读「页面最近一次旗值」（需下行旗面事件——+1 帧）；成本小——未裁前不做。**属真端面约束**（why = 审批门在盒内（核回调）——页面旗值到门须下行帧新通道（盒只出向、帧即转发即弃）；两壳门在进程内 ⇒ 可 mid-turn live，成员面不可） | 上抛·呈报 | 父侧/用户 |
 | R85 | **台账标记段**（呈报——成员面无同物）：两壳源 = **本地账本**态（VSC `ctx._ledger`）；成员面零本地账本（KD-SV-158/§3.9）⇒ 段无源。默认补法 = 下拉首行注记**服务端团队台账**未决计数（源 = `GET /api/ledger` `total`——零新端点；语义重定义「台账 N 条未决」）；未裁前不造 | 上抛·呈报 | 父侧/用户 |
 | R86 | **团队登录态段**（呈报——无参照物）：桌面段源 = 宿主登录面（未登录/失效/已登录三态）；成员面 = 恒登录（页面即成员会话）⇒ 三态无参照。如要对表显示成员名 ⇒ 一行取数（控制台会话面既有）；未裁前不造 | 上抛·呈报 | 父侧/用户 |

@@ -234,22 +234,46 @@
 **机检**：引用锁 T9（新句与连带项零文档引用）· T-CL1（块计数守恒）· 维护者注反证照常适用；**不新增断言**（内容在场 = 一次性逐行比对核——设计围栏块 ↔ 落地档，含连带两项；承 §6.1「批次收尾核对」）。
 **边界**：零机械门（承「为臆想的失败逐点加限制 = 反模式」之裁）· 不改台账机制本体（写命令 / 状态机零动）· 不落公共层 / 纪律层（子代理非受众——台账写权仅主 agent）· 不重述攒批工作流（只补「做还是记」判断）· **「父侧不代笔」交界**：「当场修掉」不越三类例外（自有写域 / 机械形态收正 / 小修改）且照**打标义务**（注明「父侧直接执行」+ 可 revert——`persona-engineering.md:73-74`）。
 
-### 6.9 派单尺寸与任务书形态纪律（三闸 + 表形态）
+### 6.9 派单尺寸与任务书形态纪律（三闸 + 表形态 + 禁令携后果）
 
 **来源**：用户裁定——裁定 A（落点）；**落笔 = eng-coder（依据 = 本节设计）**；**追加第 4 条纪律**（任务书 = 表，不是散文；措辞可润色、语义不得增删）。
+**第 5 条纪律（禁令携后果）** = 用户 2026-10-19 11:56「我希望你在spawn子agent时也要做到知其然知其所以然」+ 14:06「加」，台账 `#1703`。
 
-**机制（四条）**：① **一舱一单面**——实施舱的 `files` 声明面 ≤15 档且不跨变更面，跨面 ⇒ 按面拆舱；② **预检三闸**——档数 >15 ⇒ 拆 · 跨面 ⇒ 按面拆 · 未决口径落在实施面内 ⇒ 先裁（不许留给实施者「视情况」）。
+**机制（五条）**：① **一舱一单面**——实施舱的 `files` 声明面 ≤15 档且不跨变更面，跨面 ⇒ 按面拆舱；② **预检三闸**——档数 >15 ⇒ 拆 · 跨面 ⇒ 按面拆 · 未决口径落在实施面内 ⇒ 先裁（不许留给实施者「视情况」）。
 ③ **结构决定归设计 / 派单**——拆分边界 / 落点 / 形状在设计期定死，实施者只照表落码，留给实施者的开放结构决定 = 读循环的入口；④ **任务书 = 表，不是散文**——核心 = 逐行动作表（动作 / 落点 file:line / 期望），散文只留目标与边界；「先读档清单」自身计入探索预算，预算与阅读面自相矛盾的任务书 = 派单缺陷。
+⑤ **禁令携后果（派单禁令也带 why）**——任务书里的「别碰 X」后面必须跟「碰了会怎样」：没写后果的禁令，执行者只能照字面躲，躲过了父侧本来允许的边界（白丢效率），也躲不过父侧没写出来的那个坑（真出事）。
+**与既有 why 条的关系**：同节既有 why 条（`persona-engineering.md`「The `why` in a task book must carry the reasoning」）管整份任务书——规则要带理由；本句只管**禁令面**——禁令要带后果。**补句，不是改写**（原条逐字不动）。
+**实测**：禁令集中在 `designPoints`（字段定义逐字 = "design points & forbidden scope"）——用户 2026-10-19 派单七舱，每舱都写「只做这个、别碰那个」，无一条写后果。实例留说明面、不入落盘文本：某舱禁碰 `#1566`，那一舱正在改的是 `core-run.mjs`——台账号与仓内文件名在任何他仓会话里都不可解析（同 §6.10「口径」段：新文零具体项目实例）。
+**终稿逐字（中文 = 语义权威；英文落面见下行围栏块）**：
+> **禁令也要带 why**：派单里的「别碰 X」后面必须跟「碰了会怎样」——没写后果的禁令，执行者只能照字面躲：**躲过了你本来允许的边界，也躲不过你没写出来的那个坑**。正反例——反：「别碰 X」；正：「别碰 X——另一个实施舱正在改同一份文件，你的编辑会被它覆盖，两边都白干」。
 
-**分层归属**：落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内（六字段列表末行后）——主 agent 唯一消费（派单写权面；子代理非受众）。
+**英文逐字围栏块（实施席原样落 `persona-engineering.md` 该条行后——1 行，逐字不改；收尾对账基线 = 本块）**：
+
+```
+- **A prohibition also carries its why**: a dispatch's "don't touch X" must be followed by "what happens if it is touched" — a prohibition without its consequence leaves the executor to dodge the literal words: **it dodges the boundary you did allow, and does not dodge the pit you did not write down**. Positive vs negative — ✗ "don't touch X"; ✓ "don't touch X — another coder is editing that same file, your edit gets overwritten by their save and both runs are wasted".
+```
+
+**分层归属**：落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内——主 agent 唯一消费（派单写权面；子代理非受众）；锚点见下「落点」段。
 四问：① 人格层（谁派 / 派多少 / 派成什么形态）；② 属工程模式派单行为、非两模式协作基础（公共层不取）；③ 不以纪律层承载（子代理非受众 + 与人格层重复）；④ 项目相关、形态为提示词行为纪律 ⇒ 人格层；落点文本零文档引用 ✓。
 
-**落点（唯一副本 = `thincoder-core/prompts/`）**：`thincoder-core/prompts/persona-engineering.md`（六字段末行后增 **4 行**——实施轮 coder 落笔）。
-同一档（*Sized dispatch without these fields is a defect* 行后增 **内容 4 条（EN 物理 5 行——第 4 条折行）**——实施轮 coder 落笔）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+**落点（唯一副本 = `thincoder-core/prompts/`——定位 = 节名 + 条文本，行号只作参考读数）**：`thincoder-core/prompts/persona-engineering.md`「Implementation dispatch structure (task book + spawn params)」节内（六字段末行后增 **4 行**——实施轮 coder 落笔）。
+同一档、同节（*Sized dispatch without these parameters is a defect* 行后增 **内容 4 条（EN 物理 5 行——第 4 条折行）**——实施轮 coder 落笔）；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
+同一档、同节（既有 why 条 *The `why` in a task book must carry the reasoning, not just the order* 行后增 **1 行**——实施轮 coder 落笔；该条逐字不动，**补句不是改写**）；逐字文本 = 上方「英文逐字围栏块」（唯一副本 = 本节——D2）。行号参考读数 = `:170`（2026-10-19 实读）；§6.17 记实施委托段在 `:136`（`:417`）已漂 ⇒ **落笔前按条文本复核，行号不作定位依据**。
 
-**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性 `includes` 读数；英文面零连带（零 `##` 块新增 ⇒ 块计数无涉、零注入锚 ⇒ 锚集合无涉、零文档引用 ⇒ 引用锁无涉）。
+**机检**：**不新增断言**（「不因单次改动而增补」测试纪律）——在盘核 = 一次性 `includes` 读数；**内容判据 = 落地行与上方英文逐字围栏块整行相等**（只判行数时，正文丢了后果小句仍全绿）；同核该档恰多 1 行、既有 why 条与六字段逐字零改。英文面零连带（零 `##` 块新增 ⇒ 块计数无涉、零注入锚 ⇒ 锚集合无涉、零文档引用 ⇒ 引用锁无涉）。
 
-**边界**：零机械门禁（尺寸上限不落 `files` 校验代码——上限属判断面，承「为臆想的失败逐点加限制 = 反模式」）· 不改 spawn 门禁语义（`batchDoc` 必传 + 六字段 `validateTaskBookFields` 零动；第 4 条约束内容形态、不机械校验）· 不改台账机制 · 不落公共层 / 纪律层（子代理非受众）· 既有节内增列、不新增节（零 `##` 块计数连带）。
+**边界**：零机械门禁（尺寸上限不落 `files` 校验代码——上限属判断面，承「为臆想的失败逐点加限制 = 反模式」）
+· 不改 spawn 门禁语义（`batchDoc` 必传 + 六字段 `validateTaskBookFields` 零动；第 4 条约束内容形态、不机械校验）
+· **本笔只增 1 句**——提示词面除该行外零改（既有 why 条 *The `why` in a task book must carry the reasoning* 逐字不动——行号不作定位依据）
+· 新句不落校验代码（后果 = 写作判断，非机器可判）。
+
+**勘察证据行**：已查 `docs/core/design/DOC-DISCIPLINE.md` D9（`:23` 表行 ∥ `:64` 细则——本句 = D9 在派单面的一次应用，判据本体零动）
+· 需求档 `docs/core/requirements/PROMPT-SYSTEM.md`（「禁令」∥「派单」∥「后果」三词全档共 1 命中 = `:174` 勘察义务条，无「禁令后果」条）
+· 本档 §6.8（`:224`–`:235` 既有节内增列形）∥ §6.32（`:950` 勘察行 ∥ `:952`–`:957` 先例行既有形）∥ §6.33（`:1195` ∥ `:1197` 同形）
+· `thincoder-core/prompts/persona-engineering.md`（节名 `:153` ∥ 既有 why 条 `:170` 现状逐字）。
+除上述无其他相关公共源——已查无。
+
+**先例 ∥ 偏离**：先例 = §6.8（`:224`–`:235`）∥ §6.19（标题 `:448`）的「既有节内增列 · 零 `##` 块计数连带」形——本笔对齐（同节增 1 句，块计数与标题节点零变）；偏离 = 只增 1 句、不带机检锁，理由 = 后果写没写、够不够属写作判断，落成校验字段只会得到形式化填空（偏离须给理由之形 = §6.32（`:952`–`:957`））。
 
 ### 6.10 测试层级知识（定义 + 放置）
 
@@ -1119,6 +1143,68 @@ node -e "const fs=require('fs'),d='thincoder-core/prompts';for(const f of fs.rea
 
 **上抛项（待裁）**：① C 区两条产品口径（`persona-engineering.md:99` 内部台账不播报 ∥ `:203` 越界发现不回传）——裁前不改写；② 提示词面是否另立单档绝对帽（本节只设 3% 相对预算，§6.11 的 ≤8,000 帽属工具描述面）——请父侧裁。
 
+### 6.33 提示词 why 落地（单测用毕即删的成本公式）
+
+**来源**：用户 2026-10-19 逐字——「提示词中要求单元测试文档用后即删的原因被你写得太抽象了…总是说按纪律该删停下来问意见」＋「我希望把 why 落进提示词，做到让模型知其然知其所以然」。台账 `#1701`。
+
+**要修的那一处**：`thincoder-core/prompts/discipline-engineering.md:102` 的 `Delete on use` 句只给结果（删掉、不留可执行文件、无复跑面），**读不出成本**——模型看不出这条规矩在省什么，只能靠服从，遇到边缘就停下来问。真 why 一直住在需求档，只是没送到模型读的地方。
+
+**单源关系（why 的唯一权威）**：`requirements/TESTING.md` §1.1 第 2 条（在盘行 31：含公式「存量测试量 × 跑全量本能 = 跑测成本远超写码成本」与「删掉可跑的东西，就没有可跑的全量」）；让步句禁令 = 同档行 32（「why 可进规范面，让步句不得进」）。本节不复述判据，只定落地形（D2）。
+
+**目标形（逐字 · 替换 `discipline-engineering.md:102` 的 `Delete on use` 子句）**：
+
+> **Delete on use — an action, not a question.** At closeout the batch's unit test files are deleted; exactly one reading line stays in batch record §5 (what was verified + command + result), and no executable file is kept. **Why**: after any change the reflex is to run everything, and this is an engineering-scale product — one agent-day produces code that would need hundreds of unit tests to verify, while unit tests are per-batch and one-off; so **accumulated test volume × the run-everything reflex = verification cost far above coding cost**. Delete the runnable artifacts and there is no "everything" left to run.
+
+**中文口径句（语义锚，不进运行面）**：用毕即删是动作，不是问句；成本 = 存量测试量 × 跑全量本能，远高于写码成本；删掉可跑物，就没有「全量」可跑。
+
+**逐句 why 对应（无对应 why 的句子一律不写）**：
+
+| # | 目标形句 | 对应 why | 权威坐标 |
+|---|---|---|---|
+| S1 | Delete on use — an action, not a question. | 动作面：判据是「用毕即删」，不该停下来征询 | `TESTING.md:31`（⇒ 判据句）+ 用户原话（停下来问意见） |
+| S2 | At closeout … deleted; exactly one reading line stays in batch record §5 (what was verified + command + result), and no executable file is kept. | 动作 + 边界：删什么、留什么 | `TESTING.md:31`（零留存）· 同档 `:36`（批档一行读数） |
+| S3 | Why: after any change the reflex is to run everything … per-batch and one-off | 成本公式的两个因子：跑全量本能 · 工程级产品且每批一次性 | `TESTING.md:31` 逐字 |
+| S4 | accumulated test volume × the run-everything reflex = verification cost far above coding cost | 成本公式本体 | `TESTING.md:31` 逐字 |
+| S5 | Delete the runnable artifacts and there is no "everything" left to run. | 后果 / 边界：删后可跑面消失 | `TESTING.md:31`「删掉可跑的东西，就没有可跑的全量」 |
+
+**既有句处置（同档 `:102`）**：
+
+- 替换区间 = 自 `**Delete on use**:` 起，至 `no "re-run an old file" surface at all.` 止——这一段的结果句由目标形 S2 / S5 承接。
+- 同句尾 `**Zero retention** ⇒ re-running historical files in bulk and "aligning expectations for an old file's red" both cease to exist as actions.` **删**：与 S5 是同一后果、同一定语（D2 不重述），留着模型要读两遍同一件事。
+- 同 bullet 其余内容逐字不动：反馈回路句 ∥ 实施者本人写跑句 ∥ 不可转集成句。
+- **段落形态**：目标形并入同一 bullet 的同一段落（不插空行、不另起 bullet）——空行切断 bullet，另起 bullet 会让「删什么」与「测什么」分开读。
+
+**让步句自查**：目标形 0 句「本应 / 可以留 / 没把握 / 代价可控」类表述；英文面 0 句 `should have been` / `could be kept` / `not sure` / `the cost is acceptable`。禁令依据 = `TESTING.md:32`。
+
+**乱码项（父侧点名 `:105` 的 `Zero retention ?`）**：盘上实测无此缺陷——该句在 `:102`，字节 `e2 87 92` = U+21D2（`⇒`）合法 UTF-8；`thincoder-core/prompts/` 全 16 档零 U+FFFD、零 mojibake。**结论：零改动**；编辑器里看到 `?` 是查看器的解码显示，不是档内容。
+
+**落点（实施席照此改）**：
+
+| 面 | 坐标 | 动作 |
+|---|---|---|
+| EN 运行面 | `thincoder-core/prompts/discipline-engineering.md:102` | 按「既有句处置」替换 + 删尾句 |
+| 设计档（本档） | §6.33 | 唯一权威目标形（D2） |
+| 中文镜像面 | 无（`docs/core/design/prompts/` 已不存在——运行面单面） | 零触 |
+
+**验收（A1–A6，一次性手工核——不新增断言：`requirements/TESTING.md` §5 读档断言禁令）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | 替换区间内逐字相等——区间 = 自 `**Delete on use**:` 起至 `no "re-run an old file" surface at all.` 止；区间内 = 目标形 S1–S5 逐字，区间外同 bullet 其余内容不动 | 区间内逐字比对（不用全档子串在场——同一句抄两份时会误判） |
+| A2 | 禁留子串零命中：`Delete on use**: the batch deletes` ∥ `Zero retention** ⇒` ∥ 区间尾句 `no "re-run an old file" surface at all.` | 一次性子串比对；三条全查（区间只删一半时 A1 仍绿） |
+| A3 | 目标形零让步句词表命中（本应 ∥ 可以留 ∥ 没把握 ∥ 代价可控 ∥ should have been ∥ could be kept ∥ not sure ∥ the cost is acceptable） | 一次性词表扫描 |
+| A4 | 体量预算：改后字符数 ≤ 37,635（基线表 `:1069` 记 36,538 + 上限 1,097；体积预算 `:1125` = 每档净增 ≤ 3%） | `node -e "console.log(require('fs').readFileSync('thincoder-core/prompts/discipline-engineering.md','utf8').length)"` ⇒ ≤ 37,635；改前实读 36,574（2026-10-19）⇒ 本笔净增 ≤ 1,061 才落回表定上限 |
+| A5 | `node scripts/prompt-refs-check.mjs` ⇒ `命中 0` | 首行汇总打印「命中 0」+ `OK(prompt-refs)`。新文本 `batch record §5` = 批次档段号（`§1`–`§6` 裸段号 = 协议自名 = 合法正例，见 `:192` ∥ `:851–852`）⇒ 非死节号，不删号、不改述；命中 ⇒ 按 §6.6 删引用（非改址）复测 |
+| A6 | 设计档门 = `doc_check(mode:"gate", docs:["docs/core/design/PROMPT-SYSTEM.md"])` 首行 `DOC-CHECK GATE: PASS` | 本会话读数 ERROR（引擎已更新）⇒ 记为待核、不当作已过；收口前置 = 新进程复跑得 PASS（先例 `:1103`） |
+
+**边界（不做）**：不改需求档（why 的权威处零触）· 不动普通侧 `discipline-normal.md`（该面 `:24` 是转指「retention per the test-lifecycle policy」、`:159` 只说放置，无删除规则，无可对齐的句子；要送 why 进普通侧另立一批）· 不改测试机制本体（门 ∥ 轮次 ∥ 谁写谁跑零触）· 不新增 `##` 块 · 不新增单测断言 · 其余 15 档零触。
+
+**勘察证据行**：已查 `thincoder-core/prompts/discipline-engineering.md`（`:100`–`:109` 测试纪律节；`:102` 现状句逐字）· 同目录 16 档编码扫描 · `design/TESTING.md` ∥ 本档 §6.10 ∥ §6.32（先例形）· `requirements/TESTING.md` §1.1。除上述无其他相关公共源——已查无。
+
+**先例 ∥ 偏离**：先例 = §6.32（规则须能回答「它靠什么成立」，why 逐字复用、不新造因果）——本节完全对齐：why 从需求档逐字搬。偏离 = 不做逐项表（射程一句），改用目标形 + 逐句 why 对应表。
+
+**关键决策**：① why 与动作同 bullet 同段（读的时候「该做什么」和「为什么」不分离）；② 删 `Zero retention ⇒ …` 尾句（D2 去重，S5 已覆盖其列举）；③ 父侧原稿的 `unit tests to cover` 改 `unit tests to verify`（`cover` 会被读成覆盖率指标；单元测试的作用是验证，见 `TESTING.md:30`）。
+
 ## 7. 关键决策记录
 
 | # | 决策 | 理由 |
@@ -1131,7 +1217,7 @@ node -e "const fs=require('fs'),d='thincoder-core/prompts';for(const f of fs.rea
 | D-PS7 | **「不可裁决」自止点 = 落 `common.md` 上行通道节（既有节内增列）+ 人格档逐处同点限定（eng-designer 两处 + 同族四档）**；判据 = 发现两处要求互斥 ⇒ 即「不可裁决」⇒ 立即 `ask`（不设重读 / 权衡前置） | 判据本体在公共层 ⇒ 操作化落同节（D2；恒第二位 = 全角色覆盖）；人格档各处 = 本地出口（降级交付 / 歧义进报告 / 计划注明）的边界——就近落各档，**本地只加出口边界句 + 最短动作锚**（承编写纪律 #10「关键锚点重复」） |
 | D-PS8 | **漂移防线 = 流程步（批次收尾一次性比对）**——零常驻锁 | 零常驻 = 守当批一致性而不冻结演进 |
 | D-PS9 | **台账治理纪律 = 落 `persona-engineering.md`「派发与收尾纪律」节内 `欠账入清单` 邻位**（既有节内增列 · 零块计数连带） | 属主 agent 处置纪律（「做还是记」判断）——与同节 *Debts go on the list* / 父侧不代笔并列 |
-| D-PS10 | **派单尺寸与任务书形态纪律 = 落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内**（六字段列表末行后 · 既有节内增列 ⇒ 零块计数连带）；**EN 按本节设计于实施轮落笔** | 属主 agent 派单行为（一舱一单面 + 预检三闸 + 结构决定归设计 + 任务书形态）——与同节「有规模委派缺这些字段是缺陷」（字段面）并列，本笔补**尺寸面 + 形态面** |
+| D-PS10 | **派单尺寸与任务书形态纪律 = 落 `persona-engineering.md`「实施委托结构化（任务书 + spawn 参数）」节内**（六字段列表末行后 · 既有节内增列 ⇒ 零块计数连带）；**EN 按本节设计于实施轮落笔**；**第 5 条（禁令携后果）= 同节既有 why 条行后 1 行（补句——原条不改写）** | 属主 agent 派单行为（一舱一单面 + 预检三闸 + 结构决定归设计 + 任务书形态）——与同节「有规模委派缺这些字段是缺陷」（字段面）并列，本笔补**尺寸面 + 形态面 + 后果面** |
 | D-PS11 | **测试层级知识（定义 + 放置）= 落 `discipline-engineering.md`「测试纪律」节内两条 bullet 并文**（既有节内增列 ⇒ 零块计数连带）；**定义以机制文档为据、放置两类分述** | 落工程侧纪律节 = 事件面 + 现行节已有部分单元侧表述（最小增改 = 并文）；**「normal 侧另裁」已落——→ D-PS13** |
 | D-PS12 | **轻通道机制 = 机制规则落 `discipline-engineering.md`「基本流程」节内 + 父侧行使细则落 `persona-engineering.md`「派发与收尾纪律」节内**（均既有节内增列）；准入判据 = **三样清单 + 一句边界**；轻通道轮次 = 批档一本（§5 不适用——实施面 = 父侧直改） | 分层：机制面 = 模式怎么干活（纪律层——受众含收尾轮的评审 ∥ 设计面）；父侧动作面 = 写权独属（人格层——台账用法面判例同轴） |
 | D-PS13 | **测试层级知识扩落普通侧**（`discipline-normal.md`「测试与交付」节内两条 bullet 定点并文——定义 ∥ 放置，与工程侧同源同知识） | 口径收正（用户）：**批次档非工程模式专有 · 文档体系对全模式同一 · 两模式之别 = 是否强流程约束** ⇒ D-PS11 之「normal 侧另裁」落地；放置语义照全模式同一的文档体系书写。**流程约束面零搬迁** |

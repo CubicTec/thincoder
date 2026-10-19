@@ -1303,7 +1303,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 - **多命中 = 取第一个合格条目**（存储顺序）；无合格条目 ⇒ 无 DeepSeek 后端（行为与今日逐字同）。
 - **路径不参与判定；端点 = 固定常量** `https://api.deepseek.com/v1/tools/search` ∥ `https://api.deepseek.com/v1/tools/fetch`（不经 `baseURL` 拼接——`/v1` 尾 ∥ 前缀差异不致双 `/v1`）；key 只发官方 host。
 - **两端同字段**：CLI 由 `loadConfig` 产 `providersList` 别名（`thincoder-core/config.mjs:322`）；VSC 经 `agent/config` bag 直供 `providersList`（`thincoder-vscode/src/agent/setup.mjs:155,186`）。
-- **桌面 / server**：走核同一工具实现（桌面经核 `assembleAgent` ∥ `runAgent`——`thincoder-desktop/src/main/agent-assemble.mjs:18` · `agent-host.mjs:38`；server 核 `loadConfig()`——`thincoder-server/deploy/sandbox/member-shell/core-run.mjs:237`）；两端 `agent.config` 整建点未逐端实读 ⇒ `unverified`（本批零改——核装配产物带 `fetch` 键时读取点自然生效）。
+- **桌面 / server**：走核同一工具实现（桌面经核 `assembleAgent` ∥ `runAgent`——`thincoder-desktop/src/main/agent-assemble.mjs:18` · `agent-host.mjs:38`；server 核 `loadConfig()`——`thincoder-server/deploy/sandbox/member-shell/core-run.mjs:73`）；两端 `agent.config` 整建点未逐端实读 ⇒ `unverified`（本批零改——核装配产物带 `fetch` 键时读取点自然生效）。
 - **派生渠道**（`providers[].derived`——`PROVIDER.md` §6.25）不特判——host 非 `api.deepseek.com` 者自然不合格。
 
 #### ② 后端选择与优先级（W1 ∥ W5）

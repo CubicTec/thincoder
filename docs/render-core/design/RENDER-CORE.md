@@ -203,14 +203,21 @@
 **落位不变式（两条 · 留端清算）**：① **出生位 = 活动区区尾 append**（端实现锚 = VSC `thincoder-vscode/webview/activity.js:60`；桌面 `thincoder-desktop/renderer/views/pool-subagents.mjs:85-95`）；
   ② **归档入流 = 消费轮边界前插入、边界失效 ⇒ 常规块插入点退化**（VSC `thincoder-vscode/webview/activity.js:104-110`；桌面 = 同形——`insertBefore(块, 边界)`：边界 = `ev:digest start` 标签行、收帧清边界；座次入模；三端消化面统一——单源 = `docs/desktop/design/RENDERER.md` §1.1 插入点纪律条）——与核效果表 `archive`（`atBoundary`）同口径。
 
-3. **构件族（DOM）**——`renderBlock({ idx, withLabel })` · `renderToolCard({…})` / `finishToolCard(ref, name, text, links, truncated, deps?)` / `renderToolHistory(name, text, idx)` · `renderReasoning(model, deps?)`；
+3. **构件族（DOM）**——`renderBlock({ idx, withLabel })` · `renderToolCard({…})` / `finishToolCard(ref, name, text, links, truncated, deps?)` / `renderToolHistory(name, text, idx)` · `renderReasoning(model, deps?)`（默认态见本节推理块默认态条）；
    `renderApprovalCard(model, deps?)` / `renderBatchApprovalCard(model, deps?)` · `renderQuestionCard(model, deps?)` · `renderTaskPanel(progress, deps?) → { el, visible }` / `renderGoalPanel(goal, deps?)` ·
    `renderSubBlock(model)` / `refreshBlock(block)` / `renderSubagentChunk` / `renderSubDesc`（子 agent 块面与归档块面——消费面段 ③）；
    `initBlockFollow(block)` / `maybeScrollBlock(block)`（块内容区跟滚原语——接线 ∕ 应用；旗标 = 手势门控让位 + 无条件近底自愈，让位期出口钮 `sub-follow-btn` 随原语自持（`sub.follow.*` 两键）；**应用时机契约在核（应用点清单：追加后 · 挂载后 · 帧尾复核）∕ 触发源在端**（帧合并 ∕ 更新纪律收核）——单源 = §2 KD-RC-8 ∕ KD-RC-9）；
    `attachCopyButtons(container, deps?)` · `showToast(text)` · `linkifyPaths(bodyEl, links)`（VSC 消费） · `createSearch({ root, reveal? })`（会话内搜索面——Ctrl+F 键位注册 + 扫描 ∕ 高亮；两端端壳供 `root`） · `appendToolOutput(el, text, deps?)`（**工具输出 O(1) 追加**——
   占位清（`deps.initial`）∕ 超 `MAX_TOOL_OUTPUT` 截断（注字面 = `capText` 缺省注单源）∕ `_capped` 停收；VSC 活卡消费改指 ∥ 桌面工具卡消费）。
    `reveal(el)` = **可选披露缝（尾行收口）**——命中件展现前置钩：`showCurrentMatch(scroll)` 真值径 ⇒ `reveal` 先于 `scrollIntoView`；探针抛错 ⇒ `console.error` 一条 + 跳转照常；缺省零变（VSC 调用面单 `root` 逐字不动）。
-   **推理块默认态**：`renderReasoning` 默认折叠（`details.open = false`）——恢复径 `thincoder-render-core/flow/block.mjs` 同拍（`open` 属性删）；手动展开可看全；桌面面零触（不消费该两件——自持 `chat-text.mjs` 默认态；跨端默认差 = 界面层登记）。
+    **推理块默认态**：默认展开——`renderReasoning` `details.open = true`（`thincoder-render-core/flow/reasoning.mjs:16`）；恢复径 `thincoder-render-core/flow/block.mjs` `buildAssistantRestore` 同拍（`<details class="reasoning-block" open>`——`:108`）——实时径与恢复径同一默认态，重开会话不改变呈现；手动折叠仍可只看摘要。
+    **理由**：折叠态在界面上等同「没有活动」——看不出模型在跑还是在卡（用户 2026-10-19 14:23「感觉像没在动一样，默认不要折叠」）。原裁定 #875（2026-10-04「默认折叠」）由此推翻；两处档头注释随推翻就地收正（`reasoning.mjs:8`–`:9` ∥ `block.mjs:99`–`:101`——「默认折叠」的现行口径删掉，#875 只作 as-of 出处）。
+    **三面一致**：核缺省改一处，消费面同收——VSC 两径（`thincoder-vscode/webview/streaming.js` 活流块 ∥ `thincoder-vscode/webview/ui.js` 恢复帧）∥
+    服务器成员面网页（`thincoder-server/public/views-me-chat.mjs:12` `:244`，经 `/rc/*` 取核包——`thincoder-server/src/webui/static.mjs:56`）∥ 成员面回读径（`thincoder-server/public/views-me-chat-messages.mjs:13` `buildAssistantRestore`）。
+    **构造点 = 两处（成员面 live 径不新增构造点）**：成员面 live 径的 `<details>` 亦由 `renderReasoning` 造（`thincoder-server/public/views-me-chat.mjs:244` `renderReasoning({})` 取其 `el`）。
+    重渲器只画内容——`thincoder-render-core/flow/stream.mjs:28`–`:31` `paintReasoningTarget(el, raw)` = 画件 + 尾钉底，全篇零 `details` 构造（`:72` 消费 `deps.reasoning()` 取回的 `el`）。
+    桌面不消费本件（自持 `thincoder-desktop/renderer/views/chat-text.mjs:55` `open: true`——默认态已是展开）。
+    **弃选 = 按端参数化**（`renderReasoning(model, deps)` 收 `deps.expanded`、`buildAssistantRestore(msg, deps)` 同收，VSC 传真、成员面留假）：同一核件不设无理由的端差——差异只允许来自宿主能力差（用户 2026-10-19 14:26「体验要一致」）；参数化另给 VSC 两径各加一处传参面。
    **`configureActivityView({ tailLines })`**：折叠预览行数缝（模块级 setter——沿 `configure*` 先例；缺省 3 ∥ 允许 0；消费 = VSC `ui-prefs.js` 随 `uiPrefs` 应用）。
 
 4. **调度族（更新纪律 · KD-RC-9）**——`createFrameMerge(deps)`（**帧合并件**：脏标记 `mark(keys)` ∕ 单飞 rAF ∕ `FRAME_MIN_MS`(50) 最小间隔 ∕ `flush()` 同步尾帧；`deps = { apply(dirtyKeys), raf?, now?, minMs? }`——应用器契约 = §2 KD-RC-9）· `FRAME_MIN_MS`（常量——与核 `STREAM_RENDER_MIN_MS` 同值同意）；
@@ -229,6 +236,9 @@
    **两态文案键的载体**：`model.loading`（既有）∥ `model.empty`（新增）**只住端侧字典**——`thincoder-server/public/i18n-zh-core.mjs` ∥ `i18n-en-core.mjs`、`thincoder-desktop/renderer/i18n-composer.mjs`（en ∥ zh 两块）、`thincoder-vscode/locales/en.json` ∥ `zh.json`。
    核字典 `thincoder-core/i18n.mjs` 不收 `model.*`——该容器边界 = 核域文案（压缩 / 消化 / 限流 / 异步池 / 会诊 / 任务 / goal / 思考状态），面板文案归端侧；VSC 面缺键时 `t()` 回退返回键名（`thincoder-vscode/src/i18n.mjs:66`）。
    `createControlsRow({…})` · `createAtMenu({…})` · `createAttachBar({…})`；消费面 = VSC `thincoder-vscode/webview/input.js` 等接线档 ∥ 桌面 `thincoder-desktop/renderer/mount-composer.mjs` 装配。
+   **候选面三纯件（随 `#1529` 实装登记）**：`thincoder-render-core/composer/model-menu-state.mjs` **10** 行——`menuStateOf(models) → "loading" ∥ "empty" ∥ "list"`（三态判定单源，渲面与单测共用）；
+   `thincoder-render-core/composer/model-menu-place.mjs` **23** 行——`computePlacement({ anchorRect, viewport, panelHeight, panelWidth = 270, up }) → { left, top }`（零矩形 ⇒ 视口居中兜位）；
+   `thincoder-render-core/composer/model-menu-labels.mjs` **16** 行——`PROVIDER_SHORT` ∥ `shortName`（逐字迁自 `model-menu.mjs`）。`model-menu.mjs` 侧 = 三处接线（`place()` 退化为「取矩形 → 纯件 → 写样式」）。
    **附件面扩文本/源码档（§2 KD-RC-13）**：`createAttachBar` 返回面补 `files`（列 = `{ name, size, text }`；与 `images` 同式 `length = 0` 保身份清点）；
    增导出面 = `TEXT_EXTS` ∥ `isTextFile(file)` ∥ 三限常量（`TEXT_MAX_BYTES` ∥ `TEXT_TURN_MAX_FILES` ∥ `TEXT_TURN_MAX_BYTES`）∥ `formatFileBlock({ name, text })` ∥ `withAttachedFiles(text, files)`（末两件 = 内联形成纯函数——`panel.mjs` `send()` 消费）；
    `send()` 两径（忙态 ∥ 直发——满队拒收判之后）就地快照清列 + 内联，回显 ∥ 上行同用内联后串（`message` 单值）。
@@ -424,9 +434,13 @@ VSC ∥ `thincoder-core` = 零触；测试覆盖 = 单元测试档（平 node ·
   全清令：集成测试不写 ∕ 不改 ∕ 不跑。
 
 **模型菜单行语义随动**：
-核 `thincoder-render-core/composer/model-menu.mjs` **485**（`providerRow` 行语义重写 ∥ `openFlyout` 展开径 ∥ `closeFlyout` 单点 ∥ 拾取单点收 `click` ∥ `onPick` 携 `row`——单源 = §2 KD-RC-14；**净 +30 超设计预算（±10 内）**）；
+核 `thincoder-render-core/composer/model-menu.mjs` **488**（三纯件外提后实读；`providerRow` 行语义重写 ∥ `openFlyout` 展开径 ∥ `closeFlyout` 单点 ∥ 拾取单点收 `click` ∥ `onPick` 携 `row`——单源 = §2 KD-RC-14；**净 +30 超设计预算（±10 内）**）；
   桌面 ∥ VSC 消费面 = **零改**（核件单源两端同收；VSC `webview/model-menu.js` = 10 行 re-export shim，逐字不动）；`thincoder-render-core/composer/panel.mjs` 零改（回写门 `writebackBlocked` 不动）；
   测试覆盖 = 单元测试档（用例 a ∥ b ∥ e-3；随批留存）；全清令：集成测试不写 ∕ 不改 ∕ 不跑。
+
+**推理块默认展开随动**：核 `thincoder-render-core/flow/reasoning.mjs` **25**（`:16` `open = true` ∥ `:8`–`:9` 注收正——净 ±0）· 核 `thincoder-render-core/flow/block.mjs` **154**（`:108` 携 `open` ∥ `:99`–`:101` 注收正——净 ±0）；
+  服务器成员面三处默认态注释收正（`public/views-me-chat.mjs:238` ∥ `public/views-me-chat-messages.mjs:8` ∥ `deploy/sandbox/member-shell/protocol.mjs:187`；行数 ±0）；VSC ∥ 桌面代码零改（两端直调核件）；
+  测试覆盖 = 单元测试档（`thincoder-vscode/test/2026-10-19-vsc-reasoning-expanded.test.mjs` 新增；`thincoder-vscode/test/files.mjs` **8 ⇒ 9** 登记——不登记不执行）；用例宿主 = happy-dom（VSC devDep `@happy-dom/global-registrator`，`thincoder-vscode/package.json:156`），判据含负控与修前红对照（§7 C15）；集成测试不写 ∕ 不改 ∕ 不跑。
 
 ## 7. 验收判据（机器可检 · 回指 D19）
 
@@ -446,6 +460,8 @@ VSC ∥ `thincoder-core` = 零触；测试覆盖 = 单元测试档（平 node ·
 | C12 | 增量 md 语义：分片恒等式（段内 `mdInline` 分片复合 ≡ 整体 ∕ 块级 `md` 分片复合 ≡ 整体——语料逐例）∧ 画件协议（无缓存分片全绘 ∕ 增帧零重渲冻结区 ∕ 复位径 ∕ 异常回退 `textContent`（+ 复位））平 node 全绿；**运行时等价用例 = 真机探针 R-9**（真 DOM 增量面 ≡ 全量参照——`textContent` 逐字 + 结构归一） | 单元测试档 + 真机探针（R-9）；全清令——核集成测试零触 |
 | C13 | 帧内组合（就地改 + 追加）不回落：`streamDelta` `patch-append` 判据 ∕ `alignPlan` combo 对齐（含滑窗 ∕ 守卫例）∘ `settleFrame` combo 支（尾节点就地 + 追加段挂载——假 DOM 节点身份存续）∧ 真机边界帧零重挂（R-8） | 单元测试档（平 node）+ 真机探针（R-8） |
 | C14 | **模型菜单行语义**：provider 行 = 分组/展开控件（`role="button"` + `aria-expanded`；无 `aria-selected`）；点击 = 展开⇄收起，且菜单层恒不因行点击而关；两态零 `post` 零槽写；条目拾取恰一次（`click` 单点）∧ `onPick` 携 `row`（在场期换行集仍生效） | 单元测试档（用例 a ∥ b ∥ e-3；全清令） |
+| C15 | **推理块默认展开（DOM 属性断言 · 非文本）**：① live 径 `renderReasoning({}).el.open === true`；② 恢复径 `buildAssistantRestore({ reasoning: "x" })` 内 `.reasoning-block` 元素 `open === true`；**负控（同宿主）**：`d.innerHTML = '<details class="reasoning-block"></details>'` ⇒ `d.querySelector(".reasoning-block").open === false`（证明宿主真解析属性集——串匹配桩在此必红）；**修前红**：同一档在改前代码（`open = false` ∕ 恢复径不携 `open`）下 ①② 红（先例 = `docs/vsc/design/WEBVIEW.md` §5.8 修前红对照条） | 单元测试档（`thincoder-vscode/test/2026-10-19-vsc-reasoning-expanded.test.mjs`——`files.mjs` 在册）；用例宿主 = happy-dom（`thincoder-vscode` devDep `@happy-dom/global-registrator` ^20.11.2，`thincoder-vscode/package.json:156`）——DOM 构件用例宿主 = 消费端测试树（§6 口径） |
+| C16 | **推理块默认展开 · 桌面臂（结构性读数）**：`thincoder-desktop/renderer/views/chat-text.mjs:55` 仍 `open: true`；`grep -r "@thincoder/render-core" thincoder-desktop/renderer` 零命中；桌面树 `git diff --name-only` 不含 `thincoder-desktop/` | 结构性读数（grep / 目检——桌面树无 DOM 用例宿主，不进单测档） |
 
 ## 8. 实施分批建议（文件面 · 串行序）
 

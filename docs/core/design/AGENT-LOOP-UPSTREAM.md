@@ -891,8 +891,12 @@ export function upstreamAskLabelVars(carrier) {
     工具集 = `FILE_MUTATORS` 六件（`thincoder-core/agent/helpers.mjs:86`）。
 ▸ **判据物选择**：`_touchedFiles` 是**去重路径集**（同一文件重复编辑每轮都计「零落笔」⇒ 误杀在产出的子代理）⇒ 采集点改读写序。
   ▸ **`_touchedFiles` 记账本面零改**（约 20 个消费面：verify 变更集 / advisor 默认范围 / 审计块 / 子代理合入 / L3 调度域 / `recent_changes` / linter 等）——仅**采集点读的数量**由「路径数」换成「写序」。
-  ▸ **判据式（单源谓词）**：`const seq = agent._mutationSeq; const wrote = Number.isInteger(seq) ? seq !== agent._mutSeqMark : true`（`_mutSeqMark` = 上轮结账时的写序标；`wrote === false` ⇒ 零落笔）。
-    非整数（未跟踪执行面）⇒ **记「有落笔」** = 不判（不冒充 0、不误报）。
+  ▸ **判据式（单源谓词）**：`wroteSince(agent, mark)`——`const seq = agent._mutationSeq; return Number.isInteger(seq) ? seq !== mark : true`（`mark` = 上轮结账时的写序标 `_mutSeqMark`；返回 `false` ⇒ 零落笔）。谓词住 `thincoder-core/agent/helpers.mjs`（模块级导出——轮顶与收尾两处共用一份，且**可单测**：判据必须在改前红、改后绿，闭包只能靠文本扫描）。
+  非整数（未跟踪执行面）⇒ **记「有落笔」** = 不判（不冒充 0、不误报）。
+  ▸ **边界三形（实现前定形）**——
+    ① **`_mutationSeq` 非整数**（缺字段 / NaN）：判「有落笔」⇒ 不判。**不用 `?? 0` 兜底**：未跟踪面两值同为 0 ⇒ 读成「零落笔」——正是本收正要消除的误报方向。核内构造恒初始化 `_mutationSeq: 0`（`thincoder-core/agent.mjs:69`）⇒ 非整数属防御分支。
+    ② **resume 跨段**：`_mutSeqMark` 在每段入口重取基线（`runTurnLoop` 入口赋值——续跑 = 新一次调用），段内比对不跨段串位；`_zeroWriteStreak` / `_zeroWriteAlerted` 跨段存活（D-ZW2——续跑不复位）；`_zeroWriteTurns` / `_segmentTurns` 按段复位（`thincoder-core/agent/run-start.mjs:107`）。
+    ③ **`maxTurns ≤ 0`**：回合环未跑 ⇒ 零计数（收尾结算门 `maxTurns > 0`）；入口基线赋值无副作用。
   ▸ **落笔判定表（可证伪 · 逐条）**——
     **计落笔**：`FILE_MUTATORS` 六件任一**执行成功**；**同一文件重复编辑亦计**（每次执行 = 一次写序推进）；一次调用触多档（`apply_patch`）= 仍计 1 次事件；中断批内**已执行成功**的写（`signal.reason.interrupt`——执行期已记账）。
     **不计落笔**：只读工具族（`read` / `grep` / `glob` / `ls` / `tree` / `repo_outline` / `code_search` / `doc_search` 等）· `git`（含写型子命令）· `bash` · **`batch` 追加（§2 段写）** · **`file_ops`（移动 / 复制 / 改名）** · 写工具**执行失败**（结果 `Error:` 前缀 ⇒ 写序不推进）。
@@ -908,7 +912,7 @@ export function upstreamAskLabelVars(carrier) {
   **不变量** = `_zeroWriteTurns ≤ _segmentTurns`（同段同源、逐轮结账 ⇒ 机检可断言）。
 - **复位条件 = 链起点且无继承 guard**（`!resume` 块——钉单一锚 = `_touchedFiles = []`（`thincoder-core/agent/run-start.mjs:124`）同点；与块顶 `_turnSeq = 0`（`:112`）的分支差别 = `:124` 在 `_inheritedGuard` else 支内（有继承 guard 时不执行）、`:112` 恒执行——触面（eng 子代理恒无继承 guard）两锚同效）——段起点 / 续跑新段**不回退**（「连续」跨段存活——段边界不打断语义）。
 - **阈值** = `ZERO_WRITE_ALERT_ROUNDS = 50`（**连续**口径——「50 轮没有落笔」= 最近 50 个回合无一落笔）。越阈（`_zeroWriteStreak ≥ 50`）⇒ 推一条 note。
-- **单点采集**：判定恒在回合环轮顶（`turn > 0` 结上一轮）；**撞帽收尾轮不另判**——链尾窗口价值低，且撞帽 ask 载荷自带 `_zeroWriteTurns` 计数（终局信息不丢）。
+- **单点采集**：alert ∥ streak 判定恒在回合环轮顶（`turn > 0` 结上一轮）；**撞帽收尾轮单结**（`thincoder-core/agent/turn-loop.mjs:276`——与环内同一谓词，同结 `_zeroWriteTurns`），**不另作 alert ∥ streak 判定**（链尾无下一轮可推报）；终局计数不丢（收尾单结 + 撞帽 ask 载荷自带 `_zeroWriteTurns`）。
 - 未跟踪执行面（缺 `_zeroWriteStreak` 字段）⇒ **不判**（零动作——沿 `thincoder-core/agent-tools/checkpoint.mjs:30`「缺字段不渲染」同精神；不冒充 0）。**as-built 注（NaN 卫生 · 父侧 2026-10-05 裁 = 接受）**：未初始化面——缺字段自增产出 NaN，由门「整数判」（§6.32.6）拦下 ⇒ 零动作（与「不判」同效）；无显示面；可选加固（初始化缺省）留档。「轮」= 回合（turn——与 #417 口径同）。
 
 **② 评审族（advisor——异步评审）——「连续无产出轮」**
@@ -982,31 +986,16 @@ export function maybeZeroWriteAlert(child)         // 子代理族判定 + 推�
 export function pushAdvisorAlert(parent, from, rounds)   // 评审族推送（组合文案 + push）——呼点 = 评审环路钩子；恒零抛（实现面兜底捕获兑现——抛错不得上抛为评审 failed 面）
 ```
 
-**触发接线①（子代理族——回合环 · 采集点邻单点；**2026-10-15 判据收正**）**：
+**触发接线①（子代理族——回合环 · 采集点邻单点；判据物 = `_mutationSeq` 写序）**：
 
 ```js
-// 改前（thincoder-core/agent/turn-loop.mjs:60-62 ∥ :80-90 ∥ :270——判据物 = `_touchedFiles` 路径数）
-agent._turnFilesMark = agent._touchedFiles.length
-// ...
-if (turn > 0) {
-  if (agent._touchedFiles.length === agent._turnFilesMark) {
-    agent._zeroWriteTurns += 1
-    agent._zeroWriteStreak += 1
-    maybeZeroWriteAlert(agent)
-  } else {
-    agent._zeroWriteStreak = 0
-    agent._zeroWriteAlerted = false
-  }
-}
-agent._turnFilesMark = agent._touchedFiles.length
-
-// 改后（判据物 = `_mutationSeq` 写序；mark 更名 `_mutSeqMark`——同名不同物 = 名称失义）
-// 环外基线（:60-62 邻）：
+// 判据物 = `_mutationSeq` 写序；mark = `_mutSeqMark`（新字段——`_turnFilesMark` 是路径数标，同名不同物 = 名称失义）
+// 环外基线（thincoder-core/agent/turn-loop.mjs:62 邻）：
 agent._mutSeqMark = agent._mutationSeq
 // 环头（:73-75 邻）——本段轮数（读数分母）逐轮 +1：
 agent._segmentTurns = (agent._segmentTurns ?? 0) + 1
-// 单源谓词（`runTurnLoop` 作用域内一次声明——两处判据点共用，防漂移）：
-const wroteSince = (a, mark) => { const s = a._mutationSeq; return Number.isInteger(s) ? s !== mark : true }  // 非整数 ⇒ 不判（记「有落笔」）
+// 单源谓词（thincoder-core/agent/helpers.mjs 模块级导出——两处判据点共用，防漂移）：
+//   export function wroteSince(agent, mark) { const s = agent._mutationSeq; return Number.isInteger(s) ? s !== mark : true }  // 非整数 ⇒ 不判（记「有落笔」）
 // 轮顶结账（:80-90）：
 if (turn > 0) {
   if (!wroteSince(agent, agent._mutSeqMark)) {
@@ -1019,7 +1008,7 @@ if (turn > 0) {
   }
 }
 agent._mutSeqMark = agent._mutationSeq
-// 撞帽收尾轮单结（:270——同一谓词）：
+// 撞帽收尾轮单结（:276——同一谓词）：
 if (maxTurns > 0 && !wroteSince(agent, agent._mutSeqMark)) agent._zeroWriteTurns += 1
 ```
 
@@ -1075,20 +1064,23 @@ function traceText(child) {
 
 ### 6.32.7 受影响文件清单
 
-**② 收正轮（2026-10-15 · 判据口径与两面告知）——现量 = 按盘实读（`node` `split("\n")`，含末行空行）**
+**现量 → 预计终值（读数 = `node` `split("\n")`，含末行空行）**
 
 | # | 文件 | 现量 → 预计终值 | Δ | 说明 |
 |---|---|---|---|---|
-| 11 | `thincoder-core/agent/turn-loop.mjs` | **276** → ~282 | ≈ +6 | 判据物换 `_mutationSeq` + `_mutSeqMark` 更名（4 处）+ `_segmentTurns` 每轮自增 + `wroteSince` 谓词 + 注释；**结构未变 · 不拆** |
-| 12 | `thincoder-core/agent/run-start.mjs` | **159** → ~160 | +1 | `_segmentTurns = 0`（段起点；与 `_zeroWriteTurns` 同点） |
+| 11 | `thincoder-core/agent/turn-loop.mjs` | **282** → ~288 | ≈ +6 | 判据物换 `_mutationSeq` + `_mutSeqMark`（新字段；`_turnFilesMark` 退役）+ `_segmentTurns` 每轮自增 + 谓词 import + 注释；**结构未变 · 不拆** |
+| 12 | `thincoder-core/agent/run-start.mjs` | **159** → **160** | +1 | `_segmentTurns = 0`（段起点；与 `_zeroWriteTurns` 同点） |
 | 13 | `thincoder-core/agent-tools/checkpoint.mjs` | **122** → ~127 | ≈ +5 | `traceText` 读数带分母 + 载荷加职责句；`replyHint` 零改 |
 | 14 | `thincoder-core/agent-tools/zero-write-watch.mjs` | **78** → **78** | **±0** | 判据收正落在采集侧——叶档门的读面未变 |
-| 15 | `thincoder-core/agent/record-results.mjs` ∥ `dispatch-gates.mjs` ∥ `advisor-settle.mjs` | **零改面** | **±0** | `_touchedFiles` 记账面 ∥ 写序记账面零改（登记在案） |
-| 16 | 批次本地单元测试档（随批档留存 · 不进集成测试树） | 新 → 估 | 新增 | 落笔判定表逐条用例 + B 面读数用例（U-ZW9–U-ZW12）；复跑 = `node --test` 直跑 |
-| 17 | `docs/core/design/AGENT-LOOP-UPSTREAM.md`（本档） | **1343** → **1461**（实读——`node split("\n")`） | **+118** | §6.32 引言 + §6.32.2 / .4 / .6 / .7 / .8 / .9 / .10 / .11 |
-| 18 | `docs/core/requirements/AGENT-LOOP.md` | **351** → 父侧落笔后实读 | ≈ +2 | §4.16 总体需求目的句 + F-ZW1 口径句（**父侧笔**——见上抛项） |
+| 15 | `thincoder-core/agent/record-results.mjs` ∥ `dispatch-gates.mjs` ∥ `advisor-settle.mjs` | **零改面** | **±0** | `_touchedFiles` 记账面 ∥ 写序记账面零改 |
+| 16 | 批次本地单元测试档（随批档留存 · 不进集成测试树） | 新 → 估 60–90 | 新增 | 谓词逐条用例（U-ZW9–U-ZW12）；复跑 = `node --test` 直跑 |
+| 17 | `thincoder-core/agent/helpers.mjs` | **493** → ~496 | ≈ +3 | `wroteSince(agent, mark)` 模块级导出（单行实现 + 注释）——留 500 行建议线内 |
+| 18 | `docs/core/design/AGENT-LOOP-UPSTREAM.md`（本档） | **1272** → **1274**（本席落笔后实读） | **+2** | §6.32.2 边界三形 + §6.32.6 接线① 目标形 + §6.32.8 执行载体头注 + 本表 |
+| 19 | `docs/core/requirements/AGENT-LOOP.md` | **334** → **334** | **±0** | §4.16 F-ZW1 判据句 / F-ZW4 B 面句已在盘（父侧已收正）——本批零触 |
 
 ### 6.32.8 用例表（正常 / 边界 / 错误）
+
+**执行载体**：U-ZW9–U-ZW12 由批次本地单元测试档承载（谓词级投影 + 接线静态断言，7 例；§6.32.7 行 16 · 随批档留存）。U-ZW1–U-ZW8（叶档推送 ∥ 评审族 ∥ 文案面）只有本表规格、**从未落到可执行测试档**；补建须另立批次承载。
 
 | # | 类型 | 输入 | 期望输出 | 回指 |
 |---|---|---|---|---|
@@ -1109,11 +1101,11 @@ function traceText(child) {
 
 | # | 判据 | 回指 |
 |---|---|---|
-| A-ZW1 | 触发判据双族在盘：子代理族 = 连续 `_zeroWriteStreak ≥ 50`（采集点邻单点）；评审族 = 连续 `silentRounds ≥ 50`（缺钩子零行为）——U-ZW5 / U-ZW7 绿 | F-ZW1 / F-ZW2 |
-| A-ZW2 | 防轰炸：越阈恰一条 ∧ 写后重臂 ∧ 评审一次 / 运行——U-ZW2 / U-ZW3 / U-ZW7 绿 | F-ZW3 |
-| A-ZW3 | 文案两面逐字 = 代码叶档单源：A 面（`zero-write-watch.mjs:25` ∥ `:30`） ∧ B 面（`checkpoint.mjs:28-31` 读数 ∥ `:85-86` 载荷）；A 面携 `from`（`role#id`）+ 轮数——U-ZW1 / U-ZW12 逐字断言 | F-ZW4 |
+| A-ZW1 | 触发判据双族在盘：子代理族 = 连续 `_zeroWriteStreak ≥ 50`（采集点邻单点）；评审族 = 连续 `silentRounds ≥ 50`（缺钩子零行为） | F-ZW1 / F-ZW2 |
+| A-ZW2 | 防轰炸：越阈恰一条 ∧ 写后重臂 ∧ 评审一次 / 运行 | F-ZW3 |
+| A-ZW3 | 文案两面逐字 = 代码叶档单源：A 面（`zero-write-watch.mjs:25` ∥ `:30`） ∧ B 面（`checkpoint.mjs:28-31` 读数 ∥ `:85-86` 载荷）；A 面携 `from`（`role#id`）+ 轮数——U-ZW12 逐字断言 | F-ZW4 |
 | A-ZW4 | 送达 = 同队列 note：条目 `{from, kind:"note", message}`；**不唤醒**（静态机检：watch 档零引唤醒面）；`UPSTREAM_*` / drain 文案零改 | F-ZW5 |
-| A-ZW5 | 零回归面（收正后）：`_touchedFiles` 记账（两写入点 + ~20 消费面）零改 · 写序记账面（`noteExecutedMutation` / `noteMutations` / `_mutLog`）零改 · `zero-write-watch.mjs` ±0 · `notify_parent` / `UPSTREAM_*` / drain 零改；现役可红面 = 单元测试档（U-ZW1–U-ZW12）全绿 | F-ZW6 |
+| A-ZW5 | 零回归面（收正后）：`_touchedFiles` 记账（两写入点 + ~20 消费面）零改 · 写序记账面（`noteExecutedMutation` / `noteMutations` / `_mutLog`）零改 · `zero-write-watch.mjs` ±0 · `notify_parent` / `UPSTREAM_*` / drain 零改；现役可红面 = 批次本地单元测试档 7 例（U-ZW9–U-ZW12 的谓词级投影 + 接线静态断言；§6.32.7 行 16 · 随批档留存）——U-ZW1–U-ZW8 从未落到可执行测试档（§6.32.8 头注），补建须另立批次 | F-ZW6 |
 | A-ZW6 | `node scripts/doc-check.mjs --root .` 触碰档零新增悬空锚 / 零新增行宽违规 | 批档自身约束 |
 | A-ZW7 | 口径判定表逐条在盘：同文件重复编辑 ⇒ 计落笔；只读 / `git` / `bash` / `batch` / `file_ops` ⇒ 不计；写失败 ⇒ 不计；未跟踪（非整数）⇒ 不判——U-ZW9 / U-ZW10 / U-ZW11 绿 | F-ZW1（收正） |
 | A-ZW8 | B 面读数带分母 + 缺字段不渲染 + `_zeroWriteTurns ≤ _segmentTurns` 不变量在盘——U-ZW10 / U-ZW12 绿 | F-ZW4 |
@@ -1128,7 +1120,7 @@ function traceText(child) {
 4. 不改 `_zeroWriteTurns`（#417）的**字段名 / 承载面 / 三端消费点**（status / 面板 / webview 零改——可见面 = 既有 drain 注入）；其**采集口径与展示文案随收正**（读数与文案两变——见 §6.32.2 ① / §6.32.4）。
 5. 阈值固定 50（用户口径）——不做配置键；文案定稿 = 机制文档定稿。
 6. 触面 = 用户点名三角色；explore / plan / consult / 普通 coder / depth-0 不设；同步评审不设（§6.32.2 ②）。
-7. 撞帽收尾轮不另判（单点采集——§6.32.2 ①）；未跟踪执行面不判。
+7. 撞帽收尾轮单结（与环内同一谓词，同结 `_zeroWriteTurns`），不另作 alert ∥ streak 判定（§6.32.2 ①）；未跟踪执行面不判。
 8. 提示词面零改（内容依据 = 机制文档，落笔 = eng-coder）。
 9. **不扩落笔面**：`bash` / `git` / `batch` 追加 / `file_ops` **均不计落笔**（§6.32.2 ① 裁定）；**不放大共享 `FILE_MUTATORS`**（权限门 / 变更失效链语义不动）——真出现只经两者的长跑 ⇒ 再议（解消窗）。
 
@@ -1142,7 +1134,7 @@ function traceText(child) {
 | D-ZW4 | 防轰炸 = 闩 + 写后重臂 | 零计时零窗口、语义自洽（写 = 恢复推进——§6.32.3） |
 | D-ZW5 | 单源落点 = 本档 §6.32（上行通道族）+ 机制叶档 `thincoder-core/agent-tools/zero-write-watch.mjs` | 交付面全在 §6.27 面（队列 / 消费 / 闸 / 显示）；触发坐标以「产出站点」表跨档列示（§6.27.2 S 表先例） |
 | D-ZW6 | 评审族判据 = **文本产出否**（改锚）+ 连续 50 轮 + 异步面 + 钩子形 | 父侧裁定 A（承用户原话三面全点名）；只读角色「没有落笔」=「没有产出」；用户可一句话改判 |
-| D-ZW7 | 采集点 = 回合环轮顶单点（撞帽收尾轮不另判） | 单点最小面；撞帽 ask 载荷自带 `_zeroWriteTurns`——终局信息不丢 |
+| D-ZW7 | 采集点 = 回合环轮顶单点 + 撞帽收尾轮单结（同一谓词，同结 `_zeroWriteTurns`；不另作 alert ∥ streak 判定） | 单点最小面：alert ∥ streak 只在环顶判（链尾无下一轮可推报）；终局计数不丢（收尾单结 + 撞帽 ask 载荷自带 `_zeroWriteTurns`） |
 | D-ZW8 | 与「不设零产出阈值」裁定（`docs/core/design/TURN-CAP-CONTINUE.md` §1 行 6）的关系 = **相容**：该裁定对象 = 续跑决策的自动动作；本机制不触续跑决策（只推一条提醒，处置归父 / 用户）。**字面收窄已落 = 对象限定＋交叉指针（同档 §1 行 6）** | 用户原话（后令）立提醒阈值；机制面零自动动作与裁定精神一致 |
 | D-ZW9 | 送达时效 = **维持 note 不唤醒（有意选择——机制文档定稿）** | 代价 = 越阈提醒常在子代理结束后才达父侧（默认流首个唤醒恒 = 子代理自身 settle）；替代路径登记 = §6.27.12.11-7（改点两处 = 入队尾唤醒门 `:530`——`kind === "ask"` 门控 + `upstreamWaiting` 谓词；代价 = 每条 note 一次父侧轮）；用户 / 父侧一句话可改判 |
 | D-ZW10 | 判据物 = **写序 `_mutationSeq`**（复用既有唯一写记账点——零新字段 / 零新记账点） | 与 `_touchedFiles` 解耦：后者是**去重路径集**（首次碰新路径才增），与「本回合有无产出」不同构（同文件重复编辑 = 每轮伪零落笔） |

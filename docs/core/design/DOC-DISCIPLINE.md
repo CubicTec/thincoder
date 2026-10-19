@@ -1051,15 +1051,23 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 **节缺的同板块回退（解析序 ③b）**
 
-- **判据句**：解析序 ③ 命中档**无该节**时，取同板块（`docs/<board>/`）内 basename 相同的候选中**恰一个含该节**者 ⇒ 解析到它；0 个 ⇒ `节缺`（目标 = ③ 命中档）；≥ 2 个 ⇒ 多义，报告面不判。
-- **为什么**：③ 按「引用方档所在目录」优先——从 `requirements/` 引裸名 `TUI.md §7.5` 会落到同目录的 `requirements/TUI.md`，而真目标常是同板块的 `design/TUI.md`。夹具可复现该形（读数见下）。
+- **判据句**：解析序 ③ 命中档**无该节**时，在候选集中取**恰一个含该节**者 ⇒ 解析到它；`1` 个 ⇒ 解析成功、零报告；`0` 个 ⇒ `节缺`，目标 = ③ 命中档；`≥ 2` 个 ⇒ 多义，报告面不判。
+- **候选集枚举来源**：④ 的 basename 索引（`thincoder-core/doc-check/anchors.mjs:104`–`:109`，按域内 `.md` 全集 `files` 建）中 **basename 与 token 逐字相同**（与 ④ 同键）的条目，再按同板块过滤。候选集**不看** `anchors.roots`（⑤ 的根不参与 ③b）。
+- **路径基准（写死）**：`files` 元素 = `scanDomain` 产出的**仓根绝对路径**（`thincoder-core/doc-check/width.mjs:52`–`:57`：`resolve(base, scanDirs)` 之下逐层 `join`；索引值 = 元素原样，`anchors.mjs:105`–`:108`）。故本仓候选**恒含 `docs` 段**——「域相对 ⇒ 全不入集」这一形结构上不出现。
+- **同板块定义**：档路径含 `docs` 段者取其 `docs/<板块>/…` 的 `<板块>` 段为板块名；**同板块 = 两档该段逐字相同**（本仓板块 = `core` / `cli` / `desktop` / `vsc` / `server` / `render-core`）。不含 `docs` 段的候选 ⇒ 不同板块，不入集。
+- **段判定式（写死）**：按路径分隔符切段后**逐段比对**（`/` ∥ `\` 都认——`win32` 上 `join` 出 `\`，写 `docs/` 子串判会全落空）。某项目 `scanDirs` 不含 `docs` 段 ⇒ 候选集恒空 ⇒ ③b 零效（退化为 ③ 原行为，不误报）。
+- **含该节的匹配式**：与 ③ 判节**同一谓词** `sectionOnDisk(path, num)`（`anchors.mjs:52`–`:57`）——目标档存在标题行（`^#{1,6}\s` 起），其标题文本去前缀后的首个 `\d+(?:\.\d+)*` 与指针节号**字符串逐字等值**；不做标题文本前缀匹配、不做编号区间展开。
+- **三态落哪个报告面**：`1` ⇒ 解析成功（零报告）；`0` ⇒ `hits` 的 `节缺`（`target` = ③ 命中档）；`≥ 2` ⇒ `reports` 的多义行 `{file, line, token, candidates}`，候选 = 同板块内 basename 相同且含该节者（按路径序）。
+- **为什么**：③ 按「引用方档所在目录」优先——从 `requirements/` 引裸名 `TUI.md §7.5` 会落到同目录的 `requirements/TUI.md`，而真目标常是同板块的 `design/TUI.md`。夹具可复现该形（判法见下「复算方式」）。
 - **代价（如实）**：节号写错且同板块兄弟档恰有该号 ⇒ 放过。收窄在「同板块 + 同 basename」两条件，不跨板块、不按键号猜。
 - **不做**：不扩 ④ 的 basename 索引到仓根；不把类名改判为可解析指针。
 
-**复核读数（2026-10-19 新进程 · target = thincoder · 196 档）**
+**复算方式（读数住记录面，本节只给判法）**
 
-- `doc_check` report ⇒ **命中 0（锚 0 · 行宽 0）**；多义报告 814 条（报告面，不判）。台账 `#1633` 记的 155 条假阳**现盘不存在**。
-- 夹具（系统临时域，零落仓）：错名 `commn` + `.md` ⇒ `档缺`；`AGENTS.md` / `x.md` / `file.md` / `example.md` ⇒ 不抽；从同目录含 `TUI.md`（无该节）的档引 `TUI.md §7.5` ⇒ `节缺`（③b 的复现形）。
+- **判法**：命中以**锚**（`档缺` / `节缺`）∥ **行宽**（超宽行）两面计、逐条计入；**多义报告面不作判**。复算 = `doc_check`（report ∥ gate 同一引擎）。读数环境须为新进程——陈旧引擎在报告面首行加注记。
+- **归一算术**：两免是**抽取面闭集**（`anchors.mjs:27`–`:35` 两张表 + `:133` 逐 token 跳过）⇒ 落闭集的名字**构造上不入判**；判「某批假阳还在不在」只看现盘命中数（＝锚 + 行宽）。
+- **反证（不放宽）**：错名 `commn` + `.md` 不落任一闭集 ⇒ 报 `档缺`；夹具落系统临时域（零落仓）。
+- **③b 复现形**：临时域内两档 `docs/core/requirements/TUI.md`（无该节）∥ `docs/core/design/TUI.md`（含该节）——**同 `core` 板块**（写成 `requirements/` ∥ `design/` 即不同板块 ⇒ 候选集空 ⇒ 复现不出）；真目标在 `design/` ⇒ 生效后零命中；兄弟档无该节 ⇒ `节缺`；两档皆含该节 ⇒ 报告面多义。
 
 **公共源勘察证据行**：工作目录内**无独立公共文档仓**（`PROJECT-MANIFEST.json` 的 `index.publicRepos` = `[]`——实读）；参照系 `D:\ref\` 在索引外（只读声明源）⇒ **已查，无相关公共源可引**。
 
@@ -1082,10 +1090,10 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 **工具形（与 `manifest` / `ledger` / `batch` 同级）**：
 
 - **名 / 参数**：`doc_check`（参数 = `target` 可选——显式项目根，缺省 = 会话锚；`target` 指向多项目工作区 ⇒ 报明候选并要求指名，同 `manifest` 工具面）；
-  `mode` 可选——`report`（缺省）∥ `gate`（交付门——§3.20「交付时点强制」）；`docs` 可选——**仅 gate 模式**（显式改档清单；report 模式传入 ⇒ 拒，不静默忽略）。
-- **标记**：`readonly`（零副作用 · 免审批 · 可并行）；**无 action 参数**——`mode` 不是动作枚举：它是**同一个判据的两种问法**（全域报告 ∥ 范围化裁定），判据本身只有一条。
+  `mode` 可选——`report`（缺省）∥ `gate`（交付门——§3.20「交付时点强制」）；`docs` 可选——显式档清单：`gate` 面 = 本轮改过的档（首行 verdict）；`report` 面 = 清账 ∥ 定点复核的档集（给了 ⇒ 只判这些档；越域 ∥ 缺档 ⇒ 报错点名——见本条「报告态档集」）。
+- **标记**：`readonly`（零副作用 · 免审批 · 可并行）；**无 action 参数**——`mode` 不是动作枚举：它是**同一个判据的两种问法**（报告态 ∥ 范围化裁定），判据本身只有一条。
 - **装配段**：depth-0 段 + `eng-coder` / `eng-designer` 段（写文档 / 设计档的角色面）；explore / plan / consult / 兜底段不挂。
-- **两种问法，一条判据**：`report` = 全域报告态（**不阻断、不置退出码、不接 CI**；引擎陈旧 ⇒ 首行一行 `[doc_check note]` 注记（读数不可作交付判据），裁定仍不发生；输出不得被读作拒执行的理由——用户令 > 机检——§2 总则族）；
+- **两种问法，一条判据**：`report` = 报告态（缺省 = 全域；给 `docs` ⇒ 只判该档集——见本条「报告态档集」；**不阻断、不置退出码、不接 CI**；引擎陈旧 ⇒ 首行一行 `[doc_check note]` 注记（读数不可作交付判据），裁定仍不发生；输出不得被读作拒执行的理由——用户令 > 机检——§2 总则族）；
   `gate` = **交付时点的范围化裁定**（首行给 verdict——报面见 §3.20「交付时点强制」）。门禁的强制面住**交付协议 + 批次档 §6 收口前置**，工具本体不阻断任何动作——两种问法的判据与引擎同源，只有射程与落点不同。
 - **描述面射程化（模型可见契约 = 实际行为）**：`thincoder-core/tool-docs/doc_check.md` 的非门禁句射程 = **`report` 模式**——`report` 句加模式限定（「默认 `report` 模式：不阻断 / 不置退出码 / 不作拒执行的理由」），两句绝对句（`It cannot: … gate anything …` ∥ `Do not wire it as a gate or CI step`）同限到 `report`；
   **gate 段单列**（`mode` / `docs` / verdict 三串 / 引擎版本校验各一句）——gate 的拒绝对象 = **一次交付**，不是用户指令（与「用户令 > 机检」并存）。判据 = A-DD30 ⑧。
@@ -1193,6 +1201,95 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 ```
 
 零命中 ⇒ `结论：0 条命中（锚 ∥ 行宽 均清）`。**陈旧 ⇒ 注记行居首行之前**，判据与逐字单源 = §3.20 条目 S「引擎版本一致」的 `report` 注记条：无 stale 时首行 = `文档纪律机检（报告态 · 非门禁）`；stale 非空时其前多一行 `[doc_check note] 引擎陈旧…`（多档以 `；` 连列）。
+
+**报告态档集（`docs` 显式清单——清账 ∥ 定点复核）**
+
+**裁定（目标态）**：`report` 面接受 `docs`（字符串数组）——**给了 ⇒ 只判这些档**（每档整档入判，判据两条不变）；**不给 ⇒ 全域**（报面与命中集逐字不变）。范围只收窄被判档，解析基线仍是全域：清单内的档以裸名引用域内未判的档，照常可解析（与 gate 面同一条「解析面不缩」）。需求 = `docs/core/requirements/DOC-CHECK.md` F10 / AC-8。
+**为什么**：清账与定点复核要的是「只查这几档」——全域扫描噪声大，清账时分不清是哪几档的问题；拿 gate 面顶替不行：gate 带 verdict 判词与「本轮改过」语义，读数会被当成交付裁定。
+
+**语义矩阵**（四态；越域 ∥ 缺档恒为错误）：
+
+| 输入 | 行为 |
+|---|---|
+| `report`（无 `docs`） | 全域检查——报面与命中集逐字同改前 |
+| `report` + 非空清单 | 只判清单内各档（整档入判）；报面多一行范围行，其余行形不变 |
+| `report` + `[]`（∥ 全为空白串） | 报错——空清单 ≠ 全域，判据一条都不跑 |
+| `report` + 越域档 ∥ 不在盘的档 | 报错并逐档点名；**整次零判定**（fail-closed）——不是「判能判的、报不能判的」 |
+| `gate` + 任意 | 语义不变；越域 ∥ 缺档仍是跳过行（不是命中，但可见） |
+| `docs` 非数组 | 既有拒串不变（裸串不被读作全域请求） |
+
+**两处置同源**：范围求交唯一实现 = `thincoder-core/doc-check/index.mjs` 的 `resolveRange`（声明域内 ∧ 盘上存在的 `.md`），`report` 与 `gate` 共用。差别只在不可判档的处置：gate 给跳过行（交付面能看见「这些档没检」），report 给错误串——清账面没有「部分检查」这回事，清单写错却报 0 命中是要关闭的假绿。
+
+**报错串形**（引擎抛 `doc_check:` 前缀；工具面由调度器包成 `Error: <message>`——`thincoder-core/agent/dispatch-run.mjs:160`–`:183` 实读）：
+
+```text
+空清单：doc_check: docs is empty — an empty list does not mean "the whole declared domain"; omit docs for the whole domain, or list the documents you mean.
+不可判档：doc_check: docs names N document(s) that cannot be judged — no document was checked: <rel>（outside the declared domain）∥ <rel>（not on disk）∥ <rel>（not a markdown document）. Fix the list and re-run; neither is silently skipped and the check never widens to the whole domain.
+非数组：doc_check: docs must be an array of paths (got <type>) — a bare string is refused rather than read as a whole-domain request; pass ["<path>"].
+```
+
+**不可判档的三因（闭集；判定方向不变 = 一律报错、整次零判定）**：
+
+| # | 形状 | 原因串 |
+|---|---|---|
+| ① | 盘上不存在 | `not on disk` |
+| ② | 在盘但非 `.md` 常规档（目录 ∥ 其它扩展名） | `not a markdown document` |
+| ③ | 在盘的 `.md` 但不在声明域（`scanDirs` − `anchors.exclude`） | `outside the declared domain` |
+
+第 ② ③ 式是同一处的改判：现式把目录归进 `not on disk`、把域内非 `.md` 档归进 `outside the declared domain`（两处误标）。**禁**按 `.endsWith('.md')` 静默过滤——静默跳过正是 F10 要关的面。
+
+**非数组 `docs` 的拒绝层**：工具面守卫 = `thincoder-core/agent-tools/doc-check.mjs:44`–`:46`（**零改**——位于模式分支之前，report ∥ gate 都过它，返回上面的非数组串）；引擎面 = `runDocCheck` 的类型门（同一串，见「实现落点」）。**工具参数无共享 schema 校验层**——各工具自持 `execute` 守卫（实读 `thincoder-core/agent-tools/*.mjs`，未见通用校验器）；schema 的 `docs` 声明是模型可见契约，不是执行面判定。
+
+**报面（报告态 · 显式档集）——不产 `DOC-CHECK GATE:` 判词**：判词族是交付门的语义（消费面 = 交付协议 ∥ 批次档 §6 前置）；报告态冒出 `PASS` 会让清账读数冒充本批交付通过。报告态只多一行范围行：
+
+```text
+文档纪律机检（报告态 · 非门禁）
+射程：<root> · <域集>（M 档）· 阈值 <lineWidth> 字符 · 区带豁免：<名集 ∥ 无> · 排除：<集>
+声明：判据参数依据 `PROJECT-MANIFEST.json` `checkConfig`
+范围：显式档集 N 档（整档入判 · 解析基线 = 声明域 M 档，不收窄）
+命中 K 条（锚 a · 行宽 w）
+…
+结论：…
+```
+
+零命中 ⇒ 既有结论行逐字不变（范围行已说明只判了 N 档）。无 `docs` ⇒ 无范围行。
+
+**实现落点（逐层）**：
+
+- `thincoder-core/doc-check/index.mjs:138` 的 `if (!gate && docs !== undefined) throw …("gate-only")` **换成类型门**：`docs !== undefined ∧ !Array.isArray(docs)` ⇒ 抛「非数组」串（模式门删、类型门留——`docs` 走向双问法通用，裸串仍不被读作全域 ∥ 空清单）。
+- `:168` 范围行由 `gate ? resolveRange(...) : {check: files, …}` 改为 `(gate || scoped) ? resolveRange(...) : …`（`scoped = docs !== undefined`，类型门之后）；随后三抛——空清单 ∥ 越域 ∥ 缺档（fail-closed）。
+- `:74`–`:88` `resolveRange`：不可判档改**三因分类**（判序见「报错串形」）——现式两处误标按上节改判，逐项归因。
+- `:170`–`:171` **两句零改**：`files`（全域）已是解析基线、`checkFiles` 已是被判集——判据与解析面天然分家。
+- `:186`–`:209` 报告态报面：`scoped` 时插范围行，其余行逐字不变。
+- `thincoder-core/agent-tools/doc-check.mjs:47`–`:49` 的 report+docs 拒绝串**删除**；`:73` 报告分支传参（有清单 ⇒ `{docs, docsSource:"explicit"}`，无 ⇒ 缺省）；`:34` schema 的 `docs` 描述由「Gate only」改为两模式各自语义（模型可见契约 = 实际行为）。
+- `thincoder-core/tool-docs/doc_check.md` 的 `docs` 段同口径改述（英文运行面 = eng-coder 落）。
+
+**受影响文件（现行行数 = 实读 · 预计增量）**：
+
+| 文件 | 现行 | 预计 | 改动 |
+|---|---|---|---|
+| `thincoder-core/doc-check/index.mjs` | 210 | ≈232 | 删 gate-only 抛点；scoped 判定 + 三抛；报告态范围行 |
+| `thincoder-core/agent-tools/doc-check.mjs` | 75 | ≈72 | 删拒绝串；报告分支传参；schema 描述 |
+| `thincoder-core/tool-docs/doc_check.md` | 55 | ≈58 | `docs` 段两模式（英文运行面） |
+| `docs/core/design/DOC-DISCIPLINE.md` | — | — | 本节（报告态档集 + A-DD34 + DD-106–DD-113） |
+| `thincoder-core/test/doc-check-scope.test.mjs` | 新建 | ≈170 | DD-106–DD-113（收口删） |
+
+**用例表（正常 / 边界 / 错误）**：
+
+| # | 类 | 输入 | 期望 |
+|---|---|---|---|
+| DD-106 | 正常 | 夹具（声明域 2 档）：深层档 `common.md` 含一条指向不存在档的指针；清单档 `DOC-DISCIPLINE.md` 以裸名引用 `common.md`（域内唯一 basename）；`report` + 清单只给 `DOC-DISCIPLINE.md` | **0 命中**（对照：全域读数报 `common.md`）；报面含范围行 `范围：显式档集 1 档（整档入判 · 解析基线 = 声明域 2 档，不收窄）`——N=1 · M=2 |
+| DD-107 | 正常 | 同夹具；`report` + 清单只给深层档 `common.md` | 命中 = `common.md` 的 `档缺` 一条，逐字同全域读数中该档那条 |
+| DD-108 | 错误 | 清单给「在盘、域外」的 `.md` ∥ 「域内、盘上缺」的 `.md` | 各报错并点名该档，原因 = `outside the declared domain` ∥ `not on disk`；**零命中产出**；不降级全域 |
+| DD-109 | 边界 ∥ 错误 | `docs: []` ∥ 省略 `docs` | `[]` ⇒ 报错（空清单 ≠ 全域）；省略 ⇒ 全域读数：无范围行、命中集同改前 |
+| DD-110 | 正常（回归） | `gate` + 清单 = 域内 `DOC-DISCIPLINE.md` ∥ 域外 `AGENTS.md` | 首行逐字 `DOC-CHECK GATE: PASS`；范围行 `范围：显式 docs 1 档（声明域 2 档）…`；跳过行 `跳过 1 档（不在声明域内，未检）：AGENTS.md` 在场；`结论：0 条命中（1 档全清）` |
+| DD-111 | 边界（反证） | `report` + 清单只给 `DOC-DISCIPLINE.md`：该档以裸名引用未入清单的 `common.md`（域内唯一） | **零 `档缺`**、0 命中；范围行 `解析基线 = 声明域 2 档`——把 `files` 一并收窄 ⇒ `common.md` 必报 `档缺`（假阳，本式红） |
+| DD-112 | 错误 | `docs` 传裸串（非数组）：工具面 `docCheckTool.execute` ∥ 引擎 `runDocCheck` 各一次 | 工具面返回非数组串（不抛、不落全域）；引擎抛同串；两者均无 `文档纪律机检` 报面、无 `TypeError` |
+| DD-113 | 错误 | 清单给域内目录下在盘的非 `.md` 档 ∥ 域内子目录本身 | 各报错并点名，原因 = `not a markdown document`（第三因）；**不得**并入 `not on disk`，**不得**按 `.endsWith('.md')` 静默过滤 |
+
+**同类先例（对齐 ∥ 偏离）**：① gate 面的范围收窄（本条「交付时点强制」）——**对齐** = 同一 `resolveRange`、同一「解析面不缩」；**偏离** = 不可判档的处置（gate 跳过行 ∥ report 报错）。② `manifest` 工具的参数错面（报明 + 处置句）——**对齐**「参数错不猜」。先例批之名不入本档（D4 方向唯一）。
+
+**公共源勘察**：同本节证据行（`index.publicRepos` = `[]`，实读）——无相关公共源可引。
 
 **报面（固定句形 · 交付门 gate）**：
 
@@ -1760,6 +1857,7 @@ V5-B: /(?<![A-Za-z0-9-])((?:T-[A-Z]{1,5}\d{1,3}(?:-\d{1,3})?|T-\d{1,3}|T[A-Z]?\d
 | A-DD31 | 条目 S 的结构兜底（batch 工具两机械点）判据七条齐（判据 ①–⑦ 见下） | DOC-CHECK F9 / AC-7 · §3.20「结构兜底」 |
 | A-DD32 | 条目 S 的解析序 ⑤（声明解析根）判据六条齐（判据 ①–⑥ 见下） | §3.20 条目 S · 判据 ①「解析序 ⑤」 |
 | A-DD33 | 条目 T（行号引判据式）判据五条齐（判据 ①–⑤ 见下） | §3.21 条目 T · 台账 #1564 |
+| A-DD34 | 条目 S 的报告态档集（`report` + `docs`）判据七条齐（判据 ①–⑦ 见下） | DOC-CHECK F10 / AC-8 · §3.20「报告态档集」 |
 
 **A-DD26 判据（机器可验 · §4.5 批档可删性清账）**：
 
@@ -2043,6 +2141,16 @@ console.log('I tok=%d docs=%d table=%d prose=%d orphan=%d | doc %d/%d code %d/%d
 console.log('II tok=%d docs=%d uniq=%d multi=%d zero=%d | doc %d code %d',
   S(II, 't'), II.size, S(II, 'u'), S(II, 'm'), S(II, 'z'), S(II, 't', doc), S(II, 't', f => !doc(f)));
 ```
+
+**A-DD34 判据（机器可验 · 条目 S 的报告态档集 = `report` + `docs`）：**
+
+1. **两问法同源（源面直读）**：`thincoder-core/doc-check/index.mjs` 无 `gate-only` 抛点（`grep` 0）；范围求交唯一实现 = `resolveRange`，`report` ∥ `gate` 两处调用它；解析基线（`files`）∥ 被判集（`checkFiles`）两处收参**零改**。相关档 `node --check` 过。
+2. **AC-8 四例 + 本批补例跑绿**：DD-106–DD-113 逐条绿（夹具 = 系统临时域，零落仓 + 并发免疫——§3.4 条目 E）。
+3. **全域零回归**：无 `docs` 的 `report` ⇒ 报面无范围行、命中集与改前相等（DD-109 第二式）。
+4. **判词不串**：报告态输出（含报错面）`grep "DOC-CHECK GATE"` = **0**——判词族只属 gate。
+5. **描述面同口径**：工具 schema 与 `thincoder-core/tool-docs/doc_check.md` 的 `docs` 段**均不含**「Gate only」∥「only valid with mode」类单向句；两模式语义各写一句。
+6. **gate 面零变（回归）**：DD-110 绿——gate + 域内档 ⇒ 首行逐字 `DOC-CHECK GATE: PASS`、报面行形不变；清单含越域档 ⇒ 跳过行在场且不入命中集（gate 的范围 / 报面 / 判词与改前逐字同）。
+7. **解析面不缩（report 面反证）**：DD-111 绿——清单档以域内唯一裸名引用未入清单的档 ⇒ 零 `档缺`；「把 `files` 一并收窄」这一失效模式必红（假阳来源由此关住）。
 
 **用例表（正常 / 边界 / 错误）**：
 

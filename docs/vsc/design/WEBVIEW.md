@@ -549,8 +549,8 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 - **缺陷 a（阅读位被夺）修法 = 调用点纪律回正**：工具卡建 / 完成（`ui.js` `addTool` ∥ `finishTool` 两径）与错误横幅（`showError`）改走 `maybeScrollDown`（旗标门——`_pinBottom === false`（用户上滚）⇒ 零写不夺；钉底照旧跟底）；
   `scrollDown`（强制重 pin）只留显式动作（回底钮 ∥ 发消息 ∥ 首窗历史）。判据 = 单元测试（旗标假 ⇒ `scrollTop` 零改 ∥ 旗标真 ⇒ 写 MAX——修前红对照）。
   **已修面（保持）**：滚动条拖动 / 键盘滚动同解 pin（`scroll` 事件按近底直写——核 `scroll.mjs` 现行集）。
-- **Thinking 默认折叠**：推理块两径默认合——核 `thincoder-render-core/flow/reasoning.mjs`（live 流式块）∥ 核 `thincoder-render-core/flow/block.mjs`（恢复帧）；手动展开仍可看全。机面详句 = `docs/render-core/design/RENDER-CORE.md` §5；桌面面零触（其实读不消费该两件）。
-  **跨端默认差（VSC 折叠 ∥ 桌面 `thincoder-desktop/renderer/views/chat-text.mjs:55` 自持 open:true）= 待消解**——凭据判定 = 宿主能力面证据 ∥ 行为证据均不成立（默认开合态 = 用户可见态差，非载体差；判据 = `WEBVIEW-PROTOCOL.md` §6.1 首句）⇒ **消解路径 = 桌面面另批**（桌面默认态改折叠——一行）；**触发 ∥ 到期条件 = 桌面面下次被触碰**。
+- **Thinking 默认展开**：推理块两径默认展开——核 `thincoder-render-core/flow/reasoning.mjs`（live 流式块，`details.open = true`）∥ 核 `thincoder-render-core/flow/block.mjs`（恢复帧，`<details … open>`）；手动折叠仍可只看摘要。理由 = 折叠态在界面上等同「没有活动」，看不出模型在跑还是在卡（用户 2026-10-19 14:23）。
+  本端零改（两径直调核件，值随核缺省落地）；成员面同轮收正（`docs/server/design/agent/MEMBER-AGENT.md` §3.11(1)）——三面默认态一致（桌面自持 `thincoder-desktop/renderer/views/chat-text.mjs:55` `open: true`）。机制与推翻 #875 的理由 = `docs/render-core/design/RENDER-CORE.md` §5。
 - **视图偏好三项（VS Code 设置面）**：`thincoder.ui.autoFollow`（boolean，默认 true）∥ `thincoder.ui.activityMaxHeight`（number，默认 32，单位 vh——活动区封顶）∥ `thincoder.ui.activityTailLines`（number，默认 3，允许 0——折叠预览行数）。
   推送 = 新消息 `uiPrefs`（ext → wv；协议登记 = `WEBVIEW-PROTOCOL.md` §3 ∥ §3.2 行 23）；发射 = `thincoder-vscode/src/extension/ui-prefs.mjs`（webviewReady 握手 + `onDidChangeConfiguration`——先例 `stop-trace.mjs`）；
   应用 = `thincoder-vscode/webview/ui-prefs.js`（偏好态落 `ctx._autoFollow`；缺键 / 坏值 ⇒ 缺省 true）。`autoFollow = false` ⇒ **自动滚动全禁**——门落点三处（覆盖 = 三径全数）：
@@ -560,7 +560,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
   **射程说明（滚写入两处不入 `autoFollow` 门——登记为例外）**：
   ① **提示件**——`webview/permission.js:25` ∥ `:37`（逐项卡 ∥ 合并卡）与 `webview/question.js:22`（提问卡）的 `scrollIntoView` 不入 `autoFollow` 门：语义面 = 提示件需用户在场注意力（不滚入视口 ⇒ 静默挂起风险）⇒ **保持在场语义**（有意设计；`autoFollow` 语义面 = 工具 / 流式自动滚动）。
   ② **推理内容区内部跟滚**——核 `thincoder-render-core/flow/stream.mjs:30`（`paintReasoningTarget` 尾 `el.scrollTop = el.scrollHeight`）不在三径门集内（设计射程外——按实况登记为例外面）：
-  本端 `.reasoning-content` 内滚面（`thincoder-vscode/webview/chat.css:399-400`——`max-height: 200px` ∥ `overflow-y: auto`）⇒ 该写**于展开 + 内容溢出时生效**（帧逐拍钉底）；折叠缺省下零面；复评条件 = 用户另裁 ∥ 推理区内滚面并入 `autoFollow` 射程时（另轮可入门）；桌面面（同写经 `thincoder-desktop/renderer/views/chat-text.mjs:85`）归其自身批次。
+  本端 `.reasoning-content` 内滚面（`thincoder-vscode/webview/chat.css:399-400`——`max-height: 200px` ∥ `overflow-y: auto`）⇒ 该写**于展开 + 内容溢出时生效**（帧逐拍钉底）；默认展开为缺省 ⇒ 该写常态生效（内容溢出时）；复评条件 = 用户另裁 ∥ 推理区内滚面并入 `autoFollow` 射程时（另轮可入门）；桌面面（同写经 `thincoder-desktop/renderer/views/chat-text.mjs:85`）归其自身批次。
 
 ## 6. 关键决策记录
 

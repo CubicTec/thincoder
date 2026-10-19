@@ -1536,6 +1536,166 @@ Fetch a URL and return its content. With a DeepSeek provider configured the URL 
 
 **边界（本节不做）**：不新增工具 / action / **schema 参数**（理由走既有 `note`）· 不改 `STATUS_WORDS` 词表 · 不改冻结门对已收口档 append / status 的拒（逐字）· 不改 `close` 的 §6 单段拒串（J2 逐字）· 端面零改（VSC / desktop 消费同一 tool-docs）。用例表 ∕ 受影响文件 ∕ 验收回指 = `BATCH-RECORD.md` §4.18（本档不重述）。
 
+### 6.25 eng-coder spawn 的令牌必填与门报错三态（FR33 · 工具说明 ∥ schema ∥ 拒句）
+
+**来源**：用户 2026-10-19 22:10 逐字「开批修！」；需求权威 = `ENGINEERING-MODE-V2.md` §13.11（FR33）；台账 `#1712`。提示词面落点 = `PROMPT-SYSTEM.md` §6.35（本档不重述其逐字文本）。
+
+**机制（三处文本 + 一处分支）**：
+
+- 工具说明与 schema 的后果句统一为「missing or mismatched = the spawn is refused」，与 `batchDoc`（"Refused when absent…"）/ `round`（"missing = refused"）同形。
+- 门的同一句 `Invalid or missing design token` 拆三条判定分支：未传 / 值不等 / 值无效（第三条再按 `tokenExpired` 分过期 ∥ 格式非法两句）。**拒绝集合不变**（仍是三条件合取），只改分支与文案。
+- 四条拒句都不回显令牌值；mismatch 句可带 designId（designId 不是凭证）。
+- **机制本体** = `ENG-TOKEN-BINDING.md` §4（生命周期表 ∥「仅过期拒删槽」铁律）· §6.1（在位核对表）——本档不重述。
+
+**取法（最近先例 ∥ 偏离）**：先例 = 本档 §6.24（收口门的文本面：拒句逐字 + 落点表 + 用例三分）∥ §6.32（规则携 why、就地改既有文本）。
+**对齐** = 拒句逐字成文、落点表给「`file:line` 现文 → 新文」、用例按正常 / 边界 / 错误分类——同 §6.24 的面形。
+**偏离** = 本节把**判定分支**与拒句写在同一页：三态拆分的每一句必须与它的触发判据并排可判，拆去别处会让「哪句在什么条件下出现」无处可查；实现仍住 `subagent-spawn.mjs`，本节只给形态。
+
+**勘察证据行**：`ENG-TOKEN-BINDING.md` §3（`:31` 格式 / 畸形串门禁拒且不删槽）· §4（`:43` 门禁行「仅过期拒删槽」）· §6.1（`:170` 在位核对）——**结论 = 零改**：语义与本批三态拆分一致（删槽只在 `tokenExpired` 分支），本批只改出口文案；该档所引 `subagent-spawn.mjs:237` 的坐标处置见「边界」。
+`DESIGN-TOKEN-SETTLEMENT.md` §9 F-SL1 清点行契约（行末恒携 `designToken=<全串>`；畸形 ⇒ `designToken=—`，`:158`）——**结论 = 零改**：本批不动清点 / 消费 / 行格式（`design-slots.mjs` 零触）。
+另核 `docs/README.md:78`：两档均在册（令牌 / 参数 / 设置面）。
+
+**① 工具说明逐字（`thincoder-core/tool-docs/subagent.md`）**：
+
+| 坐标 | 换写后逐字（只列改动句；同段其余分句不动） |
+|---|---|
+| `:20` eng-coder 角色行 | `REQUIRES a valid designToken from a passed advisor(type='design') review — pass the exact value from that review, or copy it verbatim from the action:'design-slots' row (the text after designToken=): missing or mismatched = the spawn is refused, and an expired token is refused with expired named (its reply also echoes a designId — pass it: required to pick between concurrent designs, optional for one; echo it back in the delivery report).` |
+| `:23` 任务书段末 | 段末追加一句：`An eng-coder spawn also carries designToken — the write credential (the exact value from the review, or copied verbatim from the action:'design-slots' row, the text after designToken=): missing or mismatched = the spawn is refused.` |
+
+**② schema 描述逐字（`thincoder-core/agent-tools/subagent.mjs:146`）**：
+
+现文：`Required when role='eng-coder': the token from advisor(type='design') after the review passed — without it, eng-coder cannot modify files.`
+
+```
+REQUIRED for role='eng-coder': the exact token issued by advisor(type='design') after the review passed — copy it verbatim from the design-slots row (the text after designToken=). missing or mismatched = the spawn is refused; an expired token is refused with expired named. Pass it on every eng-coder spawn, fix rounds included (they reuse the same token).
+```
+
+**③ 门三态分支的四条拒句逐字（`thincoder-core/agent-tools/subagent-spawn.mjs`）**：
+
+| 态 | 触发判据（顺序固定） | 逐字拒句 |
+|---|---|---|
+| missing | `resolveDesignSlot` 无槽（`:131` 改写为同句）∥ `typeof args.designToken !== "string"` ∥ trim 后为空 | `designToken missing — the eng-coder spawn is refused: no usable token for an approved design slot came with this spawn. Pass the designToken parameter with the exact value from the subagent action:'design-slots' row (the text after designToken=), copied verbatim; if that list is empty, no design review has been approved in this session yet — run advisor with type='design' first. No token value is echoed here.` |
+| mismatch | 参数在场 ∧ `args.designToken !== issuedToken` | `designToken mismatch — the eng-coder spawn is refused: the value passed does not equal the token held for this design slot. Re-read the subagent action:'design-slots' row and pass the value after designToken= verbatim, unchanged. No token value is echoed here.`；designId 给定时追加 ` (designId: <designId>)` |
+| expired | 值相等 ∧ `!validateDesignToken(args.designToken)` ∧ `tokenExpired(args.designToken)` | `designToken expired — the eng-coder spawn is refused: the token matches this design slot but is past its TTL. The expired slot has been removed; run advisor with type='design' again on the current design and pass the newly issued token — an expired authorization cannot be retried. No token value is echoed here.` |
+| invalid（格式非法） | 值相等 ∧ `!validateDesignToken(args.designToken)` ∧ `!tokenExpired(args.designToken)` | `designToken invalid — the eng-coder spawn is refused: the value passed equals this design slot's stored token, but that stored value is not a well-formed token, so no expiry can be judged and the slot was left in place. Run advisor with type='design' to issue a fresh token for this design; a malformed record never passes the gate. No token value is echoed here.` |
+
+判据顺序 = `resolveDesignSlot`（既有未知 designId / 多槽缺 designId 两条诊断零改）→ 参数在场 → 值相等 → 值有效。
+
+**第三态两句互斥且穷尽（机判）**：`validateDesignToken(given)` = `tokenExpiryMs(given) !== null ∧ expiry >= Date.now()`（`thincoder-core/agent-tools/design-token.mjs:55-58`）；`tokenExpired(given)` = `tokenExpiryMs(given) !== null ∧ now > expiry`（`thincoder-core/token-ttl.mjs:55-58`）。
+⇒ `!validateDesignToken ∧ !tokenExpired` 等价于 `tokenExpiryMs(given) === null`，即格式非法。
+故两句各只说谓词已证之事：TTL 与删槽只在 `tokenExpired(given)` 句出现，invalid 句不称 TTL、不称删槽。
+
+槽删除只在 `tokenExpired(given)` 成立时发生（D-R16c ③：过期拒才清槽）；mismatch 与格式拒**不删槽**（T-R16d）。旧式 `expiredReject = !!issuedToken && args.designToken === issuedToken && tokenExpired(issuedToken)`（`subagent-spawn.mjs:253`）落在「值相等」分支内 ⇒ 与本节的 `tokenExpired(given)` 同一条件，删槽集合零改。
+
+**畸形槽值为何可到门**：`restoreEngTokens` 只丢「字符串 ∧ 已过期」的槽值，畸形串读回内存 Map（`thincoder-core/token-ttl.mjs:133-137`）；清点行对畸形值显示 `designToken=—`（`DESIGN-TOKEN-SETTLEMENT.md:158`）——模型虽难逐字取得该值，门一旦遇到仍必须说真话：在此态沿用 TTL 措辞即假话。
+
+**④ 提取形态（实施席照此落笔 · 语义零改）**：
+
+```js
+export function designTokenRefusal(kind, designId) {
+  if (kind === "missing") return new Error(`designToken missing — …（③ missing 逐字）`)
+  if (kind === "mismatch") return new Error(`designToken mismatch — …（③ mismatch 逐字）` + (designId ? ` (designId: ${designId})` : ""))
+  if (kind === "expired") return new Error(`designToken expired — …（③ expired 逐字）`)
+  return new Error(`designToken invalid — …（③ invalid 逐字）`)
+}
+
+export function gateDesignToken(parent, args) {
+  const issuedToken = resolveDesignSlot(parent, args?.designId).token
+  // 非字符串 ⇒ 空串 ⇒ missing（本意——T9 锁定）
+  const given = typeof args?.designToken === "string" ? args.designToken : ""
+  if (!issuedToken || !given.trim()) throw designTokenRefusal("missing")
+  if (given !== issuedToken) throw designTokenRefusal("mismatch", args?.designId)
+  if (!validateDesignToken(given)) {
+    const expired = tokenExpired(given)
+    if (expired) removeDesignTokenSlot(parent, args?.designId, given)
+    throw designTokenRefusal(expired ? "expired" : "invalid")
+  }
+  return issuedToken
+}
+```
+
+`buildSpawnChild` 的 token 门块（`:245-258`）改为 `issuedToken = gateDesignToken(parent, args)`——**返回值必须落回 `issuedToken`**：`:345-347` 的 `if (role === "eng-coder" && issuedToken) child._engDesignId = args.designId ?? null` 依赖它，丢返回值即丢 designId 回写。`resolveDesignSlot` 的 `:131` 无槽拒句改为 `throw designTokenRefusal("missing")`（单行换单行，行数 ±0）。sync / async 两路共经 `buildSpawnChild`，一处改双路生效。
+
+**导出与 import 面**：两枚 `export function`（`designTokenRefusal` / `gateDesignToken`）住 `thincoder-core/agent-tools/subagent-spawn.mjs`；测试 import 面 = `import { gateDesignToken, designTokenRefusal } from "../agent-tools/subagent-spawn.mjs"`（测试档在 `thincoder-core/test/` 下，上一级即 `agent-tools/`）。
+
+**helper 落位**：两枚定义追加在同档模块尾（`buildSpawnChild` 之后、文件末）——函数声明提升 ⇒ 前向调用合法；副作用是 `:131` / `:237` 行号不漂移，`ENG-TOKEN-BINDING.md:43` / `:170` 所引坐标继续有效（该档本批零改）。
+
+**⑤ 落点表（file:line + 现文 → 新文）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/tool-docs/subagent.md:20` | `REQUIRES a valid designToken from a passed advisor(type='design') review (its reply …` → ① `:20` 逐字 | 句内替换（行数 ±0） |
+| L2 | `thincoder-core/tool-docs/subagent.md:23` 段末 | `… round (initial\|fix) is mandatory for eng-coder/eng-designer.` 之后 → ① `:23` 追加句 | 行内追加（行数 ±0） |
+| L3 | `thincoder-core/agent-tools/subagent.mjs:146` | 现文（见 ②）→ ② 逐字 | 描述替换（行数 ±0） |
+| L4 | `thincoder-core/agent-tools/subagent-spawn.mjs:131` | `throw new Error("Invalid or missing design token — run advisor with type='design' first and pass the returned token as designToken.")` → `throw designTokenRefusal("missing")` | 替换 |
+| L5 | `thincoder-core/agent-tools/subagent-spawn.mjs:240-258` | 三条件合取 + 同一句 → `issuedToken = gateDesignToken(parent, args)`（④）+ ③ 四条拒句 | 提取 + 分支（约 +30 行） |
+| L7 | 同档模块尾（`buildSpawnChild` 之后） | 新增 `export function designTokenRefusal` + `export function gateDesignToken` | 追加（约 +20 行；声明提升 ⇒ 前向调用合法，`:131` / `:237` 不漂移） |
+| L6 | `thincoder-core/prompts/persona-engineering.md:163` 后 | 提示词必填行 → `PROMPT-SYSTEM.md` §6.35 逐字块 A | 追加（本档不重述） |
+
+**⑥ 测试计划**：
+
+- 档落点：`thincoder-core/test/subagent-design-token-gate.test.mjs`（新增；项目约定 = `thincoder-core/test/*.test.mjs` 单层收集，runner = `thincoder-core/test/run.mjs`）。
+- 跑法：目标用例 `cd thincoder-core && node --test test/subagent-design-token-gate.test.mjs`；收口门 `cd thincoder-core && node test/run.mjs`。
+- 夹具：fake parent `{ _engDesignTokens: new Map([[id, token]]) }`；过期 token = `${randomUUID()}:${Date.now() - 1000}`；畸形槽值 = `"not-a-token"`（段数 ≠ 2 ⇒ `tokenExpiryMs` 返 null）。
+- **分类 = 常驻回归套**：该档由 `thincoder-core/test/run.mjs:48`（`node --test test/*.test.mjs`）收集——单层、常驻、随代码长存。`PROMPT-SYSTEM.md:286`（§6.10 ②「单元测试用例随批次档存」）与 `:1156`（§6.33「批次单测档收口即删」）针对的是**批次单测**（改完即跑、收口即删的反馈回路），不适用于本档：本档守的是门的四个出口，不是某一批的实现细节。
+
+| # | 用例 | 输入 | 断言 |
+|---|---|---|---|
+| T1 | missing（参数缺） | 活槽 + args 无 `designToken` | 抛错；消息 = missing 逐字；含 `designToken` / `design-slots`；不含槽 token 值；槽未删 |
+| T2 | missing（无槽） | 空 map + args 带任意 token | 抛错；消息 = missing 逐字（`:131` 并入同态） |
+| T3 | mismatch | 活槽 + 错值 | 抛错；消息 = mismatch 逐字；含 `designId`（给定时）；不含两个 token 值；活槽未删 |
+| T4 | expired | 过期槽 + 槽值 | 抛错；消息 = expired 逐字；含 `expired`；槽已从 map 删除 |
+| T5 | 正常 | 活槽 + 槽值 | 返回槽值；槽保留 |
+| T6 | 四条拒句互异 | T1 / T3 / T4 / T8 的消息 | 两两不相等 |
+| T7 | 既有诊断零改 | 未知 designId；双槽缺 designId | 原两条消息逐字命中（不属三态） |
+| T8 | invalid（格式非法但值相等） | 畸形槽值 `"not-a-token"` + args 传同一串 | 抛错；消息 = invalid 逐字；含 `invalid`；不含 `expired` / `TTL`；不称已删槽（`removed` 零命中）；槽仍在 map |
+| T9 | 非字符串 ⇒ missing | 活槽 + `designToken: 123`（number）∥ `null` | 抛错；消息 = missing 逐字（标签 = missing 为本意：非字符串不携带任何可用值，读者的动作与缺席同——按 `design-slots` 行逐字重传）；槽未删 |
+
+**⑦ 验收（回指 §13.11）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.11 ②：工具说明 + schema 含同形句 | `node -e` 子串计数：`subagent.md` ≥2、`subagent.mjs` ≥1 次 `missing or mismatched = the spawn is refused` |
+| A2 | §13.11 ③：三态互异 + 点名 + 不回显 | 单测 T1–T9 全绿（含第三态两句互斥：T4 含 `expired`、T8 零 `expired`） |
+| A3 | §13.11 ④：提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0（提示词行由 §6.35 落地） |
+| A4 | §13.11 ⑤：普通模式 / depth>0 零回归 | `cd thincoder-core && node test/run.mjs` 全绿；`agent/family-tools.mjs:90-110` 零改 |
+| A5 | 门判定语义零改 | 拒绝集合 = missing ∨ mismatch ∨ invalid（旧三条件合取）；T5 + 既有用例 |
+
+**边界（本节不做）**：自动补全（缺参 + 活槽时代取）——需用户单独裁定 · 令牌签发 / TTL / 消费零改 · depth>0 子通道 schema 裁剪零改（`agent/family-tools.mjs:90-110`）· 普通模式零改 · 评审链零改 · `resolveDesignSlot` 的未知 designId / 多槽缺 designId 两条诊断零改 · 不改 `batch` / 台账 / 批次档机制 · invalid 句不细分畸形形态（段数 ≠ 2 / uuid 不合形同句；槽值非字符串落 mismatch 或 missing，不入 invalid）。
+
+**外部档案处置（本条不在本批写入面）**：`ENG-TOKEN-BINDING.md:43` / `:170` 所引 `subagent-spawn.mjs:237` 在 L7 落模块尾时**不漂移** ⇒ 该档两处坐标继续有效、本批零改。若实施席改落他处致 `:237` 漂移：父侧收口按 `grep -n "validateRoundParam(args)" thincoder-core/agent-tools/subagent-spawn.mjs` 的实测行号同步该两处（到期条件 = L5 落地即触发；不得留待无人认领）。`TOOLS.md:395` 的「`thincoder-core/test/` 现盘 = `run.mjs` / `slow.mjs`」为陈旧读数（`test/` 已另有常驻档），属 §6.13 面，本批只标注、不改写——父侧收口一并处置。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 三态 = 同一次判定的三条分支（第三态两句：过期 ∥ 格式非法），拒绝集合与旧合取全等 | 需求明令「不改门的三条件判定语义」；换的是出口文案，不是准入 |
+| K2 | 抽 `gateDesignToken(parent, args)` + `designTokenRefusal(kind, designId)` | 三态可单测而不必装配子代理；sync / async 两路同源 |
+| K3 | `:131` 无槽并入 missing 态 | 无槽时读者要的是取值路径与评审入口；missing 句自带 `if that list is empty, no design review has been approved in this session yet — run advisor with type='design' first`，空清单与无槽同源可解，不需另立一句 |
+| K4 | 只有真过期（`tokenExpired`）删槽；mismatch 不删 | 沿用 D-R16c ③（过期拒才清槽）/ T-R16d（调用方错误不得销毁有效槽） |
+| K5 | 四条拒句零令牌值；mismatch 可带 designId | 凭证不回显是既有纪律；designId 非凭证 |
+
+**UI / 交互决策**：无界面面——本条改的是模型可见文本与错误出口。
+
+**受影响文件（现行行数 = `split("\n").length − 1` 实读 · 2026-10-19 本席）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/tool-docs/subagent.md` | 38 行 / 10,229 字符 | ±0 行 / 句内改写 | `:20` 与 `:23` 两处 |
+| `thincoder-core/agent-tools/subagent.mjs` | 422 行 / 31,340 字符 | ±0 行 / `:146` 描述改写 | schema description |
+| `thincoder-core/agent-tools/subagent-spawn.mjs` | 419 行 / 23,685 字符 | 实测 +15 行 / +1,580 字符（434 行 / 25,265 字符；实施后读数） | helper + gate 提取 + 四条拒句 |
+| `thincoder-core/test/subagent-design-token-gate.test.mjs` | 新增 | 约 120 行 | T1–T9 |
+| `docs/core/design/TOOLS.md` | 1,714 行 / 150,361 字符（2026-10-19 修订后实测） | 本节 = 160 行（L1539–1698） | 实施轮零触 |
+
+**实施拆分（两舱 · 按面）**：
+
+| 舱 | 变更面 | 文件 | 验收 |
+|---|---|---|---|
+| 舱 A · 文本面 | 模型可见说明与提示词 | `tool-docs/subagent.md` · `agent-tools/subagent.mjs:146` · `prompts/persona-engineering.md` | A1 + §6.35 A1–A4 |
+| 舱 B · 代码 + 测试面 | 门分支与拒句 | `agent-tools/subagent-spawn.mjs` · `test/subagent-design-token-gate.test.mjs` | A2 / A4 / A5 |
+
+不合并的理由：两个变更面各自有独立验收面（文本子串 vs 单测分支），且按派单尺寸纪律「跨面 ⇒ 按面拆」；两舱文件不重叠，可并行派工，`dependsOn` 不需要。
+
 ## 9. checklist 废除
 
 **定位**：checklist 工具（`tools/checklist.mjs` + CLI `tools/checklist-sync.mjs`）**废除**——三处结构性理由：与 task 工具职责重叠（持久跨会话清单 vs 会话级清单——分工不清）、md 持久面与台账（LEDGER）职责重叠（待办总账已有 SQLite 单一权威源）、「归册三选一」退役流程与 M10「测试是开发期工具不是库存」冲突。

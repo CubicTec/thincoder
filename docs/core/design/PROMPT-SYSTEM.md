@@ -810,7 +810,7 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 | K1 工具实参枚举 | `ledger` 六态（待讨论 / 待设计 / 在途 / 待核销 / 已核销 / 已废弃）· `trigger` 三值（归批 / 条件 / 认账不排期） | 库表 `CHECK` 与工具 `enum` 字面（`ledger-db.mjs:161/167` · `ledger-tools.mjs:107/117`）；写面谓词比字面（`ledger-cmd.mjs:69` · `agent/dispatch.mjs:90`） | 工具拒收 / 状态机失常 |
 | K2 批次档机判字面 | `**状态行**：` · `进行中` / `已收口` / `设计完成` / `评审完成` / `实施完成` · `> 不适用` · `<§N 模板占位：` · `前情 = ` · `**重开记录**：` | `batch-skeleton.mjs:35-38/61/221` · `batch-lifecycle.mjs:291` · batch create 对 `prev` 剥 `前情 = ` 前缀 | 冻结门 / 链完整性门判读失败 |
 | K3 机产 · 机读标记 | `[上抛·待裁]` / `[上抛·知会]` · `收尾链待跑` · `老化` · `### 轮次 N（评审子代理）` | `parent-channel.mjs:155` · `agent/light-round.mjs:25` · `ledger.mjs:137` 渲染 · batch 工具评审戳 | 标记对不上：消息、轮次闸、台账渲染各认各的字面 |
-| K4 记录面 · 输入面复写字面 | 写进中文批次档 / 台账的约定串（`评审通过` · `暂缓批复核：无` · `暂缓 · 复核条件` · `已查无`）· 用户会说的中文别名（`会诊` · `飞刀`） | 落点 = 中文记录面本身；别名 = 用户输入词 | 提示词描述一个没人会写的串；别名删了则识别不到用户原话 |
+| K4 记录面 · 输入面复写字面 | 写进中文批次档 / 台账的约定串（`评审通过` · `暂缓批复核：无` · `暂缓 · 复核条件` · `已查无` · `已定决定`——成员为示例、判据按类）· 用户会说的中文别名（`会诊` · `飞刀`） | 落点 = 中文记录面本身；别名 = 用户输入词 | 提示词描述一个没人会写的串；别名删了则识别不到用户原话 |
 
 **判据**：① K1–K3 字面逐一 grep 在场。
 
@@ -1204,6 +1204,664 @@ node -e "const fs=require('fs'),d='thincoder-core/prompts';for(const f of fs.rea
 **先例 ∥ 偏离**：先例 = §6.32（规则须能回答「它靠什么成立」，why 逐字复用、不新造因果）——本节完全对齐：why 从需求档逐字搬。偏离 = 不做逐项表（射程一句），改用目标形 + 逐句 why 对应表。
 
 **关键决策**：① why 与动作同 bullet 同段（读的时候「该做什么」和「为什么」不分离）；② 删 `Zero retention ⇒ …` 尾句（D2 去重，S5 已覆盖其列举）；③ 父侧原稿的 `unit tests to cover` 改 `unit tests to verify`（`cover` 会被读成覆盖率指标；单元测试的作用是验证，见 `TESTING.md:30`）。
+
+### 6.34 批准即实施启动（提示词面显式化 · FR32）
+
+**坐标口径**：本节行号 = FR32 成文时的 `persona-engineering.md` 实读；FR33–FR36 落地后行号已漂移——本节引文与判定不变，两节都引的句子（digest / 停相）当前坐标以 §6.38 实读为准。
+
+**来源**：用户 2026-10-19 本会话逐字——「批准」= 当场派工；只有批准时另外说「先别动 / 只批设计」才停；「应该是批准或其他等价表示」；「解锁就是开工，没有第三步」。需求权威 = `ENGINEERING-MODE-V2.md` §13.10（FR32，四条）；台账 `#1710`。
+
+**要修的那一处（实读）**：`persona-engineering.md:8` 以「wait for the user's explicit go」收尾，`:13` 说 authorized-to-fire ≠ approved，`:149` 只说 unlock eng-coder——这些句子叠读时，「批准」与 `go` / `the user's word` / `the nod` / `unlock` 之间没有一句等价声明（逐条机制见下「成因分析」，共 8 处读法来源）。
+上一实例因此把批准读成「设计文档过关」、另等一句「开始」，白耗一轮。`:142-144` 的 digest 条本身成立（管评审机器信号）、本批零改；它在成因里只贡献词面重复一项（G5）。
+
+**成因分析：旧文本为什么被读成「批准后另等一句」（逐条机制 ∥ 闭合处置 · 行号 = `persona-engineering.md` 2026-10-19 实读）**：
+
+旧文本没有一句写错；缺的是**等号**——「批准」与 `go` / `the user's word` / `the nod` / `unlock` 各占独立的文法位置，没有一句把它们写成同一件事。读者要回答「实施这一步什么时候开始」，提示词里唯一直接回答的是 `:52`（implementation starts wait for the user's word）⇒ 默认答案 = 再等一句话；其余各句把「批准」与「发起 / 解锁」分开放。三步链由此拼出。
+
+| # | 机制（原句 + 坐标） | 它教出的读法 | 闭合处置 |
+|---|---|---|---|
+| G1 | `:6` `Design reviews and implementation starts are both fired by the user, not by you.` | 评审与实施并列成两次「用户发起」；没有一句说设计批准就是实施那一次发起 ⇒ 两次发起的槽位都留着 | 闭于块 A 首句：`the user's approval of the design … starts implementation, and the eng-coder spawn fires in that same round` |
+| G2 | `:8` `… both stop at the user's approval gate — the part past it was never approved …; wait for the user's explicit go.` | 同一句两个名词（`approval gate` / `explicit go`）；`the part past it was never approved` 把过门之后的动作标成未批准态 ⇒ `go` 读成过门之后的第二个动作 | 闭于块 A 首句：`that go is the approval itself`（逐词接 `:8` 的 `go`） |
+| G3 | `:10-12` 唯一的「不必逐步重发」规则绑在批次口令上（`"handle it all / do it all / go ahead"`；`:11` 说其下 `you no longer stop and wait for the user to fire each one again`） | 一句「批准」不匹配这个口令形状（不声称覆盖整批）⇒ 逐步等待仍是默认档，实施启动照旧等自己那一句 | 闭于块 A 首句：`that go is the approval itself`——批准本身就是那一步的 go，不必借批次口令 |
+| G4 | `:14`（FR36 取代前的整批令句）`"authorized to fire" is not "approved"` | 教「发起 ≠ 批准」；对称反推 =「批准 ≠ 发起」⇒ 批准把门打开，发起仍是另一次用户动作（`:6` 说发起归用户） | 闭于块 A 第二句：`Unlock and start are one step`；整批令下再闭于 §6.38——批准门被覆盖，批内全链自动跑完，评审照走 |
+| G5 | `:142-144` `it is NOT authorization to spawn or proceed` / `progress waits for the user's explicit go` | 父侧在 digest → 呈报 → 批准这条链上最后读到的一句；`explicit go` 以独立名词再出现一次，加固「go 是另一句」的词形 | 闭于块 A 首句（同一名词 `go` 被绑定）。不补：它管 digest 机器信号、不批批准语义，改它会动评审链条（本批边界）；残差 = 只读该条的读者仍见 `go` 独立出现，强度低于 G8（该条直接点名 implementation starts） |
+| G6 | `:149` `… design ready → user fires advisor review → user approves → implementation.` + 尾句 `Only an explicit sign-off after review unlocks eng-coder.` | 四段箭头把 implementation 摆成第四段，段上没有发起人、没有时机；尾句是许可隐喻——解锁 = 门开了，走进去没有着落 | 闭于块 B：`the unlock is the start: the implementation spawn fires in the same round` |
+| G7 | `:24-30` `Before writing files, restate your understanding … and wait for explicit user confirmation ("OK / sure / continue" type) before executing.`（`:25`） | 评估 = **部分成立**：触发面是「写文件之前」，父侧 spawn 不是父侧写文件，严格按触发面套不到实施启动；但 `:25` 的确认词型与用户表达批准的词型同族，读者把「执行」扩成「执行整批」时会在实施边界再要一次同型确认 | 不补文本：块 A 首句（`starts implementation … in that same round`）已把同轮写死，无第二次确认的位置；`:24` 触发面（写文件）与 spawn 不同面——补一句反而把越界套用写成规则 |
+| G8 | `:52-55` `review firing / implementation starts wait for the user's word` … `spawn / review firing / doc advancement / post-digest follow-up actions all hold for the nod`；`:52` 又有 `Each step completes → present → enter the next step` | 最强的一条：点名 implementation starts / spawn 自己等一句话，「the user's word / the nod」从不与批准等同；`Each step completes → present → enter the next step` 把批准时刻摆成「上一步完成 → 呈报 → 下一步等着」 | 加逐字块 C（最短锚）+ 对照表新增行：`the user's word / the nod` = 批准本身。判据 = 只读本节者从块 C 读出等号，推不出「批准后另等一句」 |
+
+**成因小结**：误读不是某一句写错，而是四个名词各自为政，且「实施启动何时开始」的唯一直接答案（`:52`）指向「等一句话」。所以修法 = 把等号写到读者会停下来的三个位置——`:8` 权威（块 A）· `:149` 锚（块 B）· `:52-55` 锚（块 C）；每处独立可读，不靠跨节拼接。
+
+**机制（两步规则的第二道门怎么出）**：
+
+- 评审通过前：设计讨论里对形态 / 选项的点头 = 需求确认，不是设计批准（`:149` 管；本条不动它）。
+- 评审通过后：用户的批准——或任何表达同一意图的等价表示（判据 = 意图，不是词表）——**就是实施发起本身**：父侧在批准确认的同一轮 spawn eng-coder，不再等第二句「开始」。
+- 唯一停相：批准时明说 hold / design only / not yet（或等价表达）⇒ 停；与 `:150` 的停相判据同轴，不新造词表。
+- why：批准已经是「授权落地」的决定；把两步规则读成三步，多出的那一步只能白耗一轮往返与用户注意力——它换来的是零新信息。
+
+**取法（最近先例 ∥ 偏离）**：先例 = 本档 §6.32（规则须携 why、不用禁令腔、就地改）∥ §6.29（同一事实跨层多点 = 关键锚点重复，每点独立可读）。
+**对齐** = 新增文本携 why、落点全在既有段落 / 既有句内、零新增 `##` 节。**偏离** = `discipline-engineering.md`「基本流程」不加行（理由见「纪律层判断」）。
+
+**勘察证据行**：已查 `persona-engineering.md`（`:5–13` / `:24–30` / `:52–55` / `:141–151` 实读）· `discipline-engineering.md`「Basic flow」（`:29–47`）· 本档 §6.6 / §6.29 / §6.30 / §6.32 / §8.1 · `ENGINEERING-MODE-V2.md` §13.10。除上述无其他相关公共源文档——已查无。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+A. `persona-engineering.md:8` 段末追加（同段内换行、不插空行、不另起段落；`:8` 现文零改）：
+
+```
+**Once the review has passed, that go is the approval itself**: the user's approval of the design — or any expression of the same intent, since the test is intent rather than wording ("approved", "ok, go with it", "yes, do it") — starts implementation, and the eng-coder spawn fires in that same round. Unlock and start are one step: a two-step rule read as three spends a round-trip waiting for a word the approval already spoke. The one stop shape: the approval itself saying to hold ("hold off / design only / not yet") — that is the user's stop, and implementation waits.
+```
+
+B. `persona-engineering.md:149` 尾句替换（该行其余各句零改）：
+
+现文：`Only an explicit sign-off after review unlocks eng-coder.`
+
+```
+Only an explicit sign-off after review unlocks eng-coder — and the unlock is the start: the implementation spawn fires in the same round (equivalent expressions and the one stop shape: see the Firing-rights boundary above).
+```
+
+C. `persona-engineering.md:55` 后新增一行（Advance & stop 引用块末；`>` 开头、同段内换行、不插空行；`:52-55` 现文零改）：
+
+```
+**Once the review has passed, the approval is that word**: the sign-off is the nod the next step holds for, and the spawn fires in the same round — one step, not two.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/persona-engineering.md:8` | 现文整行保留；段末追加逐字块 A | 追加（同段内换行，+1 行） |
+| L2 | `thincoder-core/prompts/persona-engineering.md:149` | 尾句 `Only an explicit sign-off after review unlocks eng-coder.` → 逐字块 B；同句前半（`User's nod ≠ design approval` … `settles the form, not the design.`）零改 | 替换尾句（行数 ±0） |
+| L3 | `thincoder-core/prompts/discipline-engineering.md:29–47`（Basic flow） | 零改 | 见「纪律层判断」 |
+| L4 | `thincoder-core/prompts/persona-engineering.md:55` 后（Advance & stop 引用块末） | 新增一行引用块：逐字块 C（`> ` 前缀 + 同段内换行） | 追加（+1 行 / +169 字符） |
+
+**纪律层判断（是否需要一行：不需要）**：本条的行为主体 = 父侧——唯一对话面、唯一 spawn eng-coder 的角色；纪律层四步描述的是一批工作怎么走，不含发起面，子代理读了也不会执行该动作。
+加在那里 = 给不执行该动作的读者重述同一条规则（D2），并把「什么时候派工」与「四步是什么」两件事混进同一节。故 `discipline-engineering.md` 零改。
+
+**对照表（与既有各句逐句对照 · 结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `:6` `Design reviews and implementation starts are both fired by the user, not by you.` | 谁做发起决定：用户，不是 agent 自判 | 决定何时生效：批准即发起 | 批准前 spawn = 自发起（`:6` 禁止的那类）；批准后 spawn = 执行用户的发起。两句各管一端 |
+| `:14` 整批令覆盖批准门（FR36） | 有整批令时：批内全链自动跑完，评审照走，四停相 | 无整批令时：批准即实施启动（`:9` 的等号） | 两句分档：FR36 覆盖「再等一句」，不改 FR32 的等号；无整批令时照旧 |
+| `:142-144` digest 是机器信号、不是放行 | 评审 digest（机器信号）不是授权 | 触发 = 用户的批准（人的表态） | 链条 = digest 到达 → 呈给用户 → 用户批准 → 同轮 spawn；本条不把 digest 读成批准 |
+| `:149` `User's nod ≠ design approval` … `unlocks eng-coder` | 评审通过**前**的点头（形态 / 选项）≠ 设计批准 | 评审通过**后**的签核 = 实施启动 | 分界线是同一条 explicit sign-off：签核之前点头买不到任何东西；到了签核，签核买到的就是开工。尾句改写把 unlock 与 spawn 接上 |
+| `:150` `First-utterance "user stop" signal` | 停相判据 = 意图，不是词表 | 批准时刻的停相 = 同一判据的应用 | 批准时说的 hold / design only / not yet 就是 `:150` 的停相信号；零新词表 |
+| `:52-55` `review firing / implementation starts wait for the user's word` … `spawn / … all hold for the nod` | 每步启动要有用户的表态才走（`:53` 的意图判据） | 哪一句算这个表态：评审通过后的批准本身就是那个 nod | 不矛盾：本节要的是「用户的表态」，不是「第二次表态」；原读法把「要有表态」升级成「要两个表态」。等号落进本节（逐字块 C），只读本节即可读出 |
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 | 评审通过后用户说「批准」 | 父侧同轮 spawn eng-coder，不再等「开始」 |
+| C2 | 等价表示 | 用户说「行，就这么办」「可以动了」 | 同 C1（判据 = 意图） |
+| C3 | 边界 · 唯一停相 | 用户说「只批设计，先别动」 | 不 spawn；呈当前结果并等用户下一句 |
+| C4 | 边界 · 评审通过前 | 设计讨论中用户对选项点头「B」「ok」 | 不 spawn（`:149` 管；点头 = 需求确认） |
+| C5 | 错误防御 · digest | 评审 digest 到达、用户尚未表态 | 不 spawn（digest 是机器信号）；呈报给用户 |
+| C6 | 边界 · 修复轮在途 | 修复轮未落地时用户提前说「批准」 | 按既有 `:131-132` 的时机判据办（批准请求在修复轮落地并核验后才发）；本条不覆盖该判据 |
+
+**受影响文件（现行行数 = `split("\n").length − 1` 实读 · 2026-10-19 本席）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 237 行 / 58,345 字符 | +2 行 / +911 字符（块 A 575 + 换行 1 · 块 B 223 换旧尾句 57 = 净 +166 · 块 C 166 + `> ` 2 + 换行 1） | L1 追加 + L2 尾句改写 + L4 加锚；改后 239 行 / 59,256 字符 ≤ +3% 上限 60,095（余量 839） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,422 行 / 120,743 字符（本节改后） | 本笔 = §6.34 新增 + 本轮成因分析（设计轮） | 实施轮零触 |
+| `thincoder-core/prompts/discipline-engineering.md` | 200 行 / 36,773 字符 | ±0 | 判断 = 不加行 |
+
+测试覆盖：零单元测试档（文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + doc_check 交付门，不新增断言。
+
+**验收（A1–A7 · 回指 §13.10 四条 · 一次性比对，不新增断言）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.10 ①：显式句在场 + 逐字相等 | `node` 子串比对：逐字块 A 与块 B 各 1 次命中；`:149` 旧尾句 0 命中 |
+| A2 | §13.10 ④：携 why、无禁令腔 | 新增区段扫 `never|do not|don't|must not|may not|forbidden` ⇒ 0 命中（只扫新增段：`:8` 原文的 `was never approved` 是既有描述性否定，不在扫描区） |
+| A3 | §13.10 ①：等价表示与唯一停相在场 | 子串 `any expression of the same intent` · `The one stop shape` 各 1 次命中 |
+| A4 | 体量 ≤ 每档 +3% | `node -e "console.log(require('fs').readFileSync('thincoder-core/prompts/persona-engineering.md','utf8').length)"` ⇒ ≤ 60,095（改前 58,345；本笔实测净增 911 ⇒ 预计改后 59,256，余量 839） |
+| A5 | 提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ `命中 0` |
+| A6 | §13.10 ②③ + 行为面（观察项，非机检） | 对照表六句无矛盾（见上）；下一批：仅说「批准」⇒ 同轮 spawn；说「只批设计」⇒ 停 |
+| A7 | 修正项 3 的判据：`:52-55` 锚逐字在场 | `node` 子串比对：逐字块 C 1 次命中；`review firing / implementation starts wait for the user's word` · `all hold for the nod` 各 1 次命中（锚是加行，原四行零改） |
+
+**边界（本批不做）**：需求档零笔 · 批准门机制本体（token / 门禁 / 凭证生命周期）零触 · 新增机械门 / 工具 / 状态 = 零 · 普通模式零改 · `:6` / `:13` / `:142-144` / `:150` 零改 · `:52-55` 仅加逐字块 C 一处（其余句零改） · `discipline-engineering.md` 零改 · 其余提示词档零触 · 不新增单测断言。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 权威句落 `:8` 段末（「wait for the user's explicit go」旁边），`:149` 只带最短锚 + 指回 | 这两处是歧义的主要读出地（第三处 `:52-55` 见 K7）；规则写在读出歧义的那一句旁边，读者不用跨节拼接；D2 = 权威句一处、其余只带最短锚 |
+| K2 | 判据写成「意图而非词表」+ 三个示例 | 用户令「批准或其他等价表示」；词表必漏，示例只作锚不作穷举 |
+| K3 | 停相复用 `:150` 判据，不新造词表 | 同轴；批准时刻的 hold = 既有停相信号，零新机制 |
+| K4 | `discipline-engineering.md` 零改 | 行为主体 = 父侧；纪律层无发起面（详见「纪律层判断」） |
+| K5 | `:149` 尾句改写而非另加一句 | 现句已说到 unlock；缺的是 unlock 与 spawn 的等号——就地接上，避免同段两句说同一件事 |
+| K6 | 不动 `:142-144` digest 条 | 它管评审机器信号，与本条触发（用户批准）不同物；两句并存才构成完整链条 |
+| K7 | `:52-55` 加最短锚（逐字块 C），不只进对照表 | 判据 = 只读 `:52-55` 的读者不能再推出「批准后另等一句」；只进对照表改的是设计档，改不到提示词读者。块 C 只用本节已有的两个名词（`the user's word` / `the nod`），一句、不重述块 A |
+
+**上抛项**：无。
+
+### 6.35 eng-coder 任务书令牌必填（提示词面显式化 · FR33）
+
+**来源**：用户 2026-10-19 22:10 逐字「开批修！」；需求权威 = `ENGINEERING-MODE-V2.md` §13.11（FR33，三条 + 验收）；台账 `#1712`。工具说明 / schema / 门报错落点 = 本档同批 `TOOLS.md` §6.25。
+
+**要修的那一处（实读 2026-10-19 本席）**：`persona-engineering.md` 任务书节（`:158` `batchDoc` ∥ `:161-171` 参数清单）——清单列 `goal` / `round` / `knownFacts` / `designPoints` / `acceptance` / `reportFormat`，`batchDoc` 在 `:158`。
+`designToken` 不在清单内，其余出现处 = 示例行 `:157` · 恢复路径 `:149` · 修正轮复用 `:147` · 并行令牌隔离 `:223` · 交付物 `:236`（均为条件句 / 旁述，不是必填清单项）。
+同节 `batchDoc`（`:158`）写的是 `omitted = refused`，`round`（`:163`）带 "fix rounds are point-fixes only" 的后果说明；令牌没有代价句——读者看不出缺它会拒掉整次 spawn。
+
+**机制（本批只补必填句）**：
+
+- 工程模式 eng-coder spawn 的任务书参数清单把 `designToken` 写成必带项：**omitted = refused**，与同节 `batchDoc` 同形。
+- 取值路径写进同一句：`subagent` `action:'design-slots'` 行里 `designToken=` 之后的值逐字复制（行格式 = `designId=<id> status=live|expired ageDays=… expiresAt=… batch=… designToken=<token>`；`agent-tools/design-slots.mjs:111`）。
+- 后果写「refuses the whole spawn (not merely file writes)」：实例把旧措辞「cannot modify files」读成「spawn 已成立、只是写权限受限」，据此在错误方向上排除了四轮。
+- why：缺参时门拒绝的是整次派工；触发必须落在模型每次组包都会读的清单里，不能只靠示例行（示例读起来像「可带」）。
+
+**取法（最近先例 ∥ 偏离）**：先例 = 本档 §6.34（逐字英文文本 + 落点表 + 验收）∥ §6.32（规则携 why、就地改）。
+**对齐** = 逐字块落 `:161-171` 节内、新增一行、不新增 `##` 节、既有行零改。
+**偏离** = 块内直接点名 `design-slots`（工具动作名）——取值路径是操作指令，不是指向另一份文档的引用，不触「提示词面禁带文档引用」。
+
+**勘察证据行**：已读 `persona-engineering.md:140-199` · `tool-docs/subagent.md` 全档 · `agent-tools/subagent.mjs:136-167` · `agent-tools/subagent-spawn.mjs:108-132 / 240-258` · `agent-tools/design-slots.mjs:111` · `token-ttl.mjs:55-83` · 本档 §6.34 ∥ §6.32 · `ENGINEERING-MODE-V2.md` §13.11。
+令牌面在册权威档（`docs/README.md:78`）：`ENG-TOKEN-BINDING.md` §4 / §6.1（生命周期 ∥ 在位核对）——**结论 = 零改**，本节只动提示词清单，机制本体不在本节。
+`DESIGN-TOKEN-SETTLEMENT.md` §9 F-SL1（清点行末位恒携 `designToken`，`:158`）——**结论 = 零改**，取值路径已按该行格式写进块 A。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+A. `persona-engineering.md:163`（`round` 行）之后新增一行（同列表、同缩进两空格；`:161-171` 其余行零改）：
+
+```
+  **`designToken`** (eng-coder only — the write credential): the exact value `advisor(type='design')` issued when the review passed; copy it **verbatim** from the `subagent` `action:'design-slots'` row — the text after `designToken=` on the designId's line. **omitted = refused** — the gate refuses the whole spawn (not merely file writes), so every eng-coder spawn carries it, fix rounds included (they reuse the same token). A mismatched or expired value is refused the same way, with the reason named in the error.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/persona-engineering.md:163` 后 | 现文零改；`round` 行之后新增逐字块 A | 追加（+1 行 / +518 字符 = 块 A 517 + 换行 1） |
+| L2 | `thincoder-core/prompts/persona-engineering.md:149` / `:157` | 零改（恢复路径与示例已带令牌） | 零改 |
+
+**受影响文件（现行行数 = `split("\n").length − 1` 实读 · 2026-10-19 本席）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 239 行 / 59,256 字符 | +1 行 / +518 字符 | 改后 59,774 字符 ≤ 61,033（+3% 上限） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,490 行 / 124,725 字符（2026-10-19 修订后实测） | 本节 = 68 行（L1338–1405） | 实施轮零触 |
+
+**验收（A1–A4 · 回指 §13.11 ①④）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.11 ①：清单含 `designToken` + `omitted = refused` 同义句 | `node` 子串比对：逐字块 A 1 次命中；`omitted = refused` ≥2 次（`batchDoc` 行已有 1 次） |
+| A2 | §13.11 ①：取值路径在场 | 子串 `designToken=` ≥1 次、`design-slots` ≥1 次命中（均在块 A 内） |
+| A3 | §13.11 ④：提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0 |
+| A4 | §13.11 ④：体量 ≤ +3% | `node -e` 读字符数 ⇒ ≤ 61,033 |
+
+**边界（本节不做）**：工具说明 / schema / 门报错 = `TOOLS.md` §6.25（本节不重述）· 令牌签发 / TTL / 消费零改 · 自动补全不做（需用户单独裁定）· 普通模式零改 · `:149` / `:157` 零改 · 不新增 `##` 节。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 落 `:161-171` 清单内（`round` 行后），不另起段 | 清单是模型每次组包读取的位置；示例行已有令牌，但读起来像「可带」 |
+| K2 | 措辞逐字对齐 `batchDoc` 的 `omitted = refused` | 同节同形，读者不必推断两种缺参的后果是否一致 |
+| K3 | 同句带取值路径（`designToken=` 逐字复制） | 只说「必须带」不给来源，模型会凭记忆编值或省略；实例的失败是缺键，不是缺值 |
+| K4 | 不写进 `:170`「Every spawn role」总句 | 令牌只对 eng-coder 成立；写进全员句会让 eng-designer 误带无意义参数 |
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
+
+**上抛项**：无。
+
+### 6.36 谈定即落笔（提示词面显式化 · FR34）
+
+**来源**：用户 2026-10-19 22:35 逐字「开批」；需求权威 = `ENGINEERING-MODE-V2.md` §13.12（FR34，三条 + 验收）；台账 `#1713`；现象 / 根因 / 版本核对 = 批次档 §1。
+
+**要修的那一处（实读 2026-10-19 本席）**：三条款从未存在（版本核对见批次档 §1）。现行文本里离「决定落盘」最近的三句，各自只覆盖一半：
+
+| 既有句 | 它给出了什么 | 缺的那一半 |
+|---|---|---|
+| `persona-engineering.md:29`（唯一豁免：record a decision the user just made — done in the same turn） | 许可 + 同轮（在豁免语境里） | 义务：决定**必须**当轮写盘；且不指定落点 |
+| `persona-engineering.md:96`（欠账入清单） | 「未派发 / 未完成的工作项」入台账 | 一条**已谈定、未写盘的决定**不是工作项形状，读不出该入清单 |
+| `discipline-engineering.md:30`（需求步 land it in the requirements doc, confirm, then move on） | 最终落点 = 需求档 | 时机：按字面读，落盘发生在讨论结束之后 ⇒「我先记下」成立 |
+
+另：`common.md:141-145`（上下文自掌舵）只讲何时压 / 怎么压，不讲压完怎么找回决定；压缩标记自带 `Check memory search for any missing decisions`（`thincoder-core/context.mjs:34-37`），那是 memory 方向的指向，不是「回读批次档 §1」的动作。
+
+**为什么（依据可指认）**：用户原话「用户向你表达的需求，会随着上下文的压缩而灭失，如果没有及时的留下需求文档，代码为什么是这样就没了依据」。文档写反比漏更坏——漏掉的决定留下空白，写反的决定变成后续实施的依据（`D:\repos` slot 4 的 hash 路由正是这样从「已定」变成设计档里的否决项）。
+
+**机制（三条规则）**：
+
+- **同轮落笔**：需求决定（形态 / 参数 / 边界 / 排除项）在做出当轮写盘——需求档能接就写需求档，否则写批次档 §1 的 `已定决定` 行。触发 = 决定做出当轮（模型自己知道刚谈定）。
+- **压缩后重锚**：看到 `[Context was automatically compacted…]` 或主动压缩回执后，第一个动作 = 回读 §1 `已定决定` 行 + 台账，核对摘要是否丢决定，丢了立即补写。触发 = 标记 / 回执，模型侧可见。**不写压缩前动作**：被动压缩在请求间安全点触发，预兆不可观察（用户 2026-10-19 22:29 裁定）。
+- **未落盘决定 = 台账行**：谈定但未进需求档的决定，当轮挂一行台账（可见债务）；决定进需求档当轮核销该行。
+
+**「已定决定」行形（§1 内的行约定，不是子块）**：
+
+```
+- **已定决定**：<决定> · 用户原话：「<逐字>」 · 时间：2026-10-19 22:29
+```
+
+判由：① §1 是 append-only——子块一旦插入，其后的讨论追加落在块后，清单不再是连续块；② 行首固定标记让每条自足、可全文扫读，回读时按标记收行；③ 六段结构零改（需求硬约束）——标记行是 §1 正文里的行约定，不是新段。标记串 = 写进中文批次档的约定串（§6.30 K4 字面类，故可出现在英文提示词里）。
+
+**取法（最近先例 ∥ 偏离）**：先例 = 本档 §6.34（逐字英文文本 + 落点表 + 对照表 + 验收）∥ §6.35（既有清单内增行）∥ §6.32（携 why、无禁令腔）。
+**对齐** = 逐字英文块、既有节内增行、零新增 `##` 节、既有行零改。
+**偏离** = ① 三条规则按各自行为面分落三处（人格档权威二条 / 人格档债务条锚一条 / 纪律档时机锚一条），不是 §6.34 的三锚同节——三条的读者与读时不同（K1 ∥ K3 ∥ K4）；② `discipline-engineering.md` 加一行——§6.34 判为不加，本条判为加，理由见 K4。
+
+**勘察证据行**：已读 `persona-engineering.md`（`:16–31` / `:83–119` / `:143–155` / `:189–223`）· `discipline-engineering.md`（`:29–64`）· `common.md`（`:134–145`）·
+`thincoder-core/context.mjs:33–37` · `thincoder-core/agent/run-stages.mjs:83–151` · 本档 §6.30 ∥ §6.32 ∥ §6.34 ∥ §6.35 · `ENGINEERING-MODE-V2.md` §13.12 ∥ §13.10。
+**记录面拥有档（本笔触及的两条约定）**：① 批次档格式 = `docs/core/design/BATCH-RECORD.md` §4.10（骨架）∥ §5（行为纪律）——已查、相关：§1 行约定登记入 §4.10；
+② 台账用法面 = `docs/core/design/LEDGER.md` §3（六态迁移表——`已废弃` 撤回态）∥ §3.2（工具参数守卫）——已查、相关：推翻收口复用既有 `已废弃` 态，零 schema 改。工作目录内无独立公共源文档仓——已查无。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+A. `persona-engineering.md:29` 后新增两行（同 bullet 列表、行间不插空行；`:29` 现文零改）：
+
+```
+- **A decision lands in the round it is made**: every requirement decision the discussion settles (shape / parameter / boundary / exclusion) goes onto disk in that same round — the requirements doc when it can take it, otherwise one line in batch record §1, in the fixed form `- **已定决定**：<decision> · 用户原话：「<verbatim words>」 · 时间：<time>` (the marker word, the full-width colon and the ` · ` separators included). "I'll note it down" is true only when that same round carries the write: a decision held only in the conversation is one compaction away from gone, and the documents written afterwards then record its opposite — a requirement written backwards is worse than one missing, because implementation is built on it.
+- **After a compaction the first move is re-anchoring**: the moment "[Context was automatically compacted…]" appears (or a compaction you started returns its receipt), read back the current batch record §1 已定决定 lines and the ledger, and check them against the summary — a decision the summary dropped goes back onto disk at once. Nothing before the compaction: passive compaction fires between requests, so the pre-compaction sign would be one no model can see — the summary's arrival is the first moment the trigger exists.
+```
+
+B. `persona-engineering.md:96` 条尾追加一句（同一 bullet 内续写，行数 ±0）：
+
+```
+ A decision the discussion settled but the requirements doc has not taken yet is a debt of the same shape: its row lands in the round it settled (visible, not prose) and closes in the round the decision reaches the requirements doc — or, when the decision is overturned before it gets there, in the round it is overturned: the row is retired under the ledger's existing 已废弃 state, or rewritten to bind the replacement decision.
+```
+
+C. `discipline-engineering.md` 步骤 1 内、收束段之后新增一行（三空格缩进，作步骤 1 的第 6 条子 bullet；定位按条文本，行号只作读数——同本档 `:261` 口径）。
+插入位的条文本锚 = 步骤 1 收束段整段原文，前段 = `Requirements done-criterion: all five elements present, concrete enough to design from (user confirmed, or answers no longer change the requirements).`
+后段 = `After confirmation, build task entries one per requirement — **the batch record §2 entry table + ledger rows** are the marker that requirements were accepted.`——两段连续、逐字。
+层次说明：`:30` = 步骤 1 编号行；`:31–35` = 五条子 bullet（三空格缩进）；`:36` = 子 bullet 与收束段之间的空行；`:37` = 步骤 1 的收束段（三空格缩进的续行段，仍属步骤 1 条区间，不是子 bullet）；`:38` = 步骤 2 编号行。块 C 必须落在 `:37` 之后、`:38` 之前。
+
+```
+   - **A decision lands in the round it is made**: the main agent writes it down in that round — the requirements doc when it can take it, otherwise the batch record §1 已定决定 lines; waiting for the discussion to close leaves the decision in the conversation alone, where the next compaction erases it.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/persona-engineering.md:29` 后 | 现文零改；新增逐字块 A（两条 bullet） | 追加（+2 行 / +1,246 字符 + 2 换行） |
+| L2 | `thincoder-core/prompts/persona-engineering.md:96` | 该 bullet 尾追加逐字块 B | 同 bullet 追加句（行数 ±0 / +427 字符） |
+| L3 | `thincoder-core/prompts/discipline-engineering.md` 步骤 1 收束段（现 `:37`）之后——条文本锚见块 C 节 | 现文零改；新增逐字块 C（三空格缩进） | 追加（+1 行 / +300 字符 + 1 换行） |
+| L4 | `thincoder-core/prompts/common.md:141–145` | 零改 | 判为不同落（K5） |
+| L5 | 批次档六段结构 | 零改 | 「已定决定」= §1 行约定（K3） |
+
+**`common.md` 判定（不落 · 理由四条）**：① 需求范围明写「工程模式下」，且普通模式在本批边界里另裁——落 common = 无声把规则扩到普通模式；② 动作的两个落点（批次档 §1 的笔、台账写权）都是主 agent 独属面，common 的读者含全部子代理——写在多数读者不能执行的位置 = 假指令；③ `common.md:141-145` 管的是「何时压 / 怎么压」，本条管「压完怎么找回决定」，两个问题；④ 跨模式同文双份的判据（D-PS36）要求内容真的跨模式——本条被需求限定在工程侧，判据不成立。
+
+**对照表（与既有各句逐句对照 · 结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `persona:29` 记录决定可免确认（done in the same turn） | 许可：这类写入不必另要确认 | 义务：这类写入必须当轮发生 | 同一动作的两面：`:29` 免除确认门，本条要求写入发生；不新增确认门 |
+| `persona:96` 欠账入清单 | 工作项（未派发 / 未完成） | 决定（已谈定 / 未写盘） | 并列进同一清单：两者都是「只在对话里、再也没人看见」的东西 |
+| `persona:189–216` 台账生命周期 | 五个事件 → 动作；核销时点 | 未落盘决定的挂行 / 核销时点 | 复用同一生命周期语义（挂行 = 新债登记；核销 = 决定进需求档）；**不增第 6 行**（FR30 五行锁定） |
+| `common:141–145` 上下文自掌舵 | 何时自压 / 自压携 focus / 自动压缩 = 兜底 | 压完之后如何找回决定 | 一条管触发器，一条管事后核对；不互相覆盖 |
+| `persona:94` 收尾三态 · 禁承诺 | 轮末陈述：说了动作而本轮未发 = not done | 同一判据落在「我先记下」上 | 措辞同形（true only when that same round carries the write）；`记下` 无写盘 = 承诺态 |
+| `persona:18` 需求讨论与登记归你 | 归属：谁写需求档 / 批次档 | 时机：何时写 | 归属不变，本条只定时机 |
+| `discipline:30` 需求步（discuss → land → confirm → move on） | 最终落点与顺序 | 落盘时机提前到决定当轮 | `land it in the requirements doc` 照旧成立；本条补的是「不用等讨论结束」 |
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 决定谈定 | 用户说「筛选按 replaceState，hash 形照你建议」 | 当轮：需求档能接 ⇒ 写需求档；不能接 ⇒ §1 加一行 `**已定决定**：`（决定 · 原话 · 时间） |
+| C2 | 正常 · 当轮即入需求档 | 决定当轮写进需求档 | §1 不加行（需求档已是耐久载体）；若已有台账行，当轮核销 |
+| C3 | 边界 · 「我先记下」 | 模型说「我先记下」而本轮无写盘 | 判为未落盘 ⇒ 本轮补写；补不上 ⇒ 按 `:94` 写成 Wait / Stop，不写成承诺 |
+| C4 | 边界 · 被动压缩后 | 上下文出现 `[Context was automatically compacted…]` | 第一个动作 = 回读 §1 `已定决定` 行 + 台账；摘要丢失的决定立即补写 |
+| C5 | 边界 · 主动压缩 | `context` 工具返回压缩完成回执（`agent/run-stages.mjs:95`） | 同 C4 |
+| C6 | 边界 · 决定进需求档 | 已挂台账行的决定写进需求档 | 当轮核销该行（`ledger` close） |
+| C7 | 错误防御 · 被否选项 | 讨论中的选项被用户否掉（如「不做 hash」被否） | 不是决定，不入清单——清单只收**已定**项 |
+| C8 | 错误防御 · 决定进需求档前被推翻 | 已挂台账行的决定被用户推翻 / 作废（不再是已定项，如「hash 路由不做了」） | 该台账行当轮收口：按既有「已废弃」态撤回（`ledger` close → 已废弃），或改写该行绑定替代决定；§1 行不回改（§1 append-only——行是当时的记录），推翻结论按 C1 记为新的已定项 |
+
+**受影响文件（现行行数 / 字符数 = `split("\n").length − 1` / `length` 实读 · 2026-10-19 本席）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 240 行 / 59,774 字符 | +2 行 / +1,673 字符 + 2 换行 | L1 + L2；改后 61,449 ≤ 61,567（+3% 上限） |
+| `thincoder-core/prompts/discipline-engineering.md` | 200 行 / 36,773 字符 | +1 行 / +301 字符 | L3；改后 37,074 ≤ 37,876（+3% 上限） |
+| `thincoder-core/prompts/common.md` | 273 行 / 43,080 字符 | ±0 | L4 = 判为不落 |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,626 行 / 134,249 字符（本轮修正前实读） | 本笔 = §6.36 修正（设计轮） | 实施轮零触 |
+
+测试覆盖：零单元测试档（纯文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + doc_check 交付门，不新增断言。
+
+**验收（A1–A7 · 回指 §13.12 ①–⑥）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.12 ①：同轮落笔句在场（触发 = 决定当轮；落点 = 需求档 ∥ §1）；块 C 落在步骤 1 的条区间内 | `node` 子串比对（按档分判）：`persona-engineering.md` 内 `A decision lands in the round it is made` 1 次 · `otherwise one line in batch record §1, in the fixed form` 1 次 · `- **已定决定**：` 1 次；`discipline-engineering.md` 内 `A decision lands in the round it is made` 1 次 · `the main agent writes it down in that round` 1 次，且该行以三空格缩进 `   - ` 起头。**位置判据（块 C）**：同一档内行索引比较——块 C 行 > `are the marker that requirements were accepted.` 所在行，且 < 行首为 `2. **Design**` 的行（块 C 必须落在步骤 1 条区间内；错位即红） |
+| A2 | §13.12 ②：重锚句在场（触发 = 标记 / 回执；动作 = 回读 §1 + 台账） | 子串 `[Context was automatically compacted` · `read back the current batch record §1` · `and the ledger` 各 1 次命中 |
+| A3 | §13.12 ③：台账行句 + 核销条件 | 子串 `is a debt of the same shape` · `closes in the round the decision reaches the requirements doc` 各 1 次命中 |
+| A4 | §13.12 ④：携 why、无禁令腔 | ① 禁令词扫描（机械）：新增区段（块 A / B / C）扫 `never|do not|don't|must not|may not|forbidden` ⇒ 0 命中（本席已预扫 = 0）；② 逐块 why 在场的一次性核对（实施轮核对、读数入批次档 §5）：块 A 第 1 条 = `a decision held only in the conversation is one compaction away from gone, and the documents written afterwards then record its opposite — a requirement written backwards is worse than one missing, because implementation is built on it`；块 A 第 2 条 = `Nothing before the compaction: passive compaction fires between requests, so the pre-compaction sign would be one no model can see — the summary's arrival is the first moment the trigger exists`；块 B = 宿主 bullet 自带 why（`persona-engineering.md:96` 欠账条整句——本句同族复用，不另写 why）；块 C = `waiting for the discussion to close leaves the decision in the conversation alone, where the next compaction erases it`。判据 = 三块各指出上述子句其一（块 A 两条各一；缺一即红） |
+| A5 | §13.12 ⑤：提示词面零文档引用 · 体量 ≤ +3% | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0；字符数 ⇒ persona ≤ 61,567（预计 61,449）、discipline ≤ 37,876（预计 37,074） |
+| A6 | §13.12 ⑥：与既有条款逐句对照无矛盾；对照结论记入批次档 | 对照表七行结论 = 零矛盾（本档对照表 = 依据）；**对照结论在收口时落批次档 §6（主 agent 笔）**；下一批行为观察：谈定后当轮有写盘；压缩后首动作 = 回读 §1 + 台账 |
+| A7 | 三条触发模型侧可观察；触发字面与运行时标记常量同形 | 同轮落笔 = 决定做出当轮；重锚 = 标记 / 回执（`context.mjs:34-37`）；台账行 = 决定谈定当轮。**一次性常量比对**（实施轮与复核轮各一次，读数入批次档 §5）：从 `thincoder-core/context.mjs` 取 `COMPACTION_PREFIX` 串首，取提示词所引字面 `[Context was automatically compacted…]` 去掉 `…]` 的前缀，断言 `常量.startsWith(提示词前缀) === true`——方向固定：提示词前缀必须是运行时常量的前缀（反向不判） |
+
+**边界（本批不做）**：压缩机制（阈值 / 摘要指令）零改 · 台账 schema 零改 · 批次档六段结构零改 · 普通模式零改（另裁）· 机械门 / 工具 / 状态零新增 · `thincoder-core/prompts/**` 本设计轮零笔（实施轮由 eng-coder 照落点表落笔）· `common.md` 零改 · 生命周期表零增行 · 需求档零笔（§5.3 的 §1 枚举随动 = 上抛项，主 agent 笔）。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 规则 1 + 规则 2 落 `persona:29` 后（确认门节内），权威句一处 | `:29` 正是「记录决定」的许可句，且已带 `done in the same turn`——义务只差这一步；规则 2 是同一保证的恢复半（决定要活过压缩），紧邻成对读 |
+| K2 | 规则 3 落 `persona:96` 债务条尾（追加句，不加 bullet） | 它是债务条的同族：只在对话里的决定与只在报告 prose 里的欠账是同一种「没人再看见」；同条内追加 ⇒ 零行数连带、零重复 |
+| K3 | 「已定决定」= §1 行约定（行首标记），不是子块 | §1 append-only：子块被后续追加冲散後清单不再连续；标记行每条自足、可全文扫读，且六段结构零改。行形逐字并入块 A（本笔）⇒ 写盘与回读扫标记同形，「固定标记」兑现到落地文本 |
+| K4 | `discipline-engineering.md` 需求步 +1 行 | 该步现文只给最终落点（`land it in the requirements doc`），按字面读落盘在讨论结束后——这正是「我先记下」的文本来源；该步是决定发生的步骤。纪律档读者 = 主 agent + eng-coder + eng-designer（`thincoder-core/prompt-overlays.mjs:44-45`）——后两者不能写需求档 / 批次档 §1（D1），故块 C 必须写明动作主体是主 agent，否则它是对无法执行它的读者下的假指令（与 K5 同一判据）。§6.34 判不加是因为那里纪律层无发起面，本条不同 |
+| K5 | `common.md` 不落 | 需求限定工程模式（普通模式另裁）；动作落点（§1 笔 + 台账写权）是主 agent 独属面，common 的读者含不能执行它的子代理；且自掌舵节管的是压缩时机，不是决定耐久 |
+| K6 | 不写压缩前动作 | 被动压缩无预兆、触发点不可观察——规则须落在模型真能看见的信号上（用户 2026-10-19 22:29 裁定） |
+| K7 | 提示词正文引用 `[Context was automatically compacted…]` 字面 | 该串是运行时真实标记（`context.mjs:34-37`），不是文档引用；写在提示词里 = 触发点可识别 |
+| K8 | 「已定决定」行形的格式归属 = `docs/core/design/BATCH-RECORD.md` §4.10 登记（回指本节） | 该行是批次档 §1 的格式面元素——格式面拥有档 = 批次档设计档；只在提示词设计档登记则格式归属无主。需求档 §5.3 的 §1 构成枚举随动 = 上抛项（需求笔归主 agent） |
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
+
+**上抛项**：无。① `requirements/ENGINEERING-MODE-V2.md` §5.3（`:175`）的 §1 构成枚举已由主 agent 于 2026-10-19 补为「目标+前情+条目+已定决定清单」；格式归属登记在 `BATCH-RECORD.md` §4.10。
+
+### 6.37 任务书陈旧口径（§2 只引不抄 ∥ 设计变更传播 ∥ 收口对账 · FR35）
+
+**来源**：需求权威 = `ENGINEERING-MODE-V2.md` §13.13（FR35，三条 + 验收 ①–⑥）；台账 `#1714`；现象与四处提示词缺口 = 本批批次档 §1。
+
+**要修的那一处（实读 2026-10-19 本席）**：
+
+| 缺口 | 现文坐标 | 缺的那一半 |
+|---|---|---|
+| 任务书两源并列，无优先级 | `thincoder-core/prompts/persona-engineering.md:162`（`batch record §2 / design doc`） | §2 与设计不一致时无判据 |
+| 单一判据源只约束派单 | `thincoder-core/prompts/persona-engineering.md:168`（`the dispatch carries ONE criterion source`） | §2 里重述的计数 / 判据不在射程内——§2 自己造了第二判据 |
+| 收口清单无跨档对账 | `thincoder-core/prompts/discipline-engineering.md:188-189`（D7 清单有 `counts`，无 §2 ↔ 设计） | 收口不核 §2 判据是否仍与当前设计一致 |
+| 三链同源只在设计轮返工前跑一次 | `thincoder-core/prompts/persona-eng-designer.md:82-84` | 后续批次改共享设计时不重跑 |
+
+**实例（why 的依据 · 可指认）**：
+
+- `D:\repos` 会话较早批 §2 第 5 条：「`:1378` 自建表四张 → **五张**，补 `skip_combo`，与 §2.2 `:93`、C3 同一表集」；
+- 同一会话后一批 §2：「自用库改**六张表**」「§5.1 C3 表集加 `doc_all`」；
+- 前批仍在途、§2 未随动 ⇒ 照其收口，「恰好五张」的等值断言与设计的六张当场对不上；
+- 同一会话更近一例：某批 §2 的「补正」行本身写「现行设计为**五张表**」，而设计已六张，由设计评审的判据行抓出——**连更正行也会陈旧**；
+- 结论：任务书把活值抄成死值，后批改设计就把前批任务书变成错的——照旧 §2 收口，正确实现被判红，或旧口径被放过。抓到它靠的是人的注意力，不是结构。
+
+**机制（三条规则 · 单源 = 本节；提示词面只持最短动作锚）**：
+
+1. **§2 只引不抄**：批次档 §2（任务书）里的判据 / 计数按 `design §N.M` / `requirements §N.M` 引用，不重述数字；必须出现字面值（验收等值断言）时，它只作为该节所陈述的值出现，引用紧贴其旁。§2 不造第二判据。
+2. **设计变更传播**：触发 = 设计变更落地（修正轮落地 / 评审通过后的设计定稿）。动作 = 父侧扫在途批次档 §2 中引用到被改节的行，**同轮**追加 §2 更正（append-only，旧行不动）或当日挂债（台账行点名批次与节）。责任面按 D1：扫描与派单 = 父侧；§2 的笔 = eng-designer（父侧不代笔，更正走 designer 修正轮）。
+3. **收口对账**：D7 收口清单加一项「§2 判据 / 计数 ↔ 当前设计档：一致，或差异已记 §6」。
+
+**扫描形态（可执行 · 仓根运行）**：
+
+```bash
+# SEC = 被改节的编号（如 2.4）；TITLE = 该节标题的锚串（如「镜像」）
+node -e "const fs=require('fs');const sec='2.4',title='镜像';for(const f of fs.readdirSync('docs/batches')){if(!f.endsWith('.md'))continue;const s=fs.readFileSync('docs/batches/'+f,'utf8');if(/^\*\*状态行\*\*：[^\n]*已收口/m.test(s))continue;if(s.includes('design §'+sec)||s.includes(title))console.log(f)}"
+```
+
+命中文件逐个读段确认：命中的是 §2 里引用被改节的行 ⇒ 进入处置（同轮更正 / 挂债）；命中在 §3 / §6 是评审或收口引述 ⇒ 不处置。
+
+**扫描边界（误报 / 漏报）**：
+
+| 类 | 情形 | 处置 |
+|---|---|---|
+| 误报 | 命中的编号属于另一档（如需求档的 `§2.4`） | 新形态带 `design` 前缀可区分；旧形态按标题串人工分辨 |
+| 误报 | 标题锚串过宽（「镜像」也出现在别的主题） | 换更长的标题串重扫 |
+| 误报 | 命中行在 §3 评审 / §6 收口（引述而非判据） | 不处置 |
+| 漏报 | 旧 §2 用行号引用（`:1378`）或只写标题不含 `§N.M` | 标题串补扫（命令已含 `title` 分支） |
+| 漏报 | 改了父节而 §2 引用的是子节 | 按父节号与子节号各扫一遍 |
+| 漏报 | 扫描只覆盖 `docs/batches/` 下在盘的档；已冻结档不在射程 | 冻结档不回改（新老划断）；「在途 / 冻结」按 §1 状态行判定：片段只跳过 §1 状态行含 `已收口` 的档，前情指针里的「已收口」字样不触发跳过 |
+
+**取法（最近先例 ∥ 偏离）**：
+先例 = 本档 §6.34（逐字英文文本 + 落点表 + 对照表 + 验收）∥ §6.35（既有清单内增行）∥ §6.36（三行为面分落）∥ D-PS37（同规则多点落、各持最短动作锚）。
+对齐 = 逐字英文块、既有节内增行、零新增 `##` 节、既有行除一处括注外零改。
+偏离 = ① 规则 1 的权威短句落 **eng-designer**（§2 的笔），父侧只落「两源优先级 + 判据源射程」两句——§6.36 两条都落主 agent 是因为两条的动作者都是主 agent；本条写 §2 的动作者是 designer（D1），规则落在不能执行它的读者身上 = 假指令（同 §6.36 K4 判据）。② `:162` 的括注改写为带优先级的句子，不是纯追加——该括注（`batch record §2 / design doc`）本身就是缺口：两源并列、无优先级，纯追加会在原地留下一对无判据的并列源（缺口表第一行）。
+
+**勘察证据行**：已读 `persona-engineering.md:145–190`（任务书参数节 + Fix rounds doc-first）· `discipline-engineering.md:179–196`（D1–D9 与可读性）·
+`persona-eng-designer.md:24–84`（修单接单 / 两份交付物 / 三链同源）· 本档 §6.34 ∥ §6.35 ∥ §6.36 ∥ D-PS37 · 需求档 §13.13 ∥ §13.12 · `scripts/prompt-refs-check.mjs`（J1/J2/J3 判据）。
+实例三本批次档在仓外（`D:\repos`），只作 rationale，不作指针。工作目录内无独立公共源文档仓——已查无（`PROJECT-MANIFEST.json` `index.publicRepos = []` 实读 `:61`）。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+A. `thincoder-core/prompts/persona-engineering.md:162` 整行替换（其余句照旧，只把括注改成带优先级的句子）：
+
+```
+- **Task books are re-derived, not transcribed**: fill every acceptance line and known fact from THIS batch's own documents — and where batch record §2 and the design doc disagree, **the design doc is the criterion source of record**: §2 is a dispatch surface that cites it, not a second copy of a count or criterion. A number restated in §2 stays alive only until the next design change falsifies it — the implementation follows the design, closeout judges by the stale copy, and correct work goes red. Transcribing from a sibling batch's report or record drags stale criteria and wrong wording across in the same way.
+```
+
+B. `thincoder-core/prompts/persona-engineering.md:168` 行尾追加（同一 bullet 内续写；行数 ±0）：
+
+```
+ The same reach extends to the task book itself: a criterion or count written into batch record §2 as its own text is that second criterion — §2 cites the owning design-doc section, in the form `design §N.M` / `requirements §N.M`, and where a literal value has to appear (an acceptance equality assertion) it appears only as that section's value with the citation beside it.
+```
+
+C. `thincoder-core/prompts/persona-engineering.md:162` 之后新增一行（同 bullet 列表，行间不插空行；现文零改）：
+
+```
+- **A landed design change propagates to the task books that cite it**: the moment a design-doc change lands — a fix round's revision, or the design finalized after review — scan the in-flight batch records for §2 citations of the changed section (its `design §N.M` token and its title), and in that same round append a §2 correction through a designer fix round (appended lines; the old ones stay as the record of what was thought then) or book the day's debt on the ledger, naming the batch and the section. The scan and the dispatch are yours; the §2 pen is the designer's — a correction you append yourself puts a second author on their segment, and a correction left unbooked is one nobody comes back to make.
+```
+
+D. `thincoder-core/prompts/discipline-engineering.md:188` 内、整段替换现文 `counts / pointers`（块 D 首尾即两端锚；行数 ±0）：
+
+```
+counts / **§2 ↔ design-doc reconciliation** (every criterion or count §2 cites still matches the owning design-doc section — a mismatch is closed by an appended §2 correction, or recorded in §6; judging closeout by a stale §2 is what turns a correct implementation red) / pointers
+```
+
+E. `thincoder-core/prompts/persona-eng-designer.md:53` 之后新增一行（三空格缩进，仍属 item 1；落在 `Six-segment boundary` 行之前）：
+
+```
+   **§2 cites rather than transcribes**: a criterion or count in §2 points at its owning section (`design §N.M` / `requirements §N.M`) — the design doc is the live side, and a number copied into §2 freezes at the copying moment, so the next design change leaves §2 wrong while the implementation follows the design, and closeout fails correct work by a stale criterion. Where a literal has to appear (an acceptance equality assertion), it appears only as that section's value, citation beside it.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `persona-engineering.md:162` | 括注 `(batch record §2 / design doc)` → 优先级句（块 A） | 整行替换（±0 行 / +364 字符） |
+| L2 | `persona-engineering.md:168` 行尾 | 追加块 B | 同行追加（±0 行 / +374 字符） |
+| L3 | `persona-engineering.md:162` 后 | 新增块 C | 追加（+1 行 / +715 字符） |
+| L4 | `discipline-engineering.md:188` 行内 | 以块 D 整体替换现文 `counts / pointers` 一段（块 D 首尾即两端锚） | 整段替换（±0 行 / +263 字符） |
+| L5 | `persona-eng-designer.md:53` 后 | 新增块 E | 追加（+1 行 / +497 字符） |
+| L6 | `common.md` · `tool-docs` · 批次档骨架 · 需求档 · 产品代码 | 零改 | 判为不落（K5） |
+
+**对照表（与既有各句逐句对照 · 结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `persona-engineering.md:162` 任务书两源（§2 / 设计档） | 任务书从哪两处取料 | 两源冲突时谁赢（设计档），§2 的形态（引用） | 原来的并列只是没写优先级；本条补优先级，取料范围不变 |
+| `persona-engineering.md:168` 单一判据源（the dispatch） | 派单不造第二判据 | 同一原则扩到任务书本身（§2） | 同一判据（one criterion, one source）的射程扩大，不换判据；派单面照旧 |
+| `persona-engineering.md:180-181` 任务书 = 表 | 任务书的形态是行动表 | 表格单元里放引用而非复述的值 | 表形态零改；只改单元的写法（引用优先） |
+| `persona-engineering.md:149` Fix rounds doc-first | 修正轮先改设计档，再派工 | 设计变更落地后扫 §2 | 同一轮的先后：先落设计，再传播；不抢时点 |
+| `discipline-engineering.md:184` D3 计数纪律 | 同一档内计数与清单同步变 | 跨档：§2 引用值随设计档变 | 两件事：D3 管写者自己的档，本条管引用方不持有活值 |
+| `discipline-engineering.md:188-189` D7 清单 | 收口固定动作集 | 清单内加一项对账 | 追加项，清单结构零改、无声明计数被牵动 |
+| `persona-eng-designer.md:82-84` 三链同源 | 条目（需求条目）三链同源，设计轮返工前跑 | 判据 / 计数的跨批陈旧，设计变更落地时跑 | 对象不同（条目 vs 判据值）、时点不同；更正走 designer 修正轮时 82-84 在轮末照跑 |
+| §2 append-only（`batch` 工具段白名单） | §2 只可追加、只 designer 可写 | 更正 = 追加行，不改旧行 | 完全同向：更正形态就是 append；父侧代笔会被工具拒（机械兜底） |
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| U1 | 正常 · 写 §2 | designer 写一条验收等值断言 | 写「表集 = `design §2.4` 所陈述的六张」+ 引用；不裸写「六张」 |
+| U2 | 正常 · 设计变更落地 | 修正轮改了设计的 §2.4 | 父侧当轮跑扫描 → 在途批 §2 命中 → 派 designer 修正轮 append 更正行 |
+| U3 | 边界 · 扫描零命中 | 设计变更落地，无在途 §2 引用该节 | 无处置；扫描读数记入当轮报告 |
+| U4 | 边界 · 旧形态引用 | §2 只写标题、无 `§N.M` | 标题串分支命中；更正行同时补新形态引用 |
+| U5 | 边界 · 已冻结批次 | 已收口批次 §2 引用被改节 | 不在射程（新老划断）；扫描过滤掉 |
+| U6 | 错误防御 · 父侧代笔 | 父侧直接给 §2 append 更正 | `batch` 工具拒（段白名单 eng-designer → §2）——机械兜底，不靠自觉 |
+| U7 | 错误防御 · 漏传播 | 设计变更落地但未扫、未挂债 | 收口对账兜底：D7 项判红，差异当轮修正或记 §6 |
+| U8 | 错误防御 · 裸数字无引用 | §2 写了计数、无来源节 | 对账按「无法归属 ⇒ 视为不一致」处置：补引用或 append 更正 |
+
+**受影响文件（现行行数 / 字符数 = `split("\n").length − 1` / `length` 实读 · 2026-10-19 本席）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 242 行 / 61,449 字符 | +1 行 / +1,453 字符 | L1–L3；改后 243 行 / 62,902 ≤ 63,292（+3% 上限） |
+| `thincoder-core/prompts/discipline-engineering.md` | 201 行 / 37,074 字符 | ±0 行 / +263 字符 | L4；改后 37,337 ≤ 38,186（+3% 上限） |
+| `thincoder-core/prompts/persona-eng-designer.md` | 88 行 / 18,077 字符 | +1 行 / +497 字符 | L5；改后 18,574 ≤ 18,619（+3% 上限，余量 45 字符） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,633 行 / 137,222 字符（本节写入前实读） | 本节新增（设计轮） | 实施轮零触 |
+| `docs/core/design/BATCH-RECORD.md` | 643 行 / 54,753 字符（登记段落地前实读；现盘 647 行 / 54,997 字符） | +4 行 / +244 字符（设计轮已落） | §4.10 增「§2 引用形态约定」登记段（格式归属，回指本节）；实施轮零触 |
+| `common.md` · `tool-docs` · 批次档骨架 · 需求档 · 产品代码 | — | ±0 | 判为不落 / 禁改 |
+
+测试覆盖：零单元测试档（纯文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + `doc_check` 交付门 + 上表子串判据，不新增常驻断言。
+
+**验收（A1–A8 · 回指 §13.13 ①–⑥ 与本批派单验收）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.13 ①：只引不抄句在场（两档分判） | `persona-eng-designer.md` 内 `§2 cites rather than transcribes` · `design §N.M` · `citation beside it` 各 1 次；`persona-engineering.md` 内 `the design doc is the criterion source of record` · `§2 is a dispatch surface that cites it` · `The same reach extends to the task book itself` · `requirements §N.M`（块 B 引用形态两档并列）各 1 次 |
+| A2 | §13.13 ②：传播句在场（触发 / 动作 / 责任面） | `A landed design change propagates to the task books that cite it` · `scan the in-flight batch records` · `append a §2 correction` · `book the day's debt` 各 1 次 |
+| A3 | §13.13 ③：D7 清单含对账项 | `discipline-engineering.md` 内 `counts / **§2 ↔ design-doc reconciliation**` 1 次，且与 `7. **D7 settlement sync**` 同一行（行号 = D7 行号）；该行内 `counts /` 与 `pointers` 各出现 1 次（两端锚重复即红） |
+| A4 | §13.13 ④：携 why、无禁令腔 | 新增区段扫 `never|do not|don't|must not|may not|forbidden` ⇒ 0（本席预扫 = 0）；why 子句逐块：A = `A number restated in §2 stays alive only until the next design change falsifies it`；B = `a criterion or count written into batch record §2 as its own text is that second criterion`；C = `a correction left unbooked is one nobody comes back to make`；D = `judging closeout by a stale §2 is what turns a correct implementation red`；E = `closeout fails correct work by a stale criterion` |
+| A5 | §13.13 ⑤：提示词面零文档引用 · 体量 ≤ +3% | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0；**块 E 内容判据 = 落地行与本节块 E 逐字围栏块整行相等**（行首三空格缩进在内；只判字数时，措辞微调仍可全绿）；字符数 ≤ 预算（persona 63,292 / discipline 38,186 / designer 18,619）作附带读数（designer 余量 45 字符） |
+| A6 | §13.13 ⑥：与既有条款逐句对照无矛盾；结论记入批次档 | 对照表八行逐句判读结论 = 零矛盾（依据 = 本表「为何不矛盾」列）；结论已记入本批 §2「验收 ⑥ 对照结论」行 |
+| A7 | 派单 ②：三条触发模型侧可观察 | 只引不抄 = 写 §2 时（designer 轮）· 传播 = 设计变更落地（修正轮 / 评审定稿，父侧当轮）· 对账 = 批次收口（D7） |
+| A8 | 派单 ③：`persona-eng-designer.md` 同落判定 | 落，理由 = K1（写 §2 的动作者是 designer；只落父侧 = 假指令） |
+
+**边界（本批不做）**：批次档六段结构零改 · 冻结档零改（新老划断）· 普通模式零改（另裁）· 机械门 / 工具 / 状态零新增 · `thincoder-core/prompts/**` 本设计轮零笔（实施轮由 eng-coder 照落点表落笔）· 需求档零笔 · 产品代码零触 · `common.md` / `tool-docs` 零改 · 既有在途 §2 的裸 `§N.M` 写法不回改（扫描按标题串兜底）。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 规则 1 的权威短句落 `persona-eng-designer.md:53` 后（§2 的笔）；父侧只落优先级与射程两句 | 写 §2 的动作者是 designer（D1）；只落父侧 ⇒ 写者从未见过规则，规则只在下游被消费 = 假指令（同 §6.36 K4 判据）；父侧两句治的恰是它的两个缺口，不是规则本体（D2：本体 = 本节） |
+| K2 | 传播落 `persona-engineering.md:162` 后新 bullet | 触发（设计变更落地）与动作（扫描 + 派 designer 修正轮）都是父侧动作；贴任务书节 = 与「任务书从哪来」同轴读 |
+| K3 | 对账落 D7 清单内、`counts` 之后 | D7 = 收口固定动作集；与 `counts` 相邻 = 同族（本档计数 vs 跨档计数），行内插入不增行 |
+| K4 | 引用形态 = `design §N.M` / `requirements §N.M` | 让引用可机扫（规则 2 的扫描依赖它）+ 区分同号不同档；既有裸 `§N.M` 由标题串补扫兜住 |
+| K5 | `common.md` / `tool-docs` / 批次档骨架不落 | 受众 = 工程模式父侧 + 设计席；common 含普通模式（本批另裁）与写不了 §2 的子代理；骨架只列 §2 装什么，不含形态规则 |
+| K6 | 更正 = append，不改旧行 | §2 append-only 是工具机械事实；旧行保留为当时记录，更正行自带「当前口径」语义 |
+| K7 | 对账带逃生面「差异已记 §6」 | 收口时无法当轮修正的差异（设计仍在校准 / 实现已按旧判据完成）记 §6 使其可见——比强行判红或静默放过好（D7 差异显式化同轴） |
+| K8 | 批次档设计档登记 = `BATCH-RECORD.md` §4.10 一行（格式归属，回指本节） | §2 的格式面元素以批次档设计档为登记面（承 §4.10「已定决定」行登记先例：行形要登记，引用形态同样要登记）；机制描述单源仍 = 本节（D2 管机制，不管格式归属）；骨架不含形态规则，零随动 |
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
+
+**上抛项**：无。
+
+### 6.38 整批令覆盖批准门（提示词面显式化 · FR36）
+
+**来源**：用户 2026-10-19 23:27「放行 = 有权发起，不等于已批准 这条纪律是哪里来的？」· 23:29「**这条纪律有问题啊！应该是要能够自动跑完的。**」· 23:30「**我是觉得如果这个规则进了提示词，应该要改正。**」
+需求权威 = `ENGINEERING-MODE-V2.md` §13.14（FR36，三条）；台账 `#1715`。被取代条文 = `thincoder-core/prompts/persona-engineering.md:14`；出处 = `docs/batches/2026-10-17-prompt-firing-rights.md` B1（冻结档，只读）。
+
+**要修的那一处（实读 · 2026-10-19 本席）**：
+
+- `persona-engineering.md:14` 现文：`The go-ahead **does not exempt the approval gate**: the review still runs, the user's approval is still required — **"authorized to fire" is not "approved"**.` 该句让整批令在批准门再停一次——同一份授权收两次费。
+- 设计档自身两处登记引用旧语义：`:1226`（§6.34 成因表 G4，闭合列写「预授权不豁免批准照旧成立」）∥ `:1285`（§6.34 对照表第 2 行，「`:13` 仍成立：预授权照旧不等于批准」）（本笔已落，见 L6 / L7）。
+- 体量读数：父侧交单读数 61,449 字符；本席 `node` 实读 = **62,902 字符 / 243 行**——差额 = FR35 `taskbook-sync` 批已落地的 +1,453。本批基线取实读 62,902，上限 = 62,902 × 1.03 = **64,789**。
+
+**机制（四条 = 需求三条 + 默认档一条 · 回指 §13.14）**：
+
+1. **覆盖批准门**：批级放行 ⇒ 批内全链（评审 → 修正 → 实施 → 收口）自动跑完，不再单独停一次批准门。令牌照旧在评审通过那轮由 advisor 签发（§6.35）：整批令替代的是「等用户那句话」，不是写权凭证——批准门被覆盖 ≠ 令牌不再铸出。
+2. **评审照走**：go-ahead 覆盖的是「再等一句 go」，不是评审；评审是质量闸，发现照原规处置。
+3. **四停相**：① 评审 🔴 修不掉 / 需改设计语义 ② 实施需偏离已批准设计 ③ 用户明示 hold / 只批设计 / 先别动 ④ 范围变更（新需求不在原批内）。命中任一条 ⇒ 停下上报。
+4. **无整批令时照旧**：`:8` 默认档与 FR32（`:9`）的等号原样成立。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形；R2 / R3 = 仅前缀的插入串，行内其余取原句逐字）**：
+
+R1 — `persona-engineering.md:14` 整行替换：
+
+```text
+The go-ahead **covers the approval gate**: the batch runs its whole chain through in one pass — review, fixes, implementation, closeout — because the go-ahead already authorizes the batch's whole scope, and a second stop at the approval gate charges the same authorization twice. **The review still runs, unchanged**: the go-ahead covers the wait for a separate go, not the review itself — review is the quality gate, and its findings are handled as before. Four shapes still stop the run and send it back to the user: (i) review 🔴 findings that cannot be fixed or that need a change of design semantics (ii) implementation would have to deviate from the approved design (iii) the user says hold / design only / not yet (iv) the scope changes — a new requirement outside the batch. Without a batch-wide go-ahead, each step waits for the user's word as before.
+```
+
+R2 — `persona-engineering.md:8` 行首插入作用域前缀（**只给前缀**；该行其余 = `:8` 原句逐字零改）：
+
+```text
+**Without a batch-wide go-ahead**,
+```
+
+落笔形 = 插入串 + 一个空格 + 原句（`Review firing and advancement both stop at the user's approval gate — …`）；净增 35 字符（34 + 空格），与 Δ 列一致。
+
+R3 — `persona-engineering.md:59` 行首插入作用域前缀（**只给前缀**；插在该行 `> ` 之后；块 C 原句逐字零改——加粗与首字母大写保留）：
+
+```text
+**Without a batch-wide go-ahead**,
+```
+
+落笔形 = `> ` + 插入串 + 一个空格 + 块 C 原句（`**Once the review has passed, the approval is that word**: …`）；净增 35 字符。
+
+**同节三句判定（需求点名 · 逐句给理由）**：
+
+| 句 | 判定 | 理由 |
+|---|---|---|
+| `:8` `Review firing and advancement both stop at the user's approval gate … wait for the user's explicit go.` | **冲突 ⇒ 同轮收正（R2）** | 无条件断言「过门之后从未被批准」+「等一句 go」；整批令下过门之后的动作已被授权，且无人再等第二句。加作用域前缀即消除，默认档原文保留 |
+| `:55` `review firing / implementation starts wait for the user's word — with the go-ahead, continue; without one, hold` | **不冲突 ⇒ 零改** | 首句已写「with the go-ahead, continue」；整批令就是「the user's word」本身（`:11` 定义：覆盖该批每一步）。它要求的是「有一个用户表态」，不是「第二个表态」 |
+| `:59` `Once the review has passed, the approval is that word … the sign-off is the nod the next step holds for` | **冲突 ⇒ 同轮收正（R3）** | 「the next step holds for the sign-off」在整批令下不成立（无人等 sign-off）；加作用域前缀把它限定到无整批令的默认档 |
+| `:9`（块 A，需求未点名） | **零改** | ① 它定的是「批准 ↔ 启动」等号（FR32），不是「必须等批准」的义务；整批令本身就是那句 go/批准，等号照旧成立。② 停相计数分两轴：`:9` 的 `The one stop shape` = 批准语本身只有一种停形（批准语说 hold）；R1 的 `Four shapes` = 使批内 run 停下的四相（与 §13.14 ② 同轴）——前者管「批准语能是什么」，后者管「已跑的批为什么停」，两个计数各自成立，不矛盾 |
+| `:11-13`（定义 + 三终点） | **零改** | `:14` 只扩覆盖对象（发起 → 批准门），不否定定义与生命周期；四停相 ③ = 叫停、④ = 范围变更，与三终点同轴 |
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/persona-engineering.md:14` | 旧句整行 → 逐字块 R1 | 替换（±0 行） |
+| L2 | `thincoder-core/prompts/persona-engineering.md:8` | 行首插入 R2 前缀（仅前缀；原文前留一空格） | 就地改（±0 行 / +35 字符） |
+| L3 | `thincoder-core/prompts/persona-engineering.md:59` | `> ` 之后插入 R3 前缀（仅前缀；原文前留一空格） | 就地改（±0 行 / +35 字符） |
+| L4 | `thincoder-core/prompts/persona-engineering.md:55` | 零改（判定见上表） | — |
+| L5 | `thincoder-core/prompts/persona-engineering.md:11-13` | 零改（定义与三终点） | — |
+| L6 | `PROMPT-SYSTEM.md` §6.34 成因表 G4（`:1226`） | 坐标 `:13` → `:14`；删「预授权不豁免批准照旧成立」，闭合改指 §6.38 | 就地改（本笔已落） |
+| L7 | `PROMPT-SYSTEM.md` §6.34 对照表第 2 行（`:1285`） | 旧 `:13` 行 → FR32 ↔ FR36 分档行 | 整行换写（本笔已落） |
+| L8 | `docs/batches/2026-10-17-prompt-firing-rights.md` | 零改（冻结档不回改） | — |
+| L9 | `thincoder-core/prompts/discipline-engineering.md` | 零改（行为主体 = 父侧；纪律层无发起面——承 §6.34 K4） | — |
+
+**对照表（与既有各句逐句对照 · 结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `:6` `Design reviews and implementation starts are both fired by the user, not by you.` | 谁发起：用户，不是 agent 自判 | 整批令 = 用户一次性给出的每步发起 + 批准门覆盖 | 覆盖的是用户已给的授权；agent 仍不自发起 |
+| `:8`（R2 改后） | 无整批令的默认：过门先有 go | 有整批令：go 已给 ⇒ 门被覆盖 | 同一句已由 R2 限定作用域 |
+| `:9` 批准 = 实施启动（FR32） | 批准时刻：批准即发起，无第三步 | 整批令：连「批准时刻」都不再单独出现 | 等号仍成立——整批令本身就是那句 go/批准；FR36 覆盖的是「等待」，不是等号 |
+| `:11-13` 整批令定义 + 三终点 | 令覆盖每步发起；到范围变更 / 叫停 / 跑完为止 | `:14` 把覆盖对象扩到批准门 | 定义零改；四停相 ③④ 与三终点同轴，①② 是批内质量停（停下上报，不改令的生命周期） |
+| `:55` 推进与叫停 | 有令即续 / 无令即停 | 有整批令时，续的范围包含批准门 | 「the user's word」= 整批令（`:11` 已定义）；零改 |
+| `:59` 块 C（R3 改后） | 无整批令时：评审后的批准就是那个 nod，同轮 spawn | 有整批令时不等这个 nod | 前缀把块 C 限定到默认档；默认档内 FR32 原样 |
+| `:147-148` digest 机器信号 | digest 不是放行 | 放行 = 整批令（用户的话） | digest 仍不是授权；有整批令时下一步走的是令，不是 digest |
+| `:154` 首句即停 | 停相判据 = 意图 | 四停相 ③ = 同一判据的应用 | 零新词表 |
+| §6.34 FR32 | 无整批令时的批准门 | 有整批令时的覆盖 | 分档；§6.34 对照表第 2 行已换写为本行关系 |
+| §6.35 `designToken` 必填 | 写权凭证：令牌在评审通过那轮签发，eng-coder spawn 必带（`omitted = refused`） | 整批令：替代「等用户那句话」，不替代令牌 | 令牌照旧铸出、照旧必带；FR36 只覆盖批准门，不触令牌生命周期（§6.35 ∥ 本节边界） |
+
+**§6.34 两处更正（本笔已落）**：① G4 行坐标 `:13` → `:14`，闭合列删去「预授权不豁免批准照旧成立」，改为「整批令下再闭于 §6.38」；② 对照表第 2 行整行换写为「有整批令 = FR36 覆盖 / 无整批令 = FR32 等号」分档行。成因表是分析面（对象就是旧文本），保留历史引文；规范断言（「仍成立」）删除。冻结批档不回改。
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 有整批令 | 用户「都处理掉」→ 评审通过 | 父侧直接进实施，不再呈批准请求；过程照常汇报 |
+| C2 | 正常 · 无整批令 | 评审通过后用户说「批准」 | 同轮 spawn（FR32 原样） |
+| C3 | 边界 · 四停相 ③ | 整批令后用户说「只批设计，先别动」 | 停下，呈当前结果，等下一句 |
+| C4 | 边界 · 四停相 ① | 评审 🔴 修不掉 / 需改设计语义 | 停下上报，不自行改语义 |
+| C5 | 边界 · 四停相 ② | 实施发现需偏离已批准设计 | 停下上报 |
+| C6 | 边界 · 四停相 ④ | 中途加新需求（批外） | 停下；新需求另批或另取新令 |
+| C7 | 错误防御 | 只有评审 digest、无整批令 | 不推进（digest 非授权，`:147-148`） |
+
+**受影响文件（现行 = 本席 `node` 实读 · 2026-10-19）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 243 行 / 62,902 字符（父侧交单读数 61,449 = FR35 落地前） | ±0 行 / +772 字符（R1 +702 · R2 +35 · R3 +35） | 改后预计 63,674 ≤ 64,789（基线 62,902 × 1.03） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,804 行 / 149,680 字符（§6.38 写入前实读） | 1,950 行 / 159,704 字符（定稿实读；Δ = +146 行 / +10,024 字符） | 本笔 = 设计轮（含评审修正轮）；实施轮零触 |
+| `thincoder-core/prompts/discipline-engineering.md` | 200 行 / 36,773 字符 | ±0 | 判断 = 不加行 |
+| `docs/batches/2026-10-17-prompt-firing-rights.md` | 冻结档 | ±0 | 冻结档不回改 |
+
+表注 · 行数口径 = `node` 读全文按 `split("\n")` 切分后 `length − 1`；本档以换行结尾 ⇒ 该式 = 正文行数（末位的空气行不计）。
+
+测试覆盖：零单元测试档（纯文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + 交付门 `doc_check`，不新增断言。
+
+**验收（A1–A10 · 回指 §13.14 三条 + 默认档一条 · 一次性比对）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.14 ①：覆盖句在场 | 子串 `covers the approval gate` 1 次命中 |
+| A2 | §13.14 ②：旧句零残留 | 提示词面 `thincoder-core/prompts/**` 扫 `does not exempt the approval gate` · `"authorized to fire" is not "approved"` ⇒ 各 0 |
+| A3 | 评审照走 | 子串 `The review still runs, unchanged` 1 次 |
+| A4 | 四停相 | 子串 `Four shapes still stop the run` 1 次；四个停相子句各 1 次 |
+| A5 | 同节自洽 | R2 / R3 前缀 `**Without a batch-wide go-ahead**,` 各 1 次；**除前缀外逐字不变**——重跑 §6.34 A1 / A7 两处子串比对：块 C 1 次、块 A 1 次、`:8` 原句 `Review firing and advancement both stop at the user's approval gate` 1 次；`:55` 的 `with the go-ahead, continue; without one, hold` 仍 1 次（零改） |
+| A6 | 携 why、无禁令腔 | 新增段（R1 全文 + R2/R3 前缀）扫 `never|do not|don't|must not|may not|forbidden` ⇒ 0；why 句 `charges the same authorization twice` 1 次 |
+| A7 | 提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0 |
+| A8 | 体量 ≤ +3% | 改后字符数 ≤ 64,789；预计 63,674（基线 62,902 + 净增 772） |
+| A9 | §13.14 ③：对照结论记入批次档 | 实施轮在批次档 §5 写一行「对照结论：§6.38 对照表十行 = 零矛盾」（引用 §6.38）；收口轮核其在场（批次档内 `对照结论` ≥1 次、引用 §6.38） |
+| A10 | 停相计数并置可判 | 提示词面（实施后）：`The one stop shape` 1 次 · `Four shapes still stop the run` 1 次；本节 `:9` 行写明两轴判据（one = 批准语停形 / four = 批内 run 停相）——子串比对 |
+
+**边界（本批不做）**：不跳评审 · 不改批准门机制本体（token / 门禁 / 凭证生命周期）· 不改普通模式 · 不改冻结档 · 不放宽四停相 · 不改批次档六段结构 · 不新增机械门 · `thincoder-core/prompts/**` 本设计轮零笔 · 需求档零笔 · 产品代码零触。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | `:14` 整行替换而非增行 | 旧句与新规直接相反（「不豁免」↔「覆盖」）；同段并存 = 读者二选一，规范面按 D8 删除 |
+| K2 | 四停相按 (i)–(iv) 列举 | 与 `:13` 三终点同轴：`(iii)` = 既有「用户叫停」、`(iv)` = 既有「范围变更」；零新机制 |
+| K3 | `:8` / `:59` 加作用域前缀，`:55` 零改 | 判据 = 该句是否无条件断言「必须再等一次」；`:55` 已写「with the go-ahead, continue」，另两句没有 |
+| K4 | §6.34 成因表保留引文、只删规范句；对照表第 2 行整行换写 | 成因表 = 分析面（对象就是旧文本）；对照表 = 规范面，旧句不留 |
+| K5 | 冻结批档不回改 | 用户令；冻结档 = 外部记忆（需求档 §13.6） |
+| K6 | `discipline-engineering.md` 零改 | 行为主体 = 父侧；纪律层无发起面（承 §6.34 K4 判据） |
+
+**先例 ∥ 偏离**：先例 = 本档 §6.34（逐字英文文本 + 落点表 + 对照表 + 验收 + 用例表）∥ §6.36（就地改、理由随句）。**对齐** = 同一形制、新增文本携 why、落点全在既有段落内。**偏离** = ① 本条额外回改前节（§6.34 两处旧登记）——旧条被推翻后，前节的「仍成立」断言会作为当前规则被检索到；② 本条逐句判定 `:8` / `:55` / `:59` 三句（需求点名），§6.34 当时只判成因表。
+
+**勘察证据行**：已读 `persona-engineering.md`（`:1-14` / `:52-60` / `:136-155` 实读）· 本档 §6.34 全文（`:1208-1338`）∥ §6.35 ∥ §6.36 ∥ §6.37（形制）。
+另读 `ENGINEERING-MODE-V2.md` §13.14 ∥ §13.10（FR32）· `docs/batches/2026-10-17-prompt-firing-rights.md` B1（`:13` / `:172` / `:195`，只读）· `scripts/prompt-refs-check.mjs`（J1/J2/J3 域）· `PROJECT-MANIFEST.json` `checkConfig` / `index.publicRepos` 实读 = `[]`。
+全仓扫 `authorized to fire|does not exempt the approval gate`：命中 = 提示词面 `:14`（实施轮改）· 冻结批档 B1 · §6.34 两行（本笔已改）· 需求档 §13.14（权威处，零改）· `.thincoder/tmp` 基线副本（非提示词面）。publicRepos 为空 ⇒ 无跨仓公共源可查——已查无。
+
+**上抛项**：无。
+
 
 ## 7. 关键决策记录
 

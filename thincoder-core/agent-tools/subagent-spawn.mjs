@@ -128,7 +128,7 @@ export function resolveDesignSlot(parent, designIdArg) {
     throw new Error(`Multiple approved designs in this session (${size}) — pass the designId parameter (echoed with each token) to choose which design this eng-coder spawn belongs to. Held design ids: ${heldIds}`)
   }
   if (size === 1) return { token: [...slots.values()][0] }
-  throw new Error("Invalid or missing design token — run advisor with type='design' first and pass the returned token as designToken.")
+  throw designTokenRefusal("missing")
 }
 
 /**
@@ -237,25 +237,11 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   if (role === "eng-coder" || role === "eng-designer") validateRoundParam(args)
   validateTaskBookParams(args, role)
 
-  // eng-coder token gate: the design review must have passed and the caller must
-  // present the exact token advisor issued — otherwise the child is not authorized to code.
-  // 2026-09-01: multi-design slots — the token is located by designId (exact slot,
-  // single-slot fallthrough); token validation itself is unchanged (2026-09-06:
-  // HMAC removed — validateDesignToken now checks format + TTL only).
+  // eng-coder token gate（TOOLS.md §6.25 ④）：判定本体 = gateDesignToken（本档模块尾）——
+  // missing / mismatch / expired / invalid 四态各出互异拒句；拒绝集合与旧三条件合取全等。
+  // 返回值 = 槽内令牌，必须落回 issuedToken：下方 `child._engDesignId` 回写依赖它。
   let issuedToken
-  if (role === "eng-coder") {
-    issuedToken = resolveDesignSlot(parent, args.designId).token
-    // R16 D-R16c ③ — spawn-gate cleanup: only an EXPIRY rejection removes the slot
-    // (the caller passed the slot's own token and it is past TTL — 长跑不重启也清);
-    // mismatch / format rejections never delete — the slot's own token may still be
-    // valid and a caller error must not destroy it (T-R16d). 单值镜像已退役（D3）——
-    // 无镜像同步清。
-    const expiredReject = !!issuedToken && args.designToken === issuedToken && tokenExpired(issuedToken)
-    if (!issuedToken || args.designToken !== issuedToken || !validateDesignToken(args.designToken)) {
-      if (expiredReject) removeDesignTokenSlot(parent, args.designId, issuedToken)
-      throw new Error("Invalid or missing design token — run advisor with type='design' first and pass the returned token as designToken.")
-    }
-  }
+  if (role === "eng-coder") issuedToken = gateDesignToken(parent, args)
 
   // Filter tool set by role: explore/plan are read-only (plan is a planning agent, its deliverable is the plan itself)
   let tools
@@ -416,4 +402,33 @@ export function buildSpawnChild(parent, ctx, args, role, wantAsync, files, depen
   }
   const childRunOpts = buildChildRunOpts(ctx)
   return { child, input, childOpts, childRunOpts, relayPrefix, childProvider }
+}
+
+// ── design-token 门（TOOLS.md §6.25 ③④——四态互异拒句；拒绝集合与旧三条件合取全等） ──
+
+/** 四态拒句（逐字 = TOOLS.md §6.25 ③）：missing / mismatch / expired / invalid。
+ *  mismatch 可携 designId（非凭证）；四句均零令牌值回显。 */
+export function designTokenRefusal(kind, designId) {
+  if (kind === "missing") return new Error("designToken missing — the eng-coder spawn is refused: no usable token for an approved design slot came with this spawn. Pass the designToken parameter with the exact value from the subagent action:'design-slots' row (the text after designToken=), copied verbatim; if that list is empty, no design review has been approved in this session yet — run advisor with type='design' first. No token value is echoed here.")
+  if (kind === "mismatch") return new Error("designToken mismatch — the eng-coder spawn is refused: the value passed does not equal the token held for this design slot. Re-read the subagent action:'design-slots' row and pass the value after designToken= verbatim, unchanged. No token value is echoed here." + (designId ? ` (designId: ${designId})` : ""))
+  if (kind === "expired") return new Error("designToken expired — the eng-coder spawn is refused: the token matches this design slot but is past its TTL. The expired slot has been removed; run advisor with type='design' again on the current design and pass the newly issued token — an expired authorization cannot be retried. No token value is echoed here.")
+  return new Error("designToken invalid — the eng-coder spawn is refused: the value passed equals this design slot's stored token, but that stored value is not a well-formed token, so no expiry can be judged and the slot was left in place. Run advisor with type='design' to issue a fresh token for this design; a malformed record never passes the gate. No token value is echoed here.")
+}
+
+/** eng-coder spawn 的令牌门（TOOLS.md §6.25 ④）：resolveDesignSlot 的既有两条 designId
+ *  诊断零改 → 参数在场 → 值相等 → 值有效。槽删除只在 tokenExpired(given) 成立时发生
+ *  （D-R16c ③）；mismatch / invalid 不删槽（T-R16d）。返回槽内令牌（调用方回写 designId
+ *  依赖它）；sync / async 两路共经 buildSpawnChild——一处判定双路生效。 */
+export function gateDesignToken(parent, args) {
+  const issuedToken = resolveDesignSlot(parent, args?.designId).token
+  // 非字符串 ⇒ 空串 ⇒ missing（本意——T9 锁定）
+  const given = typeof args?.designToken === "string" ? args.designToken : ""
+  if (!issuedToken || !given.trim()) throw designTokenRefusal("missing")
+  if (given !== issuedToken) throw designTokenRefusal("mismatch", args?.designId)
+  if (!validateDesignToken(given)) {
+    const expired = tokenExpired(given)
+    if (expired) removeDesignTokenSlot(parent, args?.designId, given)
+    throw designTokenRefusal(expired ? "expired" : "invalid")
+  }
+  return issuedToken
 }

@@ -5,6 +5,8 @@ Format: Keep a Changelog · 中文 · 号在发布时定（CalVer——见 `docs
 
 ## [Unreleased]
 
+## [0.10.9] — 2026-10-19
+
 ### Removed
 
 - **`design-slots` 的 `reveal` 开关与掩蔽（token-visibility-simplify 批 2026-10-17）**：清点面改**直读**——逐槽行恒携 `designToken`（过期照列、`status` 自标态；记录畸形 ⇒ `—`）；删净 `reveal` 开关 / 掩蔽 / 一次一槽限制（用户裁定「没必要把 token 藏起来，agent 要就告诉他」）；签发链（mint / settle / TTL / persist）零改。

@@ -2,6 +2,10 @@
 
 All notable changes to ThinCoder Desktop are documented here.
 
+## [0.10.9] — 2026-10-19
+
+> 随核依赖升版（本端面零改动）。
+
 ## [0.10.8] — 2026-10-16
 
 > 0.10.7 → 0.10.8（月内 +1——发布时定号）

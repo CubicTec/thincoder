@@ -8,6 +8,8 @@
  *
  * 抽取面：逐行扫；fenced 块整块跳过；可执行行（`isExecutableLine`）整行跳过（命令保字面）。
  * 解析序：① 仓根相对 → ② 域根相对（`scanDirs` 逐根）→ ③ 引用方档所在目录相对 →
+ *   ③b 节缺的同板块回退（③ 命中档无该节：同板块同 basename 候选恰一含该节 ⇒ 解析到它；
+ *   0 ⇒ `节缺`（目标 = ③ 命中档，止步 ④）；≥2 ⇒ 多义报告面）→
  *   ④ 域内唯一 basename 索引（同名 ≥2 ⇒ **不判**，列报告面 = 终结）→ ⑤ 声明解析根相对（`anchors.roots` 逐根，按声明序）。
  * 节在盘：目标档内存在标题行，其标题编号（标题文本去 `^#{1,6}\s` 后的首个 `\d+(?:\.\d+)*`）= 指针节号。
  * 残余登记（fail-open 方向——归评审核验面）：裸档名在域内多义 ⇒ 不判；未闭合围栏 ⇒ 至档尾免；
@@ -56,15 +58,42 @@ function sectionOnDisk(path, num) {
   return false
 }
 
+/** 同板块键（③b 的板块定义）：按路径分隔符切段后逐段比对，取 `docs` 段之后那一段（`docs/<板块>/…` 的 `<板块>`）。
+ *  切段而非 `docs/` 子串判——win32 上路径用 `\`，子串判恒 false（口径单源 = `DOC-DISCIPLINE.md` §3.20「段判定式（写死）」）。
+ *  多个 `docs` 段取最后一个（项目根自身可能含 `docs` 段）；`docs` 段后不足「板块 + 档名」两段 ⇒ 无板块 ⇒ null（不入集）。 */
+function boardOf(p) {
+  const segs = String(p).split(/[\\/]+/)
+  const i = segs.lastIndexOf("docs")
+  return i >= 0 && i + 2 < segs.length ? segs[i + 1] : null
+}
+
+/** ③b 的候选：④ 索引中 basename 与 token 逐字相同（与 ④ 同键）∧ 与 ③ 命中档同板块 ∧ 含该节者，按路径序。
+ *  候选集不看 `roots`（⑤ 的声明根不参与 ③b）；ref 无板块 ⇒ 候选集空（退化为 ③ 原行为）。 */
+function sectionFallback(refPath, token, num, index) {
+  const board = boardOf(refPath)
+  if (board === null) return []
+  return (index.get(basename(token)) ?? [])
+    .filter((c) => boardOf(c) === board && sectionOnDisk(c, num))
+    .sort()
+}
+
 /** 档解析（判据 ① 的解析序 ①–⑤）：命中 ⇒ `{ ok, path }`；同名 ≥2 ⇒ `{ ambiguous, candidates }`；零命中 ⇒ `{ ok:false }`。
  *  行号坐标尾（`:N`）不参与档解析——token 只取 `.md` 段（抽取面已剥离坐标尾与节指示）。
+ *  `num` = 指针节号（`§` 后编号；无节指示 ⇒ null）——③ 的命中档无该节时走 ③b 回退。
  *  `roots` = 声明解析根（已按值形 ∧ 根在盘过滤）——第 ⑤ 步，口径单源 = `DOC-DISCIPLINE.md` §3.20 判据 ①。 */
-function resolveDoc(token, refFile, base, scanDirs, index, roots) {
+function resolveDoc(token, refFile, base, scanDirs, index, roots, num) {
   const p1 = resolve(base, token)
   if (isFile(p1)) return { ok: true, path: p1 } // ① 仓根相对
   for (const d of scanDirs) { const p = resolve(base, d, token); if (isFile(p)) return { ok: true, path: p } } // ② 域根相对
   const p3 = resolve(dirname(refFile), token)
-  if (isFile(p3)) return { ok: true, path: p3 } // ③ 引用方档所在目录相对
+  if (isFile(p3)) { // ③ 引用方档所在目录相对
+    if (num === null || sectionOnDisk(p3, num)) return { ok: true, path: p3 }
+    // ③b 节缺的同板块回退（口径单源 = `DOC-DISCIPLINE.md` §3.20「节缺的同板块回退（解析序 ③b）」）
+    const fb = sectionFallback(p3, token, num, index)
+    if (fb.length === 1) return { ok: true, path: fb[0] } // 恰一含该节 ⇒ 解析到它
+    if (fb.length > 1) return { ambiguous: true, candidates: fb } // ≥2 ⇒ 多义报告面
+    return { ok: true, path: p3 } // 0 ⇒ 节缺，目标 = ③ 命中档（止步，不落 ④）
+  }
   const cands = index.get(basename(token)) ?? [] // ④ 域内唯一 basename 索引
   if (cands.length === 1) return { ok: true, path: cands[0] }
   if (cands.length > 1) return { ambiguous: true, candidates: cands } // ④ 多义 ⇒ 终结，不进 ⑤
@@ -131,7 +160,7 @@ export function checkAnchors(root, { scanDirs = [], files = [], checkFiles, root
         const stem = bn.replace(/\.md$/, "")
         // 类名 ∥ 占位符两免：抽取面不把它们当指针（判据 = DOC-DISCIPLINE §3.20 ① 的「档 token」定义面）
         if (FILENAME_CLASSES.has(bn) || stem.length <= 1 || PLACEHOLDER_STEMS.has(stem)) continue
-        const r = resolveDoc(token, f, base, dirs, index, usable)
+        const r = resolveDoc(token, f, base, dirs, index, usable, num)
         if (r.ambiguous) { reports.push({ file: f, line: i + 1, token, candidates: r.candidates }); continue }
         if (!r.ok) { hits.push({ file: f, line: i + 1, token, clazz: "档缺" }); continue }
         if (num !== null && !sectionOnDisk(r.path, num)) hits.push({ file: f, line: i + 1, token, clazz: "节缺", section: num, target: r.path })

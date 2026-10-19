@@ -6,6 +6,7 @@
  * 判据参数由**被开发项目**的 `PROJECT-MANIFEST.json` `checkConfig` 声明（不硬编码任何本仓路径）。
  * 两种问法（§3.20「工具形」——同一条判据）：
  *   `report`（缺省）= 全域报告态——**零门禁 / 零退出码 / 零阻断**，输出不得被读作拒执行的理由（用户令 > 机检）；
+ *   亦可给 `docs` 收窄被判档（清账 / 定点复核）：范围只收窄被判档、解析基线仍全域；不可判档报错（整次零判定）；
  *   `gate` = 交付时点的**范围化裁定**——只判本轮改过的档（整档入判），首行给机器可判 verdict；
  *   强制面住交付协议 + 批次档 §6 前置，工具本体仍不阻断任何动作。
  */
@@ -66,9 +67,19 @@ function configError(cfg) {
   return null
 }
 
+/** 不可判档的三因（闭集 · 判序 = 存在性 → 类型 → 域；口径单源 = §3.20「不可判档的三因」）：
+ *  报告态逐档点名报错用它；`gate` 面不用它（跳过行两桶维持既有形——gate 报面逐字不变）。 */
+function undecidableReason(abs) {
+  let st
+  try { st = statSync(abs) } catch { return "not on disk" }
+  if (!st.isFile() || !abs.toLowerCase().endsWith(".md")) return "not a markdown document"
+  return "outside the declared domain"
+}
+
 /**
- * gate 范围求交：候选（`docs`）= 显式清单 ∥ 本会话触达记账 ⇒ **声明域内 ∧ 盘上存在的 `.md`**。
- * 域外 / 已删**不是命中**但必须可见（跳过行）——静默丢掉会把「没跑」装成「跑了且清」。
+ * 范围求交（`report` ∥ `gate` 同源）：候选（`docs`）= 显式清单 ∥ 本会话触达记账 ⇒ **声明域内 ∧ 盘上存在的 `.md`**。
+ * 不可判档两处置：`gate` 面给跳过行（`outside` ∥ `gone` 两桶，逐档可见——不是命中，但不静默丢掉）；
+ * `report` 面由调用方按 `undecidable` 的三因报错（整次零判定）。
  * 解析基线不缩：域内全集仍交锚判据建索引（只收窄被判档）。
  */
 function resolveRange(base, files, docs) {
@@ -76,15 +87,17 @@ function resolveRange(base, files, docs) {
   const check = new Set()
   const outside = []
   const gone = []
+  const undecidable = []
   for (const d of Array.isArray(docs) ? docs : []) {
     if (typeof d !== "string" || d.trim() === "") continue
     const abs = resolve(base, d)
     const hit = inDomain.get(pathKey(abs))
-    if (hit) check.add(hit)
-    else if (isFile(abs)) outside.push(abs)
+    if (hit) { check.add(hit); continue }
+    undecidable.push({ abs, reason: undecidableReason(abs) })
+    if (isFile(abs)) outside.push(abs)
     else gone.push(abs)
   }
-  return { check: [...check].sort(), outside, gone }
+  return { check: [...check].sort(), outside, gone, undecidable }
 }
 
 /** gate 报面（固定句形——§3.20「报面（固定句形 · 交付门 gate）」）：首行 verdict = 唯一机判串。 */
@@ -122,7 +135,8 @@ function gateReport({ base, docsSource, checkFiles, domainCount, skipped, anchor
  * 跑一次文档纪律机检。
  * @param {string} root 项目根（判据参数取该根的 `PROJECT-MANIFEST.json` `checkConfig`）
  * @param {{docs?:string[], mode?:'report'|'gate', docsSource?:'session'|'explicit'}} [o]
- *   `mode` 缺省 = `report`（全域报告态）；`docs` = **仅 gate** 的范围候选（相对 `root` 或绝对）；
+ *   `mode` 缺省 = `report`（全域报告态）；`docs` = 被判档清单（相对 `root` 或绝对）——`report` 给了 ⇒ 只判这些档
+ *   （空清单 ∥ 越域 ∥ 缺档 ⇒ 报错、整次零判定），不给 ⇒ 全域；`gate` 缺省按本会话触达记账，越域 ∥ 缺档给跳过行；
  *   `docsSource` = 范围来源标签（`session` = 本会话触达记账 ∥ `explicit` = 显式 `docs`）——缺省按 `docs` 是否给定推定；只影响报面措辞。
  * @returns {{report:string, hits:{total:number, anchors:number, width:number}, anchorHits:Array,
  *   widthHits:Array, anchorReports:Array, anchorRootGaps:Array, files:string[], checkFiles:string[], scanDirs:string[],
@@ -134,8 +148,10 @@ function gateReport({ base, docsSource, checkFiles, domainCount, skipped, anchor
 export function runDocCheck(root, { docs, mode = "report", docsSource } = {}) {
   const base = resolve(root)
   const gate = mode === "gate"
-  // `docs` = gate 专属（report + docs ⇒ 拒，不静默忽略——与工具面同一判据）
-  if (!gate && docs !== undefined) throw new Error("doc_check: `docs` is gate-only — report mode always checks the whole declared domain")
+  // `docs` 类型门（双问法通用——裸串不被读作全域请求；与工具面同一串，两种问法都过它）
+  if (docs !== undefined && !Array.isArray(docs)) {
+    throw new Error(`doc_check: \`docs\` must be an array of paths (got ${typeof docs}) — a bare string is refused rather than read as a whole-domain request; pass ["<path>"].`)
+  }
   const source = docsSource ?? (docs === undefined ? "session" : "explicit")
   let read
   try {
@@ -165,7 +181,19 @@ export function runDocCheck(root, { docs, mode = "report", docsSource } = {}) {
   const zones = (Array.isArray(cfg.widthExemptZones) ? cfg.widthExemptZones : []).filter((z) => typeof z === "string" && z !== "")
 
   const files = scanDomain(base, { scanDirs, exclude })
-  const range = gate ? resolveRange(base, files, docs) : { check: files, outside: [], gone: [] }
+  const scoped = docs !== undefined // 显式档集（类型门之后 ⇒ 此处必为数组）
+  const range = (gate || scoped) ? resolveRange(base, files, docs) : { check: files, outside: [], gone: [], undecidable: [] }
+  // 报告态三抛（fail-closed）：空清单 ∥ 越域 ∥ 缺档 ⇒ 报错、整次零判定——清账面没有「部分检查」这回事，
+  // 清单写错却报 0 命中就是「没跑」装成「跑了且清」。gate 面同源但不抛：那两类给跳过行（交付面看得见）。
+  if (!gate && scoped) {
+    if (docs.length === 0 || docs.every((d) => typeof d !== "string" || d.trim() === "")) {
+      throw new Error('doc_check: docs is empty — an empty list does not mean "the whole declared domain"; omit docs for the whole domain, or list the documents you mean.')
+    }
+    if (range.undecidable.length) {
+      const named = range.undecidable.map((u) => `${rel(base, u.abs)}（${u.reason}）`).join(" ∥ ")
+      throw new Error(`doc_check: docs names ${range.undecidable.length} document(s) that cannot be judged — no document was checked: ${named}. Fix the list and re-run; neither is silently skipped and the check never widens to the whole domain.`)
+    }
+  }
   const checkFiles = range.check
   const anchors = checkAnchors(base, { scanDirs, files, checkFiles, roots })
   const widths = checkDocWidths(base, { lineWidth, scanDirs, exclude, exemptZones: zones, files, checkFiles })
@@ -187,8 +215,10 @@ export function runDocCheck(root, { docs, mode = "report", docsSource } = {}) {
     "文档纪律机检（报告态 · 非门禁）",
     `射程：${base} · ${scanDirs.join(" + ") || "（无）"}（${files.length} 档）· 阈值 ${lineWidth} 字符 · 区带豁免：${zones.length ? zones.join(" ∥ ") : "无"} · 排除：${exclude.length ? exclude.join(" ∥ ") : "（无）"}`,
     "声明：判据参数依据 `PROJECT-MANIFEST.json` `checkConfig`",
-    `命中 ${total} 条（锚 ${anchors.hits.length} · 行宽 ${widths.length}）`,
   ]
+  // 显式档集 ⇒ 多一行范围行（N = 被判档 · M = 解析基线）；无 `docs` ⇒ 报面逐字同改前（不产此行，也不产判词）
+  if (scoped) out.push(`范围：显式档集 ${checkFiles.length} 档（整档入判 · 解析基线 = 声明域 ${files.length} 档，不收窄）`)
+  out.push(`命中 ${total} 条（锚 ${anchors.hits.length} · 行宽 ${widths.length}）`)
   // 报告面（不作判）：① 声明解析根弃用 ∥ 缺位（⑤ 的配置面）；② 域内同名 ≥2 ⇒ 多义不判（残余登记——fail-open 方向，归评审核验面）
   for (const g of anchors.rootGaps) {
     out.push(g.kind === "missing"

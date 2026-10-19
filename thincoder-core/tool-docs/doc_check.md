@@ -19,8 +19,12 @@ It cannot — in `report` mode — write anything, gate anything, or turn a find
 Arguments — `target` (optional): the project root to check; defaults to the session anchor, relative paths resolve against it.
 A workspace target (several projects below it) is reported with the full candidate list — pass the project root you mean.
 `mode` (optional) — `report` (default: the whole declared domain) or `gate` (the delivery gate below).
-`docs` (optional, gate only) — the documents this round touched, as paths relative to the project root or absolute; omitted in
-gate mode ⇒ the documents this session wrote. Passing `docs` with `mode: "report"` is refused rather than silently ignored.
+`docs` (optional) — the documents to judge, as paths relative to the project root or absolute; each is judged whole. Omitted in
+`gate` mode ⇒ the documents this session wrote; omitted in `report` mode ⇒ the whole declared domain, given ⇒ only those documents
+(the report stays non-gating — no verdict line). In either mode the list narrows the judged set, not the parse baseline: bare-name
+pointers still resolve across the whole declared domain. An empty list, a path that is not on disk, a path that is not a Markdown
+document, or a path outside the declared domain is an error in `report` mode and nothing is judged; in `gate` mode such paths are
+listed as skipped instead.
 
 Delivery gate — `mode: "gate"`, for the end of a design or development round. Every listed doc is judged **whole**: a
 pre-existing dangling pointer or overlong line anywhere in it counts, not only this round's edited lines. The first line is the

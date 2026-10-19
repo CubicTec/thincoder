@@ -24,8 +24,8 @@ function buildToolBlockSeg(state, l, i, cols, maxRows) {
   const foldKey = `tool-${l._lineId ?? i}`
   const out = []
   const status = !b.done
-    ? "running"
-    : `${b.elapsed !== null ? b.elapsed + "ms" : ""}${b.summary ? (b.elapsed !== null ? " · " : "") + sliceByWidth(b.summary, 50) : ""}`.trim() || "done"
+    ? t("tool.running")
+    : `${b.elapsed !== null ? b.elapsed + "ms" : ""}${b.summary ? (b.elapsed !== null ? " · " : "") + sliceByWidth(b.summary, 50) : ""}`.trim() || t("tool.done")
   if (isExpanded(state, foldKey)) {
     const body = []
     const pushWrapped = (raw, color) => {

@@ -275,6 +275,12 @@ export function turnFrame(seq, turn, maxTurns) {
   return { turn: seq, maxTurns: seq - turn - 1 + maxTurns }
 }
 
+/** #934（零落笔看门狗——AGENT-LOOP-UPSTREAM.md §6.32.2 ① 判据式）：上轮结账至今写序是否推进；非整数（未跟踪面 / NaN）⇒ true 记「有落笔」不判（不用 `?? 0` 兜底——未跟踪面当零落笔正是本收正要消除的误报方向）。 */
+export function wroteSince(agent, mark) {
+  const seq = agent._mutationSeq
+  return Number.isInteger(seq) ? seq !== mark : true
+}
+
 /** Repair malformed conversation history: remove orphan tool messages and fill missing tool results */
 export function repairHistory(history) {
   const out = []

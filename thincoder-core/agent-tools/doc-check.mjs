@@ -31,7 +31,7 @@ export const docCheckTool = {
     properties: {
       target: { type: "string", description: "Explicit project root to check — defaults to the session anchor; relative paths resolve against it. A workspace target (several projects below it) is reported with the full candidate list — pass the project root you mean." },
       mode: { type: "string", enum: ["report", "gate"], description: "How to ask the same two-criteria check. \"report\" (default): the whole declared domain, non-gating report. \"gate\": the delivery gate — only the documents this round touched, whole-file judged, first line a machine-readable verdict (DOC-CHECK GATE: PASS / REFUSED / ERROR)." },
-      docs: { type: "array", items: { type: "string" }, description: "Gate only: the documents this round touched (paths relative to the project root, or absolute). Omitted in gate mode ⇒ the documents this session wrote. Passing docs with mode \"report\" is refused, not silently ignored." },
+      docs: { type: "array", items: { type: "string" }, description: "The documents to judge, as paths relative to the project root or absolute — each is judged whole in either mode. Omitted in \"gate\" mode ⇒ the documents this session wrote; omitted in \"report\" mode ⇒ the whole declared domain. An empty list, a path that is not on disk, one that is not a Markdown document, or one outside the declared domain is an error (no document judged) in report mode and a visible skipped line in gate mode." },
     },
   },
   readonly: true,
@@ -43,9 +43,6 @@ export const docCheckTool = {
     const explicit = Array.isArray(args?.docs) ? args.docs.map(String) : null
     if (args?.docs !== undefined && !Array.isArray(args.docs)) {
       return `doc_check: \`docs\` must be an array of paths (got ${typeof args.docs}) — a bare string is refused rather than read as a whole-domain request; pass ["<path>"].`
-    }
-    if (mode === "report" && explicit) {
-      return "doc_check: `docs` is only valid with mode:\"gate\" — report mode always checks the whole declared domain; pass mode:\"gate\" to scope the check to the documents this round touched."
     }
     const view = projectRootView(target)
     if (view.state === "workspace") {
@@ -69,7 +66,12 @@ export const docCheckTool = {
         .filter((p) => typeof p === "string" && p.toLowerCase().endsWith(".md"))
       return runDocCheck(root, { mode: "gate", docs, docsSource: explicit ? "explicit" : "session" }).report
     }
-    // 报告态读数标注（A-DD30 ①）：引擎陈旧 ⇒ 首行前一行注记；无陈旧 ⇒ 报面逐字同改前
-    return withEngineNote(runDocCheck(root).report, staleEngineFiles())
+    // 报告态读数标注（A-DD30 ①）：引擎陈旧 ⇒ 首行前一行注记；无陈旧 ⇒ 报面逐字同改前。
+    // 显式清单 ⇒ 只判这些档（不可判档的报错在引擎面抛，调度器包成 `Error: …`）；无清单 ⇒ 全域（既有形）。
+    // `docsSource` 在报告态无消费点（只改 gate 报面措辞）——随清单传入是按设计落点，不改变报面。
+    const report = explicit !== null
+      ? runDocCheck(root, { docs: explicit, docsSource: "explicit" }).report
+      : runDocCheck(root).report
+    return withEngineNote(report, staleEngineFiles())
   },
 }

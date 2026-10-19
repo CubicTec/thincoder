@@ -131,10 +131,10 @@ ledger 域 = 新立（团队台账——域档 `ledger/LEDGER.md`）；mcp 域 =
 |---|---|---|
 | KD-SV-1 | **形态 = 单进程单服务**（`node:http`——模块表见 §2.1） | 「内网一台常驻」；团队规模并发；零依赖纪律下无必要拆进程 |
 | KD-SV-2 | **中继面（网关 provider 层）不引 `thincoder-core/*`**（范围限定 = 网关面；全域口径 = KD-SV-78；逐面复核表 = §2.3） | ① 核 `thincoder-core/provider/sse.mjs` 的 `readSSE` 是消费型（onToken 回调 ∥ 全量累积 ∥ 规则短路 ∥ 120s idle 判定）——中继复用会强制整段消费/再序列化，与「SSE 逐块透传」相抵；② 核 provider 层面向客户端多协议适配（anthropic/google/responses ∥ 重试 ∥ 限速 ∥ 思考映射）——网关零需要；③ 网关要「不认识内容」的代理语义——解析越少越稳。行数影响：自持 `thincoder-server/src/gateway/sse-tap.mjs`（≈80 行）覆盖全部所需（`data:` 行 JSON 取 usage） |
-| KD-SV-78 | **server 引核面 = agent 面与后续共有机制；专有域自持**（用户指示 + 评估结论）：agent 面 = 件级取核（件清单单源 = `agent/ADMIN-AGENT.md` §17.2；环体自持 ＋ 核缝承接 = §17.4）；从核引 = 依赖声明形照 CLI（`@thincoder/core` 版本声明——`^0.10.4`） | 判据 = 「该机制三端是否也有？有 ⇒ 从核引；服务端专有 ⇒ 自持」——存储 ∥ 记账 ∥ 账号 ∥ 控制台 ∥ 沙盒 ∥ 运维 = 核里无该面（自持）；agent 面与后续共有机制 = 三端共有（从核引） |
+| KD-SV-78 | **server 引核面 = agent 面与后续共有机制；专有域自持**（用户指示 + 评估结论）：agent 面 = 件级取核（件清单单源 = `agent/ADMIN-AGENT.md` §17.2；环体自持 ＋ 核缝承接 = §17.4）；从核引 = 依赖声明形照 CLI（`@thincoder/core` 版本声明——`^0.10.7`） | 判据 = 「该机制三端是否也有？有 ⇒ 从核引；服务端专有 ⇒ 自持」——存储 ∥ 记账 ∥ 账号 ∥ 控制台 ∥ 沙盒 ∥ 运维 = 核里无该面（自持）；agent 面与后续共有机制 = 三端共有（从核引） |
 
 | KD-SV-137 | **agent 面取核形 = 件级取核 + 环体自持**（目标态 = 需求 `:601`；全形 = `agent/ADMIN-AGENT.md` §17）：件清单（file 级）+ 消费接法（动载 ∥ 注入口 ∥ 缺核降级 ∥ 垫片即宿主）；**核面实现零改**；环体取核 = 开放点①（核缝设计草案在册——后续承接） | **全环取核当下不可达**（核 depth-0 恒挂全家族矩阵 ＋ git/树/记忆/技能注入 ∥ `assembleFamilyTools` 无宿主裁剪入参——`thincoder-core/agent/setup.mjs:198-208`；与 `agent/ADMIN-AGENT.md` §5 裁剪裁决相抵）；件级取核 = 共有机制单源 ∥ 环体宿主语义（DB 单源 ∥ 帧面 ∥ 裁剪 ∥ 记账出口）服务端专有 |
-| KD-SV-138 | **带核发布形 = 版本声明 + 地板口径 + 发布序**（全形 = §2.3）：① 依赖形 = `@thincoder/core` 版本声明（registry）；② 地板 = pin 覆盖件清单（`agent/ADMIN-AGENT.md` §17.2）——新采纳 ⇒ 同提交升 pin；③ 发布序 = 核先于/同拍随 server 发行到 npm；④ 装机三径 registry 不可达 ∥ 核包缺失 ⇒ fail-loud | 单包发布位 = 定向（npm 路）；核包 = 公开包（registry 0.10.4）；缺核/不可达 ⇒ 拒启（fail-loud 已实证——`agent/ADMIN-AGENT.md` §14.5） |
+| KD-SV-138 | **带核发布形 = 版本声明 + 地板口径 + 发布序**（全形 = §2.3）：① 依赖形 = `@thincoder/core` 版本声明（registry）；② 地板 = pin 覆盖件清单（`agent/ADMIN-AGENT.md` §17.2）——新采纳 ⇒ 同提交升 pin；③ 发布序 = 核先于/同拍随 server 发行到 npm；④ 装机三径 registry 不可达 ∥ 核包缺失 ⇒ fail-loud | 单包发布位 = 定向（npm 路）；核包 = 公开包（registry 实读 0.10.8——2026-10-18 `npm view`）；缺核/不可达 ⇒ 拒启（fail-loud 已实证——`agent/ADMIN-AGENT.md` §14.5） |
 
 ## 6. 域账索引（域 → 域档文件账节）
 

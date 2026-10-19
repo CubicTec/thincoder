@@ -16,7 +16,7 @@
 import { resolve } from "node:path"
 import { projectRootView } from "../manifest.mjs"
 import { runDocCheck } from "../doc-check/index.mjs"
-import { staleEngineFiles, gateEngineError } from "../doc-check/version.mjs"
+import { staleEngineFiles, gateEngineError, withEngineNote } from "../doc-check/version.mjs"
 import { DESC } from "../tools/shared.mjs"
 
 // 版本函数单源 = `doc-check/version.mjs`（两消费面：本档 gate 分支 ∥ `batch-gate.mjs` 两机械点）——
@@ -69,6 +69,7 @@ export const docCheckTool = {
         .filter((p) => typeof p === "string" && p.toLowerCase().endsWith(".md"))
       return runDocCheck(root, { mode: "gate", docs, docsSource: explicit ? "explicit" : "session" }).report
     }
-    return runDocCheck(root).report
+    // 报告态读数标注（A-DD30 ①）：引擎陈旧 ⇒ 首行前一行注记；无陈旧 ⇒ 报面逐字同改前
+    return withEngineNote(runDocCheck(root).report, staleEngineFiles())
   },
 }

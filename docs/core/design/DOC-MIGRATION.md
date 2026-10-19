@@ -3,7 +3,7 @@
 > 归属 = **文档体系板块**（`docs/core/design/DOC-SYSTEM.md` 的下游执行表）；本档 = **CLI 树 84 档的逐档二分（活 / 历史）+ 落点 + 批次分组**的唯一权威表；并载后续迁移执行方案（§10 v1 文档退役 ∥ §11 桌面端设计档按域拆分 ∥ §12 R2 层前缀引称迁移执行表）。
 > 判据（**本节不复制**）→ `docs/core/design/DOC-SYSTEM.md` §5.1（P1–P5 归属判据句）· §4（目标目录结构）· §6（命名规则）。
 > 迁法（用户裁定「**明显应该是 B**」）= **旧档留原地一字不改 + 内容补写 / 重建进根层**。
-> 底本口径 = `thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**（不含 `design/prompts/` · `design/_archive/`）。
+> 底本口径 = `thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**（不含 `_archive/` 下的提示词档 · `design/_archive/`）。
 > 依据口径 = 逐条 `file:line` 坐标；根层基准 = `docs/core/{design,requirements}/`（见 §9.3 A21）。
 ## 1. 口径与实点
 
@@ -26,7 +26,7 @@
 | 1 | ACP-CLIENT | **已迁** | 活——根层无同话题档；实装 `thincoder-cli/src/acp/` 在位；VSC 无实现（结构性不对称）；relay 文法模块居 `thincoder-core/agent/relay-prefix.mjs` | 已落 `docs/cli/design/ACP-CLIENT.md` |
 | 2 | ADVISOR-CONVERGENCE | **已迁** | 活——根层无对应（`docs/core/design/CONSULTATION.md` §8.2 越段登记）；= advisor 评审收敛设计权威 | 已落 `docs/core/design/ADVISOR-CONVERGENCE.md` + `docs/core/design/ADVISOR-GUARDS.md` |
 | 3 | AGENT-LOOP | **已迁** | 未并入面（评审对象锚 / R1–R7 铁律 / byte-identical 取消 / 普通模式轻量审计）已并入；飞刀面由 `ESCALATE.md` 承载 | 已并入 `docs/core/design/AGENT-LOOP.md`（§6.17）+ 拆分面 `docs/core/design/AGENT-LOOP-SUBAGENT.md` · `docs/core/design/AGENT-LOOP-ASYNC-POOL.md`（§6.18 / §6.19） |
-| 4 | AGENT-PARAMS | **已迁** | 活——根层无对应（`AGENT-LOOP.md` §6.1 仅覆盖 maxTurns 默认；`timeoutMs` 面无主）；三参数默认值（`thincoder-core/advisor/compaction.mjs:36` · `thincoder-core/config.mjs:36` · `thincoder-core/agent/helpers.mjs:25`） | 已落 `docs/core/design/AGENT-PARAMS.md` |
+| 4 | AGENT-PARAMS | **已迁** | 活——根层无对应（`AGENT-LOOP.md` §6.1 仅覆盖 maxTurns 默认；`timeoutMs` 面无主）；三参数默认值（`thincoder-core/advisor/compaction.mjs:36` · `thincoder-core/config-defaults.mjs:18` · `thincoder-core/agent/helpers.mjs:25`） | 已落 `docs/core/design/AGENT-PARAMS.md` |
 | 5 | APPLY-PATCH | **已迁** | 根层无正文（`TOOLS.md` §8.2 登记「正文已拆到各工具权威档」= 无档名指针）；VSC 同名对位 | 已落 `docs/core/design/APPLY-PATCH.md` |
 | 6 | ARCHITECTURE | **已迁** | 活——根层原无架构总览载体（硬约束 / 设计原则 / 模块地图）；§3 模块地图 = 现行 `src/**` 结构 | 已落 `docs/core/design/ARCHITECTURE.md` |
 | 7 | ASYNC-RESULT-CONTAINER | 历史 | 机制结论已全文入 `docs/core/design/AGENT-LOOP-SUBAGENT.md` §6.7.3（D2–D6 覆盖范围）；余为批材料 | 不迁（就地留参照） |
@@ -47,7 +47,7 @@
 | 22 | MCP | 已清 | 对账：CLI §1–§9 ↔ 根层 §6.1–§6.9（文案级残余见 §4 注） | 无动作 |
 | 23 | MEMORY | 已清 | 对账：CLI §1–§10 ↔ 根层 §6.1–§6.8（常量与 `uid` 切分逐句同） | 无动作 |
 | 24 | MULTI-INSTANCE-COLLAB | **已迁** | 设计侧根层无档（需求侧同名根档已建）⇒ 纯新建 | 已落 `docs/core/design/MULTI-INSTANCE-COLLAB.md`（新建） |
-| 25 | POOL-CONFIG-UNIFIED | **已迁** | 配置面机制已实装（`thincoder-core/config.mjs:63` 三键 4/4/4；双读取器 `subagent-async.mjs:94` / `advisor-async.mjs:168`） | 已并入 `docs/core/design/CONFIG.md` §6.1 |
+| 25 | POOL-CONFIG-UNIFIED | **已迁** | 配置面机制已实装（`thincoder-core/config-defaults.mjs:46` 三键 4/4/4；双读取器 `subagent-async.mjs:94` / `advisor-async.mjs:168`） | 已并入 `docs/core/design/CONFIG.md` §6.1 |
 | 26 | PORTABILITY | **已迁** | 活——可移植性机制现行且根层零覆盖（分类裁判单源 `thincoder-core/conventions.mjs` 等） | 已落 `docs/core/design/PORTABILITY.md`（择机制面重建） |
 | 27 | PROMPT-SYSTEM | **已迁** | 未并入面（设计文档 → 代码落地流程 / 装配实现事实 / byte-identical 取消）已并入（设计侧）；分层 / 命名法 / 装配矩阵 = 需求侧 §4 | 已并入 `docs/core/design/PROMPT-SYSTEM.md` §6–§8 |
 | 28 | PROVIDER | 已清 | 对账：CLI §1–§16 / §21 / §23 ↔ 根层 §6.1–§6.17 | 无动作 |
@@ -94,7 +94,7 @@
 | 17 | MEMORY | **已迁** | 整档条目面已并入（F1–F14 / F-M1–F-M3 + N1–N9 / N-M1–N-M3） | 已并入 `docs/core/requirements/MEMORY.md` §4 |
 | 18 | MULTI-INSTANCE-COLLAB | **已迁** | 同名根档已建；F1–F5 / N1–N4 零缺口；旧档 §2 外部写感知（F6 / N5 / N6）= VSC 设置面板面（P2）不并 | 已并入 `docs/core/requirements/MULTI-INSTANCE-COLLAB.md`（P2 面登记 §5.2） |
 | 19 | NORMAL-MODE | **已迁** | 同名根档已建；CLI 档与装配面**不同题**（普通模式产品行为需求）⇒ 全量并入为 §5–§6 | 已并入 `docs/core/requirements/NORMAL-MODE.md`（F1–F10 / N1–N10 / F-N1.1–F-N1.6） |
-| 20 | PHILOSOPHY | **已迁** | 活 · **统一面**（三观 = 最高层需求；提示词正本已归 `docs/core/design/prompts/`） | 已落 `docs/core/requirements/PHILOSOPHY.md` |
+| 20 | PHILOSOPHY | **已迁** | 活 · **统一面**（三观 = 最高层需求） | 已落 `docs/core/requirements/PHILOSOPHY.md` |
 | 21 | PORTABILITY | **已迁** | 同名根档已建；接受方向表 + FR14 落实文本并入 | 已并入 `docs/core/requirements/PORTABILITY.md`（§5；(d) 类入 §6.1） |
 | 22 | PROJECT | **已迁** | 同名根档已建（其档头自注「迁入时对账合并」）；产品级定性面全量并入为 §5 | 已并入 `docs/core/requirements/PROJECT.md`（§5 对账合并——用户裁定②） |
 | 23 | PROMPT-SYSTEM | **已迁** | 蓝图条目已并入（分层模型 / 命名法 / 内容大纲 / 编写纪律 15 条 / 装配逻辑 / 归属判定）；§8–§10 批面登记不并 | 已并入 `docs/core/requirements/PROMPT-SYSTEM.md` §4 |
@@ -261,13 +261,13 @@
 |---|---|---|---|---|
 | VSC | `batches/` | `_archive/batches/` | 34 | 8,443 |
 | VSC | `design/` | `_archive/design/` | 50 | 13,458 |
-| VSC | `design/prompts/` | `_archive/design/prompts/` | 15 | 1,026 |
+| VSC | `design/` 下的提示词档 | `_archive/` 下的提示词档 | 15 | 1,026 |
 | VSC | `requirements/` | `_archive/requirements/` | 34 | 2,232 |
 | VSC | `docs/` 根（`README.md` · `thincoder-vscode/docs/_archive/CAPABILITY_GAP.md` · `thincoder-vscode/docs/_archive/COMPETITIVE_ANALYSIS.md`） | `_archive/`（同名） | 3 | 625 |
 | VSC | **小计** | —— | **136** | **25,784** |
 | CLI | `batches/` | `_archive/batches/` | 41 | 17,744 |
 | CLI | `design/` | `_archive/design/` | 47 | 19,851 |
-| CLI | `design/prompts/` | `_archive/design/prompts/` | 15 | 1,012 |
+| CLI | `design/` 下的提示词档 | `_archive/` 下的提示词档 | 15 | 1,012 |
 | CLI | `requirements/` | `_archive/requirements/` | 37 | 4,350 |
 | CLI | `guides/` | `_archive/guides/` | 1 | 72 |
 | CLI | `docs/` 根（`README.md`） | `_archive/`（同名） | 1 | 257 |
@@ -330,10 +330,10 @@
 | # | 步骤（逐轮 · `<树>` = 该轮树 · `<份额>` = 该轮引用份额） | 判据 / 读数 |
 |---|---|---|
 | S0 | **前置读数**：`node scripts/doc-check.mjs --root .`（记 `汇总` 行）；`git status --porcelain`（记在途面）；**越树相对锚枚举**（§10.7 用例） | 基线锚悬空数入册；**在途文档债未收口 ⇒ 不点火**（§2.5 执行窗口条件）；相对锚非 0 ⇒ 登记为已知遗留 |
-| S1 | **建归档根（`<树>`）**：`mkdir <树>/docs/_archive/` 含子目录 `design/` · **`design/prompts/`** · `requirements/` · `batches/`（**两树皆需**）· `guides/`（CLI 专有） | 目录在位 |
+| S1 | **建归档根（`<树>`）**：`mkdir <树>/docs/_archive/` 含子目录 `design/`（其下 **`prompts/`**）· `requirements/` · `batches/`（**两树皆需**）· `guides/`（CLI 专有） | 目录在位 |
 | S2 | **迁移**（`git mv`，**逐档**）：按 §10.3 清单把**该轮树** 136 ∥ 142 档移入 `_archive/` + 原相对路径；**既有 `<层>/_archive/**` 不动** | `git status` 全为 `R`（rename）；`git diff --stat` = **零内容行**（纯 rename）；该轮树 `docs/` 下除 `_archive/` 与既有 `design/_archive/` 外为空 |
 | S3 | **引用改写（`<份额>`）**：按 §10.4 族 A/B/C 逐行处置该轮份额（族 A/C 路径改指 · 族 B 改指 canonical / 退场注记）；轮 A + 轮 B 合计 = 52 引用 | 改后 52 行全部可解析；**新增悬空 = 0** |
-| S4 | **测试处置**（§2.5 前提 2；前置枚举 = **三包** `test/**`（VSC / CLI / core）检索退役树前缀）：① `thincoder-vscode/test/prompts-mirror-anchors.test.mjs`（153 行 · 结构不变 · **3–4 处**——档内同串全量替换 + 逐处复核：镜像路径字面同串 ×2–3 + 扫描根 ×1）——③ 镜像源（`:39`）改指 `docs/_archive/design/prompts` · ⑤ 扫描根（`:53`）改指 `docs/_archive/`（判据不变、**不得静默空扫描**）；② `thincoder-cli/test/prompts-dual-source.test.mjs`（122 行 · 结构不变 · 1 处路径常量 + 2 处断言坐标）——`:44` / `:49` / `:51` 读 CLI 镜像档 ⇒ **同族改指**（轮 B · 判据不变）；③ 枚举余项 = 注释类（出处注 / 内部注——非断言、不读树）⇒ 引-E 登记 · 零动作 | 逐档**非空扫描判定**（改指后扫描根非空：15 档集合 / 存在性 / 头注格式断言在位）；`node --test <两档>` 逐档 pass（① 3 用例 ③/⑤/⑨-3）；AC-5 差值式全量兜底 |
+| S4 | **测试处置**（§2.5 前提 2；前置枚举 = **三包** `test/**`（VSC / CLI / core）检索退役树前缀）：① `thincoder-vscode/test/prompts-mirror-anchors.test.mjs`（153 行 · 结构不变 · **3–4 处**——档内同串全量替换 + 逐处复核：镜像路径字面同串 ×2–3 + 扫描根 ×1）——③ 镜像源（`:39`）改指 `_archive/` 下的提示词档目录 · ⑤ 扫描根（`:53`）改指 `docs/_archive/`（判据不变、**不得静默空扫描**）；② `thincoder-cli/test/prompts-dual-source.test.mjs`（122 行 · 结构不变 · 1 处路径常量 + 2 处断言坐标）——`:44` / `:49` / `:51` 读 CLI 镜像档 ⇒ **同族改指**（轮 B · 判据不变）；③ 枚举余项 = 注释类（出处注 / 内部注——非断言、不读树）⇒ 引-E 登记 · 零动作 | 逐档**非空扫描判定**（改指后扫描根非空：15 档集合 / 存在性 / 头注格式断言在位）；`node --test <两档>` 逐档 pass（① 3 用例 ③/⑤/⑨-3）；AC-5 差值式全量兜底 |
 | S5 | **声明面核**：`PROJECT-MANIFEST.json` `checkConfig` **零改**（§10.2 行 6）；`npm run doc:check`（VSC 包内 = `node ../scripts/doc-check.mjs --root ..` 口径）与仓根同读数 | 逐键对读 = 基线；包内读数 = 仓根读数 |
 | S6 | **文档收正**（同笔）：① `docs/README.md` 首部层级定位 + §2 政策行——产品 `docs/**` 状态「迁移期参照历史」→「**v1 参照历史（已归档 `_archive/`）**」；② `docs/vsc/design/VSC-MIGRATION.md` §2.4 降格声明 + §2.5 加**执行注**（本方案 = 本档 §10 · 执行窗口 = 用户点火）；③ 两档变更记录各一行 | 三处落笔在位；引用面无悬空 |
 | S7 | **终态读数 + 提交（逐轮）**：复跑 `node scripts/doc-check.mjs --root .`；`git commit`（**该轮**：迁移 + 该轮份额 + 该轮测试 / 文档改笔） | 见 §10.6 AC-4/AC-5；AC-1 的 `R` 对断言按轮读数（轮 A 136 / 两轮合计 **275** = 136 + 139） |
@@ -364,7 +364,7 @@
 |---|---|---|
 | 正常 · 迁移 | S2 逐档 `git mv` 后 | `git status` 全 `R`；归档树结构 = 原结构（§10.3 表逐目录对位） |
 | 边界 · 既有归档 | 指向 `thincoder-cli/docs/design/_archive/ARCHITECTURE-v2.md` 的 5 行（`ARCHITECTURE.md:27` 等） | 仍可解析（既有归档原地）⇒ 不产新悬空 |
-| 边界 · 同名集合 | `design/prompts/` 15 档（两树同名） | 迁后 ③ 断言（核包 15 ↔ 归档镜像 15 同名集合相等）仍成立 |
+| 边界 · 同名集合 | `_archive/` 下的提示词档 15 档（两树同名） | 迁后 ③ 断言（核包 15 ↔ 归档镜像 15 同名集合相等）仍成立 |
 | 错误 · 漏迁 | 迁移集少 N 档 | AC-1 机核读数 ≠ 136 / 139（S0 `136 17` / `142 50` ⇒ S7 `0 153` / `3 189`）⇒ 红 |
 | 错误 · 触既有归档 | 既有 `_archive/**` 被移动 / 改动 | AC-1 ＋ AC-2 双红 |
 | 错误 · 标记出路 | 52 引用改用行级标记豁免结案 | AC-3 红（引用须可解析——改指为正解） |
@@ -373,7 +373,7 @@
 ### 10.8 边界（本设计不做）
 
 **不执行**（执行窗口 = 用户点火 · 父侧发起）；不碰 `_archive/**` 既有内容；不碰两产品树 `docs/` 外任何面（`AGENTS.md` / `src` / `webview` / `test` 头注 = 引-E 登记）；
-不碰台账两档（`docs/TODO.md` · `TODO-archive.md` = 主 agent 笔）；不碰需求档（父侧笔）；不碰提示词面（`docs/core/design/prompts/**` 与两产品镜像均为对象外）；
+不碰台账两档（`docs/TODO.md` · `TODO-archive.md` = 主 agent 笔）；不碰需求档（父侧笔）；不碰提示词面（`thincoder-core/prompts/**` 为对象外）；
 不碰 `checkConfig` / `SKIP_DIRS`（声明面零改）；不改 `_archive` 内文本（含既有归档与迁入档）；不夹带新语义（族 B 的 4 行例外仅 = 现态断言失效的处置）。
 不改两产品树**正文**——含**树内越树相对锚**（§10.7 前置枚举）与域内含退役树前缀的**残类陈旧指针**（不改 · 不逐一登，§10.4 残类口径 + 到期条件）。
 
@@ -398,7 +398,7 @@
 | 3 | `IPC.md`（保持） | 主↔渲染通道 | 现 `IPC.md` 全档 ∥ `PROJECT.md` §2 通道行 · §4.1 ipc ∥ preload 行 · 白名单计数句 |
 | 4 | `SESSIONS.md`（新） | 会话族 | KD-5 ∥ 9 ∥ 15 ∥ 16 ∥ 28 ∥ 41 ∥ 56 · `UI.md` 会话控制面行（`:28`）+ 会话族注（`:132` 表行 ∥ `:152` ∥ `:206`）· §4.1 会话族行 · §6.1 D1 ∥ D2 ∥ D18 ∥ D23 ∥ D26 行 · §7 会话族用例 · §10 CU |
 | 5 | `CHAT.md`（新） | 对话流与卡面 | KD-8 ∥ 14 ∥ 22 ∥ 23 ∥ 24 ∥ 37 ∥ 39 · `UI.md` 对话流（`:18`）∥ 审批（`:21`）∥ 提问（`:22`）∥ 计划（`:23`）∥ 目标（`:24`）∥ 工具卡（`:25`）行 + 相关注（`:66` ∥ `:342` 对话流面 ∥ `:455` ∥ `:464` ∥ `:506`）· §6.1 D3 ∥ D5 ∥ D19 相关行 · §7 对话族用例 |
-| 6 | `COMPOSER.md`（新） | 输入区 · 队列 · 三值 | KD-17 ∥ 18 ∥ 19 ∥ 21 ∥ 31 ∥ 40 ∥ 51 ∥ 52 · `UI.md` 输入区行（`:19`）+ 批 B 注附件 ∥ 三值项（`:38–53`）∥ `:426` ∥ `:520` ∥ `:528` ∥ `:569` · §6.1 D6 ∥ D13 ∥ D25 ∥ D34 行 · §7 输入族用例 |
+| 6 | `COMPOSER.md`（新） | 输入区 · 队列 · 三值 | KD-17 ∥ 18 ∥ 19 ∥ 21 ∥ 31 ∥ 40 ∥ 51 ∥ 52 · `UI.md` 输入区行（`:19`）+ 会话面四件注附件 ∥ 三值项（`:38–53`）∥ `:426` ∥ `:520` ∥ `:528` ∥ `:569` · §6.1 D6 ∥ D13 ∥ D25 ∥ D34 行 · §7 输入族用例 |
 | 7 | `ACTIVITY.md`（新） | 活动池 · 子代理 · 挂起消化 | KD-26 ∥ 32 ∥ 33 ∥ 34 ∥ 35 ∥ 36 ∥ 47 ∥ 55 ∥ 58 ∥ 60 ∥ 62 · `UI.md` §2 项 1（`:649`）∥ 子 agent 块注（`:487` ∥ `:496`）· `PROJECT.md` §2.2（`:117`）· §6.1 D4 ∥ D20 ∥ D28 ∥ D30 ∥ D35 行 · §7 活动族用例 · §10 CZ ∥ DA ∥ CR |
 | 8 | `SETTINGS.md`（新） | 设置与首启 | KD-10 ∥ 11 ∥ 12 ∥ 13 ∥ 44 ∥ 45 ∥ 46 ∥ 49 ∥ 66（KD-45 ∥ 46 的通道半 ∥ 渲染半随行核）· `UI.md` 设置面（`:29`）∥ 首启向导（`:30`）∥ 启动态（`:27`）行 + `:554` ∥ `:628` · §6.1 D7 ∥ D8 ∥ D9 ∥ D11 ∥ D16 ∥ D37 行 · §7 设置族用例 · §10 CH |
 | 9 | `MENU.md`（新） | 菜单体系 | KD-65 · `UI.md` 菜单注（`:619`）· §6.1 D36 行 · §7 T-DSK57 · §10 DG |
@@ -481,7 +481,7 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 
 ### 11.7 提示词随动（按域分界原则落提示词体系）
 
-**落点**：正本 `docs/core/design/prompts/discipline-engineering.md`「文档纪律」族——新子节「按域分界（创建即留并行面）」，插入位 = 「板块归属与归属判定四问」子节后（`:92–:99` 段尾）；落地镜像 `thincoder-core/prompts/discipline-engineering.md` 同族同序（`:94–:101`）。
+**落点**：`thincoder-core/prompts/discipline-engineering.md`（唯一副本）「文档纪律」族——新子节「按域分界（创建即留并行面）」，插入位 = 「板块归属与归属判定四问」子节后（`:92–:99` 段尾）；规则详述 = `DOC-DISCIPLINE.md`「按域分界」节。
 
 **措辞草案（逐字固化——正本 · 中文）**：
 
@@ -504,7 +504,7 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 > - **One-line criterion**: would two tasks running in parallel write the same file — if yes ⇒ split further; if it cannot be split ⇒ same-domain sequencing (serial) = expected, not a defect.
 > - **When reorganizing existing content**: move text verbatim (restructuring changes no wording); leave a one-line pointer at the old site — no duplicate copy; counts reconcile against the moved content.
 
-**随动面**：① 两份同批同改（中文设计文档 + 英文代码；**节名对应**——各面取该面草案名逐字：正本中文名 ∥ 落地英文名）；② 计数——两档无「N 节」类外露计数；③ 指针——他档行号引用位于插入位之上（`docs/core/design/TOOLS.md:782` 的 `:6` ∥ `:35`）⇒ 零漂；`PROMPT-SYSTEM.md:115` 族 = 分叉分析登记（他面文件，零随动）；④ 笔权 = 主 agent 内容权 + 落笔分述（D1）；⑤ 波次 = 实施波（本设计轮**零写提示词**）。
+**随动面**：① 落笔 = EN 一档（本设计轮零写提示词，实施轮 coder 落）；② 计数——两档无「N 节」类外露计数；③ 指针——他档行号引用位于插入位之上（`docs/core/design/TOOLS.md:782` 的 `:6` ∥ `:35`）⇒ 零漂；`PROMPT-SYSTEM.md:115` 族 = 分叉分析登记（他面文件，零随动）；④ 笔权 = eng-coder 独笔（内容依据 = 本节设计）；⑤ 波次 = 实施波（本设计轮**零写提示词**）。
 
 ### 11.8 验收（逐条回指 §3.16）
 
@@ -514,7 +514,7 @@ D14（E2E）归属届盘定（`E2E-TESTING` 镜像 ∥ 总览——分卷执行�
 | AC-2 | 逐波迁移零语义——逐域闭环、波末已迁域全闭合（剪枝 = 域收尾步，§11.2）：`doc-check` 相对判据（新增悬空 0 ∥ 区带外新增超宽 0）∧ 计守恒对拍逐项全等 ∧ 保位指针解析命中 ∧ 原址零正文副本 | O-5 |
 | AC-3 | 机检随动三件（§11.5 ①② + §11.1 档名查重行）落齐：扫描域零声明改 ∧ 档头计数摘除 ∧ 档名查重过 | O-6 |
 | AC-4 | 并发面实测：夹具 = 菜单批 `{MENU, SHELL, IPC, COMPOSER}` ∥ 设置批 `{SETTINGS}`——拆分后写域交集 = ∅ ∧ 评审 `docSetKey` 互异（复跑 = `docSetKey(两集, cwd)` 对拍——导出 = `thincoder-core/agent-tools/review-facts.mjs`；现状同 scope 拒发 = 对照基线）；矩阵「消」行 ≥2 组逐行实证 | O-4 |
-| AC-5 | 提示词两份同批落（中文设计文档 + 英文代码；节名对应——各面取该面草案名逐字）∧ 零新悬空引用 ∧ 无外露计数 | §11.7 |
+| AC-5 | 提示词 EN 落（`thincoder-core/prompts/` 一档）∧ 零新悬空引用 ∧ 无外露计数 | §11.7 |
 | AC-6 | 需求分卷与 D 行全集对拍（37 行零遗漏零重复——分卷执行波判） | §11.3 |
 
 **AC-4 复跑口径**（cwd = thincoder）：两集各跑 `docSetKey(集, '.')` 对拍（导出 = `thincoder-core/agent-tools/review-facts.mjs`）——键异 ⇒ 并行放行；对照 = 现状两笔同 scope（`PROJECT.md` +5）⇒ 键同 ⇒ 拒发。

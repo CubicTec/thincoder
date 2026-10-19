@@ -15,13 +15,13 @@ const timeoutMs = (Number.isFinite(cfg) && cfg > 0) ? cfg : REVIEW_TIMEOUT_MS
 ```
 
 - **运行期校验**：手写 `config.json` 的非法值（0 / 负数 / 字符串）不得静默禁用或立即触发超时——**非法一律回退默认**。
-- 读取链：`thincoder-core/config.mjs:335` 把 `merged.agent.advisor` promote 为 `merged.advisor`（decoupled copy）⇒ `agent.config.advisor.timeoutMs` 天然可见；`runAdvisorToolLoop` 已接收 `agent` 参数，**无需改签名**。
-- **默认值单一来源**：**不**在 `DEFAULTS.agent.advisor` 写死 `timeoutMs`——默认值只住 `REVIEW_TIMEOUT_MS` 常量（`thincoder-core/advisor/compaction.mjs:42`），避免两处漂移（`thincoder-core/config.mjs:49` 的 advisor 默认块注释即登记 `timeoutMs` 为可覆盖项）。
+- 读取链：`thincoder-core/config.mjs:323` 把 `merged.agent.advisor` promote 为 `merged.advisor`（decoupled copy）⇒ `agent.config.advisor.timeoutMs` 天然可见；`runAdvisorToolLoop` 已接收 `agent` 参数，**无需改签名**。
+- **默认值单一来源**：**不**在 `DEFAULTS.agent.advisor` 写死 `timeoutMs`——默认值只住 `REVIEW_TIMEOUT_MS` 常量（`thincoder-core/advisor/compaction.mjs:42`），避免两处漂移（`thincoder-core/config-defaults.mjs:32` 的 advisor 默认块注释即登记 `timeoutMs` 为可覆盖项）。
 - **TUI 不新增编辑项**：`/config` 不提供 `timeoutMs` 菜单——手写 `config.json` 即可。
 
 ## 3. 主 agent 轮次上限（默认 200）
 
-- `thincoder-core/config.mjs:36`：`maxTurns: 200`（DEFAULTS）。
+- `thincoder-core/config-defaults.mjs:18`：`maxTurns: 200`（DEFAULTS）。
 - `thincoder-core/agent/helpers.mjs:24`：`DEFAULT_MAX_TURNS = 200`（prepareRun 的兜底常量）。
 - 读取链为**三级回退**（`thincoder-core/agent/setup.mjs:44`）：
 
@@ -29,8 +29,8 @@ const timeoutMs = (Number.isFinite(cfg) && cfg > 0) ? cfg : REVIEW_TIMEOUT_MS
 const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_TURNS
 ```
 
-- TUI 显示兜底 `?? 200`（`thincoder-cli/src/tui/cmd-config.mjs:340` 状态头 · `:341` 菜单项 · `:366` 详情行 · `:438` 编辑初始值——四处）。
-- **不动**的相邻参数：`goalTurns: 200`（goal 模式上限，独立语义——`thincoder-core/config.mjs:40` · `thincoder-core/agent/helpers.mjs:26`）· `DEFAULT_SUBAGENT_TURNS = 100`。
+- TUI 显示兜底 `?? 200`（`thincoder-cli/src/tui/cmd-config.mjs:125` 状态头 · `:126` 菜单项 · `:155` 详情行 · `:260` 编辑初始值——四处）。
+- **不动**的相邻参数：`goalTurns: 200`（goal 模式上限，独立语义——`thincoder-core/config-defaults.mjs:22` · `thincoder-core/agent/helpers.mjs:26`）· `DEFAULT_SUBAGENT_TURNS = 100`。
 
 ## 4. 子代理轮次（CLI 端无专属代码）
 
@@ -43,8 +43,8 @@ const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_T
 | 参数 | 键 / 常量 | 默认 | 落点 |
 |---|---|---|---|
 | 评审墙钟 | `agent.config.advisor.timeoutMs` → `REVIEW_TIMEOUT_MS` | 600 000 ms | `thincoder-core/advisor/compaction.mjs:42` · 读取 `thincoder-core/advisor/loop.mjs:104` |
-| 主 agent 轮次 | `agent.maxTurns` → `DEFAULT_MAX_TURNS` | 200 | `thincoder-core/config.mjs:36` · `thincoder-core/agent/helpers.mjs:24` |
-| goal 模式轮次 | `agent.goalTurns` → `DEFAULT_GOAL_TURNS` | 200 | `thincoder-core/config.mjs:40` · `thincoder-core/agent/helpers.mjs:26` |
+| 主 agent 轮次 | `agent.maxTurns` → `DEFAULT_MAX_TURNS` | 200 | `thincoder-core/config-defaults.mjs:18` · `thincoder-core/agent/helpers.mjs:24` |
+| goal 模式轮次 | `agent.goalTurns` → `DEFAULT_GOAL_TURNS` | 200 | `thincoder-core/config-defaults.mjs:22` · `thincoder-core/agent/helpers.mjs:26` |
 | 子代理轮次 | `agent.subagentTurns` → `DEFAULT_SUBAGENT_TURNS` | 100 | `thincoder-core/agent/helpers.mjs:25` |
 | 设计 token TTL | `agent.engTokenTtlMs` | 7 天 | 见 `docs/core/design/ENG-TOKEN-BINDING.md` §3（本表只列名，不重述） |
 
@@ -56,11 +56,11 @@ const maxTurns = overrideTurns ?? agent.config?.agent?.maxTurns ?? DEFAULT_MAX_T
 |---|---|---|
 | 评审默认常量 | `thincoder-core/advisor/compaction.mjs:42`（`REVIEW_TIMEOUT_MS` = 600 000） | 在位 |
 | 评审读取 + 运行期校验 | `thincoder-core/advisor/loop.mjs:104` | `Number.isFinite(cfg) && cfg > 0` 回退 |
-| advisor 配置 promote | `thincoder-core/config.mjs:335` | `merged.advisor = { ...merged.agent.advisor }` |
-| advisor 默认块（含 timeoutMs 说明） | `thincoder-core/config.mjs:49` | 注释在位 |
-| `maxTurns` 默认 | `thincoder-core/config.mjs:36` · `thincoder-core/agent/helpers.mjs:24` | 均 200 |
+| advisor 配置 promote | `thincoder-core/config.mjs:323` | `merged.advisor = { ...merged.agent.advisor }` |
+| advisor 默认块（含 timeoutMs 说明） | `thincoder-core/config-defaults.mjs:32` | 注释在位 |
+| `maxTurns` 默认 | `thincoder-core/config-defaults.mjs:18` · `thincoder-core/agent/helpers.mjs:24` | 均 200 |
 | `maxTurns` 三级回退 | `thincoder-core/agent/setup.mjs:50` | 在位 |
-| TUI 显示兜底 | `thincoder-cli/src/tui/cmd-config.mjs:340` · `:341` · `:366` · `:438` | 四处 `?? 200` |
+| TUI 显示兜底 | `thincoder-cli/src/tui/cmd-config.mjs:125` · `:126` · `:155` · `:260` | 四处 `?? 200` |
 | 子代理轮次读取 | `thincoder-core/agent-tools/subagent-async.mjs:387` · `thincoder-core/agent-tools/subagent-actions.mjs:418` · `thincoder-core/agent-tools/escalate-async.mjs:218` | 三处同形回退 |
 
 ### 6.2 测试覆盖

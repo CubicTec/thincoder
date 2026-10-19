@@ -1,7 +1,7 @@
 # Thincoder Server · 运维面（ops/OPS）
 
 > 板块 = server ∥ 本档 = ops 域（配置 ∥ 首启引导 ∥ 运维 CLI ∥ 部署面 ∥ 启动/停机/日志 ∥ 可靠性面：备份恢复 ∥ 指标与告警 ∥ 容量与降级）；板总览 = `PROJECT.md`（文档地图 = §3）。
-> 本域回指 = `PROJECT.md` §7（非功能·仅内网 ∥ AC-7⑦ 引导幂等——机制 = 本档 §2）。
+> 本域回指 = `PROJECT.md` §7（默认内网部署；公网部署须开 `tls` ∥ AC-7⑦ 引导幂等——机制 = 本档 §2）。
 
 ## 1. 配置面（`config.json`）
 
@@ -26,13 +26,15 @@
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
-| `host` | 是 | 内网接口地址（如 `192.168.x.x` ∥ `10.x.x.x`）；填 `0.0.0.0` 时启动警告（仅单接口机可接受） |
+| `host` | 是 | 监听地址：**默认内网部署**填内网接口地址（如 `192.168.x.x` ∥ `10.x.x.x`）；公网部署须同时开 `tls` 段（机制 = `gateway/PUBLICNET.md` §2）；填 `0.0.0.0` 时启动警告（仅单接口机可接受） |
 | `port` | 否 | 缺省 `8787` |
 | `db` | 否 | SQLite 库路径（相对 = 本配置档所在目录）；缺省 `data/gateway.db` |
 | `autoUpdate` | 否 | 更新档位：`false`（关——零检查） ∥ `"notify"`（检查 + 日志） ∥ `"auto"`（检查 + 自装）；缺省 `"notify"`；非法值 ⇒ 拒启（机制 = §5.4） |
-| `trustProxy` | 否 | 反代场景客户端 IP 口径：`false`（缺省——IP = 连接对端地址） ∥ `true`（读 `X-Real-IP` 头——反代须 set 形覆盖客户端伪造；前提 = 服务端口仅反代可达）；登录防爆破 IP 维消费（`accounts/ACCOUNTS.md` §2） |
+| `trustProxy` | 否 | 客户端 IP 口径：`false`（缺省——IP = 连接对端地址） ∥ `true`（读 `X-Real-IP` 头——仅当服务前置于可信代理；直连 ∥ 内置 TLS 部署保持 `false`）；登录防爆破 IP 维消费（`accounts/ACCOUNTS.md` §2） |
 | `proxy` | 否 | 上游出口代理（形 = `{ "uri": "http://host:port" }`——代理目标本体，非门槛）：在场时仅**逐渠 `proxy: true`** 的 provider 上游请求（chat 转发 ∥ 模型发现）经此代理（逐渠独立——无全局闸）；缺省/缺位 = 零代理；非对象形态（数组 ∥ 数字）∥ `uri` 非法（非字符串 ∥ 空串 ∥ 非 URL ∥ scheme 非 `http:`——仅 `http:` 收）⇒ 拒启（fail-closed）；启动 warn 两条（触发/文案 = `gateway/API.md` §6 KD-SV-55）——① 明文 `http:` uri（密钥外发提示）∥ ② 任一条目旗 `true` 而 `uri` 缺位（直连——旗未生效）；改动生效 = 重启（配置文件不热载——§10 在案）；机制全文 = `gateway/API.md` §6 KD-SV-55 |
 | `usageRetentionDays` | 否 | 保留窗（天；**用量（含 `usage_daily`/`quota_counters` 两派生表）与审计事件同窗**——单一旋钮）：正整数 ∥ `null`（不限——保留全量）；缺省 `90`；非正整数 ∥ 非法值 ⇒ 拒启（机制 = `metering/METERING.md` §1 ∥ `accounts/ACCOUNTS.md` §2.1） |
+| `tls` | 否 | 内置 TLS 段六键：`enabled` ∥ `certPath` ∥ `keyPath`（相对 = 配置档目录） ∥ `publicHost` ∥ `publicPort`（缺省 `443`——只被重定向 `Location` 消费） ∥ `redirectPort`（`null` = 不开重定向）；缺位 = 明文 HTTP（零行为变化）；启用期证书不可读/非法 ⇒ 拒启；生效 = 重启；机制 = `gateway/PUBLICNET.md` §2 |
+| `rateLimits` | 否 | 匿名入口限流：`enabled`（缺省 `true`） ∥ `authPerMin`（缺省 `20`） ∥ `publicPerMin`（缺省 `120`）；固定窗 60 s、粒度 = IP × 端点类；超限 429 `rate_limit_error` + `Retry-After`；生效 = 重启；机制 = `gateway/PUBLICNET.md` §2 |
 | `alert` | 否 | 告警 webhook（可靠性批——暂缓，机制未落）：形 = `{ "webhookUrl": "http(s)://…" }`；出场非对象 ∥ `webhookUrl` 非法（非字符串 ∥ 空 ∥ 非 URL ∥ scheme 非 http(s)）⇒ 拒启（fail-closed）；缺省/缺位 = 告警投递禁用（服务照常）；投递 = JSON POST（超时 5s ∥ 失败仅日志 ∥ 去抖 10 分钟窗）；生效 = 重启（配置文件不热载——§10 在案）；控制台写面 = 「服务配置」卡告警行（`alertWebhookUrl`——`""` ⇒ 删段） |
 | `bootstrap` | 否 | 首启引导凭据（`username` ∥ `password`——支持 `env:`）；仅零 admin 时消费（§2——幂等） |
 | `providers[]` | 否 | **首启种子**（一次性导入——矩阵见下；此后控制台管理——`gateway/API.md` §2.2）。**两种条目形**：预设形（`preset` = 预设名——缺省字段展开，见下）∥ 手写形（`name` ∥ `baseURL` ∥ `models` 自备）。两形共有字段：`name`（预设形可省——缺省 = 预设名） ∥ `baseURL`（OpenAI 兼容根——预设形可省） ∥ `apiKey`（可空——空则不发 Authorization 头；支持 `env:` 引用——载入不解析，引用保形） ∥ `models`（开放清单——预设形可省；**条目两形**：字符串 = 上游模型名（无别名）∥ 对象 `{ name, alias }`（配别名——对外标识 = alias）；无别名时对外标识 = `provider/model`；KD-SV-59；控制台编辑位 = 服务模型页「别名」组——`webui/ADMIN.md` §2.1③） ∥ `proxy`（布尔——true = 该渠上游请求经代理；缺省/非真 = 直连——机制 = `gateway/API.md` §6 KD-SV-55） |
@@ -55,6 +57,7 @@
 - **条目校验单源** = `thincoder-server/src/ops/config.mjs` 导出（`validateProviderEntry` ∥ `validateProviderEntries`）——三径调用：配置载入 ∥ 启动构建/种子 ∥ 控制台保存（`gateway/API.md` §2.2）；**别名校验**（KD-SV-59）：非空 ∥ 不含斜杠 ∥ 无首尾空白；
   **全服唯一**（别名 vs 别名 ⇒ 拒启/保存 400——唯一性三径同助手）；**别名与带前缀名形上不相交**（别名无斜杠 ∥ 前缀名含斜杠 ⇒ 唯一撞法互斥）。
 - **启动校验（fail-closed）**：`host` 缺失 ∥ 种子/库内 provider `name` 缺/空 ∥ `name` 含 `/` ∥ `name` 重名（providers 间） ∥ **同 provider 内**模型重名 ∥ `baseURL` 非 http(s) ∥ **未知预设名** ∥ `trustProxy` 非布尔 ∥ `usageRetentionDays` 非正整数且非 `null`
+  ∥ `tls` 段非法（非对象 ∥ 数组 ∥ `enabled` 非布尔 ∥ 启用期证书不可读或上下文建不出 ∥ `publicHost`/`publicPort`/`redirectPort` 非法 ∥ `redirectPort` = `port`） ∥ `rateLimits` 段非法（非对象 ∥ 数组 ∥ `enabled` 非布尔 ∥ 两阈值越界）
   ∥ `embedding` 在场非对象 ∥ 在场缺 `baseURL`/`model`（或 `baseURL` 非 http(s)）
   ∥ **别名非法**（空 ∥ 含斜杠 ∥ 首尾空白 ∥ 跨 provider 重名）
   ⇒ 非零退出 + 明确报错；`bootstrap` 在场时 `password` ≥8 字符（否则启动失败）。**零 provider = 允许态**（服务照常起 + 警告；控制台/种子为两条配置路径）。
@@ -63,7 +66,8 @@
 - 对外模型标识 = **别名（配了）∥ `provider/model`（未配）**——别名 = 唯一显示名与请求名（KD-SV-59）；未配时 = `provider/model`（**首斜杠切分**——首段 = provider `name` ∥ 余段 = 上游模型名（可含斜杠）；两段非空；裸名不解析（别名形除外）；**同名模型跨 provider 并存且各自可达**）；`/v1/models` = 对外标识清单。
 - 模板 = `thincoder-server/config.example.json`（已落盘——预设形 ∥ 手写形并存）；真档 = `thincoder-server/config.json`（部署机本地——不入 git）。
 - provider key 轮换 = 控制台改 provider 并保存（**保存即热生效**——机制 = `gateway/API.md` §2.2）。
-- **配置写面（控制台——`#/admin/system`「服务配置」卡（含 `proxy.uri` 行 + 连通测试块——`webui/SYSTEM.md` §2.2） + 向量卡）**：可写项 = `autoUpdate` ∥ `trustProxy` ∥ `usageRetentionDays` ∥ `proxy.uri`（顶层段） ∥ `embedding.{baseURL,model,apiKey}` ∥ `alert.webhookUrl`（顶层段——可靠性批；`""` ⇒ 删段）；
+- **配置写面（控制台——`#/admin/system`「服务配置」卡（含 `proxy.uri` 行 + 连通测试块——`webui/SYSTEM.md` §2.2） + 向量卡）**：可写项 = `autoUpdate` ∥ `trustProxy` ∥ `usageRetentionDays` ∥ `proxy.uri`（顶层段） ∥ `embedding.{baseURL,model,apiKey}` ∥ `alert.webhookUrl`（顶层段——可靠性批；`""` ⇒ 删段）
+  ∥ `tls.{enabled,certPath,keyPath,publicHost,publicPort,redirectPort}`（顶层段——证书只存路径，内容永不回显） ∥ `rateLimits.{enabled,authPerMin,publicPerMin}`（顶层段）；
   只读展示 = `host` ∥ `port` ∥ `db`（部署拓扑项——改端口 = 自断连接 ∥ 改库 = 迁移动作；**定则例外显式说明**：不做写面）+ `bootstrap`（一次性——口令永不回显）+ `providers[]`（指针：常态管理 = 控制台 Provider 页）。
   读写形 = **文件面**（读 = config.json 现值（缺省回填展示） ∥ 写 = 读改写）；
   写路径 = ① 白名单（未知键 ⇒ 400）→ ② 合并原档（**保未知键**；`proxyUri: ""` ⇒ 删 `proxy` 段）→ ③ 门 = `resolveEnvRefs` + `validateConfig`（**载入面等价两跳**——写入的文件必可载入；不过 ⇒ 400 原报文，文件零变）→ ④ 原子写（同目录 tmp ⇒ `rename` 覆盖；写盘形 = 2 空格缩进 + 末尾换行——与现档同形）→ ⑤ 审计 `config_update`（detail = 键名清单；值永不入）。
@@ -97,8 +101,9 @@ node src/ops/cli.mjs --config <配置档> <命令>
 ## 4. 启动/停机与日志
 
 - 启动 = `thincoder-server/bin/thincoder-server.mjs`（已落盘）：argv（`--config`）→ 配置加载/校验 → 首启引导 → 开库/迁移（`store/STORE.md` §3）→ **保留清理（用量 + 审计事件：启动一次 + 24h 周期——`metering/METERING.md` §1 ∥ `accounts/ACCOUNTS.md` §2.1）** →
-  **provider 运行时引导（种子导入 ∥ 注册表构建——§1）** → **告警 watchdog（60s 周期——可靠性批暂缓，未落；webhook 缺省 ⇒ 零行为）** → `node:http` 监听 → 就绪日志（`ready` 行含 `version` 字段——§5.4(g)）。
-- 停机 = SIGINT/SIGTERM ⇒ 优雅收尾（停收新连 ∥ 清周期定时器（更新循环 ∥ 保留清理 ∥ watchdog 同法） ∥ 关闭库）。
+  **provider 运行时引导（种子导入 ∥ 注册表构建——§1）** → 路由族注册 → 项目同步调度器（60s 周期——`gateway/API.md` §2.9）→ 终端 hub → **告警 watchdog（60s 周期——可靠性批暂缓，未落；webhook 缺省 ⇒ 零行为）** → `node:http` 监听 → 就绪日志（`ready` 行含 `version` 字段——§5.4(g)）→ 盒 ticker（30s——§5.10）→ 更新自检（启动即检一次 + 6h——§5.4(a)）。
+- 停机 = SIGINT/SIGTERM ⇒ 优雅收尾（停收新连 ∥ 清周期定时器（更新循环 ∥ 保留清理 ∥ 盒 ticker ∥ 项目同步 ∥ watchdog 同法） ∥ 收终端 ∥ 收 MCP 会话 ∥ 关闭库）。
+  周期集合与装配断言逐条对齐 = §4.1「面 → 不变量对照」。
 - 日志 = `thincoder-server/src/ops/log.mjs`（已落盘）：单行 JSON 到 stdout（逐请求一行 + 启动/引导/错误事件）；采集/落盘 = 部署面（§5——裸机 journald ∥ 容器 docker logs）。
 - 启动失败（catch 段）⇒ `startup_failed` 日志 + 告警尽力投递（`alert.webhookUrl` 在案时——可靠性批暂缓，未落；投递失败仅 warn——进程退出码 1 不变）。
 - **入口判据（bin 垫片形）**：主入口判定 = `argv[1]` 经 `realpathSync` 解析后与 `import.meta.url` 比对——npm 全局装（POSIX）= bin 符号链接形：`argv[1]` 为符号链接路径而 `import.meta.url` 为真身路径，不解析 ⇒ 判据恒假 ⇒ **静默退出 0**（`run` 从不执行）；路径不可解析 ⇒ 抛（显式报错——不静默）；模块被 import（非主入口）⇒ `run` 不自动执行（供测试导入）。判据行最终形（`:12` 邻增 import ∥ `:176`）：
@@ -109,13 +114,61 @@ import { realpathSync } from "node:fs"
 if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) await run()
 ```
 
+### 4.1 装配面的持久断言（回归护栏）
+
+- **最近先例**：包内测试面 = `thincoder-server/test/rc-resolve.mjs`（模块解析守卫，`node --test` 直跑）；跑法先例 = `thincoder-core/test/run.mjs:1-49`（`test/*.test.mjs` 单层收集 → `npm test`）。本档沿用「包内 `test/` ＋ `node --test`」，不改惯例；装配面探针缝无先例（缝形自定，理由见下）。
+- **调研证据**：查过 `thincoder-server/test/`（现只有 `rc-resolve.mjs`——零装配面断言）、`thincoder-server/package.json`（无 `scripts.test`）、`thincoder-core/test/run.mjs`（跑法）；无同形先例。
+- **现状缺口**：装配面（`thincoder-server/bin/thincoder-server.mjs`，实读 **241** 行）的验证只有进程内驱 `run()` 的整链冒烟——跑完即弃，不留常驻断言。删掉一处装配行（周期 ticker ∥ 路由族注册 ∥ 终端 hub 接线 ∥ 保留清理周期 ∥ 更新自检周期 ∥ 项目同步调度），全套测试仍绿 ⇒ **静默失效**。
+- **落地形态**：常驻测试位 = `thincoder-server/test/assembly.test.mjs`（`node --test`）；断言 = **行为断言**（进程内驱 `run()` 跑一遍看结果），不读设计档查句子。
+- **运行点**：命令 = `cd thincoder-server && npm test`——本批新增 `thincoder-server/package.json` 的 `"test": "node --test test/*.test.mjs"`（包内现无 `test` 脚本，实读）。**入发布门**：`prepublishOnly` 链尾追加 `&& npm test`（现链 = 3×`node --check`）。
+- **寿命档位**：本档 = **常驻回归档**——§5.1「单元测试档不入任何门 ∥ 随批收口零留存」纪律的**显式例外**。理由：它是装配面唯一的持久断言，删掉即「删一行仍全绿」复发；一般单元测试档随批删除的纪律不变（`#1346` 的用例档仍属后者）。
+- **产品面改动 = 族表驱动重构 ＋ 探针缝 ＋ 停机句柄**（三件同批）：族表驱动 = 路由族注册收进 `ROUTE_FAMILIES` 表循环（A1） ∥ 停机句柄 = `stop` 暴露清周期入口（A3） ∥ 探针缝 = `run(argv, log, { update = {}, onAssembled })`——装配完成、`listen` 前调用
+  `onAssembled({ routes, server, redirectServer, config, timers, families, terminalHub, stop })`：
+  `routes` = 路由表 · `server` = http 实例 · `redirectServer` = 重定向监听句柄（未开重定向 ⇒ `null`） · `config` = 载入后配置 · `timers` = 本次装配的周期句柄表（键 `prune` ∥ `box`）· `families` = 装配面自身的路由族表 · `terminalHub` = 终端 hub 实例 · `stop` = 优雅停机句柄。缺省不传 ⇒ 生产行为逐字不变。
+- **钉住的不变量七条**（每条以「删掉对应装配行 ⇒ 该档必红」为准）：
+
+| # | 不变量 | 断言形 | 删掉什么它会红 |
+|---|---|---|---|
+| A1 | 路由族全覆盖 | 装配面按 `ROUTE_FAMILIES` 表（`{ name, probe, register }`）循环注册；探针载荷 `families` = 该表。断言两条：① 逐族 `probe` 端点在 `routes` 中命中，且 `probe` 两两不重（不手抄清单）；② **集合面锚点** = `families.length === 22`——`22` 是测试档内**写死的独立常量**（不读表、不从 `families` 推算）；注册与断言同源时删掉整族表行，① 同步缩水仍绿，只有 ② 红。新增族 ⇒ 手动改常量（红即提醒入表） | 表内任一整族行（`families.length` 22 → 21） ∥ 表内任一 `register` 项 ∥ 任一注册函数体内的 `routes.add` 行 |
+| A2 | 周期器件在册 | 拦截 `globalThis.setInterval`：装配后四个周期值在场——`USAGE_PRUNE_INTERVAL_MS`（24h）∥ `TICK_INTERVAL_MS`（30s）∥ 项目同步周期（60s）∥ `UPDATE_INTERVAL_MS`（6h） | 保留清理 `:139` ∥ 盒 ticker `:213` ∥ `projectSync.start()` `:197` ∥ `updater.start()` `:216` |
+| A3 | 优雅停机清周期 | 经探针 `stop("SIGINT")` 触发：A2 记下的四个句柄全部进入清除面（`clearInterval` 或其 `stop()`），残留活周期 = 0 | `stop()` 的 `updater?.stop()` `:105` ∥ `clearInterval(pruneTimer)` `:107` ∥ `clearInterval(boxTicker)` `:111` ∥ `projectSync?.stop()` `:114` |
+| A4 | 监听与自环接线 | 装配后**有界轮询** `server.listening`（≤2s · 步 10ms）；成立后 `server.address().port` = 配置端口，且真打 `GET /healthz` 得 200 | `serverRef = server` `:205` ∥ 监听块 `:207-210` |
+| A5 | 终端 hub 接线 | `server.listeners("upgrade")` 恰 1 条且 `=== terminalHub.handleUpgrade`；另发一次带 `Upgrade` 头的裸请求，收到 hub 的响应（非连接重置） | `upgrade: terminalHub.handleUpgrade` 实参 `:204` ∥ `createTerminalHub` `:203` |
+| A6 | 更新自检在册 | 经 `run` 第三参 `update` 替身（§5.4(c) 注入口径）：启动即检一次（替身被调恰 1 次）；`autoUpdate: false` ⇒ 零调用；停机后零再检 | `updater = createUpdater(...)` `:215` ∥ `updater.start()` `:216` |
+| A7 | TLS 附加面在册 | `tls.redirectPort` 在场 ⇒ 探针载荷 `redirectServer` 非 `null`、`address().port` = `redirectPort`；触发 `stop()` 后该 server 已关闭；`SIGHUP` 监听断**基线增量恰 1**——装配前记 `base = process.listenerCount("SIGHUP")`，装配后断 `process.listenerCount("SIGHUP") - base === 1`（跨用例残留不兜底：删注册行 ⇒ 增量 0 ⇒ 红） | 第二监听装配行 ∥ `SIGHUP` 注册行 ∥ `stop()` 内的 `redirectServer.close()` |
+
+- **面 → 不变量对照**（`:121` 自列的静默失效面逐条有归宿，无豁免项）：
+
+| 装配面 | 不变量 |
+|---|---|
+| 周期 ticker（盒 30s） | A2 ∥ A3 |
+| 路由族注册 | A1 |
+| 终端 hub 接线 | A5 |
+| 保留清理周期（24h） | A2 ∥ A3 |
+| 更新自检周期（启动即检 + 6h） | A2 ∥ A6 |
+| 项目同步调度（60s） | A2 ∥ A3 |
+| 监听 ∥ 自环取数 | A4 |
+| TLS 附加面（重定向监听 ∥ `SIGHUP` 注册） | A7 |
+
+- **夹具规格**（用例侧；全部临时件，`finally` 复原）：
+  - `config`：临时目录写 `config.json`（`host: "127.0.0.1"` · 端口 = 下面取的临时值 · `db` = 临时路径 · `autoUpdate: "notify"` · 零 `providers`；A7 用例另加 `tls` 段 = `enabled: true` ∥ `certPath`/`keyPath` 指向证书夹具 ∥ `publicHost: "localhost"` ∥ `redirectPort` = 第二端口）；`finally` 删目录。
+  - 证书夹具：入库测试 PEM 放 `thincoder-server/test/fixtures/tls/`（`cert.pem` ∥ `key.pem`——自签、长期有效、只作测试材料）；测试期不现生成（零新包）。
+  - 第二端口：`redirectPort` 先 `net.createServer().listen(0)` 读 OS 分配端口 ⇒ 关闭 ⇒ 再用（不写固定值；须 ≠ 配置端口——校验拒 `redirectPort = port`）。
+  - 监听器复原：装配前快照 `process.listeners("SIGHUP")`；用例 `finally` 按差集 `removeListener` 摘掉装配期新增的监听——跨用例不堆积，A7 的「基线增量 = 1」因此不被残留污染。
+  - 全局缝：装配前保存 `globalThis.setInterval` ∥ `clearInterval` 原值，替身记录（句柄 · 延迟）；`finally` 原值复原。
+  - 触发面：A3 用探针 `stop`——**不用** `process.emit("SIGINT")`（监听器会在同进程跨用例堆积）。
+- **反证义务**：实施轮必须逐条做「临时删一行 ⇒ 跑该档 ⇒ 红 ⇒ 恢复」，读数落实施记录；未做反证的不变量视为未验证。
+- **机检基线**：`node scripts/doc-check.mjs --root .` 对比开工基线（悬空 ∥ 行宽逐档零新增），读数落实施记录。
+- **边界**：不测业务端点语义（各域自有测试档）；不引入外部依赖（零新包）；不钉业务数据。
+
+
 ## 5. 部署面（两路统一：版本身份 = npm 包；容器 = 壳；守护两路：systemd ∥ 容器 restart）
 
 ### 5.1 分发（两路——版本身份 = npm 包 `@thincoder/server`，唯一真相）
 
 - **版本身份 = npm 包**（两路同源）：升级 = 装 npm 新版 + 重启（§5.4）；**镜像 tag 不承担版本语义**（tag 只标壳——除 Node 基座换代外无需重建镜像）。
 - **npm 路（包体就绪——发布动作 = 发布面轮）**：`thincoder-server/package.json` 转可发布形——撤 `private` ∥ 包名 = `@thincoder/server`（拟——发布轮验 registry 占用/scope 权限；更优命名可上抛） ∥ `bin` = `thincoder-server`
-  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁 = 3×`node --check`（`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`）——**单元测试档不入任何门**（单元测试纪律——随批收口用后即删、零留存；红不作门禁判据）。
+  ∥ `engines` node>=24 ∥ `prepublishOnly` 门禁 = 3×`node --check`（`bin` ∥ `src/ops/update.mjs` ∥ `deploy/converge.mjs`）→ `npm test`（**唯一例外** = §4.1 的常驻装配回归档——它要阻一件事，红即不发布）；其余**单元测试档不入任何门**（随批收口用后即删、零留存）。
   - `files` 白名单 = bin ∥ src ∥ public ∥ config.example.json ∥ README.md（`deploy/` 档组 = 仓内部署面——不入包）。
 - **npm 路装机 = 前缀式**（自升前提）：`NPM_CONFIG_PREFIX` 指**服务账号可写目录**（建议 `/opt/thincoder-server/.npm-global`——与配置/数据同根）⇒ 装机（`npm i -g @thincoder/server`）与自升（服务进程内——§5.4）同前缀、免 sudo 重写；安放后该根目录整归服务账号（`chown -R`）。
 - **Docker 路 = 壳镜像**（`thincoder-server/Dockerfile`——重设计）：基座 `node:24-slim` + 引导层（`thincoder-server/deploy/docker-entrypoint.sh`（已落盘 7 行） ∥ `thincoder-server/deploy/converge.mjs`（已落盘 197 行））；**App 代码由 npm 取装**——镜像本体只含壳（不带版本身份）。
@@ -137,9 +190,11 @@ services:
       - TC_SERVER_VERSION=${TC_SERVER_VERSION:-}   # 钉死 = 写 x.y.z；留空（缺省空串）= 按镜像预装运行（离线）
       # - NPM_CONFIG_REGISTRY=http://<内网镜像>/          # 更新源（选填——§5.4）
     ports:
-      - "8787:8787"
+      - "8787:8787"                               # TLS 面（开 tls 段则同端口只讲 TLS——§5.6）
+      - "8443:8443"                               # 重定向面（tls.redirectPort = 8443；可选）
     volumes:
       - ./config:/app/config                    # 配置目录（目录级 rw——写面原子写（同目录 tmp ⇒ `rename`）须之；须 chown 1000:1000）
+      - ./certs:/app/certs:ro                   # 证书/私钥（只读；路径写进 tls.certPath ∥ tls.keyPath）
       - ./data:/app/data                        # SQLite 库（db 写 `/app/data/gateway.db`）；须 chown 1000:1000（部署清单 ③）
     env_file: .env
 ```
@@ -214,12 +269,12 @@ services:
 - **环境回退**：若 `backup()` 环境核验不过 ⇒ 回退 = 停写窗快照方案（README 明示）。
 - 边界：进程内自动备份面不做（备份 = 部署侧面）；轮转/保留 = 部署方自管（不做）。
 
-### 5.6 反代与 TLS（样例——nginx；登录防护 IP 维接线）
+### 5.6 TLS 内置与证书轮换（登录防护 IP 维接线）
 
-- 边界保持：内网 HTTP；HTTPS 如需 = **前置反代**（不集成进 server——不做项在册）；完整样例 = README §11（选型 = KD-SV-25）。
-- 样例要点（接线三件——必须带对）：① `client_max_body_size` = 32m（≥ 服务端通用 32 MiB 请求体上限——nginx 默认 1m 会先挡）；
-  ② SSE：`proxy_http_version 1.1` ∥ `proxy_buffering off` ∥ `proxy_read_timeout` 拉长（流式逐块透传——缓冲/短超时会断流）；③ `proxy_set_header X-Real-IP $remote_addr`（set 形覆盖客户端伪造）⇒ 服务端置 `trustProxy: true` 后按真实客户端 IP 计防爆破 IP 维。
-- `trustProxy: true` **前提** = 服务端口仅反代可达（同机仅听回环 ∥ 防火墙白名单——否则直连可伪造 `X-Real-IP`）；README 样例注记同拍。
+- **形态** = 服务自身实现 TLS（`node:https` + 证书；零第三方运行期依赖）：配置 = 配置档 `tls` 段（`enabled` ∥ `certPath` ∥ `keyPath` ∥ `publicHost` ∥ `publicPort` ∥ `redirectPort`）；缺 `tls` 段 ⇒ 明文 HTTP（现行为零变）。机制全文 = `gateway/PUBLICNET.md` §2，完整示例段 = README §11。
+- **证书轮换** = 换文件后 `kill -HUP <pid>`（重读并 `setSecureContext`）；重载失败保留旧上下文继续服务，落审计 `security_event`/`cert_reload_failed`。
+- **HTTP→HTTPS** = `tls.redirectPort` 在场时起第二个监听：308 + `Location` 主机取 `tls.publicHost`（不读 `Host` 头——零站外重定向面）。
+- `trustProxy: true` 只在服务前置于**可信**代理时使用（直连部署 ∥ 内置 TLS 部署保持 `false`）；内置 TLS 下客户端 IP = 连接对端地址。
 
 ### 5.7 首部署清单（两版）
 
@@ -227,6 +282,10 @@ services:
 - **Docker 路**（7 步）：① 装 Docker → ② `docker build -f thincoder-server/Dockerfile -t <registry>/thincoder-server:<tag> .`（构建上下文 = **仓根**——console-chat-align 批收正；壳化——构建期预装上下文包体（`@thincoder/core` 不在上下文 ⇒ `npm i -g` 须 registry——构建非离线）；registry ∥ 镜像名 ∥ tag = 待定占位——§5.1）。
   - 续（③–⑦）：③ 备 `config/`（内含 `config.json`——目录须对 node 账号可写：`chown 1000:1000 ./config`；`db` 写绝对形 `/app/data/gateway.db`）+ `data/`（`chown 1000:1000`——node 账号）+ `.env`（`TC_SERVER_VERSION` 可选——§5.4(d)）
     → ④ `docker compose up -d` → ⑤ 首启日志确认（converge 行 + env 建首个 admin；`docker compose ps` 可见 `(healthy)`——§5.9）→ ⑥ 验收同 npm 路（端口 `8787`）→ ⑦ 升级/回滚 = 改 `TC_SERVER_VERSION` + `up -d`（§5.4(e)）。
+- **TLS 追加（可选段，容器路）**：① 证书放宿主 `./certs/`（`fullchain.pem` ∥ `privkey.pem`）
+  → ② compose 挂 `./certs:/app/certs:ro` + 端口加 `"8443:8443"`
+  → ③ `config.json` 写 `tls` 六键（`enabled: true` ∥ `certPath: /app/certs/fullchain.pem` ∥ `keyPath: /app/certs/privkey.pem` ∥ `publicHost` ∥ `publicPort: 443` ∥ `redirectPort: 8443`）
+  → ④ `docker compose up -d` → ⑤ 验收 = `docker compose ps` 见 `(healthy)` + `curl -k https://localhost:8787/healthz` 得 200 + `curl -I http://localhost:8443/` 得 308。
 
 ### 5.8 目标机/OS
 
@@ -236,8 +295,9 @@ services:
 
 - 探针 = `GET /healthz`（无鉴权只读）：200 = `{ status:"ok", …, db:"ok" }`；db 探活失败 ⇒ 503 `degraded`。
 - 容器路 = **Dockerfile `HEALTHCHECK` 单源**（interval 30s ∥ timeout 5s ∥ start-period 120s ∥ retries 3——start-period 覆盖壳收敛/装版窗）：
-  `CMD node -e "const fs=require('node:fs');let c={};try{const raw=JSON.parse(fs.readFileSync('/app/config/config.json','utf8'));if(raw&&typeof raw==='object')c=raw}catch{};const h=(typeof c.host==='string'&&c.host!==''&&c.host!=='0.0.0.0')?c.host:'127.0.0.1';const p=Number.isInteger(c.port)?c.port:8787;fetch('http://'+h+':'+p+'/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"`；compose 不重复声明（镜像 healthcheck 自动继承——`docker ps` STATUS 可见 `(healthy)`）。
+  `CMD node -e "const fs=require('node:fs');let c={};try{const raw=JSON.parse(fs.readFileSync('/app/config/config.json','utf8'));if(raw&&typeof raw==='object')c=raw}catch{};const h=(typeof c.host==='string'&&c.host!==''&&c.host!=='0.0.0.0')?c.host:'127.0.0.1';const p=Number.isInteger(c.port)?c.port:8787;const tlsOn=!!(c.tls&&c.tls.enabled===true);const mod=tlsOn?require('node:https'):require('node:http');const ok=(r)=>r.statusCode===200;const target=tlsOn?{host:h,port:p,path:'/healthz',rejectUnauthorized:false}:'http://'+h+':'+p+'/healthz';mod.get(target,(r)=>{r.resume();process.exit(ok(r)?0:1)}).on('error',()=>process.exit(1))"`；compose 不重复声明（镜像 healthcheck 自动继承——`docker ps` STATUS 可见 `(healthy)`）。**判定 = `statusCode === 200`**：`r` 是 `node:http` 的 `IncomingMessage`（同回调里按流用 `resume()`），`ok` 只在 fetch `Response` 上有；两支共用同一判定函数 `ok`，分支只选模块与目标形——不两处各写一遍。
 - **探针取址 = 按配置**（#1426）：读 `/app/config/config.json` 的 `host`/`port`——`host` = `0.0.0.0` ∥ 空 ∥ 档缺 ⇒ `127.0.0.1`；`port` 非正整数 ∥ 缺 ⇒ `8787`；**`host`/`port` 改值零同步**（不再依赖 host 取 `0.0.0.0`——探针不再写死 `127.0.0.1:8787`）。
+- **TLS 部署（`tls.enabled`）**：探针改走 `node:https` 且 `rejectUnauthorized: false`（只判「进程活着、能应答」，身份校验在客户端面；目标恒为本机）；同一端口只讲 TLS，明文探针会恒失败 ⇒ 容器恒 `unhealthy`（决策 = `gateway/PUBLICNET.md` §4 KD-PN-10）。
 - `unhealthy` = **标注态**（restart 策略只按进程退出动作——healthcheck 不触发重起；「不健康即重起」= 外部工具，不做项）。
 - 裸机路 = 手跑探活（`curl`——README §12 排障节）；systemd 不设独立探活（`Restart=always` 按退出主）。
 
@@ -265,8 +325,9 @@ services:
 
 | 档 | 行数 | 职责 |
 |---|---|---|
-| `thincoder-server/bin/thincoder-server.mjs` | **182** | argv ∥ 配置加载 ∥ 首启引导 ∥ 启动 ∥ 停机 |
-| `thincoder-server/src/ops/config.mjs` | **≈316** | 读档 ∥ 校验（fail-closed） ∥ `env:` 解析 ∥ 缺省值 ∥ 预设展开接线 |
+| `thincoder-server/bin/thincoder-server.mjs` | **241**（实读 2026-10-19；本批 ＋≈40——族表驱动 ＋ 探针缝 ＋ 停机句柄） | argv ∥ 配置加载 ∥ 首启引导 ∥ 启动 ∥ 停机 |
+| `thincoder-server/test/assembly.test.mjs` | 新档 ≈220 | 装配面常驻断言（A1–A7 ＋ 反证注释——§4.1） |
+| `thincoder-server/src/ops/config.mjs` | **360** | 读档 ∥ 校验（fail-closed） ∥ `env:` 解析 ∥ 缺省值 ∥ 预设展开接线 |
 | `thincoder-server/src/ops/update.mjs` | **239** | 更新机制 |
 | `thincoder-server/src/ops/presets.mjs` | **52** | 预设表（`SERVER_PRESETS`——起步 **21** 家 `{ baseURL }`；**2026-10-09 清除批：零 `model` 键**） ∥ 展开（`expandProviderEntry`：`name` 缺省 ∥ 覆盖 ∥ 未知预设拒启） |
 | `thincoder-server/src/ops/log.mjs` | **35** | 单行 JSON 日志（stdout） |
@@ -275,24 +336,24 @@ services:
 | `thincoder-server/deploy/thincoder-server.service` | **34** | systemd unit 模板（裸机路——Restart=always ∥ 开机自启 ∥ journald） |
 | `thincoder-server/deploy/docker-entrypoint.sh` | **7** | 容器入口（壳——`exec … --config /app/config/config.json`） |
 | `thincoder-server/deploy/converge.mjs` | **197** | 壳引导收敛（零 App 依赖——自足） |
-| `thincoder-server/Dockerfile` | **≈37** | 镜像构建（壳 + 构建期预装——§5.1） |
+| `thincoder-server/Dockerfile` | **41**（实读 2026-10-19；本批探针换形 ≤+3） | 镜像构建（壳 + 构建期预装——§5.1） |
 | `thincoder-server/.dockerignore` | **12** | 构建上下文排除（config.json ∥ config/ ∥ data ∥ docs ∥ .git） |
 | `thincoder-server/docker-compose.yml` | **22** | 容器样例（端口 ∥ 卷（配置目录 rw ∥ 数据） ∥ env_file ∥ restart: unless-stopped） |
 | `thincoder-server/deploy/backup.mjs` | **86** | 备份（命令化——定时器样例在 README §9） |
 | `thincoder-server/deploy/sandbox/Dockerfile` | **46** | 沙盒盒镜像 |
-| `thincoder-server/README.md` | **≈318** | 运维面：安装（npm ∥ Docker） ∥ 部署（systemd ∥ compose） ∥ 启动（首启引导） ∥ CLI 用法 ∥ 控制台 |
+| `thincoder-server/README.md` | **259** | 运维面：安装（npm ∥ Docker） ∥ 部署（systemd ∥ compose） ∥ 启动（首启引导） ∥ CLI 用法 ∥ 控制台 |
 | **小计** | ——（逐档见上表） | —— |
 
 ## 7. 验收判据（机检）
 
 | 需求 | 设计级判据 | 载体 |
 |---|---|---|
-| 非功能 · 仅内网 | `host` 必填（缺失 ⇒ 拒启——fail-closed）；`0.0.0.0` ⇒ 启动警告 | 单元测试档 |
+| 非功能 · 部署口径 | 默认内网部署；公网部署须开 `tls`（启用 ⇒ 同端口 TLS，容器探针随之走 https——`gateway/PUBLICNET.md` §5 AC-PN-2 ∥ AC-PN-15）。`host` 必填（缺失 ⇒ 拒启——fail-closed）；`0.0.0.0` ⇒ 启动警告 | 单元测试档 + 收口轮 |
 | AC-8（功能点 8——分发与部署） | `npm pack --dry-run` 通过（`files` 白名单齐 ∥ 零 install 步）∥ `docker build` 成功 + compose 起停通 ∥ systemd unit 安放可启（`systemd-analyze verify` ∥ `enable --now` 后 `is-active`——unit 模板 = §5.2） | 收口轮（真机；发布动作 = 发布面轮） |
 | AC-9（功能点 9——provider 预设；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 预设形展开（`{"preset":"deepseek","apiKey":"env:X"}` ⇒ `name`=`deepseek` ∥ `baseURL`=预设值 ∥ `models`= 空（预设表零 `model` 键）⇒ 经「模型发现」勾选后 `/v1/models` 含 `deepseek/<选中模型>` ∥ 经 mock 上游完成一次请求）；未知预设名 ⇒ 拒启（报错列可用名）∥ `name` 缺省 = 预设名（显式者胜）∥ 条目覆盖 `baseURL`/`models` 生效 ∥ 手写形回归零变 ∥ 漂移件（CLI 表对照）绿 ∥ 名单含 `gemini-openai`（Google 官方 OpenAI 兼容端点——OpenAI 形入子集） | 单元测试档（349 行） |
 | AC-10（功能点 10——自动更新；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 自检（假 registry ⇒ 触发 ∥ 404/失败 ⇒ 静默）∥ 档位三值语义 + 非法值拒启 ∥ 自升执行器（成功 ⇒ 优雅停机；失败/超时 ⇒ 不退 ∥ 旧版续跑）∥ 启动日志 `ready` 行含 `version` ∥ 容器收敛判定表（converge 矩阵）；`docker build` + 起停 = 收口轮真机 | 单元测试档（498 行）+ 收口轮 |
 | AC-11（功能点 11——种子与生效面） | 种子四格（库空+段 ⇒ 导入且 `env:` 保形 ∥ 非空库+段 ⇒ 忽略 + 警告 ∥ 两空 ⇒ 允许起 + 警告「零 provider」）∥ 零 provider 允许态（`/v1/models` = 空清单 ∥ chat ⇒ 404）∥ `env:` 缺位（启动 ⇒ 拒启 ∥ 保存 ⇒ 400）；端到端判据全文 = `gateway/API.md` §5 AC-11 行 | 单元测试档 |
-| AC-13（功能点 12——首版完备化⑤面与本域接线；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | ⑤ 部署文档：README 结构断言（成员接入节 ∥ nginx 完整段 ∥ 备份命令/定时器样例 ∥ 恢复步）∥ `thincoder-server/deploy/backup.mjs`（已落盘 86 行）实跑 ⇒ 快照生成 + 可开（含热库在线备份）∥ Dockerfile `HEALTHCHECK` 行在册；配置校验：`trustProxy` 非布尔 ∥ `usageRetentionDays` 非法 ⇒ 拒启 | 单元测试档 + 收口轮 |
+| AC-13（功能点 12——首版完备化⑤面与本域接线；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | ⑤ 部署文档：README 结构断言（成员接入节 ∥ TLS 内置完整段 ∥ 备份命令/定时器样例 ∥ 恢复步）∥ `thincoder-server/deploy/backup.mjs`（已落盘 86 行）实跑 ⇒ 快照生成 + 可开（含热库在线备份）∥ Dockerfile `HEALTHCHECK` 行在册；配置校验：`trustProxy` 非布尔 ∥ `usageRetentionDays` 非法 ⇒ 拒启 | 单元测试档 + 收口轮 |
 | 功能点 8（分发与部署——npm 全局装启动链；缺陷 #1113） | 经符号链接（bin 垫片形 ∥ 目录连接形）调用入口 ⇒ 程序真执行（进入正常输出/错误路径——非静默退 0）；路径不可解析 ⇒ 显式报错（非静默）；普通 `node <真身路径>` 调用不回归 | 单元测试档（缺陷 #1113 件） |
 | 上游代理（机制 = `gateway/API.md` §6 KD-SV-55） | 判定（旗 `proxy: true` ∧ 顶层 `proxy.uri` 在案 ⇒ 经代理；缺省 ∥ 无 uri ⇒ 直连——两条链同判定：chat 转发 ∥ 模型发现）；loopback 目标恒直连；假代理回放（CONNECT 命中 + SSE 逐块透传）；代理不可达 ⇒ 502 `upstream_error`；代理路径断连 ⇒ 中止上游 + 记 `status='aborted'`（§2.1 契约零回归）；启动 warn 两条（明文 `http:` ∥ 旗 `true` 缺 uri——触发/文案 = KD-SV-55）；迁移 v9（空库 9 ∥ v8 升 9 ∥ 幂等）；配置面：顶层 `proxy` 段校验（非法 ⇒ 拒启）∥ 条目 `proxy` 布尔判据（非布尔 ⇒ 拒启/400）∥ 管理面字段往返（POST/PATCH/GET）；控制台勾选（添加 ∥ 详情两窗） | 单元测试档 + 收口轮（浏览器实走） |
 | AC-6（功能点 6——嵌入配置可选与禁用形态；已落需求档——`docs/server/requirements/PROJECT.md` 验收表） | 缺 `embedding` 段（∥ 显式 `null`）⇒ 载入通过 + 警告恰一条（嵌入未配置）∥ 服务照常起（`/healthz` 200）∥ 缺段档创建（PATCH `embedding` ⇒ 建段 ⇒ 重启启用）∥ 在场非对象 ∥ 缺子键 ⇒ 拒启 ∥ 400（文件零变）；判据全文 = §9 B33/B34 ∥ E22 | 单元测试档 |
@@ -310,7 +371,7 @@ services:
 | KD-SV-19 | **provider 配置面 = 库单源 + 保存即热生效**：控制台管理（`providers` 表——迁移 v2）；密钥落库（明文 ∥ `env:` 引用并存——引用保形）；`config.json` 的 `providers[]` 降为**一次性种子**（空库导入；非空库忽略 + 警告）；热生效 = 注册表重建 + 原子换表（在途请求 = 派发时快照） | 用户 2026-10-06 16:01 令（「不再只靠 `config.json` + 重启」）；库 = 运行期单源（迁移链 G2 断点）；热生效免重启（零守护依赖 ∥ 亚秒级）；`env:` 保形（密钥卫生——种子不物化秘密）；预设衔接 = 界面「从预设快速添加」复用 `presets.mjs`（KD-SV-17） |
 | KD-SV-23 | **健康检查 = `GET /healthz`（无鉴权只读探活）**：`{ status, version, uptime, db }`（`SELECT 1` 一探）；db 故障 ⇒ 503 `degraded`；no-store；接线 = Dockerfile `HEALTHCHECK` 单源（compose 继承——§5.9；探针契约 = `gateway/API.md` §2.3） | 探针入口须零凭据（Docker/监控直调）；只读单探 = 零副作用；`version` 与 `ready` 行同源；接线单源 = 改一处 |
 | KD-SV-24 | **版本/更新可见面 = `GET /api/system`（会话——两角色）+ 控制台（meta 槽 ∥ 系统页）**：`{ version, update: { mode, lastCheckAt, latest } }`——数据 = 更新器进程内状态（`getStatus()` 导出）；`latest` = 已见新版（无/未检/失败 ⇒ `null`——静默同面） | 浏览器不可读日志 ⇒ 控制台可见须 HTTP 数据面（#961「ready 行足」限定 = 部署面——两消费方不同，不相抵）；系统页 = admin（动作方）；meta 槽 = 全角色（版本非敏感） |
-| KD-SV-25 | **部署文档完备 = README 定稿（反代 = nginx 完整段 ∥ 备份 = `deploy/backup.mjs`（已落盘 86 行）+ systemd 定时器样例）**：反代段 = body 上限（32m） ∥ SSE 免缓冲 ∥ `X-Real-IP`；备份 = node:sqlite `backup()`（WAL 在线一致——免停写窗；零外部工具） | 用户 16:04 令；nginx = 最常见 ∥ 不预设自动证书（内网自签直白）；node 自带备份 = sqlite3 CLI 不保证在；在线备份 = 免停写、与运行实例并存 |
+| KD-SV-25 | **部署文档完备 = README 定稿（TLS 内置完整段 ∥ 备份 = `deploy/backup.mjs`（已落盘 86 行）+ systemd 定时器样例）**：TLS 段 = `tls` 配置六键 ∥ 证书轮换（`SIGHUP`） ∥ 重定向（308）∥ 公网部署注意（安全组只开 443）；备份 = node:sqlite `backup()`（WAL 在线一致——免停写窗；零外部工具） | 用户 2026-10-19 令（「没有nginx，thincoder-server要自己实现tls」）；证书用户自备、服务只读路径；node 自带备份 = sqlite3 CLI 不保证在；在线备份 = 免停写、与运行实例并存 |
 | KD-SV-53 | **bin 主入口判据 = `argv[1]` 经 `realpathSync` 解析后与 `import.meta.url` 比对（#1113）**：符号链接（npm 全局装（POSIX）垫片）∥ 目录连接（dev 树 junction）两形均可主入口执行；路径不可解析 ⇒ 抛（显式报错——不静默）；比较用 `node:fs` `realpathSync`（拼写保持面——与 ESM 装载器的模块 URL 解析同面；`.native` 会归一盘符/大小写——小写拼写调用恒假） | 缺陷双证（ECS：垫片形 = 零输出退 0、服务永不启动；真身直跑 = 真执行）+ 本机实证（2026-10-09：文件符号链接 ∥ junction 两形旧判据恒假、realpath 判据恒真） |
 | KD-SV-56 | **配置控制台 = 文件面读写 + 重启生效 + 原子写 + 校验单源 + 单写者**：写端点 = `PATCH /api/admin/config`（白名单五键 ∥ 未知键 400 ∥ 合并保未知键 ∥ 载入面等价两跳门 ∥ 同目录 tmp ⇒ `rename` ∥ 审计 `config_update`）；读 = 文件面有效值（缺省回填 ∥ 密钥掩码）；`host`/`port`/`db` 只读展示（定则例外显式说明）；容器路写面前提 = 配置目录级可写挂载（§5.1） | 用户定则（「任何配置项必须有配置界面」）；文件面 = 单源不改（KD-SV-19 库面零涉）；原子写 = 半写零暴露（同目录 tmp ⇒ `rename`）；校验门复用载入单源（写入的文件必可载入）；单写者 = 部署模型单实例 |
 | KD-SV-57 | **嵌入配置可选 = 禁用态 + 控制台可从无到有创建（用户令「这个约束不合理，不应该强制必须配置以后才能启动」）**：`embedding` 缺位 ∥ `null` ⇒ 归一 `null`（服务照常起 + 启动警告一条）；禁用语义 = `/v1/embeddings` ⇒ 404 `model_not_found`（消息明示未配置——**零新码**）；在场 ⇒ 严格校验保持（`baseURL` http(s) ∥ `model` 非空；部分子键 ⇒ 400）；控制台向量卡「未配置」态 + 保存创建（同一 PATCH——缺段合并建段）；全下游随动 = `/api/system.embedding.model = null` ∥ `GET /api/admin/embedding` 两值 `null` ∥ 探活无草稿 ⇒ 400（携草稿照常）；生效 = 重启 | 用户裁（强制配置「不合理」）；「服务照起 + 缺时明确禁用语义」= 目标形；错误码沿既有族（零新码纪律）；引擎可不在线语义不变（启动路径零探引擎——既有） |
@@ -348,10 +409,10 @@ services:
 
 ## 10. 本域边界（不做的面）
 
-- 日志落盘/轮转（裸机 = journald ∥ 容器 = docker logs——采集归各平台） ∥ **`config.json` 文件热载**（文件改动仍须重启；**provider 数据面 = 保存即热生效**——机制 = `gateway/API.md` §2.2） ∥ TLS 终结（前置反代） ∥ 进程内自动备份/巡检面（备份 = 部署侧面：命令 + 定时器样例——§5.5） ∥ Windows 守护面（部署时定写法）——均不做。
+- 日志落盘/轮转（裸机 = journald ∥ 容器 = docker logs——采集归各平台） ∥ **`config.json` 文件热载**（文件改动仍须重启；**provider 数据面 = 保存即热生效**——机制 = `gateway/API.md` §2.2） ∥ 证书签发/ACME 自动续期 ∥ 进程内自动备份/巡检面（备份 = 部署侧面：命令 + 定时器样例——§5.5） ∥ Windows 守护面（部署时定写法）——均不做。
 - provider 管理面不做：本机 CLI 面 ∥ URL 白名单/出口限制（admin 自担）——归 `gateway/API.md` §8。
 - 更新面不做：渠道（beta ∥ canary） ∥ 灰度分批 ∥ 多版本并存（A/B 双装 ∥ 秒切） ∥ 进程内热载 ∥ 认证型 registry 的自检凭据面（fetch 不带 npm 凭据——如内网镜像要求认证 ⇒ 自检静默不更新；自装经 npm 凭据面但需手工触发） ∥ 自动备份（回滚前备份 = 命令 + 定时器样例——§5.5）。
-- 健康面不做：metrics/Prometheus ∥ 深度依赖探活 ∥ `unhealthy` 自动处置（探针接线 = §5.9）；反代配置生成/托管不做（样例仅文档——§5.6）；备份轮转/保留策略不做（部署方自管）。
+- 健康面不做：metrics/Prometheus ∥ 深度依赖探活 ∥ `unhealthy` 自动处置（探针接线 = §5.9）；证书签发/自动续期不做（证书用户自备——§5.6）；备份轮转/保留策略不做（部署方自管）。
 - 配置控制台面不做：`config.json` 热载/运行态注入（生效 = 统一重启——§10 不破）∥ `host`/`port`/`db` 写面（部署拓扑项——只读展示；定则例外显式说明）∥ 配置版本史/回滚 ∥ 写前 `.bak` 备份（备份 = 部署侧面——§5.5）∥ 多实例并发写（部署模型 = 单写者）。
 - 嵌入配置面不做：控制台删除/清空 `embedding` 段（缺段 = 编辑配置文件；界面仅创建/改值）∥ 嵌入面新错误码（404 `model_not_found` 复用——零新码）∥ 引擎进程起停管理（手动——不变）。
 - 别名面不做（KD-SV-59）：配置/控制台面别名批量编辑 ∥ 别名历史（改别名当即生效）∥ 别名与带前缀名的交叉排歧（形上不相交——别名无斜杠）；机制全文 = `gateway/API.md` §6 KD-SV-59。

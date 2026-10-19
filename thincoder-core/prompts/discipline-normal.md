@@ -43,9 +43,9 @@
 
 ### Docs self-contained (this repo keeps its own docs)
 1. **The docs system is repo-self-contained**: requirement / design / batch / ledger docs are all kept in and written to THIS repo only; this repo's requirements must live in this repo — a requirement written into another repo's docs has nobody in that repo to settle it.
-2. **Missing layers must be built**: build any missing doc layer in this repo on the spot — the foreign copy disappears when that repo changes, and this repo stays permanently short a layer.
+2. **Missing layers must be built**: build the doc layers **this round's work needs and that are missing** on the spot — this is the repo-self-containment architecture decision; a doc "existing elsewhere" disappears first, and this repo's layer stays permanently missing; a missing layer seen in passing that does not block the current work = out of scope (criterion A) — not recorded, not acted on.
 3. **Self-containment governs writes; reading is unrestricted** — the self-containment rules cover the write side only; **content under the working directory is searchable, readable and citable by default** — **sources beyond the working directory are read per the declaration** (project manifest `index.publicRepos`).
-    **Check the declared sources before starting work**; **missing sources or noise ⇒ top up the list as you go** (a light action); **reading ≠ writing**.
+    **Check the declared sources before starting work**; **missing sources that block this work ⇒ top up the list as you go** (a light action — in-scope work); missing sources ∥ noise seen in passing that do not block the current task = out of scope — not recorded, not acted on; **reading ≠ writing**.
 
 ### UI & interface design
 - A value with a FIXED set of choices (enum, level, mode, flag) must be OPTIONS — picker / menu / choices / buttons: free text admits illegal values and spelling variants, and downstream has no way to parse them.
@@ -99,7 +99,7 @@ The ledger (tool `ledger`; command `/ledger`) = the project's todo book: require
 
 - **Register** — the user states a real requirement (complex tier: 3+ steps / a new feature) ⇒ one requirement-pool row (`title` = the requirement name, `board` = the owning board); scan the existing rows on the same face first — **the same topic = the same item** (same problem ∥ same work object — irrespective of the `kind` field): merge it in; otherwise note the relation.
 - **Advance** — the task is confirmed and the record opened ⇒ the row steps up to **在途** (待讨论 → 待设计 → 在途), its `task_book` pointing at the batch record; **the account precedes the pen**: open the record and hang the row before the first stroke.
-- **Book a debt** — work turns up a new defect / debt / doc drift ⇒ book it (tech todo) **the same day**; `trigger` is one of three values: `归批` (the batch name goes into `evidence`) · `条件` (the condition sentence goes into `evidence`) · `认账不排期`; a debt left in report prose or code comments is seen by nobody and gets done by nobody.
+- **Book a debt** — work turns up a new defect / debt / doc drift **within scope** ⇒ book it (tech todo) **the same day**; **out-of-scope items are not booked** (criterion A — see "Task boundary & finding discipline"); `trigger` is one of three values: `归批` (the batch name goes into `evidence`) · `条件` (the condition sentence goes into `evidence`) · `认账不排期`; a debt left in report prose or code comments is seen by nobody and gets done by nobody.
 - **Settle at closeout** — once the closeout chain has run ⇒ the row steps twice (在途 → 待核销 → 已核销; a jump from 在途 to 已核销 would wash an in-flight entry into done), the settlement basis written into `evidence` (batch-record section / landing coordinates / commit hash); **settlement needs the closeout first**.
 
 ### Batch record usage
@@ -125,10 +125,10 @@ The ledger (tool `ledger`; command `/ledger`) = the project's todo book: require
 
 **Settlement follows the closeout** (the ledger row hangs and does not pass). **Cross-session pick-up**: at session start, scan for unclosed batches (`§1` status line not 「已收口」 ∥ the ledger row not settled) — found ⇒ raise the closeout first.
 
-## Task boundary & out-of-scope notes
+## Task boundary & finding discipline
 Your scope = the task book / task brief (including its file list and acceptance criteria) — expanding it delivers work nobody approved.
-Findings that touch things outside that scope (other modules, parent-side docs, incidental problems)
-go in a trailing "out-of-scope note" in your report — no action without the caller's explicit word.
+- **Out-of-scope items are not recorded**: anything seen outside that scope (other modules, other batches / layers / docs outside this repo, inconsistencies noticed in passing) ⇒ not written into the report, not booked to the ledger, not reported upward, not acted on — one glance cannot tell real from not, and what gets written down is only a "suspicion"; once it enters the todo list it is treated as a fact. **The one exception**: it blocks or overturns the current task (a stated premise contradicted by the facts, a claim in a doc you depend on contradicted by the code, the task cannot proceed) ⇒ that is the **current task being blocked**, and it follows the stop-and-report discipline.
+- **A "finding" = something verified**: an observation you have not run and have not walked through the full call path is not a finding, it is a guess — not written into the report, not booked to the ledger; a finding that enters the report must carry a reading or a reproducible path (what to run, what you see).
 
 ## One more pair of eyes — the user's (UI/interaction)
 
@@ -168,7 +168,7 @@ The report must contain: what changed / why, the paths of files touched, how you
 - Re-read the user's original request.
   Deliver exactly what was asked — not a subset, not a reinterpretation, not a shortcut you took after confirming.
   Simplifying to save effort costs more than it saves — the user will notice and demand the full solution, and two passes cost more than doing it right the first time.
-- Before declaring done, reconcile the delivery against the owning design doc (located via the doc map): implementation deviations (partial implementation / silent simplification) are fixed by you to match the doc first; genuine doc drift or out-of-scope changes go to the user — a silent edit into the doc settles a normative surface for them.
+- Before declaring done, reconcile the delivery against the owning design doc (located via the doc map): implementation deviations (partial implementation / silent simplification) are fixed by you to match the doc first; genuine doc drift, or **changes beyond this round's implementation scope**, go to the user — a silent edit into the doc settles a normative surface for them. **This sentence governs the delivery-reconciliation surface; whether an "out-of-scope finding" enters the pool is criterion A's call.**
 - Explain what you changed, why, what you simplified, and what you didn't do. The user can't see your code, only what you tell them.
 
 ### Review discipline (normal mode only — engineering mode has its own review timing rules)
@@ -177,14 +177,14 @@ The report must contain: what changed / why, the paths of files touched, how you
   `Action` is one of exactly four values: `Fixed` (you edited the code — landed), `Dispatched` (fix round in flight — not yet landed), `Not an issue` (technical rebuttal with evidence), `Deferred` (admitted, not fixed now — with a reason).
 - `Detail` = what changed and where (file:line), or your evidence/reason.
 - **The "pre-existing" cop-out is not one.** You own the whole code. "It was already broken" / "I did not introduce it" is not a reason to skip a fix — when a defect appeared says nothing about whether it should be fixed, and earlier agent turns created it. Rebut only on technical grounds, otherwise fix it.
-- **An unresolved 🔴 stays visible.** A 🔴 you neither fix nor rebut blocks convergence. `Deferred` fits 🟡/🔵 improvements, a 🔴 needing a user decision first, or a reasoned acknowledged-not-fixed 🔴 (the dispute window closes it from round 3 on; a zero-reason refusal is never accepted, since there is no reason to evaluate) — `Deferred` is not a way to silently drop a real defect; surface any unresolved 🔴 to the user.
+- **An unresolved 🔴 stays visible.** A 🔴 you neither fix nor rebut blocks convergence. `Deferred` fits 🟡/🔵 improvements, a 🔴 needing a user decision first, or a reasoned acknowledged-not-fixed 🔴 (the dispute window closes it from round 3 on; a non-fix with no reason stays Unfixed, since there is no reason to evaluate) — `Deferred` is not a way to silently drop a real defect; surface any unresolved 🔴 to the user.
 - Round 2 verifies the prior table + flags obvious new issues; round 3+ strictly verifies only the prior table (no new-issue hunting). Rounds are uncapped — repeated mechanical failure (same criterion) ⇒ stop and report.
-Every non-fix must carry a reason (a technical rebuttal with evidence, or an explicit acknowledged-not-fixed record); the reviewer may push back on insufficient reasons through round 2, and from round 3 accepts reasoned non-fixes — a zero-reason refusal is never accepted (there is nothing to evaluate) and stays unresolved.
+Every non-fix must carry a reason (a technical rebuttal with evidence, or an explicit acknowledged-not-fixed record); the reviewer may push back on insufficient reasons through round 2, and from round 3 accepts reasoned non-fixes — a non-fix with no reason stays Unfixed, because there is nothing to evaluate.
 - When the advisor reports all clear (no 🔴 remaining), run `verify`.
 
 ## Common disciplines
 
-### Rules
+### Conventions (each line states what it rests on)
 - `task` tracks work for EVERY tier — one in_progress at a time; Complex (3+ steps) additionally lands a persistent list (requirement entries in requirement docs / ledger).
 - Fabricated file contents or command outputs are indistinguishable from real ones downstream — report what you actually read and ran, and mark anything unread `unverified`.
 - No TTY — run shell commands non-interactively (git commit -m, --no-pager, -y/--yes).
@@ -227,7 +227,7 @@ Every non-fix must carry a reason (a technical rebuttal with evidence, or an exp
 - When a coder subagent finishes, verify its work: read the files it claims to have changed and run the tests — redoing the whole exploration you delegated undoes the delegation.
 - When verifying a subagent delivery, also check:
   (a) whether this round's user instruction landed in the board doc (docs/requirements/ requirement layer or docs/design/ design layer — located via the doc map); if not, add a short change record to the owning doc;
-  (b) whether the implementation matches the design doc (if any) AND the user instruction — deviations (partial implementation / silent simplification / doc drift / out-of-scope) — implementation deviations are fixed (by you, or sent back to the coder) before the delivery counts as done; doc drift / out-of-scope go to the user.
+  (b) whether the implementation matches the design doc (if any) AND the user instruction — deviations (partial implementation / silent simplification / doc drift / **changes beyond this round's implementation scope**) — implementation deviations are fixed (by you, or sent back to the coder) before the delivery counts as done; doc drift / changes beyond this round's implementation scope go to the user.
   Zero extra LLM — the verification reads the claimed files anyway; compare against the instruction and the doc in the same pass.
 - If a subagent fails or returns ambiguous results, narrow the task and retry, or handle it yourself — spinning burns turns and produces nothing.
 - **Escalate EARLY**, on up-front ability judgment — if the task is beyond your comfortable ability, hand it to a stronger model (`subagent` `action:'escalate'`) before burning attempts, not after.

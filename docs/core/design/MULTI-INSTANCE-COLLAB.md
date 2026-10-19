@@ -263,7 +263,7 @@ depth-0 分支内 `await pushPeerReminder(agent)`；**注入时序与文案零�
 ### 6.2 双管齐下（D-F5a + D-F5b）
 
 - **D-F5a 消灭整节内存写回**：全部 config.json 写点改为「在磁盘新鲜 raw 上执行单操作」语义（单字段补丁 / fresh raw 上 push·splice·改单字段）——双进程并发改不同 provider 都保留；
-- **D-F5b 收口函数 `writeConfigAtomic(path, mutate)`**（`thincoder-core/config.mjs:29` export）——持「新鲜读 → mutate 单操作 → 写前重 stat → 写」全链，所有 config.json 写点（config-helpers persistRaw / cmd-config / setup-wizard / settings writeDisk）都经它落盘。
+- **D-F5b 收口函数 `writeConfigAtomic(path, mutate)`**（`thincoder-core/config.mjs:28` export）——持「新鲜读 → mutate 单操作 → 写前重 stat → 写」全链，所有 config.json 写点（config-helpers persistRaw / cmd-config / setup-wizard / settings writeDisk）都经它落盘。
 
 ### 6.3 writeConfigAtomic 语义
 

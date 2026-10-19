@@ -146,7 +146,7 @@ win32 只用于决定「config.shell 空时读 %COMSPEC% 还是 SHELL」这一 s
 ## 8. 边界（不做）
 
 - **零触**：advisor/subagent 工具面 ∥ manifest 面 ∥
-  需求档/提示词正本面（`docs/core/design/prompts/**`——注入值本身除外）∥ VSC terminal 参数语义（`shell.mjs` visible/inject 行原文保留）∥
+  需求档面（`docs/core/requirements/**`；提示词 = `thincoder-core/prompts/**`，注入值本身除外）∥ VSC terminal 参数语义（`shell.mjs` visible/inject 行原文保留）∥
   spawn 面行为本身（`shell` 参数计算式零改——只加声明面与 hint 门）。
 - 边界口径：授权边界 = **设计前枚举**（三面——`thincoder-core/tool-docs/bash.md` ∥ 三端 `prompt-injections.mjs` ∥ 探测辅助档）；条目 4（hint 身份门）∥ 5（VSC 死常量删除）∥ 6（权威档三档指针/收正）依用户全链授权纳入（同缺陷族修复面，非新语义）。
 - 残余口径（偏差登记）：核心缝注册即快照、不支持函数值键 ⇒ **描述面 Executor 行随进程启动固定**——进程存活期内改 `shell` 配置不刷新该行（重启生效）；hint 门等逐执行调用面按配置值 memo 键控重探。

@@ -48,15 +48,34 @@ export function staleEngineFiles({ nowMs = Date.now(), uptimeSec = process.uptim
   return { startMs, stale }
 }
 
+/** stale 列表形（`<文件> mtime <ISO 8601>`，`；` 连列）——gate ERROR 行 ∥ report 注记行共用一处格式。 */
+function staleParts(stale) {
+  const when = (t) => new Date(t).toISOString()
+  return stale.map((s) => `${s.file} mtime ${s.mtimeMs === null ? "不可读（stat 失败）" : when(s.mtimeMs)}`)
+}
+
 /** 引擎版本 ERROR 报面（固定句形）：多档 stale ⇒ 逐档 `<文件> mtime <时间>` 以 `；` 连列——**不产 PASS**。 */
 export function gateEngineError({ startMs, stale }) {
   const when = (t) => new Date(t).toISOString()
-  const parts = stale.map((s) => `${s.file} mtime ${s.mtimeMs === null ? "不可读（stat 失败）" : when(s.mtimeMs)}`)
   return [
-    `DOC-CHECK GATE: ERROR（引擎已更新（${parts.join("；")} > 进程启动 ${when(startMs)}），请重启会话后复跑）`,
+    `DOC-CHECK GATE: ERROR（引擎已更新（${staleParts(stale).join("；")} > 进程启动 ${when(startMs)}），请重启会话后复跑）`,
     "原因：本会话进程加载的引擎模块早于盘上引擎档——旧引擎读数不可信（假阳：旧误报消不掉 ∥ 假绿：引擎变严时旧版放过）",
-    "处置：重启会话后复跑 gate（`report` 模式不查版本——报告态不是交付判据）",
+    "处置：重启会话后复跑 gate（`report` 不裁定、不产 verdict（陈旧时只在首行前加注记））",
   ].join("\n")
+}
+
+/** 报告态引擎陈旧注记（纯函数）：stale 空 ⇒ `null`；非空 ⇒ 一行注记（逐字单源 = `DOC-DISCIPLINE.md`
+ *  §3.20「gate 裁定 · report 注记」——多档以 `；` 连列，与 `gateEngineError` 同形）。 */
+export function reportEngineNote({ startMs, stale } = {}) {
+  if (!Array.isArray(stale) || stale.length === 0) return null
+  const when = (t) => new Date(t).toISOString()
+  return `[doc_check note] 引擎陈旧（${staleParts(stale).join("；")} > 进程启动 ${when(startMs)}）——本次读数由会话启动时加载的旧引擎产出，不可作为交付判据；重启会话后复跑。`
+}
+
+/** 报面 + 注记：有注记 ⇒ 注记行 + 原报面；无 ⇒ 原报面逐字返回（三不改：既有行 ∥ verdict ∥ PASS 语义）。 */
+export function withEngineNote(report, version) {
+  const note = reportEngineNote(version ?? {})
+  return note ? `${note}\n${report}` : report
 }
 
 /** 报面首行取形（唯一机判串 = 首行 `DOC-CHECK GATE:` 前缀——消费面共用一个取法，不各自 split）。 */

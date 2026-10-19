@@ -73,7 +73,8 @@ export function createReadDataHandlers(ctx, { intervalMs = WATCH_INTERVAL_MS } =
       const c = resolveCwd(params, ctx)
       if (c.error) return c.error
       const { ledgerCmd } = await core()
-      try { return { count: ledgerCmd.ledgerCount({ cwd: c.cwd }) } } catch (e) { return badParams(e?.message ?? String(e)) }
+      // `ledgerCount` 出参 = 对象形 `{ count, overdue, evidenceOversize }`（设计档 §7.1）——直传核对象，零包装
+      try { return ledgerCmd.ledgerCount({ cwd: c.cwd }) } catch (e) { return badParams(e?.message ?? String(e)) }
     },
 
     "batch/list": async (params) => {

@@ -7,10 +7,10 @@
  * 沿革：原落点 = `thincoder-cli/test/prompt-refs-zero.test.mjs`（T1–T9 常驻锁）——随 2026-09-28
  * 测试树全清退役；2026-09-29 用户裁「重建形态 = 脚本族」⇒ 本档（判据语义原样，零改）。
  *
- * 域：PROMPT_DIRS = `thincoder-core/prompts/**` + `thincoder-core/tool-docs/**` + `docs/core/design/prompts/**`（.md 全文）
+ * 域：PROMPT_DIRS = `thincoder-core/prompts/**` + `thincoder-core/tool-docs/**`（.md 全文）
  *     CODE_DIRS   = `thincoder-core/**` + `thincoder-cli/src/**` + `thincoder-vscode/src/**`（.mjs/.js/.cjs）
  * 排除：公共排除 = test/_archive/node_modules/.git/.thincoder/dist/build/coverage；CODE_DIRS 另排 docs/scripts；
- *     PROMPT_DIRS 中 `docs/core/design/prompts/` 恰在 docs/ 下且属提示词面——排除不适用（分面各判）。
+ *     PROMPT_DIRS 全在 thincoder-core/ 内——公共排除不适用（分面各判）。
  * 行级算法：全行注释（* / // / /*）跳过 → 引号感知截断行尾 `//` 注释 → 正则扫描；
  *     J3 仅提示词面；行内 CANON 操作数整串删除（先删除再扫——token 形删除会误放行孤立引证）。
  * 运行（仓根零参）：`node scripts/prompt-refs-check.mjs` —— 命中 ⇒ FAIL（exit 1）；清零 ⇒ OK（exit 0）。
@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url"
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, "..")
 
-const PROMPT_DIRS = ["thincoder-core/prompts", "thincoder-core/tool-docs", "docs/core/design/prompts"]
+const PROMPT_DIRS = ["thincoder-core/prompts", "thincoder-core/tool-docs"]
 const CODE_DIRS = ["thincoder-core", "thincoder-cli/src", "thincoder-vscode/src"]
 const BASE_EXCL = new Set(["test", "_archive", "node_modules", ".git", ".thincoder", "dist", "build", "coverage"])
 const CODE_EXCL = new Set([...BASE_EXCL, "docs", "scripts"])

@@ -342,7 +342,7 @@ export function outputReserve(provider, spec) {
 - **两档语义**：`compactAt` = 触发本地裁剪；`limit` = 压缩后仍超即判死（`context_limit`）。两者关系（×0.8）不变；上限来源 = **可用窗口 = 窗 − 预留**，「如何比较」不变。
 - **循环侧消费（两处）**：循环体外一次性取预算（provider 全场不变）；两处比较点读 `compactAt` / `limit`。
 - **完成预留（基数扣减项——单源 `outputReserve`）**：显式 `provider.maxTokens`（有限且 > 0——请求实发值 `thincoder-core/provider/core.mjs:187`）∥ 规格 `maxOutput` ∥ 0。
-- **预留消费面（两处 · 同源）**：评审预算（`thincoder-core/advisor/compaction.mjs:34-39`）∥ 代理侧压缩阈值 `resolveCompactThreshold`（×0.6——`thincoder-core/config.mjs:122-129`；每回合压缩检查 / 展示面回退 `thincoder-core/token-window.mjs:151`）。
+- **预留消费面（两处 · 同源）**：评审预算（`thincoder-core/advisor/compaction.mjs:34-39`）∥ 代理侧压缩阈值 `resolveCompactThreshold`（×0.6——`thincoder-core/config.mjs:116-120`；每回合压缩检查 / 展示面回退 `thincoder-core/token-window.mjs:151`）。
 - **预留在窗口里占位**（provider 口径 = 输入 + `max_tokens` ≤ 窗）⇒ 折入预算，基数 = **可用窗口**（评审两档与代理阈值同基数口径——预留 0 ⇒ 比例关系整式逐值相等）。
 
 **派生读数（逐行可复算）**：

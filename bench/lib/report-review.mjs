@@ -18,7 +18,7 @@ export function divergenceOf(data) {
   const agree = j?.agreements ?? 0
   const disagree = j?.disagreements ?? 0
   const doubleValid = agree + disagree
-  // 判官不可用成因分列（§2.3 告警行口径：有效判不足 / 分歧未决）+ 复核失败计数（AC-12 告警面）——从逐 run 记录现算
+  // 判官不可用成因分列（§2.3 告警行口径：有效判不足 / 分歧未决）+ 复核失败计数（告警面）——从逐 run 记录现算
   const causes = { insufficient: 0, unresolved: 0, missing: 0, reviewErrors: 0 }
   for (const m of data.models ?? []) {
     for (const c of m.cases ?? []) {

@@ -154,7 +154,7 @@
 | 档 | 行数（实读——设计估） | 职责 |
 |---|---|---|
 | `thincoder-server/public/views-chat.mjs` | **440** ⇒ ≈**465**（本批 +ask 帧分发/清卡/重挂钩 ≈+25） | 管理面对话页（本档 §2.1）：页四段装配 ∥ 会话条 ∥ 消息装配（核 `flow/block.mjs`——回读/活流）∥ NDJSON 帧分发（`delta`/`call`/`result`/`turn`/`usage`/`end`/`ask`）∥ 队列 ∥ 新会话弹窗 ∥ 取数 ∥ 审批卡接线（`views-chat-cards.mjs`） |
-| `thincoder-server/public/views-chat-cards.mjs`（拟新增） | ≈**110** | 审批卡族（本档 §2.1 审批卡面条；机制 = `agent/ADMIN-AGENT.md` §11.5）：`createAskCards`（`append`/`clear`/`remount`）+ 核两卡件适配 + 应答单点（非乐观——失败重挂）；键族零增（核卡面键 = core 两表已册） |
+| `thincoder-server/public/views-chat-cards.mjs` | ≈**110** | 审批卡族（本档 §2.1 审批卡面条；机制 = `agent/ADMIN-AGENT.md` §11.5）：`createAskCards`（`append`/`clear`/`remount`）+ 核两卡件适配 + 应答单点（非乐观——失败重挂）；键族零增（核卡面键 = core 两表已册） |
 | `thincoder-server/public/views-chat-messages.mjs` | ≈**105** | 消息面（本档 §2.1②）：NDJSON 行/帧纯函数（`splitLines`/`parseFrame`/`argsText`）∥ notice 行文案映射（五值）∥ 工具结果文案（失败判据 = 核 `isToolFailure`）∥ 回读装配（库行 ⇒ 核 `buildUserMessage`/`buildAssistantRestore`/`renderToolHistory`——`messageNodes`）；`views-chat.mjs` 面 `export … from` 兼容重导出（**用例级**：既有纯函数/键消费两用例经重导出零改——文件级改动清单 = 本 § 末段 ∥ §6⑥）；拆档缘由 = `views-chat.mjs` 500 软线已贴满（增行前必须先外拆） |
 | `thincoder-server/public/views-chat-composer.mjs` | ≈**318** | 输入区与状态行（本档 §2.1③④——核件全件消费适配层；拆档缘由 = `views-chat.mjs` 并入后 ≈630——越 500 软线（拆档审查；800 硬限未越）） |
 | `thincoder-server/public/i18n-zh-core.mjs` | ≈**62** | 文案表·zh·核件词面（键 = 核件原名；值逐字同 VSC locales——slash 族源 = 桌面 `thincoder-desktop/renderer/i18n-views.mjs` 同键） |

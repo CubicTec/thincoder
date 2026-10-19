@@ -4,13 +4,14 @@
  */
 
 import assert from "node:assert/strict"
-import { mkdtempSync, writeFileSync } from "node:fs"
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { check, run } from "./harness.mjs"
+import { after, check, run } from "./harness.mjs"
 import { aggregateVerdict, median, runMetrics, speedMedians, sumPresent, tokPerSecOf } from "../lib/metrics.mjs"
 import { applyPricesToResult, costOf, loadPrices, matchPrice } from "../lib/prices.mjs"
 
+const tmpDirs = []
 const TABLE = { asOf: "2026-09-23", currency: "CNY", unit: "元 / 百万 token", source: "fixture", entries: [] }
 const call = (over = {}) => ({ round: 1, ttftMs: 100, totalMs: 1100, tokens: { prompt: 1000, cached: 0, completion: 100 }, toolNames: [], finishReason: "stop", throttled: false, ...over })
 
@@ -91,6 +92,7 @@ check("matchPrice：精确优先；通配按字面段长度降序；无命中 �
 
 check("loadPrices：schema fail-closed（缺 asOf / input 非数字 ⇒ 装载即拒）", () => {
   const dir = mkdtempSync(join(tmpdir(), "bench-prices-"))
+  tmpDirs.push(dir)
   const write = (name, obj) => {
     const p = join(dir, name)
     writeFileSync(p, JSON.stringify(obj), "utf8")
@@ -148,4 +150,5 @@ check("applyPricesToResult：填 costCny / metrics.cost / aggregate + 三类警�
   assert.ok(warnings3.some((w) => w.includes("价格未录")))
 })
 
+after(() => { for (const d of tmpDirs) rmSync(d, { recursive: true, force: true }) })
 await run()

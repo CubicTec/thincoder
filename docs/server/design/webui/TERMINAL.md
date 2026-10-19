@@ -17,10 +17,10 @@
 
 | 件 | 职责 | 依赖 |
 |---|---|---|
-| `thincoder-server/public/terminal-core.mjs`（拟新增） | **解析器 + 字符网格模型**：VT 序列解析（CSI/ESC/OSC 子集——§2.2 能力表）∥ 网格（单元格 = 码点 + SGR 属性）∥ 宽字符占位（`wcwidth` 简表——东亚宽/全角 = 2 列）∥ 备用屏 ∥ 滚动区（DECSTBM）∥ 卷回环（1000 行）∥ 光标态与模式位（`?1`/`?6`/`?7`/`?25`/`?47`/`?1047`/`?1049`/`?2004`）∥ 增量 UTF-8 解码 ∥ 键盘编码（`encodeKey` 纯函数） | 零（纯件——Node 可 import 直测：喂字节 ⇒ 网格快照） |
-| `thincoder-server/public/terminal-render.mjs`（拟新增） | **DOM 渲染 + 输入捕获**：脏行重渲（行节点 + SGR 段 `span`）∥ 光标元素（形状随模式；闪烁 = CSS 固定）∥ 卷回视口映射（滚轮 ∥ Shift+PageUp/PageDown ∥ 输入即回底）∥ 尺寸观测（`ResizeObserver` ⇒ cell 量宽 ⇒ cols/rows ⇒ `onResize`）∥ 隐藏输入区（`keydown` 特殊键码 + IME 组合 + `paste` 事件 ∥ 选区非空时 Ctrl+Shift+C 复制不发给 pty） | 仅 `terminal-core.mjs` |
-| `thincoder-server/public/terminal-link.mjs`（拟新增） | **传输客户端**：WebSocket 建链 ∥ 二进制帧 = pty 字节（双向）∥ 文本帧 = JSON 控制（收 `ready`/`exit`/`error`/`pong`；发 `resize`/`ping`）∥ 心跳（30s 文本 ping；60s 无下行 ⇒ 本地判死）∥ 断开态上抛（回调——文案归宿主） | 仅 `terminal-core.mjs`（增量 UTF-8 复用） |
-| `thincoder-server/public/views-sandbox-terminal.mjs`（拟新增） | **控制台消费件（本期唯一落地点）**：终端窗（`modal.mjs` 壳——大窗类）∥ 状态行（连接中/已连接 `cols×rows`/已断开/退出码）∥ 重连钮（新会话）∥ i18n 文案 ∥ 关窗收口 | `modal.mjs` ∥ `i18n.mjs` ∥ 核三件 |
+| `thincoder-server/public/terminal-core.mjs` | **解析器 + 字符网格模型**：VT 序列解析（CSI/ESC/OSC 子集——§2.2 能力表）∥ 网格（单元格 = 码点 + SGR 属性）∥ 宽字符占位（`wcwidth` 简表——东亚宽/全角 = 2 列）∥ 备用屏 ∥ 滚动区（DECSTBM）∥ 卷回环（1000 行）∥ 光标态与模式位（`?1`/`?6`/`?7`/`?25`/`?47`/`?1047`/`?1049`/`?2004`）∥ 增量 UTF-8 解码 ∥ 键盘编码（`encodeKey` 纯函数） | 零（纯件——Node 可 import 直测：喂字节 ⇒ 网格快照） |
+| `thincoder-server/public/terminal-render.mjs` | **DOM 渲染 + 输入捕获**：脏行重渲（行节点 + SGR 段 `span`）∥ 光标元素（形状随模式；闪烁 = CSS 固定）∥ 卷回视口映射（滚轮 ∥ Shift+PageUp/PageDown ∥ 输入即回底）∥ 尺寸观测（`ResizeObserver` ⇒ cell 量宽 ⇒ cols/rows ⇒ `onResize`）∥ 隐藏输入区（`keydown` 特殊键码 + IME 组合 + `paste` 事件 ∥ 选区非空时 Ctrl+Shift+C 复制不发给 pty） | 仅 `terminal-core.mjs` |
+| `thincoder-server/public/terminal-link.mjs` | **传输客户端**：WebSocket 建链 ∥ 二进制帧 = pty 字节（双向）∥ 文本帧 = JSON 控制（收 `ready`/`exit`/`error`/`pong`；发 `resize`/`ping`）∥ 心跳（30s 文本 ping；60s 无下行 ⇒ 本地判死）∥ 断开态上抛（回调——文案归宿主） | 仅 `terminal-core.mjs`（增量 UTF-8 复用） |
+| `thincoder-server/public/views-sandbox-terminal.mjs` | **控制台消费件（本期唯一落地点）**：终端窗（`modal.mjs` 壳——大窗类）∥ 状态行（连接中/已连接 `cols×rows`/已断开/退出码）∥ 重连钮（新会话）∥ i18n 文案 ∥ 关窗收口 | `modal.mjs` ∥ `i18n.mjs` ∥ 核三件 |
 
 ### 2.2 能力表 v1（真终端声明 = `TERM=xterm-256color`；覆盖判据 = `vim`/`top`/`bash` 行编辑实走）
 
@@ -78,7 +78,7 @@
 ### 2.7 最近先例
 
 - **窗与组件先例**：弹窗族 `modal.mjs`（控制台公共弹窗件——KD-SV-31：原生 `<dialog>` 基座 ∥ 单例；`webui/ADMIN.md` §2.1①）——终端窗（`views-sandbox-terminal.mjs`）沿同壳同单例 ∥ **两挂载件先例** = `host-credential.mjs`（一件两页挂载——沙盒页 ∥ 对话页；`webui/SANDBOX.md` §2.1①）；对齐 = 独立 `.mjs` 件 + 挂载点接线；**偏离 = Esc 不关窗**（终端要用 Esc——唯一偏离点，理由在册）。
-- **无先例两件（显式声明）**：自搓 WS 服务端（`gateway/ws.mjs`（拟新增）——仓库内无 WS 服务端先例；服务端会话链单源 = `sandbox/SANDBOX.md` §3）∥ VT 解析/字符网格（`terminal-core.mjs`——无终端核先例）；两件设计判据 = 本档 §2 ∥ `sandbox/SANDBOX.md` §3（无先例坐标可沿用）。
+- **无先例两件（显式声明）**：自搓 WS 服务端（`gateway/ws.mjs`——仓库内无 WS 服务端先例；服务端会话链单源 = `sandbox/SANDBOX.md` §3）∥ VT 解析/字符网格（`terminal-core.mjs`——无终端核先例）；两件设计判据 = 本档 §2 ∥ `sandbox/SANDBOX.md` §3（无先例坐标可沿用）。
 
 ## 3. 文件账（本面文件行）
 

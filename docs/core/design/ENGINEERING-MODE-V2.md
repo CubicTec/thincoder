@@ -20,7 +20,7 @@
 | E1 | 三账架构（PROJECT-MANIFEST + 台账 + 批次档 + 两账咬合） | v2 §5 |
 | E2 | 文档体系（四层关系 + 目录约定 + 声明面覆盖） | v2 §6 |
 | E3 | 角色架构（四角色 + 写权矩阵机械门禁 + 互锁） | v2 §7 |
-| E4 | 规则架构（交接契约 / 委派治理 / 纪律兑底 / 提示词设计→实现流程 / 测试纪律 / 机检引擎） | v2 §8 |
+| E4 | 规则架构（交接契约 / 委派治理 / 纪律兑底 / 提示词单源承载 / 测试纪律 / 机检引擎） | v2 §8 |
 | E5 | 情境架构（阶段 / 轮次旋钮 → manifest 字段 + 情境值模型注入） | v2 §9 |
 | E6 | 评审凭证（advisor 评审 + token 门——继承 v1，只微调） | v2 §8.5 |
 | E7 | 工程模式 plan 面排除（装配裁剪 + 命令面禁 + 残留清零） | v2 §13.9（FR31） |
@@ -69,7 +69,7 @@
 | M6 | 评审凭证（advisor + token） | `thincoder-core/advisor.mjs`（274 行·**修改**）+ `token-ttl.mjs`（286 行·**零改（继承）**）+ `agent-tools/design-token.mjs`（118 行·**零改（继承）**） | 评审对象来源读 `docRoot`（唯一微调，继承 v1 不重写） | §8.5 |
 | M7 | checklist 废除 | 删 checklist 族 3 档 + 摘挂载/移除注入（核 2 + VSC 2）+ 死指针 2 + 门禁 1 + 测试 5——完整清单见接线表 | 待办跟踪统一到台账六态 | §5.2 · §10.1 |
 | M8 | 机检引擎 | `scripts/doc-check.mjs` + `scripts/doc-check-anchors.mjs` + `scripts/doc-check-targets.mjs` + `scripts/doc-check-width.mjs`（**现状档**） | 单引擎（锚 + 行宽）+ 声明面（manifest `checkConfig`）；台账一致性由 SQLite schema 承接（`check-ledger` 作废） | §8.7 |
-| M9 | 提示词设计→实现流程 | 中文设计文档 `docs/core/design/prompts/` → 英文代码 `thincoder-core/prompts/`（依设计文档精确翻译生成）+ 清理「方案选型对比」残留 |（`persona-eng-designer.md` 8 项「选型对比」· `discipline-engineering.md` A3⑤——随 M9 落地清理） | 单向流程（只改中文设计文档 → 按它精确翻译生成英文代码），落点读声明面 | §8.4 |
+| M9 | 提示词单源承载 | `thincoder-core/prompts/`（16 档，唯一副本，运行期加载面——M9 落点读 manifest `promptsLanding`） | 提示词 = 产品代码单源（只承载「怎么执行」）；规则本体 = 机制文档 | §8.4 |
 | M10 | 测试纪律 | 产品 `package.json`（**修改**）+ `test/run-fast|full|integration|slow-gate|slow`（**修改/删除**） | 三层门禁 → 一条 `test` 全绿 | §8.6 |
 | M11 | plan 面排除（FR31） | 核 `agent/family-tools.mjs`（174 行·**修改**）+ `thincoder-core/agent-tools/plan.mjs`（86 行·**修改**）+ `agent-tools/eng.mjs`（102 行·**修改**）+ `session-lifecycle.mjs`（305 行·**修改**）；两端侧文件见接线表 + §2.3 E7 | 工程模式 plan 工具不入表 + 命令面拒绝（含 ACP 出口形态 / VSC 提示载体）+ `planMode` 清零（内存 + 槽） | §13.9 |
 
@@ -94,7 +94,7 @@
 | M6 评审凭证 | 修改 `advisor.mjs` + `token-ttl.mjs` + `agent-tools/design-token.mjs` | 零改 | 零改（`tool-gates.mjs` 已 import `validateDesignToken` 自核） |
 | M7 checklist 废除 | 删 checklist 族 + 摘挂载 `thincoder-core/tools/index.mjs` + 移除注入 `thincoder-core/agent/setup.mjs` + 死指针 + 门禁 + 注释 + 测试 3 档（清单见 M7 模块设计档） | 零改 | VSC 摘挂载/移除注入/死指针 + 编排注记（±0）+ 测试 2 档（清单见 M7 模块设计档） |
 | M8 机检 | 零改（引擎在仓根 `scripts/`） | 零改 | 零改 |
-| M9 提示词 | 零改（落地 `prompts/` = 生成物，重生成不手改） | 零改 | 零改 |
+| M9 提示词 | 零改（提示词 = 产品代码，由 coder 按机制文档落笔） | 零改 | 零改 |
 | M10 测试 | 修改 `package.json` + `test/` | 修改 `package.json` + `test/` | 修改 `package.json` + `test/` |
 | M11 plan 面排除 | 修改 `family-tools.mjs` · `plan.mjs` · `eng.mjs` · `session-lifecycle.mjs` | 修改 `cmd-plan.mjs` · `cmd-eng.mjs` · `handlers-session.mjs` | 修改 `thincoder-vscode/src/agent/setup.mjs` · `src/agent/agent-state.mjs` · `src/extension/chat-panel.mjs` · `panel-messages-settings.mjs` · `panel-messages.mjs` · `panel-session.mjs` · `image-handler.mjs` · `webview/mode-buttons.js` · `locales/en.json` · `locales/zh.json`（逐档改动面 = §2.3 E7 表） |
 
@@ -275,7 +275,7 @@ M10 测试（独立简化，无依赖）
 | 需求池不展开细节（一行一条） | 台账 schema（单行 title）+ 机检 |
 | 两账不互相替代（台账 ⇄ 批次档） | 已落半幅 = M2 咬合 CHECK（`task_book` 非空——`docs/core/design/LEDGER.md` §2 · AC-M2-5） |
 
-**提示词：中文 = 设计文档，英文 = 代码**（M9 落点，v2 §8.4）：「中文设计文档（`docs/core/design/prompts/`）= 人读的规格（用中文因读者是中文用户，与性质无关）；英文代码（`thincoder-core/prompts/`）= 机器执行物。更新流程 = 先改中文设计文档 → 英文由 coder 在编码时依它**精确翻译**生成；生成 = 精确翻译，不是 cp、不是照抄。无机检门（用户裁定）」。
+**提示词 = 代码单源**（M9 落点，v2 §8.4）：「唯一副本 = `thincoder-core/prompts/`（机器执行物，只承载「怎么执行」）；规则的**人读权威** = 中文机制文档（`docs/core/design/` 纪律族——用中文因读者是中文用户，与提示词的性质无关）。更新流程 = 改规则 → 先改机制文档 → coder 依它改 `thincoder-core/prompts/` 对应档。无机检门（用户裁定）」。
 
 **测试纪律（简化）**（M10 落点，v2 §8.6）：「门禁 = 一条 `test` 全绿」；慢测层归册（慢就慢，照跑）；处置按需求 `requirements/TESTING.md` §2 F6 ∕ F9（批次收口逐条）——具体裁剪到模块设计定，本档只定「简化」方向。
 
@@ -283,7 +283,7 @@ M10 测试（独立简化，无依赖）
 
 #### E4.1 提示词系统接口（行为面载体）
 
-> 提示词系统权威源（两层，本档只交叉引用、不重述——D2）：**需求层** `docs/core/requirements/PROMPT-SYSTEM.md`（内容大纲 = §4.3 人格层/公共层/纪律层表）· **设计层** `docs/core/design/PROMPT-SYSTEM.md`（机制面 = §6 设计文档 → 代码落地/装配 + §2 核模块裁决行）。
+> 提示词系统权威源（两层，本档只交叉引用、不重述——D2）：**需求层** `docs/core/requirements/PROMPT-SYSTEM.md`（内容大纲 = §2.2 人格层 ∥ §2.3 公共层 ∥ §2.4 纪律层）· **设计层** `docs/core/design/PROMPT-SYSTEM.md`（机制面 = §6.1 提示词承载与落笔分工 ∥ §6.2 装配实现事实 + §2 核模块裁决行）。
 
 **纪律分流（v2「约束即结构」核心命题）**：
 
@@ -292,11 +292,11 @@ M10 测试（独立简化，无依赖）
 | 语义写权（谁写需求/设计）· 角色职责（designer 核对 Function Spec 合规、coder 勘察边界）· 互锁（谁写谁把关） | **行为面——提示词**（不可机判） | persona 模板 + `discipline-engineering` |
 | token 门 · 段白名单 · 冻结窗口 · 机检判据 | **机械面——代码**（可机判，M1–M8） | 产品代码 + manifest 声明面 |
 
-**模板落点**（各装什么）：persona ×7（engineering=主 agent / coder / eng-coder / eng-designer / explore / plan / normal）· discipline ×2（engineering / normal）· common · advisor ×4 · consult-base——权威内容大纲见需求层 `PROMPT-SYSTEM.md` §4.3（不在此重述）。
+**模板落点**（各装什么）：persona ×7（engineering=主 agent / coder / eng-coder / eng-designer / explore / plan / normal）· discipline ×2（engineering / normal）· common · advisor ×4 · consult-base——权威内容大纲见需求层 `PROMPT-SYSTEM.md` §2.2 人格层 ∥ §2.3 公共层 ∥ §2.4 纪律层（不在此重述）。
 
-**设计 → 实现流程**：中文设计文档 → 英文代码（M9——依设计文档精确翻译生成，无机检门）——流程见设计层 `PROMPT-SYSTEM.md` §6.1。
+**提示词承载**：唯一副本 = `thincoder-core/prompts/`（产品代码面，只承载「怎么执行」）；规则本体 = 机制文档——流程见设计层 `PROMPT-SYSTEM.md` §6.1。
 
-**变更点（v2 对提示词系统的改动，落 `PROMPT-SYSTEM.md` 同步）**：M9 设计→实现流程（§6.1 收正——中文设计文档 → 精确翻译 → 英文代码）· 纪律分流（搬到结构后从提示词移除）· designer 职责收正（§7.3）· 删「方案选型对比」纪律。
+**变更点（v2 对提示词系统的改动，落 `PROMPT-SYSTEM.md` 同步）**：M9 提示词单源承载（§6.1 收正——规则先落机制文档，coder 改 `thincoder-core/prompts/` 对应档）· 纪律分流（搬到结构后从提示词移除）· designer 职责收正（§7.3）· 删「方案选型对比」纪律。
 
 #### E5 情境架构（v2 §9）
 
@@ -445,7 +445,6 @@ engineering 真值 ──► 固定段裁剪（plan / task 不入表）───
 | M5 → M1 | **零读面** | spawn 门判据不依赖 manifest |
 | M5 → M4 | 读 | eng-coder spawn 需活 token（活槽判据） |
 | M8 → M1 | 读 | `checkConfig`（扫描域/阈值/豁免）+ `docRoot`（目录落点） |
-| M9 → 文件 | 读/写 | 中文设计文档目录 → 英文代码目录（精确翻译生成） |
 | M6 → M1 | 读 | 评审对象来源 = manifest `docRoot`（声明面，E6 微调点） |
 | M11 ← VSC 装配 | 读 | `engineering` 模式位（端差面：VSC 装配块下移后取派生值——E7） |
 | M11 → planMode 消费面 | 不变量 | 「工程模式 ⇒ `planMode` 恒 false」——core 侧五处（示例）：`thincoder-core/agent/dispatch.mjs:167` · `thincoder-core/agent/run-stages.mjs:98` · `thincoder-core/context.mjs:344` · `thincoder-cli/src/tui/render-frame.mjs:234 ∕ :237` · `thincoder-core/session.mjs:128`（槽保存）；同不变量下另有 VSC 载体面（`thincoder-vscode/src/agent/tool-gates.mjs:73` · `thincoder-vscode/src/agent.mjs:419`）与槽写面（`thincoder-core/token-ttl.mjs:256` · `thincoder-core/session-slot-write.mjs:131` · `thincoder-core/session-lifecycle.mjs:250`）——**全部零改** |
@@ -475,7 +474,7 @@ engineering 真值 ──► 固定段裁剪（plan / task 不入表）───
 | KD2 | manifest `checkConfig` = 机检声明面 | 硬编码脚本参数不可迁移（N3 违），且本仓路径烧进产品（v1 病根） |
 | KD3 | 写权门禁 = 机械面（继承）+ 行为面（提示词）分层 | 语义写权不可机判（谁写需求 = 语义），纯提示词无机械兜底 |
 | KD4 | 机检引擎 = 单引擎 + 声明面 | 双引擎双源域 = 漂移源（v2 §8.7 明确要砍） |
-| KD5 | 提示词 = 中文设计文档 + 英文代码（依设计文档精确翻译生成，无机检） | 用户裁定：不设机检；一致性由收口核对兑底 |
+| KD5 | 提示词 = 代码单源（`thincoder-core/prompts/`）；规则的人读权威 = 中文机制文档 | 用户裁定：不设机检；一致性由收口核对兜底 |
 | KD6 | token 门 = 继承 v1 零改，仅评审对象来源改读 `docRoot` | 重写 token 门无必要（v2 §8.5 明示「继承 v1 只微调」） |
 | KD7 | 台账直用 `node:sqlite`（零依赖） | 引入第三方 SQLite 包违零依赖硬约束（ARCHITECTURE §1.1 约束 4） |
 | KD8 | plan 排除形态 = 卸载（不注册）而非「注册 + 报错」 | 用户裁决①：看不见的选项不会被选；注册但报错 = 白烧干扰回合 |

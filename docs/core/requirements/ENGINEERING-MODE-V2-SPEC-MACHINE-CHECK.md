@@ -35,7 +35,7 @@
 | AC-M8-3 | 全仓无硬编码本仓 `docs/` 路径于机检判据 | grep |
 | AC-M8-4 | 台账一致性由 schema 承接（无 `check-ledger`） | 文件不存在 |
 | AC-M8-5 | 锚检查 / 行宽检查可跑并出红绿 | 跑脚本 |
-| AC-M8-6 | 判据项计数 = `checkConfig` 键数 + `anchors` 拆分 1（D3；如「6 = 5 + 1」） | 计数比对 |
+| AC-M8-6 | 判据项计数 = `checkConfig` 键数 + `anchors` 拆分 1（D3；现读「**7 = 6 + 1**」= 去 `lineCounts` 后 6 键 + 新增 `anchors.roots`；键集单源 = 机制档 §7 F2 表行数） | 计数比对 |
 | AC-M8-8 | 判据句 ⇄ 实装一致（抽核四面：右界守卫转义 · 谓词闭枚举 13 词 · 用例定义面 · 两族三态） | `node --test thincoder-cli/test/doc-check.test.mjs` |
 | AC-M8-9 | 判据自测护栏在册且随 `npm test` 常驻（零落仓 + 并发免疫） | 跑用例 + 扫描域前后快照比对 |
 

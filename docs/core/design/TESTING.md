@@ -8,7 +8,7 @@
 > **多实现面（语义同源 · 各面原文自持 · 不做字节一致 · 不加面间同步依赖）**：CLI 面（上行所列）· VSC 对端面（其 `test/` 同构 runner 族）· **核树面**（`thincoder-core/test/run.mjs` + `thincoder-core/package.json` scripts——无集成测试层）
 > **桌面面**：`thincoder-desktop/test/run.mjs` + `thincoder-desktop/package.json` scripts——单入口，单元 + 集成同清单（集成测试域 = `thincoder-desktop/test/integration/`）；驱动 / 隔离 / 截图面单源 = `docs/desktop/design/E2E-TESTING.md`。
 > **服务面（server）**：`thincoder-server/package.json` scripts——**无集成测试**（无 `test` 入口；门如实空绿——§10）；发布钩 `prepublishOnly` = 语法门（3×`node --check`）；单元测试档（批次目录）零留存（用毕即删）、**不入任何门**（边界详 §2）。
-> 关联：本档 §1 分层纪律口径源 = `requirements/TESTING.md` §2 F1–F4（只引用不重述）；工程模式实现侧正文 = `thincoder-core/prompts/discipline-engineering.md`（测试纪律节）· `persona-engineering.md`（派单验收行）——CN 正本 = `docs/core/design/prompts/` 同名两档。
+> 关联：本档 §1 分层纪律口径源 = `requirements/TESTING.md` §2 F1–F4（只引用不重述）；工程模式实现侧正文 = `thincoder-core/prompts/discipline-engineering.md`（测试纪律节）· `persona-engineering.md`（派单验收行）。
 > 对端对位档 = 对端仓库的同名测试基建档（**语义同源、各端原文自持**）。
 > **先例对齐（单元测试档寿命口径）**：对位设计节 = **§3.1 ∥ §3.3**（既有寿命表述形态——「寿命 ∕ 去处」列写「零留存（用毕即删——批档 §5 留一行读数）」）；实施坐标 = 本档 §2.3 ∕ §3.1–§3.3 ∕ §5 ∕ §7 ∕ §10 ∕ §11.6；先例批 = 无（批档为一次性载体、可整体清理 ⇒ 长期面不指批次）。判 **对齐**（全档统一到 §3.1 既有形）；偏离：无。
 > **公共源勘察**：工作目录树内公共源文档已查（`docs/**` 设计 ∥ 需求两树 + 三前端 `test/**`）——相关 = 本档自身 ∥ `requirements/TESTING.md`（口径单源）；外部公共源（独立文档仓 ∥ 标准发布方站点）：无相关（对象 = 仓内两档寿命措辞）。
@@ -125,7 +125,7 @@
 | ② 集成影响核 | `新增 <场景>` / `修订 <场景>` / `无` ＋ **窗口读数**（现集成数 ∕ 窗口；需求 §1.3） | 主 agent 评估结论（F10——不外包不自动） |
 
 - **执行人** = 主 agent（§6 作者）；① 半零落手（用毕即删——零维护、零动作）。
-- **同步面（落笔清单）**：`design/DOC-DISCIPLINE.md` D7 行（槽位枚举权威）+ 同前需求档 D7 行（eng-designer 修订）· 工程纪律档两副本的 D7 枚举（主 agent 内容权 + 落笔分述）· 对端两份同款两文件。
+- **同步面（落笔清单）**：`design/DOC-DISCIPLINE.md` D7 行（槽位枚举权威）+ 同前需求档 D7 行（eng-designer 修订）· 工程纪律档（EN）的 D7 枚举（主 agent 内容权 + eng-coder 落笔）· 对端两文件同款。
 - **落笔时机** = **无冻结窗口冲突时**（父侧排程）。
 - **收口走查纪律**：**收口看一张截图**——截图 ∕ 可见面工具只解决「**能不能看到**」，「**该看什么**」靠**程序级搁置清单回核**（逐条核设计档登记 ∕ 搁置项——口径 = `design/BATCH-RECORD.md` §5.3）；基建 = Electron `capturePage`（零依赖降级路）+ Playwright 直驱（可判引用件 = `thincoder-desktop/package.json` devDependencies 含 `playwright-core`）。
 
@@ -253,7 +253,7 @@
 ### 6.3 禁令（禁止新写）
 
 新增断言**只允许**：**行为面**（业务可观察结果）与**结构机检**；**禁止新写散文锚**。
-纪律落点 = 本仓提示词测试纪律节（两份）+ 需求档 + 本档；对端落点自持于对端档。
+纪律落点 = 本仓提示词测试纪律节（EN）+ 需求档 + 本档；对端落点自持于对端档。
 **相容口径（与端到端 harness 的关系）**：子进程输出 / 协议帧 / 工具返回文案等**执行产物**类断言**不命中**判据 ① ⇒ 非散文锚、属允许的行为面。
 
 ### 6.4 边界

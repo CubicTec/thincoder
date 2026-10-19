@@ -35,7 +35,9 @@ VOLUME /app/data
 # 启动宽限 120s（覆盖壳收敛/装版窗）∥ 重试 3；compose 不重复声明（镜像 healthcheck 自动继承——docker ps 可见
 # `(healthy)`）。**探针按配置取址**（#1426）：读 `/app/config/config.json` 的 `host`/`port`——`host` = `0.0.0.0` ∥
 # 空 ∥ 档缺 ⇒ `127.0.0.1`，`port` 缺省 `8787`；`host`/`port` 改值零同步（不再依赖 host 取 `0.0.0.0`）。
+# **`tls.enabled` ⇒ 走 `node:https`**（`rejectUnauthorized: false`——只探活不验身份；同一端口只讲 TLS，明文探针恒失败）。
+# **判定 = `statusCode === 200`**（`r` 是 `IncomingMessage`，没有 fetch `Response.ok`）——两支共用同一判定函数。
 # `unhealthy` = 标注态（restart 策略只按进程退出动作——不触发重起）。
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 CMD node -e "const fs=require('node:fs');let c={};try{const raw=JSON.parse(fs.readFileSync('/app/config/config.json','utf8'));if(raw&&typeof raw==='object')c=raw}catch{};const h=(typeof c.host==='string'&&c.host!==''&&c.host!=='0.0.0.0')?c.host:'127.0.0.1';const p=Number.isInteger(c.port)?c.port:8787;fetch('http://'+h+':'+p+'/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 CMD node -e "const fs=require('node:fs');let c={};try{const raw=JSON.parse(fs.readFileSync('/app/config/config.json','utf8'));if(raw&&typeof raw==='object')c=raw}catch{};const h=(typeof c.host==='string'&&c.host!==''&&c.host!=='0.0.0.0')?c.host:'127.0.0.1';const p=Number.isInteger(c.port)?c.port:8787;const tlsOn=!!(c.tls&&c.tls.enabled===true);const mod=tlsOn?require('node:https'):require('node:http');const ok=(r)=>r.statusCode===200;const target=tlsOn?{host:h,port:p,path:'/healthz',rejectUnauthorized:false}:'http://'+h+':'+p+'/healthz';mod.get(target,(r)=>{r.resume();process.exit(ok(r)?0:1)}).on('error',()=>process.exit(1))"
 
 ENTRYPOINT ["/app/deploy/docker-entrypoint.sh"]

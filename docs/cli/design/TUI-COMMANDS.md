@@ -132,6 +132,7 @@
   生效 = 立即（bash 工具每次调用实时读配置）；持久化走 `persistRaw`；VSC 扩展共享同一 `config.json` 字段。
 - **`/config`**：embedding 三件套落盘（补写 baseURL / model——已有值保留、缺省引用默认配置**不硬编码字面量**；
   存量仅 apiKey 的配置再次保存自动补齐）/ 代理 / 轮次 / 阈值等菜单循环。数值项手输属合理自由文本（非枚举）。
+  **数值项可写回 auto（限 `agent.compactThreshold`）**：输入 `auto` ⇒ 删键（压缩线回模型窗口派生值，显示回 `(auto)`）；空输入 = 取消，非数值非 `auto` = 报错零落盘。三档落值 = `CONTEXT-COMPACTION.md` §6.17（本档不重述）；与 VSC 面板「置空 = auto」写盘结果同为删键。
 - **`/mcp`**：MCP 服务器管理（add / remove / connect / list / edit / test、token 一等字段、headers / env 键值对合并与 `k=` 删除语义、
   `✓ Save & test` 探活确认环、失败回同一表单）——**字段表单机制权威 = `docs/core/design/MCP.md` §5 / §8**，本档不重述。
 - **`/advisor`**：评审模型 / 思考配置 + guard 开关（交互菜单循环）；Thinking 子菜单以**真实条目列表**打开。

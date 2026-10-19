@@ -12,6 +12,7 @@
 import { statSync } from "node:fs"
 import { relative, resolve } from "node:path"
 import { MANIFEST_REL, readManifest } from "../manifest.mjs"
+import { anchorRootError } from "../manifest-schema.mjs"
 import { scanDomain, checkDocWidths } from "./width.mjs"
 import { checkAnchors } from "./anchors.mjs"
 
@@ -54,6 +55,13 @@ function configError(cfg) {
   if (cfg.anchors !== undefined) {
     if (cfg.anchors === null || typeof cfg.anchors !== "object" || Array.isArray(cfg.anchors)) return "`checkConfig.anchors` 须为对象"
     if (cfg.anchors.exclude !== undefined && !Array.isArray(cfg.anchors.exclude)) return "`checkConfig.anchors.exclude` 须为数组"
+    if (cfg.anchors.roots !== undefined) {
+      if (!Array.isArray(cfg.anchors.roots)) return "`checkConfig.anchors.roots` 须为字符串数组（元素 = 相对项目根的目录）"
+      for (const r of cfg.anchors.roots) {
+        const why = anchorRootError(r)
+        if (why) return `\`checkConfig.anchors.roots\` ${why}：${JSON.stringify(r)}`
+      }
+    }
   }
   return null
 }
@@ -117,7 +125,7 @@ function gateReport({ base, docsSource, checkFiles, domainCount, skipped, anchor
  *   `mode` 缺省 = `report`（全域报告态）；`docs` = **仅 gate** 的范围候选（相对 `root` 或绝对）；
  *   `docsSource` = 范围来源标签（`session` = 本会话触达记账 ∥ `explicit` = 显式 `docs`）——缺省按 `docs` 是否给定推定；只影响报面措辞。
  * @returns {{report:string, hits:{total:number, anchors:number, width:number}, anchorHits:Array,
- *   widthHits:Array, anchorReports:Array, files:string[], checkFiles:string[], scanDirs:string[],
+ *   widthHits:Array, anchorReports:Array, anchorRootGaps:Array, files:string[], checkFiles:string[], scanDirs:string[],
  *   lineWidth:number|null, zones:string[], exclude:string[], skipped:{outside:string[], gone:string[]},
  *   error?:"manifest"}}
  *   `error` 在场 ⇒ 取参失败形（首行 = `DOC-CHECK GATE: ERROR（…）`、`lineWidth` = null、`hits` 恒 0）——
@@ -152,18 +160,19 @@ export function runDocCheck(root, { docs, mode = "report", docsSource } = {}) {
   }
   const scanDirs = (Array.isArray(cfg.scanDirs) ? cfg.scanDirs : []).filter((d) => typeof d === "string" && d !== "")
   const exclude = Array.isArray(cfg.anchors?.exclude) ? cfg.anchors.exclude : []
+  const roots = cfg.anchors?.roots // 原值下传：值形 ∥ 根在盘的门归 anchors（报告态弃用、不炸）
   const lineWidth = cfg.lineWidth
   const zones = (Array.isArray(cfg.widthExemptZones) ? cfg.widthExemptZones : []).filter((z) => typeof z === "string" && z !== "")
 
   const files = scanDomain(base, { scanDirs, exclude })
   const range = gate ? resolveRange(base, files, docs) : { check: files, outside: [], gone: [] }
   const checkFiles = range.check
-  const anchors = checkAnchors(base, { scanDirs, files, checkFiles })
+  const anchors = checkAnchors(base, { scanDirs, files, checkFiles, roots })
   const widths = checkDocWidths(base, { lineWidth, scanDirs, exclude, exemptZones: zones, files, checkFiles })
 
   const hits = { total: anchors.hits.length + widths.length, anchors: anchors.hits.length, width: widths.length }
   const shared = {
-    hits, anchorHits: anchors.hits, widthHits: widths, anchorReports: anchors.reports,
+    hits, anchorHits: anchors.hits, widthHits: widths, anchorReports: anchors.reports, anchorRootGaps: anchors.rootGaps,
     files, checkFiles, scanDirs, lineWidth, zones, exclude, skipped: { outside: range.outside, gone: range.gone },
   }
   if (gate) {
@@ -180,7 +189,12 @@ export function runDocCheck(root, { docs, mode = "report", docsSource } = {}) {
     "声明：判据参数依据 `PROJECT-MANIFEST.json` `checkConfig`",
     `命中 ${total} 条（锚 ${anchors.hits.length} · 行宽 ${widths.length}）`,
   ]
-  // 报告面（不作判）：域内同名 ≥2 ⇒ 多义不判（残余登记——fail-open 方向，归评审核验面）
+  // 报告面（不作判）：① 声明解析根弃用 ∥ 缺位（⑤ 的配置面）；② 域内同名 ≥2 ⇒ 多义不判（残余登记——fail-open 方向，归评审核验面）
+  for (const g of anchors.rootGaps) {
+    out.push(g.kind === "missing"
+      ? `报告 锚·声明解析根缺位 \`${g.root}\`（未核、不入判）`
+      : `报告 锚·解析根弃用 ${JSON.stringify(g.root)}（值形非法：${g.reason} · 本元素不入判）`)
+  }
   for (const r of anchors.reports) {
     out.push(`报告 锚·多义 ${rel(base, r.file)}:${r.line} \`${r.token}\`（同名 ${r.candidates.length}：${r.candidates.map((c) => rel(base, c)).join(" ∥ ")}——报告面，不作判）`)
   }

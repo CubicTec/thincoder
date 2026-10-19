@@ -228,7 +228,7 @@
      **实测（真机 `10.0.0.6`，Docker 29.1.3 ∥ API 1.44+）**：`Tty: true` ⇒ 裸字节流（无 8 字节复用帧）∥ `Env` = **并入容器 env**（`PATH` 保留——实测 5 键 ⇒ 6 键）∥ 容器未运行 ⇒ **409**（`container <id> is not running`）∥
      无此可执行 ⇒ 建 exec 仍 201、**start 200 且流内原文**（`OCI runtime exec failed: …`）+ 退出码 127——原样落终端，零加工。
   ③ **起 exec（升级连接）**（`POST exec/<execId>/start` 携 `Connection: Upgrade` + `Upgrade: tcp`——体 `{ Detach: false, Tty: true }`）⇒ **`101` + 裸双工 socket**。**实测口径**：不带 `Upgrade` 只能收输出、**stdin 无法流式**（请求体不 end 则无响应头）⇒ 此链 `fetch` 面不可达 ⇒ 服务端走 `node:http` 劫持（`docker-exec.mjs`（已落））。
-- **传输层（最小 WebSocket 服务端——`gateway/ws.mjs`（拟新增））**：标准握手（`Sec-WebSocket-Accept` = `base64(sha1(key + GUID))`）∥ 帧编解码（掩码位/两档扩展长度/分片重组/控制帧）∥ 上界（单帧 ≤ 1 MiB ∥ 解码缓冲 ≤ 4 MiB——越 ⇒ 协议错收口）；
+- **传输层（最小 WebSocket 服务端——`gateway/ws.mjs`）**：标准握手（`Sec-WebSocket-Accept` = `base64(sha1(key + GUID))`）∥ 帧编解码（掩码位/两档扩展长度/分片重组/控制帧）∥ 上界（单帧 ≤ 1 MiB ∥ 解码缓冲 ≤ 4 MiB——越 ⇒ 协议错收口）；
   **实测**（同一件对 node 内建 `WebSocket` 客户端）：握手 101 ∥ 文本/二进制双向 ∥ close 1000 ∥ **服务端 ping ⇒ 客户端自动 pong**。挂点 = `gateway/server.mjs` 增 `upgrade` 挂点（`server.on("upgrade", …)`——未匹配路径 ⇒ 404 后断开）。
 - **尺寸（实测口径）**：`POST exec/<execId>/resize?h=<rows>&w=<cols>`——**就绪前调用 ⇒ 500**（`timeout waiting for exec session ready`——start 后即刻调用亦可能撞此窗）⇒ 客户端首帧 `resize` 到达即记（挂起），**就绪后施加一次**，此后逐帧直发；初值缺省 = 80×24（客户端未给）；合法域 = cols 1–500 ∥ rows 1–300（越界/非法 ⇒ 忽略——不当帧、不发 resize）。
 - **帧协议（本档 = 单源；消费端 = `webui/TERMINAL.md` §2.5）**：**二进制帧 = pty 字节**（双向——上行 = 键盘/粘贴 UTF-8 字节；下行 = 引擎字节原样）∥ **文本帧 = JSON 控制**（下行 `{"t":"ready","cols","rows"}` ∥ `{"t":"exit","code"}` ∥ `{"t":"error","code","detail?"}` ∥ `{"t":"pong"}`；上行 `{"t":"resize","cols","rows"}` ∥ `{"t":"ping"}`）；
@@ -537,7 +537,7 @@
 | `thincoder-server/bin/thincoder-server.mjs` | **241/242** | import + 注册行 + 装配 |
 | `thincoder-server/src/sandbox/box.mjs`（已落） | **652/653** | 盒生命周期动作链 ∥ 建盒参数集 ∥ 放置/补放置 ∥ 卷目录准备 ∥ 定时器（空闲/墙钟/周期快照——`sandbox/EXECUTION.md` §3） |
 | `thincoder-server/src/sandbox/quota.mjs`（已落） | **285/286** | 磁盘限额（探明 ∥ 项目配额/loopback ∥ 就位判据与自愈 ∥ 卸除件 ∥ 读回核——§4） |
-| `thincoder-server/src/sandbox/workspace-routes.mjs`（拟新增） | ≈**280**（`baseImage` 键 ∥ derive 端点 ∥ 列表行字段） | 工作区面四路由 + 快照列表（自 `routes.mjs` 拆出——拆案首选执行） |
+| `thincoder-server/src/sandbox/workspace-routes.mjs` | ≈**280**（`baseImage` 键 ∥ derive 端点 ∥ 列表行字段） | 工作区面四路由 + 快照列表（自 `routes.mjs` 拆出——拆案首选执行） |
 | `thincoder-server/src/store/migrations.mjs`（已落） | **795/796**（距 800 硬限余量 ≈4 行——拆案在案，见下） | 迁移段链（v1–v24——自 `db.mjs` 外提，纯搬移零语义） |
 | `thincoder-server/deploy/sandbox-probe.mjs`（已落） | ≈**530** | 探针执行器（余腿 ∥ 一次性容器径 ∥ PASS/FAIL/SKIP/退出码——§10） |
 | **小计** | ——（逐档见上表） | —— |
@@ -558,9 +558,9 @@
   执行面件（估 ≈**330**：规则文本位次 ∥ 下发幂等/单事务 ∥ DNS 闸三径（放行/拒/待批持答）∥ 解析过滤 ∥ 临时集回收）——**该件已退场删**。
 - **单元测试档（底座可换；入 server 链）**：服务面件（估 ≈**320**：派生 tag/Id 内容寻址 ∥ Dockerfile 逐行 ∥ 镜像就位四步（假 Docker——缓存/拉取/构建三径）∥ 凭据 CRUD/加密/`X-Registry-Auth` 组装 ∥ `baseImage` PATCH ∥ 建盒链 ④ 两腿（**缺省零新增调用**））∥
   前端面件（估 ≈**220**：两卡渲染 ∥ 设置底座/凭据弹窗 ∥ 构建在飞态 ∥ i18n 键集 ∥ 档目）。
-- **服务端件（底座可换）**：`derive.mjs`（拟新增）≈200 ∥ `registry-creds.mjs`（拟新增）≈130 ∥ `registry-cred-routes.mjs`（拟新增）≈110 ∥ `image-routes.mjs`（**150**——拉取凭据注入 + 审计 `auth` 键）∥
+- **服务端件（底座可换）**：`derive.mjs` ≈200 ∥ `registry-creds.mjs` ≈130 ∥ `registry-cred-routes.mjs` ≈110 ∥ `image-routes.mjs`（**150**——拉取凭据注入 + 审计 `auth` 键）∥
   `workspace-routes.mjs`/`box.mjs`/`docker.mjs`/`bin` 四行 delta——**增补分项和 = ≈+686**（三新档 ≈440 + 五行 delta ≈206 + 迁移段 +≈40）；全形 = `sandbox/EXECUTION.md` §14；webui 面 = `webui/WEBUI.md` §5 ∥ `webui/SANDBOX.md` §3。
-- **服务端件（连接面 TLS 档）**：`docker-tls.mjs`（拟新增）≈**220**（三件形校验 ∥ 材料加解密存取（复用 `credential-crypto.mjs`）∥ 连接元数据视图 ∥ `node:https` 传输适配件）
+- **服务端件（连接面 TLS 档）**：`docker-tls.mjs` ≈**220**（三件形校验 ∥ 材料加解密存取（复用 `credential-crypto.mjs`）∥ 连接元数据视图 ∥ `node:https` 传输适配件）
   ∥ 六处 delta（`routes` +≈55 ∥ `registry` +≈30 ∥ `docker` +≈25 ∥ `migrations` +≈10 ∥ 容器/镜像/卷/终端四路由（各 +≈3）≈12 ∥ 盒链 `config` 透传 +≈3——合计 ≈135）⇒ **分项和 ≈+355**（`docker-tls.mjs` ≈220 + delta ≈135）；
   **单元测试档两件**（估 ≈180 ∥ ≈140）；webui 面 = `webui/WEBUI.md` §5 ∥ `webui/SANDBOX.md` §3。
 - 单元测试档三件（入 server 链）：服务面件（Docker 客户端 ∥ 路由 ∥ v12 迁移；估 ≈420）∥

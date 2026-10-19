@@ -24,8 +24,8 @@
 ### 2.1 总链
 
 - **两出口共用核读出口统一序列化**（N1）：CLI 与 ACP 都不落 SQL、不碰表名——一律经核只读函数取完整载荷：
-  - 台账：`ledgerExport({ cwd, family, full })` → `{ projects: [...] }`（拟新增——`thincoder-core/ledger-read.mjs`）；
-  - 批次：`listBatchRecords({ cwd })` → `{ batches: [...] }`（拟新增——`thincoder-core/agent-tools/batch-read.mjs`）。
+  - 台账：`ledgerExport({ cwd, family, full })` → `{ projects: [...] }`（`thincoder-core/ledger-read.mjs`）；
+  - 批次：`listBatchRecords({ cwd })` → `{ batches: [...] }`（`thincoder-core/agent-tools/batch-read.mjs`）。
 - 载荷即对外契约（§3）——出口只做「解析入参 → 调核 → JSON 序列化」；序列化零复刻。
 
 ### 2.2 只读开库（FR2③ 落点）

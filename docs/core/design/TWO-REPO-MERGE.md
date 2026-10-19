@@ -77,17 +77,15 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | 文档地图 | 基准层地图 = `docs/README.md`；各产品地图各留一份（各管各产品）；仓根 `README.md` = 合并仓总览 |
 | 三部分落点（core / cli / vsc） | 规划 = `docs/core/design/DOC-SYSTEM.md`；迁移台账 = `docs/core/design/DOC-MIGRATION.md`（CLI 树）· `docs/vsc/design/VSC-MIGRATION.md`（VSC 树） |
 
-## 4. 提示词承载（双源保留）
+## 4. 提示词承载（单源）
 
-现状结构：各产品持 `src/prompts/`（运行期落地物）+ `docs/design/prompts/`（中文权威模板）；提示词**正本** = 基准层 `docs/core/design/prompts/`（16 档）。
+现状结构：唯一副本 = `thincoder-core/prompts/`（16 档，运行期加载面，两产品共用）；两产品 `docs/` 下的提示词档（15 档 × 2）已归档到 `_archive/`（历史参照，不再维护）。
 
 | 层 | 对象 | 处置 |
 |---|---|---|
 | 跨仓机制层 | 对端发现 / 自指防护 / 跨仓逐字断言 | **退役**——合并后对端发现无对象 |
-| 产品内双源层 | 产品 `docs/design/prompts/`（中文权威）↔ `src/prompts/`（运行期落地物） | **保留**——产品内的权威↔落地关系与「仓」无关 |
-| 跨产品内容层 | 两产品同名提示词集合的逐字节差异 | 收敛归 **phase 2**（§8） |
 
-**「单副本」在 phase 1 不可实现（机械约束，非偏好）**：npm tarball 与 vsix **均只收包根之内**的文件（CLI 的 `files` 无法收录父目录文件；vsix 打包根 = 扩展目录）。单副本若居仓根或另一产品内，两产品的运行期加载会同时断供（槽位面缺档**静默空载** / advisor 面缺档**即抛错**）；而「构建期拷入」会把 `src/**` 变成生成物，破坏开发期直跑源码。
+**单副本必须住核包内（机械约束，非偏好）**：npm tarball 与 vsix **均只收包根之内**的文件（CLI 的 `files` 无法收录父目录文件；vsix 打包根 = 扩展目录）。单副本若居仓根或另一产品内，两产品的运行期加载会同时断供（槽位面缺档**静默空载** / advisor 面缺档**即抛错**）；而「构建期拷入」会把 `src/**` 变成生成物，破坏开发期直跑源码。
 
 ## 5. 机检单仓化
 
@@ -117,7 +115,7 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | D11 | CLI 侧 CI **顺路补齐** | 工作流本就必须迁至仓根，是天然时机 |
 | D12 | 实施**分批** | 每批可独立回滚 |
 | D13 | **不做**「双仓并存」过渡窗口 | 并存会让跨仓机制继续存活，违背本板块目标 |
-| D14 | 提示词**不做单副本合流**——产品内双源保留 | 运行期硬加载 + 打包边界（§4）——机械约束 |
+| D14 | 提示词 = **单副本**（`thincoder-core/prompts/`，运行期硬加载 ⇒ 副本须在包内） | 承 2026-10-18 取消镜像裁定；打包边界见 §4 |
 
 ## 7. 跨仓机制退役面（现状）
 
@@ -132,8 +130,6 @@ git blame thincoder-vscode/package.json                # blame 跨 graft 无需�
 | 5 | `SIBLING_NAMES` | 兄弟仓族常量（台账面） |
 
 **白名单两处**（`PEER_*` 裸字面，与跨仓判据无关——并发实例机制）：`thincoder-core/peer-domains.mjs` · `thincoder-vscode/src/extension/peer-domains.mjs`。
-
-**同型守卫现行承担面**：产品内双源守卫由**单仓版断言**承担（本端同名集合相等 + 本端镜像节引用可解析）。
 
 ## 8. phase 2 演进通道（本档不实施）
 

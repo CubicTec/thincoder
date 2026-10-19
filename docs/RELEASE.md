@@ -11,7 +11,9 @@
 对外版本号规则 = **CalVer**（§4——各单元同制）。
 **发布顺序恒为：核 → CLI → VSC → 桌面**（产品发布恒以核已发布为前提——`CORE-UNIFICATION.md` §2.6 发布顺序硬约束；**桌面 = 三端之一**（发布轮含桌面——2026-10-13 用户裁定）——其核内嵌源自源树、发布窗按 §5.6 走）。
 **顺序 = 版本面 + 内容面双关**：下游引用核的**新面**（判例 = CLI `src/cli/team-command.mjs` 消费核 `team.mjs`——唯一写者）⇒ 核须随**含该面**的版本**先发 ∥ 同拍发**；核源树内容变而未换号 ⇒ registry 面滞留旧内容 ⇒ 装后即缺档失效
-（同类实证 = 0.10.5 核包缺 `browser/`——台账 #1362）。机检 = §5.0 P2 核行闭包断言 + §5.0 P4 ④ registry 复验（工具 = `scripts/check-pack.mjs`（拟新增——台账 #1363 ∥ #1222））。
+（同类实证 = 0.10.5 核包缺 `browser/`——台账 #1362）。机检 = §5.0 P2 核行闭包断言 + §5.0 P4 ④ registry 复验（工具 = `scripts/check-pack.mjs`——台账 #1363 ∥ #1222）。
+**发布序硬门（核内容变更 ⇒ 依赖面同批抬版）**：核内算式 / 机制变更 ⇒ 核先发；下游（服务端 ∥ 三端）对核依赖写**精确版本**（不携 `^` ∥ `~`），并在同一发布轮抬到本次核发行版；发前人工校一次核 tag 内算式常量与源树一致（一次性动作，非运行时判据）。
+**文案键新增的发布归属**：判据 = 该键是否落核字典（`thincoder-core/i18n.mjs` 的键族边界）——落 ⇒ 按上一句发布序走；不落 ⇒ 端侧字典随端发布。键族边界与端侧载体见 `docs/render-core/design/RENDER-CORE.md` §5 条 6。
 **发布 = 按 §5 一条主线走**（从上到下执行即可，无需参考其他章）。
 
 ## 2. 功能性需求（统一）
@@ -96,7 +98,7 @@
 | 端 | 干跑命令 | 通过判据（读数形） |
 |---|---|---|
 | 核 | `cd thincoder-core && npm publish --access public --dry-run` | 窗口内（bump 后）exit 0——输出含 `prepublishOnly → npm test` 段 + `Tarball Details`（`total files` ∕ `package size`）。bump 前 ⇒ 止于 `You cannot publish over the previously published versions: <现号>` exit 1 = **版本占用守卫在位**（非缺陷） |
-| 核（tarball 内容） | `node scripts/check-pack.mjs thincoder-core`（在仓根跑；脚本 = `scripts/check-pack.mjs`（拟新增））∥ 原读数式 `cd thincoder-core && npm pack --dry-run --json` | exit 0 + 读数行「pack 件数 ∥ 根 `.mjs` 集 = 源树（实读 100——含 `think-off.mjs`——#470 判据）∥ 闭包缺口 0」——**闭包断言** = `files[]` ⊇ 运行时 import 闭包（台账 #1363；判例 = 0.10.5 缺 `browser/`）；`prompts/` 16 档 + `tool-docs/` 53 档（实读 2026-10-17）；排除面 = 根非 `.mjs` 档（`CHANGELOG.md` ∥ `LICENSE` ∥ `package.json` ∥ `README.md`）；**发布后复验形 = `node scripts/check-pack.mjs thincoder-core --registry <号>`**（registry 面与源树同口径：路径集 + integrity 相等——防核内容滞留；台账 #1222） |
+| 核（tarball 内容） | `node scripts/check-pack.mjs thincoder-core`（在仓根跑；脚本 = `scripts/check-pack.mjs`）∥ 原读数式 `cd thincoder-core && npm pack --dry-run --json` | exit 0 + 读数行「pack 件数 ∥ 根 `.mjs` 集 = 源树（实读 100——含 `think-off.mjs`——#470 判据）∥ 闭包缺口 0」——**闭包断言** = `files[]` ⊇ 运行时 import 闭包（台账 #1363；判例 = 0.10.5 缺 `browser/`）；`prompts/` 16 档 + `tool-docs/` 53 档（实读 2026-10-17）；排除面 = 根非 `.mjs` 档（`CHANGELOG.md` ∥ `LICENSE` ∥ `package.json` ∥ `README.md`）；**发布后复验形 = `node scripts/check-pack.mjs thincoder-core --registry <号>`**（registry 面与源树同口径：路径集 + integrity 相等——防核内容滞留；台账 #1222） |
 | CLI | `node scripts/check-pack.mjs thincoder-cli`（在仓根跑——CLI 打包面闭包，口径同 #1363）∥ `cd thincoder-cli && node scripts/release-check.mjs` | 前者 = exit 0 + 闭包缺口 0；后者 = exit 0 + 尾行 `✅ release-check 全绿——可发版`；读面 = `⓪ ✔ registry 上存在 @thincoder/core@<号>` + `✔ lint OK` + test 摘要行。⓪ 不过 = 核先发守卫（设计如此） |
 | VSC | `cd thincoder-vscode && node scripts/publish-all.mjs --dry-run` | 段 0（核版本预检）+ 段 1 `vsce package`（`vscode:prepublish` = lint + test）+ 段 1.5 vsix 含核断言（B ∕ D ∕ E ∕ F 全过——E = 撞帽检查点接线 ∥ F = 渲染核版本逐字；定义 = `thincoder-vscode/scripts/check-vsix.mjs` 断言 E ∕ F 段）+ 段 2 🧪 跳过；exit 0 |
 

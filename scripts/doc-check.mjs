@@ -62,8 +62,8 @@ export function main(argv = process.argv.slice(2), { log = console.log } = {}) {
   const cfg = read.manifest.checkConfig;
   const declaredRoots = declaredPublicRoots(root); // §6.15 单一声明源根集（#832——声明源候选入参；缺省 [] ⇒ 零行为）
   // D3 计数纪律：判据键清单 = 单一数组（计数 = 列表长度——加键时改一处，计数自动同改）。
-  // 派生自 checkConfig 实际键面：scanDirs / lineWidth / anchors.domain / anchors.exclude / exemptions / widthExemptZones。
-  const CRITERIA_KEYS = ["scanDirs", "lineWidth", "anchors.domain", "anchors.exclude", "exemptions", "widthExemptZones"];
+  // 派生自 checkConfig 实际键面：scanDirs / lineWidth / anchors.domain / anchors.exclude / anchors.roots / exemptions / widthExemptZones。
+  const CRITERIA_KEYS = ["scanDirs", "lineWidth", "anchors.domain", "anchors.exclude", "anchors.roots", "exemptions", "widthExemptZones"];
   log(`判据项 ${CRITERIA_KEYS.length} 项（${CRITERIA_KEYS.join(" / ")} = checkConfig 声明面——D3）`);
   const bases = domainArg ? [resolve(root, domainArg)] : discoverDomains(root);
   if (domainArg && !existsSync(bases[0])) {

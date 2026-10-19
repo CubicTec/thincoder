@@ -91,11 +91,11 @@
 （:52——token-only 降级形句尾）Copy it verbatim — every character, including the colon and the digits after the uuid; a shortened echo is flagged as truncated.
 ```
 
-**b. 评审员系统提示两源**（同文口径——EN 运行期 ∥ CN 模板逐字对应）：
+**b. 评审员系统提示**（`thincoder-core/prompts/`，单源）：
 
 ```text
 （EN——`thincoder-core/prompts/advisor-design.md:24` 句内加固）Copy BOTH values verbatim — every character, including the colon and the digits after the uuid inside the token brackets; a shortened echo is flagged as truncated. The designId must be the LAST thing you output.
-（CN——`docs/core/design/prompts/advisor-design.md:55` 句内加固）两个值逐字复制——每个字符都在内，包括冒号与 token 方括号内 uuid 之后的数字位；截断回显会被标记。designId 必须是你输出的**最后**一样东西。
+（EN——`thincoder-core/prompts/advisor-design.md`）两个值逐字复制——每个字符都在内，包括冒号与 token 方括号内 uuid 之后的数字位；截断回显会被标记。designId 必须是你输出的**最后**一样东西。
 ```
 
 条件句面（凭证回显条件）= `docs/core/design/ADVISOR-CONVERGENCE.md` §2.5（本档不重述）。
@@ -114,7 +114,7 @@ VERDICT_PASS_LINE    = /^[ \t]*[*_`]*[ \t]*VERDICT:[ \t]*pass[ \t]*[*_`]*[ \t]*$
 VERDICT_CHANGES_LINE = /^[ \t]*[*_`]*[ \t]*VERDICT:[ \t]*changes-required[ \t]*[*_`]*[ \t]*$/m
 ```
 
-- **裁定行来源（提示词面既有逐字约定——两源同文口径；本闸零新造提示词面要求）**：`VERDICT: pass` / `VERDICT: changes-required` = 评审员提示词既有的收尾裁决行——EN 运行期 `thincoder-core/prompts/advisor-design.md:20-22` ∥ CN 模板 `docs/core/design/prompts/advisor-design.md:51-53`（同文口径）；
+- **裁定行来源（提示词面既有逐字约定；本闸零新造提示词面要求）**：`VERDICT: pass` / `VERDICT: changes-required` = 评审员提示词既有的收尾裁决行——EN 运行期 `thincoder-core/prompts/advisor-design.md:20-22`；
   补充轮族三档同形（`thincoder-core/prompts/advisor-round1.md` 等——「`## Verdict Line`」节）。
   EN 逐字锚（`:20`）= 「Close your findings with a single verdict line — `VERDICT: pass` or `VERDICT: changes-required` — as the line immediately before the token echo」。
 - **判定三值（机器序 = 先 changes、后 pass）**：含 changes-required（与 pass 并存亦然——fail-closed 方向）⇒ `"changes-required"`；否则缺 pass 行 ⇒ `"no-pass-line"`（**缺行 = 拒签**——fail-closed：提示词面既有「以单行裁决收尾」义务，缺行 = 不合规回执，不得铸）；含 pass ∧ 无 changes ⇒ `null`（过闸）。实现形（新导出；逐字——供直连单元测试，同 `stripDesignTokenEcho` 先例）：
@@ -142,7 +142,7 @@ export function verdictGateFailure(rawResult) {
 The verdict line is checked mechanically: without a `VERDICT: pass` line, or with a `VERDICT: changes-required` line, no token is issued even when the token is echoed.
 ```
 
-  提示词档（`advisor-design.md` EN/CN）既有「pass ⇒ 才回显」句已言明耦合——**零改**（如需同句加固 = 主 agent 内容权）。
+  提示词档（`advisor-design.md` EN）既有「pass ⇒ 才回显」句已言明耦合——**零改**（如需同句加固 ⇒ 内容依据 = 机制文档）。
 - **实现坐标（钉死——实施者零开放结构决定）**：`settleDesignReview`（`thincoder-core/agent-tools/design-token.mjs:128`）回显分支内——现体 `:146-149` 非回显径 return 之后 ∥ `:158` `agent._engDesignTokens ??= new Map()` 之前（闸不过 ⇒ 原地 early return 拒签）。
   两常量 + `verdictGateFailure` + 标记常量同宿主（`NO_VALID_ECHO_MARK` 族邻位——现体 `:95-96`；函数导出——直连单元测试，同 `stripDesignTokenEcho` 先例）。
   同步径（`thincoder-core/agent-tools/advisor.mjs:261`）∥ 异步径（`thincoder-core/agent-tools/advisor-settle.mjs:155`）共用本单点——**零第二签发点 ∥ 零调用点改**（re-export 面 `advisor-async.mjs:45` 零触）。

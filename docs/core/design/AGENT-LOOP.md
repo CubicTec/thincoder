@@ -136,7 +136,7 @@
 2. **载体双夹具**：CLI 形（`agent` 字段对象）与 VSC 形（`history` 字段对象）各跑同组断言——证明「池载体按端注入」成立（机制对载体零预设，除上表字段集）；**并各补一组「不预置载体字段」夹具**（池 / 队列 / pending / 墓碑 / 唤醒栓注册表 / 评审实例注册表 / 变更日志 / 上行队列全空缺——字段集 15 款全无预置）：机制须**自建容器**且同组断言与预置形同值（防「两端各自预置才碰巧能跑」——见上「载体字段集与回写义务」）。
 3. 核内零端名分支 / 零文案：`suspension.mjs` 无产品名、无状态行文案字面量（grep 零命中——契约 5 / 10）；零 TUI / 宿主依赖（N3——既有 `core-hygiene` 机检覆盖）。
 4. **依赖顺序（硬）**：本行与异步机械族的 VSC 侧融合（#98 / #101 / #154 等——清扫 / 计数读法 = 核内异步面单一实现的下游）同批或先后紧邻；先定异步面载体口径，再落本行（池队列表示随 #94 融合收敛——本行不重复裁决）。
-5. 行为面：核内零消费方阶段只测内核；S2 接线后按面内裁决口径验收（A10）；**S1 段两产品一行不改**（T-C12）。**驱动面单源**（2026-09-29 · parity-b1-vsc-core 全修收编）——挂起面单源 = 核驱动（三端消费）：CLI ∕ VSC ∕ desktop 皆以 `startSuspension` 为唯一驱动，端差只在装配面（carrier ∕ hooks ∕ 输入缝）。
+5. 行为面：核内零消费方阶段只测内核；S2 接线后按面内裁决口径验收（A10）；**S1 段两产品一行不改**（T-C12）。**驱动面单源**（收编后现态）——挂起面单源 = 核驱动（三端消费）：CLI ∕ VSC ∕ desktop 皆以 `startSuspension` 为唯一驱动，端差只在装配面（carrier ∕ hooks ∕ 输入缝）。
 
 ## 3. 须用户裁条目
 
@@ -331,6 +331,26 @@ PreToolUse hooks → 阻断
 
 - **停滞检测**：同一工具 + 同一参数序列化签名连续 3 次 → 注入「你在原地空转，换条路或求助」（窗口 5）。
 - **goal 预算**：goal 活跃时每轮注入目标 / 已用 turn 数；用满 75% 预警；`goal complete` 需验证证据门槛。
+- **设计轮轮数注入（`eng-designer` · 台账 #1661）**：设计人格写着「首版 ≤15 回合 / 回合过半（>7）未落盘 ⇒ 降级交付（骨架 + 未决清单）」（提示词 `thincoder-core/prompts/persona-eng-designer.md:35`），而轮数本身是模型看不见的量——实跑 `eng-designer#14` 28 轮零写入、`#15` 16 轮零写入。本注入把「已用轮次 + 是否落过盘」逐轮送到模型眼前（与 goal 预算同文件、同注入点、同形 = `agent.history.push({ role: "user", … })`）。
+  - **判据源（一）轮号**：`agent._currentTurn` = **链内累计轮号**（跨段累计，续跑不重置；与状态行 / Stop 载荷同源——`thincoder-core/agent/turn-loop.mjs:73-74` → `thincoder-core/agent/helpers.mjs:274-276`，`turn = seq`）。
+  - **为什么不取 `injectPostTurn` 的 `turn` 形参**（`thincoder-core/agent/post-turn.mjs:42`）：`turn` = **段内轮号**（0 起，`turn-loop.mjs:64` 的循环变量）——续跑段从 0 重数；persona 的预算（「首版 ≤15 回合」）是**整个设计轮**的量、不按段重置 ⇒ 取累计轮号才与预算同口径（且 1 起 ⇒ `turn ≥ 5` 即第 5 轮）。
+  - **判据源（二）是否落过盘**：`wrote = (agent._touchedFiles ?? []).length > 0 || (agent._batchWrites ?? 0) > 0`。
+    - `_touchedFiles` = 六件写工具的记账（`write` / `edit` / `insert_after` / `apply_patch` / `delete` / `hashline_edit`）。
+    - `_batchWrites` = `batch` 工具**成功写盘**的计数器（append / status / create / close 五处 `onWritten` 汇聚点单点自增；被拒绝的调用不增）。设计轮落 §2 的唯一通道是 `batch append`，不计它则「§2 已落盘」仍被判成未落盘——注入句与盘面相反（台账 `#1677`）。
+    - 两集合都在 resume 保留集内（§6.2「resume 保留集」）⇒ **续跑段沿用上一段痕迹**，`wrote` 按整轮累计读。
+    - **`_batchWrites` 不并入 `_touchedFiles`**：后者有五个下游消费者（`verify` 改动清单 / advisor 默认范围 / `doc_check` 默认受检文档 / `recent_changes` / 子代理合入父域），且 `hasCodeMutations` 会把「只写了批档」判成「代码有变更」；计数器只动本注入的判据面。
+  - **续跑段后果（如实登记）**：续跑段起手即带前段轮数与写入痕迹 ⇒ 可能首轮就出常行、或直接命中 `turn ≥ 8` 触发降级句（前段已写过文件则降级句不出现）——这是设计轮预算的累计语义，不是漏判。
+  - **边界**：机器看得见「写过文件」与「写过批次档」，仍看不见「写的内容是不是设计本体」——判据只回答「有没有落盘」，不回答「落得对不对」。
+  - **纯函数（单源）**：`designTurnReminder({ role, turn, wrote })` → 注入串 | `null`（`thincoder-core/agent/post-turn.mjs`，与 goal 预算同一函数体内、`callbacks.onTurnEnd` 之前）；
+    常量 `DESIGN_TURN_NOTICE_AT = 5` · `DESIGN_TURN_SKELETON_AT = 8` · `DESIGN_FIRST_VERSION_TURNS = 15`。角色表当前一行（`eng-designer`）。
+  - **`eng-coder` 不在本批**：其零落笔面已由 `AGENT-LOOP-UPSTREAM.md` §6.32 看门狗兜（父侧提醒、连续 50 轮）；模型面计数要先定它的预算数，另裁——加一行即扩展，不改函数体。
+  - **注入形逐字**（`turn ≥ 5` 起，每工具轮末；两串里的 `15` 一律由常量 `DESIGN_FIRST_VERSION_TURNS` 插值——改常量即改注入文本，不另留字面；`7` = persona 判定点 `turn > 7`）：
+    - 常行：`[System reminder: design round turn ${turn}/15 — ${wrote ? "something has been written to disk" : "nothing has been written to disk yet"}. First version budget is 15 turns; past 7 turns with nothing landed the rule is a skeleton + unresolved list.]`
+    - 降级行（`turn ≥ 8` 且未落盘，替代常行）：`[System reminder: design round turn ${turn}/15 — nothing has been written to disk yet. The 7-turn mark has passed with nothing landed: degrade the delivery NOW — write the skeleton (design doc + batch record §2) plus an unresolved list, then refine in place.]`
+  - **阈值理由**：5 = 在「过半（>7）」判据之前 3 轮给出计数（模型还有 3 轮可动手）；8 = 与 persona「过 7 轮」同一判定点（`turn > 7`）。`turn < 5` 静默——早期注入只是噪声。
+  - **机判（纯函数五断言）**：`designTurnReminder` 五断言（`turn 4` ⇒ `null`；`turn 5` 且未落盘 ⇒ 常行、不含降级句；`turn 8` 且未落盘 ⇒ 降级句、含 `skeleton`；`turn 8` 且已落盘 ⇒ 常行、不含降级句；`role` = `eng-coder` / `null` ⇒ `null`）。
+  - **机判（`batch` 写面，台账 `#1677`）**：`batch append` 成功后 `agent._batchWrites` 自增（两次追加 ⇒ 2）；被拒的 append（空文本 / 段白名单外）⇒ 不增；`_touchedFiles` 空 ∧ `_batchWrites = 1` ∧ `turn 8` ⇒ 常行、含 `something has been written`、不含降级句。
+  - **机判（续跑 + 接线）**：续跑断言一条（`turn 12` ∧ `_touchedFiles:["x"]` ⇒ 常行、含 `turn 12/15` 与 `something has been written`、不含降级句）；接线一条（fake agent 调 `injectPostTurn` ⇒ `history` 末条为注入串；`turn` 实参传段内值、`_currentTurn` 传累计值——二者故意不同，取后者）。
 
 > **§6.7–§6.12 已拆出** → `docs/core/design/AGENT-LOOP-SUBAGENT.md`（子代理 / 文件域调度器 / abort 来源标注）· `docs/core/design/AGENT-LOOP-ASYNC-POOL.md`（挂起 digest / 分域池与 async advisor / 评审池接入——节号沿用）。
 
@@ -359,7 +379,7 @@ if (depth === 0 && !signal?.aborted && thrownError?.name !== "AbortError") {
 - `reason` 三态：`done`（正常完成）· `maxTurns`（`ContinueError`——撞帽暂停）· `error`（其余异常——`error` 字段带 message）。
 - 每 `runAgent` 调用至多一次（触发块在收尾函数内、收尾函数在 `finally` 单点调用）。
 - **端侧触发面**：随主循环取核归核——VSC 经核 `runAgent` 自动获得（事实表 = 本档 §6.18「生命周期钩子面」行）；
-  载荷 `turn` = 链内累计轮号（核 `agent._currentTurn` ← 帧赋值 `thincoder-core/agent/turn-loop.mjs:66`），与本节载荷表一致。
+  载荷 `turn` = 链内累计轮号（核 `agent._currentTurn` ← 帧赋值 `thincoder-core/agent/turn-loop.mjs:74`），与本节载荷表一致。
 
 **时序**：回合循环每轮 = chat → dispatch（Pre / Post / Failure hooks）→ post-turn 注入（`onTurnEnd` = 显示面簿记）
 → 循环退出（正常 return / `ContinueError` / 异常 / 中止）→ finally → `finalizeAgentTurn`：

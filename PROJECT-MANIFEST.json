@@ -39,6 +39,11 @@
         "batches",
         "TODO.md",
         "TODO-archive.md"
+      ],
+      "roots": [
+        "thincoder-core/prompts",
+        "thincoder-core/tool-docs",
+        "thincoder-core"
       ]
     },
     "exemptions": []

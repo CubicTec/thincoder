@@ -215,7 +215,7 @@ VSC 域锚检对产品树外部符号现以**报告态**输出（非阻断——
 ## 6. 提示词落点（F20 行为面）
 
 **落点（现状）**：`thincoder-core/prompts/discipline-engineering.md` 的「文档与台账自持（本仓记本仓的）」节（`:116` 起）；
-中文设计档正本 = `docs/core/design/prompts/discipline-engineering.md` §文档与台账自持（本仓记本仓的）节（各实现面原文自持）。
+ 规则详述 = `LEDGER-SELF-CONTAINED.md` §5.2；提示词面 = `thincoder-core/prompts/discipline-engineering.md` 同名节（各实现面原文自持）。
 
 **该节第 6–8 条**：「批 = 一次实现轮、各带自己的批次档」·「子代理只写本仓」·「需本仓之外的改动 = 停下上报」（`:124`–`:128`）。
 

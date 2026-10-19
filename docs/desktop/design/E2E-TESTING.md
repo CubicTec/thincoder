@@ -140,7 +140,7 @@ _electron.launch({
 | `thincoder-desktop/test/integration/statusline-align.test.mjs`（集成域） | **142** | — | 用例 4（`T-DSK39` 状态栏对齐——真 Electron 打开态对表；夹具前置 = 第二枚临时目录项目根〔槽 `cwd` = `PROJ`〕——判据单源 = §6）· 常驻类 |
 | `thincoder-desktop/test/integration/ledger-notice.test.mjs`（集成域） | **121** | — | 用例 5（`T-DSK40` 账本警示面——真 Electron；夹具前置 = 损坏现场档 `{manifest}.corrupted` + 会话槽族档〔槽 `cwd` = `PROJ`〕——判据单源 = §3.6 / §6）· 常驻类 |
 | `thincoder-desktop/test/integration/align3-face.test.mjs`（集成域） | **209** | — | 用例 6 / 7（`T-DSK42` / `T-DSK43` 小修族真机——真 Electron；**离线可产断言** = 工具卡摘要 / 错误横幅 / 欢迎条 / 设置面类型加工 / Esc 关闭；**离线不可产面**（停止痕 / 文件链接 / 子代理门审批 / 提问卡键焦 / 忙态两钮可点 / 审批卡真置焦）= 人工走查 + 父侧真跑闭合；夹具前置 = `{"locale":"en"}` + 会话槽族档〔槽 `cwd` = `PROJ`〕——判据单源 = §6）· 常驻类 |
-| `thincoder-desktop/test/integration/timer-wake-face.test.mjs`（集成域） | **≈120**（拟新增） | — | 用例 8（`T-DSK44` 到期触发面——真 Electron；**离线不可产组**（零 provider ⇒ 真 timer 不可复现）⇒ 人工走查 + 父侧真跑闭合；**机检 = 单元测试档惯例**（名随批次档——住 `docs/batches/` · 不登记 · 随批留存）；判据单源 = §6）· 常驻类 |
+| `thincoder-desktop/test/integration/timer-wake-face.test.mjs`（集成域） | **≈120** | — | 用例 8（`T-DSK44` 到期触发面——真 Electron；**离线不可产组**（零 provider ⇒ 真 timer 不可复现）⇒ 人工走查 + 父侧真跑闭合；**机检 = 单元测试档惯例**（名随批次档——住 `docs/batches/` · 不登记 · 随批留存）；判据单源 = §6）· 常驻类 |
 | `thincoder-desktop/test/integration/midturn-input.test.mjs`（集成域） | **135** | — | 用例 9（`T-DSK45` 回合中插入真机——真 Electron；夹具前置 = `{"locale":"en"}` + 会话槽族档〔槽 `cwd` = `PROJ`〕；**离线不可产**（真回合需 provider）⇒ 人工走查 + 父侧真跑闭合；判据单源 = §6）· 常驻类 |
 | `thincoder-desktop/test/files.mjs` | **3**（单源 = 本档 §9.1） | — | 登记新用例文件（walk 递归 + 反向自检据此覆盖；集成件 = 落盘时登记 +1） |
 | `thincoder-desktop/test/run.mjs` | **49**（单源 = 本档 §9.1） | ±1 行（`:4` 注释改写 · **逻辑零改动**） | 注释须与「集成域已建」同实（walk 递归天然覆盖新档） |
@@ -181,8 +181,8 @@ _electron.launch({
 | `T-DSK40 ledger-notice` | 正常 | fixture 家（`{"locale":"en"}` + 第二枚临时目录作项目根〔记 `PROJ`〕+ 会话槽族档〔`cwd` = `PROJ`〕+ **损坏现场档** `{manifest}.corrupted` 一枚——命名 / 落位单源 = §3.6 第 1 步；清理 = 两枚临时目录） | ① 真点**会话控制面项目钮**（`button.session-project`——对话框夹具 `PROJ`，照 §3.5 第 6 步）⇒ 等 `[data-guide="no-message"]` ② 点开下拉 ⇒ 下拉首行 = `div.session-ledger-notice[data-ledger-notice]`（**非 `button`** ∧ 零 `data-action`）∧ `.session-item` 条目数 = 夹具族数 ③ PNG 落 `thincoder-desktop/test/artifacts/ledger-notice.png` ④ 零 `pageerror`；断言序单源 = §3.6；用例号自铸披露 | ✅ 做（机检 = 单元测试档惯例） |
 | `T-DSK42 小修族·对话流面` | 正常 | fixture 家（`{"locale":"en"}` + 会话槽族档〔`cwd` = `PROJ`〕——沿 `T-DSK32` 夹具先例） | ① 工具卡头 = 名称 / 参数 / 状态词 / 耗时 / **摘要段**（`read` ⇒ `N lines` 形）在场 ∧ 状态色 = `data-status` 两值（`error` ⇒ `#f14c4c`）② 停止痕 `[data-stopped]` 在场（`msg:interrupt` ⇒ `stopped` 终局后）且词 = `[stopped]`（en）——**离线不可产** ③ 错误横幅 = 文 + 重试钮在场（末 `user` 块在场 ⇒ 钮在）；`details`（`techInfo`）面 = **离线不可产** ④ `no-message` 帧欢迎条 = 抬头 / 文案 / 快捷键行三行 ⑤ 工具结果含盘上真路径 ⇒ `.file-link[data-path]` 在场 ∧ 点按 ⇒ 零 `pageerror`——**离线不可产**；**离线不可产面 = 人工走查 + 父侧真跑闭合**（D16 义务——零 provider 夹具 ⇒ 真回合不可离线复现）；机检 = `thincoder-desktop/test/integration/align3-face.test.mjs`（**209** · 集成域——离线可产断言） | ✅ 做 |
 | `T-DSK43 小修族·外围面` | 正常 | fixture 家（同上） | ① 子代理门审批卡首行含 owner 段（`<owner> · <tool>`）∧ diff 节点在场（`apply_patch` 门——`diff-preview` 类名）——**离线不可产** ② 提问卡填入 ⇒ Enter ⇒ 卡退场 ∧ 回焦 `[data-input="text"]`——**离线不可产** ③ 回合在飞 ⇒ 输入区模型 ∕ 推理钮**可点** ∧ 中断键可点（**非在飞 ⇒ 键隐**——核件两态 = 显 ∕ 隐）——**离线不可产** ④ 设置面 agent 段 = 具名控件 ∧ `change` ⇒ 即改即存（回读同值）——离线可产 ⑤ 设置面开 ⇒ `Escape` ⇒ 关闭（`[data-slot="settings"]` 清空）——离线可产（**F-Esc 判据**）⑥ 审批卡出现即 `document.activeElement` = 卡内 `[data-autofocus="1"]`——**离线不可产**（**F-置焦 判据**）；**离线不可产面 = 人工走查 + 父侧真跑闭合**；机检 = `thincoder-desktop/test/integration/align3-face.test.mjs`（**209** · 集成域——离线可产断言） | ✅ 做 |
-| `T-DSK44 timer-wake 触发面` | 正常 | 真 provider 会话：真设 timer ⇒ 到期 | ① 到期 ⇒ 交付 + 流内触发行恰一行（`[System reminder: ⏰ timer — …]` 原文——显示裁 ≤3 行）② 状态行 `⏰N` 段随动（在途 N）①②③ = 真 provider 面——**全组离线不可产**（零 provider 夹具 ⇒ 真 timer 不可复现）⇒ 人工走查 + 父侧真跑闭合；**机检 = 单元测试档惯例**；真机档 = `thincoder-desktop/test/integration/timer-wake-face.test.mjs`（拟新增） | ✅ 做（拟新增） |
-| `T-DSK45 回合中插入` | 正常 | 真 provider 会话：长工具回合在飞 ⇒ 忙态发两条 | ① 忙态提交 ⇒ **零 `busy` 拒** ∧ 输入区上方 `⏳` 待发送气泡在场（逐条 · 非流内）∧ 段 14 读数 = N ② 首条于**步边界**注入 ⇒ 气泡退场 ∧ 用户块入流（标签 `❯ You:`）∧ 段 14 随动（N-1）③ 末条随**回合尾送达**（无需用户再按 Enter）④ 队空后 `[data-pending]` 零节点；**离线不可产**（真回合需 provider）⇒ 人工走查 + 父侧真跑闭合；机检 = 单元测试档惯例（名随批次档 · 住 `docs/batches/` · 不登记 · 随批留存） | ✅ 做（拟新增） |
+| `T-DSK44 timer-wake 触发面` | 正常 | 真 provider 会话：真设 timer ⇒ 到期 | ① 到期 ⇒ 交付 + 流内触发行恰一行（`[System reminder: ⏰ timer — …]` 原文——显示裁 ≤3 行）② 状态行 `⏰N` 段随动（在途 N）①②③ = 真 provider 面——**全组离线不可产**（零 provider 夹具 ⇒ 真 timer 不可复现）⇒ 人工走查 + 父侧真跑闭合；**机检 = 单元测试档惯例**；真机档 = `thincoder-desktop/test/integration/timer-wake-face.test.mjs` | ✅ 做 |
+| `T-DSK45 回合中插入` | 正常 | 真 provider 会话：长工具回合在飞 ⇒ 忙态发两条 | ① 忙态提交 ⇒ **零 `busy` 拒** ∧ 输入区上方 `⏳` 待发送气泡在场（逐条 · 非流内）∧ 段 14 读数 = N ② 首条于**步边界**注入 ⇒ 气泡退场 ∧ 用户块入流（标签 `❯ You:`）∧ 段 14 随动（N-1）③ 末条随**回合尾送达**（无需用户再按 Enter）④ 队空后 `[data-pending]` 零节点；**离线不可产**（真回合需 provider）⇒ 人工走查 + 父侧真跑闭合；机检 = 单元测试档惯例（名随批次档 · 住 `docs/batches/` · 不登记 · 随批留存） | ✅ 做 |
 | `R1` 模型菜单全渠·一级全渠 | 正常 | 配 ≥2 有 key 渠（含自定义）——真机 | 菜单一级行数 = 渠数 ∧ 行序 = 配置序 ∧ 每渠悬停列模型 ∧ 选取 ⇒ 槽写生效（跨端同槽复核） | ✅ 做（真机 · 父侧收口——桌面 + VSC 同配置对拍） |
 | `R2` 模型菜单全渠·跨端集合对照 | 正常 | 桌面 ∥ VSC 同 config | 两端一级行集合相等（按 provider 键取集合——勿按显示文本：桌面分组标题 = 渠名 ∕ VSC = `providerLabel`） | ✅ 做（真机 · 父侧收口） |
 | `R3` 模型菜单全渠·失败渠诊断 | 错误 | 一渠 key 作废 | 该渠零行、零崩、控制台零静默（核落账失败项在） | ✅ 做（真机 · 父侧收口） |
@@ -201,7 +201,7 @@ _electron.launch({
 判据单源 = `docs/desktop/design/PROJECT.md` §7 **T-DSK39** 行。
 > `T-DSK40`（账本警示面——真 Electron；判据单源 = §3.6 / §6）。
 > `T-DSK42` / `T-DSK43`（小修族真机——**离线不可产面** = 人工走查 + 父侧真跑闭合；判据单源 = `docs/desktop/design/PROJECT.md` §7 两行）。
-> `T-DSK44`（到期触发面——**拟新增** · **机检 = 单元测试档惯例** + 真机档 `timer-wake-face.test.mjs`（拟新增 · 离线不可产组 ⇒ 人工走查 + 父侧真跑闭合）；判据单源 = 本节 + `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.12）。
+> `T-DSK44`（到期触发面——**拟新增** · **机检 = 单元测试档惯例** + 真机档 `timer-wake-face.test.mjs`（离线不可产组 ⇒ 人工走查 + 父侧真跑闭合）；判据单源 = 本节 + `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.30.12）。
 > `T-DSK45`（回合中插入——**拟新增** · **机检 = 单元测试档惯例**；**离线不可产面** = 人工走查 + 父侧真跑闭合；判据单源 = `docs/desktop/design/PROJECT.md` §6.1 ∕ `docs/desktop/design/UI.md` §1「批注（回合中插入 · 步边界 pickup）」）。
 > **R10 · 子代理面板 ∕ live 面**：真机 = **右列子代理全族**（出生 ∕ 走时 ∕ ⏹ ∕ 终态留场 ∕ 归档 ∕ 计数贴 ∕ 空态）——**人工走查 + 父侧真跑闭合**（离线不可产组同 T-DSK45；**测试覆盖随全清令取消**——不新增用例号）。
 > **桌面 ⇒ VSC 对齐（R1–R13 · 真机走查面登记）**：卡三面（R1）· 待发送三态 ∕ 步边界取批（R3）· timer 到期唤醒（R4）· 附件贴图两径（R5）· 文件链接点开（R2）· 失焦通知两档 ∕ 子代理 2s 走时（R6）· provider 四流程（R8）· 悬挂窗四态（R9）·
@@ -235,7 +235,7 @@ _electron.launch({
 10. **`thincoder-desktop/test/run.mjs` 注释随改**：注释须与「集成域 `thincoder-desktop/test/integration/` 已建」同实 ⇒ 已并入（§4 表在册）；runner 逻辑零改动（walk 递归 + 反向自检天然覆盖新档）。
 11. **实施期实证点**：家目录重定向被 Node `os.homedir()` 采纳——**已实证**（fixture 家内预设生效）；**userData 面 = env 改向不达**（Chromium 不采信 `APPDATA`）⇒ 生效面 = §3.2 `--user-data-dir`（落 `<临时家>/userData` · 两况俱过）
   · `thincoder-desktop/test/integration/` 档被 `thincoder-desktop/test/run.mjs` walk 正常收——**已实证**（单入口覆盖）；Electron 二进制缺盘时 electron 包入口会自下载（CI 接入前须预装）。
-12. **本档「（拟新增）」标记的清除**：先例 = `docs/desktop/design/RENDERER.md` §1 去标记六处。
+12. **本档标记面**：本档不携带「待建档」标记——档面所述即现状（标记退场后形；先例 = `docs/desktop/design/RENDERER.md` §1）。
 13. **改善项**：核侧家目录隔离现经 `USERPROFILE` / `HOME` 覆写（核侧 `os.homedir()` 读取面——系统原语）；显式参数 seam = **可选**（用户 2026-09-27 口径「参数通道偏好 · 非禁令」）；现形已实证可用（§8 第 11 项）⇒ **非缺口**；触发条件 = 核侧新增 home 依赖点令 E2E 隔离失效 ⇒ 随触面批补 seam。
 
 ## 9. 文件账（本域）

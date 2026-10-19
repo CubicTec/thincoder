@@ -107,4 +107,5 @@ if (failedFiles.length > 0) {
   process.exitCode = 1
 }
 if (totalFailed > 0) process.exitCode = 1
-console.log(`bench/check: ${totalPassed} passed, ${totalFailed} failed`)
+const failedNote = failedFiles.length > 0 ? `, ${failedFiles.length} failed file(s)` : ""
+console.log(`bench/check: ${totalPassed} passed, ${totalFailed} failed${failedNote}`)

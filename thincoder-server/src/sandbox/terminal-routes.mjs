@@ -350,7 +350,23 @@ export function createTerminalHub({ db, log = null, now = Date.now, fetchImpl = 
   }
 
   return {
-    handleUpgrade,
+    /** 升级入口（**对外暴露形**——装配面直挂后 `listeners("upgrade")[0] === 本件`，身份可比）：
+     *  同步抛兜底（记日志 + 断链）——直挂不再经网关包装，本件自持这层保护，钩子异常不落进程。 */
+    handleUpgrade: (req, socket, head) => {
+      try {
+        handleUpgrade(req, socket, head)
+      } catch (e) {
+        log?.error("upgrade_handler_error", { message: e?.message ?? String(e) })
+        // 孤儿会话收口：内层在 `sessions.set` 之后才建 conn——同步抛可留下无 conn 的行（单线程无并发构建）。
+        // 自带 try/catch：收口路径会写审计（`finishSession` → `recordAudit`），库已关时可能再抛——不得逃进事件发射栈。
+        try {
+          for (const session of [...sessions.values()]) if (session.conn === null) finishSession(session, "error")
+        } catch (cleanupError) {
+          log?.error("upgrade_handler_cleanup_failed", { message: cleanupError?.message ?? String(cleanupError) })
+        }
+        try { socket.destroy() } catch { /* 已断 */ }
+      }
+    },
     /** 停机全收口（`reason='server_stop'`——N85）：在飞会话逐一收口 ⇒ 表清空。 */
     closeAll(reason = "server_stop") {
       for (const session of [...sessions.values()]) finishSession(session, reason)

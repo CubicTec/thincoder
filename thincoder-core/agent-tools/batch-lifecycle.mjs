@@ -24,9 +24,13 @@
  * ——§2/§3/§4/§6 各段有内容 ∥ §1 声明不适用（仅 §2/§3/§4 可声明；§6 不可声明 · §5 段号豁免）；
  * 缺段 ⇒ 点名拒（门位 = 冻结拒写之后、文档机检门之前）。重开径（§4.18-B）：已收口档
  * `status` §1 → 进行中 + `note` 非空 ⇒ 状态行改写 + §1 段尾追记行（只追加，其余行字节不变）。
+ *
+ * 收口重锚（§6.2 · C · AC-M2-30）：收口有两条通路——`close` ∥ `status` 写 §1「已收口」——两路都冻结档、
+ * 都让批「收口了」，故**两路同调**单源 `reanchorOnClose`（本档下方），调点均在状态行写盘之后。
+ * 一次收口只出一份 `[ledger reanchor]` 回执段（判据 = 前态未冻结：已冻结档在两路都被冻结门早拒）。
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
-import { dirname, resolve } from "node:path"
+import { dirname, relative, resolve } from "node:path"
 
 import {
   SEGMENT_BY_ROLE, SEGMENT_BY_ROLE_NORMAL, DEPTH0_SEGMENTS, STATUS_WORDS, STATUS_LINE_RE, readBatchStatusLine, sectionHasStatusLine, sectionHeaderRe, batchSkeleton,
@@ -393,9 +397,11 @@ function assertStatusNote(note) {
  * path 参数 = 仅 depth-0（D-BR21）——子代理/评审传 path ⇒ 拒（目标 = spawn/实例注入，语法上
  * 写不到别处）。F11-C 挂点 = 写盘前（assertStatusValue 后）：档头结构行含骨架死占位 ⇒ 拒
  * （段体引用豁免；close 不拦——收口是主 agent 终态动作）。
- * @returns {string} 成功消息
+ * **收口第二通路**：值余核 = §1「已收口」时本 action 同样收口（链门 + 机检门 + 冻结与 close 同序）⇒
+ * 状态行写盘后同调 `reanchorOnClose`（单源——不复制 close 径逻辑），回执携同一 `[ledger reanchor]` 段。
+ * @returns {Promise<string>} 成功消息
  */
-export function statusBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
+export async function statusBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
   const depth0 = isDepthZero(ctx)
   // 模式位执行期实读（§4.16——同款先例 = task.mjs execute 门；翻转即时生效——D-BR26）。
   // 写域：评审 → §3 · 子代理 → 身份段（普通模式分支合并 coder 增表——工程模式分支不查）·
@@ -457,20 +463,28 @@ export function statusBatchRecord({ args, ctx, review, pickTarget, onWritten }) 
     //（值非「已收口」；写后门态 = open，后续 append/status 恢复放行）。
     writeFileSync(abs, rewriteAsReopen(src, note))
     onWritten?.(ctx?.agent ?? {}, abs)
-    return `batch: §1 reopened — status line → 「进行中（重开 ${todayLocal()}）」 + reopen record appended to §1 (reason lands verbatim in the record line). Append/status are writable again (BR-64); the closeout chain gate still applies at the next close (§4.18-A).`
+    return `batch: §1 reopened — status line → 「进行中（重开 ${todayLocal()}）」 + reopen record appended to §1 (reason lands verbatim in the record line). Append/status are writable again (BR-64); the closeout chain gate still applies at the next close.`
   }
   // ③ 链完整性门（§4.18-A——门位 = 冻结拒写之后、文档机检门之前）：链未跑完先报结构缺口，不先跑机检
-  if (seg === 1 && stripDecorations(value) === STATUS_WORDS[1].closed) assertCloseoutChainComplete(src)
+  // 收口判据（本笔把 §1 写成「已收口」）单点——链门 ∥ 机检门 ∥ 重锚合取三处共消费，段号守卫只写这一次
+  // （`STATUS_WORDS[1].closed` 只属 §1 项，`assertStatusValue` 亦拒他段该值；显式 `seg === 1` 让不变量不靠巧合）。
+  const closingValue = seg === 1 && stripDecorations(value) === STATUS_WORDS[1].closed
+  if (closingValue) assertCloseoutChainComplete(src)
   // ④ 文档机检门（§3.20「结构兜底」②——门位 = 链门之后、状态行改写之前）：值余核 =「已收口」时同门；
   // REFUSED（K ≥ 1）∥ ERROR ⇒ throw（§1 状态行字节不变）；其余值零挂（回执逐字旧形）。
-  const gate = stripDecorations(value) === STATUS_WORDS[1].closed
-    ? runBatchGate({ abs, cwd: ctx?.agent?.cwd ?? process.cwd(), agent: ctx?.agent ?? {}, scope: "close" })
-    : null
+  const gate = closingValue ? runBatchGate({ abs, cwd: ctx?.agent?.cwd ?? process.cwd(), agent: ctx?.agent ?? {}, scope: "close" }) : null
   if (gate && (gate.state === "refused" || gate.state === "error")) throw new Error(gateRefusalMessage(gate, "status"))
   const written = updateSectionStatusLine(src, seg, lineValue)
   writeFileSync(abs, written)
   onWritten?.(ctx?.agent ?? {}, abs)
-  return `batch: §${seg} status line updated to ${JSON.stringify(lineValue)} — the freeze gate (§1) is a read-only domain for non-§1 writes (frozen truth stays = the §1 line).${gateReceiptLine(gate)}`
+  // 收口重锚（§6.2 · C · AC-M2-30）：值余核 = §1「已收口」⇒ 本 action 就是收口（上两道门与 close 同序、
+  // 同样冻结档）⇒ 同调单源 `reanchorOnClose`（不复制 close 径逻辑）；次序位 = 状态行写盘之后（与 close 径一致）
+  // ——本笔被任一拒因拒 ⇒ 上面各门早 throw，台账零写（被拒的收口没有收口）。
+  // **一次收口只出一份清单**：触发 = `closingValue` ∧ 前态未冻结；`batch` 一次调用只分派一个 action
+  // （close ∥ status 不会同拍）⇒ 同一拍至多一次重锚、至多一份 `[ledger reanchor]`。前一合取项 =
+  // **defensive-only**：前态 closed 已被冻结门（`assertGateOpen`，本函数上方）早拒，正常路径跑不到这里。
+  const reanchor = closingValue && readBatchStatusLine(src) !== "closed" ? await reanchorOnClose(abs) : null
+  return `batch: §${seg} status line updated to ${JSON.stringify(lineValue)} — the freeze gate (§1) is a read-only domain for non-§1 writes (frozen truth stays = the §1 line).${gateReceiptLine(gate)}${reanchorReceiptLine(reanchor)}`
 }
 
 /**
@@ -481,9 +495,9 @@ export function statusBatchRecord({ args, ctx, review, pickTarget, onWritten }) 
  * 不适用；§6 唯一缺段时拒串 = 旧 §6 串逐字零回归）；② 拒句含「失败 ⇒ 勿 close」（append/status 面
  * ——见 batch.mjs 与上方 assertGateOpen）；③ 无状态行档 ⇒ 自建机读位（updateSectionStatusLine
  * 缺失即插——同路收口；「有行但不可解析」仍 fail-closed）。
- * @returns {string} 成功消息
+ * @returns {Promise<string>} 成功消息
  */
-export function closeBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
+export async function closeBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
   assertMainAgentOnly(ctx, "close", review)
   const abs = pickTarget(args?.path)
   const src = readFileSync(abs, "utf8")
@@ -501,5 +515,41 @@ export function closeBatchRecord({ args, ctx, review, pickTarget, onWritten }) {
   const written = updateSectionStatusLine(src, 1, `已收口 ${date}`)
   writeFileSync(abs, written)
   onWritten?.(ctx?.agent ?? {}, abs)
-  return `batch: §1 status line → 「已收口 ${date}」 — the record is frozen: append is refused from now on, and status is refused except the reopen conjunction (§1 → 进行中 with a note, §4.18-B) (整档冻结；改 = 新批新档; §6 内容与台账核销仍走既有通道).${gateReceiptLine(gate)}`
+  // 收口重锚（§6.2 · C · AC-M2-30）：顺序位 = 全部拒因通过、§1 状态行写盘**之后**（上两行）——close 被拒
+  //（身份 ∥ 冻结 ∥ 链完整性门 ∥ 文档机检门）⇒ 台账零写（被拒的 close 没有收口，「原批已收口」那时是假事实）。
+  const reanchor = await reanchorOnClose(abs)
+  return `batch: §1 status line → 「已收口 ${date}」 — the record is frozen: append is refused from now on, and status is refused except the reopen conjunction (§1 → 进行中 with a note) (整档冻结；改 = 新批新档; §6 内容与台账核销仍走既有通道).${gateReceiptLine(gate)}${reanchorReceiptLine(reanchor)}`
+}
+
+/** 收口重锚（设计档 §6.2 · C）——收口两条通路（`close` ∥ `status` 写 §1「已收口」）共调本函数（同一单源，
+ *  不复制逻辑）；写入单源 = `ledgerReanchorBatch`（本档只供 `cwd` 基准与回执形；工具层零 SQL）。
+ *  `cwd` = **批档所属项目根** = `resolveLedgerRoot(dirname(<batchDoc>))?.root`（§6.1 口径 2 同一子表达式）——
+ *  **不用会话锚**：会话锚为工作区 ∥ 容器时可能收到别的项目根 ⇒ 选行零命中 ⇒ 唯一的机器写静默失效。
+ *  无根 ⇒ 传 `null`（核心不取行、不重锚，`failed` 点名——不落兜底基准）。
+ *  `batch` = 项目根相对路径（复启句的 `<批名>` 即其文件部分；绝对路径同样可解析，但句内会带整条绝对路径）。
+ *  失败**不抛**（台账忙 ∥ 无根均不否决收口——档面写与台账库分属两存储，不做分布式事务）。 */
+async function reanchorOnClose(abs) {
+  try {
+    const { ledgerReanchorBatch, resolveLedgerRoot } = await import("../ledger.mjs") // 动态 import：ledger-db 静态引 node:sqlite（W8 契约②）
+    const root = resolveLedgerRoot(dirname(abs))?.root ?? null
+    // 句内路径统一正斜杠（与 `task_book` 列值同形——`<批名>` 是给人读的事实句，不是平台路径）
+    return ledgerReanchorBatch({ cwd: root, batch: root ? relative(root, abs).replace(/\\/g, "/") : abs })
+  } catch (e) {
+    // 非预期异常（模块加载失败 ∥ 根推导内读声明抛）同样不得否决收口——降为同一返回形（台账零写）
+    return { batch: abs, reanchored: [], alreadyAnchored: [], failed: String(e?.message ?? e) }
+  }
+}
+
+/** 重锚回执段（回执单源 = `ledgerReanchorBatch` 返回形——本档不另调选行再拼一次）：无未落行 ⇒ 无该段；
+ *  失败 ⇒ 点名失败因（台账零写、冻结照常）；非空不覆盖形（复启句入 `evidence`）逐行点名。 */
+function reanchorReceiptLine(result) {
+  if (!result) return ""
+  if (result.failed) return `\n[ledger reanchor] 未重锚：${result.failed}——台账零写；记录冻结照常完成`
+  const line = (r) => `#${r.id} ${r.status} 「${r.title}」`
+  const anchored = result.reanchored.map((r) => `${line(r)}→ 条件${r.sentenceTo === "evidence" ? "（resume_when 现值非空——原值保留，复启句追加 evidence）" : ""}`)
+  const skipped = result.alreadyAnchored.map((r) => line(r))
+  return [
+    anchored.length ? `\n[ledger reanchor] 本批未落行 → 条件 ${anchored.length} 行：${anchored.join("；")}` : "",
+    skipped.length ? `\n[ledger reanchor] 已是 条件（幂等跳过，零写）${skipped.length} 行：${skipped.join("；")}` : "",
+  ].join("")
 }

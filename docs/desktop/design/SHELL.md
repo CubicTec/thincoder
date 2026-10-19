@@ -13,7 +13,7 @@
 ```text
 thincoder-desktop/                  ← 本端产品包
 ├── package.json                    ← 包定性：`main` 入口 + script 六条（`test` / `start` / `prepackage` / `package` / `postpackage` / `quickcheck`（渲染面 web 快筛——非集成测试树）——单源 `docs/desktop/design/PACKAGING.md` §2）+ devDeps（electron · electron-builder · `playwright-core`——E2E 驱动 · 测试 + web 快筛驱动）
-├── electron-builder.yml            ← 三平台产物声明（拟新增）
+├── electron-builder.yml            ← 三平台产物声明
 ├── .gitignore                      ← 忽略 `thincoder-desktop/test/artifacts/`（运行期产物不进 git——单源 = `docs/desktop/design/E2E-TESTING.md` KD-10）
 ├── src/main/                       ← 主进程（Node / ESM——唯一持 Node 能力者）
 │   ├── main.mjs                    ← 入口：单实例锁 → 协议注册 → 窗口前恢复（重启自动重开——`docs/desktop/design/SESSIONS.md` §1 KD-56）→ 窗口 · 启动自检（同档 §2 KD-7）；ready 前初始化一律 await

@@ -81,11 +81,11 @@
 | `qwen-vl-max` | 同上 | 同上 |
 | `qwen-omni-turbo` | 同上 | 同上 |
 | `qwen3-235b-a22b` | 同上 | 同上 |
-| `qwen3-coder-plus` | 同上（该名的 `qwen3-coder` 门在 `thincoder-core/config.mjs:135`，**不读 spec**） | 同上 |
+| `qwen3-coder-plus` | 同上（该名的 `qwen3-coder` 门在 `thincoder-core/config.mjs:146`，**不读 spec**） | 同上 |
 
 （`qwen-max` / `qwen-plus` 两行按退役指令一并删，退化在 §2.4 认账。）
 
-**关键澄清（两件事不得混同）**：`thincoder-core/config.mjs:133-140` 的
+**关键澄清（两件事不得混同）**：`thincoder-core/config.mjs:143-156` 的
 `resolveEnableThinking` 判据 = **名称前缀 `startsWith("qwen")` + `isBailianHost`**，
 **不读 `MODEL_SPECS`** ⇒ 删 `qwen` spec 行**完全不影响**它（实测两机制零耦合）。
 `thincoder-core/provider/normalize.mjs:22` / `thincoder-vscode/src/extension/image-handler.mjs:110` 等
@@ -112,7 +112,7 @@
 | 8 | `qwen3.5-plus` / `qwen3.5-flash` | ② 接受退化 | 两名在普查的三个口径面（服务端实测 / token-plan 清单 / DashScope 文档族）**均无逐名条目** ⇒ 全字段零口径（仅 6 的在册性亦无） |
 | 9 | `qwen-flash` / `qwen-turbo` | ② 接受退化 | 老命名族：无实测、无清单点名 ⇒ 全字段零口径（此两名曾完全依赖托底行，退化幅度最大） |
 | 10 | `qwen-vl-max` / `qwen-omni-turbo` / `qwen3-235b-a22b` | ② 接受退化 | **视觉退化最重**：「按命名即视觉/全模态档」属**命名推断**（既非实测也非官方逐名口径 ⇒ 不够补行门槛）；退化为 `multimodal` 未声明 ⇒ `read_image` 摘除。认账同 5 |
-| 11 | `qwen3-coder-plus` | ② 接受退化 | 渠道清单未见该名 ⇒ 全字段零口径；`thincoder-core/config.mjs:135` 的 `qwen3-coder` 排除门独立存在，**不受影响** |
+| 11 | `qwen3-coder-plus` | ② 接受退化 | 渠道清单未见该名 ⇒ 全字段零口径；`thincoder-core/config.mjs:146` 的 `qwen3-coder` 排除门独立存在，**不受影响** |
 | 12 | `qwen-max` | ② 接受退化 | 服务端实测 **DashScope 200 活着** ⇒ 与「退役」指令字面矛盾。按裁定删行，退化同 5。**差异上报 = R-1** |
 | 13 | `qwen-plus` | ② 接受退化 | 同 12 |
 | 14 | `qwen3.8-max-preview` | ①→并入既有行 | 删独立行；查表经 `qwen3.8-max` 前缀**遮蔽命中该行**（实测同对象）⇒ **不退化**，且避开该 preview 名实测的 token-plan **静默映射**陷阱 |
@@ -142,33 +142,33 @@
 | `thincoder-core/auto-think.mjs:67-68` | 仅 `reasoningEffortEnum`（无枚举 ⇒ return null） | **autoThink 对两 flash 档从静默失效变生效** |
 | `thincoder-core/agent/spawn-child.mjs:188-195` | 仅 `reasoningEffortEnum` | consult/subagent effort 钳制生效（越界值由「放行」转「丢弃」） |
 | `thincoder-core/provider/core.mjs:197-203` | 仅 `reasoningEffortEnum`（越界即抛） | 消除一条**现网正在发生**的抛错路径：`qwen3.7-flash` / `qwen3.8-flash` 无枚举 ⇒ `:198` 判据短路、`/think effort high` 直通服务端吃 400；补枚举后该值在枚举内 ⇒ 该路径就地消解。**对照**：`qwen3.8-max` 枚举 `xhigh/medium/low`（`:74`）零改，其 `/think effort high` 抛错 ⇒ 不属本册效果（另见 §7）|
-| `thincoder-core/config.mjs:133-140` | 名称前缀 + Bailian 主机（**不读 spec**） | **零改零影响**（§2.3 澄清；两新档前缀 `qwen` 自动覆盖） |
+| `thincoder-core/config.mjs:143-156` | 名称前缀 + Bailian 主机（**不读 spec**） | **零改零影响**（§2.3 澄清；两新档前缀 `qwen` 自动覆盖） |
 | `thincoder-core/model-specs.mjs:215` · `thincoder-core/model-specs.mjs:292`（`:295` `...spec` 展开） | `cacheMode`（只登记不消费：`DEFAULT_SPEC` 取值 + `providerSpec` 展开复制） | **字段本体整体删除**（§14.2 #11 · 字面清零）——消费面零 ⇒ 删除零行为差；本条效力面收口于 §14 |
 | `thincoder-cli/src/tui/cmd-think.mjs:13-16` · `thincoder-cli/src/tui/cmd-think.mjs:131` | `thinkApi` / `thinkEnabledValue` / `reasoningEffortEnum`（`:131`＝`/think on` 默认档取值点） | `:131` 已落（§2.8-1）；`:104` 入口归一 `"none"` ⇒ off 标记（§2.8-2 · A-18，已落）；`:13-16` 读取面零改 |
 | `thincoder-vscode/webview/model-picker.js:85` · `:123` | 条目 `reasoning` 枚举 + `effortDefault`（两处归一 = `selectModel` / `handleModelsMessage`） | **回归修复 · 披露面**（§2.8-3 · A-17）：取值式随 §15.4 单源规则收正（`effortSelection` 三支优先序——注册默认优先、无注册默认 ⇒ 中性档 `null`） |
 | `thincoder-cli/src/tui/cmd-advisor.mjs:225-255` | `reasoningEffortEnum`（`:235` 档位表 · `:247-253` `← current` 标记） | **出批零改**（listing-only）：会诊池 effort 菜单档位随枚举显真相（含 `"none"`）；无写槽、无载荷面 |
 | `thincoder-cli/src/tui/slash-commands.mjs:150-157` | `reasoningEffortEnum`（`:154` 补全候选） | **出批零改**（listing-only）：`/think effort <Tab>` 候选随枚举显真相 |
-| `thincoder-cli/src/tui/cmd-config.mjs:172-184` | `reasoningEffortEnum`（`:180` `["none", ...enumList]` · `:205` 过滤 `!== "none"`） | **出批零改**：枚举含 `"none"` 的档 picker 出双 `none` 行 = **既有形态**（`glm-5` / `glm-5.2` 在册） |
+| `thincoder-cli/src/tui/cmd-config-menus.mjs:84-93` | `reasoningEffortEnum`（读点 `:87`；`none` 去重形 = `thincoder-cli/src/tui/config-helpers.mjs:40-42`） | **出批零改**：枚举含 `"none"` 的档 picker 出双 `none` 行 = **既有形态**（`glm-5` / `glm-5.2` 在册） |
 | `thincoder-core/provider/core.mjs:253` | `partialMode` | 四新行沿用 true ⇒ 零变化 |
 | **八个**消费点：核 `thincoder-core/tools/index.mjs:64` · `thincoder-core/tools/file.mjs:159` · `thincoder-core/agent/record-results.mjs:51` · `thincoder-core/agent/setup-reminders.mjs:251` · `thincoder-core/provider/normalize.mjs:22` · `thincoder-core/attachments.mjs:54` · VSC `thincoder-vscode/src/agent/tool-table.mjs:177` · `thincoder-vscode/src/extension/image-handler.mjs:43` | `multimodal`（共 **8** 处，逐处语义见 §2.7 第 1 项） | **八个消费点全部零改**；四新行置 true ⇒ 两 flash 档由「蹭来」变「声明」，布尔语义无失真（实测见 §2.7）。 |
 
 **关键事实（修正原后果评估）**：核/CLI 路径上**没有任何一处读 `spec.thinking`**
 （全仓 `spec.thinking` 仅 1 处消费 = 上面 VSC 那行（`thincoder-vscode/src/extension/provider-probe-window.mjs:66`）+ 1 处测试断言）。
 ⇒ 危害面 = **VSC 下拉显隐 + effort 枚举缺失 + autoThink 静默失效**，
-**不是**「请求体发错字段」——请求体的思考开关由 `thincoder-core/config.mjs:133` 名称白名单兜住
+**不是**「请求体发错字段」——请求体的思考开关由 `thincoder-core/config.mjs:146` 名称白名单兜住
 （`doc:PROVIDER.md:§12`）。
 
 ### 2.6 `enable_thinking` 的契约归属（开放项 3 裁定）
 
 **裁定：不新增 `thinkToggleApi` 字段；`reasoningEffortEnum` 含 `"none"` 是「可关」的唯一枚举表达。**
 
-1. `enable_thinking` 已是**名称 + 主机驱动**的白名单（`thincoder-core/config.mjs:133-140`），与 spec 无耦合，
+1. `enable_thinking` 已是**名称 + 主机驱动**的白名单（`thincoder-core/config.mjs:143-156`），与 spec 无耦合，
    qwen 全族（含四新档）自动覆盖；新增 spec 字段 = 同一语义两处真源（违 D2 单权威源）。
 2. 两条关闭路径职责不同，**不是二义**：`reasoning_effort:"none"` = 服务端参数（枚举内合法值，
    实测）；`enable_thinking:false` = 面板/`/think off` 的显式 off 标记
    （`provider.thinking === null`）所触发。**但两侧不得互补**：判据序 = ① effort 有值且非 `"none"` ⇒ `true`
    ② `thinking === null` ⇒ `false` ③ effort truthy ⇒ `true`（机制正文与百炼互斥约束 = `doc:PROVIDER.md:§6.12`；
-   实现 = `thincoder-core/config.mjs:183-196`）⇒「标记缺失 + effort = `"none"`」= `true` + `"none"`
+   实现 = `thincoder-core/config.mjs:143-156`）⇒「标记缺失 + effort = `"none"`」= `true` + `"none"`
    同携（矛盾载荷，面板显示 `Thinking: ON` 与实际关思考分叉）；该组合在生产端消除（§2.8-2 · A-18），三条判据之外零改（§7 边界）。
 3. VSC off 链路已验证可达：`thincoder-vscode/webview/model-picker.js:64` → `thincoder-vscode/src/extension/reasoning-mode.mjs:22-24`
    （`{thinking:null, reasoningEffort:null}`）→ `thincoder-core/provider/core.mjs:209` → `enable_thinking:false`。
@@ -218,7 +218,7 @@
 - **面 2（裁定②）：CLI `/think effort none` ⇒ 关思考**。判据：`e.action === "effort"` ∧ `e.level === "none"`
   ⇒ 终态必须落**显式 off 标记**（`cur.thinking = null`）；终态若为「档位 `"none"` + 标记缺失」则
   `resolveEnableThinking`（判据序 ①②③ = §2.6-2；机制正文 = `doc:PROVIDER.md:§6.12`；
-  实现 = `thincoder-core/config.mjs:183-196`）返 `true` ⇒ 载荷 `enable_thinking:true` + `reasoning_effort:"none"` **同携**（矛盾载荷），
+  实现 = `thincoder-core/config.mjs:143-156`）返 `true` ⇒ 载荷 `enable_thinking:true` + `reasoning_effort:"none"` **同携**（矛盾载荷），
   面板 `:48-49` 亦显 `Thinking: ON`。该档位随四新档入册进入可达面。修点在**生产端**（`:104`）：
   `"none"` 落 off 标记，`resolveEnableThinking` 的三条判据零改（§7 边界）。effort 值写法（保留 `"none"` / 清除）
   两形态均落 off（qwen 侧由 `thinking === null` 主导 `enable_thinking:false`；effort 族侧由 §9.6 D-14
@@ -327,7 +327,7 @@
   （§2.8-1 / §2.8-2）＋ `applyThink` 具名导出＋ `:86-87` 循环回执守卫（同裁定② 第三处，§2.8 面 2 末条）——CLI 面板 / picker / `:16` 列表语义零触碰（**例外 = 上述回执守卫：交互循环仅此一处公式入册面**）；
   **VSC picker 归一 = 回归修复**（§2.8-3 / A-17，另列；取值式随 §15.4 收正——无注册默认 ⇒ 中性档「—」）。
 - 不给 `specMatch` 的 `matched` 位加第三态；不改 `lookupSpec` 返回形状与热路径。
-- 不新增思考关闭开关：`"none"` 已是枚举成员（四新档首项），`resolveEnableThinking`（`thincoder-core/config.mjs:183-196`）对显式 off 的既有覆盖即够（§2.6）——该函数现无「effort=none ⇒ `enable_thinking:false`」分支，不加；`"none"` 面的矛盾组合消除在**生产端**（§2.8-2 / A-18），不经该函数。
+- 不新增思考关闭开关：`"none"` 已是枚举成员（四新档首项），`resolveEnableThinking`（`thincoder-core/config.mjs:143-156`）对显式 off 的既有覆盖即够（§2.6）——该函数现无「effort=none ⇒ `enable_thinking:false`」分支，不加；`"none"` 面的矛盾组合消除在**生产端**（§2.8-2 / A-18），不经该函数。
 - 不为 qwen 之外的族新增/删除任何托底或冗余行（`glm` / `mimo` 族泛前缀行为**既有已核验设计**，不碰）。
 - 不扩 `modalities` 结构化字段（§2.7 裁定）；不改 **8** 个 `multimodal` 消费点的任何判据（八处完整坐标 = §2.5 表末行 + §2.7 第 1 项）。
 - 不引入网络探测 / 自动校正；全部字段均**人工登记**。
@@ -462,7 +462,7 @@ VSC 探测下拉该两名的档位枚举空（`thincoder-vscode/src/extension/pr
 **D-14 effort 族非百炼渠道的 off 静默失效（登记的实测事实制造的端侧假告知，同 §2.8 先例不得出厂）**：
 两端「关思考」现形态 = `thinking:null` 标记（CLI `thincoder-cli/src/tui/cmd-think.mjs:104 / :127` /
 VSC `thincoder-vscode/src/extension/reasoning-mode.mjs:22-24`）。该标记对百炼 qwen 生效靠 `enable_thinking:false`
-（`thincoder-core/config.mjs:136` 主机门控），对 `hy3`/seed 两新渠道**不发任何思考字段**（`thinking:null` falsy 被
+（`thincoder-core/config.mjs:147` 主机门控），对 `hy3`/seed 两新渠道**不发任何思考字段**（`thinking:null` falsy 被
 `thincoder-core/provider/core.mjs:193` 跳过），而两渠道服务端默认思考 **on**（裸请求实测）⇒
 UI 显示 OFF、服务端照想 = 与 PROVIDER.md §6.12 初始缺陷同类。修法（单点、载荷组装层；**谓词单源 = `doc:PROVIDER.md:§6.12`**
 ——本节引其条件，机制面不另立判据）：
@@ -574,7 +574,7 @@ UI 显示 OFF、服务端照想 = 与 PROVIDER.md §6.12 初始缺陷同类。�
 - 不为两族登记音频/视频模态位（产品无发送路径，同 §2.7 判）。
 - 不引入方舟 schema 剥除兼容层（§9.5 实测裁定），亦**不**为兼容层预建字段。
 - 不为转售名增设渠道限定行、不给 `lookupSpec` 扩 provider 维度（§9.4 D-12——机制变更越本节边界）。
-- 不改 `resolveEnableThinking`（`thincoder-core/config.mjs:133-140`——百炼主机门控专属，与两新渠道的关系已核对 = §9.6，非改码对象）。
+- 不改 `resolveEnableThinking`（`thincoder-core/config.mjs:143-156`——百炼主机门控专属，与两新渠道的关系已核对 = §9.6，非改码对象）。
 - 不改三端 effort UI 形状、不改用户 `config.json`、不建 Anthropic Messages 通道（hy4 标称支持，非本节目标）。
 - 不修 VSC 端差默认档面（五新名未登记 `EFFORT_DEFAULT_PREFIXES` ⇒ 面板默认档落枚举首项）：VSC 侧零改。
 - 不做 TokenPlan 订阅端点（`api.lkeap.cloud.tencent.com/plan/v3` 同 key 401 ⇒ 未订阅）与方舟 Coding 订阅端点（`/api/coding/v3` 400 `InvalidSubscription`）。
@@ -644,7 +644,7 @@ UI 显示 OFF、服务端照想 = 与 PROVIDER.md §6.12 初始缺陷同类。�
 - **零改**：CLI（`cmd-think.mjs` 档位行枚举驱动，flashx 自动显示三档）· VSC（
   `specs.mjs` 端差表零改——`EFFORT_DEFAULT_PREFIXES` 既有 `glm-5` 族前缀条目即命中 flashx，
   其默认档 `max` 在新枚举内合法）· `thincoder-core/provider/core.mjs`（`resolveEnableThinking`
-  qwen 白名单对 glm 恒 undefined——`thincoder-core/config.mjs:133-140` 零影响）·
+  qwen 白名单对 glm 恒 undefined——`thincoder-core/config.mjs:143-156` 零影响）·
   `PROVIDER.md`（渠道机制无变）。
 
 ### 10.5 影响文件清单
@@ -919,7 +919,7 @@ v2.5 两行（改值面；其余字段零改）：
 
 | 消费点 | 读什么 | 三新款变化（数据驱动） |
 |---|---|---|
-| 压缩阈值 / 上下文占比 | `context` · `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.8；核侧 `thincoder-core/config.mjs:153-159`（`resolveCompactThreshold`）· `thincoder-core/token-window.mjs:152`（窗口与占比）· `:161`；面板 `thincoder-vscode/src/specs.mjs:73` · `:87`；CLI 帧 `thincoder-cli/src/tui/render-frame.mjs:393`） | 128K → 1M（长会话截断面解除） |
+| 压缩阈值 / 上下文占比 | `context` · `maxOutput`（完成预留——可用窗口 = 窗口 − 预留；阈值 = 可用窗口 × 0.8；核侧 `thincoder-core/config.mjs:116-120`（`resolveCompactThreshold`）· `thincoder-core/token-window.mjs:152`（窗口与占比）· `:161`；面板 `thincoder-vscode/src/specs.mjs:73` · `:87`；CLI 帧 `thincoder-cli/src/tui/render-frame.mjs:393`） | 128K → 1M（长会话截断面解除） |
 | 温度钳位 | `tempRange`（`thincoder-core/provider/core.mjs:187-188`） | 不钳位 → 钳至 [0, 1.5]（越界值不再打到服务端吃 400） |
 | 视觉门（**8** 处） | `multimodal`（坐标 = §2.7 第 1 项） | 无视觉 → `read_image` 注册 + 贴图注入生效 |
 | 工具轮回声构造 | `reasoningEcho`（`thincoder-core/model-specs.mjs:288-290`） | 无字段 → 工具轮 assistant 消息恒带 `reasoning_content`（缺值 ⇒ `""`；三形态全 200 实测支撑） |
@@ -930,7 +930,7 @@ v2.5 两行（改值面；其余字段零改）：
 VSC 产品码全零改（`EFFORT_DEFAULT_PREFIXES`（`thincoder-vscode/src/specs.mjs:22-41`）不含 mimo ⇒ 端差默认档不命中 =
 档位首项兑底：三新款 = `"enabled"`、v2.5 同形 = **现状**）；查表 / 排序 / 告警 / 兜底机制零改（`:193` · `:198-212` · `:217-223`）；
 `thincoder-core/config-presets.mjs` 除 `model` 两处取值外零改；`thincoder-core/provider/core.mjs` 零改（无枚举名 ⇒ effort 越界门短路 = 现状）；
-`assistantToolCallMessage` 构造零改（仅按既有 `reasoningEcho` 判定）；`resolveEnableThinking`（`thincoder-core/config.mjs:133-140`）零改（百炼主机门控，与 mimo 无关）。
+`assistantToolCallMessage` 构造零改（仅按既有 `reasoningEcho` 判定）；`resolveEnableThinking`（`thincoder-core/config.mjs:143-156`）零改（百炼主机门控，与 mimo 无关）。
 
 ### 12.5 影响文件清单
 
@@ -1183,11 +1183,11 @@ CLI `/think` 面板与 VSC 思考下拉的可见面：新建行未声明枚举�
 
 ### 14.5 消费面契约（本节动谁、谁零改）
 
-**零改面**：`cmd-think.mjs` 码面（#17 纯补测）· `settings-state.js` 的 `effortEnumFor`（枚举读取面——`effortSelectView` 内部调用，本体零改）· `cmd-config.mjs:205/:232` 消费语义（只认 `=== "none"`）· `specMatch` / 前缀排序 / `warnUnknownModel` / `DEFAULT_SPEC` 兜底语义 · F-1:429 / F-2:439 断言 · k3 预置面（不转）· mimo 半边（销案）·
+**零改面**：`cmd-think.mjs` 码面（#17 纯补测）· `settings-state.js` 的 `effortEnumFor`（枚举读取面——`effortSelectView` 内部调用，本体零改）· `cmd-config-menus.mjs:117/:144` 消费语义（只认 `=== "none"`）· `specMatch` / 前缀排序 / `warnUnknownModel` / `DEFAULT_SPEC` 兜底语义 · F-1:429 / F-2:439 断言 · k3 预置面（不转）· mimo 半边（销案）·
   VSC `src/specs.mjs` 的 cacheMode（本就零在场）· 核守卫/裁剪/豁免（`thincoder-core/provider/core.mjs`）。
 
 **动面**：`model-specs.mjs`（改值 / 补行 / 删字段）· `config-presets.mjs:17` · `specs.mjs:22-41`（+1 登记）·
-  `cmd-config.mjs:180`（抽纯函数）· `cmd-advisor.mjs:116-117`（归一 + 删档 + 回执）· `settings-state.js:44-49`（`effortSelectView` / `effortPayloadValue` 新增；`defaultEffortFor` 并入删除——零调用者）·
+  `config-helpers.mjs:40`（抽纯函数）· `cmd-advisor.mjs:116-117`（归一 + 删档 + 回执）· `settings-state.js:44-49`（`effortSelectView` / `effortPayloadValue` 新增；`defaultEffortFor` 并入删除——零调用者）·
   `settings-widgets.js:44-53`（`buildEffortSelect` 同源化 = **换模型重建径**）· `settings-models.js:26-30`（`collectConsultRows` 落盘归一 +import；`:18` 读取面保持原值）· `settings-agent.js:50/:63`（初渲染径）+ `:125`（payload 归一）· 八支单元测试档（§14.6——含三支拟新增）。
 
 ### 14.6 影响文件清单
@@ -1790,8 +1790,8 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 
 | 字段 | 消费点 | 行为变化 |
 |---|---|---|
-| `context` | `providerSpec` → 压缩阈值（`thincoder-core/config.mjs:153-159`（`resolveCompactThreshold`）；`COMPACT_RATIO = 0.8` `:123`）· 上下文占比显示（`thincoder-vscode/src/specs.mjs:82` / `:96`）· advisor 预算（`thincoder-core/advisor/compaction.mjs:35-36`） | 压缩阈值按 1M 窗口重算——预设渠（`maxTokens: 8192`，`thincoder-core/config-presets.mjs:30`）：≈ 71 884 ⇒ **838 860**；无显式 `maxTokens` 渠：**838 860**（= min(1 048 576 − 65 536, floor(1 048 576 × 0.8))）；长会话不再被 128K 档提前压缩 |
-| `maxOutput` | `outputReserve`（`thincoder-core/config.mjs:130-134`）——仅无显式 `provider.maxTokens` 时生效 | 预留 32 000 ⇒ 65 536（计入上式）；显式 `maxTokens` 渠零变化（预设主导）。**发送面**：spec 值不达 google 请求（`thincoder-core/provider/google.mjs:86` 发 `maxOutputTokens` 仅取 `provider.maxTokens`） |
+| `context` | `providerSpec` → 压缩阈值（`thincoder-core/config.mjs:116-120`（`resolveCompactThreshold`）；`COMPACT_RATIO = 0.8` `:51`）· 上下文占比显示（`thincoder-vscode/src/specs.mjs:82` / `:96`）· advisor 预算（`thincoder-core/advisor/compaction.mjs:35-36`） | 压缩阈值按 1M 窗口重算——预设渠（`maxTokens: 8192`，`thincoder-core/config-presets.mjs:30`）：≈ 71 884 ⇒ **838 860**；无显式 `maxTokens` 渠：**838 860**（= min(1 048 576 − 65 536, floor(1 048 576 × 0.8))）；长会话不再被 128K 档提前压缩 |
+| `maxOutput` | `outputReserve`（`thincoder-core/config.mjs:59-62`）——仅无显式 `provider.maxTokens` 时生效 | 预留 32 000 ⇒ 65 536（计入上式）；显式 `maxTokens` 渠零变化（预设主导）。**发送面**：spec 值不达 google 请求（`thincoder-core/provider/google.mjs:86` 发 `maxOutputTokens` 仅取 `provider.maxTokens`） |
 | `multimodal` | 图像门族（清单与语义单源 = §2.7 第 1 项：`thincoder-core/attachments.mjs:54` 入列（第八处）∥ `thincoder-vscode/src/agent/setup-tooltable.mjs:305` ⇒ `thincoder-vscode/src/agent/tool-table.mjs:177` ∥ `thincoder-vscode/src/extension/image-handler.mjs:110` ⇒ `:43`） | 两档由「非多模态」（`true` 之外一切）转「多模态」：`read_image` 注册门（`thincoder-core/tools/index.mjs:66`——读点 `specForModel(model)?.multimodal`；注册表达式 `:69`）、贴图 / 读图 / 注入门放行；google 侧 `inlineData` 通路既有（`thincoder-core/provider/google.mjs:54-59`） |
 | `thinking` | `effortEnumForModel` 读取点：`spec.thinking` 直接读点 = `thincoder-vscode/src/specs.mjs:72`（读形 `s.reasoningEffortEnum || (s.thinking ? ["enabled"] : ["high","max"])`）此一处；消费面（调用点）= `thincoder-vscode/src/extension/provider-probe-window.mjs:66` | 该两档 VSC 档位面落 `["enabled"]` 单档（思考开关族既有形；选档归一落中性档、零 patch——§16.6-⑴）；其余面零变 |
 | `thinkAlwaysOn` | `thinkOffPath`（`thincoder-core/think-off.mjs:22-26`）→ 既有条件分支族 | ①CLI `/think`：无 Thinking 开关项 ∧ `/think off` 拒绝（§16.4 两菜单面落点）；②`/advisor`：Disabled 项不渲染；③生成标题零发禁用形（`thincoder-core/generate-title.mjs:46` / `:74`——「无有效 off 路径 ⇒ 不发禁用形」；判据单源 = §16.4）；④auto-think 无枚率先行 `return null`（`thincoder-core/auto-think.mjs:73-74`，先于恒思考守卫）；⑤桌面模型菜单 `thinkOff: false` ∧ `effortEnum: []`（`thincoder-desktop/src/main/settings.mjs:96-99`） |
@@ -1800,7 +1800,7 @@ legacy `effort` 保存即删（§15.4-2 侧写面）；快照面（`thincoder-vs
 
 - `thinkApi`：读点全在端侧 off 形族（`thincoder-cli/src/tui/cmd-think.mjs:16` · `thincoder-cli/src/tui/cmd-advisor.mjs:130` / `:265` · `thincoder-core/think-off.mjs:15` · `thincoder-core/provider/core.mjs:222` · `thincoder-vscode/src/extension/reasoning-mode.mjs:32`）；
   两新档 `thinkAlwaysOn: true` ⇒ off 形族动作不可达（`thinkOffPath === false`）⇒ 无消费后果。
-- `reasoningEffortEnum`：读点全为 `reasoning_effort` 参数面（CLI 档位 `thincoder-cli/src/tui/cmd-think.mjs:19` / `cmd-advisor.mjs:267` / `cmd-config.mjs:182` / `thincoder-cli/src/tui/slash-commands.mjs:157`）；
+- `reasoningEffortEnum`：读点全为 `reasoning_effort` 参数面（CLI 档位 `thincoder-cli/src/tui/cmd-think.mjs:19` / `cmd-advisor.mjs:267` / `cmd-config-menus.mjs:87` / `thincoder-cli/src/tui/slash-commands.mjs:157`）；
   核 `thincoder-core/provider/core.mjs:206` / `thincoder-core/agent/spawn-child.mjs:211` / `thincoder-core/auto-think.mjs:73` · 端 `thincoder-vscode/src/specs.mjs:72` / `thincoder-desktop/src/main/settings.mjs:77`；
   google 发送面排除（`thincoder-core/provider/core.mjs:205`；`:153` 分派即返）⇒ 零可达（假控制面——KD-2）。
 - `tempRange`：钳制点 = OpenAI 兼容体组装段（`thincoder-core/provider/core.mjs:195-196`）∥ responses（`thincoder-core/provider/responses-request.mjs:208-209`）∥ anthropic（`thincoder-core/provider/anthropic.mjs:66`）——google 在 `thincoder-core/provider/core.mjs:153` 分派即返、不经该段 ⇒ 本传输面零消费；

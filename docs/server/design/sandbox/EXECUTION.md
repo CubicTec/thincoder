@@ -10,7 +10,7 @@
 > **偏离** = 键 = 注册表主机（非 SSH 主机）∥ 注入点 = 拉取头 `X-Registry-Auth`（非 exec 通道；理由 = Docker 按注册表主机寻址同口径，KD-SV-188）。
 > ③ **节点侧构建流**（实现 = `thincoder-server/src/sandbox/docker.mjs:8`（头注：拉取同步 10 分钟 ∥ 失败两形 ∥ `findStreamError`）；设计 = 本档 §8 派生构建流）——**对齐** = 流内错误两形逐帧扫描 ∥ 同步长超时常量；**偏离** = `POST /build` = 新增动作面（镜像族此前只读 + 拉取；理由 = 离线纪律下节点侧取件，KD-SV-185）。
 > ④ **项目标记分治**（实现 = `thincoder-server/src/sandbox/quota.mjs`（项目标记步——`EXT4_PROJECT_STEP`）；设计 = 本档 §4 ②）——**对齐** = 单一步标签 ∥ 降级判据零随动（KD-SV-198）；**偏离** = 前形单命令（`chattr -R … +P`）→ 目录/文件分治（理由 = `+P` 只对目录有效——`-p` 赋号不得丢；落文件恒拒 `Operation not supported`——§4 ②）。
-> ⑤ **壳更新面**（实现 = `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs`（拟新增）∥ `thincoder-server/deploy/pack-box-shell.mjs`（拟新增）∥ `thincoder-server/deploy/sandbox/member-shell/index.mjs:339`（`main()`——本批改）；设计 = 本档 §8 壳更新面块）——**对齐** = 内容寻址（沿 KD-SV-185 风）∥ 静态面单源分发（`src/webui/static.mjs` 零改）；
+> ⑤ **壳更新面**（实现 = `thincoder-server/deploy/sandbox/member-shell/bootstrap.mjs` ∥ `thincoder-server/deploy/pack-box-shell.mjs` ∥ `thincoder-server/deploy/sandbox/member-shell/index.mjs:339`（`main()`——本批改）；设计 = 本档 §8 壳更新面块）——**对齐** = 内容寻址（沿 KD-SV-185 风）∥ 静态面单源分发（`src/webui/static.mjs` 零改）；
 > **偏离** = 容器内运行时件自判/自取/自换——既有面之外的新形（无先例；理由 = 壳与镜像生命周期解耦，KD-SV-229）。
 > **抽查（本批收正——公共源文档）**：`docs/README.md`（档目）∥ `docs/server/requirements/PROJECT.md` §5 沙盒块（「磁盘配额」= 上限条）∥ `sandbox/SANDBOX.md` ∥ `docs/TEST-ENV-ECS.md`（后两档 `chattr` 零命中——查过，无相关）∥ e2fsprogs `misc/chattr.c`（`-p` 无模式形合法 ∥ `+P` 落非目录 = EOPNOTSUPP）——结论 = 在档文档无相关约束（需求侧「磁盘配额」上限条不抵命令形）；e2fsprogs 读件 = 本收正依据。
 > **抽查（box-shell-update 批——公共源文档）**：`docs/README.md`（档目）∥ `desktop/design/PACKAGING.md` §2.8（桌面自动更新 = electron-updater + generic feed）∥ 壳源树 + `deploy/sandbox/Dockerfile`（助手登记形）实读——结论 = 查过，无相关（唯一近形 = 宿主应用面自动更新——不可搬；容器内运行时件自更新 = 新形，偏离记档头⑤）。
@@ -106,6 +106,11 @@ HostConfig:
   ③ 前两径皆不可 ⇒ **loopback**（镜像文件 `<path>.loop.img` + `mkfs.ext4 -O project,quota` + 挂载到工作区路径——备选）；
   ④ 三者皆不可 ⇒ **建盒停**（人话 + 处置句：节点需 xfs/ext4 项目配额或 loop 设备）。
 - **② 降级腿**（KD-SV-198）：`ext4`+`prjquota` 径的**项目标记步**（`chattr`）失败 ⇒ 降 loopback 径一次——**守卫 = 仅 `ext4-project` 径的该次调用降**（两径复用同一步标签）；降级后 loopback 径的项目标记**再失败 ⇒ 停**（零第二次降级）。判据 = 该步**步标签**（非错误文本——locale 不稳）。**披露**：降级落 loopback ⇒ 新 fs 盖住工作区路径 ⇒ 原目录内容从盒视角不可达（与 `rebuild` 同面——KD-SV-197）。
+- **降级后原目录的复原口径**（前述披露腿的操作面）：
+  ① **前置 = 先停盒（或销毁）**：运行中的盒经 bind 占用工作区路径 ⇒ 直接 `umount` 撞 `EBUSY`，且盒面失卷；停用 §3「停止」动作（卷零触），或走销毁径（已含卸挂 + 删目录与镜像）。
+  ② **`<path>.loop.img` 去留二择及后果**：**保留** ⇒ 下次建盒/启动走 ext4 径再失败 ⇒ 再降级 ⇒ `absent` ∧ 镜像在场且具 `project` ⇒ 只挂载既有镜像（零 `mkfs`）⇒ 原目录**再被盖住**；**删除**（`rm -f <path>.loop.img`——销毁径镜像那一半）⇒ 下次 `absent` ∧ 镜像不在 ⇒ `truncate` + `mkfs` 新建 ⇒ **同样盖住**。两择皆不产生持久复原。
+  ③ **「当次可达」与「持久复原」分开表述**：停盒 + 卸挂 + detach 后原目录内容露出 ⇒ **一次性检视**（本次读出 / 备份走）可达成；**持久复原**（让工作区长期可用原目录）**不成立**——根因 = 项目标记步被拒（`EOPNOTSUPP`）未解 ⇒ 每次建盒/启动复发降级 ⇒ 每次重演覆盖。
+  命令序列（停盒后）：`umount <工作区目录>` ⇒ `losetup -a -O NAME,BACK-FILE -n` 按 back-file 归属定位本工作区 loop ⇒ `losetup -d <loopN>` ⇒ 原目录内容可见；须保留降级后内容者先 `tar` 到盒外备份。
 - **读件（只读——就位探与卸除件共用）**：`mountpoint -q <path>`（在挂判）∥ `findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -T <path>`（挂载点/源/类型/选项）∥ `test -f <path>.loop.img`（镜像在场）∥ `dumpe2fs -h <path>.loop.img`（镜像 fs UUID + features）∥ `dumpe2fs -h <source>`（**挂载侧** fs UUID——判据⑤取数；仅源为 `/dev/loop<n>` 时读，外来挂载零外读）
   ∥ `losetup -a -O NAME,BACK-FILE -n`（loop 归属读数——**卸除阶段用**：自愈卸除 ∥ 销毁卸除件；健康径零读）。
   **旗形与字段序**：探明调用 = `findmnt -no TARGET,SOURCE,FSTYPE,OPTIONS -T <path>`（`applyDiskQuota` 首步）；`parseFindmnt` 出参序 = `{ mount, source, fstype, options }`（= 旗形逐位 TARGET ∥ SOURCE ∥ FSTYPE ∥ OPTIONS）。

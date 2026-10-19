@@ -25,6 +25,20 @@ export function isValidDocRootValue(value) {
   return value.every((p) => typeof p === "string" && p.trim() !== "")
 }
 
+/** `checkConfig.anchors.roots` **单元素值形判据**（判据单源——解析根 = 相对项目根的目录）：
+ *  合法 ⇒ `null`；非法 ⇒ 理由句（非空字符串 ∥ 相对路径 ∥ 无 `..` 越界段）。
+ *  消费面两处：产品引擎 `doc-check/anchors.mjs`（报告态逐元素弃用）∥ `doc-check/index.mjs`
+ *  （gate 面 `configError` 拒，fail-closed）。
+ * @param {unknown} value 解析根元素
+ * @returns {string|null}
+ */
+export function anchorRootError(value) {
+  if (typeof value !== "string" || value.trim() === "") return "元素须为非空字符串"
+  if (/^(?:[A-Za-z]:[\\/]|[\\/])/.test(value)) return "元素须为相对项目根的路径（不得为绝对路径）"
+  if (value.split(/[\\/]/).includes("..")) return "元素不得含 `..` 越界段"
+  return null
+}
+
 /** 默认八键（架构 §2.3 E1 五键 + 三族声明键——KD-M1-31）——整档初始化的写源与缺键 fallback 的补源。 */
 export const DEFAULT_MANIFEST = Object.freeze({
   version: 1,
@@ -41,7 +55,7 @@ export const DEFAULT_MANIFEST = Object.freeze({
     scanDirs: Object.freeze(["docs"]),
     lineWidth: 300,
     widthExemptZones: Object.freeze([]),
-    anchors: Object.freeze({ domain: "docs", exclude: Object.freeze(["_archive", "batches"]) }),
+    anchors: Object.freeze({ domain: "docs", exclude: Object.freeze(["_archive", "batches"]), roots: Object.freeze([]) }),
     exemptions: Object.freeze([]),
   }),
   // 项目声明三族（2026-09-27 声明载体唯一化批并入——键名 / 形态逐字承前；来源档已退役）。

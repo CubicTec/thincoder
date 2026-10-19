@@ -461,7 +461,7 @@ SQLite 的 `wal_checkpoint` 是否走 busy handler（从而是否真受该上界
   **不以树存活为判据（输出仍报树存活供警示）、不走信号 A/B**（显式点名 ≠ 树亡推断——**活树 origin 亦可整删**；此即与全扫档的判据分界）。
   **组合档**：`--path <sub>` 收窄档（新增）须与 `--origin` 同用——删除范围收窄至 `<sub>` 前缀行（语义见 §6.14 面 ①-3）。
 - **安全设计（三件）**：① **备份前置** = `VACUUM INTO <path>`（判据同 §6.11 步 1：文件存在 ∧ 大小 > 0 ∧ 打开后 `PRAGMA integrity_check` = `ok`；失败 ⇒ 中止零写）；
-  **取备份档位** = `--confirm` 档**且命中行 > 0**（写前置）；dry-run 档与零命中档不取（零写 ⇒ 无回退对象）；**路径与命名** = `<dbPath>.sweep-backup-<UTC yyyymmddHHMMSS>`（同目录；`dbPath` = `config.memory.dbPath` 展开值——缺省 `~/.thincoder/memory.db`，`thincoder-core/config.mjs:66`）；
+  **取备份档位** = `--confirm` 档**且命中行 > 0**（写前置）；dry-run 档与零命中档不取（零写 ⇒ 无回退对象）；**路径与命名** = `<dbPath>.sweep-backup-<UTC yyyymmddHHMMSS>`（同目录；`dbPath` = `config.memory.dbPath` 展开值——缺省 `~/.thincoder/memory.db`，`thincoder-core/config-defaults.mjs:59`）；
   **同域命名先例** = 会话索引隔离名 `session-index.db.corrupt-`（`thincoder-core/test/session-index.test.mjs:215`）；**目标已存在 ⇒ 中止零写**（fail-closed，不覆盖）。
   ② **干跑默认**（`--confirm` 才写；零写判据 = 库字节 / 行数不变）；**输出形态（含 `--origin` 档）** = 逐 origin 一行 `origin=<归一形> · 树存活=<是|否> · code=<n> / doc=<n> / files=<n> / 合计=<n>`（树存活 = 原样 / 归一形两路径探针读数——活树附警示行）+ 末行合计；`--confirm` 档同形 + 备份路径。
   ③ **审计** = 输出逐 origin 折叠映射 / 删除行数 / 备份路径；**写后回读判据按档分列**：折叠（全扫）档 = 归一键集合大小 = 1 ∧ 任一 `(归一键, path[, line_start])` 恰一行 ∧ `COUNT(*)` ≤ 前（同 §6.11 步 3）∥ **`--origin` 档 = 目标归一键三表零命中 ∧ 非目标 origin 零变**（非目标归一键集合与各键计数逐键等前值；FTS 随触发器同步）。

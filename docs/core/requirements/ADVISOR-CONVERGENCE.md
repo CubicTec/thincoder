@@ -72,7 +72,7 @@
 | # | 维度 | 标准 | 度量方式 |
 |---|---|---|---|
 | N4 | 零语义漂移 | 既有逐字锚（含修正轮 docs FIRST、拍板 ≠ 批准）文本**零改动**；既有 prompts 锚测试不红 | 双端既有 prompts 锚测试集全绿；锚字面在 `thincoder-core/prompts/discipline-engineering.md` 逐字在位 |
-| N5 | 双源双端一致 | 新文本**四面同文**：CLI / VSC ×（运行期落地 + 中文正本）；`discipline-engineering` 与 `discipline-normal` 的 Action 词表不得两说 | 机判：同一字面串四面在位 + 跨仓逐字断言 |
+| N5 | 双源双端一致 | 新文本**双端同文**：CLI / VSC × 运行期落地（单一副本）；`discipline-engineering` 与 `discipline-normal` 的 Action 词表不得两说 | 机判：同一字面串两端在位 + 跨仓逐字断言 |
 | N6 | 可机判 | 每条验收标准可 grep / 断言级判定；计数词与列表同改（D3——计数与枚举同步） | 结构机检（`node scripts/check-doc-width.mjs` 新增违规 0——双端） |
 
 ### 3.3 守卫面

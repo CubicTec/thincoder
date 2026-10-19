@@ -173,8 +173,7 @@
 | 16 | `thincoder-vscode/src/agent/setup.mjs` | 500 | 修改 | `hydrateRun` 钩子块同形（非 fatal + `_projectView`——两端同形）+ **拆分（F12 硬限触发）：装配段（`:222-304`——家族段装配 / MCP 连接 / 基础集 · 全表 · `toolByName` · `toolSchemas` 构建）迁入邻档 `setup-tooltable.mjs`**（纯结构搬移零语义；W8 契约②保持：段内动态 import 原样动态）；方案全文见下条拆分注 | 拆：−~83 · 钩子 ±~12 · 调用点 +~3（拆后 ≈432） |
 | 17 | `thincoder-core/agent/setup-reminders.mjs` | 200 | 修改 | 状态选行：`projectView(agent.cwd)` 接入 + 报明行构造 `manifestReportLine`（KD-M1-26）；判据③ 改**无锚门**、新增 ③' 状态选行（**每回合实读**——成本两轴见 §2.6 条 3）；无锚零 I/O 保持（KD-M1-27） | +~55 / −~10 |
 | 18 | `thincoder-core/tools/git.mjs` | 403 | 修改 | 工作区消息按 `matched` 出两档变体（裸仓档文案）+ 裸仓级命中同享重定向 / 注记——判据仍单源（§6.13） | +~10 / −~3 |
-| 27 | `docs/core/design/prompts/persona-engineering.md` | 165 | 修改 | 「项目状态档」段改写（§2.9 E） | ±~10 |
-| 28 | `thincoder-core/prompts/persona-engineering.md` | 161 | 修改 | 英文代码（精确翻译）落地副本同义落地 | ±~11 |
+| 28 | `thincoder-core/prompts/persona-engineering.md` | 161 | 修改 | 提示词 = 产品代码（单副本） | ±~11 |
 | 29 | `thincoder-vscode/src/agent/setup-tooltable.mjs` | 230 | 修改 | **拆入面**（行 16 装配段迁入——新导出 `buildToolTable({ depth, role, engineering, provider, mcpServers, builtinTools, opts, batchDoc, settingsTool })` → `{ baseSet, tools, toolByName, toolSchemas }`；入参 = 段内消费的既有局部，返回 = 后续段解构收下（零语义）；段内 import 面随段迁入——静态边 = 既有子集（`engine-floor-guard` 零改）、四条动态 import 原样动态）。工具表族另出档 `thincoder-vscode/src/agent/tool-table.mjs`（**250**）——本档现读 **102** | **102 ∕ 250（两档）** |
 | 30 | `thincoder-core/manifest.mjs` | 451 | 修改 | `DEFAULT_MANIFEST` + `MANIFEST_SCHEMA`（`nestedKeys` 补 `index` / `advisor`）+ `validateManifest` 三族形态判据 + `fillDefaults` 嵌套分支 + 头注契约行（KD-M1-31 / M1-32） | +~35 |
 | 31 | `thincoder-core/conventions.mjs` | 254 | 修改 | 装载换源：删 `CONVENTIONS_REL_PATH` / `loadConventions` / `clearConventionsCache` / `DEFAULT_CONVENTIONS` / `typeErrorsOf` / `DEFAULT_CODE_PATHS`；新增 `loadProjectDeclaration` / `clearDeclarationCache` / `DEFAULT_DECLARATION` + 退役告警点（存在性检查——内容零解析）；头注 / JSDoc | 净 ±~15 |
@@ -564,7 +563,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 
 **D phase 情境注入形（多项目）**：注入物 = **会话锚项目**（`agent.cwd` 的解析结果）的状态；动作作用于别的项目时参数按该动作的路径解析（**不注入、不切换「当前项目」**）。行形 / 判据 / 四态见 §2.6。**锚为工作区**（`agent.cwd` 解析不出唯一项目）⇒ 注入物 = **工作区事实行**（无相位行——§2.6 条 1b），会话照常起。
 
-**E 提示词模板**：「项目状态档」段（`docs/core/design/prompts/persona-engineering.md`）按新模型改写；英文代码落地副本 `thincoder-core/prompts/persona-engineering.md` 同义落地。
+**E 提示词模板**：「项目状态档」段（`thincoder-core/prompts/persona-engineering.md`，唯一副本）按新模型改写。
 
 **边界（不做）**：翻转面判据本体零改（`/eng` · `/session` · 核心 `eng` 工具 · ACP——#41 拒翻语义沿用；**但发现梯升级使可拒面收窄**：梯⑤ 现可建档 ⇒ 不再落拒格；**再收窄**：工作区（`workspace`）不落拒格 ⇒ 可拒面 = **仅「档非法」**（用户裁定））；消费面回退链零改；不做「当前项目」选择器 / 记忆；不做启动期人读横幅（报明面 = 情境行 + 动作侧——**端差消**）。
 
@@ -631,7 +630,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 | 层 | 载体 | 常驻性 | 载荷（住哪层） | 不载 |
 |---|---|---|---|---|
 | ① 键面事实 | `thincoder-core/tool-docs/manifest.md`（`DESC("manifest")` 单解析面——`thincoder-core/tools/shared.mjs:19`） | **常驻**（每轮可见）⇒ 受篇幅约束 | **键目录（可族分组）+ 每键一句**：是什么 · 何时动 · 改错后果 | 管理流程 / 与台账·批次档分工（②的活） |
-| ② 管理面 | `docs/core/design/prompts/persona-engineering.md`「项目状态档」节 + 英文落地副本 `thincoder-core/prompts/persona-engineering.md`（同义） | 场景触发**阅读**（物理上文件级常驻——见「触发与实况」） | **怎么管 · 有什么用 · 何时动 · 与台账 / 批次档的分工**（三账分工 = 需求 §5.4） | 每键完整语义目录（①的活） |
+| ② 管理面 | `thincoder-core/prompts/persona-engineering.md`「项目状态档」节 | 场景触发**阅读**（物理上文件级常驻——见「触发与实况」） | **怎么管 · 有什么用 · 何时动 · 与台账 / 批次档的分工**（三账分工 = 需求 §5.4） | 每键完整语义目录（①的活） |
 
 **为什么这样分**：键面事实是**用点必需且封闭有限**（20 个可写节点）⇒ 宜常驻、宜短句，一次备齐；管理面判据（何时想起它）是**流程面**，随场景触发阅读，不进常驻噪音。
 **分工线 = 一句问法**：「这个键是什么」住 ①；「什么时候该想起它 / 它和别的账怎么分」住 ②。同一句不写两遍（D2）。
@@ -646,7 +645,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 - **取形 = 目录 + 每键一句**（非段落散文；**可族分组**——同族节点键名逐列 + 逐族一句）。句形「`键` — 是什么；何时动；改错 ⇒ 后果」（三腿齐）。
   例：`index.excludePaths` — 项目根相对路径**前缀**数组（索引用途）；**要排除某目录不入索引时改它**；写错 ⇒ 该目录仍入索引（前缀命中 = 恰等 ∨ 后随 `/`）。
 - **引设计档不复制**：描述只承载「用点上必须知道的最小事实」；全语义 / 判据 / 机制**仍单源在本档**（D2），描述不复制本档段落。
-  **引法（解「禁引证」）**：描述内**零档名 / 零节号 / 零指路句**（`docs/core/design/prompts/common.md:48`——提示词面禁带文档引用，模型读到的句子须自足）；设计档指针只落**注释面**——`thincoder-core/agent-tools/manifest.mjs:3` 头注已载「权威设计 = `docs/core/design/MANIFEST.md` §2.10」，无需在描述里再指。
+  **引法（解「禁引证」）**：描述内**零档名 / 零节号 / 零指路句**（`thincoder-core/prompts/common.md`——提示词面禁带文档引用，模型读到的句子须自足）；设计档指针只落**注释面**——`thincoder-core/agent-tools/manifest.mjs:3` 头注已载「权威设计 = `docs/core/design/MANIFEST.md` §2.10」，无需在描述里再指。
 
 **触发与实况（须报）**：② 的**触发条件** = 「主 agent 要动 manifest 某个键 / 判断某声明该不该改」这一刻——节领句写成场景条件句（「动 manifest 键之前……」），内容只在该场景被读取执行。
 **物理实况**：工程模式提示词三档为**文件级常驻**（`thincoder-core/prompt-overlays.mjs:42` 恒拼接 `persona-engineering.md` / `common.md` / `discipline-engineering.md`），**无节级条件装配机制** ⇒「只在该场景进上下文」在**文件级不可达**。本设计以「**短节（新增 ≤8 行）+ 场景触发领句**」达成「不常驻噪音」的**意图**；**节级条件装配 = 新机制，出本批边界**（另批另裁）。
@@ -670,6 +669,8 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 
 > 目录只给「用点必需」的最小事实；值形归一细则 / 消费面清单 / 判据仍读本档对应节（§2.2 `:120-132`）。四族整键写 ⇒ 拒（须点改子键）——此句属**动作面**，住描述既有段（零改）。
 
+> `checkConfig.anchors.roots` = **声明解析根**——项目根相对的目录数组（缺省 `[]`）；提示词 / 工具描述档住在 `docs/` 之外时动；写错 ⇒ 该根不参与解析、报告面逐根列缺位，该根下的死指针照报 `档缺`（判定不放宽）。同节点另两成员：`.domain`（锚定域）· `.exclude`（锚 / 行宽排除集）；`anchors` 仍为**单一可写节点**（节点计数 20 不变）。
+
 **验收对照（回指需求块——三链同源）**：
 
 | # | 验收条 | 核法（源面） |
@@ -686,10 +687,9 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 | # | 文件 | 面 | 执行角色 | 当前行数 | 变更 | 编辑点 | 增量 |
 |---|---|---|---|---|---|---|---|
 | 1 | `thincoder-core/tool-docs/manifest.md` | 产品（描述档——`DESC("manifest")` 常驻面） | eng-coder | **17**（2,235 字符） | 修改 | 末段后增「键目录」块（全 20 节点） | ≤ +2,300 字符（落 ≤5,000 自设帽） |
-| 2 | `docs/core/design/prompts/persona-engineering.md` | 文档（中文评审面提示词） | eng-designer | **219** | 修改 | 「项目状态档」节（`:52-60`）尾续**管理面** + `:56` 失义措辞收正 | ≤ +8 行 |
-| 3 | `thincoder-core/prompts/persona-engineering.md` | 产品（英文运行时面提示词） | eng-coder | **217** | 修改 | 「Project state file」节（`:52-60`）**同义落地**（含 `:56` 同款收正） | ≤ +8 行 |
-| 4 | `docs/core/design/MANIFEST.md` | 文档（设计档） | eng-designer | **868** | 修改 | 本块（§2.10 尾）+ `:201` / `:604` 坐标收正 | ≤ +100 行 |
-| 5 | `docs/core/design/PROMPT-SYSTEM.md` | 文档（设计档——预算表） | eng-designer | **882** | 修改 | §6.11 预算表 +1 行（面专属帽指针行） | +1 行 |
+| 2 | `thincoder-core/prompts/persona-engineering.md` | 产品（英文运行时面提示词） | eng-coder | **217** | 修改 | 「Project state file」节（`:52-60`）**同义落地**（含 `:56` 同款收正） | ≤ +8 行 |
+| 3 | `docs/core/design/MANIFEST.md` | 文档（设计档） | eng-designer | **868** | 修改 | 本块（§2.10 尾）+ `:201` / `:604` 坐标收正 | ≤ +100 行 |
+| 4 | `docs/core/design/PROMPT-SYSTEM.md` | 文档（设计档——预算表） | eng-designer | **882** | 修改 | §6.11 预算表 +1 行（面专属帽指针行） | +1 行 |
 
 > **文档 / 提示词面零行数义务**（`docs/core/requirements/ENGINEERING-MODE-V2.md:645` F12）；受篇幅约束者 = 产品描述档（**字符帽**，非行数）。**测试覆盖 = 无**（文本面知识设计——核法 = 源面读判 AC-K1–K5，无代码可单测）；实施轮只改文本，无单元测试档。
 

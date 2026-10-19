@@ -76,7 +76,6 @@ thincoder/                                  ← 合并仓根（git 仓）
 │   ├── core/                               ← 部分一 · core（核 = 共享实现 + 共享机制 + 工程模式）
 │   │   ├── requirements/<板块>.md
 │   │   ├── design/<板块>.md
-│   │   └── design/prompts/                 ← 提示词**中文设计档正本**（16 档）
 │   ├── cli/                                ← 部分二 · cli（CLI 壳面）
 │   │   ├── requirements/<板块>.md
 │   │   └── design/<板块>.md
@@ -118,7 +117,6 @@ thincoder/                                  ← 合并仓根（git 仓）
 |---|---|---|
 | `docs/design/*.md`（16 板块档） | `docs/core/design/` | 全部为核心统一子系统档 ⇒ 统一面（§5 判据 P1） |
 | `docs/requirements/*.md`（16 板块档） | `docs/core/requirements/` | 同上 |
-| `docs/design/prompts/`（16 档正本） | `docs/core/design/prompts/` | 提示词正本归 **core**（其落地档 = `thincoder-core/prompts/` · `tool-docs/`） |
 | `docs/README.md` · `docs/TODO*.md` | **原地不动** | 项目级流程面——**不进五部分**（§5 判据 P3） |
 | `thincoder-cli/docs/{design,requirements}/**` | 按 §5 初分类逐档落到 `docs/core/` ∥ `docs/cli/` | **不迁**——`docs/README.md` §2「逐档随批迁」不变 |
 | `thincoder-vscode/docs/{design,requirements}/**` | 按同一判据落到 `docs/core/` ∥ `docs/vsc/` | 同上 |
@@ -140,7 +138,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 | **P1** | **统一面**：该档所描述机制在 **≥2 个部分**存在（同路径对 ∨ 语义对位 ∨ 被 ≥2 部分引用）⇒ 落 `docs/core/` | 落点 = **人判**（机制面判读——辅助代理仅给倾向，分歧入待核）+ **对位表 artifact**（逐档 → 目标部分；对位表 = 分档依据——落点 = 引擎批次，随 §8.2 声明面一并落档） |
 | **P2** | **产品面**：只被**一个部分**引用**且**该机制只在该部分存在（结构性不对称：CLI 的 TUI / 命令面 / ACP 客户端；VSC 的宿主 API / webview / 面板）⇒ 落 `docs/<部分>/` | 同上 |
 | **P3** | **流程面（项目级）**：台账 / 批次档 / 文档地图 = 项目级流程档 ⇒ 落 `docs/` 根，**不进五部分** | 台账面 = SQLite（`docs/core/design/LEDGER.md`）；`docs/TODO.md` · `docs/TODO-archive.md` = 退役历史（md 形态） |
-| **P4** | **运行期 vs 文档面**：提示词**正本**（中文设计档）= 文档面（随 core）；核内运行期落地档（`thincoder-core/prompts/**` · `thincoder-core/tool-docs/**`）= **产品代码**，不入 `docs/` | 二者档名集合相等且各 16 / 52 档（`PROMPT-SYSTEM.md` §2 组陈述） |
+| **P4** | **提示词 = 产品代码**：唯一副本 = `thincoder-core/prompts/**`（运行期加载面）+ `thincoder-core/tool-docs/**`；`docs/` 下不含提示词档 | 机检：`docs/**` 下 `prompts/` 目录数 = 0 ∧ 提示词档集合 = `thincoder-core/prompts/*.md` 16 档（`PROMPT-SYSTEM.md` 单面陈述） |
 | **P5** | **冲突序**：P2 优先于 P1（结构性不对称压过引用计数）；P3 优先于 P1 / P2（流程面不对半分）；**模块镜像**（§4 判据句）优先于 P1（共享包不因多端引用归 `core`——用户裁定） | —— |
 
 **机器辅助判据（初分类用；非权威）**：`basename` 在 ≥2 部分有对位档 ⇒ 倾向 P1。**该代理有假阳 / 假阴**
@@ -149,9 +147,9 @@ thincoder/                                  ← 合并仓根（git 仓）
 ### 5.2 现有产品树文档初分类（FR3——底本 = CLI 树 84 档）
 
 > 口径：`thincoder-cli/docs/design/*.md`（47）+ `thincoder-cli/docs/requirements/*.md`（37）= **84 档**
-> （**不含** `design/prompts/` 15 档 · `design/_archive/` 50 档 · 批次档 41 档）。
+> （**不含** `_archive/` 下的提示词档 15 档 · `design/_archive/` 非提示词档 46 档 · 批次档 41 档）。
 > **计数收正**：需求池既有条目写「`thincoder-cli/docs/{design,requirements}/**`（86 档）」（`docs/TODO.md` 需求池第 24 条）——
-> 实核 = **84**（含 `design/prompts/` 则 99；含 `_archive/` 则 149）。差额登记于报告未决面。
+> 实核 = **84**（含 `_archive/` 下的提示词档则 99；含 `_archive/` 则 149）。差额登记于报告未决面。
 
 **逐档二分（活 / 历史）与落点** → 迁移台账 `docs/core/design/DOC-MIGRATION.md`。
 该台账 = 本节的**唯一执行表**：逐档一行（判 · 依据（`file:line` 实核）· 动作 / 落点）+ 对账 / 待核 / 小计闭合 / 后续批分组——本节不复制（D2 单一权威源）。
@@ -171,7 +169,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 | **N-a** | **同部分同层的板块名唯一** | `docs/<部分>/<层>/<板块>.md`——同一 `<部分>/<层>` 下档名去重计数 = 档数（机检：目录列举去重比对） |
 | **N-b** | **板块镜像同名成对** | `docs/<部分>/requirements/<板块>.md` ↔ `docs/<部分>/design/<板块>.md`（承 README §3.2 惯例，仅多一层部分目录） |
 | **N-c** | **跨部分同名须带路径** | 任一档的 basename 若在 **≥2 个部分**出现，则引用它**一律写仓根相对全路径**（§7 R3）；只在本部分出现者**可写裸名——但本部分存在 N-b 同名对时须带层前缀**（§7 R2） |
-| **N-d** | **正本不与落地档同名混淆** | 提示词正本 = `docs/core/design/prompts/<槽名>.md`；运行期落地档 = `thincoder-core/prompts/<槽名>.md`——**两者不同域**（文档面 vs 代码面），路径前缀可区分 |
+| **N-d** | **提示词不建第二处** | 提示词档只在 `thincoder-core/prompts/`；`docs/` 下不得出现同名档（机检：`docs/**` 下 `prompts/` 目录数 = 0） |
 
 **拆档触发（板块粒度）**：一档该不该拆（板块定义 / 三触发 / 拆分动作 / 不预建空档）= `DOC-DISCIPLINE.md §3.14`——本档只落**命名形态**（§6 表），**不重述**拆档判据（**D2**）。
 
@@ -240,7 +238,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 
 ### 8.2 声明面（接口契约 · **v2 承接**）
 
-**现行（v2）声明面 = manifest `checkConfig`**（`PROJECT-MANIFEST.json:24`）：判据项 **6** = `scanDirs` / `lineWidth` / `anchors.domain` / `anchors.exclude` / `exemptions` / `widthExemptZones`。
+**现行（v2）声明面 = manifest `checkConfig`**（`PROJECT-MANIFEST.json:26`）：判据项 **7**——键集与各键消费面单源 = `docs/core/design/DOC-DISCIPLINE.md` §7「F2 声明面键集（键 → 消费面）」表（本档只引用，不复制枚举——D2）。
 **机制单源 = `docs/core/design/DOC-DISCIPLINE.md` §7**（F2 声明面判据行 + 四档接口段 + 产物包域取向段）——本档不重述（D2）。
 **产品工具面（内建）**：判据由 agent 工具 **`doc_check`** 提供（只读 · 报告态 · 非门禁）；判据参数依据 `PROJECT-MANIFEST.json` 的声明——口径 = `docs/core/design/DOC-DISCIPLINE.md` §3.20（引，本档不重述 · D2）。
 **可迁移性判据** = AC-M8-3（同处：全仓无硬编码本仓 `docs/` 路径于机检判据）。
@@ -266,14 +264,11 @@ thincoder/                                  ← 合并仓根（git 仓）
 |---|---|---|---|
 | **①** | 根仓 `docs/` = **基准层**（项目级唯一权威层） | 五部分**全部建在 `docs/` 之内**（`docs/{core,cli,vsc,desktop,render-core}/`），基准层地位与「唯一权威」不变；本规划不新增第二权威层 | ✓ 自洽 |
 | **②** | 产品 `docs/**` = **迁移期保留的参照历史记录**（保留 ≠ 维护 · 不迁不删） | 本规划**不动**产品树任一档的物理位置；§5 初分类给的是「随批迁时的**落点**」，不是搬迁动作；「逐档随批迁」政策不变 | ✓ 自洽 |
-| **③** | `docs/design/prompts/` 仓根 = 提示词**正本**；核 `prompts/` · `tool-docs/` = **运行期落地档** | 正本归 **core** 部分（`docs/core/design/prompts/`，§4）；两份链路（正本 → 回写核内落地档 → 产品两份不参与）**不变**；落地档属**代码面**（`thincoder-core/prompts/**`），不进 `docs/` ⇒ 判据 P4 落档 | ⚠ **路径变更**（见下修法 1） |
+| **③** | 提示词只有一份 = `thincoder-core/prompts/**`（运行期加载面 = 产品代码，不入 `docs/`）；`docs/` 侧无提示词档 | 本规划不引入文档面提示词档，P4 按单面陈述 | ✓ 自洽 |
 | **④** | `docs/README.md` §2「逐档随批迁」 | **不变**——本规划正是给「随批迁」补上**确定的目的地**（此前只有「迁入本层」的粗粒度，无部分轴）；本规划**不批量搬迁**，不设一次性迁移批 | ⚠ **判据替换**（见下修法 2） |
 
-**修法 1（③ 的连带——串级扫替）**：正本落 `docs/core/design/prompts/` 后，根层文档（`CORE-UNIFICATION.md`〔含 D-C14 面〕· `PROMPT-SYSTEM.md` 等）内全部 `docs/design/prompts/` 引用须**串级扫替**
-（承目录改名子批「类 A」形态：全量文本扫替 + 复查 0 残留〔K2〕——**以扫替为口径、不以点名清单为限**）；**该扫替属迁移批**（不落）；本设计只把落点写进 §4 表。
-**逐站点清单（抽验——根仓指代 7 处）**：`CORE-UNIFICATION.md` `:45` · `:1045` · `:1130` · `:1131` · `:1307` · `:1552` · `:1918`；
-同档另存产品树相对 / 分析面术语形态的命中（raw 21 行）——逐站点语义三分清点归迁移批。
-**扫替域** = 根层 `docs/**`（扣 `_archive/` 与时序日志面）；**两产品树排除**（同名目录 = 迁移期参照历史，不得改指）。**判据** = 扫替后域内 `docs/design/prompts/` 计数 = 0。
+**修法 1（③ 的连带——引用清扫）**：扫替判据——域 = 根层 `docs/**` 扣 `_archive/` 与时序日志面、两产品树排除；判据 = 域内指向 `docs/**/prompts` 的引用计数 = 0。**该清扫属 R5（与删档同批）**。
+
 **修法 2（④ 的连带）**：README §2.4 现文「哪些旧档属项目级随触碰逐个判定（依据 = 是否跨两产品被引用）」= **无判据句**；
 替换为本档 §5.1 的 P1–P5（可判据化）。**已在地图加指针**（§11），替换动作随迁移批。
 
@@ -298,14 +293,13 @@ thincoder/                                  ← 合并仓根（git 仓）
 > 能观察 ⇒ 需求池；否则 ⇒ 技术待办。**两池不混**（§1.13）；条目形态与状态机不变。
 ```
 
-### 10.3 落点二：提示词层（**不落**——英文提示词 = 代码）
+### 10.3 落点二：提示词层（**只落 EN 一面**）
 
 | # | 档 | 节 | 动作 |
 |---|---|---|---|
-| 1 | `docs/core/design/prompts/persona-engineering.md`（**正本**） | §「台账（需求池 / 技术待办）——攒批与生命周期」第 5 条**边界**（「池只收用户需求点……不混池」） | 在「边界」条**追加判据句**（同 §10.1 文本，不加新节） |
-| 2 | `thincoder-core/prompts/persona-engineering.md`（**运行期落地档**） | §「台账（需求池 / 技术待办）——攒批与生命周期」第 5 条 | 按正本**回写**（两份链路：先改正本 → 回填落地档） |
+| 1 | `thincoder-core/prompts/persona-engineering.md`（唯一副本） | §「台账（需求池 / 技术待办）——攒批与生命周期」第 5 条**边界** | 在「边界」条**追加判据句**（同 §10.1 文本，不加新节） |
 
-**为何落这里（实核）**：两池机制的唯一详述处 = `docs/core/design/prompts/persona-engineering.md` §「台账（需求池 / 技术待办）——攒批与生命周期」（该节即攒批工作流 / 附属纪律的正本）。**本设计只给落点与文本，不写提示词档**（英文提示词 = 代码，内容权归主 agent）。
+**为何落这里（实核）**：两池机制的详述处 = `design/LEDGER.md`（机制档）；提示词只是该规则的执行面。**本设计只给落点与文本，不写提示词档**。
 
 ## 11. 受影响文件清单（FR7 含实修）
 
@@ -323,8 +317,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 | # | 档 | 当前行数 | 预计增量 | 动作 | 归属 |
 |---|---|---|---|---|---|
 | 6 | `DOC-CODE-RECONCILE`（VSC 仓·设计）§4 | 488 | +~12 | 外部参照面判据（§8.4 E-1–E-4） | 产品树**只读** ⇒ 另派 VSC 轮——**已落**（基准层 `docs/core/design/DOC-CODE-RECONCILE.md` §3.9 · 产品树零写入） |
-| 7 | `docs/core/design/prompts/discipline-engineering.md` | 189 | +5 | 两池判据句（§10.3） | 英文提示词 = 代码 ⇒ 主 agent 内容权 |
-| 8 | `thincoder-core/prompts/discipline-engineering.md` | 264 | +5 | 按正本回写 | 同上（**核树只读**） |
+| 8 | `thincoder-core/prompts/discipline-engineering.md` | — | — | 两池判据句（coder 落笔） | eng-coder |
 | 9 | `docs/TODO.md` | 40 | +3 | 两池判据（§10.2） | **父侧落笔**（不动台账） |
 
 **拆分面 = §5.2 分类表 → 迁移台账**（`docs/core/design/DOC-MIGRATION.md`）——**已落地**（本档只留判据句与指针）。
@@ -340,7 +333,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 | 5 | 外部参照面 = **档级声明** | §3.4——判据简单 + 声明随档走 |
 | 6 | **`:1446` 改写为「计划档名（裸名） + 指向既有覆盖用例」** | 该锚指向 **S2 计划产物**（尚不存在），非现态事实锚；V5 判据**无「计划产物」通道**（注记标记集只覆盖已退场族）⇒ 不新开豁免通道（**不许豁免绕过**），改以「计划表述 + 指向现存锚 `thincoder-core/test/tool-registry.test.mjs:54`」表达；**判据缺口已登记**（§12 末注） |
 | 7 | `:1440` 的裸 basename + 坐标（`agent.mjs` `:125`——仓内两义：核 + VSC）→ `thincoder-core/agent.mjs:125` | 实核：`thincoder-core/agent.mjs:125` = `prepareRun` 唯一调用点（`const { maxTurns, …, systemPrompt } = await prepareRun(`）；裸名在仓内两义（核 + VSC） |
-| 8 | 正本落 `docs/core/design/prompts/` | 提示词正本 = core 机制（落地档 `thincoder-core/prompts/`） |
+| 8 | 提示词无文档面正本；唯一副本 = `thincoder-core/prompts/` | 承 2026-10-18 取消镜像裁定 |
 | 9 | 台账 / 批次档 / 地图**不进五部分** | 项目级流程面（P3）——批可跨部分，按部分切会把一份批档劈成两半 |
 | 10 | **零搬迁零代码** | 用户边界（只做规划）；N4 可回退 |
 
@@ -352,7 +345,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 
 | # | 验收标准（机器可验） | 回指 |
 |---|---|---|
-| **A1** | `docs/` 五部分目录树 + 部分 id ↔ 代码 / 产品目录对应表在档（§4）；现有 16+16 板块档与提示词正本去向逐项给出（§4 表） | FR1 |
+| **A1** | `docs/` 五部分目录树 + 部分 id ↔ 代码 / 产品目录对应表在档（§4）；16+16 板块档去向逐项给出（§4 表）；提示词面无文档面档（单副本 = `thincoder-core/prompts/`） | FR1 |
 | **A2** | 命名规则以**判据句**给出（N-a–N-d），且每条带机检落点（§6） | FR2 · N1 |
 | **A3** | 归属判据 P1–P5 可判定；产品树文档**逐档二分表**给出且计数自洽（84 = 设计 47 + 需求 37；小计六栏与逐档表闭合——见迁移台账 §5） | FR3 |
 | **A4** | 交叉引用形态 R1–R5 逐条给判据 + 机检现状（✓ / ✗ / 须扩），并点明 R2 / R3 的引擎扩展面 | FR4 |
@@ -385,7 +378,7 @@ thincoder/                                  ← 合并仓根（git 仓）
 1. **不搬迁**：不改两产品树任一档的物理位置；不建 `docs/{core,cli,vsc}/` 目录；不改 `docs/README.md` 的现状地图内容（只加指针）。
 2. **不改机检**：`scripts/**` 零改动；引擎 / 路由切分与射程修法**只给规格**（§8），实装归引擎化批次。
 3. **不写产品树**：`thincoder-cli/**` · `thincoder-vscode/**` 零写入（含判据权威 `DOC-CODE-RECONCILE` §4——§8.4 的文本已备，待另派）。
-4. **不写核树 / 提示词 / 台账**：`thincoder-core/**` 零写入；提示词文件（含中文模板）零写入；`docs/TODO.md` 零写入（§10.2 交父侧）。
+4. **不写核树 / 提示词 / 台账**：`thincoder-core/**` 零写入；提示词文件（`thincoder-core/prompts/**`，产品代码面）零写入；`docs/TODO.md` 零写入（§10.2 交父侧）。
 5. **不发起评审、不 commit**（发起权 = 用户）。
 6. **本档不含 UI / 交互决策**（本板块无用户界面）——**显式声明豁免**，非遗漏。
 

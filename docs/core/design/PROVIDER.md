@@ -206,7 +206,7 @@ qwen 系列（百炼**混合思考**模式，默认开启）需能**真正关闭
 on 分支默认 effort 契约 = 取 `spec.reasoningEffortEnum` 的**首个非 `"none"` 档**——枚举首项为 `none` 的族（qwen 全族）不得拿首项当 on 默认，否则 = 「开了个关着的思考」；
 `none` 不在枚举时两者等价 ⇒ 对其余族零回归。（`/think on` 取档实现 = `doc:MODEL-SPECS.md:§2.8`，A-16 / T-14。）
 
-**一致性分支（百炼互斥约束——`thincoder-core/config.mjs:183-196`）**：服务端约束 = `enable_thinking:false` 时 `reasoning_effort` 必须为 `"none"`，互斥即 400；
+**一致性分支（百炼互斥约束——`thincoder-core/config.mjs:143-156`）**：服务端约束 = `enable_thinking:false` 时 `reasoning_effort` 必须为 `"none"`，互斥即 400；
 ⇒ `provider.reasoningEffort` 有值且非 `"none"` ⇒ `resolveEnableThinking` 返 `true`（effort 赢），该判**先于** `thinking === null` 的显式 off 判。
 压缩下行（`{...agent.provider, thinking:null}` + 继承 effort——v3 同源，`doc:CONTEXT-COMPACTION.md:§6.14`）因此发 `{enable_thinking:true, reasoning_effort:<档>}` = 合法对（无 effort 档位时仍落 `false`）。
 
@@ -371,7 +371,7 @@ VSC 调用面无相位传参点——相位参数由核 chat 装配（核 `thinc
 本地接线不变 = responses provider 经 config.json 手写 `format: "responses"` 或预设扩展启用（custom 表单 format 下拉未加 responses 项——显式 opt-in，CLI parity）；
 finishReason 区分（`response.incomplete` 非长度原因不得报成 `length`）**保留为端侧验收**。
 
-**能力适配端差**（语义同源不重并——坐标即指）：`specForModel` / `providerSpec` / `resolveEnableThinking` / `isBailianHost`（`thincoder-core/model-specs.mjs:290` / `:323` ∥ `thincoder-core/config.mjs:167` / `:150`）·
+**能力适配端差**（语义同源不重并——坐标即指）：`specForModel` / `providerSpec` / `resolveEnableThinking` / `isBailianHost`（`thincoder-core/model-specs.mjs:290` / `:323` ∥ `thincoder-core/config.mjs:143` / `:126`）·
 reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 真 off；**载荷形随 `doc:MODEL-SPECS.md:§16.2` 按族取形**）· escape v5 与 UTF-16 安全截断（核 `escape.mjs` + 端 `src/agent/run-helpers.mjs` `safeSliceUTF16`——§6.7 同构）·
 畸形 tool_calls 防御（现体 = 核 `provider/sse.mjs`；§6.10 同构）· 前缀剥离与 `DEFAULT_SPEC` 兜底（§6.9 同构）；
 规格表每行多 `reasoningEffortDefault`（§6.9 已登记端差）。**`provider.headers`：VS Code 端无 `providers[].headers` 概念**（§6.17 域外与端面已登记——对位引入属新需求）。
@@ -438,7 +438,7 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 
 > **来源**：用户原则裁定「三端界面可以不一样，但是逻辑应该是一样的」+ 取 **U3 档**（宽松 + 明示）。本节 = 该机制**长期单源**；三端消费面只留各自落点细节（D2）。
 
-**问题（实读）**：「缺 ∥ 无效 `defaultModel`」这一态的**判定与处置**三端不等——核 ∥ CLI ∥ 桌面 = 严格（解析未过即无效态：`thincoder-core/config.mjs:328-335`）；VSC = 接入面**自建回退链**绕过核判据（`panel-turn-stages.mjs:57-74` + `thincoder-vscode/src/extension/presets.mjs:107-117`）——既是偏离、也是事实标准。⇒ 同一配置态，一端能发、两端不能发。
+**问题（实读）**：「缺 ∥ 无效 `defaultModel`」这一态的**判定与处置**三端不等——核 ∥ CLI ∥ 桌面 = 严格（解析未过即无效态：`thincoder-core/config.mjs:296-303`）；VSC = 接入面**自建回退链**绕过核判据（`panel-turn-stages.mjs:57-74` + `thincoder-vscode/src/extension/presets.mjs:107-117`）——既是偏离、也是事实标准。⇒ 同一配置态，一端能发、两端不能发。
 
 **统一判据（核单源）**：核 `thincoder-core/model-ref.mjs` 导出 `resolveProviderPlan({ providers, defaultModel, slot })`（**纯函数 · 零 I/O**）——三端消费同一函数；`loadConfig` 的运行时 `provider` 取值切换至该函数（CLI ∥ 桌面经装配自动同源；VSC 回合面直调）。返回面：
 
@@ -467,10 +467,10 @@ reasoning 档位落 patch（`src/extension/reasoning-mode.mjs`——`"off"` ⇒ 
 - `fallback` —「**无有效 defaultModel**」类：`defaultModel` 缺 ∥ 不可解析 ∥ 所指渠道不在册 ∥ 所指渠道无 key；**且**全局存在可运行渠道 ⇒ **可运行 + 明示必达**；
 - `invalid` —「**无 provider/key**」类：渠表空 ∥ 全表无 key ⇒ **真无效 + 引导配置**。
 
-**端面「invalid 类」合成式（U-4 裁：两字段并存，不合并）**：`providerState`（key 面）∥ `providerInvalidReason`（**name 面**——`thincoder-core/config.mjs:337` 产出：入选渠道具名 ⇒ null ∕ 无入选渠道 ⇒ 非空；语义不变）为**两字段并存**；端面「invalid 类」（= 出导引节点的类）判据 = **`state === "invalid"` ∨ `providerInvalidReason` 非空**（三端同一合成式 · 单判据）。
+**端面「invalid 类」合成式（U-4 裁：两字段并存，不合并）**：`providerState`（key 面）∥ `providerInvalidReason`（**name 面**——`thincoder-core/config.mjs:301-303` 产出：入选渠道具名 ⇒ null ∕ 无入选渠道 ⇒ 非空；语义不变）为**两字段并存**；端面「invalid 类」（= 出导引节点的类）判据 = **`state === "invalid"` ∨ `providerInvalidReason` 非空**（三端同一合成式 · 单判据）。
 「持 key 但结构不全」（缺 `baseURL` 等）**不在合成式内**——该角归**发送 ∕ 装配失败面**（装配标记 `_providerInvalid` 载体：桌面发送门〔`provider` 类词〕∥ ACP `session/new` 装配后检查；CLI ∥ VSC 落发送期失败面），非导引节点——与断言③负向锁互洽。
 
-`loadConfig` 落三键：`provider` = `plan.provider`；`providerState`（三值：`ok` ∥ `fallback` ∥ `invalid`）+ `providerStateReason`（state≠ok 时非空）；`providerInvalidReason` 语义不变（无入选渠道时非空——`thincoder-core/config.mjs:337` 产出，装配校验 `validateProvider` 消费面照旧〔reason 优先源〕）。
+`loadConfig` 落三键：`provider` = `plan.provider`；`providerState`（三值：`ok` ∥ `fallback` ∥ `invalid`）+ `providerStateReason`（state≠ok 时非空）；`providerInvalidReason` 语义不变（无入选渠道时非空——`thincoder-core/config.mjs:301-303` 产出，装配校验 `validateProvider` 消费面照旧〔reason 优先源〕）。
 
 **reason 文本（语义源 · 逐档）**：`fallback` = 沿用 `defaultModelReason` 现两档（缺 ∥ 无效）+ 新档「`defaultModel` 渠道 "<name>" 无 API 密钥——已回退到可用渠道」；`invalid` = 渠表空 ⇒ 现串「未配置任何 provider」∥ 有渠无 key ⇒ 新档「未配置 API 密钥（providers[].apiKey）——请先配置渠道密钥」。
 

@@ -727,7 +727,7 @@ VSC = 同批（触发支 `thincoder-vscode/src/extension/panel-messages.mjs` 选
 | 选定写回：槽写未发生（槽未解析窗口 ∥ 槽不可读） | 零写回（会话侧照旧：内存态 ∥ prefs 已更新） | 判据句 6——写回门住槽面实变；无槽面 ⇒ 无判据 |
 
 **验收回指**：① 桌面会话头三值切标签随动 + 非活动槽只写盘 → 判据句 1 / 4 / 5；② 老槽零行为变更 → 判据句 5 + 边界表首行；③ 档位候选面与写面同判据（不可 off 的模型两面一致）→ 判据句 3 + 边界表第 3 行；④ 三包测试全绿 + `doc-check` 零新增闸态失败 → 落点表在册；⑤ 会话选定（模型面实变）⇒ `defaultModel` 实写回 ∥ 等值 ∥ 回声 ∥ boot 播种 ∥ 回退径零写 + **端到端 = 选定 ⇒ 新建会话 ⇒ 运行模型 = 最近一次显式选定**
-（取数链 = 新槽创建（核 `newSession`，`thincoder-core/session-lifecycle.mjs:226`——空槽规范结构无会话级 provider/model）∥ 装配取数（核 `loadConfig` 归一链 `resolveProviderPlan`——`thincoder-core/config.mjs:332` ∥ `thincoder-core/model-ref.mjs:113`/:126：槽面无源 ⇒ `defaultModel` 档入选））
+（取数链 = 新槽创建（核 `newSession`，`thincoder-core/session-lifecycle.mjs:226`——空槽规范结构无会话级 provider/model）∥ 装配取数（核 `loadConfig` 归一链 `resolveProviderPlan`——`thincoder-core/config.mjs:296` ∥ `thincoder-core/model-ref.mjs:113`/:126：槽面无源 ⇒ `defaultModel` 档入选））
 → 判据句 6（三端同判；用例 = 新会话起点条）。
 
 **不做（边界）**：不改 CLI / VSC 端侧档位面（`/think` / `reasoning-mode.mjs` / `settings-panel-write.mjs` 各自实现沿用——「推理档位面端侧自有」既有裁定；补充面 = **槽字段 + 写出口 + 保存携带 + 恢复施加**四事）· 会话级偏好自身不落 config（`settings:agent` 仍是设置面全局默认）——**例外 = 判据句 6 选定写回** · 不校验端侧控件域 / 不做档位闭集机检 · 不回填老槽 · 不动 marker 与槽认领语义。

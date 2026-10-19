@@ -54,6 +54,26 @@ export const EN_SYSTEM = Object.freeze({
   "system.cfgLoadFailed": "Failed to load the config",
   "system.cfgRestartNote": "Takes effect after a restart (the config file is not hot-reloaded)",
 
+  // ── System · config card TLS block (TLS built-in batch — PUBLICNET.md §9; six sub-keys, restart to apply) ──
+  "system.cfgTlsTitle": "TLS (built in)",
+  "system.cfgTlsEnabled": "Enable TLS (certificate and key paths required)",
+  "system.cfgTlsCertPath": "Certificate path (certPath)",
+  "system.cfgTlsKeyPath": "Private key path (keyPath)",
+  "system.cfgTlsPublicHost": "Public host name (publicHost, no port)",
+  "system.cfgTlsPublicHostPh": "e.g. tc.example.com",
+  "system.cfgTlsPublicPort": "Public port (publicPort, default 443)",
+  "system.cfgTlsRedirectPort": "HTTP→HTTPS redirect port (empty = off)",
+  "system.cfgTlsHint": "Certificate and key are your own PEM files (relative paths resolve against the config directory); saving pre-checks that they are readable and paired, so errors stop before a restart; rotate with kill -HUP <pid> — no downtime.",
+  "system.cfgTlsPortInvalid": "Port must be an integer from 1 to 65535",
+
+  // ── System · config card rate-limit block (publicnet batch — PUBLICNET.md §9; three sub-keys, restart to apply) ──
+  "system.cfgRateLimitsTitle": "Rate limiting (anonymous entry)",
+  "system.cfgRateLimitsEnabled": "Enable rate limits (login and public intake, per IP)",
+  "system.cfgRateLimitAuth": "Login threshold (requests/min/IP, default 20)",
+  "system.cfgRateLimitPublic": "Public intake threshold (requests/min/IP, default 120)",
+  "system.cfgRateLimitHint": "Fixed 60-second window; above the threshold returns 429 + Retry-After, and one security event is recorded per IP per window. /healthz and static assets are never limited.",
+  "system.cfgRateLimitInvalid": "Threshold must be an integer from 1 to 10000",
+
   // ── System · config card proxy block (2026-10-10 proxy-move-back batch: proxy.uri moved back from the Proxy page + connectivity test follows) ──
   "proxy.uriLabel": "Upstream proxy address",
   "proxy.uriPh": "http:\/\/host:port (empty = disabled)", // "\/" keeps the designed value; the raw text scan bans the literal URL form under public/**
@@ -181,6 +201,16 @@ export const EN_SYSTEM = Object.freeze({
   "audit.type.ledger_event": "Team ledger",
   "audit.type.member_event": "Member session",
   "audit.type.mcp_event": "MCP servers",
+  "audit.type.security_event": "Security event",
+  "audit.securityTls": "TLS started",
+  "audit.securityCert": "Certificate rotation",
+  "audit.securityBurst": "Rate limit hit",
+  "audit.securityFailed": "Failed",
+  "audit.securityClass": "Endpoint class",
+  "audit.securityCount": "Count",
+  "audit.securityPort": "Port",
+  "audit.securityRedirectPort": "Redirect port",
+  "audit.retryAfter": "Retry after",
   "audit.sandboxKind.container_create": "Container created",
   "audit.sandboxKind.container_start": "Container started",
   "audit.sandboxKind.container_stop": "Container stopped",

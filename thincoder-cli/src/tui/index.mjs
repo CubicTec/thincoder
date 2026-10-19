@@ -11,7 +11,8 @@
  *   pickers.mjs       — generic list picker + model picker
  *   wizard.mjs        — first-launch config wizard
  *   slash-commands.mjs — slash command dispatch
- *   config-helpers.mjs — persistRaw / syncProviderField / maskKey
+ *   config-helpers.mjs — persistRaw / syncProviderField / maskKey + /config value & display helpers
+ *   cmd-config.mjs    — /config command spine；cmd-config-menus.mjs — its four sub-menus
  *   clipboard.mjs     — clipboard image paste
  *   distill-cmd.mjs   — /distill command
  *   mouse.mjs         — SGR mouse parsing + dispatch assembly (createMouseDispatch)

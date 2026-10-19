@@ -150,6 +150,8 @@
 - **ctx 字段**：cwd / agent / depth / signal / callbacks / onOutput / onQuestion / onPermissionRequest。
 - **undo 快照**：副作用工具执行前 `snapshotForUndo`（写前文件内容入内存栈），`/undo` 回滚；快照为全量副本（检查点面权威 = 本层 `CHECKPOINT.md`）。
 - **hooks**：PreToolUse / PostToolUse / PostToolUseFailure / Stop 四事件用户脚本——配置位 = `~/.thincoder/config.json` 的 `hooks` 键（`{ matcher?, command, args?, timeout?, action? }`，action = allow/block/notify）；`action: "block"` 时按**退出码**定夺（0 = 放行、非 0 = 阻断）。
+  - **载荷含工具结果全文**：`PostToolUse` ∥ `PostToolUseFailure` 的 stdin JSON 携 `result`（原始返回值）与 `toolArgs`——hook 是用户自己配置的可执行命令，与自己直接跑脚本同权（可读任意文件）；日志面的 `SECRET_FORM` 剥离（形态扫描常量 = `thincoder-core/log.mjs:43`；脱敏函数 `redactSecret` = 同档 `:149-180`）不覆盖该面。配置第三方 hook 前须自行确认它会怎样处理这段正文。
+  - **本披露行的先例与调研**：先例 = `thincoder-core/log.mjs:43` 的 `SECRET_FORM` 形态扫描 ∥ 同档 `:149-180` 的脱敏函数（日志面既有口径，本行沿用不改）；调研 = 查过 `thincoder-core/log.mjs` 的脱敏面与 hooks 配置位——无既有「hook 载荷分级」面 ⇒ 本批只落披露句，收窄 ∥ 脱敏 ∥ 可选开关留待用户裁（安全纪律⑤）。
 - **dispatch console 回显**：工具执行期间的 console 输出回显到结果（调试价值）——调度细节权威 = AGENT-LOOP 板（本层 `AGENT-LOOP.md`）。
 
 ### 6.4 安全边界
@@ -164,6 +166,7 @@
 | 文件 | `MAX_READ_LINES = 2000` / `MAX_OUTPUT_CHARS = 200_000`（超限落盘，模型见预览）；`normalizeEOL`（CRLF 统一）；write 前 `autoSyntaxCheck`（JS 文件自动 `node --check`） |
 | lint | `node --check` fast path + 语言级联（tsc / ruff / cargo / go vet）；`scripts/check-syntax.mjs` 替代 eslint 级联（零依赖） |
 | lsp | 按需 spawn LSP server（`config.lsp.servers` 的 `command` 直跑，无 shell——`thincoder-core/tools/lsp.mjs:148`），语义级诊断 / 跳转兜底 |
+| hooks | 用户脚本与 agent 同权（可读任意文件）：载荷含工具结果全文（`result` ∥ `toolArgs`），`SECRET_FORM` 剥离不覆盖 hook stdin（机制与披露句 = §6.3 hooks 行）；收窄 ∥ 脱敏 ∥ 可选开关三选一 = **未建立**（安全纪律⑤——不默认加防护，待用户裁） |
 
 **execute 边界**：纯净 node ESM 子进程，与 bash 同边界——顶层 await / 动态 `import()` / `require()` / `console` / `fetch` / `process` 全可用；**无 import 阻断、无 require 禁、无目录限制、无伪沙箱、无预置全局**。文件能力唯一入口 = 专用工具。超时 SIGKILL 强杀（默认 30s，上限 600s）。
 
@@ -310,7 +313,8 @@ A13 调用方普查 · 集成测试级：三包全量 `npm test` 失败集合 �
 
 **对账口径**：收口判定一律以 `git status --porcelain`（bash，仓内）为准；工具侧自 **#62 起**已自带仓发现（**缺省 = 发现的项目仓根**，显式 `workdir` 优先）。
 
-**边界（本节不做）**：跨仓自动发现不在本节（归 §6.13——工作区根 ⇒ 唯一仓自动下钻：带档优先，零档看裸仓）；本节的 fail-closed 保留为**零发现态**兜底，语义零改；不改工具描述（`thincoder-core/tool-docs/git.md` = 提示词面，内容权归主 agent）；不改 `runGitStrict` 族（写面已是严格形——该族体于 §6.14 转异步薄壳，签名与写面语义不变，见 §6.14）；H3 夹具留实施轮；不改 `advisor/repos.mjs` 的独立 git 读取面（自带 `stdio` 三通，非本缺陷族）。
+**边界（本节不做）**：跨仓自动发现不在本节（归 §6.13——工作区根 ⇒ 唯一仓自动下钻：带档优先，零档看裸仓）；本节的 fail-closed 保留为**零发现态**兜底，语义零改；不改工具描述（`thincoder-core/tool-docs/git.md` = 提示词面，内容依据 = 机制文档，落笔 = eng-coder）；
+不改 `runGitStrict` 族（写面已是严格形——该族体于 §6.14 转异步薄壳，签名与写面语义不变，见 §6.14）；H3 夹具留实施轮；不改 `advisor/repos.mjs` 的独立 git 读取面（自带 `stdio` 三通，非本缺陷族）。
 
 ### 6.13 git 工具仓发现（§6.12 之上的发现层）
 
@@ -686,27 +690,25 @@ Error: engineering mode is ON — task is unavailable (the batch record + the le
 | VSC-2 | 工程段断言同步 | VSC `host-shape-spawn.test.mjs` | 工程段 = timer…（无 task）断言更新后全绿 | vsc `host-shape-spawn.test.mjs` |
 | VSC-3 | 端侧催更门排除（VSC 副本直驱） | 直驱 `maybeGuardPushbacks`——桩 agent：`_tasks` 含 pending ∧ `engineering=true`（advisor/verify 面不构成候选） | 零推回（返回 false · 零提醒注入） | vsc `advisor-guard-rounds.test.mjs`（`thincoder-vscode/test/files.mjs:83` 已登记） |
 
-**边界（本节不做）**：台账工具自身零改（六态 enum 已是对照面）· eng/plan/escalate 既有门零改 · 普通模式 task 行为零变（不移注册不加开关）· batch 六段 / append-only / 一段一作者 / 冻结门语义零变 · 散文纪律句不删 · 铁律 3 提示词分支 = PROMPT-SYSTEM 板块（本节带上——条目文本 = §6.15.2「提示词面条目文本」逐字固化；落档 = 主 agent 笔面）。
+**边界（本节不做）**：台账工具自身零改（六态 enum 已是对照面）· eng/plan/escalate 既有门零改 · 普通模式 task 行为零变（不移注册不加开关）· batch 六段 / append-only / 一段一作者 / 冻结门语义零变 · 散文纪律句不删 · 铁律 3 提示词分支 = PROMPT-SYSTEM 板块（本节带上——条目文本 = §6.15.2「提示词面条目文本」逐字固化；落档 = eng-coder（内容依据 = 机制文档））。
 VSC 副本 verify guard 分支同类缺差（`thincoder-vscode/src/agent/run-stages.mjs:105` 零 engineering 条件 vs 核 `thincoder-core/agent/completion.mjs:75` 有）= **随本节收口（hygiene-sweep 面）**。
 
-**提示词面条目文本（逐字固化——三撞点 = 核内运行期落地档 `thincoder-core/prompts/discipline-engineering.md` §🔴 铁律 · 第 3 条 / §基本流程 · 步骤 1「需求完成判据」 · `persona-engineering.md:68`，正本同句 = `docs/core/design/prompts/discipline-engineering.md` 同节同位 · `persona-engineering.md:67`）**：
+**提示词面条目文本（逐字固化——三撞点 = 提示词面（`thincoder-core/prompts/`）的 `discipline-engineering.md` §🔴 铁律 · 第 3 条 / §基本流程 · 步骤 1「需求完成判据」 · `persona-engineering.md:68`）**：
 
-① **铁律 3**（`discipline-engineering.md` §🔴 铁律 · 第 3 条）——现行（正本·中文）「**工作靠批次档 + 台账跟踪**：需求确认后逐条建任务条目（条目落批次档 §2 + 台账行）；没有条目 = 需求没落地。（工程模式 `task` 工具机械停用——追踪权威面 = 批次档 + 台账。）」
-   现行（核内落地档·英文）「**Work is tracked by the batch record + the ledger**: after requirements are confirmed, build task entries one per requirement (entries land in batch record §2 + ledger rows); no entry = the requirement hasn't landed. (The `task` tool is mechanically disabled in engineering mode —
+① **铁律 3**（`discipline-engineering.md` §🔴 铁律 · 第 3 条）——现行（EN）：
+「**Work is tracked by the batch record + the ledger**: after requirements are confirmed, build task entries one per requirement (entries land in batch record §2 + ledger rows); no entry = the requirement hasn't landed. (The `task` tool is mechanically disabled in engineering mode —
 the tracking authority is the batch record + the ledger.)」
-② **需求完成判据**（`discipline-engineering.md` §基本流程 · 步骤 1「需求完成判据」）——现行（正本·中文）「…需求确认后逐条建立任务条目——**批次档 §2 条目表 + 台账行**是需求验收的标志。」
-   现行（核内落地档·英文）「…build task entries one per requirement — **the batch record §2 entry table + ledger rows** are the marker that requirements were accepted.」
-③ **欠账入清单**（`persona-engineering.md:67` 正本 / `:68` 核内）——现行「**欠账入清单**：未发 / 未完成的自有事项 ⇒ **立即写进任务清单**（或批次档 §6 未决）——欠账**必须看得见**，不得只活在报告文字里、靠用户催问兑现。」
-   建议（正本·中文）「**欠账入清单**：未发 / 未完成的自有事项 ⇒ **立即写进批次档 §6 未决（或台账行）**——欠账**必须看得见**，不得只活在报告文字里、靠用户催问兑现。」
-   建议（核内落地档·英文）「**Debts go on the list**: undispatched / unfinished items of your own ⇒ **immediately written into batch record §6 unresolved (or a ledger row)** — debts **must be visible**, never living only in report prose waiting for the user to chase.」
+② **需求完成判据**（`discipline-engineering.md` §基本流程 · 步骤 1「需求完成判据」）——现行（EN）「…build task entries one per requirement — **the batch record §2 entry table + ledger rows** are the marker that requirements were accepted.」
+③ **欠账入清单**（`persona-engineering.md:68`）——现行「**欠账入清单**：未发 / 未完成的自有事项 ⇒ **立即写进任务清单**（或批次档 §6 未决）——欠账**必须看得见**，不得只活在报告文字里、靠用户催问兑现。」
+   建议（EN）「**Debts go on the list**: undispatched / unfinished items of your own ⇒ **immediately written into batch record §6 unresolved (or a ledger row)** — debts **must be visible**, never living only in report prose waiting for the user to chase.」
 
-改因（一句）：F10 机械门上线后工程模式 `task` 调用被拒——三处仍指挥 / 引指 task 的句子 = 自相矛盾态（撞点修复）；双副本链路承 D-C14（先改 `docs/core/design/prompts/` 正本 → 回写 `thincoder-core/prompts/` 运行期落地档）。落档 = 主 agent 笔面（提示词 = 主 agent 内容权）。
+改因（一句）：F10 机械门上线后工程模式 `task` 调用被拒——三处仍指挥 / 引指 task 的句子 = 自相矛盾态（撞点修复）；提示词 = 产品代码（`thincoder-core/prompts/`，eng-coder 笔）。
 
 #### 6.15.3 F10 第三面——auto-turn digest 域的模式变体
 
-**处置 = 平行导出 + 两侧按模式选串**（承父侧裁定；**变体文本内容权 = 父侧**——先例 = `UPSTREAM_TURN_DOMAIN` 注「Content authority = parent side」）：
+**处置 = 平行导出 + 两侧按模式选串**（承父侧裁定；**变体文本内容依据 = 机制文档**）：
 
-- **核**：`thincoder-core/agent/helpers.mjs` 新增平行导出 **`AUTO_TURN_DIGEST_DOMAIN_ENG`**（单行 · 无换行；注 = 内容权 = 父侧 + 出处指针 = `AGENT-LOOP-ASYNC-POOL.md` §6.8 与本条）；普通档常量逐字零变。
+- **核**：`thincoder-core/agent/helpers.mjs` 新增平行导出 **`AUTO_TURN_DIGEST_DOMAIN_ENG`**（单行 · 无换行；注 = 内容依据 = 机制文档 + 出处指针 = `AGENT-LOOP-ASYNC-POOL.md` §6.8 与本条）；普通档常量逐字零变。
 - **选串单点两处**（同一规则 = `agent.config.agent.engineering` 真值）：核注入点 `thincoder-core/agent/run-start.mjs:100` 三元（三拆前 `thincoder-core/agent.mjs:170`）+ VSC 组合点 `composeTurnDomain`——两级选择（轮型 → 模式）同式（核 / 端各一处 = 非构成差异）。
 - **ask 唤醒轮不受模式影响**：`UPSTREAM_TURN_DOMAIN` 无 task 指针 ⇒ 该轮基座选择零变（变体只挂 digest 基座）。
 
@@ -734,7 +736,7 @@ FORBIDDEN this turn (mechanically enforced): modifying files, bash/execute/verif
 
 | 文件 | 现行 | Δ 预估（⇒ 实施后 ≈） |
 |---|---|---|
-| `thincoder-core/agent/helpers.mjs` | 412 | +8（平行导出 + 注——内容权 = 父侧）⇒ ≈420 |
+| `thincoder-core/agent/helpers.mjs` | 412 | +8（平行导出 + 注——内容依据 = 机制文档）⇒ ≈420 |
 | `thincoder-core/agent.mjs` | 435 | ±0（注入点 `:170` 行内改三元）⇒ ≈435 |
 | `thincoder-vscode/src/agent/turn-domains.mjs` | 31 | +6 −2（签名 +1 参数 · 基座两级选择 · 头注同步）⇒ ≈35 |
 | `thincoder-vscode/src/agent/setup-reminders.mjs` | 138 | +1 −1（转口表 +1 名 · 头注同步）⇒ ≈139 |
@@ -1066,7 +1068,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 - **身份面载体 = ⑨ 记录同档扩字段**：`identityFile`（路径——**非密**）∥ `auth`（`"key"` ∥ `"password"`——上次成功认证方式：探连成功记 `key`，带密会话成功记 `password`）。
 - **`connect` 可选参 `identityFile`**：给出 ⇒ `-i <路径>` 下发（`~` 展开为家目录）＋成功后记入记录；未给而记录有 ⇒ 取记录值（照 `user` 同式）。
 - **优先级铁序**：本机配置 / agent ∥ `-i` ⇒ 探连 → 探连**仅认证类失败**才读保存件（⑪）→ 仍失败才落窗。保存件**恒不先于探连**——密钥可用 ⇒ 保存件零读取（S6 判据）。
-- **装公钥引导（不做自动装）**：本机 `ssh-keygen -t ed25519`（无密钥时）⇒ `ssh-copy-id user@host`（或把 `id_ed25519.pub` 追加进主机 `~/.ssh/authorized_keys`）⇒ 重连即零窗（探连自试密钥）；步骤落工具描述（英文面——内容权主 agent / 落笔 eng-coder）。
+- **装公钥引导（不做自动装）**：本机 `ssh-keygen -t ed25519`（无密钥时）⇒ `ssh-copy-id user@host`（或把 `id_ed25519.pub` 追加进主机 `~/.ssh/authorized_keys`）⇒ 重连即零窗（探连自试密钥）；步骤落工具描述（英文面——内容依据 = 机制文档 / 落笔 = eng-coder）。
 
 **⑪ 加密凭证库（B 案——必须用密码的，存密文）**：
 - **档**：`configDir/ssh-credentials.json`（**私档**——用户域，仓库零落点；与 ⑨ 非密档**分档**——⑨ 档「非密白名单」性质不破）。形 = `{ version: 1, entries: { "<host[:port]>": { user, scheme, blob, savedAt, lastUsedAt? } } }`（读键 = ⑨ 同式——`hostKey()` 单源迁本档，会话面引用）；**`lastUsedAt` = 复用成功时更新**（带密会话认证成功 ⇒ 回写；写失败 = 增益面静默）。
@@ -1118,7 +1120,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | 1 | `thincoder-core/tools/ssh.mjs` | **105** | +13 实读 | 工具本体 + 参数 schema + 动作分发；保存面：`credentials` / `forget` 两动作 + `identityFile` 参 + 只读钩子 |
 | 2 | `thincoder-core/agent-tools/ssh-session.mjs` | **439**（实读；非空 411） | +47（⇒ **486**） | 会话池 / 连接流 / 动作面 / 凭据窗 / 非密预填档 / 生命周期；保存面：保存件接线（探连失败支）+ 勾选面 + 两动作薄转口 |
 | 3 | `thincoder-core/tools/ssh-askpass.mjs` | — | 新 ≈30–50 | 口令助手（独立进程入口） |
-| 4 | `thincoder-core/tool-docs/ssh.md` | **34**（实读） | +17（⇒ **51**） | 工具描述（**英文提示词 = 代码**：内容权归主 agent、落笔归 eng-coder——保存面内容点：勾选语义 / 零窗复用 / fail-soft / `credentials`·`forget` / 装公钥引导步骤 / 残余风险句 / 边界（仅连接凭据 · 仅本机）） |
+| 4 | `thincoder-core/tool-docs/ssh.md` | **34**（实读） | +17（⇒ **51**） | 工具描述（**产品代码 · `thincoder-core/tool-docs/`**：内容依据 = 机制文档、落笔 = eng-coder——保存面内容点：勾选语义 / 零窗复用 / fail-soft / `credentials`·`forget` / 装公钥引导步骤 / 残余风险句 / 边界（仅连接凭据 · 仅本机）） |
 | 5 | `thincoder-core/tools/index.mjs` | 80 行 | +2 | 注册 + 导出 |
 | 6 | `thincoder-core/agent/helpers.mjs` | 491 行 | +1 | 子代面排除集 |
 | 7 | `thincoder-core/permission.mjs` | **126**（实读） | +5（⇒ **131**） | `formatPermission` `ssh` 行（保存面 += `forget` 行——明示目标主机，无值） |
@@ -1140,7 +1142,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 > **读数口径**：现况列 = 内容行实读（2026-10-17 复读——端侧会话面 / 保存面同拍）。
 > **零改面（保存面核过）**：`tools/ssh-askpass.mjs`（35）∥ 三端转口链（`tool-events.mjs` 462 / `panel-callbacks.mjs` 359 / `agent-bridge.mjs` 331——`fields` 整体透传，勾选属性沿载不需扩白名单）。
 
-> **口径注（描述文本面）**：`thincoder-core/tool-docs/ssh.md` 保存面变更**不持逐字文本面**（有意——与 §6.21 体例差异明记）：逐字文本面归主 agent 内容权、eng-coder 落笔；本节只列内容点（行 4）。
+> **口径注（描述文本面）**：`thincoder-core/tool-docs/ssh.md` 保存面变更**不持逐字文本面**（有意——与 §6.21 体例差异明记）：逐字文本面落笔 = eng-coder（内容依据 = 机制文档）；本节只列内容点（行 4）。
 
 #### 验收判据（S1–S9 / NS1–NS7 逐条 → 判据句 · 机检形）
 
@@ -1300,7 +1302,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 
 - **多命中 = 取第一个合格条目**（存储顺序）；无合格条目 ⇒ 无 DeepSeek 后端（行为与今日逐字同）。
 - **路径不参与判定；端点 = 固定常量** `https://api.deepseek.com/v1/tools/search` ∥ `https://api.deepseek.com/v1/tools/fetch`（不经 `baseURL` 拼接——`/v1` 尾 ∥ 前缀差异不致双 `/v1`）；key 只发官方 host。
-- **两端同字段**：CLI 由 `loadConfig` 产 `providersList` 别名（`thincoder-core/config.mjs:434`）；VSC 经 `agent/config` bag 直供 `providersList`（`thincoder-vscode/src/agent/setup.mjs:155,186`）。
+- **两端同字段**：CLI 由 `loadConfig` 产 `providersList` 别名（`thincoder-core/config.mjs:322`）；VSC 经 `agent/config` bag 直供 `providersList`（`thincoder-vscode/src/agent/setup.mjs:155,186`）。
 - **桌面 / server**：走核同一工具实现（桌面经核 `assembleAgent` ∥ `runAgent`——`thincoder-desktop/src/main/agent-assemble.mjs:18` · `agent-host.mjs:38`；server 核 `loadConfig()`——`thincoder-server/deploy/sandbox/member-shell/core-run.mjs:237`）；两端 `agent.config` 整建点未逐端实读 ⇒ `unverified`（本批零改——核装配产物带 `fetch` 键时读取点自然生效）。
 - **派生渠道**（`providers[].derived`——`PROVIDER.md` §6.25）不特判——host 非 `api.deepseek.com` 者自然不合格。
 
@@ -1312,7 +1314,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | `fetch` | **DeepSeek → 本地直取** | ①–③ 同上（键 = `fetch.backend`）；无查询长度条件 |
 
 - **Tavily / Bing / 本地直取三支零改**（`web.mjs:55-93` ∥ `:122-144` ∥ `:216-250`）——只在链头插入 DeepSeek 尝试。
-- **键面**：`websearch.backend` ∥ `fetch.backend` ∈ {`auto`, `local`}，缺省 `auto`（`DEFAULTS` 落 `thincoder-core/config.mjs:90-93` 邻位）；`local` = 跳过 DeepSeek（**不是**「只用本地能力」）；值非 `local`（含拼写错）一律按 `auto`（fail-open）。键面详表 = `CONFIG.md` §6.5。
+- **键面**：`websearch.backend` ∥ `fetch.backend` ∈ {`auto`, `local`}，缺省 `auto`（`DEFAULTS` 落 `thincoder-core/config-defaults.mjs:73-78` 邻位）；`local` = 跳过 DeepSeek（**不是**「只用本地能力」）；值非 `local`（含拼写错）一律按 `auto`（fail-open）。键面详表 = `CONFIG.md` §6.5。
 - **`args.engine` ∥ `args.page` 不绕过 DeepSeek**：与 Tavily 今日位置一致（`web.mjs:118` 先于 engine 分支）；`page` 对 DeepSeek 无对应参数（忽略，与 Tavily 同）。
 - **`args.proxy` 照旧透传**给 DeepSeek 请求（与 Tavily 同——逐次网络决策）；目标 URL 的本地抓取语义不变。
 
@@ -1367,7 +1369,7 @@ ctx.onSecretInput({ kind:"ssh-credential" | "ssh-secret", sessionId, host, user,
 | 跳过信号 | `web.mjs` | `unavailable` = 无合格渠道（零网络调用）⇒ 直走回落链、**零提示行**；`local` 由链头拦截，不进本模块 |
 | 提示行返回路径 | `web.mjs` | `empty` ∥ `failed` ⇒ 走回落链；search 腿在回落结果串末尾追加 ④ 的提示行（文案按返回态分叉，文本见 ④）；fetch 腿两态零提示（D-WB6）；`unavailable` ⇒ 走回落链、零提示（无渠道 = 零回归） |
 
-#### ⑥ 工具描述建议文本（英文运行期面——内容权主 agent，eng-coder 落笔）
+#### ⑥ 工具描述建议文本（提示词面——内容依据 = 机制文档，落笔 = eng-coder）
 
 > 增量差异句；其余文字零动。文本面先例 = §6.20 / §6.21。
 
@@ -1425,7 +1427,7 @@ Fetch a URL and return its content. With a DeepSeek provider configured the URL 
 |---|---|---|---|
 | `thincoder-core/tools/web-deepseek.mjs` | **173**（新） | **173** 实读 | 探测 / 键读 / 熔断 / 请求 / 映射 / 重试 / 日志（单点） |
 | `thincoder-core/tools/web.mjs` | **253** | +**26** 实读 | 链头接线（search ∥ fetch）+ 回落提示行；Tavily / Bing / 本地三支零改 |
-| `thincoder-core/config.mjs` | **523** | +**3** 实读（≤528 判据成立） | `websearch.backend` ∥ `fetch.backend` 两键（DEFAULTS）；**软线已超（523 > 500）**——拆分挂结构维护台账（台账 `#1612`）；本批零重构 |
+| `thincoder-core/config.mjs` | **570** | +**3** 实读 | `websearch.backend` ∥ `fetch.backend` 两键（DEFAULTS）；**软线已超（570 > 500）**——拆分计划见 `CORE-UNIFICATION.md` §2.8.1 第 1 行（台账 `#1612`）；本批零重构 |
 | `thincoder-core/tool-docs/websearch.md` | **19** | +2 实读 | 建议文本（⑥） |
 | `thincoder-core/tool-docs/fetch.md` | **14** | +1 实读 | 建议文本（⑥） |
 | `thincoder-vscode/src/agent/setup.mjs` | **323** | +3 实读 | `cfgFetch` 形三处：声明 ∥ try 内赋值（`{ ...DEFAULTS.fetch, ...(raw.fetch ?? {}) }`）∥ cfgBag 条目（形同 `cfgTraces`；读点 `agent.config.fetch.backend`） |
@@ -1513,7 +1515,7 @@ Fetch a URL and return its content. With a DeepSeek provider configured the URL 
 |---|---|
 | `status` | `… prose goes to the separate `note` field, which lands as a parenthetical). Writing §1 已收口 closes the record and runs the closeout-chain gate: §2 / §3 / §4 / §6 must each carry content, or §1 declares it inapplicable with `> 不适用：§N —— <reason>` (§2 / §3 / §4 only; §5 is exempt; §6 never). Reopening a frozen record = §1 → 进行中 with `note` = the reason: the tool rewrites the §1 status line and appends a 「重开记录」 line — no other existing line is touched.` |
 | `note` | `… Omit for a plain value. On the reopen path (a frozen record, §1 → 进行中) `note` is REQUIRED and lands verbatim in the §1 reopen record instead of the status-line parenthetical (it may name the frozen keyword there).` |
-| `close` | `close (depth-0 only — freeze the record: §1 → 「已收口 <date>」, every further write is refused except the reopen conjunction (§4.18-B); runs the same closeout-chain gate as status — an incomplete chain is refused, naming the missing sections)` |
+| `close` | `close (depth-0 only — freeze the record: §1 → 「已收口 <date>」, every further write is refused except the reopen conjunction; runs the same closeout-chain gate as status — an incomplete chain is refused, naming the missing sections)` |
 
 **② 四条拒句（逐字 · 模型可见）**：
 

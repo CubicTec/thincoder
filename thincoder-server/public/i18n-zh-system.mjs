@@ -54,6 +54,26 @@ export const ZH_SYSTEM = Object.freeze({
   "system.cfgLoadFailed": "配置读取失败",
   "system.cfgRestartNote": "重启生效（配置文件不热载）",
 
+  // ── 系统·服务配置卡 TLS 段（TLS 内置批——PUBLICNET.md §9；六键子键级、重启生效） ──────────
+  "system.cfgTlsTitle": "TLS（内置）",
+  "system.cfgTlsEnabled": "启用 TLS（证书与私钥路径必填）",
+  "system.cfgTlsCertPath": "证书路径（certPath）",
+  "system.cfgTlsKeyPath": "私钥路径（keyPath）",
+  "system.cfgTlsPublicHost": "公网主机名（publicHost，不携端口）",
+  "system.cfgTlsPublicHostPh": "如 tc.example.com",
+  "system.cfgTlsPublicPort": "公网端口（publicPort，缺省 443）",
+  "system.cfgTlsRedirectPort": "HTTP→HTTPS 重定向端口（留空 = 不开）",
+  "system.cfgTlsHint": "证书与私钥为用户自备的 PEM（相对路径 = 配置档目录）；保存时预检可读且成对，错误挡在重启前；轮换证书后 kill -HUP <pid> 热换，无需停机。",
+  "system.cfgTlsPortInvalid": "端口须为 1–65535 的整数",
+
+  // ── 系统·服务配置卡限流段（publicnet 批——PUBLICNET.md §9；三键子键级、重启生效） ──────────
+  "system.cfgRateLimitsTitle": "限流（匿入入口）",
+  "system.cfgRateLimitsEnabled": "启用限流（登录面与公开接收面，按 IP 计）",
+  "system.cfgRateLimitAuth": "登录阈值（次/分钟/IP，缺省 20）",
+  "system.cfgRateLimitPublic": "公开接收面阈值（次/分钟/IP，缺省 120）",
+  "system.cfgRateLimitHint": "固定窗 60 秒计数；超阈回 429 + Retry-After，同一 IP 同一窗只记一条安全事件；/healthz 与静态面不限。",
+  "system.cfgRateLimitInvalid": "阈值须为 1–10000 的整数",
+
   // ── 系统·服务配置卡代理块（2026-10-10 代理回迁批：`proxy.uri` 自「代理」页回迁 + 连通测试随迁） ──────
   "proxy.uriLabel": "上游代理地址",
   "proxy.uriPh": "http:\/\/host:port（留空 = 不启用）", // 「\/」转义 = 评估值同设计文案；原文本受 `public/**` 零外部引用扫描限
@@ -181,6 +201,16 @@ export const ZH_SYSTEM = Object.freeze({
   "audit.type.ledger_event": "团队台账",
   "audit.type.member_event": "成员会话",
   "audit.type.mcp_event": "MCP 服务器",
+  "audit.type.security_event": "安全事件",
+  "audit.securityTls": "TLS 起服",
+  "audit.securityCert": "证书轮换",
+  "audit.securityBurst": "限流命中",
+  "audit.securityFailed": "失败",
+  "audit.securityClass": "端点类",
+  "audit.securityCount": "计数",
+  "audit.securityPort": "端口",
+  "audit.securityRedirectPort": "重定向端口",
+  "audit.retryAfter": "重试等待",
   "audit.sandboxKind.container_create": "容器创建",
   "audit.sandboxKind.container_start": "容器启动",
   "audit.sandboxKind.container_stop": "容器停止",

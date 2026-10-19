@@ -402,9 +402,7 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 
 ## 6. 验收判据回指需求
 
-### 6.1 功能点 D1–D41
-
-（**D35 设计面 = `docs/desktop/design/ACTIVITY.md` §2「批注（右栏池极多实例可滚动 · D35）」**（实读结论 ∥ 复现判据两用例 ∥ 候选映射 ∥ 收口规则）；实现形随复现收口。）
+### 6.1 功能点 D1–D27 · D34 · D35
 
 | 需求 | 机检判据（点回需求卷） | 验证 |
 |---|---|---|
@@ -435,6 +433,8 @@ CLI = 裸 ANSI 终端 + 单会话前台；扩展端 = VS Code 宿主内的 Webvi
 | D25 | → `docs/desktop/design/COMPOSER.md` §4 | — |
 | D26 | → `docs/desktop/design/SESSIONS.md` §4 | — |
 | **D27**（需求卷 D27） | 右键编辑菜单（宿主面）：可编辑 ⇒ 剪切 ∕ 复制 ∕ 粘贴 ∕ 全选四件（`enabled` 随 `editFlags`）；非编辑 ∧ 选中 ⇒ 复制 ∕ 全选；非编辑 ∧ 空选 ⇒ 零菜单；文案 = `HOST_DICT` 两语现读（`locale` 现读即随动）——单源 = 本档 §2 **KD-43** ∕ `docs/desktop/design/CHAT.md` §2「批注（复制面对齐 VSC）」 | T-DSK47 + 两纯函数平 node 直测口径（`context-menu.mjs`——**单元测试档随批留存**（不入集成测试树——全清令：集成测试不写 ∕ 不改 ∕ 不跑）） |
+| **D34** | → `docs/desktop/design/COMPOSER.md` §4（设计单源）∥ 用例 T-DSK56 | T-DSK56 |
+| **D35** | → `docs/desktop/design/ACTIVITY.md` §2 | — |
 
 ### 6.2 验收 A1–A4 与依赖面 P1–P4
 

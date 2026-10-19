@@ -358,7 +358,7 @@
      判据全文 = 设计 `agent/ADMIN-AGENT.md` §12.1（五面）∥ §7 对应判据行 ∥ §8（N84 ∥ B80 ∥ E62）∥ §9 KD-SV-205 ∥ §13 R87。
 
 **56. MCP 管理工具（管理面会话——立案）**：
-     ① **工具面 = 管理面第九件 `mcp`**（五动作：列 ∥ 增 ∥ 改 ∥ 删 ∥ 探活——与 provider/member 管理族同形；寻址 `update` 以 `id`、`remove`/`probe` 两形；执行器新档 `thincoder-server/src/mcp/admin-tools.mjs`（拟新增））；
+     ① **工具面 = 管理面第九件 `mcp`**（五动作：列 ∥ 增 ∥ 改 ∥ 删 ∥ 探活——与 provider/member 管理族同形；寻址 `update` 以 `id`、`remove`/`probe` 两形；执行器新档 `thincoder-server/src/mcp/admin-tools.mjs`）；
      ② **零第二实现**（复用 `thincoder-server/src/mcp/store.mjs` + `face.mjs`——引件表 + 假件用例）；
      ③ **凭据纪律**（token 只写零回显——结果 ∥ 审计 ∥ 日志三面零秘密；沿 `SECRET_FORM`）；
      ④ **错报治理**（能力叙述认 MCP——`CHAT_LIMITS_BLOCK` 管理族行 += `mcp`；治「系统不支持 MCP」型错报）；

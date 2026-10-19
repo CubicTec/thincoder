@@ -51,7 +51,7 @@
 
 - **可用性**：派生条目无 `apiKey` ⇒ 不参与运行时解析（`hasKey` 既有判据——零新代码）；不触发「渠道无效」类提示（回退序跳过）。
 - **列表可见性**：`derived === true` ∧ 无 key ⇒ 从 provider 列表/模型候选面隐藏（**五消费面各一处过滤**：
-  CLI 模型候选（`thincoder-cli/src/tui/model-picker.mjs:115/:271`） ∥ **CLI `/config` provider 列表（`thincoder-cli/src/tui/cmd-config.mjs:297/:307`）** ∥ CLI provider-admin（`thincoder-cli/src/tui/provider-admin.mjs`） ∥ VSC `providerStatus`（`thincoder-vscode/src/extension/settings.mjs`）∥
+  CLI 模型候选（`thincoder-cli/src/tui/model-picker.mjs:115/:271`） ∥ **CLI `/config` provider 列表（`thincoder-cli/src/tui/cmd-config-menus.mjs:204/:214`）** ∥ CLI provider-admin（`thincoder-cli/src/tui/provider-admin.mjs`） ∥ VSC `providerStatus`（`thincoder-vscode/src/extension/settings.mjs`）∥
   桌面 `providerList`（`thincoder-desktop/src/main/providers.mjs`）；**共单源** = `isDerivedProviderHidden`（`provider-admin.mjs:23`）——与 `docs/core/design/PROVIDER.md` §6.25 同拍）；**登录态下在场**（正常参与，key 掩码显示）。
 - **不自动改**：不写 `defaultModel` ∥ 不切换当前会话模型 ∥ 不动既有手工条目（登录唯一副作用 = §2.2 两处写）。
 

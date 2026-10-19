@@ -70,7 +70,7 @@
 ## 5. 受影响文件（该子系统）
 
 指针（不复制）→ `CORE-UNIFICATION.md` §2.8 下列行：**产品运行期（S2 改）** · **对外契约兼容面（S0 登记 / S2 落地）**。
-**核内落点行数** → §2.8.1「核内逐档行数与拆分计划」（本子系统面：`thincoder-core/config.mjs`（越软线——拆分计划挂结构维护台账 #1612）· `thincoder-core/config-io.mjs` · `thincoder-core/config-presets.mjs`）。
+**核内落点行数** → §2.8.1「核内逐档行数与拆分计划」（本子系统面：`thincoder-core/config.mjs`（越软线——拆分计划见 §2.8.1 第 1 行，台账 #1612）· `thincoder-core/config-defaults.mjs` · `thincoder-core/config-normalize.mjs` · `thincoder-core/config-io.mjs` · `thincoder-core/config-presets.mjs`）。
 
 ## 6. 机制面
 
@@ -87,9 +87,9 @@
 | `advisor` | **独立** advisor 读取器（每 launch 读） | 合法 ≥1 整数生效；非法 / 缺省回退 4 |
 
 - **双读取器独立不共享**（键表语义不同）：subagent 两键 = `thincoder-core/agent-tools/subagent-async.mjs:94`（`poolLimitsFor`）；advisor 第三键 = `thincoder-core/agent-tools/advisor-async.mjs:178`（`resolveAdvisorPoolLimit`）。
-- **默认值三源同改**（缺一即漂移）：DEFAULTS（`thincoder-core/config.mjs:63`）↔ 运行时常量（`thincoder-core/agent-tools/subagent-async.mjs:55` · `thincoder-core/agent-tools/advisor-async.mjs:166`）。
+- **默认值三源同改**（缺一即漂移）：DEFAULTS（`thincoder-core/config-defaults.mjs:46`）↔ 运行时常量（`thincoder-core/agent-tools/subagent-async.mjs:55` · `thincoder-core/agent-tools/advisor-async.mjs:166`）。
 - **生效时机**：变更下回合生效；运行期读取点各自校验（非法键回退默认 + 告警）。
-- **界面入口**：CLI `/config` →「并发池」子菜单（`thincoder-cli/src/tui/cmd-config.mjs:245`–`:273`——三域读写 + 主菜单 / view 摘要）；VSC 设置面板并发池三域（`thincoder-vscode/src/extension/settings-panel-write.mjs:94` 白名单 · `thincoder-vscode/src/extension/settings.mjs:176` 回退显 4/4/4）。
+- **界面入口**：CLI `/config` →「并发池」子菜单（`thincoder-cli/src/tui/cmd-config-menus.mjs:160`–`:191`——三域读写 + 主菜单 / view 摘要）；VSC 设置面板并发池三域（`thincoder-vscode/src/extension/settings-panel-write.mjs:94` 白名单 · `thincoder-vscode/src/extension/settings.mjs:176` 回退显 4/4/4）。
 - **向后兼容**：旧两键配置值零迁移（`advisor` 缺省 ⇒ 回退 4）；非法值不落盘回退；VSC 面板白名单全非法 ⇒ 删整键回退默认（语义不变）。
 - **模型可见文案去数字化**：advisor 工具描述与拒文案报**生效上限**（`thincoder-core/agent-tools/advisor.mjs:49` · `thincoder-core/agent-tools/advisor-async.mjs:266`）。
 - **同 scope 评审并发守卫**：容量守卫 ⇄ 同 scope 守卫**两关独立**——机制本体见 `AGENT-LOOP-ASYNC-POOL.md` §6.10（本档不复制）。

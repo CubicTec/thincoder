@@ -103,7 +103,7 @@ subagent(action:"escalate")
 | 子代理构建 | `createAgent({ provider, tools, config, cwd, memory, role: "coder" })`（async `thincoder-core/agent-tools/escalate-async.mjs:195` · 同步 `subagent-actions.mjs:165`）——人格槽由 `assemblePrompt` 场景表承载 | 同形 |
 | provider 解析 / 改动合并 | `resolveChildProvider`（`thincoder-core/agent-tools/subagent-async.mjs:138`）· `mergeChildMutations`（`:430`） | 同形机制 |
 | 活动流上屏 | relay 前缀 `escalate#<id>/`（`thincoder-core/agent-tools/escalate-async.mjs:158`）→ TUI 子代理活动区块（no-preview legacy 面——`thincoder-cli/src/tui/tool-events.mjs:227-238`） | |
-| 配置入口 / 提示词条款 | `/config` 候选池管理（`thincoder-cli/src/tui/cmd-config.mjs`——上限 5 条 `:198`）· 飞刀条款 = `thincoder-core/prompts/discipline-normal.md` | Settings 面板（VSC 专有面——见 VSC 迁移台账） |
+| 配置入口 / 提示词条款 | `/config` 候选池管理（`thincoder-cli/src/tui/cmd-config-menus.mjs`——上限 5 条 `:110`）· 飞刀条款 = `thincoder-core/prompts/discipline-normal.md` | Settings 面板（VSC 专有面——见 VSC 迁移台账） |
 
 ## 7. 关键决策记录
 

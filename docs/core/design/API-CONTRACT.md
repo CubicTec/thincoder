@@ -141,10 +141,10 @@
 | `handleAdvisorCommand` | `thincoder-cli/src/tui/cmd-advisor.mjs:12` | `fn` |
 | `handleAutoCommand` | `thincoder-cli/src/tui/cmd-auto.mjs:5` | `fn` |
 | `handleClearCommand` | `thincoder-cli/src/tui/cmd-clear.mjs:3` | `fn` |
-| `embeddingPatch` | `thincoder-cli/src/tui/cmd-config.mjs:9` | `fn` |
-| `poolCur` | `thincoder-cli/src/tui/cmd-config.mjs:22` | `fn` |
-| `effortMenuLevels` | `thincoder-cli/src/tui/cmd-config.mjs:30` | `fn` |
-| `handleConfigCommand` | `thincoder-cli/src/tui/cmd-config.mjs:35` | `fn` |
+| `embeddingPatch` | `thincoder-cli/src/tui/config-helpers.mjs:20` | `fn` |
+| `poolCur` | `thincoder-cli/src/tui/config-helpers.mjs:33` | `fn` |
+| `effortMenuLevels` | `thincoder-cli/src/tui/config-helpers.mjs:40` | `fn` |
+| `handleConfigCommand` | `thincoder-cli/src/tui/cmd-config.mjs:7` | `fn` |
 | `lastAssistantContent` | `thincoder-cli/src/tui/cmd-copy.mjs:9` | `fn` |
 | `handleCopyCommand` | `thincoder-cli/src/tui/cmd-copy.mjs:20` | `fn` |
 | `writeSessionFile` | `thincoder-cli/src/tui/cmd-eng.mjs:19` | `fn` |
@@ -1090,23 +1090,23 @@
 | `presetToEntry` | `thincoder-core/config-presets.mjs:61` | `fn` |
 | `configTupleOf` | `thincoder-core/config-watch.mjs:24` | `fn` |
 | `createConfigWatch` | `thincoder-core/config-watch.mjs:41` | `fn` |
-| `parseModelRef, resolveChannelModel, resolveProviderPlan, resolveRuntimeProvider, defaultModelReason, migrateLegacyModelFields` | `thincoder-core/config.mjs:26` | `named` |
-| `PROVIDER_PRESETS, presetToEntry, configDir, configPath, _setConfigPathForTest, _resetConfigPathForTest` | `thincoder-core/config.mjs:27` | `named` |
-| `writeConfigAtomic` | `thincoder-core/config.mjs:29` | `named` |
-| `DEFAULTS` | `thincoder-core/config.mjs:33` | `const` |
-| `specForModel, providerSpec, specMatch, assistantToolCallMessage` | `thincoder-core/config.mjs:115` | `named` |
-| `outputReserve` | `thincoder-core/config.mjs:130` | `fn` |
-| `usableWindow` | `thincoder-core/config.mjs:142` | `fn` |
-| `resolveCompactThreshold` | `thincoder-core/config.mjs:153` | `fn` |
-| `isBailianHost` | `thincoder-core/config.mjs:166` | `fn` |
-| `resolveEnableThinking` | `thincoder-core/config.mjs:183` | `fn` |
-| `sanitizeSubagentModel` | `thincoder-core/config.mjs:235` | `fn` |
-| `sanitizeSubagentModels` | `thincoder-core/config.mjs:240` | `fn` |
-| `findProvider` | `thincoder-core/config.mjs:264` | `fn` |
-| `normalizeProxy` | `thincoder-core/config.mjs:275` | `fn` |
-| `normalizeTeamSection` | `thincoder-core/config.mjs:286` | `fn` |
-| `loadConfig` | `thincoder-core/config.mjs:315` | `fn` |
-| `reloadMcpFromDisk` | `thincoder-core/config.mjs:462` | `fn` |
+| `parseModelRef, resolveChannelModel, resolveProviderPlan, resolveRuntimeProvider, defaultModelReason, migrateLegacyModelFields` | `thincoder-core/config.mjs:25` | `named` |
+| `PROVIDER_PRESETS, presetToEntry, configDir, configPath, _setConfigPathForTest, _resetConfigPathForTest` | `thincoder-core/config.mjs:26` | `named` |
+| `writeConfigAtomic` | `thincoder-core/config.mjs:28` | `named` |
+| `DEFAULTS` | `thincoder-core/config-defaults.mjs:15` | `const` |
+| `specForModel, providerSpec, specMatch, assistantToolCallMessage` | `thincoder-core/config.mjs:41` | `named` |
+| `outputReserve` | `thincoder-core/config.mjs:59` | `fn` |
+| `usableWindow` | `thincoder-core/config.mjs:70` | `fn` |
+| `resolveCompactThreshold` | `thincoder-core/config.mjs:116` | `fn` |
+| `isBailianHost` | `thincoder-core/config.mjs:126` | `fn` |
+| `resolveEnableThinking` | `thincoder-core/config.mjs:143` | `fn` |
+| `sanitizeSubagentModel` | `thincoder-core/config-normalize.mjs:53` | `fn` |
+| `sanitizeSubagentModels` | `thincoder-core/config-normalize.mjs:58` | `fn` |
+| `findProvider` | `thincoder-core/config.mjs:175` | `fn` |
+| `normalizeProxy` | `thincoder-core/config-normalize.mjs:78` | `fn` |
+| `normalizeTeamSection` | `thincoder-core/config-normalize.mjs:89` | `fn` |
+| `loadConfig` | `thincoder-core/config.mjs:192` | `fn` |
+| `reloadMcpFromDisk` | `thincoder-core/config.mjs:346` | `fn` |
 | `pruneStaleToolOutputs` | `thincoder-core/context-degrade.mjs:19` | `fn` |
 | `shrinkOversized` | `thincoder-core/context-degrade.mjs:52` | `fn` |
 | `COMPACTION_PLACEHOLDER` | `thincoder-core/context-echo.mjs:10` | `const` |

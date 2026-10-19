@@ -2,12 +2,13 @@
  * views-audit.mjs — 管理·审计（webui/READINGS.md §2.1④——`#/admin/audit`）：过滤三轴（类型/成员/时段）∥
  * 事件表（时间 ∥ 类型 ∥ 操作者 ∥ 对象 ∥ 详情——按型模板渲染）∥ 空态；`GET /api/audit` 取数（倒序，新在前）。
  *
- * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十七型——全型收编；本表十七型在册）；
+ * 类型枚举与 detail 形 = accounts/ACCOUNTS.md §2.1（型面十八型——全型收编；本表十八型在册）；
  * 详情字段（IP ∥ 维度 ∥ key 提示形 ∥ 角色 ∥ `keys`（配置变更键名清单） ∥ `summary`（agent_event 会话动作摘要——`agent/ADMIN-AGENT.md` §11）
  * ∥ agent 行（`agent_event`——tool · subject · 成败 ·〔截断〕· summary；KD-SV-114） ∥ 沙盒 kind 族（`sandbox_event`——走查轮 2026-10-11）
  * ∥ 沙盒规则行（`sandbox_rule`——动作词 + 允许/拒绝 + target（`port` 在场 ⇒ `:port`）；`kind` 不入）
  * ∥ project 行（`project_event`——kind 族 + 源/项目/成员三面逐值；team-projects-permissions 批（B2））
- * ∥ ledger 行（`ledger_event`——kind 族 + id/repo/两面逐值；team-ledger 批））
+ * ∥ ledger 行（`ledger_event`——kind 族 + id/repo/两面逐值；team-ledger 批）
+ * ∥ 安全事件行（`security_event`——四 kind 三文案键 + ip/端口/成败/计数；publicnet 批））
  * 按在场渲染；对象与操作者同名 ⇒「—」（名快照口径——改/删后记录自足）。渲染一律节点 + textContent；文案经 `t()` 取值。
  * 沙盒规则行模板 `sandboxRuleDetailText`（纯函数——`t` 显式入参；导出供单元测试档直测）。
  */
@@ -33,6 +34,7 @@ const AUDIT_TYPES = [
   ["ledger_event", "audit.type.ledger_event"],
   ["member_event", "audit.type.member_event"],
   ["mcp_event", "audit.type.mcp_event"],
+  ["security_event", "audit.type.security_event"],
 ]
 
 export async function renderAudit(ctx, mount) {
@@ -84,7 +86,7 @@ function eventsTable(ctx, events) {
     typeLabel(event.type),
     event.actor,
     event.target && event.target !== event.actor ? event.target : "—",
-    event.type === "sandbox_rule" ? sandboxRuleDetailText(event.detail, t) : event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : event.type === "project_event" ? projectDetailText(event.detail) : event.type === "ledger_event" ? ledgerDetailText(event.detail) : detailText(event.detail),
+    event.type === "sandbox_rule" ? sandboxRuleDetailText(event.detail, t) : event.type.startsWith("sandbox_") ? sandboxDetailText(event.detail) : event.type === "agent_event" ? agentDetailText(event.detail) : event.type === "project_event" ? projectDetailText(event.detail) : event.type === "ledger_event" ? ledgerDetailText(event.detail) : event.type === "security_event" ? securityDetailText(event.detail) : detailText(event.detail),
   ])
   return ctx.table([t("audit.col.time"), t("audit.col.type"), t("audit.col.actor"), t("audit.col.target"), t("audit.col.detail")], rows, { foot: true })
 }
@@ -117,6 +119,32 @@ export function agentDetailText(detail) {
   if (detail?.resultCode !== undefined && detail?.resultCode !== null) parts.push(Number(detail.resultCode) === 0 ? t("audit.agentOk") : t("audit.agentFail"))
   if (detail?.truncated === true) parts.push(t("audit.agentTruncated"))
   if (typeof detail?.summary === "string" && detail.summary !== "") parts.push(detail.summary)
+  return parts.length === 0 ? "—" : parts.join(" · ")
+}
+
+/** 安全事件 kind 文案键（`security_event` detail.kind——四 kind、三键：两个证书 kind 共键；枚举外 ⇒ 原值兜底）。 */
+const SECURITY_KIND_KEYS = {
+  tls_start: "audit.securityTls",
+  cert_reload: "audit.securityCert",
+  cert_reload_failed: "audit.securityCert",
+  rate_limit_burst: "audit.securityBurst",
+}
+
+/** 安全事件行详情（`security_event`——kind · ip/端口 · 成败 · 〔详情〕）：
+ *  `cert_reload_failed` ⇒ 附「失败」+ `reason`；`rate_limit_burst` ⇒ 端点类/计数/重试等待；`tls_start` ⇒ 端口/重定向端口。
+ *  零字段行 ⇒ 「—」；导出 = 单元测试档断言（同 `agentDetailText` 先例）。 */
+export function securityDetailText(detail) {
+  const parts = []
+  const kind = typeof detail?.kind === "string" ? detail.kind : ""
+  if (kind !== "") parts.push(SECURITY_KIND_KEYS[kind] === undefined ? kind : t(SECURITY_KIND_KEYS[kind]))
+  if (kind === "cert_reload_failed") parts.push(t("audit.securityFailed"))
+  if (detail?.ip) parts.push(`${t("audit.ip")}: ${detail.ip}`)
+  if (typeof detail?.ruleClass === "string" && detail.ruleClass !== "") parts.push(`${t("audit.securityClass")}: ${detail.ruleClass}`)
+  if (detail?.count !== undefined && detail?.count !== null) parts.push(`${t("audit.securityCount")}: ${detail.count}`)
+  if (detail?.retryAfterS !== undefined && detail?.retryAfterS !== null) parts.push(`${t("audit.retryAfter")}: ${detail.retryAfterS}s`)
+  if (detail?.port !== undefined && detail?.port !== null) parts.push(`${t("audit.securityPort")}: ${detail.port}`)
+  if (detail?.redirectPort !== undefined && detail?.redirectPort !== null) parts.push(`${t("audit.securityRedirectPort")}: ${detail.redirectPort}`)
+  if (typeof detail?.reason === "string" && detail.reason !== "") parts.push(detail.reason)
   return parts.length === 0 ? "—" : parts.join(" · ")
 }
 

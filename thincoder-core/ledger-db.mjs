@@ -139,9 +139,15 @@ export const PENDING_STATUSES = ["待讨论", "待设计", "在途", "待核销"
  *  保公共面零变——LEDGER.md §13.4）。 */
 export const AGING_DAYS = 30
 
+/** `evidence` 软上限（字——设计档 `LEDGER.md` §5 P4 读数面单源）：超限**只出读数，不拒写**
+ *  （软上限非闸门——用户裁定「无限机检反感」；读数面 = `query` 逐行 `evidenceOversize` ∥
+ *  `count` 回报）。 */
+export const EVIDENCE_SOFT_LIMIT = 300
+
 /** 台账库结构版本（N2 标记**单源**——`PRAGMA user_version` 落标：写面开库 `v < 本值 ⇒ 置`；
- *  读面如实回读（旧库未标 = 0）；结构变更（新列 / 新表）同步升号——2026-10-03 read-data-interface 批）。 */
-export const LEDGER_SCHEMA_VERSION = 1
+ *  读面如实回读（旧库未标 = 0）；结构变更（新列 / 新表）同步升号——2026-10-03 read-data-interface 批。
+ *  2 = `resume_when` 可空列（设计档 §3.4 P5）。 */
+export const LEDGER_SCHEMA_VERSION = 2
 
 /** 六态允许迁移表（ledgerUpdate 迁移前判，不在表内 → 拒——规格 ②.2；设计档 §2.1）。 */
 export const ALLOWED_MIGRATIONS = {
@@ -169,24 +175,29 @@ CREATE TABLE IF NOT EXISTS items (
   created_at TEXT,
   updated_at TEXT,
   closed_at  TEXT,
+  resume_when TEXT,
   CHECK (status NOT IN ('在途','待核销') OR (task_book IS NOT NULL AND task_book <> ''))
 )`
 
-/** 老库幂等迁移：items 表缺 executor 列（旧 DDL 建的库）→ ALTER 补列。
- *  判据 = PRAGMA table_info 实查（不猜版本号）；ALTER duplicate column 竞争 → 复核列在吞 / 不在抛真错。
- *  列存在性谓词抽成单元（param exists），便于并发竞争拍直测。K-LX5：老库零删改、零重建。 */
-export function ensureExecutorColumn(db, { exists } = {}) {
+/** 老库幂等迁移共件：items 表缺该可空列 ⇒ ALTER 补列（`executor` ∥ `resume_when` 两列共用一份
+ *  「复判列在否」逻辑——设计档 §3.4）。判据 = PRAGMA table_info 实查（不猜版本号）；ALTER
+ *  duplicate column 竞争 → 复核列在吞 / 不在抛真错。列存在性谓词抽成单元（param exists），
+ *  便于并发竞争拍直测。K-LX5：老库零删改、零重建。 */
+export function ensureColumn(db, name, { exists } = {}) {
   const columnExists = exists
-    ?? (() => db.prepare("SELECT 1 FROM pragma_table_info('items') WHERE name = 'executor'").get() !== undefined)
+    ?? (() => db.prepare("SELECT 1 FROM pragma_table_info('items') WHERE name = ?").get(name) !== undefined)
   if (columnExists()) return false
   try {
-    db.exec("ALTER TABLE items ADD COLUMN executor TEXT")
+    db.exec(`ALTER TABLE items ADD COLUMN ${name} TEXT`)
     return true
   } catch (e) {
     if (columnExists()) return false // 并发竞争——另一连接已加列：吞
-    throw new Error(`台账库 executor 列迁移失败：${e.message}`)
+    throw new Error(`台账库 ${name} 列迁移失败：${e.message}`)
   }
 }
+
+/** `executor` 列补列（F-LX1——共件别名，公共面形零改）。 */
+export const ensureExecutorColumn = (db, opts) => ensureColumn(db, "executor", opts)
 
 /** 只读态开库（read-data-interface 批 FR2③——readOnly 句柄 + **零 DDL / 零 ALTER**；先例 = 本包
  *  `ledger-migrate.mjs` 的 `openRead`）：文件必已在盘；items 表缺失探针 ⇒ 视同空账返回 null
@@ -239,7 +250,8 @@ export function openLedger(cwd, { create = false, readOnly = false } = {}) {
   const db = new DatabaseSync(file)
   try {
     db.exec(DDL)
-    ensureExecutorColumn(db)
+    ensureColumn(db, "executor")
+    ensureColumn(db, "resume_when")
     markSchemaVersion(db)
   } catch (e) {
     db.close()

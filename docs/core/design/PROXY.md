@@ -15,7 +15,7 @@
 
 - `uri`：http 代理地址（`url` 字段名也兼容）——**代理目标本体（非门槛）**；全仓单一 `proxy.uri`。旧格式 `"proxy": "http://..."`（裸字符串）兼容，等价于 `web: true`。
 - `model` 键：**已退役**。运行期判定不读该键（逐渠独立——§4）；载入归一恒收窄为 `{ uri, web }`。
-- 归一化：`thincoder-core/config.mjs:261`（`normalizeProxy`）→ `{ uri, web }` 或 `undefined`；加载时调用点 `thincoder-core/config.mjs:385`。缺省 `web: true`；无 uri / uri 非字符串 / 非对象类型（数字 / 数组等）一律**丢弃**。
+- 归一化：`thincoder-core/config-normalize.mjs:78`（`normalizeProxy`）→ `{ uri, web }` 或 `undefined`；加载时调用点 `thincoder-core/config.mjs:287`。缺省 `web: true`；无 uri / uri 非字符串 / 非对象类型（数字 / 数组等）一律**丢弃**。
 - `injectProxy` 判定同源同函数：`normalizeProxy(config?.proxy)?.uri ?? null`——`""` ∥ 空对象 ∥ 非法型 ⇒ 零注入
   （`!= null` 过闸后的 env 回供理论口封死——模型代理永不吃 env，D-PX4 判据加强）。
 - `web` 与**逐渠代理**（渠道条目 `providers[].proxy`）的**现行消费面**见 §4。
@@ -80,11 +80,11 @@ const tlsSock = tlsConnect({ socket: sock, servername: target.hostname, rejectUn
 
 | 开关 | 现行语义 | 落点 |
 |---|---|---|
-| 模型请求（逐渠 `providers[].proxy`） | **逐渠道独立才生效**——per-provider `proxy: true` **且** `proxy.uri` 在案 ⇒ 该渠模型请求经代理；渠道旗缺席 ⇒ 直连（**无全局闸**）。`uri` = 代理目标本体（非门槛）。注入点 = **二**：① `injectProxy`（CLI ∥ 桌面经核装配；判定式 = 逐渠旗 ∧ `uri`）② VSC `providerFromConfig`（`thincoder-vscode/src/extension/presets.mjs:134`——VSC 运行期自建 provider 自身注入点） | 注入 ① `thincoder-core/proxy.mjs`（`injectProxy`——拆档后仍住本档）· 调用 `thincoder-core/agent/assemble.mjs:71` ∥ `thincoder-cli/src/tui/cmd-config.mjs:71`（`/config` 保存重载）· ② `thincoder-vscode/src/extension/presets.mjs:134` · 消费 `provider.proxyUri`：`thincoder-core/provider/core.mjs:399` ∥ `provider/list-models.mjs:32` ∥ `thincoder-core/generate-title.mjs:115` ∥ `provider/anthropic.mjs:104` ∥ `provider/google.mjs:127` ∥ `provider/responses.mjs:249/:268/:286` |
-| `web` | **不再自动应用到 web 工具**：`fetch` / `websearch` 采**逐次调用**的 `proxy` 工具参数（`args.proxy`），config 的代理**不自动施加**。`web` 字段现行唯一活消费面 = `/config` 的 **Test connection** 探针 | 工具面 `thincoder-core/tools/web.mjs:96` · `:104`–`:106` · `:188` · `:197`–`:198`；探针 `resolveWebProxy`（`thincoder-core/proxy-target.mjs`）· 调用 `thincoder-cli/src/tui/cmd-config.mjs:149` |
+| 模型请求（逐渠 `providers[].proxy`） | **逐渠道独立才生效**——per-provider `proxy: true` **且** `proxy.uri` 在案 ⇒ 该渠模型请求经代理；渠道旗缺席 ⇒ 直连（**无全局闸**）。`uri` = 代理目标本体（非门槛）。注入点 = **二**：① `injectProxy`（CLI ∥ 桌面经核装配；判定式 = 逐渠旗 ∧ `uri`）② VSC `providerFromConfig`（`thincoder-vscode/src/extension/presets.mjs:134`——VSC 运行期自建 provider 自身注入点） | 注入 ① `thincoder-core/proxy.mjs`（`injectProxy`——拆档后仍住本档）· 调用 `thincoder-core/agent/assemble.mjs:71` ∥ `thincoder-cli/src/tui/cmd-config.mjs:45`（`/config` 保存重载）· ② `thincoder-vscode/src/extension/presets.mjs:134` · 消费 `provider.proxyUri`：`thincoder-core/provider/core.mjs:399` ∥ `provider/list-models.mjs:32` ∥ `thincoder-core/generate-title.mjs:115` ∥ `provider/anthropic.mjs:104` ∥ `provider/google.mjs:127` ∥ `provider/responses.mjs:249/:268/:286` |
+| `web` | **不再自动应用到 web 工具**：`fetch` / `websearch` 采**逐次调用**的 `proxy` 工具参数（`args.proxy`），config 的代理**不自动施加**。`web` 字段现行唯一活消费面 = `/config` 的 **Test connection** 探针 | 工具面 `thincoder-core/tools/web.mjs:96` · `:104`–`:106` · `:188` · `:197`–`:198`；探针 `resolveWebProxy`（`thincoder-core/proxy-target.mjs`）· 调用 `thincoder-cli/src/tui/cmd-config-menus.mjs:58` |
 | **server 上游链（探针 ∥ chat 转发）** | **逐渠独立镜像（同首行语义）**——条目 `proxy: true` ∧ `uri` 在案 ⇒ 该渠上游请求（chat 转发 ∥ 模型发现）经代理；缺省 ∥ 无 uri ⇒ 直连（**无全局闸**——镜像 D-PX1）；loopback 旁路照旧。实现 = server 树**自持**（零第三方——不 import 核件：KD-SV-2）；机制全文 = `docs/server/design/gateway/API.md` §6 KD-SV-55 | server 侧自持实现 |
 
-> `web` 字段仍可写、仍可在 `/config` 切换（`thincoder-cli/src/tui/cmd-config.mjs:121`），但其对 web 工具的门控已取消——**字段语义与菜单标签存在落差**。
+> `web` 字段仍可写、仍可在 `/config` 切换（`thincoder-cli/src/tui/cmd-config-menus.mjs:50`），但其对 web 工具的门控已取消——**字段语义与菜单标签存在落差**。
 
 > 例外：**loopback 目标永不经代理**——`localhost` ∥ `*.localhost` ∥ `127.0.0.0/8` ∥ `::1` 命中即直连（核内 `proxyFetch` 入口旁路——见 §2）；VSC 添加渠道表单的 Test connection 探针**经核 `probeTargetOf` 单源**
 > （表单「走 proxy」勾选随行——勾 ⇒ 逐渠判定（`proxy: true` ∧ `uri`）∧ loopback 旁路照旧；未勾 ∥ 缺省 ⇒ 直连，与运行期缺省一致；不取全局 `web` 旗——`thincoder-vscode/src/extension/settings.mjs:232`）。
@@ -93,8 +93,8 @@ const tlsSock = tlsConnect({ socket: sock, servername: target.hostname, rejectUn
 > 来源面 = 盘上条目（准入 ∥ 拉取探针取落盘条目——自带 `headers` 随行）∥ 表单（VSC 添加表单探针——表单无 `headers` 录入位 ⇒ 该径零键）；消费点 = `list-models` 各 format 分支请求头展开（`thincoder-core/provider/list-models.mjs:61` ∥ `:66` ∥ `:82`）。
 
 > 配置写径归一：`proxy` 形 = **两键**（`{ uri, web }`）——`model` 键**零回读零保留**；CLI 写径 `seturi` **写即归一**
-> （`raw.proxy = { uri: newUri, web: … }`——两键重建，不「原样保留」旧对象 ⇒ 残键随一次写清零 · `thincoder-cli/src/tui/cmd-config.mjs:136-137`）∥ `toggleweb` 在归一态两键上翻转（`:143`）∥ `clear` 整键删（`:163`）；桌面 ∥ 种子同两键
-> （投影 = `thincoder-desktop/renderer/views/settings.mjs` ∥ 种子 = `thincoder-desktop/renderer/store.mjs`——单源 = `docs/desktop/design/SETTINGS.md` §2.20）。归一语义本体单源 = 核 `normalizeProxy`（`thincoder-core/config.mjs:261`——§6.1 行）；菜单与保存链 = §5。
+> （`raw.proxy = { uri: newUri, web: … }`——两键重建，不「原样保留」旧对象 ⇒ 残键随一次写清零 · `thincoder-cli/src/tui/cmd-config-menus.mjs:45-47`）∥ `toggleweb` 在归一态两键上翻转（`cmd-config-menus.mjs:52`）∥ `clear` 整键删（`cmd-config-menus.mjs:72`）；桌面 ∥ 种子同两键
+> （投影 = `thincoder-desktop/renderer/views/settings.mjs` ∥ 种子 = `thincoder-desktop/renderer/store.mjs`——单源 = `docs/desktop/design/SETTINGS.md` §2.20）。归一语义本体单源 = 核 `normalizeProxy`（`thincoder-core/config-normalize.mjs:78`——§6.1 行）；菜单与保存链 = §5。
 
 ## 5. `/config` Proxy 子菜单与保存链
 
@@ -105,10 +105,10 @@ Test connection                                经当前生效配置请求 gener
 Clear proxy
 ```
 
-- 落点：`thincoder-cli/src/tui/cmd-config.mjs:114`（`proxyMenu`）· 菜单项 `:118`–`:124`。
-- **保存链**：`saveProxy` → `reloadConfig`（`loadConfig` → `injectProxy` → 恢复运行时 provider 选择）——`thincoder-cli/src/tui/cmd-config.mjs:67`–`:98` · `:106`–`:111`。
+- 落点：`thincoder-cli/src/tui/cmd-config-menus.mjs:22`（`createProxyMenu`）· 菜单项 `:28`–`:34`。
+- **保存链**：`saveProxy` → `reloadConfig`（`loadConfig` → `injectProxy` → 恢复运行时 provider 选择）——`thincoder-cli/src/tui/cmd-config.mjs:41`–`:75`（`reloadConfig`）· `:83`–`:88`（`saveProxy`）。
 - 菜单开关必须先有 `uri`（未设置时提示 `Proxy URI not set — use Set proxy URI… first`，`:142`）。
-- 主菜单摘要行 `proxySummary()`（`cmd-config.mjs:42`；消费 `:349` ∥ `:363` ∥ `:388`）——形 = `uri web:on|off`。
+- 主菜单摘要行 `proxySummary()`（`cmd-config.mjs:16`；消费 `:125` ∥ `:142` ∥ `:170`）——形 = `uri web:on|off`。
 - **CLI 两向导「走 proxy」问句（设计落法）**：两向导 = `thincoder-cli/src/cli/setup-wizard.mjs`（首配——入口 `thincoder-cli/src/command-interactive.mjs:56` ∥ `thincoder-cli/src/cli/distill-command.mjs:44` ∥ `thincoder-cli/src/acp/login.mjs:19`）∥
   `thincoder-cli/src/tui/wizard.mjs`（TUI 首启——`thincoder-cli/src/tui/index.mjs:194` 装配 ∥ `thincoder-cli/src/tui/startup.mjs:238` 触发）；皆在 provider-admin 四流之外。
   **问句形 ≡ add 流既有问句**（`thincoder-cli/src/tui/provider-admin.mjs:74` ∥ `:102` 同形）：正文 `Route this provider's model requests through the proxy` ∥ 两选项 No (direct) / Yes (proxy) ∥ 缺省 No；答 Yes ⇒ 条目 `proxy: true`，No ∥ 缺省 ⇒ 零 `proxy` 键（渠道条目照落）。
@@ -123,7 +123,7 @@ Clear proxy
 
 | 面 | 落点 | 实核 |
 |---|---|---|
-| 配置归一化 | `thincoder-core/config.mjs:261`（`normalizeProxy`）· 调用 `:385` | 在位 |
+| 配置归一化 | `thincoder-core/config-normalize.mjs:78`（`normalizeProxy`）· 调用 `thincoder-core/config.mjs:287` | 在位 |
 | 代理解析（含 env 回落） | `thincoder-core/proxy-target.mjs`（现位 `:17-31` ∥ `:34-37`） | 在位 |
 | model 注入（逐渠判定） | `thincoder-core/proxy.mjs`（`injectProxy`——判定式 = 逐渠旗 ∧ `uri`，归一化单源 `normalizeProxy`；现位 `:22-27`） | 在位 |
 | TLS 校验判定 | `thincoder-core/proxy-transport.mjs`（`tunnelHttps` 内——现位 `:253`） | 默认全量校验 |
@@ -135,7 +135,7 @@ Clear proxy
 | 统一出口 | `thincoder-core/proxy.mjs`（`proxyFetch` 编排——直连分支 = 断流通道建设点；现位 `:36-53`） | 在位 |
 | loopback 旁路 | `thincoder-core/proxy-target.mjs`（`isLoopbackTarget`——现位 `:44`）· 旁路点 = `proxy.mjs` `proxyFetch` 入口（现位 `:38`） | 在位 |
 | web 工具代理参数 | `thincoder-core/tools/web.mjs:96` · `:188` | 逐次调用参数 |
-| TUI 子菜单 | `thincoder-cli/src/tui/cmd-config.mjs:104`–`:114` | 在位 |
+| TUI 子菜单 | `thincoder-cli/src/tui/cmd-config-menus.mjs:22`–`:79` | 在位 |
 | VSC 对位实现 | 经 `@thincoder/core/proxy.mjs` 引用 · 配置面 = 核 `config-io.mjs` 引用 · **运行期注入点 = `thincoder-vscode/src/extension/presets.mjs:134`（`providerFromConfig`——逐渠判定）** | 同实现 |
 | body 终止守卫 | `thincoder-core/stream-destroy.mjs`（已落——单点 `destroyBody` ∥ `terminateBody`（web 流 abort 通道）+ `IDLE_ABORT`）· **abort 通道建设点 = `thincoder-core/proxy.mjs` 直连分支（`proxyFetch`）** · 消费点 `thincoder-core/proxy-transport.mjs:71` ∥ `:102` ∥ `thincoder-core/provider/sse.mjs:207` ∥ `thincoder-core/provider/google.mjs:219` | 已落位 |
 | server 对位实现 | `thincoder-server/src/gateway/proxy.mjs`（自持——`proxyFetch` fetch-like：loopback 旁路 ∥ CONNECT 隧道 ∥ 经典转发 ∥ 超时族；node:http/https 内建 + 自建 CONNECT——std） | 逐渠判定镜像（D-PX1）；机制全文 = `docs/server/design/gateway/API.md` §6 KD-SV-55 |

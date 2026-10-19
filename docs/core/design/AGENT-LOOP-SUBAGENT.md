@@ -409,7 +409,7 @@ export function writeTombstone(parent, id, status, role) {
 | A6 | CLI 形（U6）：`carrierField(parent, "_asyncTombstones") === parent._asyncTombstones` | `AGENT-LOOP.md` §2.3 写回义务 |
 | A6b | 首写用例（U6b）：无自有 Map + `history` 在场 ⇒ 主容器 = 父字段、`history` 侧同一容器 | — |
 
-**边界（本节不做）**：不动 `spawn` 的 depth 语义；不动工具描述 / 提示词面（`subagent` 工具描述 = `thincoder-core/tool-docs/subagent.md`——描述外置面（`DESC("subagent")` 单点加载）；内容权归主 agent）；不做 observe/send/cancel/panel 既有门文案的旧编号收正（旧编号在现行两档均不可解析——域外登记）；
+**边界（本节不做）**：不动 `spawn` 的 depth 语义；不动工具描述 / 提示词面（`subagent` 工具描述 = `thincoder-core/tool-docs/subagent.md`——描述外置面（`DESC("subagent")` 单点加载）；内容依据 = 机制文档，落笔 = eng-coder）；不做 observe/send/cancel/panel 既有门文案的旧编号收正（旧编号在现行两档均不可解析——域外登记）；
 **不执行** `subagent-actions.mjs` 拆分，只登记不执行（§6.20.8-3 = §6.20 的边界声明，非拆分计划本体——措辞收正）。
 
 ## 6.26 机制性指令注入位置：spawn 固块改走 system 面
@@ -468,11 +468,11 @@ if (agent._spawnSystemBlock) systemPrompt += `\n\n${agent._spawnSystemBlock}`
 
 - **拼接位（槽位裁定）**：`base`（人格 → common → 纪律）→ **固块** → `Project instructions…` → skills 尾块。
   理由：固块与槽位同属「角色 / 契约」层；项目指令（不可信包裹）保持尾位（现状不动）。
-  不新设槽位文件（槽位 = 设计档 + 中英两份流程面，本块是**运行期派生文本**，非槽位档）。
+  不新设槽位文件（槽位 = 设计档 + 提示词面（`thincoder-core/prompts/`），本块是**运行期派生文本**，非槽位档）。
 - **字段生命周期**：`buildSpawnChild` 写入一次（sync / async 单点——`thincoder-core/agent-tools/subagent.mjs:276` 为唯一调用点）；
   此后只读 ⇒ 同一 child 的任意 run（含 `resume` 续跑、报告追问重跑）逐字节恒定。
 - **文本零改**：块内文本逐字搬移（含块内 `above` / `below` 自指——它们指本块内的相对位置，整块搬移不改真值）
-  ⇒ **不触提示词正文**（内容权 = 主 agent）；无正文改动 ⇒ 无上抛项。
+  ⇒ **不触提示词正文**（内容依据 = 机制文档，落笔 = eng-coder）；无正文改动 ⇒ 无上抛项。
 
 **缓存契约兼容证明（`docs/core/design/AGENT-LOOP.md` §6.3——契约精化见同批该档修订）**：
 
@@ -511,7 +511,7 @@ if (agent._spawnSystemBlock) systemPrompt += `\n\n${agent._spawnSystemBlock}`
 | D23-1 | 载体 = **system 固块**（`child._spawnSystemBlock` → `prepareRun` 拼接） | 与缓存契约相容 / 压缩天然不丢 / 零重挂机制 |
 | D23-2 | 拼接位 = 槽位装配之后、项目指令之前 | 固块与槽位同属「角色 / 契约」层；项目指令（不可信包裹）保持尾位不动 |
 | D23-3 | 审计块构造器外提 `audit-block.mjs` | 块构造成纯函数可直测 |
-| D23-4 | 块内文本**逐字搬移**（含块内自指词） | 零提示词正文改动（内容权在主 agent） |
+| D23-4 | 块内文本**逐字搬移**（含块内自指词） | 零提示词正文改动（内容依据 = 机制文档，落笔 = eng-coder） |
 | D23-5 | 审计子代理不补批次档路径行 | 审计范围纪律 + schema 面已删该参数 |
 | D23-6 | `_engTaskInput` 语义 = **纯任务书**（不含固块） | A2 摘要面更干净（三要素抽取不受派生行干扰）；固块不再是「任务书的一部分」 |
 | D23-7 | 任务书本体（批次档 §2 文本）**不**入 system | 范围 = 机制性指令；任务内容属会话内容，压缩摘要面已按「当前任务锚定」承接（SUMMARIZE_PROMPT 第 3–4 条）——边界如实登记 |
@@ -547,7 +547,7 @@ if (agent._spawnSystemBlock) systemPrompt += `\n\n${agent._spawnSystemBlock}`
 4. 不动 VSC 镜像装配面（`thincoder-vscode/src/agent/setup.mjs`）：VSC 子代理恒经核 `runChildPipeline` → 核 `runAgent`
    （`thincoder-core/agent-tools/subagent-async.mjs:305-308`）⇒ 单点即可；该端 depth>0 直连面仅 `thincoder-vscode/src/extension/image-handler.mjs:84`（无固块字段）。
    **实施轮复核项**：若发现端侧另有子代理装配路径携带该字段，同式补一行。
-5. 不改 `batch_segment` 工具描述与提示词正文（零正文改动 ⇒ 内容权面零依赖）。
+5. 不改 `batch_segment` 工具描述与提示词正文（零正文改动 ⇒ 落笔面零依赖——内容依据 = 机制文档，落笔 = eng-coder）。
 6. 不动 `thincoder-core/agent/family-tools.mjs` 的 schema 删除面（审计子代理仍无 batchDoc 参数）。
 7. 无 UI / 交互决策（system 面对 UI 不可见；TUI / webview 零改）——**无 open 项**。
 
@@ -676,5 +676,5 @@ subagent(role="eng-coder", round="initial", goal="…", knownFacts="…", design
 - **KD-TF2（共享块）**：eng-coder / eng-designer 共享一段——两段重复 = 描述面双份字面（D2；改一处漏一处）。
 - **KD-TF3（参数即骨架）**：六行文本骨架退役——「照抄标签写进任务文本」的形不再是门的形（照抄者会漏传任务书参数 ⇒ 被门拒）；骨架改为一次带参调用，文本面与门面同形。
 
-**边界（本节不做）**：门的判据面归 §6.22 F2 · 提示词面（persona ∥ 中文正本）零触 · 其他工具描述零清扫 · 不新增工具。同族两件（batch 档头可填性 ∥ 死占位判据可辨性）= `TOOLS.md` §6.20。
+**边界（本节不做）**：门的判据面归 §6.22 F2 · 提示词面（`thincoder-core/prompts/`）零触 · 其他工具描述零清扫 · 不新增工具。同族两件（batch 档头可填性 ∥ 死占位判据可辨性）= `TOOLS.md` §6.20。
 

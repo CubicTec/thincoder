@@ -634,7 +634,7 @@ webview：agentSettings 到达 ⇒ 打开等待器触发 buildSettings ⇒ 建�
 - **快照未达拍的代理控件渲染值**（观感面 · §2.8 登记）：`#px-web` 在快照缺席时按渲染默认显示为勾选——打开拍必达落地后该拍仅在推送丢失时出现，且发值门（§2.8 基线判据）已消除其危害；消解路径 = 若日后引入推送回执 / 超时可见化，则在同一处显式化该拍；到期 = 设置面下次被触碰时。
 - **确认弹框形态三处同族重复**（结构面 · §2.10 登记）：同一弹框件现有三处实现——
   `thincoder-vscode/webview/session-bar.js:75-107`（会话删除确认）· `webview/mode-buttons.js:54-92`（AUTO 启用确认）· §2.10 的 settings 面一处；
-  只在 settings 面立单源（`showConfirmPopover`）。消解路径 = 抽公共件 `thincoder-vscode/webview/confirm-popover.js`（拟新增 · 未落）并三点迁移（纯搬移、零语义改）；
+  只在 settings 面立单源（`showConfirmPopover`）。消解路径 = 抽公共件 `thincoder-vscode/webview/confirm-popover.js` 并三点迁移（纯搬移、零语义改）；
   到期 = 该两面下次被触碰时 / 父侧裁定扩写域。
 - **provider 行 − 的凭证归类**（归类面 · §2.10 入口册 #4）：该行条目内含 `apiKey`（写入 = `thincoder-core/config-io.mjs:201-208` · 删条目的整条 filter = `:262-277`）⇒ 删行同时移除 key 原文 ⇒ 判入**不可复得类**（用户裁定 A——载体 = `webview/settings-providers.js:137` 卡 HTML + `:22-23` 编辑行取消重建位）。
 - **本门弹框文案**（文案面 · §2.10 弹框契约登记）：正文键 `settings.secretDeleteConfirm` = 类通用式（值级改写 · 键数不变 · 键名不动；改写值 = §2.10 文案条）——密钥类与 MCP server 行（入口册 #5，不显掩码、删除目标 = 整条 server 条目）两族均成立。
@@ -650,7 +650,7 @@ webview：agentSettings 到达 ⇒ 打开等待器触发 buildSettings ⇒ 建�
   补偿 = 目标选定步（QuickPick）自身是显式选择（见 §2.10 补偿两条）；消解路径 = ① 若父侧裁定确认须绑定目标，则须先裁定该半句读法（严格 = 零发值 / 宽松 = 无持久副作用）+ 登记第二确认形态（VS Code 原生件）例外；② 或宿主把选定 `name` 回传 webview 走同件（须协议 +1 条消息）；到期条件 = 本门下次被触碰 / 父侧裁定。
 
 - **`thincoder-vscode/src/extension/settings.mjs` 越 300 行建议线（拆分复核）**（结构面 · §2.13 载体档）：该档现 **426**（内容行数口径）——**仍越 300 建议线**（< 750 触发阈值）⇒ 拆分计划维持（快照面透传语义不变）。
-  拆分组边界 = ① 快照族（`agentSettings` / `proxySettings` / `websearchSettings` / `fullStatus`）② 渠道路由族（provider 增删 / 代理旗标 / 连接测试）③ 密钥与 MCP 族（`saveProviderKey` / `deleteProviderKey` / MCP 三件）——① 拆出 = `thincoder-vscode/src/extension/settings-snapshots.mjs`（拟新增 · 未落）。
+  拆分组边界 = ① 快照族（`agentSettings` / `proxySettings` / `websearchSettings` / `fullStatus`）② 渠道路由族（provider 增删 / 代理旗标 / 连接测试）③ 密钥与 MCP 族（`saveProviderKey` / `deleteProviderKey` / MCP 三件）——① 拆出 = `thincoder-vscode/src/extension/settings-snapshots.mjs`。
   拆分计划 = 触发阈值 **750 行** 或该档下次结构改动（先到即拆）；到期条件 = 触发阈值到达时。
 
 - **`advisor.guard: null` 磁盘形态 vs 判据用例域**（边界面 · §2.14 载体）：种子循环（`settings-panel-write.mjs:135-139`）对 `v === null` 除 `thinking` 外 continue

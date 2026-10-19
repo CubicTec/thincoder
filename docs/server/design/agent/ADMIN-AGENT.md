@@ -30,7 +30,8 @@
 |---|---|---|
 | `thincoder-server/src/agent/run.mjs`（已落盘） | 实读 **33** ⇒ ≈**34**（本批删 `TRIMMED_FACES` 之 `"approval"`——KD-SV-224；保留 = 预算常量 ∥ `loadCoreChat` ∥ `providerModelRefs`） | 核装载共用件（chat 会话装配 ∥ 预算常量 ∥ `providerModelRefs` ∥ 裁剪面清单） |
 | `thincoder-server/src/agent/tools.mjs`（已落盘） | ≈**20**（**保留 = `maskSecrets`**——掩蔽单源（chat `exec` ∥ 主机凭据面共用）） | 掩蔽单源（`maskSecrets`——KD-SV-136 同件） |
-| `thincoder-server/src/agent/chat.mjs`（已落盘） | 实读 **736**（口径 = `split("\n").length − 1`；本批 +门挡装配 Δ ≤15——拆档评估 = §9 KD-SV-208/228） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（七型 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
+| `thincoder-server/src/agent/chat.mjs`（已落盘） | 实读 **745**（口径 = `split("\n").length − 1`；本批 +4/−1 ⇒ ≈**748**；越 500 咨询线——微触不拆判据 = §9 KD-SV-208/228） | 聊天式驱动（§11）：会话装配（系统简报 + 历史重放）∥ 回合环（预算 ∥ 工具循环 ∥ 中止检查点）∥ 帧流编解码（七型 + `end` 两可字段）∥ 逐条落库 ∥ 终态收尾（五形） |
+| `thincoder-server/src/agent/chat-compact.mjs`（已落盘） | 实读 **334**（口径 = `split("\n").length − 1`；本批 +50/−3 ⇒ ≈**381**） | A3 压缩面（§17.3）：核件动载（`context.mjs`）∥ 压缩调用与垫片 ∥ 覆盖区间差分求 ∥ 标记行落库 ∥ 阈值取数（`compactThresholdOf`——按在用模型现算，与核同源） |
 | `thincoder-server/src/agent/chat-routes.mjs`（已落盘） | 实读 **223** ⇒ **224**（本轮 `#1617` +1；结构不变） | 会话面**七**端点（§11——契约 = `gateway/API.md` §2.8；+ask 应答 = KD-SV-224）∥ 判权 ∥ 在途门 ∥ 重启恢复钩（running ⇒ idle + notice） |
 | `thincoder-server/src/agent/chat-asks.mjs`（已落盘） | 实读 **242**（口径 = `split("\n").length − 1`——沿 chat.mjs 行） | 审批 ask 宿主（§11.5——KD-SV-224）：写类调用 ⇒ `ask` 帧构造 ∥ 应答 ⇒ 结算续跑 ∥ 拒值三径（回合收 ∥ 中止 ∥ 流断）∥ 置库（`auto_approve`） |
 | `thincoder-server/src/agent/chat-tools.mjs`（已落盘） | 实读 **562**（口径 = `split("\n").length − 1`——沿 chat.mjs 行） ⇒ ≈**590**（越 500 软线——上限 700：触发 = 实读 >700 ⇒ 起拆档审查；本批 +只读判类表/`readonlyOf` = KD-SV-225）∥ `mcp` 第九件 = 独立面 `thincoder-server/src/mcp/admin-tools.mjs`（已落盘——实读 **222**），§12.2 | 管理面**九件**（§12——九中之八在本档；`mcp` = 独立面，§12.2）：members ∥ providers ∥ models ∥ usage ∥ audit ∥ runners ∥ docker ∥ exec——参数校验 ∥ 结果结构化 ∥ 审计包装（进程内直取域件） |
@@ -40,7 +41,7 @@
 | `thincoder-server/src/agent/chat-store.mjs`（已落盘） | 实读 **155** | 库面单源（库面段 + `parseJson` + `CHAT_ROLES`/`CHAT_EXCERPT_MAX` 抽出；11 名重导出同引用 ∥ 零反引 `chat.mjs`） |
 | `thincoder-server/src/agent/chat-wake.mjs`（已落盘） | 实读 **141** | 唤醒器（§15.1）：会话键面闩表（核 `createTimerWatch` 复用——零第二套闩）∥ 空闲判定（会话行 `status` 单源）∥ 火策略（核 `fireTimerWake`）∥ 结算钩子（`_asyncWaiters`——先自再武装再评估）∥ 再武装三链尾 ∥ 零轮询 |
 
-- `thincoder-server/package.json`（`@thincoder/core` 版本声明依赖——实读 `^0.10.4`）与**带核发布形**（版本对位口径）= 服务端设计档 `PROJECT.md` §2.3（单源；核先于/同拍发行）。
+- `thincoder-server/package.json`（`@thincoder/core` 版本声明依赖——实读 `^0.10.7`）与**带核发布形**（版本对位口径）= 服务端设计档 `PROJECT.md` §2.3（单源；核先于/同拍发行）。**地板 = 含 A3 阈值算式的核版本**：导出在场 ≠ 算式同位（0.10.7/0.10.8 的 `resolveCompactThreshold` = `floor(usable × 0.6)`；仓内现行 = `min(usable, ⌊window × 0.8⌋)`——读数差额 = §13 R92）。
 - sandbox 域件（`ssh.mjs` ∥ 主机凭据件）= `sandbox/SANDBOX.md` §13（本档不重复）；`bin/thincoder-server.mjs` **±0**（节点/凭据端点经 `thincoder-server/src/sandbox/routes.mjs` 转注册——装配行计入 sandbox 域预算）。
 
 ## 7. 验收判据（机检）
@@ -233,7 +234,8 @@
 
 - **归属与形**（口径③——用户「行」）：档位归**会话**（与 `model` 同层）——库列 `agent_chats.reasoning`（v16 增段；NULL = 未设）；`chatView` 行形携 `reasoning`（建会话回执 ∥ 列表 ∥ 详情 ∥ PATCH 回执四面同源）。
 - **值域源 = 核单源**：`thincoder-core/model-specs.mjs` `specForModel(上游真名).reasoningEffortEnum`（前缀匹配 + 命名空间剥离同核）——服务端桥件 `thincoder-server/src/gateway/reasoning-levels.mjs`（已落盘——懒载 `@thincoder/core/model-specs.mjs` + 缓存；`levelsOf` ∥ `modelReasoningMap` 稀疏图）；
-  **标识解析径**（会话 `model` = 对外标识——别名 ∥ `provider/model`；KD-SV-59）：**先解上游真名再取枚举**——反查 = `thincoder-server/src/gateway/providers.mjs` 别名索引（`createAliasIndex().lookup(外标)` ⇒ `{ provider, model: 上游真名 }`——「读面回映射」同源件，保存换表随动）；**源面行 ∥ PATCH 校验 ∥ 回合装配三处同经此解析**（别名模型 = 别名所指上游的枚举——不另退中性）；
+  **标识解析径**（会话 `model` = 对外标识——别名 ∥ `provider/model`；KD-SV-59）：**先解上游真名再取枚举**——反查 = `thincoder-server/src/gateway/providers.mjs` 别名索引（`providerAliasIndex(db).lookup(外标)` ⇒ `{ provider, model: 上游真名 }`）；
+  实件 = 同档 `:79`（其形 = `createAliasIndex(listProviderEntries(db))`，`:80`）——「读面回映射」同源件，保存换表随动；**源面行 ∥ PATCH 校验 ∥ 回合装配三处同经此解析**（别名模型 = 别名所指上游的枚举——不另退中性）；
   **零第二清单**（不落库档位词表）；**模型列表下发** = `GET /api/admin/providers` 每行 `modelReasoning`（键 = 上游真名——与 `settings`/`modelMeta` 同键空间；无档模型零键）；**缺核**（本开发机未装包——`thincoder-server/node_modules` 无 `@thincoder/core`）⇒ 空图 + 一条警告（档位面退中性；生产 = 核为声明依赖）。
 - **设置路由**（口径②）：`PATCH /api/admin/agent/chats/:id` 扩为**会话设置面**——体一次一件（`{ model }` ∥ `{ reasoning }`；同携 ⇒ 400 人话）：`model` 在场 ⇒ 换模型 + **档位清 NULL**（换模型回中性——同一写）；`reasoning` 在场 ⇒ `null`（清）∥ 字面 ∈ 当刻模型枚举 ⇒ 落库，否则 400 人话；判权 = `requireAdmin` 沿用；**零审计行**（KD-SV-91 三 kind 不扩——沿 KD-SV-108）。
 - **回合装配**：`runChatTurn` 起跑读行（与 `chat.model` 同点——在途回合零触；沿 KD-SV-108 口径）⇒ 行值 ∈ 当刻模型枚举 ⇒ `buildChatExit` 出口 provider 配置携 `reasoningEffort`（核 `thincoder-core/provider/core.mjs` 载荷门/枚举门/路由形守门单源消费）；**未设 ∥ 表外 ⇒ 零字段**（与今日行为逐字同）；表外 = 读侧容忍（不炸、不改行——沿核会话槽「表外串不动」先例）。
@@ -393,6 +395,8 @@
 
 | R91 | **审批卡面批（2026-10-17）——需求回笔 ＋ 随正件 ＋ 披露 ＋ 部署收尾**：① 需求回笔 = 主 agent 笔（用户裁「必须上审批卡」在册）∥ ② 随正件（实施轮实读为准）：结构版本断言 = **25** ∥ `agent_chats` 列面 = **8 列**（含 `auto_approve`） ∥ 门禁件数 ∥ 静态档目链 + `views-chat-cards.mjs` ∥ ③ 披露：`#auto-btn` 留隐（钮位面出列）∥ 断线/未决卡 ⇒ 拒值（中止可解）∥ 拒行落审计（−1）∥ ④ 部署收尾 = 父侧（镜像 + 实走：写类弹卡 ⇒ 批 ⇒ 执行 ∥ always ∥ 拒） | 披露 | 评审/用户复核 |
 
+| R92 | **压缩阈值取核批（2026-10-18）——披露：依赖地板须含 A3 算式**：① 事实（实读）：`thincoder-server/package.json:17` 声明 `@thincoder/core ^0.10.7`；v0.10.7 ∥ v0.10.8 的 `resolveCompactThreshold`（`config.mjs`）算式 = `floor(usable × 0.6)`，仓内现行 = `min(usable, ⌊window × 0.8⌋)`（`config.mjs:181` `requestBudget`——2026-10-18 提交，未入任何 tag）⇒ 导出在场、算式旧：成员形校验只判导出 ⇒ 阈值静默为旧式（`gpt-4o` 67,200 vs 102,400 ∥ `deepseek-flash` 369,600 vs 616,000）∥ ② 处置：地板抬至含该算式的核版本（号于核发布时定；发布序 = `PROJECT.md` §2.3③ 核先发，服务端随升）；抬版前服务端不得以 `^0.10.7` 发行 ∥ ③ 披露（不阻塞）：服务面 `loadCoreConfig` 的形校验只判导出在场、不判算式——防静默旧式只靠版本地板（另立算式探测 = 第二份算式，D3 所拒） | 披露 | 评审/用户复核 |
+
 ## 14. 环境感知与环境工具面（功能点 43 ∥ AC-43 ①–⑥）
 
 > 口径 = 用户「管理面的agent现在没有环境感知能力，我希望这一块要对齐cli/vsc和桌面。」+（工具面 ∥ 读文件族 + `bash` ∥ 审计 + 权限归用户）三句；单源 = 需求 `docs/server/requirements/PROJECT.md` §2 功能点 43。
@@ -457,7 +461,7 @@
 
 ### 14.5 核可达性（生产镜像——核实结论）
 
-- 依赖声明在案（`thincoder-server/package.json:16` `@thincoder/core: ^0.10.4`）；registry 实核 = 该包在 npm 上（`npm view @thincoder/core version` ⇒ **0.10.4**，与仓内核版本一致）；包白名单含 `tools/` ∥ `agent-tools/` ∥ `tool-docs/`（`files` 面）+ `exports: { "./*": "./*" }` ⇒ 子路径直引可达。
+- 依赖声明在案（`thincoder-server/package.json:17` `@thincoder/core: ^0.10.7`）；registry 实核 = 该包在 npm 上（`npm view @thincoder/core version` ⇒ **0.10.8**，2026-10-18 实读；与仓内核版本一致——但该版 `resolveCompactThreshold` 为旧算式，见 §13 R92）；包白名单含 `tools/` ∥ `agent-tools/` ∥ `tool-docs/`（`files` 面）+ `exports: { "./*": "./*" }` ⇒ 子路径直引可达。
 - 镜像两装径同经 npm 解析该依赖：构建期（`thincoder-server/Dockerfile:25` `npm i -g ./thincoder-server/*.tgz …`）∥ 运行期（`thincoder-server/deploy/converge.mjs:79-90` `installVersion`——`npm i -g @thincoder/server@<target>`）——registry 不可达 ⇒ 装机失败 ⇒ 拒启（fail-loud，非静默）。**结论：核在镜像内可达**（前提 = 装机时 registry 可达）。
 - 开发机（本仓 checkout）未装核 ⇒ 本面全族走动载 + 注入口（生产走真件；单元测试档走注入——真件亦可经仓内直引）。
 
@@ -613,7 +617,7 @@
 |---|---|---|
 | A1 工具轮回灌形 | `@thincoder/core/model-specs.mjs` `assistantToolCallMessage`（`:355`）＋ `specForModel`（`:298`） | `chat.mjs` ∥ `run.mjs` 自建形替换；回声落库/回放 |
 | A2 历史修复 | `@thincoder/core/agent/helpers.mjs` `repairHistory`（`:279`） | 回合装配期（回放段）施用 |
-| A3 上下文压缩 | `@thincoder/core/context.mjs` `compressIfNeeded`（`:165`）∥ `compressFallback`（`:239`）∥ `COMPRESS_FAILURE_LIMIT` | 新档 `chat-compact.mjs`（压缩面 ＋ 落库标记适配） |
+| A3 上下文压缩 | `@thincoder/core/context.mjs` `compressIfNeeded`（`:165`）∥ `compressFallback`（`:239`）∥ `COMPRESS_FAILURE_LIMIT`；`@thincoder/core/config.mjs` `resolveCompactThreshold`（`:191`）——阈值 | 新档 `chat-compact.mjs`（压缩面 ＋ 落库标记适配 ＋ 阈值取数） |
 
 ### 17.3 新增三面（机制与接法）
 
@@ -632,11 +636,14 @@
 2. 垫片 = **专用压缩垫片**（`{ history: <本次待发消息数组>, provider: <loopback 描述子>, config: { traces: { enabled: false } }, cwd }`——勿与 env 垫片混用）；**provider 取数 = 注入口** = `deps.compactProvider ?? modelExit.provider`（生产 = 出口同源；单测替身免真 HTTP）；
 3. 调用 = `compressIfNeeded(垫片, 阈值, { onCompressStart }, { systemPrompt, tools }, signal)`——**摘要调用经同一出口**（loopback ⇒ 记账同链；`usage` 行可归因——用户 15:44 口径不破）；**可视面 = `onCompressStart` ⇒ 日志一条**（`chat_compact_start`——观察链，不产帧）；
 4. **落库单源 = 压缩标记行**（`role="user"` ∥ `data.kind="compaction"` ∥ `data.covers=[seq首, seq尾]` ∥ 内容 = 压缩产物文本）：回放自标记解析——覆盖区间以标记行代（嵌套标记自然消解）；**原行不删**（审计面原文留存；模型视野 = 压缩后形——「回放逐字一致」= 对标记形成立）；覆盖区间 = 压缩前后差分求（首变点 ⇒ 尾重合段前沿——实施当刻以核 `applyCompression` 实读为准）；
-5. 失败链 = 进程内计数 ＋ 达 `COMPRESS_FAILURE_LIMIT`（= 3——取件 = `@thincoder/core/context.mjs`）⇒ 降级 `compressFallback`（确定性截断——同落标记行）；阈值 = 核缺省镜像常量（`DEFAULT_COMPACT_THRESHOLD` = 100k——`thincoder-core/agent/setup.mjs:26`；核变同拍）。
+5. 失败链 = 进程内计数 ＋ 达 `COMPRESS_FAILURE_LIMIT`（= 3——取件 = `@thincoder/core/context.mjs`）⇒ 降级 `compressFallback`（确定性截断——同落标记行）；
+   **阈值 = 按在用模型现算（与核同源）**：起跑段 `compactThresholdOf`（`chat-compact.mjs`）取数——会话外标经 §11.4 标识解析径解上游真名 ⇒ 核 `resolveCompactThreshold(undefined, { model })`（`@thincoder/core/config.mjs:191`；算式单源 = `CONTEXT-COMPACTION.md` §6.17，本档不复述）⇒ 传 `compactTurnHistory` 的 `threshold`。
+   `DEFAULT_COMPACT_THRESHOLD`（`chat-compact.mjs:24` = 100,000）= **兜底**（调用方未传 ∥ 缺核 ∥ 取值失败——`compactTurnHistory` 缺省入参 `:260`）；模型名未登记 ⇒ 核缺省规格（128K/32K ⇒ 96,000）＋ 核一条告警（`model-specs.mjs:294`）——服务面不复述算式、不加第二条告警。
+   生效面 = 后续回合起跑段；已落库原文 ∥ 既有标记行零动（回放按 `covers` 解析，与阈值无关）。
 
 被否 = 不压缩（跨端差异续存）∥ 就地删行改写（记录面丢原文）。
 
-**缺核降级与警告面（三面共轨）**：三面各自退中性（A1 自建形回落 ∥ A2 原样返回 ∥ A3 跳过）；核件成员级形校验（导出缺失 ∥ `COMPRESS_FAILURE_LIMIT` 非正整数 ⇒ 按缺核处置）＋ 核件运行期抛 ⇒ 自建形回落——**回合不阻断**。警告面 = 会话面（`log` 通道在位）：退中性面各一条 `chat_core_face_missing`。
+**缺核降级与警告面（三面共轨）**：三面各自退中性（A1 自建形回落 ∥ A2 原样返回 ∥ A3 跳过）；核件成员级形校验（导出缺失 ∥ `COMPRESS_FAILURE_LIMIT` 非正整数 ⇒ 按缺核处置）＋ 核件运行期抛 ⇒ 自建形回落——**回合不阻断**。警告面 = 会话面（`log` 通道在位）：退中性面各一条 `chat_core_face_missing`。阈值件（`config.mjs`）**单缺** ⇒ A3 **不跳过**（压缩照常，阈值取兜底常量 100,000）——该面退化只到阈值口径（`face="config"` 一条警告）。
 
 ### 17.4 开放点（不纳入——路径与触发已定）
 
@@ -649,7 +656,7 @@
 
 ### 17.5 核面零改声明
 
-- 取核件（§17.2 在盘 15 件 ＋ 新增 3 面）**全部为 `@thincoder/core@0.10.4` 既有导出**（逐件坐标 = §17.2/§17.3）；
+- 取核件（§17.2 在盘 15 件 ＋ 新增 3 面）**全部为核既有导出**（声明依赖实读 `^0.10.7`；逐件坐标 = §17.2/§17.3）；**导出在场 ≠ 算式同位**（阈值算式随核版本变——§13 R92）；
 - 与实施轮**核侧零文件 ∥ 零导出 ∥ 零行为改动**；核欠缝面（环体 ∥ 场景槽 ∥ 会话面）= §17.4 开放点——**配套核批承接**（不塞实施）。
 
 ### 17.6 版本对位与机检

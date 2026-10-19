@@ -38,6 +38,7 @@ export const EN_SANDBOX = Object.freeze({
   "admin.sandbox.keepContainers": "Keep containers (registration only)",
   "admin.sandbox.removeContainers": "Delete containers too",
   "admin.sandbox.runnerUnreachable": "Node unreachable — containers cannot be checked (any that exist keep running)",
+  "admin.sandbox.workspacesUnreachable": "Could not read the workspace list — cannot tell whether this node hosts any workspaces (delete stays disabled; retry first)",
   "admin.sandbox.runnerDeleted": "Node deleted: {name}",
   "admin.sandbox.createContainer": "Create container",
   "admin.sandbox.containerName": "Container name",

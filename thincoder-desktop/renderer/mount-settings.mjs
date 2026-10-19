@@ -79,7 +79,7 @@ const MODAL_READS = Object.freeze({
 /**
  * 设置族接线：装配两族（读数供给 / 出口）+ 挂载（一挂载面：设置 / 向导两树互斥）+ 向导接线 + 自持重绘订阅。
  * `host` = preload 窄桥（只 `invoke`）；`deps.onProjectOpened` = 装配面项目面链注入（缺 ⇒ 目录出口零动作）；
- * `deps.onProvidersChanged` = 输入区候选面随动注入（provider 写成功 ∥ 登录成 —— 全渠扇出批 ∥ `TEAM.md` §2.8；缺 ⇒ 零动作）。
+ * `deps.onProvidersChanged` = 输入区候选面随动注入（provider 写成功 ∥ 登录成 ∥ 登出成 —— 全渠扇出批 ∥ `TEAM.md` §2.8；缺 ⇒ 零动作）。
  * 返回 `{ paintSettings, openSettings, openSettingsModal, closeSettingsModal, refreshSettings, handlers,
  * wizardHandlers, keys, detach, setTheme }`（消费面只 `attachSettings(host, …)`；`refreshSettings` 出句柄面 =
  * config 写盘感知复读口（R8 · `ev:config` 窄口 —— `renderer/app.mjs` `attachEvents` 消费）；`setTheme` = 菜单

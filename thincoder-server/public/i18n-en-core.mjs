@@ -37,6 +37,7 @@ export const EN_CORE = Object.freeze({
   "slash.desc.new": "start a new chat",
   "slash.desc.help": "this list",
   "model.loading": "Loading models…",
+  "model.empty": "No models available",
   "model.filterPlaceholder": "Filter models…",
   "model.noMatch": "No models match",
   "model.addProvider": "+ Add provider…",

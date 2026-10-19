@@ -184,7 +184,7 @@ export function endFrame({ status, reason, message, durationMs, calls }) {
   return frame
 }
 
-/** 推理块增量（`reasoning` 型——§3.11(1)；页面 = 核 `renderReasoning`（默认折叠）+ 流渲染器 `markReasoning`）。 */
+/** 推理块增量（`reasoning` 型——§3.11(1)；页面 = 核 `renderReasoning`（默认展开）+ 流渲染器 `markReasoning`）。 */
 export function reasoningFrame(text) {
   return { type: "reasoning", text: String(text ?? "") }
 }

@@ -14,6 +14,7 @@
 import { mapError, t } from "./i18n.mjs"
 import { copyText } from "./dom.mjs"
 import { field, openModal, showNote, submitThen } from "./modal.mjs"
+import { removeRunnerGate } from "./sandbox-remove-gate.mjs"
 import { openHostCredentialModal } from "./host-credential.mjs"
 import { createTabs } from "./tabs.mjs"
 import { createContainerSection, createVolumeSection } from "./views-sandbox-containers.mjs"
@@ -283,7 +284,8 @@ function nodeWiringBlock(h) {
 
 /** 删除节点弹窗：读容器清单 + 承载工作区清单（**并行**）⇒ 有容器 ⇒ 列数 + 二选一「保留 ∥ 连删」；无容器/不可达 ⇒ 单确认（不可达明示保留语义）；
  *  **有承载工作区 ⇒ 警告句（N + 名——沿服务端 400 同款措辞）+「确认丢弃」勾选（缺省不勾 ⇒ 删除钮禁、勾后启）**；
- *  提交体携 `confirm: true`（勾选时）；无承载/不可达 ⇒ 体不携 `confirm`（现行两径零回归）。 */
+ *  **工作区清单读败 ⇒ 明示句 + 重试钮 + 删除钮先禁**（读败 ≠ 无承载——承载数未知时放行删除 = 误删仍在跑的工作区；判门单源 = `removeRunnerGate`）；
+ *  提交体携 `confirm: true`（勾选时）；无承载/不可达/读败 ⇒ 体不携 `confirm`（现行两径零回归；读败下删除钮已禁，提交不可达）。 */
 function openRemoveRunnerModal(ctx, { runner, reload }) {
   const { h } = ctx
   const bodyBox = h("div", {}, h("p", { class: "hint", text: t("common.loading") }))
@@ -301,8 +303,10 @@ function openRemoveRunnerModal(ctx, { runner, reload }) {
     input.addEventListener("change", () => { choice = value })
     return h("label", { class: "key-clear" }, input, t(labelKey))
   }
-  /** 删除钮门（有承载工作区 ⇒ 须勾「确认丢弃」；勾后启）。 */
-  const applyGate = () => { confirmBtn.disabled = boundCount > 0 && !boundConfirmed }
+  /** 判门入参（取数落定写值；勾选变化只改 `boundConfirmed`）——判门单源 = 纯件 `removeRunnerGate`。 */
+  const gateInput = { containerReachable: true, listedCount: 0, workspacesOk: true, boundCount: 0, boundConfirmed: false }
+  /** 删除钮门（纯件复算——勾选变化 ∥ 取数落定同一门）。 */
+  const applyGate = () => { confirmBtn.disabled = removeRunnerGate(gateInput).confirmDisabled }
 
   const submit = () => submitThen(ctx, {
     note, button: confirmBtn, modal, reload,
@@ -310,33 +314,51 @@ function openRemoveRunnerModal(ctx, { runner, reload }) {
     flash: t("admin.sandbox.runnerDeleted", { name: runner.name }),
   })
 
-  // 两取数并行（容器清单 ∥ 承载工作区清单）——落定后一次渲（两清单同页共读）
-  const containersCall = ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers`)
-    .then((data) => ({ reachable: true, listed: data?.containers ?? [] }), () => ({ reachable: false, listed: [] }))
-  const workspacesCall = ctx.api("/api/admin/sandbox/workspaces")
-    .then((data) => (Array.isArray(data?.workspaces) ? data.workspaces : []), () => [])
-  Promise.all([containersCall, workspacesCall]).then(([containerResult, workspaces]) => {
-    const bound = workspaces.filter((workspace) => workspace?.runnerId !== null && workspace?.runnerId !== undefined && String(workspace.runnerId) === String(runner.id))
-    boundCount = bound.length
-    const rows = []
-    if (containerResult.reachable !== true) {
-      choice = "keep" // 不可达 ⇒ 仅 keep 可过（§2.5 删除节点行）
-      rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerUnreachable") }))
-    } else if (containerResult.listed.length === 0) {
-      rows.push(h("p", { class: "hint", text: t("admin.sandbox.removeRunnerConfirm", { name: runner.name }) }))
-    } else {
-      rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerContainers", { count: containerResult.listed.length }) }),
-        radio("keep", "admin.sandbox.keepContainers"), radio("remove", "admin.sandbox.removeContainers"))
-    }
-    if (boundCount > 0) {
-      rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerWorkspaces", { count: boundCount, names: bound.map((item) => item.name).join(" ∥ ") }) }))
-      const discardCheck = h("input", { type: "checkbox" })
-      discardCheck.addEventListener("change", () => { boundConfirmed = discardCheck.checked; applyGate() })
-      rows.push(h("label", { class: "key-clear" }, discardCheck, t("admin.sandbox.discardWorkspaces")))
-    }
-    rows.push(note)
-    bodyBox.replaceChildren(...rows)
-    footBox.replaceChildren(confirmBtn, cancelButton())
-    applyGate()
-  })
+  /** 两取数并行（容器清单 ∥ 承载工作区清单）——落定后一次渲（两清单同页共读）；**重试钮复调本函数**（两取数重发）。 */
+  const renderRemoveRunnerBody = () => {
+    bodyBox.replaceChildren(h("p", { class: "hint", text: t("common.loading") }))
+    const containersCall = ctx.api(`/api/admin/sandbox/runners/${runner.id}/containers`)
+      .then((data) => ({ reachable: true, listed: data?.containers ?? [] }), () => ({ reachable: false, listed: [] }))
+    // 工作区清单：`ok` 与「空表」分列——旧形失败径给 `[]`，读败与无承载同值 ⇒ 承载数未知却放行删除
+    const workspacesCall = ctx.api("/api/admin/sandbox/workspaces")
+      .then((data) => (Array.isArray(data?.workspaces) ? { ok: true, listed: data.workspaces } : { ok: false, listed: [] }),
+        () => ({ ok: false, listed: [] }))
+    return Promise.all([containersCall, workspacesCall]).then(([containerResult, workspaceResult]) => {
+      const bound = workspaceResult.listed.filter((workspace) => workspace?.runnerId !== null && workspace?.runnerId !== undefined && String(workspace.runnerId) === String(runner.id))
+      boundCount = bound.length
+      gateInput.containerReachable = containerResult.reachable
+      gateInput.listedCount = containerResult.listed.length
+      gateInput.workspacesOk = workspaceResult.ok
+      gateInput.boundCount = boundCount
+      const gate = removeRunnerGate(gateInput)
+      const rows = []
+      if (containerResult.reachable !== true) {
+        choice = "keep" // 不可达 ⇒ 仅 keep 可过（§2.5 删除节点行）
+        rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerUnreachable") }))
+      } else if (containerResult.listed.length === 0) {
+        rows.push(h("p", { class: "hint", text: t("admin.sandbox.removeRunnerConfirm", { name: runner.name }) }))
+      } else {
+        rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerContainers", { count: containerResult.listed.length }) }),
+          radio("keep", "admin.sandbox.keepContainers"), radio("remove", "admin.sandbox.removeContainers"))
+      }
+      if (boundCount > 0) {
+        rows.push(h("p", { class: "hint", text: t("admin.sandbox.runnerWorkspaces", { count: boundCount, names: bound.map((item) => item.name).join(" ∥ ") }) }))
+        const discardCheck = h("input", { type: "checkbox" })
+        discardCheck.addEventListener("change", () => { boundConfirmed = discardCheck.checked; gateInput.boundConfirmed = boundConfirmed; applyGate() })
+        rows.push(h("label", { class: "key-clear" }, discardCheck, t("admin.sandbox.discardWorkspaces")))
+      }
+      if (gate.retry) {
+        // 读败 ⇒ 明示句 + 重试钮（复调本函数、两取数重发）；容器侧不可达句照渲 ⇒ 两行并存
+        const retryBtn = h("button", { type: "button", class: "tiny", text: t("error.retry") })
+        retryBtn.addEventListener("click", () => { renderRemoveRunnerBody() })
+        rows.push(h("p", { class: "hint error", text: t(gate.hintKey) }), retryBtn)
+      }
+      rows.push(note)
+      bodyBox.replaceChildren(...rows)
+      footBox.replaceChildren(confirmBtn, cancelButton())
+      applyGate()
+    })
+  }
+
+  renderRemoveRunnerBody()
 }

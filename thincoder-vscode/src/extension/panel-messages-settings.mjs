@@ -272,13 +272,15 @@ export async function handleTeamLogin(panel, msg) {
 }
 
 /** case "teamLogout"（webview → host）：核 `teamLogout`（吊销 best-effort——网络失败照清本地）⇒ 成 ⇒
- *  推 `teamStatus` + `providerStatus`（派生条目退场——无 key ⇒ 列表隐藏——`TEAM.md` §2.4）⇒ 回执
+ *  推 `teamStatus` + `providerStatus`（派生条目退场——无 key ⇒ 列表隐藏——`TEAM.md` §2.4）+ `_pushSettings()`
+ *  （全状态链——渠 key 已失效 ⇒ 候选面整表作废，空表早退径照发；`TEAM.md` §2.8）⇒ 回执
  *  `teamLogoutResult` `{ ok, revokeDelivered? }`（缺席 = true；false ⇒ webview 卡内就地提示）。 */
 export async function handleTeamLogout(panel) {
   const r = await teamLogout()
   if (r.ok) {
     pushTeamStatus(panel._panel)
     panel._pushStatus()
+    panel._pushSettings() // 登出成 ⇒ 全状态链（`models` 随探针拍落——不推则界面挂着过期候选表；`TEAM.md` §2.8）
     refreshTeamSurface() // F-W21：团队 item 随动（退出 ⇒ 入口态／已失效清位）
   }
   panel._panel?.webview.postMessage({ type: "teamLogoutResult", ...r })

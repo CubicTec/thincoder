@@ -235,7 +235,7 @@ export async function renderMeChat(ctx, mount) {
     if (liveRaw.trim() === "") return
     ensureBlock(); if (liveBubble === null) ensureBubble(); streamRenderer.markToken()
   }
-  /** `reasoning` 帧（§3.11(1)——核 `renderReasoning` 块（默认折叠）+ 核重渲器 `markReasoning`；无推理 ⇒ 零块）。 */
+  /** `reasoning` 帧（§3.11(1)——核 `renderReasoning` 块（默认展开）+ 核重渲器 `markReasoning`；无推理 ⇒ 零块）。 */
   function appendReasoning(text) {
     const chunk = String(text ?? "")
     if (chunk === "") return

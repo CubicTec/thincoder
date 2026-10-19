@@ -169,8 +169,6 @@ export function agentSettings(session) {
     engineering: slotData?.engineering ?? s.engineering,
     consultTurns: s.consultTurns,
     consultTimeoutMs: s.consultTimeoutMs,
-    // MODEL-MERGE-SESSION：defaultModel 顶层键（新会话起点）——面板「默认模型」项读写
-    defaultModel: loadRaw().defaultModel ?? null,
     // Guard chain: slot value when the session ever set it (explicit false ≠ unset — an
     // explicit session OFF must not fall through to a config ON, see eng-session.test.mjs),
     // then the config flag coerced to boolean.
@@ -393,8 +391,18 @@ export { endProbeWindow, _resetProbeWindowsForTest, _setProbeRetryDelayForTest }
 export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOverride = null) {
   pushStatus(panel)
   const s = providerStatus()
-  // #841：无可运行渠道（核态 invalid）⇒ 零探针（去「有 configured 渠道」第二判据——核态派生单判据）
-  if (!s.providerState || s.providerState.state === "invalid") return
+  // #841：无可运行渠道（核态 invalid）⇒ 零探针（去「有 configured 渠道」第二判据——核态派生单判据）。
+  // 空表照发 = 已到且空（不推则界面挂着上一份过期候选表，用户点了才失败）；prefs 与簿记同拍同源
+  // （`prefsOverride ?? workspaceState`——与下方 `flush` 同式），推了不记等于把 `_lastPushedPrefs` 的判零门拆掉。
+  if (!s.providerState || s.providerState.state === "invalid") {
+    const prefs = prefsOverride ?? loadModelPrefs(workspaceState)
+    _lastModelsPayload = []
+    _lastPushedPrefs = typeof prefs?.provider === "string" && prefs.provider && typeof prefs?.model === "string" && prefs.model
+      ? `${prefs.provider}:${prefs.model}`
+      : null
+    panel?.webview.postMessage({ type: "models", models: [], prefs })
+    return
+  }
 
   const w = _probeWindow(panel)
   const names = providerNames().filter((n) => s.providers[n]?.configured)

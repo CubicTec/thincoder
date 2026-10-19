@@ -5,7 +5,7 @@
  * notice 行文案映射（`data.reason` **六值** = 管理面五值 + `"box_lost"`——`agent/MEMBER-AGENT.md` §3.4 收尾三径②）∥
  * 工具结果文案（**失败判据 = 核 `isToolFailure`** 单源）∥ 工具结果全文取读（`data.content` ⇒ 全文——§3.11(6) 工具结果全文面）∥
  * 回读装配（盒内槽文件投射行 ⇒ 核 `buildUserMessage`/`buildAssistantRestore`/`renderToolHistory`——`messageNodes`）∥
- * 推理块回读（行携 `data.reasoning` 串 ⇒ 核 `buildAssistantRestore` `msg.reasoning` 面——默认折叠；缺 ⇒ 零块）。
+ * 推理块回读（行携 `data.reasoning` 串 ⇒ 核 `buildAssistantRestore` `msg.reasoning` 面——默认展开；缺 ⇒ 零块）。
  *
  * 活流径（按步开合——步界 = `turn` 帧）留 `views-me-chat.mjs`；本档只承纯函数面与「读时单源」读侧。
  */

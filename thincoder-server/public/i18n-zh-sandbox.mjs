@@ -38,6 +38,7 @@ export const ZH_SANDBOX = Object.freeze({
   "admin.sandbox.keepContainers": "保留容器（只删登记）",
   "admin.sandbox.removeContainers": "连容器一起删除",
   "admin.sandbox.runnerUnreachable": "节点不可达——容器无法核对（如有将保留运行）",
+  "admin.sandbox.workspacesUnreachable": "工作区清单读取失败——无法确认该节点是否承载工作区（删除钮先禁，重试后再决定）",
   "admin.sandbox.runnerDeleted": "已删除节点：{name}",
   "admin.sandbox.createContainer": "创建容器",
   "admin.sandbox.containerName": "容器名",

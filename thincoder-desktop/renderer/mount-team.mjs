@@ -10,7 +10,7 @@
  *   ① 三态（判序写死）= 未登录 ∥ 已失效（`verify === "invalid"`）∥ 已登录（`valid` ∥ `null` ∥ `unreachable`
  *      同判 —— **离线容忍**，不判失效）；面板内容 = `teamBody`（单一 owner = `views/settings-sections-team.mjs`）。
  *   ② 活校验**触发点制**（零周期轮询）：启动一次 ∥ 面板开（本档 `refresh` 两处同一实现）；他端点 = CLI `/team status`。
- *   ③ 写成功径两复读（`team:status` + `loadProviders`）+ **登录成径**候选面随动（`onProvidersChanged`——`TEAM.md` §2.8；登出 ∥ 轮换两径零改）；`verify` 清位两处（退出落盘后状态复读
+ *   ③ 写成功径两复读（`team:status` + `loadProviders`）+ **登录 ∥ 登出成径**候选面随动（`onProvidersChanged`——`TEAM.md` §2.8；登出径同随动 ∥ 轮换径零改——轮换只换签 token、渠道集合不变，下次打开/切会话拍自然刷新）；`verify` 清位两处（退出落盘后状态复读
  *      见 token 缺席 ⇒ 清 ∥ 重登成 ∥ 轮换成 ⇒ 清——新 token 新判）。
  *   ④ 关三路 = 段再点（视图档翻转）∥ Esc ∥ 面板外点击；**Esc 优先序写死**：面板在场 ⇒ 仅关面板（文档级**捕获相**
  *      截获 —— 不连带既有 document 级 Esc 面：F-Esc 关页 ∥ 弹窗专指 ∥ 会话控制选择器）；开面复位 = 当刻一次性提示清。
@@ -162,6 +162,7 @@ export function createTeam(deps = {}) {
     setTeamSlice({ notice: receipt.revokeDelivered === false ? { kind: "revokeFailed" } : null })
     await loadTeam()
     if (loadProviders !== null) await loadProviders()
+    onProvidersChanged?.() // 登出成 ⇒ 输入区候选面全渠重取（渠 key 已失效 ⇒ 候选表整表作废；`TEAM.md` §2.8）
   }
 
   /** 段出口族表（锚名逐字 = 视图 `data-action` 同域；面板体消费）。 */

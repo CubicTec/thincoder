@@ -105,6 +105,7 @@
   "digest.capAuto": "[auto-turn: continuing past turn cap…]",
   "digest.capStop": "[auto-turn stopped at ${turns} turns — partial digest; finished reports stay in history]",
   "model.loading": "Loading models…",
+  "model.empty": "No models available",
   "model.reasoning": "Reasoning",
   "model.listLabel": "Model list",
   "model.reasoningLevels": "Reasoning levels",

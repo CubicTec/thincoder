@@ -26,6 +26,9 @@
  * 推理下拉解散面（点外关 ∕ Esc 关）＝ VSC `chat.js` 本件部分（设置面 ∕ 会话下拉两段留端）；工厂化后本件自持（两端同形）。
  */
 import { t } from "../i18n.mjs"
+import { shortName } from "./model-menu-labels.mjs"
+import { computePlacement } from "./model-menu-place.mjs"
+import { menuStateOf } from "./model-menu-state.mjs"
 
 /**
  * 归一链单源（`settings-state.js` 搬核——设置面板 ∕ 聊天面板 picker / advisor 读面三面共用同一个 value）：
@@ -41,19 +44,6 @@ export function effortSelection(levels, current, registeredDefault) {
   if (list.includes(current)) return current
   if (list.includes(registeredDefault)) return registeredDefault
   return null
-}
-
-/** Short display names for menu rows — the preset desc strings are long annotations
- *  (key-compatibility notes etc.) meant for the add-provider form, not menus. */
-const PROVIDER_SHORT = {
-  deepseek: "DeepSeek", kimi: "Kimi", "kimi-code": "Kimi Code", glm: "GLM", "glm-code": "GLM Coding",
-  qwen: "Qwen", qwenplan: "Qwen Plan", minimax: "MiniMax", openai: "OpenAI",
-  claude: "Claude", gemini: "Gemini", grok: "Grok", mistral: "Mistral",
-  volcengine: "Volcengine", hunyuan: "Hunyuan", siliconflow: "SiliconFlow",
-  openrouter: "OpenRouter", groq: "Groq",
-}
-function shortName(provider, group) {
-  return PROVIDER_SHORT[provider] || (group && group.length > 22 ? provider : group) || provider
 }
 
 // ─── 菜单实现（模块级单例 + 独立导出——VSC `model-menu.js` 逐字；工厂与独立导出共用同一份，单源）──
@@ -89,11 +79,12 @@ export function openModelMenu({ anchorEl, models, value, onPick, footer = [], up
   panel.className = "mm-panel"
   overlay.appendChild(panel)
 
-  // ── content ──
-  if (!models || models.length === 0) {
+  // ── content（三态：候选未到 ⇒ 加载行 ∥ 已到且空 ⇒ 无可用模型行、不渲分组 ∥ 有候选 ⇒ 分组行——判定单源 `menuStateOf`）──
+  const menuState = menuStateOf(models)
+  if (menuState !== "list") {
     const d = document.createElement("div")
     d.className = "mm-loading"
-    d.textContent = t("model.loading") || "…"
+    d.textContent = menuState === "empty" ? (t("model.empty") || "No models available") : (t("model.loading") || "…")
     panel.appendChild(d)
   } else {
     const byProvider = new Map()
@@ -119,14 +110,17 @@ export function openModelMenu({ anchorEl, models, value, onPick, footer = [], up
     }
   }
 
-  // ── positioning: viewport rect, flip up when no room below ──
+  // ── positioning: viewport rect, flip up when no room below（落位单源 = `computePlacement`；零矩形 ⇒ 视口居中）──
   const place = () => {
-    const r = anchorEl.getBoundingClientRect()
     const ph = Math.min(panel.offsetHeight || 200, 340)
-    const below = window.innerHeight - r.bottom - 4
-    const openUp = up || below < Math.min(ph, 180)
-    panel.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 270)) + "px"
-    panel.style.top = openUp ? Math.max(4, r.top - ph - 4) + "px" : (r.bottom + 4) + "px"
+    const pos = computePlacement({
+      anchorRect: anchorEl.getBoundingClientRect(),
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      panelHeight: ph,
+      up,
+    })
+    panel.style.left = pos.left + "px"
+    panel.style.top = pos.top + "px"
   }
 
   overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModelMenu() })

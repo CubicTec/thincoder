@@ -62,6 +62,7 @@ export const COMPOSER_DICT = Object.freeze({
     "auto.cancel": "Cancel",
     // ── ③ 模型 ∕ 推理两浮层（`model-menu.mjs`）──
     "model.loading": "Loading models…",
+    "model.empty": "No models available",
     "model.filterPlaceholder": "Filter models…",
     "model.noMatch": "No models match",
     "model.reasoning": "Reasoning",
@@ -125,6 +126,7 @@ export const COMPOSER_DICT = Object.freeze({
     "auto.cancel": "取消",
     // ── ③ 模型 ∕ 推理两浮层 ──
     "model.loading": "加载模型…",
+    "model.empty": "无可用模型",
     "model.filterPlaceholder": "过滤模型…",
     "model.noMatch": "没有匹配的模型",
     "model.reasoning": "推理深度",

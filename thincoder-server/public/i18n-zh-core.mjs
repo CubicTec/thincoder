@@ -40,6 +40,7 @@ export const ZH_CORE = Object.freeze({
   "slash.desc.new": "新建会话",
   "slash.desc.help": "本清单",
   "model.loading": "加载模型…",
+  "model.empty": "无可用模型",
   "model.filterPlaceholder": "过滤模型…",
   "model.noMatch": "没有匹配的模型",
   "model.addProvider": "+ 添加 provider…",

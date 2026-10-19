@@ -105,6 +105,7 @@
   "digest.capAuto": "自动回合：越过轮次上限，继续推进…",
   "digest.capStop": "自动回合在 ${turns} 轮处停止——部分消化；已完成的报告保留在历史中",
   "model.loading": "加载模型…",
+  "model.empty": "无可用模型",
   "model.reasoning": "推理深度",
   "model.listLabel": "模型列表",
   "model.reasoningLevels": "推理档位",

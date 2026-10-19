@@ -119,7 +119,8 @@ function afterChange() {
 }
 
 /** 登录流（未登录 ∥ 已失效两态共用）：三问（server 预填留存值 → username → password 掩码）⇒ 成 ⇒ 复读 + 推 `teamStatus`
- *  + 全状态链（`_pushSettings()`——登出径不合流：`afterChange()` 为两径共用件，本径另加一行；`TEAM.md` §2.8）。 */
+ *  + 全状态链（`_pushSettings()`——`afterChange()` 为两径共用件（复读 + 状态推送）；候选面刷新在登 ∥ 退
+ *  两径各加一行（本径 ∥ `logoutFlow`）——`TEAM.md` §2.8）。 */
 async function loginFlow() {
   const st = teamStatus()
   const server = await vscode.window.showInputBox({ prompt: t("settings.team.server") + " — " + t("settings.team.serverHint"), value: st.server ?? "" })
@@ -140,13 +141,15 @@ async function loginFlow() {
   }
 }
 
-/** 退出流（已登录态）：QuickPick 单选项 ⇒ 核 `teamLogout`（吊销 best-effort——网络失败照清本地）。 */
+/** 退出流（已登录态）：QuickPick 单选项 ⇒ 核 `teamLogout`（吊销 best-effort——网络失败照清本地）⇒ 成 ⇒
+ *  复读 + 推 `teamStatus` + 全状态链（`_pushSettings()`——渠 key 已失效 ⇒ 候选面整表作废）。 */
 async function logoutFlow() {
   const pick = await vscode.window.showQuickPick([t("settings.team.logout")])
   if (pick === undefined) return
   const r = await teamLogout()
   if (r?.ok === true) {
     afterChange()
+    _chatPanel?._pushSettings?.() // 登出成 ⇒ 全状态链（`models` 随探针拍落——候选面整表作废；`TEAM.md` §2.8）
     if (r.revokeDelivered === false) vscode.window.showWarningMessage(t("settings.team.notice.revokeUndelivered"))
   } else {
     vscode.window.showErrorMessage(wordOf(FAIL_WORD, reasonOf(r)))

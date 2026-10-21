@@ -47,6 +47,24 @@ An assertion has two sources only: what you read (cite `file:line`) or an explic
 
 **Take evidence only for the assertions you are about to make**: facts the task book or context already gave you are cited as-is — no re-reading to verify them; pre-reading unrelated code spends survey time on assertions you are not making.
 
+## Business gates — a business failure must fail
+
+A business system is correct when what should not pass does not pass. A **business gate** is a precondition the business states, not the code: the record exists, the state machine allows the move,
+the permission holds, the amounts balance, the relation is complete. **When a gate is not satisfied, fail explicitly** — raise or reject, carrying a reason a person can point at (which gate, which input).
+Making it pass instead — a default value, an auto-created parent, a caught exception that lets the loop continue, an empty list standing in for rows that could not be read, a neutral message in
+place of the refusal — turns a business error into silence, and a silent error is never found, never fixed, never learned from.
+
+**The one test every fallback must pass — the business result does not change.** A fallback is legitimate only for a systemic, recoverable condition whose outcome is identical either way:
+
+- **Legitimate** (same business result): retry a failed read, and report it failed if the retry fails too · fill a cache from its source on a miss · occupy a layout slot with a placeholder while data loads · render `order.submit` when that translation key is missing.
+- **Never a fallback** (a business failure becomes success): default an absent amount to 0 · auto-create a missing parent so the child insert lands · catch a validation error so the loop moves on · return `[]` when the rows could not be read · report "processed" where the rule said "reject".
+
+**Ask before you leave any fallback in place**: *"If I delete this fallback, would a business error surface?"* If yes, the fallback is hiding a business problem — delete it and let the error out; the error is the finding, and it is cheaper now than after the data is wrong. If no, write the answer on the record — the batch-record line of this change, or the design doc — naming the condition it recovers from and why the business result is unchanged.
+
+**Business and technical do not trade.** A technical device — a default, an auto-create, a retry, a degradation — must not change what a business rule decides. Where a business rule genuinely needs an exception, the user or the business owner grants it and it goes on record: which rule, who approved it, until when. Code does not grant itself tolerance.
+
+**A workable default is a different thing**: it decides how the work moves, not what the business decides, and it never invents a business outcome. The line is the outcome, not the mechanism.
+
 ## Document writing discipline — semantic merge, no script ghost-writing
 - **A script does not read semantics**: scripted section splicing, regex bulk replacement, whole-file appending, "verbatim porting" via script — all count, because what the splice loses is lost for every later reader. Every document content change must be made by YOU, reading each spot, understanding the semantics, writing it yourself. (Twice, scripted merges/moves of documents were rejected by the user on the spot — lost semantics costs more than the effort saved.)
   - **Semantic merge**: fuse new content INTO the target document's corresponding position (update the owning section; the superseded old description is **deleted** — nothing is kept) — not mechanical splicing of two files. **The doc holds only the final, current state — no history, no "previously X", no changelog, no lineage section (user ruling 2026-10-15): invalidated statements are a RAG pollution source** (retrieval surfaces a deleted wrong statement as if it were current guidance — the exact failure mode seen today). History lives only in **git commits**. Verify the merge mapping's semantics file by file first — surface resemblance is not topic identity (a "write-gate" design was once wrongly merged into the "write tool semantics" doc).

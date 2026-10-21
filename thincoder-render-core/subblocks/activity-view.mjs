@@ -190,9 +190,11 @@ function updateStopButton(block) {
   }
 }
 
-/** Chunk-level state-word tracking（状态区取值源 = 闭枚举——`WEBVIEW.md` §5.2）：写点恰两处
+/** Chunk-level state-word tracking（状态区取值源 = 闭枚举——`WEBVIEW.md` §5.2）：**写点恰一处**
  *  ——结构化工具行（`${name} — ${cmd ≤60}` / 工具名；嵌套 name = `sub/tool`，CLI
- *  `subagent-blocks.mjs` 同构）与 think（`m.sub` 在场 ⇒ `<sub>/` + think 词；顶层 ⇒ 裸 think 词）。
+ *  `subagent-blocks.mjs:341` 同构）。**think / text / toolOutput 均不写**（think 支 = `return`）：
+ *  思考期间状态区仍挂上一个工具行；无前置工具 ⇒ 读侧缺省支（`stateWord()` 的 `meta.stateWord ||
+ *  W.thinking()`）给裸 think 词——CLI `currentTool` 语义逐条对齐（`subagent-blocks.mjs:308` / `:323`）。
  *  **输出面永不入状态区**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态
  *  一律不改写状态区（输出 / 结果只进块体行——CLI `currentTool` 语义 §14 C-11①）。 */
 export function noteChunk(block, kind, text, m) {
@@ -208,9 +210,10 @@ export function noteChunk(block, kind, text, m) {
     }
     refreshBlock(block)
   } else if (kind === "think") {
-    // 嵌套身份前缀（F-W23 · `WEBVIEW.md` §5.2 D-W42）：`sub` 逐 chunk 重算；think 覆盖前一状态词（D-W43）
-    const who = (typeof m?.sub === "string" && m.sub) ? `${m.sub}/` : ""
-    meta.stateWord = `${who}${W.thinking()}`
-    refreshBlock(block)
+    // CLI 对齐（2026-10-21 用户裁定 · 批 `2026-10-21-think-align-cli`）：think **不改写状态词**——
+    // CLI `subagent-blocks.mjs` 的 `currentTool` 只由工具 call 写、think / text 从不碰它
+    // （`:308` / `:323`）⇒ 思考期间标题仍挂「子代理名/最后工具」；无工具时由 `stateWord()` 缺省支给
+    // 裸 think 词。子代理身份不进块头状态词（父子两实体不同行——用户 2026-09-07 裁定）。
+    return
   }
 }

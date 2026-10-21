@@ -1,12 +1,12 @@
 /**
- * 2026-10-20-vsc-subagent-think-label.test.mjs — 子代理块头状态词 think 支携带干活者身份
- * （批档 2026-10-20-subagent-think-label · 台账 #1720 · 需求 F-W23）。
- * 契约单源 = `docs/vsc/design/WEBVIEW.md` §5.2（嵌套身份前缀 D-W42 ∥ think 覆盖 D-W43）。
+ * 2026-10-20-vsc-subagent-think-label.test.mjs — 子代理块头状态词：think 支**零改写**（对齐 CLI）
+ * （批档 2026-10-20-subagent-think-label · 2026-10-21-think-align-cli · 台账 #1720 · 需求 F-W23）。
+ * 契约单源 = `docs/vsc/design/WEBVIEW.md` §5.2（嵌套身份前缀 D-W42 = 工具行 ∥ think 零改写 D-W43）。
  *
  * 八用例（驱动核件 `subblocks/block.mjs` `renderSubagentChunk` → `activity-view.mjs` `noteChunk`）：
- *   T-A33 嵌套 think 带身份前缀（修前红）· T-A34 顶层 think 正控（含 `sub` 空串/非字符串边界）· T-A35 工具行支零变 ∥ 旧载荷无 `tool`
+ *   T-A33 嵌套工具行后接 think ⇒ 零改写（修前红：旧 think 覆盖）· T-A34 顶层 think 正控（含 `sub` 空串/非字符串边界）· T-A35 工具行支零变 ∥ 旧载荷无 `tool`
  *   · T-A36 同源（VSC shim 纯再导出 · 桌面同件 · CLI 零触）· T-A37 两刷新路径同值（DOM-only 写入反例）
- *   · T-A38 多段嵌套 · T-A39 出生前缺省正控 · T-A40 冻结块负控
+ *   · T-A38 多段嵌套（think 零改写 ∥ 工具行前缀逐字）· T-A39 出生前缺省正控 · T-A40 冻结块负控
  * 宿主 = happy-dom（`@happy-dom/global-registrator`，VSC devDep）——状态词读真 DOM 头行文本，
  * 串匹配桩在此必红（头行由 `refreshBlock` 构树，非载荷回显）。
  */
@@ -67,35 +67,44 @@ function toolPayload(extra = {}) {
   return { role: "eng-coder", id: 3, kind: "tool", text: "x", ...extra }
 }
 
-// ─── T-A33 嵌套 think（修前红）──────────────────────────────────────────────
+// ─── T-A33 嵌套 think：状态词零改写（CLI 对齐）──────────────────────────────
 
-test("T-A33 嵌套 think：状态词 = `<sub>/` + think 词（修前红）", () => {
+test("T-A33 嵌套 think：状态词零改写（CLI 对齐）", () => {
+  // 无前置工具：think 不写状态词 ⇒ 缺省支裸 think 词
+  const fresh = makeBlock()
+  renderSubagentChunk(fresh, thinkPayload({ sub: "advisor#1" }))
+  assert.equal(fresh._subMeta.stateWord, null, "think 不写载体（CLI `currentTool` 只由工具 call 写）")
+  assert.ok(header(fresh).endsWith(` ${THINK}`), `无工具时 = 缺省裸 think 词；实际 = ${header(fresh)}`)
+  // 先嵌套工具行、后嵌套 think：标题保持「子代理名/最后工具」
   const block = makeBlock()
+  renderSubagentChunk(block, toolPayload({
+    tool: "read", cmd: "src/x.mjs", sub: "advisor#1", face: "tool", text: "advisor#1/read — src/x.mjs",
+  }))
   renderSubagentChunk(block, thinkPayload({ sub: "advisor#1" }))
-  assert.equal(block._subMeta.stateWord, `advisor#1/${THINK}`, "载体 = block._subMeta.stateWord（前缀 + 词键值）")
+  assert.equal(block._subMeta.stateWord, "advisor#1/read — src/x.mjs", "think 后仍 = 上一个工具行（零改写）")
   assert.ok(
-    header(block).endsWith(` advisor#1/${THINK}`),
-    `头行状态词 = advisor#1/${THINK}；实际头行 = ${header(block)}`,
+    header(block).endsWith(" advisor#1/read — src/x.mjs"),
+    `头行保留工具行；实际头行 = ${header(block)}`,
   )
 })
 
 // ─── T-A34 顶层 think（正控）───────────────────────────────────────────────
 
-test("T-A34 顶层 think：状态词 = 裸 think 词（正控 ∥ 前缀不残留）", () => {
+test("T-A34 顶层 think：状态词零改写（正控）", () => {
   const block = makeBlock()
   renderSubagentChunk(block, thinkPayload())
-  assert.equal(block._subMeta.stateWord, THINK, "无 `sub` ⇒ 零前缀")
+  assert.equal(block._subMeta.stateWord, null, "think 不写状态词（无前置工具）")
   assert.ok(header(block).endsWith(` ${THINK}`), `头行以裸 think 词收尾；实际头行 = ${header(block)}`)
   assert.equal(header(block).includes(`/${THINK}`), false, "零 `/` 前缀")
-  // 前缀逐 chunk 重算（批档 §6 边界行）：先嵌套工具行、后顶层 think ⇒ 前缀不残留
+  // 先嵌套工具行、后顶层 think ⇒ 标题仍是工具行（think 不参与，也就无前缀残留问题）
   renderSubagentChunk(block, toolPayload({ tool: "read", cmd: "src/x.mjs", sub: "advisor#1", face: "tool" }))
   renderSubagentChunk(block, thinkPayload())
-  assert.ok(header(block).endsWith(` ${THINK}`), "嵌套工具行后接顶层 think ⇒ 前缀不残留")
-  // 边界（批档 §6）：`sub` 空串 / 非字符串 ⇒ 顶层形态、零抛（空串 ∥ 真值非串两形）
+  assert.equal(block._subMeta.stateWord, "advisor#1/read — src/x.mjs", "嵌套工具行后接顶层 think ⇒ 零改写")
+  // 边界（批档 §6）：`sub` 空串 / 非字符串 ⇒ 零抛（think 支不读 sub）
   for (const bogus of ["", 1]) {
     const probe = makeBlock()
     assert.doesNotThrow(() => renderSubagentChunk(probe, thinkPayload({ sub: bogus })))
-    assert.equal(probe._subMeta.stateWord, THINK, `sub = ${JSON.stringify(bogus)} ⇒ 顶层形态（零前缀）`)
+    assert.equal(probe._subMeta.stateWord, null, `sub = ${JSON.stringify(bogus)} ⇒ 零改写、零抛`)
   }
 })
 
@@ -160,12 +169,12 @@ test("T-A37 两刷新路径同值（1 s 拍 ∥ 覆盖式重建——DOM-only �
   ctx.activityEl.appendChild(block)
   S._subBlocks.set("sub:eng-coder#3", block)
   refreshLiveHeaders()
-  assert.ok(header(block).endsWith(` advisor#1/${THINK}`), "路径①（1 s 拍重绘）⇒ 同值")
-  // ② 覆盖式重建：头词 DOM 被清空后按块级 meta 重建（DOM-only 一次写入会在此回落到旧工具名 ⇒ 红）
+  assert.ok(header(block).endsWith(" advisor#1/read — src/x.mjs"), "路径①（1 s 拍重绘）⇒ 仍是工具行")
+  // ② 覆盖式重建：头词 DOM 被清空后按块级 meta 重建
   block.querySelector("summary").replaceChildren()
   refreshBlock(block)
-  assert.ok(header(block).endsWith(` advisor#1/${THINK}`), "路径②（覆盖式重建）⇒ 同值")
-  assert.equal(block._subMeta.stateWord, `advisor#1/${THINK}`, "两路径的取值源 = 块级 stateWord 单字段")
+  assert.ok(header(block).endsWith(" advisor#1/read — src/x.mjs"), "路径②（覆盖式重建）⇒ 同值")
+  assert.equal(block._subMeta.stateWord, "advisor#1/read — src/x.mjs", "两路径的取值源 = 块级 stateWord 单字段（think 未污染）")
   // 清账：块出区 + map 复位（本文件其余用例用独立块）
   S._subBlocks.delete("sub:eng-coder#3")
   block.remove()
@@ -173,11 +182,16 @@ test("T-A37 两刷新路径同值（1 s 拍 ∥ 覆盖式重建——DOM-only �
 
 // ─── T-A38 多段嵌套 ────────────────────────────────────────────────────────
 
-test("T-A38 多段嵌套：深层前缀逐字拼接", () => {
+test("T-A38 多段嵌套：工具行前缀逐字拼接 ∥ think 零改写", () => {
   const block = makeBlock()
   renderSubagentChunk(block, thinkPayload({ sub: "advisor#1/explore#2" }))
-  assert.equal(block._subMeta.stateWord, `advisor#1/explore#2/${THINK}`, "多段前缀 = `path.inner.join(\"/\")` 原样")
-  assert.ok(header(block).endsWith(` advisor#1/explore#2/${THINK}`), "头行状态词逐字同形")
+  assert.equal(block._subMeta.stateWord, null, "think 零改写（与嵌套深度无关）")
+  renderSubagentChunk(block, toolPayload({
+    tool: "read", cmd: "src/x.mjs", sub: "advisor#1/explore#2", face: "tool",
+    text: "advisor#1/explore#2/read — src/x.mjs",
+  }))
+  assert.equal(block._subMeta.stateWord, "advisor#1/explore#2/read — src/x.mjs", "多段前缀 = `path.inner.join(\"/\")` 原样")
+  assert.ok(header(block).endsWith(" advisor#1/explore#2/read — src/x.mjs"), "头行状态词逐字同形")
 })
 
 // ─── T-A39 出生前缺省（正控）───────────────────────────────────────────────

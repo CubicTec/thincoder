@@ -1461,9 +1461,8 @@ B. `persona-engineering.md:96` 条尾追加一句（同一 bullet 内续写，�
 ```
 
 C. `discipline-engineering.md` 步骤 1 内、收束段之后新增一行（三空格缩进，作步骤 1 的第 6 条子 bullet；定位按条文本，行号只作读数——同本档 `:261` 口径）。
-插入位的条文本锚 = 步骤 1 收束段整段原文，前段 = `Requirements done-criterion: all five elements present, concrete enough to design from (user confirmed, or answers no longer change the requirements).`
-后段 = `After confirmation, build task entries one per requirement — **the batch record §2 entry table + ledger rows** are the marker that requirements were accepted.`——两段连续、逐字。
-层次说明：`:30` = 步骤 1 编号行；`:31–35` = 五条子 bullet（三空格缩进）；`:36` = 子 bullet 与收束段之间的空行；`:37` = 步骤 1 的收束段（三空格缩进的续行段，仍属步骤 1 条区间，不是子 bullet）；`:38` = 步骤 2 编号行。块 C 必须落在 `:37` 之后、`:38` 之前。
+插入位的条文本锚（收束段整段原文）已随 §6.40 的 R2 退役——块 C 现址 = `discipline-engineering.md:40`（收束段之后的第 1 条子 bullet），位置判据 = §6.40 A8。
+坐标现值（读数）：`:30` = 步骤 1 编号行 · `:31-35` = 五要素子 bullet · `:37` = §6.40 R1 段 · `:39` = 收束段 · `:41` = 步骤 2 编号行。
 
 ```
    - **A decision lands in the round it is made**: the main agent writes it down in that round — the requirements doc when it can take it, otherwise the batch record §1 已定决定 lines; waiting for the discussion to close leaves the decision in the conversation alone, where the next compaction erases it.
@@ -1783,6 +1782,7 @@ R3 — `persona-engineering.md:59` 行首插入作用域前缀（**只给前缀*
 | L7 | `PROMPT-SYSTEM.md` §6.34 对照表第 2 行（`:1285`） | 旧 `:13` 行 → FR32 ↔ FR36 分档行 | 整行换写（本笔已落） |
 | L8 | `docs/batches/2026-10-17-prompt-firing-rights.md` | 零改（冻结档不回改） | — |
 | L9 | `thincoder-core/prompts/discipline-engineering.md` | 零改（行为主体 = 父侧；纪律层无发起面——承 §6.34 K4） | — |
+| L10 | `thincoder-core/prompts/persona-engineering.md:40` | FR37 残句收口：落笔 = §6.39 L2（R4）；本节只载对照表 `:40` 行 | 回指（本节不落笔） |
 
 **对照表（与既有各句逐句对照 · 结论 = 零矛盾）**：
 
@@ -1792,6 +1792,7 @@ R3 — `persona-engineering.md:59` 行首插入作用域前缀（**只给前缀*
 | `:8`（R2 改后） | 无整批令的默认：过门先有 go | 有整批令：go 已给 ⇒ 门被覆盖 | 同一句已由 R2 限定作用域 |
 | `:9` 批准 = 实施启动（FR32） | 批准时刻：批准即发起，无第三步 | 整批令：连「批准时刻」都不再单独出现 | 等号仍成立——整批令本身就是那句 go/批准；FR36 覆盖的是「等待」，不是等号 |
 | `:11-13` 整批令定义 + 三终点 | 令覆盖每步发起；到范围变更 / 叫停 / 跑完为止 | `:14` 把覆盖对象扩到批准门 | 定义零改；四停相 ③④ 与三终点同轴，①② 是批内质量停（停下上报，不改令的生命周期） |
+| `:40`（FR37 改后）`Defaults stay in bounds` | 在飞提问的默认值取值域：只从已确认范围取 | 整批令把该批全范围放进「已确认范围」 | 同源分档：`:40` 不再断言「过批准门即无授权」，改按已确认范围判；整批令下已确认范围 = 该批全范围（改法见 §6.39） |
 | `:55` 推进与叫停 | 有令即续 / 无令即停 | 有整批令时，续的范围包含批准门 | 「the user's word」= 整批令（`:11` 已定义）；零改 |
 | `:59` 块 C（R3 改后） | 无整批令时：评审后的批准就是那个 nod，同轮 spawn | 有整批令时不等这个 nod | 前缀把块 C 限定到默认档；默认档内 FR32 原样 |
 | `:147-148` digest 机器信号 | digest 不是放行 | 放行 = 整批令（用户的话） | digest 仍不是授权；有整批令时下一步走的是令，不是 digest |
@@ -1838,7 +1839,7 @@ R3 — `persona-engineering.md:59` 行首插入作用域前缀（**只给前缀*
 | A6 | 携 why、无禁令腔 | 新增段（R1 全文 + R2/R3 前缀）扫 `never|do not|don't|must not|may not|forbidden` ⇒ 0；why 句 `charges the same authorization twice` 1 次 |
 | A7 | 提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0 |
 | A8 | 体量 ≤ +3% | 改后字符数 ≤ 64,789；预计 63,674（基线 62,902 + 净增 772） |
-| A9 | §13.14 ③：对照结论记入批次档 | 实施轮在批次档 §5 写一行「对照结论：§6.38 对照表十行 = 零矛盾」（引用 §6.38）；收口轮核其在场（批次档内 `对照结论` ≥1 次、引用 §6.38） |
+| A9 | §13.14 ③：对照结论记入批次档 | 实施轮在批次档 §5 写一行「对照结论：§6.38 对照表十一行 = 零矛盾」（引用 §6.38）；收口轮核其在场（批次档内 `对照结论` ≥1 次、引用 §6.38） |
 | A10 | 停相计数并置可判 | 提示词面（实施后）：`The one stop shape` 1 次 · `Four shapes still stop the run` 1 次；本节 `:9` 行写明两轴判据（one = 批准语停形 / four = 批内 run 停相）——子串比对 |
 
 **边界（本批不做）**：不跳评审 · 不改批准门机制本体（token / 门禁 / 凭证生命周期）· 不改普通模式 · 不改冻结档 · 不放宽四停相 · 不改批次档六段结构 · 不新增机械门 · `thincoder-core/prompts/**` 本设计轮零笔 · 需求档零笔 · 产品代码零触。
@@ -1859,6 +1860,302 @@ R3 — `persona-engineering.md:59` 行首插入作用域前缀（**只给前缀*
 **勘察证据行**：已读 `persona-engineering.md`（`:1-14` / `:52-60` / `:136-155` 实读）· 本档 §6.34 全文（`:1208-1338`）∥ §6.35 ∥ §6.36 ∥ §6.37（形制）。
 另读 `ENGINEERING-MODE-V2.md` §13.14 ∥ §13.10（FR32）· `docs/batches/2026-10-17-prompt-firing-rights.md` B1（`:13` / `:172` / `:195`，只读）· `scripts/prompt-refs-check.mjs`（J1/J2/J3 域）· `PROJECT-MANIFEST.json` `checkConfig` / `index.publicRepos` 实读 = `[]`。
 全仓扫 `authorized to fire|does not exempt the approval gate`：命中 = 提示词面 `:14`（实施轮改）· 冻结批档 B1 · §6.34 两行（本笔已改）· 需求档 §13.14（权威处，零改）· `.thincoder/tmp` 基线副本（非提示词面）。publicRepos 为空 ⇒ 无跨仓公共源可查——已查无。
+
+**上抛项**：无。
+
+
+### 6.39 派单纪律补硬（文件重叠 ≠ 扣住 / 改落点）+ FR36 残句收口（提示词面显式化 · FR37）
+
+**来源**：需求权威 = `ENGINEERING-MODE-V2.md` §13.15（FR37，两条）；台账 `#1717`（本批）+ `#1716`（FR36 残句，本笔收口）。
+现象 = 本批批次档 §1（slot 4 两次手工排队：15:19 因与 `#28` 共享文件而「等 `#28`」；16:28 让 designer 把设计写进批档 §2.7 以绕开被冻的设计档）。
+
+**要修的那一处（实读 · 2026-10-20 本席）**：
+
+| # | 坐标 | 现文 | 缺的那一半 |
+|---|---|---|---|
+| F1 | `thincoder-core/prompts/persona-engineering.md:229` | `Submit and go — queuing is the mechanism's job` … `a hand-kept queue duplicates the scheduler` | 机制在，失效模式没点名：模型把「共享文件」读成「并行失败」，于是提前等待 ∥ 换落点 |
+| F2 | 同上（`:229` 行内） | domain conflicts are queued by the scheduler (returns `queued` + position) | 只写了回执形态，没写读法——`queued` 被当成代价 |
+| F3 | `thincoder-core/prompts/persona-engineering.md:40` | `anything past the approval gate has no approval behind it` | FR36 后整批令覆盖批准门 ⇒ 批内已授权；该断言无作用域，字面不成立（`#1716`） |
+
+体量读数（本席 `node` 实读 2026-10-20）：`persona-engineering.md` = **243 行 / 63,674 字符**；本批上限 = 63,674 × 1.03 = **65,584**。
+
+**机制（四条 = 需求三句 + 自检 · 回指 §13.15）**：
+
+1. **文件重叠是调度输入，不是扣住的理由**：感知到两个 spawn 共享文件 ⇒ 声明 `files` 直接派。等待的代价 = 整批被同一个冲突拖住；换落点的代价 = 内容落进它的判据不在的地方，后一轮还要搬回。
+2. **`queued` 是正常准入回执**：回执报的是队列位置 ⇒ 读作「已准入」继续派；把回执读成失败信号，才会把一分钟的派单变成手工等待。
+3. **行号漂移是内容问题，不是时机问题**：串行编辑互相顶行号，等待不会把行移回去——文本锚点把编辑钉在内容上，`dependsOn` 把编辑排在产出任务之后。
+4. **派单前自检**：「我是因为文件重叠在等、或改了落点吗？」——是 ⇒ 声明 `files` 直接派。
+
+**触发点（模型可观察 · 逐条对位）**：
+
+| 句 | 触发点 | 观察面 |
+|---|---|---|
+| ① 重叠 ≠ 扣住 | 派单那一刻：两个 spawn 的 `files` 相交 | 自己写的 `files` 数组 |
+| ② `queued` 是回执 | spawn 回执里出现 `queued` + 队列位置 | 工具回执原文（`:86` 只许抄它） |
+| ③ 漂移用锚解 | 串行编辑前：前一任务已改过同一文件的更早位置 | 读回的行号与盘上内容不符 |
+| ④ 自检 | 派单前（与 ① 同一刻） | 同一刻的自问 |
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+S1 — 在 `persona-engineering.md:229` 之后**新增一整行**（`:229` 原行零改；新增 = 一个 `- **…**` bullet）：
+
+```text
+- **A perceived file overlap is a scheduling input, not a reason to hold or relocate**: the perception is exactly what the `files` declaration exists for — declare the domain, dispatch, and let the scheduler queue what overlaps; a hand-kept wait stalls the batch on the same conflict the queue would have absorbed in place. Relocating the landing point to get around the overlap is the heavier detour: the content lands where its criterion does not live, and a later round pays to move it back. **`queued` is a normal admission receipt**: read it as admission and keep dispatching — a receipt read as a failure signal is what turns a same-minute dispatch into a hand-kept wait. **Line-number drift is a content problem, not a timing one**: serial edits shift line numbers under each other, and a wait leaves the shifted line exactly where it was — a text anchor puts the edit on its content, and a `dependsOn` on the producing task orders the edit after it. **Pre-dispatch self-check**: "am I waiting, or have I moved the landing point, because of file overlap?" — if yes, declare `files` and dispatch; the queue holds the conflict while the work proceeds.
+```
+
+R4 — `persona-engineering.md:40` 整行替换：
+
+```text
+- **Defaults stay in bounds**: a default is drawn only from the scope already confirmed — a default that widened that scope would carry a decision nobody made, and the user would meet the work only after it landed. A batch-wide go-ahead puts the batch's whole scope inside that confirmation, so a default anywhere inside the batch rests on the same authorization; a default reaching outside the batch rests on nothing the user has said, which is why the in-flight ask steers within the confirmed scope rather than expanding it.
+```
+
+R4 的作用域句（`A batch-wide go-ahead puts the batch's whole scope inside that confirmation`）与 §6.38 覆盖条同源：取值域从「批准门之前 / 之后」改判为「已确认范围」——`:40` 由此不再依赖批准门字面。净增 303 字符（旧 224 → 新 527）。
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/persona-engineering.md:229` 之后 | 新增 S1 一整行（原行零改） | 插入（+1 行 / +1,157 字符） |
+| L2 | `thincoder-core/prompts/persona-engineering.md:40` | 旧句整行 → R4 | 替换（±0 行 / +303 字符） |
+| L3 | `thincoder-core/prompts/persona-engineering.md:175` / `:189` / `:86` / `:229` | 零改（对照见下表） | — |
+| L4 | `PROMPT-SYSTEM.md` §6.38 对照表 + 落点表 + A9 计数 | 对照表 +1 行（`:40`）；落点表 +1 行（L10 回指本节 L2）；A9「十行」→「十一行」 | 就地改（本笔已落） |
+| L5 | 调度器本体 / `files` / `dependsOn` 语义 / 需求档 / 普通模式 / 机械门 / 冻结档 | 零改 | — |
+| L6 | `thincoder-core/prompts/**` 其余行 | 本设计轮零笔（实施轮只落 L1 / L2） | — |
+
+**对照表（与既有条款逐句对照 · 结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `:229` Submit and go — queuing is the mechanism's job | 机制面：卡与池的排队归调度器；父侧只读状态、不模拟调度 | 失效模式面：感知到文件重叠时提前等待 ∥ 换落点 | 同向分工：机制描述仍住 `:229`（池上限 / 状态读取一字不改）；本条只点名失效模式并给自检出口 |
+| `:229` 并发上限（`pool-full is queued by the pool` · `past 4 the bookkeeping cost and cross-talk risk outweigh the speedup`） | 并发上限轴：池满由池排队；同域并行超过 4 个，父侧自行跟踪每个实现的成本与串扰风险超过提速收益 ⇒ 派单规模自限 | 重叠排队轴：感知到的文件重叠由调度器排队，不是扣住 ∥ 改落点的理由 | 两轴分工：本条的 `keep dispatching` 只在重叠排队轴上读——重叠照派，由队列吸收；并发上限仍按 `:229`：池满排队、过 4 不再加派。一条管「重叠怎么办」，一条管「最多并行几个」 |
+| `:227` async ∥ sync 准入分轴（`async spawns overlapping in-flight/queued files queue until the blocker settles` · `sync spawns conflicting on files error out (no queueing)`） | 派法分轴：async 派单的重叠面交调度器入队等 blocker；sync 派单的文件冲突直接报错、不入队 | 重叠时直接派、不扣住 ∥ 不换落点 | 本条只在 async 默认档上写「let the scheduler queue what overlaps」——该档的排队归调度器；sync 派的冲突面仍按 `:227` 报错、不入队。两档各属一种派法，本条没有把任一种改写成另一种的行为 |
+| `:175` pass `files` for scheduler serialization | `files` 是串行化通道 | 重叠时声明 `files` 直接派 | 同一条通道的两面：`:175` 说「传」，本条说「重叠不构成不传的理由」 |
+| `:171` `files` 是调度通道、不是简报通道 | 子代理看不见 `files`，文件清单须写进任务文本 | 本条让 `files` 承担排队 | 零冲突：本条只取 `files` 的调度义；简报面仍按 `:171` 写进任务文本 |
+| `:189` Cross-task reading dependencies ⇒ serialize / dependsOn | 读依赖：后任务要读前任务的读数 ⇒ 串行 ∥ `dependsOn` | 行号漂移：内容位置问题 ⇒ 文本锚点 ∥ `dependsOn` | 两轴：`:189` 治「读数还不存在」，本条治「行号已经变了」；`dependsOn` 两处同为排序工具，语义同一 |
+| `:86` Dispatch truthfully | 状态只许抄工具回执 | `queued` 抄自回执、读作准入 | 同一纪律：本条给的是回执的读法，不是第二种状态来源 |
+| `:178-180` 派单尺寸 / 按面拆分 | 派单自身是否合法（≤15 文件 · 一面一单） | 重叠时不扣住、不换落点 | 判据不同：尺寸 ∥ 面不合规 ⇒ 拆单；单本身合规 ⇒ 直接派。本条不豁免拆单 |
+| `:188` 工程工具面不进 `files` | `files` 只列内容产物 | 声明 `files` 直接派 | 零冲突：本条的「声明」仍按 `:188` 的口径 |
+| §6.38 四停相 ③（用户明示 hold） | 停 = 用户的令 | 本条治的是 agent 自己加的那次等待 | 本条不新增停相：自检命中 ⇒ 不停，直接派；停相仍只有 §6.38 的四条 |
+| §6.38 覆盖条（`:14`） | 整批令覆盖批准门，批内全范围已授权 | `:40` 的取值域改按「已确认范围」判 | 同源：整批令下已确认范围 = 该批全范围；`:40` 不再断言批准门之后无授权 |
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 有重叠 | 两个 spawn 都声明 `run.mjs` | 两个都直接派；后者回执 `queued` + 位置，读作准入 |
+| C2 | 正常 · 无重叠 | 两个 spawn 文件不相交 | 同一轮派出，各自运行 |
+| C3 | 边界 · 串行编辑 | 前一任务改过同一文件的更早位置 | 文本锚点落笔 ∥ `dependsOn` 排序；不等待 |
+| C4 | 边界 · 需拆单 | 单个派单 >15 文件 ∥ 跨面 | 按 `:178-180` 拆单——拆单不是「因重叠而改落点」 |
+| C5 | 错误防御 | 因重叠把设计搬进批档 §2.7 以绕开冻结档 | 判为缺陷：内容落点由设计判据定，不由冲突定（slot 4 16:28 实例） |
+| C6 | 错误防御 | 把 `queued` 报成「被挡住 / 要等」 | 判为不实派单汇报（`:86`）：回执原文只有 `queued` + 位置 |
+| C7 | 边界 · `:40` 批内默认值 | 整批令下，在飞提问给批内默认值 | 允许：已确认范围含该批全范围 |
+| C8 | 边界 · `:40` 出批 | 在飞提问的默认值要扩到批外 | 不允许：出批不在已确认范围（`:41` 硬门：新范围 ⇒ `question` ∥ 停下上报） |
+
+**受影响文件（现行 = 本席 `node` 实读 · 2026-10-20）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/persona-engineering.md` | 243 行 / 63,674 字符 | +1 行 / +1,460 字符（S1 +1,157 · R4 +303） | 改后预计 244 行 / 65,134 字符 ≤ 65,584（63,674 × 1.03） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 1,950 行 / 159,704 字符 | 2,096 行 / 171,522 字符（定稿实读；Δ = +146 行 / +11,818 字符） | 本笔 = 设计轮（含评审修正轮 + 设计层记账修正轮）；实施轮零触 |
+| `thincoder-core/prompts/discipline-engineering.md` | 201 行 / 37,337 字符 | ±0 | 判断 = 不加行（行为主体 = 父侧派单面，同 §6.34 K6 判据） |
+| 调度器实现 / `files` · `dependsOn` 语义 / 需求档 / 普通模式面 | — | ±0 | 边界（见下） |
+
+表注 · 行数口径 = `node` 读全文按 `split("\n")` 切分后 `length − 1`；本档以换行结尾 ⇒ 该式 = 正文行数。
+
+**表注 2 · 坐标位移**：L1 在 `persona-engineering.md:229` 之后插入一行 ⇒ 该档 `:230` 起的坐标各下移一位；本档 `:1345`（§6.35）记的盘点读数 `persona-engineering.md:236` 随之后移，实施轮在批次档 §5 记一行「`:1345` 的 `:236` 随插入位移，按需复读」，不留常驻锁。
+
+测试覆盖：零单元测试档（纯文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + 交付门 `doc_check`，不新增断言。
+
+**验收（A1–A9 · 回指 §13.15 两条 · 一次性比对）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.15 ①：三句 + 自检各 1 次 | 提示词面子串各 1 次命中：`A perceived file overlap is a scheduling input` · `` `queued` is a normal admission receipt `` · `Line-number drift is a content problem, not a timing one` · `Pre-dispatch self-check` |
+| A2 | §13.15 ②：旧断言清零 + 作用域句在场 | `persona-engineering.md:40` 含 `A batch-wide go-ahead puts the batch's whole scope inside that confirmation` 1 次；提示词面 `thincoder-core/prompts/**` 扫 `anything past the approval gate has no approval behind it` ⇒ 0（设计档 F3 ∥ 需求档 ∥ 批次档的引文属分析面，不计） |
+| A3 | 携 why、无禁令腔 | 新增文本（S1 全文 + R4 全文）扫 `never\|do not\|don't\|must not\|may not\|forbidden` ⇒ 0；why 子串各 1 次：`stalls the batch on the same conflict` · `the content lands where its criterion does not live` · `turns a same-minute dispatch into a hand-kept wait` · `a wait leaves the shifted line exactly where it was` |
+| A4 | 提示词面零文档引用 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0 |
+| A5 | 体量 ≤ +3% | 改后字符数 ≤ 65,584；预计 65,134（基线 63,674 + 1,460） |
+| A6 | §6.38 对照表 +1 行且含 `:40` | 对照表数据行 10 → 11；新行「既有句」列含 `:40`；A9 计数句为「十一行」，与行数一致 |
+| A7 | 触发点可观察 | 本节「触发点」表四行在场；三个观察面 = 派单那一刻 / `queued` 回执 / 串行编辑前 |
+| A8 | 台账收口条件 | `#1716`：A2 两条同时成立即达收口条件；`#1717`：本批 §6 结算（实施面 A1 + A5 绿） |
+| A9 | 对照结论记入批次档 | 实施轮在 §5 记一行对照结论（§6.39 对照表 = 零矛盾，引 §6.39）；收口轮核其在场（§5 含「对照结论」且引 §6.39） |
+
+**边界（本批不做）**：不改调度器本体 · 不改 `files` / `dependsOn` 语义 · 不改台账 · 不改普通模式 · 不新增机械门 · 不改 FR36 四停相 · 不改冻结档 · `thincoder-core/prompts/**` 本设计轮零笔 · 需求档零笔 · 产品代码零触。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | S1 落 `:229` 之后新增一行，不改 `:229` 原行 | 原行已 992 字符，且是机制描述；同段追加会把机制与失效模式压进一行，读者只能整体读。新增一行 ⇒ 失效模式可单独点名，原行零改零风险 |
+| K2 | `:40` 改成「判据句 + 作用域句」，不删默认值纪律 | 需求给的两条路合成一条：判据句（只从已确认范围取）让规则不依赖批准门字面，作用域句（整批令）与 §6.38 同源。只加作用域而留旧断言，整批令下仍会被读成「过门即无授权」 |
+| K3 | 行号漂移一条同列文本锚点与 `dependsOn` | 两个工具治两个面：只有锚点时，读依赖仍可能读到还没落的内容；只有 `dependsOn` 时，前一任务改了更早位置，行号依旧失效 |
+| K4 | 自检句置四条之末 | 前三句给判断，自检给出口（「是 ⇒ 声明 `files` 直接派」）；出口放最后，读到时手里有一条可执行动作，而不是又一条判据 |
+| K5 | §6.38 只加一行对照 + 一行落点回指（L10）+ A9 计数随动，其余不回改 | 本节改的是 `:40` 的取值域；§6.38 的机制与四停相零变。落点回指行只指向本节 L2、不在 §6.38 落笔；「十行 → 十一行」是 D3 计数随动，不是语义改动 |
+| K6 | S1 首句 = 决策点最小动作锚；机制面仍住 `:229` / `:227` | D2：S1 首句（`declare the domain, dispatch, and let the scheduler queue what overlaps`）与 `:227` 的「overlapping domains are queued by the scheduler rather than hand-serialized」同义——保留它，因为决策点读的就是这句出口；按 D-PS41 / D-PS7 先例（本地只加出口边界句 + 最短动作锚），机制描述的唯一权威 = `:229`（submit-and-go）∥ `:227`（async 入队 ∥ sync 报错分轴），S1 不构成第二份活描述 |
+
+**先例 ∥ 偏离**：先例 = 本档 §6.38（逐字英文文本 + 落点表 + 对照表 + 用例表 + 验收）∥ §6.34（就地改 + 前缀法）。
+**对齐** = 同一形制；新增文本携 why；小改走「新增一行 + 整行替换」，相邻行零改。
+**偏离** = ① 本条同时落到既有 bullet 的紧邻（`:229` 之后）与另一节（`:40`），§6.38 全部落在同一节内；② 本条是「三句 + 自检」的成组落地，不是单条替换——四句互为出口，拆开任一句都留一个失效模式无人对撞。
+
+**勘察证据行**：已读 `persona-engineering.md`：`:5-15`（发起权边界 + 整批令）· `:30-42`（在飞提问 · `:40`）· `:155-192`（实施委托结构化 · `:171` / `:175` / `:178-180` / `:188` / `:189`）· `:224-231`（并行派发 · `:229`）· `:238-244`。
+本档 §6.38 全文（`:1721-1863`）∥ §6.37（`:1551` 起，形制）。`ENGINEERING-MODE-V2.md` §13.15（`:794-806`）· 本批批次档 §1。
+`discipline-engineering.md:195-201` 实读：`:201` 已载同一机制的短句（`file conflicts and dependencies are already ordered for you by the scheduler`），并括注 `submit-and-go = main-agent role behavior` ⇒ 该档判 ±0 的理由 = 同机制短句已在，且该档自承派单面属主 agent 行为（本条落人格层 `:229` 邻位，不在纪律层重复成文——D2）。
+`scripts/prompt-refs-check.mjs` 实读：域 = `thincoder-core/prompts` + `thincoder-core/tool-docs`（提示词面）∥ `thincoder-core` + `thincoder-cli/src` + `thincoder-vscode/src`（代码面）；J1/J2/J3 三式；本席零参运行读数 = `汇总：提示词面 69 档 · 代码面 463 档 · 命中 0`。
+`PROJECT-MANIFEST.json` `index.publicRepos` 实读 = `[]` ⇒ 无跨仓公共源可查——已查，无相关。
+全仓扫 `anything past the approval gate`：命中 = 提示词面 `:40`（实施轮改）· 需求档 §13.15（权威处，零改）· 冻结批档 `2026-10-19-goahead-covers-gate`（只读）· 本批批次档 §1。无其它规范面引用旧句。
+全仓扫 `persona-engineering.md:2[3-9][0-9]`：命中 = 两份批次档（历史记录，不回改）——本条插入点之后的坐标引用不落在规范面。
+
+**上抛项**：无。
+
+
+### 6.40 需求阶段必须问出来（讨论硬化 · 提示词面显式化 · FR38）
+
+**来源**：需求权威 = `ENGINEERING-MODE-V2.md` §13.16（FR38，三条）；台账 `#1721`；现象与根因 = 本批批次档 §1（会话 `.3` 实读：助手消息 1,910 / 用户消息 230 / `question` 工具 4 次，全在设计成形之后；57 条用户消息以祈使句开头）。
+
+**要修的那一处（实读 · 2026-10-20 本席）**：
+
+| # | 坐标 | 现文 | 缺的那一半 |
+|---|---|---|---|
+| F1 | `discipline-engineering.md:30` | `Requirements — discuss what's wanted until clear, land it in the requirements doc, confirm, then move on.` | 只有动词「discuss」：没写问什么、几类、何时算问过 ⇒ 可以读成「自己读代码读到清楚」 |
+| F2 | `discipline-engineering.md:37` | `(user confirmed, or answers no longer change the requirements)` | 自判逃生口：一次没问，也能宣布「答案不再改需求」 |
+| F3 | `common.md:15` | `Ask only when the docs leave it unanswered and the answer would change what you do next` | 成本过滤没有分界：业务意图既不在文档里、也没被认成「改变下一步」⇒ 永不发问 |
+| F4 | `persona-engineering.md:36-42` ∥ `:54-59` | 在飞提问（给默认值 · 不阻塞 · `Channel boundary`）∥ 推进与叫停 | 与 F1 的「必须问」没有分面：两套规则同场，读者不知道哪条管需求形成、哪条管执行 |
+
+**机制（三条 = 需求三条 + 一条面分界）**：
+
+1. **需求必须问出来**（R1）：新功能 / 新业务规则进入时，设计开始前至少一轮「提问 → 用户回答」，覆盖四类——业务规则 · 边界 · 优先级 · 验收口径。判定「问过了」= 四类里用户能答的都答过，不是问题条数配额。读代码只填事实：事实可以支撑规则，不能代替用户把规则说出来。
+2. **需求完成 = 用户明确确认**（R2）：原话或点选；agent 自判「够清楚了」不算确认。未确认 ⇒ 本步产出是待确认问题清单，不是设计。自判逃生口删除。
+3. **`common.md` 分界**（R3）：文档能答的是事实；意图 / 规则 / 取舍是用户的话，必须问。这不是给成本过滤开豁免口，而是指出这一类永远落在「文档答不了」且「答案决定做什么」那一侧 ⇒ 过滤本身放行。用户说过一次即事实，不重问。
+4. **面分界**（R3 末句）：三条只作用于需求形成期；执行面的在飞提问（不阻塞 · 默认值 · 四停相）零改，默认值仍只从已确认范围取（`persona:40`）。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+R1 — `discipline-engineering.md:35` 与 `:37` 之间插入一段（前后各一空行 · 三空格缩进 · **不用 bullet**：五要素列表仍是五条，D3 计数不被牵动）：
+
+```text
+   **Requirements get asked out of the user before design starts**: a new feature or a new business rule opens the step with at least one round of questions to the user and answers back, covering the four kinds the user can answer: **business rules · boundaries · priorities · acceptance criteria**. The round is done when every one of the four the user has an answer for has been asked, not when a question count is met — a list of questions nobody asked is not a discussion, and a fixed quota keeps asking past the point where answers stop adding anything. Reading the code fills in facts; a fact can support a rule and cannot stand in for the user stating it.
+```
+
+R2 — `discipline-engineering.md:37` 整行替换：
+
+```text
+   Requirements done-criterion: all five elements present, concrete enough to design from, and **the user's explicit confirmation of the requirement set** — the user's own words or a click on the proposed set; an agent's own reading of "clear enough" does not confirm it. Until that confirmation the step's output is the open-questions list, not a design. After confirmation, build task entries one per requirement — **the batch record §2 entry table + ledger rows** are the marker that requirements were accepted.
+```
+
+R3 — `common.md:16` 之后新增一行（`**Why**: …` 行之后；`:15` 的成本过滤句与它的 `**Why**` 保持相邻）：
+
+```text
+**A doc answers facts; intent gets asked**: what the docs can settle is a **fact** — what exists, what the code does, what was ruled before. **Intent · rules · trade-offs** are the user's to state and must be asked: no document holds them, and a rule nobody asked for is a rule the user has not given, so the work built on it gets redone. Once the user has stated one, it is a fact like any other — asking again spends the attention the first look was meant to save. **The line holds while the requirement is being formed**; once work is under way, the in-flight ask still steers with a workable default drawn from what the user already confirmed.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 现文 → 新文 | 动作 |
+|---|---|---|---|
+| L1 | `thincoder-core/prompts/discipline-engineering.md` `:35` 后 / `:37` 前 | 插入逐字块 R1（三空格缩进段落；前后各一空行） | 插入（+2 行 / +662 字符 + 2 换行） |
+| L2 | `thincoder-core/prompts/discipline-engineering.md:37` | 整行 → 逐字块 R2 | 替换（±0 行 / +202 字符） |
+| L3 | `thincoder-core/prompts/common.md:16` 之后（成本过滤句的 `**Why**` 行之后） | 新增逐字块 R3 一行；`:15` 与 `:16` 的 `**Why**` 保持相邻、不拆 | 插入（+1 行 / +647 字符 + 1 换行） |
+| L4 | `persona-engineering.md:36-42` · `:40` · `:41` · `:54-59` | 零改（对照见下表） | — |
+| L5 | `discipline-engineering.md:30` · `:31-35` · `:38` · `:50-58` | 零改 | — |
+| L6 | `thincoder-core/tool-docs/**` · 产品代码 · 需求档 · 批次档六段结构 | 零改 | — |
+| L7 | 本档 §6.36 L3 的条文本锚（`:1464-1465`） | §6.36 登记的锚 = 前段 + 后段逐字；前段（`(user confirmed, or answers no longer change the requirements)`）由 R2 删除 ⇒ 锚退役、只剩尾句 `are the marker that requirements were accepted.`；§6.36 A1 的位置判据本就以该尾句为界，落地后按 A8 复跑；`:37` 坐标在 L1 后下移两行（表注 2） | 回指（本节不落笔；前段引文不再作为定位依据） |
+
+**对照表 · 与既有提示词条款逐句对照（结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `discipline:30` `discuss what's wanted until clear … confirm, then move on` | 需求步的顺序：讨论 → 落档 → 确认 → 前进 | 讨论怎么进行、什么时候算问过 | 同向：`:30` 要「讨论到清楚」，本条把「清楚」的操作形写出来；顺序与落点不变 |
+| `discipline:31-35` 五要素 | 需求档的组织形态：五个要素 | 需求形成过程：问哪四类 | 对象不同（文档形态 vs 讨论过程）；R1 用段落不用 bullet，列表仍是五条 |
+| `discipline:38` `A decision lands in the round it is made` | 落盘时机：决定做出当轮写盘 | 放行条件：用户确认才进设计 | 两件事：`:38` 管「写不写、什么时候写」，R2 管「能不能进下一步」。未确认期间决定照写，设计不开 |
+| `discipline:50-58` 轻通道 | 细节 / 缺陷 / 现场问题的旁路 | 新功能 / 新业务规则必须走全链并先问 | 轻通道准入面零改；`:58` 一句边界已写「新机制 ∥ 大改 ⇒ 全链」，本条四类问题落在全链那一侧 |
+| `common:14` 先查档 | 问之前先查文档 | 分界：哪一类问题文档答不了 | `:14` 保留原样；R3 补的是「文档答不了的那一类是什么」 |
+| `common:15` 成本过滤 | 只问「答了会改变下一步」的问题 | 意图 / 规则 / 取舍永远落在过滤放行侧 | 不是豁免：R3 说明该类「文档答不了」（条件一成立）且「答案决定做什么」（条件二成立）⇒ 过滤本身放行。过滤面零改 |
+| `common:16-20` why ∥ 两边都适用 ∥ checked-evidence line | 过滤的理由与提交形态 | 分界只在「哪些问题属于用户的话」 | 零改：父代理 ∥ 子代理的 checked-evidence line 照旧要带 |
+| `common` 上行通道节 `Ask only when both hold` | 子代理 → 父代理的提问过滤 | 主会话向用户问意图 | 适用对象不同；子代理问意图仍满足该节两条件（材料里没有、答案改变做法） |
+| `persona:36-39` 在飞提问（给默认值 · 不阻塞） | 执行期：长任务中途用默认值前进 | 需求形成期：无默认值可代规则，必须问到答案 | R3 末句显式分面：形成期问、执行期默认值推进；`:37` 的触发条件（mid-run + 有工作默认值）在形成期不成立 |
+| `persona:40` `Defaults stay in bounds` | 默认值只能从已确认范围取 | 形成期的答案 = 新的已确认范围 | 同源：先问出来、用户答了，默认值才有取值域；未确认就没有默认可给 |
+| `persona:41` `Channel boundary`（硬门用 `question` ∥ 停下上报） | 硬问题走阻塞通道 | 需求四类问题属硬门 | 同向：规则 / 边界 / 验收口径正是该句的「a ruling on a criterion」，通道指引不变 |
+| `persona:42` `Discipline`（一问一答 · 重问已授权范围耗注意力 · 默认值领先） | 执行期在飞提问的提问纪律 | 需求形成期「已陈述即事实、不重问」的注意力理由 | 同一理由（重问耗用户注意力）两层各一条关键锚点：`persona:42` 管已授权范围，R3 管已陈述事实；common 层读者含两模式 + 全部子代理，persona 层读者只有工程侧 ⇒ 各层须独立可读（D-PS41），两处保留，D2 不判违规 |
+| `persona:54-59` 推进与叫停 ∥ `:8` 发起权 | 谁发起、何时停 | 需求没确认就不进设计 | 同向：本条把「进设计」的前置写明；发起权仍在用户 |
+| `persona:14` 四停相（§6.38） | 已跑的批为什么停 | 需求未确认不进设计 | 两轴：四停相管「跑起来的批」，R2 管「还没放行的需求」 |
+
+**对照表 · 与既有设计节（§6.34 ∥ §6.38 ∥ §6.39）**：
+
+| 节 | 它管什么 | 与本节的关系 |
+|---|---|---|
+| §6.34 批准即实施启动（FR32） | 评审通过后的批准 = 实施启动 | 本节在更前一步：需求确认在设计开始之前；批准门语义零改，两门各自独立 |
+| §6.38 整批令覆盖批准门（FR36） | 批内全链自动跑完 | 整批令覆盖评审 / 实施 / 收口那一侧；需求形成期的提问发生在批点火前，不因整批令被跳过——令的对象是该批范围，范围本身由需求确认定下 |
+| §6.39 派单纪律补硬（FR37） | 派单与 §2 任务书面 | 本节无派单面；§2 仍要写（本批 §2 = 本节的设计任务书） |
+
+**行为契约 · 用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 新功能进入 | 用户提出新功能 | 设计开始前至少一轮问四类；用户答后落需求档，原话确认 ⇒ 进设计 |
+| C2 | 正常 · 用户点选 | 呈「需求清单 + 待确认问题」，用户点选确认 | 视为明确确认（点选 = 原话等价） |
+| C3 | 边界 · 某类用户答不了 | 用户说「优先级你们定」 | 该类记为「用户已授权自定」并写明依据，其余类照问、不因此跳过整轮；「记为授权自定」= 对 R1 的解读（「你们定」就是用户对该类给出的答案），不是 R1 之外的独立要求；依据按 `:38` 当轮落盘 |
+| C4 | 边界 · 文档已答事实 | 代码 / 需求档已有的事实 | 直接查，不占提问名额（R3：事实走文档侧） |
+| C5 | 错误防御 · 自判放行 | agent 认为「够清楚了」直接进设计 | 判为违规：本步产出应为待确认问题清单；判据 = 用户明确确认 |
+| C6 | 错误防御 · 问过但没记 | 用户答了，需求档未更新 | 按 `:38` 当轮落盘，再请用户确认清单 |
+| C7 | 错误防御 · 借轻通道跳过 | 新业务规则被当成 detail 走轻通道 | 按 `:58` 一句边界判回全链；轻通道准入面零改 |
+| C8 | 边界 · 执行期冒出新问题 | 实施中途出现一条规则问题 | 走 `persona:36-42` 在飞提问 ∥ 硬门；本节只界定形成期，不改执行期通道 |
+
+**受影响文件（现行 = 本席 `node` 实读 · 2026-10-20）**：
+
+| 文件 | 现行 | Δ | 说明 |
+|---|---|---|---|
+| `thincoder-core/prompts/discipline-engineering.md` | 201 行 / 37,337 字符 | +2 行 / +866 字符 | L1 + L2；改后 203 行 / 38,203 字符 |
+| `thincoder-core/prompts/common.md` | 273 行 / 43,080 字符 | +1 行 / +648 字符 | L3；改后 274 行 / 43,728 字符 |
+| `thincoder-core/prompts/persona-engineering.md` | 244 行 / 65,134 字符 | ±0 | L4 = 零改 |
+| 三档合计 | 718 行 / 145,551 字符 | +3 行 / +1,514 字符 | 改后 147,065（+1.04%）——合计 = 附带读数；体量判据 = A6 逐档上限 |
+| `docs/core/design/PROMPT-SYSTEM.md` | 2,096 行 / 171,522 字符（本节写入前实读） | 本节新增 | 本笔 = 设计轮；实施轮只落 L1–L3 |
+| `thincoder-core/tool-docs/**` / 产品代码 / 需求档 / 批次档六段结构 | — | ±0 | 边界（见下） |
+
+表注 · 行数口径 = `node` 读全文按 `split("\n")` 切分后 `length − 1`；字符数 = `length`（含换行符）。R1 / R3 各携带新换行，已计入 Δ。
+表注 2 · 坐标位移：L1 在 `:35` 与 `:37` 之间插入两行 ⇒ `discipline-engineering.md` 的 `:37` 起各下移两位（R2 的落笔位以 R2 前的收束段原文为锚，不按行号）；本档其它节对 `discipline-engineering.md:37` 的坐标引用随之后移，实施轮在批次档 §5 记一行「`:37` 随 R1 插入位移两行，按需复读」，不留常驻锁。L3 在 `common.md:16` 之后插入一行 ⇒ 该档 `:17` 起各下移一位（`:14`–`:16` 不动）；表内 `common:16-20` 等坐标 = 落地前读数。
+
+测试覆盖：零单元测试档（纯文本改动、无分支）；机判 = 既有 `scripts/prompt-refs-check.mjs` + 交付门 `doc_check`，不新增常驻断言。
+
+**验收（A1–A9 · 回指 §13.16 四条验收 · 一次性比对）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | §13.16 ①：机制句在场（一轮 + 四类 + 读码只填事实） | `discipline-engineering.md` 内 `at least one round of questions to the user and answers back` · `business rules · boundaries · priorities · acceptance criteria` · `cannot stand in for the user stating it` 各 1 次 |
+| A2 | §13.16 ②：判据 = 用户明确确认 + 逃生口清零 | `the user's explicit confirmation of the requirement set` · `the open-questions list, not a design` 各 1 次；提示词面 `thincoder-core/prompts/**` 扫 `answers no longer change the requirements` ⇒ 0（本档 F2 引文、需求档 §13.16、批次档 §1 属分析面，不计——同 §6.38 A2 判据域） |
+| A3 | §13.16 ③：`common.md` 分界句在场 | `common.md` 内 `A doc answers facts; intent gets asked` · `are the user's to state and must be asked` 各 1 次 |
+| A4 | 面分界句在场（需求面 vs 执行面） | `common.md` 内 `The line holds while the requirement is being formed` · `the in-flight ask still steers with a workable default` 各 1 次 |
+| A5 | 携 why、无禁令腔 | 新增文本（R1 + R2 + R3）扫 `never\|do not\|don't\|must not\|may not\|forbidden` ⇒ 0（本席预扫 = 0）；why 子句各 1 次：`a fact can support a rule`（R1）· `the work built on it gets redone`（R3） |
+| A6 | §13.16 ③：提示词面零文档引用 · 逐档净增 ≤ +3%（D-PS42 ③） | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0；逐档判：`discipline-engineering.md` ≤ 38,457（37,337 × 1.03；预计 38,203）· `common.md` ≤ 44,372（43,080 × 1.03；预计 43,728）· `persona-engineering.md` ±0（65,134）；三档合计 147,065 ≤ 149,917 只作附带读数 |
+| A7 | 同档自洽（五要素计数 · 相邻句零改 · 按引文判） | `:30` / `:31-35` / `:38` / `common.md:14` = 改前坐标、只作读数；按引文判：`discipline-engineering.md` 内 `discuss what's wanted until clear, land it in the requirements doc, confirm, then move on` · `organized by **five elements**` · `A decision lands in the round it is made` 各 1 次、五要素子 bullet 仍 5 条（`:31-35`；步骤 1 另有一条既有决策子 bullet，不计入）；`common.md` 内 `Before you ask anything, look for the answer in the docs` 1 次 |
+| A8 | §6.36 位置判据复跑（条文本锚已退役，只剩尾句界） | `discipline-engineering.md` 内 `are the marker that requirements were accepted.` 1 次，且 `A decision lands in the round it is made` 所在行在其后、`2. **Design**` 行亦在其后（§6.36 A1 位置判据重跑绿；前段引文不参与判定——见 L7） |
+| A9 | 对照结论记入批次档 | 实施轮在 §5 记一行对照结论（§6.40 对照表 = 零矛盾，引 §6.40）；收口轮核其在场 |
+
+**边界（本批不做）**：不改 `question` 工具语义 · 不改 persona 的在飞提问 / 默认值 / 四停相 / 发起权 · 不改评审 ∥ 实施面 · 不改数据前提面（`#1722` 另议）· 普通侧专属档零改（`discipline-normal.md` / `persona-normal.md`），公共层句经 `common.md` 照达普通侧（R3 落点即公共层；同 §6.14 限定形）· 不新增机械门 · `thincoder-core/prompts/**` 本设计轮零笔 · 需求档零笔 · 产品代码零触。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | R1 用段落（非 bullet），落在五要素列表与收束段之间 | 五要素是需求档的组织形态，R1 是讨论过程；加成第 6 个 bullet 会让「five elements」与列表条数对不上（D3）。段落形态保持列表五条，读序 = 要素 → 怎么问 → 何时算完 |
+| K2 | R2 整行替换、删除逃生口，不保留旧措辞 | 旧句与新判据方向相反（自判 ↔ 用户明说）；同行并存 = 读者二选一，规范面按 D8 删除 |
+| K3 | 判定「问过了」= 四类覆盖面，不设问题条数 | 需求给的判据就是「四类里能答的都答过」；固定配额会在某一类问满就收工，其余类永远不问 |
+| K4 | R3 不写「成本过滤不适用」，写「这一类永远落在过滤放行侧」 | 直接豁免会与 `common:15` 的 `Ask only when…` 字面冲突，读者得二选一；按条件归类的写法两句话都成立（文档答不了 + 答案决定做什么），过滤本体零改 |
+| K5 | 面分界句落 `common.md`（R3 末句），不落 persona | 界要在读者同时看到两条规则时存在；common 恒第二位注入 = 全角色两模式共读。persona 的在飞提问节读者只有主 agent，界写在需求面才两侧都读到 |
+| K6 | `persona-engineering.md` 零改 | 执行面规则由需求点名「不改」；R3 末句已把分界给到读者，persona 再加一句 = D2 第二份活描述。`:42` 既有句与 R3 的注意力子句 = 关键锚点重复，处置见对照表 `persona:42` 行（声明保留，不新增句） |
+
+**先例 ∥ 偏离**：先例 = 本档 §6.38（逐字英文文本 + 落点表 + 对照表 + 用例表 + 验收）∥ §6.39（插入行 + 整行替换、相邻行零改）。
+**对齐** = 同一形制；新增文本携 why；落点 = 既有节内增行 ∥ 整行替换；机判沿用既有脚本与交付门。
+**偏离** = ① 本节一次跨两档（`discipline-engineering.md` + `common.md`），§6.38 全落单档；② 新增一段面分界（R3 末句）——需求面与执行面此前没有共读句，两条规则各自成立却会互相压。
+③ R1 的落点位移——需求把机制句的落点写成 `discipline-engineering.md:30`，本节落 `:35` 与 `:37` 之间；理由 = K1 的读序（要素 → 怎么问 → 何时算完）：`:30` 是步骤 1 的编号行，插在其后会把领起行与五条子 bullet 拆开，且 `:30` 自身逐字零改；A1 是子串判，两个落点都过，位移在此声明。
+
+**勘察证据行**：已读 `discipline-engineering.md:28-45`（基本流程 · 五要素 · `:37` 判据 ∥ `:38` 决策落盘）∥ `:50-58`（轻通道 · 一句边界）。
+已读 `common.md:13-20`（Check the docs before you ask 全段）∥ `:68-96`（上行通道 · `Ask only when both hold`）· `persona-engineering.md:5-15`（发起权边界 + 整批令）∥ `:35-42`（在飞提问 · `:40` 默认值 · `:41` 通道界）∥ `:54-59`（推进与叫停）；
+本档 §6.34（`:1208` 起）∥ §6.36（`:1409` 起，其 L3 锚引 `discipline-engineering.md:37`）∥ §6.38 ∥ §6.39（形制）· 需求档 §13.16（`:809-822`）· 本批批次档 §1。
+`node scripts/prompt-refs-check.mjs` 零参运行读数 = `汇总：提示词面 69 档 · 代码面 463 档 · 命中 0`；`PROJECT-MANIFEST.json` `index.publicRepos` 实读 = `[]` ⇒ 工作目录内无独立公共源文档仓——已查，无相关。
+全仓扫 `answers no longer change the requirements`：命中 = 提示词面 `discipline-engineering.md:37`（实施轮 L2 删除）· 本档 `:1464`（§6.36 块 C 定位说明引旧收束段原文——分析面，保留）· 需求档 §13.16（权威处，零改）· 本批批次档 §1 · `.thincoder/tmp` 两份基线副本（非提示词面）。
+提示词面 `thincoder-core/prompts/**` 扫三条目标子串（`at least one round of questions to the user` · `the user's explicit confirmation of the requirement set` · `A doc answers facts`）：各 0（本节写入前）。
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
 
 **上抛项**：无。
 

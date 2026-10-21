@@ -202,8 +202,9 @@ export async function enterSuspensionTurn(panel, { turnSlot, distillSlot, histor
         if (visionAbort?.signal.aborted) panel._abortRequested = true
       }
       // ① 队内容随会话入口移交（splice 消费——driver 消费清队，避免二次装载）
+      // C-B2-6 ⑦（queue-band 批 2026-10-20）：推送先于 splice——快照读迁移前队列（行 ③「带面原样」；splice 后推恒空）。
+      if (busyQueued.length > 0) pushBusyQueued(panel)
       const seeded = busyQueued.length > 0 ? busyQueued.splice(0) : null
-      if (seeded) pushBusyQueued(panel) // C-B2-6 细则①⑦：快照重推（实况——两载体合计；载体迁移零清标）
       await suspensionSession(panel, {
         turnSlot, distillSlot,
         // lines 双键形：driver 用 lines.history/lines.fullHistory；会话内回合（runPanelChat

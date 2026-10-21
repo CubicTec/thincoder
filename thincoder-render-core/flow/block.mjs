@@ -88,7 +88,7 @@ export function appendAdvisorChunk(block, kind, text, sub, meta) {
 export function buildUserMessage(text, timestamp, idx) {
   const el = document.createElement("div")
   el.className = "message user"
-  el.dataset.raw = String(text) // 待发送标记面锚定源（`queued-mark.js`——快照按原文匹配气泡）
+  el.dataset.raw = String(text) // 待发送标记 ∕ 带面锚定源（原文逐字——快照按原文匹配）
   const ts = timestamp ? fmtTime(new Date(timestamp)) : ""
   if (timestamp) el.dataset.ts = String(timestamp) // 清标重建标签行用（无 ts 不显示纪律保持）
   if (idx !== undefined) el.dataset.idx = String(idx)

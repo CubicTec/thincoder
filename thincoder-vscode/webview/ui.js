@@ -110,7 +110,7 @@ export function addUser(ctx, text, timestamp, idx) {
   ctx.messagesEl.appendChild(el)
   trimOldMessages(ctx)
   scrollDown(ctx)
-  return el // 标记面（`queued-mark.js`）需持有气泡引用
+  return el // 调用方按需持有气泡引用（核 composer 忙态 `markPending` 原语；VSC 忙态零本地气泡——带面在 `pending-band.js`）
 }
 
 /** Restored assistant FRAME container（核 `buildAssistantRestore`——live-DOM parity 同形）。 */

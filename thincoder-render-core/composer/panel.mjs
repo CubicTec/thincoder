@@ -323,7 +323,7 @@ export function createComposerPanel(deps = {}) {
     if (slashCommands !== null && handleSlash(text)) return
     // C-B2-6（busy-injection 批 2026-09-21 · busy-extend 批 2026-09-22 扩面 · queue-visible 批 2026-09-24
     // 多槽 + 待发送标记 · `WEBVIEW-INPUT.md` §1）：busy 提交**一律排队**——判据 = `running`（`_suspended`
-    // 不再分流：挂起会话内与普通回合同判据）⇒ 本地气泡先行（送达时即该消息 user 回声面）+ 出泡即标记
+    // 不再分流：挂起会话内与普通回合同判据）⇒ 端侧 hooks.onUserEcho 自落（VSC 忙态零泡——待发送带；桌面按端面）+ 出泡即标记
     // （「待发送」态）+ `queuedUserMessage` 上行（host 队列两载体，容量 8；不 setLoading 不清面板
     // ——回合仍跑在既有流上）；回合态簿记（`_turnStart`）归下一回合起点——零触碰。
     if (busyState() === "running") {

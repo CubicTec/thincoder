@@ -33,8 +33,8 @@ import { clearStatusText, handleStatusText, showCompressStatus, showDigestStatus
 import { showAtDropdown } from "./autocomplete.js"
 // #875（协议 §3.2 行 23）：视图偏好三键应用面（`uiPrefs` 消息——autoFollow ∥ activityMaxHeight ∥ activityTailLines）
 import { applyUiPrefs } from "./ui-prefs.js"
-// C-B2-6 细则⑦（queue-visible 批 2026-09-24）：排队「待发送」标记面（逐条标记 / 消费即清 / 多批合泡）
-import { applyBusyQueued } from "./queued-mark.js"
+// C-B2-6 细则⑦（queue-band 批 2026-10-20）：待发送带（输入区上沿派生面——带面重绘 / 消费出块）
+import { applyBusyQueued, clearPendingBand } from "./pending-band.js"
 // #1053（协议 §3.2 行 25）：密钥行保存受理回执消费位（`providerKeySaved` → 恢复静态行 + 闪徽标）
 import { onProviderKeySaved } from "./settings-providers.js"
 // B1（团队卡——B1 批）：态推送 + 两回执消费位（`teamStatus` / `teamLoginResult` / `teamLogoutResult`
@@ -109,8 +109,8 @@ export function initMessageLoop(deps) {
       // 无工作区守卫（2026-09-21 批 · `PROJECT-SWITCHER.md` §4.1）：host 守卫态镜像 ⇒
       // 占位符第三态（拒发出口守卫单源 = send.js）
       case "workspaceGuard":   S._workspaceRequired = m.active === true; applyBusyLock(); break
-      // C-B2-6 细则①⑦（busy-injection fix 轮 2026-09-22 · queue-visible 批 2026-09-24）：host 队列快照
-      // （`busyQueued { pending, count, items, text, merged }`）⇒ 镜像（守卫判据源）+「待发送」气泡面
+      // C-B2-6 细则①⑦（queue-band 批 2026-10-20）：host 队列快照（`busyQueued { pending, count, items, merged? }`）
+      // ⇒ 镜像（守卫判据源）+ 待发送带重绘 + `merged` 消费出块（流内恰一枚）
       case "busyQueued":       applyBusyQueued(ctx, S, m); break
       case "complete":         clearStatusText(); finish(); break
       case "aborted":          clearStatusText(); finish(true); break
@@ -130,6 +130,7 @@ export function initMessageLoop(deps) {
         ctx.currentBubble = null; ctx.currentBlock = null; ctx.currentTools = []; ctx.currentRaw = ""; ctx.currentReasoning = null; ctx.currentReasoningRaw = ""
         S._digestBoundary = null; S._statusText = null; S._turnFrame = null; resetActivity()
         clearPanels() // #642：会话切换 ∕ 载入清面板态（重置点归位——回合起点不再清；跨会话零残留）
+        clearPendingBand() // C-B2-6 ⑦：带面复位（空带——随握手 / 下一次快照重建）
         ctx._hasOlder = false
         ctx._nextIdx = 0
         S._loadingOlder = false

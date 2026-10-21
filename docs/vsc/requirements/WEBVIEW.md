@@ -39,6 +39,10 @@ webview 只做 UI 渲染与用户交互；agent 循环与工具执行在 extensi
 | F-W16 | **工具非零退出可见性（CLI 对位）**：`thincoder-core/tools/bash.mjs:224-226` 失败结果非 `Error:` 前缀 ⇒ 判据单源 = `thincoder-render-core/lib.mjs:113` `isToolFailure`（活卡 `thincoder-render-core/flow/tool-card.mjs:106` ∕ 恢复卡 `thincoder-render-core/flow/tool-card-restore.mjs:29` 同读）；摘要 = `thincoder-render-core/tool-summary.mjs:31-85`（`BASH_MARKER` `:32`）；**CLI 对位**（`thincoder-cli/src/tui/tool-summaries.mjs:60-68`）把退出状态拼进摘要；**spawn 失败（无退出码）同族入册**；产者两处 = 核 `thincoder-core/tools/bash.mjs:187-191` · 宿主 `thincoder-vscode/src/tools/shell.mjs:242-281` | 非零退出 ⇒ 可见面有失败信号（卡色 / 展开 / 摘要含退出码——至少一）；与 CLI 口径一致或按端差登记（二选一） | 不改核 `thincoder-core/agent/dispatch-run.mjs:85` 的 `ok:true` 上游语义（设计意图 I-8）；卡色判据可另定（§16） |
 | F-W20 | **首启板增「登录团队服务器」入口（三端同批）**：首启板（`webview/onboarding.js`）提供两路——① 本地配置 provider（现路径；`addProvider` 交棒位 `:63`）；② **登录团队服务器**（地址 ∥ 账号 ∥ 密码 ⇒ 登录成即用——模型面由 server 派生，免自配；能力单源 = `docs/server/requirements/PROJECT.md` AC-31） | 首启板含该选项；登录成 ⇒ 直接可用（零 provider 手配）；失败 ⇒ 就地出原因（四句逐字沿用 B1）并可改选本地路 | 不改 `addProvider` 交棒语义 ∥ 不改设置面团队卡（B1 已落）；不做免密 / SSO |
 | F-W21 | **登录态常显 + 直达登/退（三端同批）**：本端主界面常显团队登录态（**已登录** ⇒ 成员 + 服务器；落点候选 = 面板头 ∥ 状态栏 item（台账 item 为同族先例）——**设计轮定**），**且登/退 = 主界面直达**（用户裁：不得要求先钻设置；形随设计轮——状态位点击/命令面板项两候选） | 已登录 ⇒ 常显面可见成员与服务器；未登录 ⇒ 零注入或直达登入口（设计轮定）；**登/退不经设置面完成** | 设置面第 6 卡降为**管理面**（label ∥ 详情；**轮换 = 已落**——管理面就地动作，服务端 `POST /api/client/rotate`；零客户端专用页）；不做团队面板（状态 = 本行）；与设置面卡不重复呈现 |
+| F-W22 | **忙态排队面 = 输入区上方待发送带（非流内 · 对齐桌面端）**：忙态提交的排队项**不得**在会话流内先出气泡；队列可见面 = 输入区上沿一条待发送带（标签行单条 ∥ 多条；逐条原文 ≤3 行 + 超限尾标记；数据源 = 宿主 `busyQueued` 快照 `items` / `count`）；**消费前流内零块**——消费时刻（步边界 / 回合尾 / 卸载直发 / 窗内消费）= 带项退场 + 流内**恰一枚** user 块（单条 = 原文；多条 = 合并文本）。对位 = `docs/desktop/design/COMPOSER.md` KD-31 ∥ KD-40 ②（用户 2026-10-20 12:03 裁定「这是缺陷，要对齐桌面端」）。 | ① 忙态提交后 DOM：流内 user 气泡数不变（`data-blocks` 零新增）；待发送带条数 = 队列条数。② 消费后：带项归零 + 流内恰新增一枚 user 块（合并批 = 合并文本）。③ 带面贴输入区上沿（非流内、不进 `data-blocks`）；短会话不得浮在会话区上方。④ 满队（第 9 条）行为零变（不出泡 + toast + 文本保留）。⑤ 单条 ∕ 多条两形 + 逐条 ≤3 行 + 尾标记与桌面端同形。 | 不改队列机制本体（容量 8 / 合并常量 / 五个消费点 / 满队拒收 / 步边界 pickup）· 不改附件留队语义 · 不改 CLI 面 · 桌面端零改 · 不改会话流其余形态。 |
+| F-W23 | **子代理块头状态词携带干活者身份（think 支 · 共用核件）**：状态词的 think 支须带当前干活子代理的身份前缀——**嵌套子代理**（relay `sub` 前缀在场，如 `eng-coder#3/advisor#1/…`）⇒ `<sub>/思考中…`（如 `advisor#1/思考中…`）；**顶层子代理** ⇒ `思考中…`（角色已在括号段 `[▶ role#id …]`，不重复）。工具行支已带 `sub` 前缀（现状零改），本点只收 think 支。用户 2026-10-20 16:32 裁定「我在意的就是第一条，think 态把子代理名称吃掉」。 | ① 嵌套 think chunk ⇒ 状态词 = `<sub>/思考中…`（子串机判，如 `advisor#1/思考中…`）；② 顶层 think chunk ⇒ 恰为 `思考中…`（零前缀）；③ 结构化工具行支零变（`<sub>/<tool> — <cmd ≤60>`）；④ 桌面 + VSC 同源生效（共用 `thincoder-render-core/subblocks/activity-view.mjs`），CLI 零改。 | 不改块头括号段 · 不改正文默认展开（用户明示不重要）· 不改 CLI · 不改状态词固定三态（审批 ∥ 待消化 ∥ 排队）的优先级 · 不改工具行支形态。 |
+
+
 
 **异步任务可见性（VSC 面板 live 块出生可靠性 · 编号承旧档）**
 
@@ -134,6 +138,8 @@ webview 只做 UI 渲染与用户交互；agent 循环与工具执行在 extensi
 | TTO FR4（完整输出落盘） | `TOOL-OUTPUT-LIMITS（VSC 侧·需求）`（本档不重述——D2）；呈现面 = 卡体预览 | 无端差（同机制——本端已自持对位档） |
 | TTO NFR1（区块渲染性能） | N-W3 | 等价（增量路径） |
 | TTO NFR2（单一输出入口） | 消息族 `toolCall` / `toolOutput` / `toolResult`（`thincoder-vscode/webview/chat-messages.js:67-78`） | 接口形态端差：宿主回调 vs postMessage 消息族——**实证例外（宿主证据）**：接口形态——宿主回调 ∥ postMessage 消息族 |
+| **本端 F-W23**（子代理块头状态区 think 支） | 对位 = CLI 状态区（`thincoder-cli/src/tui/subagent-panel.mjs:105-110` = `currentTool` + `command≤60`）∥ CLI 工具行前缀（`thincoder-cli/src/tui/subagent-blocks.mjs:341` 的 `${path.label}/${path.rest}`） | 工具行前缀 = **等价**（`<sub>/<tool>` 逐字同构）；**think 覆盖 = 实证例外（行为证据）**：本端 think 到达即改显 `<sub>/思考中…`，CLI 停在上一工具名（think / text 不碰 `currentTool`——`subagent-blocks.mjs:308` ∥ `:323`；兜底词 = 裸 `thinking...`，`subagent-panel.mjs:106`）——凭据 = 状态区答「它现在在做什么」+ 身份由 `<sub>/` 前缀留住 + 用户 2026-10-20 16:32 裁定「think 态把子代理名称吃掉」；机制单源 = `design/WEBVIEW.md` §5.2（D-W42 ∥ D-W43） |
+
 
 ## 5. 迁移期状态登记（须随批收口）
 

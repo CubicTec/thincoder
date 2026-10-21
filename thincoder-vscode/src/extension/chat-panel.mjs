@@ -299,9 +299,12 @@ export class ChatPanel {
     // 单一判据）一律队列受理（容量 8）——挂起会内 busy 拒收守卫随本批撤销（同面受理：回显先决 + 下方
     // `routeUserTurn` 两载体分流——会话在飞入会话队列 / 无会话入 `_busyQueued`；C-B2-6 细则③）。
     if (this._panel) {
-      // Echo FIRST — the quick-input command renders its own user bubble（排队气泡面同款）；
-      // F（SESSION-RESTORE-PARITY）：echo 补真实时间戳——气泡时间 = 发出时刻（非回退"现在"）。
-      this._panel.webview.postMessage({ type: "userMessage", text, timestamp: Date.now() })
+      // 回显只走真回合（C-B2-6 ③⑦ ∕ `WEBVIEW-PROTOCOL.md` §4.1）：忙态（`turnBusy()` = running ∨ susp）
+      // ⇒ 零 `userMessage` post——排队面 = 待发送带（快照驱动），消费时刻出块；idle 直发保留回显
+      // （F SESSION-RESTORE-PARITY：echo 补真实时间戳——气泡时间 = 发出时刻，非回退"现在"）。
+      if (!this.turnBusy()) {
+        this._panel.webview.postMessage({ type: "userMessage", text, timestamp: Date.now() })
+      }
       // A1（SESSION-FLOW-A F-A1——修 R6 残留——sendMessage 曾是唯一绕过 routeUserTurn 的
       // 入口——回合中 Ask ThinCoder/发送命令直呼 _chat 杀当前回合）：命令直发并入
       // userMessage/retry 的单一入口——busy 单槽受理（C-B2-6；susp 两态 D-S5 分流不变）；idle 直发。

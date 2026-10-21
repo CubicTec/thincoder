@@ -101,7 +101,9 @@ composerHooks.onTurnStart = () => {
   S._lastOutputAt = S._turnStart // 停滞轻显形：回合起刻 = 静默初始锚（WEBVIEW.md §4.7——`_turnStart` 邻位同置）
   ctx.hadToolResult = false
 }
-composerHooks.onUserEcho = (text, ts) => addUser(ctx, text, ts) // `send`——本地气泡（返回元素供待发送标记）
+// `send`——忙态（running ∨ susp）零本地气泡（可见面 = 待发送带；消费时刻由 `busyQueued.merged` 出块）；
+// idle 直发 = 本地气泡（零回归）。
+composerHooks.onUserEcho = (text, ts) => (S._turnState === "idle" ? addUser(ctx, text, ts) : null)
 composerHooks.onWelcomeDismiss = () => { // `send`
   const w = ctx.messagesEl.querySelector(".welcome")
   if (w) w.remove()

@@ -641,7 +641,7 @@ EN 档**不在行宽机检域**（`scanDirs = ["docs"]`）——新行 406 字�
 **落点（唯一副本 = `thincoder-core/prompts/`——四处）**：① `discipline-engineering.md` 设计步 ∥ ② `persona-eng-designer.md` 8 项 item 1 ∥ ③ `persona-engineering.md` 派发纪律 ∥ ④ `advisor-design.md` 评审标准第 10 条；逐字文本 = 设计围栏块（一次性材料不混入本档——D2）。
 **落笔安排**：**EN 代码 = 实施轮 coder 落笔**（依据 = 本节设计）。
 
-**计数连带（D3——列明处）**：① 设计评审标准条目数 **10**（两档——「第 10 条」）；② 设计档 8 项计数不变（item 1 就地扩）；③ task book 六字段计数不变（②独立行）。
+**计数连带（D3——列明处）**：① 设计评审标准条目数 **11**（两档——「第 10 条」∥「第 11 条」）；② 设计档 8 项计数不变（item 1 就地扩）；③ task book 六字段计数不变（②独立行）。
 
 **机检**：`scripts/prompt-refs-check.mjs` 复跑 = 0 命中（新文本零文档引用——读数入一次性记录面）；提示词档不在行宽机检域（披露不行使——同 §6.19 记法）；**不新增断言**（内容在场 = 一次性比对——落地档 ↔ 设计围栏块，承 §6.1「批次收尾核对」）。
 
@@ -2158,6 +2158,192 @@ R3 — `common.md:16` 之后新增一行（`**Why**: …` 行之后；`:15` 的�
 **UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
 
 **上抛项**：无。
+
+### 6.41 落地前先答三问：现成的名字 ∥ 组件 ∥ 端点（重造轮子防御 · 提示词面显式化 · FR39）
+
+**来源**：需求权威 = `ENGINEERING-MODE-V2.md` §13.17（FR39，六条，`:826-843`）；台账 `#1724`；结构诊断五行 = 本批批次档 §1（`:17-21`）。三次实例（JSON 行内展开 ∥ 筛选控件 ∥ 自造名「案字段」「正文」）全走轻通道、**不过设计档** ⇒ 规则必须挂到「笔」上（需求第 4 条），只加「设计前」对三例全部无效。
+
+**要修的那一处（实读 · 2026-10-21 本席）**：
+
+| # | 坐标 | 现文 | 缺的那一半 |
+|---|---|---|---|
+| F1 | `discipline-engineering.md:42` | `Closest-precedent survey … survey how **similar / same-kind features currently do it** … an intended deviation ⇒ an **explicit rationale**` | 「相似」即可交差：勘察可做、名字不必答出；「偏离 + 理由」是合法通道（F-W23 偏离理由逐字「F-W23 ①/② 逐字指定」） |
+| F2 | `persona-engineering.md:107-111` | 轻通道三例 + 两种披露句式 | 笔前无「现成件」问题；三例全是小改 ⇒ 设计前规则对它们无效 |
+| F3 | `advisor-design.md:23` | 第 9 条 Closest-precedent check：查「先例行在场 + 偏离理由显式」 | 只查「有没有写」，不查「现成件为什么没用」——存在门缺席 |
+| F4 | `discipline-engineering.md:116-117` | `Naming discipline`（名字要携定义）· `One word per thing`（一名一物：`doc word = UI word = conversation word, 1:1`） | UI 标签 / 字段名 / 按钮文字没有挂靠面：`:117` 已把 UI word 纳入一对一，却没有「先挂靠产品已载概念」的动作 |
+| F5 | 全部门 | 需求 ↔ 设计 ↔ 实现 ↔ 测试逐层自洽 | 无一道问「是不是已经存在」（批次档 §1 行 1；F-W23 五道门零拦截） |
+| F6 | `persona-engineering.md:104` | 收口清账条：收口扫台账、每条给处置 | 收口不读该轮 §1 的笔行——答案行缺了没有地方现形 |
+
+坐标注：需求 §13.17 与派单书引 `discipline-engineering.md:40`；现盘实读 = `:42`——FR38 的 R1 在 `:35` 后插入两行所致（§6.40 L1 已预告位移）。本条按现盘坐标落笔，`:40` 作历史引文不参与定位。
+
+**机制（七件 = 需求六条 + 验收 ② 的读者面）**：
+
+1. **三问前置**（F1 · 需求 ①）：任何新落点（新名字 ∥ 新组件 ∥ 新端点 ∥ 新标签文字）动手前答——**哪里有**（代码坐标 ∥ 文档节）· **叫什么**（现成名字，逐字）· **谁在用**（调用方 ∥ 消费方 ∥ 先例批次）。答得上 ⇒ **用现成的**（名字照抄 ∥ 组件复用 ∥ 端点直连）；答不上 ⇒ 写 `none found: <查过哪些面>`。
+2. **答案落盘 · 三形**（需求 ②）：三形定死、落点定死——`existing: <坐标> · name: "<逐字>" · consumers: <谁>`（现成件在且可用）· `none found: <查过哪些面>`（查无）· `existing but unusable: <坐标> · name: "<逐字>" · failed on: <能力 ∥ 契约面的逐字失败>`（现成件在、找着了、不用，必须说清哪一面失败）。落点：设计档新机制节**每条落点一行**；批次档 §1 **每笔一行**（轻通道 / 直改也写）。中文记录面两字面：`已查无：` ∥ `现成不可用：`。
+3. **偏离收窄**（需求 ⑤ · F1 同句）：偏离仅在现成件**不可复用**时成立；理由须指名**能力 / 契约面的具体失败**；形态不同 / 更顺手 / 更好看 = 口味，不是理由。
+4. **笔前也答**（需求 ④ · F2）：轻通道 / 直改同样先答三问，答案进批档 §1 该笔行；轻通道准入本体零改。
+5. **评审存在性判据**（需求 ⑥ · F3）：新名字 / 组件 / 端点存在且设计未用、未说明为何不可用 ⇒ **🔴**；缺答案行本身仍 **🟡**（现状 = 缺先例行）。落点 = `advisor-design.md` 新增第 11 条（判据 = K1）；**作用域 = 设计所依据的需求集要求该答案行时**——普通模式的需求集无此要求 ⇒ 第 11 条不判（二择一理由见 K10）。
+6. **新名挂靠**（需求 ③ · F4）：UI 标签 / 字段名 / 按钮文字 = 产品**已载概念**的直译，文档写明对应；无对应 ⇒ 登记新名 + 说明取代谁 ∥ 扩展谁。落点 = `discipline-engineering.md:117` 同一 bullet 的续句（一名一物的执行形；K8）。
+7. **收口抽读**（验收 ② 的读者面 · F6）：父侧收口轮读该轮 §1 的笔行——**抽样 ≥2 行，不足 2 行全查**——逐行判三形在场。落点 = `persona-engineering.md:104` 之后的新 bullet（B2b）：「父侧收口轮」是运行期动作，规则只住中文设计档 = 运行时不触发（同本条对三次实例的诊断）。
+
+**唯一机检项 = 答案行在场性（判据形 · 非机械门）**（需求验收 ②）：
+
+- **谁在何时读**：① 设计评审（第 11 条）读设计档的每条落点行——**仅当设计所依据的需求集要求该行时**；② 父侧收口轮读批档 §1 的笔行——**抽样 ≥2 行，不足 2 行全查**（落点 = B2b，`persona-engineering.md:104` 后）。
+- **怎么判**：行内三形之一（`existing:` ∥ `none found:` ∥ `existing but unusable:`；中文记录面 `已查无：` ∥ `现成不可用：`）⇒ 已答；**缺行 = 「没查」**，不得读成「查无」。
+- **不做**：不新增脚本、不进 CI、不加批次档机判门；`scripts/prompt-refs-check.mjs` 与交付门 `doc_check` 照旧。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+B1 — `discipline-engineering.md:42` 整行替换：
+
+```text
+   - **Closest-precedent survey = three questions before any new landing** (any landing: design or direct pen): before any new name ∥ component ∥ endpoint ∥ label text, answer and write down — **where does this function live now** (a code coordinate ∥ a doc section) · **what is it called** (the existing name, verbatim) · **who uses it** (callers ∥ consumers). Three shapes: `existing: <coordinate> · name: "<verbatim>" · consumers: <who>` ⇒ **use the existing piece** (name copied verbatim, component reused, endpoint connected); `none found: <which surfaces were checked>` — only a checked absence earns a new build; a missing line = "not checked", not "checked, none found"; `existing but unusable: <coordinate> · name: "<verbatim>" · failed on: <the capability ∥ contract failure>`. In a design doc: one line per new landing in the new-mechanism section; a direct pen: one line in batch record §1 beside that pen. Survey how **similar / same-kind features currently do it** (implementation coordinates ∥ design sections ∥ precedent batches) — **align first** (the existing shape: component ∥ layout ∥ criteria ∥ wording); a deviation needs the existing piece **not reusable**, and its rationale names the **concrete failure on the capability ∥ contract face** — a different shape, a smoother fit or a nicer look is taste, not a rationale; **diverging for its own sake = a violation**.
+```
+
+B2 — 移到轻通道段末：`Closeout-chain segment map` 行之后 / `- **Round field**` 之前（现盘 `:123` 之前）新增顶层段落（无缩进 · 前后各一空行）；原 `:113` 处的缩进段落连同其前一行空行删去：
+
+```text
+**A pen answers the three questions before it moves** — where the function lives now (a coordinate ∥ a doc section) · what it is called (the existing name, verbatim) · who uses it — and the answer joins the pen's §1 entry in one of three shapes: `existing: <coordinate> · name: "<verbatim>" · consumers: <who>` (then reused) · `none found: <surfaces checked>` · `existing but unusable: <coordinate> · name: "<verbatim>" · failed on: <the capability ∥ contract failure>`. An answer on hand ⇒ the pen reuses the existing piece; a deviation names the concrete capability ∥ contract failure that left it unusable — a different shape, a smoother fit or a nicer look is taste, not a reason. A full-chain pen writes the same line in its design doc's new-mechanism section, one per landing.
+```
+
+B2b — `persona-engineering.md:104` 之后新增 bullet（空行分隔 · 与 104 同形）：
+
+```text
+- **Closeout samples the pen lines**: at each batch closeout, read at least two of the round's §1 pen lines — fewer than two ⇒ read them all — and check each carries a three-question answer (`existing:` ∥ `none found:` ∥ `existing but unusable:`, the Chinese record face `已查无：` ∥ `现成不可用：`); a missing line reads as "not checked", not as "checked, none found" — this sample is where that absence surfaces.
+```
+
+B3 — `advisor-design.md:24` 之后新增第 11 条（与 2–10 条同形：条目间无空行）：
+
+```text
+11. **Existing-piece check** — where the requirement set requires it: each new name ∥ component ∥ endpoint ∥ label text carries a three-question answer (where it lives · name, verbatim · who) in one of: `existing: …` · `none found: …` · `existing but unusable: …`. **An existing piece left unused with no reason it is unusable ⇒ 🔴**; a missing line stays 🟡.
+```
+
+B4 — `discipline-engineering.md:117` 整行替换（保留原句，尾部接续句）：
+
+```text
+- **One word per thing**: one thing keeps one name across every surface — doc word = UI word = conversation word, 1:1; a second name for the same thing is a defect. **A new name anchors to a concept the product already carries**: a UI label ∥ field name ∥ button text is that concept's direct translation, and the doc writes the mapping down; with no counterpart, the new name is registered together with what it replaces ∥ extends.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 动作 |
+|---|---|---|
+| L1 | `thincoder-core/prompts/discipline-engineering.md:42` | 整行 → B1（替换 · ±0 行） |
+| L2 | `thincoder-core/prompts/persona-engineering.md`：`Closeout-chain segment map` 行之后 / `- **Round field**` 之前 | 插入 B2（顶层段落 · 无缩进 · 空行 + 段落 + 空行）；旧址（原 `:113` 段落**连同前后空行整块删去**，恢复 HEAD 原形）⇒ 净行数不变（248 行） |
+| L2b | `thincoder-core/prompts/persona-engineering.md:104` 之后 / `:105` 之前 | 插入 B2b（bullet · 同行列表续条 · +1 行 / +405 字符） |
+| L3 | `thincoder-core/prompts/advisor-design.md:24` 之后 / `:25` 空行之前 | 插入 B3 一行（第 11 条 · 与 2–10 条同形：条目间无空行 · +1 行 / +360 字符） |
+| L4 | `thincoder-core/prompts/discipline-engineering.md:117` | 整行 → B4（替换 · ±0 行） |
+| L5 | `persona-eng-designer.md` · 轻通道准入三例 · `discipline-engineering.md:37/:39` · `common.md`（全档零笔）· 需求档 · 产品代码 · 批次档六段结构 | 零改 |
+| L6 | 本档 §6.26「计数连带」行（`:644`） | 设计评审标准条目数 `10` → `11`（本条设计轮笔 · 见 A5） |
+
+同档两处插入（L2 ∥ L2b · 同属 `persona-engineering.md`）按**内容锚**落位，行号只是当前读数：L2b 落 `- **Implementation-round role routing` 之前，L2 落 `**Start-up booking**` 之前。
+
+**对照表 · 与既有提示词条款逐句对照（结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本条管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `discipline:42` 先例勘察句 | 设计前勘察相似先例、先对齐；偏离须理由 | 勘察的执行形：三问答出名字、答案落盘、偏离收窄 | 同向：原句保留（并入 B1 同一行），三问是其执行形；「保留 + 执行形」= 需求验收 ③ 的字面要求 |
+| `discipline:30` 需求步（过程步名） | 四步顺序与步骤入口 | 设计步内部的前置动作 | 两轴：`:30` 管何时进设计，本节管进设计后第一笔怎么做 |
+| `discipline:37` FR38 需求必须问出来 | 需求形成期问用户 | 设计 / 落笔前查现成件 | 相邻两门：问用户（意图）与查代码（事实）各一侧；`common:17` 已写「文档答事实、意图问用户」——本条走文档 / 代码一侧 |
+| `discipline:50-58` 轻通道节 | 三例旁路全链 | 旁路的笔前前置（答三问 · 写 §1） | 准入三例与边界零改；只加「笔前先答」，不缩也不放准入 |
+| `persona:107-111` 轻通道披露句式 | 父侧逐笔披露（轻 ∥ 全链） | 披露行里多一段答案行（B2 落轻通道段之后、`Closeout-chain segment map` 行后 / `- **Round field**` 行前——顶层段落，零缩进） | 披露形不变；答案行加入 §1 笔行 = 披露面的内容扩充；B2 不回插披露列表内部 ⇒ 轻通道列表项与「The disclosure carries…」的指代关系零动 |
+| `persona:104` 收口清账条 | 收口扫台账，每条给处置 | 收口抽读该轮 §1 笔行（B2b） | 同轮同拍、两个读面：一处扫台账，一处扫笔行；清账判据零改 |
+| `persona:120` 派单公共源坐标句 | 派单时给公共源坐标；没有 ⇒ 明写「已查无」 | 落笔时给现成件答案；查无 ⇒ `none found:` | **同形不同题**：一个是派单给方向（公共源坐标，主 agent → 设计席），一个是落笔交答案（现成件，笔 → 评审 / 收口）；两形各定死在各自面，「缺行 = 没查」的判法同源 |
+| `persona:54-59` 推进与叫停 | 谁发起、何时停 | 笔前答三问 | 两轴：本节不动发起权 / 叫停判据 |
+| `discipline:116` 命名纪律 | 名字要携定义（可读性） | 新名字先挂靠产品已载概念 | 两轴同节：`:116` 管「名字怎么起」，B4 管「起之前挂靠谁」 |
+| `discipline:117` 一名一物 | 一物一名；`doc word = UI word = conversation word, 1:1` | 是它的执行形：先挂靠、无对应须登记 | 同条续句：`:117` 给判据，续句给动作；一条两处写同一机制即两份活描述（D2），故并入同条、复用该条既有 why |
+| `advisor-design:23` 第 9 条先例行 | 查先例行在场 + 偏离理由显式 | 第 11 条查「现成件为什么没用」 | 两条相邻不同问：第 9 条查「写了没」，第 11 条查「用了没」；第 11 条另限作用域 = 需求集要求该行时（K10），第 9 条无此限 |
+| `advisor-design:24` 第 10 条勘察证据行 | 查公共源勘察证据 | 第 11 条存在性 | 同族相邻（10 = 查过公共源、11 = 查过现成件），条目数 10 → 11 |
+| `common:19` checked-evidence line | 提问时带查过什么 | 落笔时带三问答案 | 同形不同场：一个在提问里，一个在设计档 / §1 里 |
+
+**用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 现成件在 | 设计要一个「筛选控件」 | 三问答上 ⇒ `existing: <坐标> · name: "…" · consumers: …`；直接复用 |
+| C2 | 正常 · 查无 | 新端点确无先例 | `none found: <面清单>` 一行；允许新建 |
+| C3 | 边界 · 名字近似能力不同 | 现成件叫法相近、能力不同 | 偏离理由须指名能力 / 契约面失败；答不出 ⇒ 仍判现成件可用 |
+| C4 | 边界 · 轻通道小改 | 标签文字改一处 | 笔前答三问，§1 笔行带答案行；准入不变 |
+| C5 | 错误防御 · 没查就写 | 落点行无答案行 | 判「没查」（不是「查无」）；设计评审 🟡（缺行）∥ 现成件未用且无说明 ⇒ 🔴 |
+| C6 | 错误防御 · 偏离当通道 | 理由写「形态不同 / 更顺手」 | 判不合规（口味非理由）；须能力 / 契约面失败 |
+| C7 | 错误防御 · 自造名 | UI 标签起新名、无对应登记 | 按 B4 判：须写对应 ∥ 取代谁；评审可查 |
+| C8 | 边界 · 中文记录面 | 批档 §1 用 `已查无：` | 三形之一，判已答 |
+| C9 | 边界 · 现成件在但不可用 | 现成组件接口不兼容（契约面失败） | `existing but unusable: <坐标> · name: "…" · failed on: <逐字失败>`；缺 `failed on:` ⇒ 按 C5 判 |
+| C10 | 边界 · 收口抽读 | 本轮 §1 有 5 笔行 | 父侧读 ≥2 行，逐行判三形；有一笔缺行 ⇒ 记「没查」并回该笔 |
+
+**受影响文件（现行 = 本席 `node` 实读 · 2026-10-21；Δ = 本节逐字块长度实算）**：
+
+| 文件 | 现行 | Δ → 改后（占比 / 上限 · 上限 = 基线 × 1.03 取整） |
+|---|---|---|
+| `thincoder-core/prompts/discipline-engineering.md` | 203 行 / 38,203 字符 | L1 −524 +1,389 = +865 ∥ L4 −164 +432 = +268 ⇒ **+1,133 字符 / ±0 行** → 39,336（+2.97% / 上限 39,349 · 余 13） |
+| `thincoder-core/prompts/persona-engineering.md` | 244 行 / 65,134 字符 | L2：+785 字符 / +3 行 ∥ L2b：+405 字符 / +1 行 ⇒ **+1,190 字符 / +4 行** → 66,324（+1.81% / 上限 67,088 · 余 764） |
+| `thincoder-core/prompts/advisor-design.md` | 76 行 / 12,274 字符 | L3：**+360 字符 / +1 行** → 12,634（+2.93% / 上限 12,642 · 余 8） |
+| `thincoder-core/prompts/common.md` | 274 行 / 43,728 字符 | **±0**（B4 不落此档 · K8） |
+| `docs/core/design/PROMPT-SYSTEM.md` | 2,247 行 / 184,362 字符（本节写入前） | 本节改写 + §6.26 计数行 |
+| `thincoder-core/tool-docs/**` · 产品代码 · 需求档 · 批次档六段结构 | — | ±0 |
+
+**验收（A1–A10 · 回指 §13.17 六条 + 验收三条）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | 需求 ①：三问齐 + 「答不上来再动手」 | `discipline-engineering.md` 内 `where does this function live now` · `what is it called` · `who uses it` · `only a checked absence earns a new build` 各 1 次 |
+| A2 | 需求 ②：答案落盘、三形 + 两落点 | `discipline-engineering.md` 内 `existing: <coordinate>` · `none found: <which surfaces were checked>` · `existing but unusable:` · `failed on:` 各 1 次；`one line per new landing in the new-mechanism section` · `one line in batch record §1 beside that pen` 各 1 次 |
+| A3 | 需求 ⑤：偏离收窄 | `discipline-engineering.md` 内 `not reusable` · `concrete failure on the capability ∥ contract face` · `is taste, not a rationale` 各 1 次 |
+| A4 | 需求 ④：笔前也答 + 收口抽读落点 | `persona-engineering.md` 内 `A pen answers the three questions before it moves` · `Closeout samples the pen lines` · `read at least two of the round's §1 pen lines` 各 1 次；轻通道三例与边界原文各 1 次（准入零改） |
+| A5 | 需求 ⑥：评审存在性 ⇒ 🔴 + 条目数连带 | `advisor-design.md` 内 `Existing-piece check` · `left unused with no reason it is unusable ⇒ 🔴` · `existing but unusable: …` 各 1 次；`^11\. ` 计 1 条（条目数 10 → 11）；本档 §6.26 计数行 = `11` |
+| A6 | 需求 ③：新名挂靠（子串 + 节锚 + 行锚） | `discipline-engineering.md` 内 `A new name anchors to a concept the product already carries` · `a UI label ∥ field name ∥ button text` 各 1 次，**且两串同在 `## Doc discipline` 节内、同在一条以 `- **One word per thing**` 起的行上**（节切 = `## Doc discipline` 至下一个 `^## `），按错节 / 错行判红；`jdata` 全档 0 次 |
+| A7 | 携 why、无禁令腔 | B1–B4 五块扫 `never\|do not\|don't\|must not\|may not\|forbidden` ⇒ 0（本席预扫 = 0）；why 子句在场（B1 `only a checked absence earns a new build` · B4 承接宿主行 `:117` 既有 `a second name for the same thing is a defect`） |
+| A8 | 提示词面零文档引用 · 逐档净增 ≤ +3% | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0（基线 69 档 / 463 档 / 0）；逐档上限见文末「体量读数」；`doc_check(mode:"gate")` ⇒ PASS |
+| A9 | 唯一机检项 = 判据形（非机械门） | 本节「唯一机检项」段在场：读者（评审 / 父侧收口）· 读点（设计档落点行 / §1 笔行）· 三形判法各 1；父侧读者有提示词落点（B2b）；`scripts/` 零新增 |
+| A10 | 与 FR38 三条零冲突 | `discipline-engineering.md` 内 `at least one round of questions to the user and answers back` · `the user's explicit confirmation of the requirement set` · `common.md` 内 `A doc answers facts; intent gets asked` 各 1 次（改后仍各 1） |
+
+**体量读数（+3% 上限逐档 · 基线 = 现行字符数 · 上限 = 基线 × 1.03 取整；改后 = 本节实算）**：
+
+**行数口径** = `split("\n").length − 1`（末行换行后的空段不计）；`read` 工具显示的「N lines total」含末尾空段，比本口径多 1（两口径差 1，非漂移）。
+
+- `discipline-engineering.md` ≤ 39,349 字符（改后 39,336 · 余 13）
+- `persona-engineering.md` ≤ 67,088 字符（改后 66,324 · 余 764）
+- `common.md` ≤ 45,039 字符（改后 43,728 · ±0）
+- `advisor-design.md` ≤ 12,642 字符（改后 12,634 · 余 8）
+
+超出即削 why 不削规则（D-PS42 ③）。
+
+**边界（本批不做）**：不改轻通道准入本体（三例与一句边界零改）· 不新增机械门 / 脚本 / CI 步 · 不改 FR38 三条（`:37` `:39` `common:17`）· 不改数据前提门（`#1722`）。
+不改评审收敛流程与严重度表（B3 只加第 11 条，🔴/🟡 体系沿用）· **不写不删 `.thincoder/advisor.md`**（K1：workspace 级档实存，写它即整档取代内建）· 不改 `persona-eng-designer.md` 8 项形态。
+本设计轮 `thincoder-core/prompts/**` 零笔 · 产品代码零触 · 需求档零笔。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 评审存在性判据落 `thincoder-core/prompts/advisor-design.md` 新增第 11 条；**不写不删** `.thincoder/advisor.md` | ① `thincoder-core/advisor/history.mjs:53-58` 实读：`loadAdvisorMd(cwd)` 读 `join(cwd, ADVISOR_MD_PATH)`、命中即**整档取代**内建判据（文件注释 `if present, otherwise the built-in defaults`）——写它会把 1–10 条整体换掉，除非整份复制；② 该档在**本仓 cwd**（`D:\teamcode\thincoder\.thincoder\`）实读不存在；**共存事实**：工作区根 `D:\teamcode\.thincoder\advisor.md` 实存（`# Advisor 评审标准（workspace 级：D:\teamcode）`，自带 6 条设计评审判据）⇒ 会话 cwd 落在工作区根时 `loadAdvisorMd` 命中该档、整档取代内建，**只改提示词档的 B3 在那一 cwd 不生效**（该行为面影响未实证，标 `unverified`）；本批写权也不及该路径；③ `PROJECT-MANIFEST.json` `advisor.docMap` / `standardsDoc` 均为空串 ⇒ 无声明面；④ 先例 = D-PS37 把勘察证据行落为同档第 10 条（同族判据同址） |
+| K2 | 三问 = 先例勘察句的**执行形**，整行替换、不另起一段 | 需求验收 ③ 明写「后者保留、前者是其执行形」；另起一段 = 同一机制两句并存（D2 两份活描述）；整行替换后读序仍是「勘察 → 对齐 → 偏离」 |
+| K3 | 三形定死 + 记录面两字面 | 判据必须能区分「没查」与「查无」还要能说「找着了但不用」；英文面 `existing:` / `none found:` / `existing but unusable:`，中文记录面 `已查无：` / `现成不可用：`（批次档 / 台账中文面） |
+| K4 | 笔前规则落 `persona-engineering.md` 轻通道节，与 discipline 层成对 | 受众分层：discipline 层读者 = 主会话 + eng-coder + eng-designer；persona 层 = 主 agent 的笔披露形（轻通道写权独属）。同 FR38 的 twin-anchor 处置（`persona:42` ∥ `common` R3）：两层各须独立可读，D2 不判重复 |
+| K5 | 评审两档严重度：现成件未用且无说明 ⇒ 🔴；缺答案行 ⇒ 🟡 | 需求第 6 条给的就是这两档；缺行若也判 🔴，一次评审会把每条落点行判红，设计轮变填空题——「存在门」的目标是现成件被绕开，不是每行都被填满 |
+| K6 | 唯一机检项不做脚本，只给判据形（谁读 / 何时读 / 怎么判 / 抽样 ≥2） | 需求明写「不做机械门」；判据形让「没查」有地方现形，且不把成本摊到每次运行 |
+| K7 | §6.26 计数连带行（`:644`）的 `10` → `11` 由本条设计轮同步 | D3 计数与列表同改；留 `10` 则本档内部两处计数互斥（§6.26 vs §6.41） |
+| K8 | B4 落 `discipline-engineering.md:117` **同一 bullet 的续句**（替换该行），不落 `common.md` | ① 判据面就在 `:117`（一名一物，且已含 `UI word`）——另立一条 = 同一机制两份活描述（D2）；② `common.md` 无命名纪律节（`:113-118` 是搜索工具节），落那里即错位，且公共层与工程纪律层在工程会话里同读一份 ⇒ 孪生锚 = 同一读者读两遍，收益为零；③ 并入同条 = 复用宿主行既有 why（`a second name for the same thing is a defect`），字节省下 508，使该档留在 +3% 内（39,336 ≤ 39,349 · 余 13） |
+| K9 | 收口抽读落 `persona-engineering.md:104` 之后（B2b），不停在设计档 | 验收 ② 的读者是父侧收口轮——运行期只读提示词；规则只住中文设计档 = 不触发（本条对三次实例的同一诊断） |
+| K10 | 第 11 条作用域 = **设计所依据的需求集要求该答案行时**，不按「工程模式」限定 | 二择一：① 需求集限定——评审的判据面（判据 1 已按需求覆盖判），且缺省不判，普通模式不会误红；② 工程模式限定——评审上下文无可核模式信号：`advisor-design.md:2` 无条件自称 `inside an engineering-mode session`，普通模式同读该档时该句照样在场（`thincoder-core/advisor.mjs:100-102` 只按 `reviewType === "design"` 选档，无模式分支）⇒ 按模式限定在普通模式仍会误判，等于没改。取 ①；代价 = 需求集不要求该行的设计判据不触发（宁可不判，不误判——误判要整轮整改） |
+
+**先例 ∥ 偏离**：先例 = 本档 §6.40（同批形制：逐字英文文本 + 落点表 + 对照表 + 用例表 + 验收）∥ §6.39（整行替换 + 相邻行零改）∥ D-PS37 / §6.26（评审判据落 `advisor-design.md` 新条目 + 条目数计数连带）。
+**对齐** = 同形制；新增文本携 why；落点 = 既有行替换 / 节内增行；机判沿用既有脚本与交付门。
+**偏离** = ① 本条首次把**评审严重度分档**写成条文（🔴 vs 🟡）——既有判据无严重度分档先例；理由 = 「存在门」与「记录缺行」是两种失败，同一严重度会让存在门失去牙齿（K5）。② 答案行是**新增的记录形态**（设计档落点行 ∥ 批档 §1 笔行），既有落点表只有「动作」列——本条不新增表列，答案行按所在节既有形态就地落行。③ B4 以续句并入既有 bullet 而非新增条目（K8）——既有档内无「同名机制续句」先例，理由 = D2 与 +3% 预算共同定死落法。
+④ 坐标位移：需求引 `discipline-engineering.md:40`，现盘 `:42`（FR38 R1 插入两行所致），本条已按现盘坐标声明。
+
+**勘察证据行**：已读 `discipline-engineering.md:29-47`（四步 · 需求步 · `:42` 先例勘察）∥ `:50-66`（轻通道 · 一句边界 · 轮形）· `:114-118`（`## Doc discipline` · `:116` 命名纪律 · `:117` 一名一物）。
+`persona-engineering.md:5-15`（发起权）∥ `:104-120`（收口清账条 · 轻通道披露形 · 启动即挂账 · `:120` 「已查无」）· `advisor-design.md` 全文（判据 1–10 · 严重度 · Judgment Rules）。
+`common.md:13-21`（先查档 · 分界）∥ `:113-118`（搜索工具节——无命名条）∥ `:192-223`（文档体系评估标准——无 UI 命名面）⇒ 公共层无 B4 的既有宿主，K8。
+`thincoder-core/advisor/history.mjs:49-59`（`loadAdvisorMd` 整档取代语义）· `D:\teamcode\.thincoder\advisor.md` 实存（workspace 级档）∥ 本仓 `.thincoder/` 实读无 `advisor.md` · `PROJECT-MANIFEST.json` `advisor.docMap` / `standardsDoc` = 空串 · 本档 §6.38 ∥ §6.39 ∥ §6.40（形制与相邻节）。
+`node scripts/prompt-refs-check.mjs` 零参运行读数 = 提示词面 69 档 · 代码面 463 档 · 命中 0（本节写入前）。
+`PROJECT-MANIFEST.json` `index.publicRepos` 实读 = `[]` ⇒ 工作目录内无独立公共源文档仓——已查，无相关。
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。唯一「用户可见」面 = 用户三次实例里的 UI 标签文字：B4 把「新标签必须挂靠产品已载概念名」写成规则，评审按第 11 条查；无待裁的界面形态。
+
+**上抛项**：无。
+
+
 
 
 ## 7. 关键决策记录

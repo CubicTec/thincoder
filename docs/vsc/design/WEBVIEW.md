@@ -305,11 +305,30 @@ extension 端对应：`chat-panel.mjs`（面板生命周期/消息路由）· `p
 
 块头为一行方括号 + 状态词（核 `thincoder-render-core/subblocks/activity-view.mjs:54` `headerText` / `:104` `stateWord`）：
 
+**勘察源（本规则轮）**：① `docs/vsc/requirements/WEBVIEW.md`（F-W23 ∥ §4 端差口径）——相关（判据与端差口径所本）；
+② `docs/render-core/design/RENDER-CORE.md`（§1.3 落点与加载形 ∥ §2 KD-RC-3 ∥ §3 模块判定行）——相关（核件落点 ∥ 两端取值同件）；
+③ 核件 `subblocks/activity-view.mjs`（`:38` 词源 ∥ `:104` / `:113` 读点 ∥ `:198-213` 写点）——相关（实现实读）；
+④ CLI 对位件 `thincoder-cli/src/tui/subagent-blocks.mjs:341` ∥ `subagent-panel.mjs:105-110`——对位参照（坐标随上游给定，本轮流内未重读）；
+⑤ 工作树内无独立文档仓（`docs/` 即本仓权威面）⇒「独立档仓」项**不适用**。
+
 - **live**：`[▶ key · sync/async · model · Ns · turn N/M]` + 状态词（取值源闭枚举——见下条）。
-- **状态区取值源（闭枚举）**：取值的写点恰两处——结构化工具行（`activity-view.js` `noteChunk`）与 think chunk（同函数），取值 = `${tool} — ${cmd ≤60}` / 工具名 / `思考中…`；
-  区块固定三态词（审批 / 待消化 / 排队——核 `activity-view.mjs:104` `stateWord` 首判）优先于该取值。
-  **嵌套工具名 = `label/tool`**（`m.sub` 链 + `/` + `m.tool`——与 CLI 逐字同构：`thincoder-cli/src/tui/subagent-blocks.mjs:341` 的 `${path.label}/${path.rest}`）。
-  **输出面零写入（CLI `currentTool` 语义）**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态**一律不改写状态区**（输出只进块体行）——CLI 状态区 = `currentTool` + `command≤60`，无「输出文本入状态区」规则（`thincoder-cli/src/tui/subagent-panel.mjs:105-110`）。
+- **状态区取值 = 写点闭集 + 缺省支**：取值的写点恰两处——结构化工具行与 think chunk（同一函数 = 核 `subblocks/activity-view.mjs:198` `noteChunk`；端档 `thincoder-vscode/webview/activity-view.js` = 2 行 `export *` shim、零逻辑——写点不落在端档），
+  取值 = `${tool} — ${cmd ≤60}` / 工具名 / **think 词**（词键 `status.thinking` + 静态 `…`——`W.thinking()`，核 `:38`；zh 字面 `思考中…` 仅例示，词面随词键）；
+  区块固定三态词（审批 / 待消化 / 排队——核 `activity-view.mjs:104` `stateWord` 首判）优先于该取值；三项均可带 `<sub>/` 前缀（见下条）。
+  **缺省支（出生至首个写点）**：块级 `stateWord` 字段缺席 ⇒ **裸 think 词**（核 `:113` `meta.stateWord || W.thinking()`）——此时无 chunk，`sub` 前缀无处可取；缺省支零改。
+  **载体 = 块级 `block._subMeta.stateWord` 单字段**（工具行写核 `:207` ∥ think 写核 `:213`；缺省 = 字段缺席，不以空串占位）；缺省支之外的唯一读点 = `stateWord()`（核 `:113`）经 `refreshBlock`（核 `:132`）。
+  **纯 DOM 一次写入不成立**：该读点被两条路径消费——① 1 s 同点刷 live 块头 ∥ ② 覆盖式重建头词与状态区（`thincoder-vscode/webview/panels.js:55-58`；同形先例 = 本节「载体与读点（刷新两路径）」条）⇒ **两刷新路径同值**（DOM-only 写入被 1 s 拍抹回旧值——功能面绿、真机不成立）。
+  **嵌套身份前缀（工具行 ∥ think 同一条规则）**：`m.sub` 在场（relay 嵌套前缀 = `path.inner.join("/")`，如 `advisor#1`）⇒ 状态词前置 `<sub>/`——工具行 = `advisor#1/read`，think = `<sub>/` + think 词（zh 例示 `advisor#1/思考中…`）；
+  缺席（顶层子代理——角色已在括号段 `[▶ role#id · …]`）⇒ 零前缀（think = 裸 think 词）。前缀**逐 chunk 重算**（无跨 chunk 残留）；工具行支形态零改。
+  **think 覆盖前一状态词**：think chunk 到达 ⇒ 状态区 = `<sub>/` + think 词（`<sub>` 缺席 ⇒ 裸 think 词），不保留上一个工具名——状态区答「它现在在做什么」，think 时它在想；
+  身份由 `<sub>/` 前缀留住，不停在上一个工具名上。
+  **先例与偏离**：precedent = CLI 工具行前缀（`thincoder-cli/src/tui/subagent-blocks.mjs:341` 的 `${path.label}/${path.rest}`）——**对齐**部分 = 工具行前缀逐字同构（`<sub>/<tool> — <cmd ≤60>`）；
+  CLI 状态区（`thincoder-cli/src/tui/subagent-panel.mjs:105-110`）= `currentTool` + `command≤60`，think / text 不碰 `currentTool`（其兜底词 = 裸 `thinking...`，`:106`）⇒ **偏离**部分 = think 覆盖（CLI 停在上一工具名，本端 think 到达即改显 think 词）。
+  偏离理由：F-W23 ①/② 逐字指定 think 到达时的状态值——保留旧工具名会让顶层 think 显示工具名，直接违 ②；用户「CLI 最好」的判据 = 名称可见，该判据由 `<sub>/` 前缀复现。
+  **输出面零写入（CLI `currentTool` 语义）**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态**一律不改写状态区**（输出只进块体行）——CLI 状态区无「输出文本入状态区」规则（`thincoder-cli/src/tui/subagent-panel.mjs:105-110`）。
+  **落点 = 核 `subblocks/activity-view.mjs`（桌面同源）∥ CLI 零改**（F-W23 AC④）：本规则唯一实现 = 核 `noteChunk` think 支（VSC 经 2 行 shim 取同件；桌面经协议根 `/rc/` 直映射同件）；CLI 自带 `subagent-panel.mjs`，零改。
+- **受影响面（F-W23 · T-A15 同口径）**：核 `subblocks/activity-view.mjs` 现 **215** 行 ⇒ `≤ +2`（think 支加前缀一行；≪ 500 ⇒ 零拆分计划，结构不变）· 端档 `webview/activity-view.js`（2 行 shim）零改 ·
+  `docs/render-core/design/RENDER-CORE.md`（524 行）零增行（`:82` 行内改写）· 本档规则块 + 用例行 + 登记面行；用例 = **T-A33–T-A40**（载体 = VSC 测试树，清单单源 `test/files.mjs`——单元用例件收口即删，本档不落具体档名）。
 - **queued**：`[⏳ key · queued|waiting]` + 排队信息——**与 CLI 逐档一致**（标尺 = `thincoder-cli/src/tui/subagent-panel.mjs:73` 状态词 / `:100-102` 状态区）。
   slot（`kind: "slot"`）→ `排队中 · 位置 N（槽满等位）`；wait / depc（`kind` ≠ slot）→ **host detail 原文**（`waiting for: …` / `dependency cancelled: …`——零改写）。
   载荷 = `status:"queued"` + `position` / `waiting` / `reason` / `kind`；**降级形态**（缓存缺省 ⇒ 仅 `position`、`kind` 缺省）⇒ 走 **`kind` ≠ `slot`** 支：有 `reason` ⇒ 原文、无 `reason` ⇒ 中性回落 `sub.queued`（= CLI `queued.detail || "queued"` 同形）∧ 状态词 `waiting`。
@@ -443,7 +462,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | T-A12 | （**退场**）consult / escalate 终态 | 原「留痕不补」用例——射程收正后该分支不存在 | 覆盖 = **T-A31**（补桩非留痕）；本行只作退场标记 |
 | T-A13 | 留痕：host 五处置（NFR-A2 主侧） | 五路径各投递一次（含 dispose 清队） | `ev:subdeliver` 五行（`direct` / `enqueue` / `flush` / `drop-overflow` / `discard-dispose`；载荷含 `ch` · `status` · `wvReady`） |
 | T-A14 | 留痕：webview 痕迹 + 上行（NFR-A2 端侧） | 出生 / 接管 / 补桩 / 心跳命中各一次 | 环形 ≤50 丢最旧 + `panelDiag{subTrace}` 批内合并上行 ⇒ host `ev:subtrace`；`reassert-hit` 每频道每生命周期恰一条 |
-| T-A15 | 结构门（NFR-A3 机检） | `doc-check` + 行数扫描 | 改动后 `activity.js` < 500（痕迹外提抵消新增）· `activity-diag.js` ≤ 500 · 新增行无 >300 单行 · 文档锚零悬空 |
+| T-A15 | 结构门（NFR-A3 机检） | `doc-check` + 行数扫描 | 改动后 `activity.js` < 500（痕迹外提抵消新增）· `activity-diag.js` ≤ 500 · 核 `subblocks/activity-view.mjs` ≤ 500（现 215，本批 `≤ +2`）· 新增行无 >300 单行 · 文档锚零悬空 |
 | T-A16 | 出生闸①：冻结键 + **新代 started**（真分发） | `relaySubagentEventToken(panel, "explore#7/[model]m")` → 载荷喂 `applySubagentStatus`（键已冻结） | 新块（`_subMeta.frozen === false`）+ 旧 awaitingDigest 块归档 + `takeover` 痕（**修前红**：`ensureBlock` 返 null ⇒ 零块） |
 | T-A17 | 出生闸①：冻结键 + **queued** | 真 token `⟦ev⟧queued\x1eslot\x1e1\x1equeued\x1e` → 同键已冻结 | 新代块 + 头 `[⏳ …]` + `takeover` 痕（**修前红**：丢弃且无痕） |
 | T-A18 | 出生闸②：**escalate** started（无块） | `relaySubagentEventToken(panel, "escalate#6/[model]glm-5.2")` | 建块 `sub:escalate#6`（无 sync/async 词）· 后续内容 chunk 落同块（**修前红**：family 门 ⇒ 零块） |
@@ -461,6 +480,14 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | T-A30 | ⑥：sync spawn 工具返回 ⇒ 块冻结 | 真 `onToolResult(name, result, id, "coder#2")`（第 4 参在） | 该键块冻结（done）+ 归档；无第 4 参形（async ack / 普通工具）零动作（**修前红**：块永不折叠） |
 | T-A31 | ⑥/②：consult 终态无块 ⇒ 补桩 | `relaySubagentEventToken(panel, "consult#4/⟦ev⟧done")`（无块） | 补桩（折叠 + 立即归档）+ `late-terminal-stub`（**修前红**：`drop-unknown-role`、不补——射程收正） |
 | T-A32 | **反例**（NFR-A1）：冻结键收 chunk 不复活 | `streaming.subagentChunk({ name: "sub:explore#5", kind: "text", text: "late" })`（键已冻结） | 零新块 / 零 append / 原块不变 + `drop-frozen` 痕（**反例保持**——不许因本条变红） |
+| T-A33 | F-W23 ①：嵌套 think 带身份前缀 | `renderSubagentChunk(block, { role:"eng-coder", id:3, kind:"think", sub:"advisor#1", text:"…", face:"think" })` | 头行状态词 = `advisor#1/` + think 词（zh 例示 `advisor#1/思考中…`；**修前红**：现盘 think 支丢 `m.sub` ⇒ 裸词） |
+| T-A34 | F-W23 ②：顶层 think（正控） | 同载荷去 `sub` | 头行状态词 = 裸 think 词、零 `/` 前缀（修前修后同绿——防前缀过施） |
+| T-A35 | F-W23 ③ + 输出面零写入：工具行支零变 ∥ 旧载荷无 `tool` | ① `{ kind:"tool", tool:"read", cmd:"src/x.mjs", sub:"advisor#1" }`；② 去 `sub`；③ `{ kind:"tool", face:"toolOutput" }`（无 `tool` 字段） | ① `advisor#1/read — src/x.mjs`；② `read — src/x.mjs`；③ 状态词零改写（输出面零写入） |
+| T-A36 | F-W23 ④：同源（VSC + 桌面同件，CLI 零改） | 用例 import 核路径 `../node_modules/@thincoder/render-core/subblocks/activity-view.mjs`；静态断言 `webview/activity-view.js` 纯再导出（`export *`，无本地 `noteChunk`） | 与桌面 `/rc/subblocks/activity-view.mjs` 同一文件（同件同形）；`thincoder-cli/**` 零改 |
+| T-A37 | 两刷新路径同值（守卫反例：DOM-only 写入） | 嵌套工具行 → 嵌套 think ⇒ ① 走 1 s 同点刷 ∥ ② 走覆盖式重建，各断言一次 | 两次头行状态词同 = `advisor#1/` + think 词（载体 = `block._subMeta.stateWord`；DOM 一次写入会在 ① 后回落到旧值 ⇒ 红） |
+| T-A38 | 多段嵌套（深层） | `sub:"advisor#1/explore#2"` 的 think chunk | 状态词 = `advisor#1/explore#2/` + think 词 |
+| T-A39 | 出生前缺省（正控） | 建块后、首个 chunk 前读头行 | 状态词 = 裸 think 词（`stateWord` 缺席 ⇒ `W.thinking()`；缺省支零改） |
+| T-A40 | 冻结块负控 | 块 `frozen:true` 后投 think chunk | 头行零改写（`noteChunk` 首行守卫保持） |
 
 
 ### 5.4 150 窗与懒历史
@@ -606,6 +633,9 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | D-W38 | 工具结果截断提示 = **宿主切片点事实旗标** `truncated` 驱动（正文尾行 + 摘要标注）（X5） |
 | D-W39 | 块头注记 = **块级 `meta.note` 单字段载体**（X6 停因注记 + X11 `interrupted` 共用；`— <note>` 渲染句复用——禁第二注记字段 / 禁第二回落通道）（X6 · X11） |
 | D-W40 | sync 块 ⏹ = 门控加 `syncLive` 支 + 路由走核 registry（**只读**·禁第二套 registry）（X10） |
+| D-W41 | 推理按钮**中性档** = 「—」且无 ✓（未注册默认 ∧ 已存值 ∉ 枚举）；不新增列表项（U-W20）——判据单源 = `doc:MODEL-SPECS.md:§15.4` |
+| D-W42 | 状态词**嵌套身份前缀** = `<sub>/`（`m.sub` 在场；relay `path.inner.join("/")`）；工具行 ∥ think 同一条规则，前缀逐 chunk 重算（F-W23 ①） |
+| D-W43 | **think 覆盖前一状态词**（不保留旧工具名；身份由 `<sub>/` 前缀留住）；`<sub>` 缺席 ⇒ 裸 think 词（F-W23 ②） |
 
 ## 8. UI / 交互决策落档
 
@@ -631,6 +661,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | U-W18 | sync 运行块 ⏹ 可见（宿主确证可中止时；registry 不可读 ⇒ 降级为登记） | 已定（§5.2 · D-W40） |
 | U-W19 | digest 计数行随 `n > 0`（两档同规）；ask-only 轮（`n = 0`）= 标签行在 ∧ 无计数行；ask 档标签携 `from` / `msg` | 已定（§5.1 · D-W35） |
 | U-W20 | 推理按钮中性档（未注册默认 ∧ 已存值 ∉ 枚举）渲染「—」且无 ✓；不新增列表项（同 `D-W41`） | 已定（D-W41 · `doc:MODEL-SPECS.md:§15.4`） |
+| U-W21 | 块头状态词 think 支 = 干活者身份可见：嵌套 ⇒ `<sub>/` + think 词；顶层 ⇒ 裸 think 词；think 到达即覆盖上一工具名 | 已定（§5.2 · D-W42 · D-W43 · F-W23） |
 
 ## 10. 验收与需求回指
 
@@ -655,6 +686,7 @@ CLI 存活判据读池实体（`livePoolHas`），端侧**无池** ⇒ 存活凭
 | 17 | 消化面记录恢复（痕元素 ∥ 归档块——记录承接 ∥ `recordAppend` 出站 ∥ 页级重建 ∥ 容差二态） | F-W1 · I-7 · core §4.4 F-S7 |
 | 18 | 首启板两路（两卡 ∥ 零预选 ∥ 同屏换取 ∥ 回退保真 ∥ 「以后再说」第三态 ∥ 提交链复用零新协议） | F-W20 |
 | 19 | 团队常显与直达（状态栏 item 三态 ∥ 命令 `thincoder.team` 登/退流 ∥ 校验触发点制 ∥ 卡降管理面） | F-W21 |
+| 20 | 子代理块头状态词 think 支携带干活者身份（嵌套 `<sub>/` 前缀 ∥ 顶层零前缀 ∥ think 覆盖前一状态词 ∥ 两刷新路径同值 · 桌面 + VSC 同源，CLI 零改） | F-W23 |
 
 **用例**：本板块用例表归测试层，本档不复制（D2）。
 **登记例外 1 条**：F-W4 活卡面（`toolCall`/`toolOutput`/`toolResult` 接收）现无专属用例

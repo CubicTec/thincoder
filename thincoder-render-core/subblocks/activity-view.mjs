@@ -192,7 +192,7 @@ function updateStopButton(block) {
 
 /** Chunk-level state-word tracking（状态区取值源 = 闭枚举——`WEBVIEW.md` §5.2）：写点恰两处
  *  ——结构化工具行（`${name} — ${cmd ≤60}` / 工具名；嵌套 name = `sub/tool`，CLI
- *  `subagent-blocks.mjs` 同构）与 think（`思考中…`）。
+ *  `subagent-blocks.mjs` 同构）与 think（`m.sub` 在场 ⇒ `<sub>/` + think 词；顶层 ⇒ 裸 think 词）。
  *  **输出面永不入状态区**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态
  *  一律不改写状态区（输出 / 结果只进块体行——CLI `currentTool` 语义 §14 C-11①）。 */
 export function noteChunk(block, kind, text, m) {
@@ -208,7 +208,9 @@ export function noteChunk(block, kind, text, m) {
     }
     refreshBlock(block)
   } else if (kind === "think") {
-    meta.stateWord = W.thinking()
+    // 嵌套身份前缀（F-W23 · `WEBVIEW.md` §5.2 D-W42）：`sub` 逐 chunk 重算；think 覆盖前一状态词（D-W43）
+    const who = (typeof m?.sub === "string" && m.sub) ? `${m.sub}/` : ""
+    meta.stateWord = `${who}${W.thinking()}`
     refreshBlock(block)
   }
 }

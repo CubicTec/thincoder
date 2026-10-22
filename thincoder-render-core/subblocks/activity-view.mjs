@@ -196,8 +196,10 @@ function updateStopButton(block) {
  *  `subagent-blocks.mjs:308` / `:323`）；**唯一例外** = 状态词还空且 `sub` 在场时，think 写入
  *  `<sub>/<think 词>`——否则子代理刚起、先思考时标题只剩裸 think 词，名字被吃掉（用户 2026-10-20 16:32 ∥
  *  2026-10-21 17:44 两次裁定）。
- *  **输出面永不入状态区**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态
- *  一律不改写状态区（输出 / 结果只进块体行——CLI `currentTool` 语义 §14 C-11①）。 */
+ *  **输出面不入状态区**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态
+ *  不改写状态区（输出 / 结果只进块体行——CLI `currentTool` 语义 §14 C-11①）。
+ *  **唯一例外 = 顾问名支**（下支 `toolOutput ∧ tool === "advisor"`）：只写「本块正被 advisor 占用」
+ *  这个名字，不写输出文本——名字是事实，正文是内容，两者不进同一个面。 */
 export function noteChunk(block, kind, text, m) {
   if (!block?._subMeta || block._subMeta.frozen) return
   const meta = block._subMeta

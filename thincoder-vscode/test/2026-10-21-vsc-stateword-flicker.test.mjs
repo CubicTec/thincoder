@@ -77,6 +77,16 @@ test("S2 顾问的 toolOutput 让标题显示 advisor（只写名字，不写输
   assert.equal(block._subMeta.stateWord, "advisor#1/advisor", "子标 + advisor")
   assert.ok(header(block).endsWith(" advisor#1/advisor"), `头行 = ${header(block)}`)
 
+  // T-A44 第二半：同载荷再投一段输出 ⇒ 状态词不变，且绝不把输出正文拼进状态词
+  renderSubagentChunk(block, {
+    role: "eng-coder", id: 2, kind: "tool",
+    text: "### Another finding\nmore text",
+    sub: "advisor#1",
+    face: "toolOutput", tool: "advisor",
+  })
+  assert.equal(block._subMeta.stateWord, "advisor#1/advisor", "输出换了，名字不变")
+  assert.ok(!block._subMeta.stateWord.includes("Another"), "状态词不含输出正文")
+
   // 顶层顾问（无 sub）
   const top = renderSubBlock(model())
   top._subMeta.stateWord = null

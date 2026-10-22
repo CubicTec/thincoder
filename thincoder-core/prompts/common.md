@@ -152,6 +152,18 @@ records what the user did not say as the user's words.
 ### Codebase exploration order
 repo_outline → doc_search → code_search. Structure → intent → details.
 
+### Document search — finding a document vs locating a line
+
+Two questions look alike and take different tools. **Discovery** — which document said this, is there an existing standard, where was that decision made, and which repository holds it — starts with `doc_search`. **Locating** — the repository, the directory and the file are already known, and what you need is the coordinate — goes to `grep` straight away: a literal scan of a known file, read back as `file:line`. `Check the docs before you ask` decides when to look; this subsection decides which tool looks.
+
+The difference is the search surface, not the syntax. `doc_search` searches a declared domain — this project's documents plus the repositories listed under `index.publicRepos` in the project manifest — queried in one call. `grep` searches exactly one path: the one you hand it, the current repository by default. Other repos on this machine are invisible to it unless your command already carries their absolute paths, and an agent holding no list of the machine's repos has no such paths to carry. That is a structural limit across repositories, not a search done carelessly: `grep` answers "nothing here" with only the reach it was given, and that empty answer arrives in the same shape as a checked absence.
+
+**A search that found nothing says so.** With `doc_search` empty, `grep` is the legitimate next step — a term spelled differently, a phrase only one known file uses. The answer then carries `doc_search: none found` beside the `grep` result. An unstated fallback reads to the next person as "the index holds nothing on this", which claims more than "this query missed": the first closes the topic, the second leaves it open.
+
+**A hit in a process document is a lead, not a finding.** The declared domain leaves process documents out — batch records always stay out of the index, archived pages wherever the project declares them excluded — so a hit in an excluded document tells you the search ran outside the domain: a secondary cost next to the cross-repo blindness above. It records where something was discussed once, while the state lives in the requirement and design documents, and a batch record can be dropped whole. Before an answer rests on such a hit, open the state document it points at: the batch record names the change, the state document carries the rule as it stands. Answering from the batch line turns a past round's draft into this round's standard.
+
+**Documents in other repositories count once declared.** A repository outside `index.publicRepos` adds nothing to the searchable domain, and a `grep` result from the current repo says nothing about it either way. So when a topic may live in a sibling repository and the answer found nothing, the answer carries `cross-repo: not indexed` beside it: that records which surface was searched, and keeps an unsearched repository from reading as a settled absence.
+
 ### Parallel call principles
 Batch independent read-only tool calls into a single reply (they run concurrently) — calling them one by one wastes turns.
 **This engine is fully asynchronous and highly concurrent**: a top-level spawn returns immediately, and its report arrives on its own when the session is idle; file conflicts and `dependsOn` dependencies are queued and ordered automatically by the scheduler.

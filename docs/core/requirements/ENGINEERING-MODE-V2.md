@@ -861,6 +861,73 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 - **不变量（不做）**：不禁用系统性重试/降级（限业务结果不变）· 不改既有安全/校验机制 · 不改渲染层占位与 i18n 缺键回落 · 不改普通模式的既有纪律。
 - **落点**：主落 `common.md`（跨角色通用层：全模式 + 全子代理都读，匹配「业务系统」范围）；`discipline-engineering.md` 是否同落一层（工程纪律面）由设计定；代码评审判据落 `advisor-round1.md`。**体量无帽**——2026-10-21 用户裁定「提示词无预算」，只作读数。具体分句由设计定。
 
+### 13.19 查文档走 doc_search：grep 不用于发现（文档检索路由 · FR41）
+
+**背景**（用户 2026-10-22 10:02 转述**别的项目的反馈**——不是本仓的发现；原话逐字）：「我们明明提供了doc_search工具，但是模型在查文档的时候总是用直觉使用grep，这就带来很多问题，首先是跨仓文档查不到，其次是批次档里的旧信息经常造成污染。」
+
+**已核事实（父侧实读）**
+
+| # | 事实 | 证据 |
+|---|---|---|
+| 1 | 批次档**早已排除在文档索引之外**——段序列 `docs/batches` 无条件排除；`_archive` 同样排除 | `thincoder-core/declaration.mjs:121-144`（面⑥）· `PROJECT-MANIFEST.json` `index.excludePaths` |
+| 2 | 所以「批次档旧信息污染」不是索引的锅——**是 grep 绕过了索引**，直接读原始档 | 同上；`grep` 工具面只管「搜文件内容」，无档类判据 |
+| 3 | 跨仓查不到 = 声明域为空：`index.publicRepos = []` ⇒ 其它仓的 docs 根本不在索引里 | `PROJECT-MANIFEST.json` `index.publicRepos` |
+| 4 | 提示词只说「探索顺序 repo_outline → doc_search → code_search」，**没有「文档检索禁用 grep 发现」这条**，工具路由表也只列了 doc_search 的用途 | `common.md`「Codebase exploration order」/ 工具路由表 |
+
+**需求**
+
+1. **两分法写进提示词**：**发现式检索**（「哪份文档说过这件事 / 有没有既有规范 / 旧决定在哪」）⇒ `doc_search` 首查；**定位式 grep**（已知档名或坐标，要拿 `file:line`）⇒ 允许。grep 做发现 = 跳过声明域与排除规则。
+2. **无命中要说出来**：`doc_search` 0 命中后才许 grep 兜底，且结论必须写「doc_search 已查无」（与 FR38「查档」∥ FR39「已查无」同形）。
+3. **命中不是口径**：grep 命中 `docs/batches/**` ∥ `**/_archive/**` ⇒ **线索不是结论**（批次档是过程档、可整档删；状态只在需求/设计档，见 `D5`「过程不进状态档」）；拿它当依据前必须回状态档核。
+4. **跨仓**：`index.publicRepos` 声明的公共源仓文档必须能经 `doc_search` 命中；未声明 ⇒ 检索面明确「跨仓未纳入索引」，不许用 grep 静默替代后当作已查。
+5. **配置面一并处置**：本仓 `publicRepos = []` ⇒ 是否需要声明（如 `thincoder.com` / `issues` 等）由用户裁；声明了才谈跨仓。
+
+- **为什么（依据可指认）**：两者的搜索面不同——doc_search 查的是**声明域**（可含 index.publicRepos 声明的跨仓源，一次覆盖多个仓；
+  命中形 = `` `path > heading` `` + 行段 + relevance + 内容片段，不带档类——实读 `thincoder-core/memory/docs.mjs:236-238`）；
+  grep 查的是**你递给它的那一个路径**（缺省当前 cwd），于是**别的仓的文本除非已知绝对路径否则完全不可见**，而模型连「这台机器上有哪些仓」都不知道 ⇒ 跨仓是**结构性失明**，不是「没查仔细」。次因：grep 无档类判据，绕过索引后会把已排除的过程档（docs/batches/** ∥ _archive）捞回来当依据。
+- **不变量（不做）**：不禁 grep（定位式照用）· 不改 `doc_search` 的检索语义 · 不改既有排除规则（面⑥ 已正确）· 不新增机械门。
+- **验收**：① 提示词面含两分法句 + 「doc_search 无命中必须声明」句（英文形 doc_search: none found）+ 过程档命中判线索句（子串机判；判英文落地形，不判中文字面）；② 跨仓声明后 `doc_search` 能命中 ── 未声明时回答含「跨仓未纳入索引」；③ 与 FR38（查档先于提问）∥ FR39（已查无：<面>）无矛盾。
+
+### 13.20 用户 manifest 只声明「这个项目」：删 promptsLanding ∥ checkConfig ∥ advisor（八键 → 五键 · FR42）
+
+**背景**（用户 2026-10-22 10:19-10:24 原话）：「用户仓创建出来的manifest为什么会包含这样一行：`"promptsLanding": "thincoder-core/prompts"`」→「**不要有这个键，这是thincoder产品内部的事儿，挂到用户那边是几个意思？**」→「**checkconfig也去掉，现在都走内置工具了，不要留着误导。**」→「**advisor为什么要另外指一套文档指针？这个也很不对啊！docRoot不都指定过了吗？advisor这个键也没必要。**」
+
+**已核事实（父侧实读）**
+
+| # | 事实 | 证据 |
+|---|---|---|
+| 1 | `promptsLanding` 默认值 = `"thincoder-core/prompts"`，`initManifest` 整份照抄 DEFAULT_MANIFEST ⇒ **每个用户项目出生即带本产品内部路径** | `manifest-schema.mjs:53` · `manifest.mjs:286` |
+| 2 | `promptsLanding` **零 reader**（全仓 grep 只命中 schema 与 manifest 的通用键接线） | 同上；`MANIFEST.md:619` 已登记「核内未见读取方」 |
+| 3 | `checkConfig` 是 `doc_check` 的**参数来源**，且 `gate` 模式下「缺 `checkConfig`」直接**拒跑**（不产 PASS） | `doc-check/index.mjs:167-170` · `:29-38` |
+| 4 | 其余六键中 `version` · `phase` · `docRoot` · `codePaths` · `index` 只描述**用户项目自身**；`advisor` 例外（见第 6 行） | 逐键 reader 实读 |
+| 5 | 未知键**非拒**（`ok` 定性零变），`fillDefaults` 以 DEFAULT 为基 ⇒ 旧键在下次写盘自然消失 | `manifest-schema.mjs:92` · `:162-180` |
+| 6 | `advisor` 键 = **第二套文档指针**：`advisor.docMap` 声明优先、内建探测 `docs/README.md` → `docs/design/README.md` 兜底；`advisor.standardsDoc` 纯声明、无探测 —— 与 `docRoot` 声明的是同一件事（文档在哪），两处声明同一事实 | `advisor/project-context.mjs:141-147` · `:175-192` |
+
+**需求**
+
+1. **`promptsLanding` 整键删除**：它是 thincoder 产品源码布局，不是用户项目事实；用户项目默认不带任何指向产品内部的路径。
+2. **`checkConfig` 整键删除 · doc_check 收成「只查指定文件」**：现有 `report` 模式的**全声明域扫描（`scanDirs`）取消**——它正是「扫全仓 ⇒ 技术待办爆炸」的老病；
+  `anchors.domain` / `anchors.roots` 一并取消（没有全仓基线，就没有「在哪儿解析裸名」这回事）。`doc_check` 只判**调用时给的文件**：`gate` 传本轮触达档、`report` 传显式文件清单；
+  **裸名指针不再跨目录解析——引用必须写仓根相对全路径，或与所在档同目录**（与 D4 实现坐标口径一致）。`lineWidth: 300` · `widthExemptZones: []` · `exemptions: []` = 内置常量。
+3. **`advisor` 整键删除**：文档指针**由 `docRoot` 派生**，不再另挂一套——`docMap` 的等价物 = 从 `docRoot` 探测（或由索引列出文档生成 map），`standardsDoc` 面要么同样由 `docRoot` 派生、要么撤掉该注入面（保留「降级可见」句，不得静默跳过）；**不得**引入任何替代指针键。
+4. **默认键集 = 五键**：`version` · `phase` · `docRoot` · `codePaths` · `index`（全部只描述用户项目自身）。
+5. **`doc_check` 的门语义随动**：参数不再取 manifest ⇒ 「缺 `checkConfig` ⇒ 拒跑」这条**删除**；`gate` 只判传入档、不再有「解析基线 = 全声明域」这一层（判定范围与解析范围**同一集合** = 传进来的档）；manifest 不可读时 manifest 工具自行报错，`doc_check` 不再因取参失败拒跑。
+6. **迁移无需脚本**：旧 manifest 里的三键按未知键处理（非拒），下次 `write` 经 `fillDefaults` 自然清除；不得为兼容保留「接受但忽略」的分支（那就是「留着误导」本身）。
+7. **连带计数与文档**：`MANIFEST.md` 的「八键」表述全改五键（键表 · 接口清单 · 写面白名单 · 计数 · 测试行）· `manifest` / `doc_check` 两个工具描述的参数说明同步改 · 评审注入面（`project-context.mjs` 的 `advisor.*` 读取）改为 `docRoot` 派生。
+
+- **为什么（依据可指认）**：manifest 是**这个项目**的状态声明（阶段 / 文档层 / 代码段 / 索引）。`promptsLanding` 描述产品源码；`checkConfig` 描述产品工具的参数；`advisor` 把「文档在哪」又说了一遍——`docRoot` 已经声明过。三处的共同毛病 = 替用户声明他自己没掌握的事实，或同一事实两处声明（D2），唯一效果是误导（读到的指针与索引/批次档用的不是一套）。
+- **不变量（不做）**：不改其余五键语义 · **不改两条判据本身**（anchors 可解析 ∥ 行宽 ≤300），只改**判哪些档**（调用方给，不扫全仓）· 不改 `docRoot` / `index` 消费面 · 不改评审两条判据（文档归属 ∥ 项目标准）的**判法**（只换参数来源）· 不加迁移脚本。
+- **验收**：① `DEFAULT_MANIFEST` 恰五键（机判键集）；
+  ② 新建项目 `init` 后 manifest 不含 `promptsLanding` / `checkConfig` / `advisor`（机判）；
+  ③ `doc_check` 只判传入档：不传 `docs` 时报错要求显式清单，`report` 模式**不再有全仓扫描支**（机判：代码里 `scanDirs` 零消费）；
+  ④ `doc_check` 在无 `checkConfig` 的 manifest 上照常判（不因缺键拒跑）；
+  ⑤ `MANIFEST.md` 内「八键」零命中、「五键」在位；
+  ⑥ 两个工具描述不含三键的参数说明；
+  ⑦ 评审注入面在无 `advisor` 键时仍产出 Document Map（由 `docRoot` 派生）或明确降级句，不得静默跳过；
+  ⑧ 本仓 696 条裸名指针改全路径后 gate 全绿（债务另批 `#1731`，本批只保证不新增）。
+
+
+
 
 
 

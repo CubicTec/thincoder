@@ -2517,6 +2517,167 @@ B3 — `discipline-engineering.md`：`- **Assertions ride behavior, not prose**`
 
 
 
+### 6.43 查文档走 doc_search：发现式 vs 定位式（文档检索路由 · FR41）
+
+**来源**：需求权威 = `ENGINEERING-MODE-V2.md` §13.19（FR41，五条，`:864-887`）；台账 `#1728`；结构诊断四行 = 本批批次档 §1（`:15-22`）。
+
+用户 2026-10-22 10:02 转述**别的项目**的反馈（逐字：「模型在查文档的时候总是用直觉使用grep……跨仓文档查不到，其次是批次档里的旧信息经常造成污染」）+ 10:04「提示词强化一下，但是要求还是老规矩“知其然知其所以然”」。**10:06 父侧更正（用户原话）**：「grep的问题不是扫全树，是会忽略跨仓文本。」
+
+⇒ why 主轴 = **检索面之差**（`doc_search` = 声明域、含 `index.publicRepos` 跨仓源；`grep` = 你递给它的**一个路径**，缺省当前仓）——次因 = 过程档在域外（`grep` 无档类判据，批次档命中只算线索）。体量口径 = 提示词无体量帽（2026-10-21 裁定），只作读数。
+
+**要修的那一处（实读 · 2026-10-22 本席）**：
+
+| # | 坐标 | 现文 | 缺的那一半 |
+|---|---|---|---|
+| F1 | `common.md:13-21`（先查档节） | 答的是「要不要先查」：`docs` 排在 `doc_search` 之前，`A doc answers facts; intent gets asked` | 全节无「查文档用哪个工具」一句；`doc_search` 只作为一个名字出现在清单首位 |
+| F2 | `common.md:152-153`（`### Codebase exploration order`） | `repo_outline → doc_search → code_search. Structure → intent → details.` | 只给顺序，不给边界：读成「先试 doc_search，不行就 grep」，恰是要修的那个读法 |
+| F3 | `common.md:166-191`（工具路由表 · `:178` 行） | `repo_outline / code_search / doc_search` = `module dependency graph / code search / doc search`；`Not` 列管的是「bash 里的 grep → 用工具」 | 表行只列用途；`Not` 列的 grep 规则是「工具 vs bash」，与「发现 vs 定位」不同轴 |
+| F4 | `thincoder-core/tool-docs/doc_search.md`（一句正文） | `Search the project's documentation (README, design docs, guides, markdown files)…` | **工具自述里没有声明域、没有过程档排除、没有跨仓语义** ⇒ 机制差只能由提示词面承载（本节 P2 的 why 由此而来） |
+| F5 | 全档扫 `docs/batches` / `publicRepos` / `none found` | 三串在 16 档提示词面零命中 | 「命中不是口径」与「跨仓未纳入索引」两条在运行期无落点 |
+
+**机制（四条 + 一句分界）**：
+
+1. **两分法**（需求 ①）：**发现式**（哪份文档说过 / 有没有既有规范 / 旧决定在哪 / **在哪个仓**）⇒ `doc_search` 首查；**定位式**（已知仓、目录、档名，要 `file:line`）⇒ `grep` 照用。判据就是检索面：不确定在哪个仓 ⇒ 只有 `doc_search` 够得着。
+2. **机制差（why 主轴）**：`doc_search` 的检索面 = **声明域**（本仓文档 + `index.publicRepos` 声明的公共源仓），一次提问覆盖多仓；`grep` 的检索面 = **你递给它的一个路径**（缺省 = 当前 cwd），别的仓的文本除非命令里已带绝对路径否则不可见——而模型连机器上有哪些仓都没有清单。所以 grep 对跨仓是**结构性失明**，不是「没查仔细」。
+3. **无命中要说**（需求 ②）：`doc_search` 空 ⇒ `grep` 正当兜底，答案携 `doc_search: none found`（中文记录面 = `doc_search 已查无：`，与 FR39 的 `none found:` / `已查无：` 同形）。
+4. **命中不是口径（次因 · 需求 ③）**：声明域无条件排除批次档（`declaration.mjs:144` 面⑥），归档页仅在项目声明 `index.excludePaths` 时排除（缺省 `[]` · `manifest-schema.mjs:63`）⇒ `grep` 命中 `docs/batches/**` ∥ 项目声明排除的 `**/_archive/**` ∥ 日志页 = 搜索跑在域外的证据，**线索不是结论**，回状态档核。
+5. **跨仓未声明要写**（需求 ④）：`index.publicRepos` 未声明的仓 ⇒ 携 `cross-repo: not indexed`（中文记录面 = `跨仓未纳入索引：`）；`grep` 在本仓的空结果对那个仓「说了等于没说」。
+6. **分界句（三条相邻不同轴，零重叠）**：FR38（`common.md:13-21`）决定**要不要先查**——意图问人、事实查档；FR39（`discipline-engineering.md:42`）决定**落笔前交什么答案**——现成件在 ∥ `none found:`；本节决定**查文档用哪个工具、它的检索面覆盖什么**。前两者管「何时查 / 交什么」，本节管「用谁查」。
+
+**落点判断（两候选逐条对照 —— designPoints 6 的理由）**：
+
+| 判面 | 候选 A：`### Codebase exploration order` 节内续段（`common.md:152-153`） | 候选 B：`## Tool routing` 表行加注（`:166-191`） | 采纳形：同层新增 `###`（A 之后） |
+|---|---|---|---|
+| 读者 | 全角色，探索时 | 已知道要用哪个工具、来查「怎么用」的人 | 全角色，**动手查之前** |
+| 读时机 | 「从哪开始」 | 「这个工具是干嘛的」——此刻已选完工具 | 「选哪个工具」——正是本条的触发点 |
+| 能否携 why | A 只有 2 行格言体，塞进机制差即毁其形态 | 表单元格：一个 3 列 1 行的索引，why 段落进不去；且该行 `Not` 列管的是 bash-vs-tool | 独立段：机制差有地方落 |
+| 既有文本 | 需改 A 的正文（2 行格言是记忆锚） | 无需改 | **零改**：A 逐字保留，新节紧随其下 |
+| 计数连带 | `###` 不牵动 `##` | 零 | `###` 不牵动 `##`（20 节不变）；标题节点 25 ⇒ 26 |
+
+**采纳理由**：`## Tool discipline` 已装两张「选哪个搜索工具」的子节（`### Search tool priority` = 联网面 ∥ `### When online verification is required` = 何时联网），**缺的正是文档面这一张**；放在 `### Codebase exploration order` 之后 = 与「探索从哪里起手」同节相邻（先顺序、后边界）。候选 B 被否的硬理由 = 表行装不下 why，而本条的全部价值在 why。
+
+**逐字英文文本（实施席照此落笔 · 唯一权威目标形）**：
+
+B1 — `common.md`：`repo_outline → doc_search → code_search. Structure → intent → details.` 行（现盘 `:153`）之后、空行（`:154`）之后、`### Parallel call principles`（`:155`）之前，插入新 `###` 子节（前后各一空行）：
+
+```text
+### Document search — finding a document vs locating a line
+
+Two questions look alike and take different tools. **Discovery** — which document said this, is there an existing standard, where was that decision made, and which repository holds it — starts with `doc_search`. **Locating** — the repository, the directory and the file are already known, and what you need is the coordinate — goes to `grep` straight away: a literal scan of a known file, read back as `file:line`. `Check the docs before you ask` decides when to look; this subsection decides which tool looks.
+
+The difference is the search surface, not the syntax. `doc_search` searches a declared domain — this project's documents plus the repositories listed under `index.publicRepos` in the project manifest — queried in one call. `grep` searches exactly one path: the one you hand it, the current repository by default. Other repos on this machine are invisible to it unless your command already carries their absolute paths, and an agent holding no list of the machine's repos has no such paths to carry. That is a structural limit across repositories, not a search done carelessly: `grep` answers "nothing here" with only the reach it was given, and that empty answer arrives in the same shape as a checked absence.
+
+**A search that found nothing says so.** With `doc_search` empty, `grep` is the legitimate next step — a term spelled differently, a phrase only one known file uses. The answer then carries `doc_search: none found` beside the `grep` result. An unstated fallback reads to the next person as "the index holds nothing on this", which claims more than "this query missed": the first closes the topic, the second leaves it open.
+
+**A hit in a process document is a lead, not a finding.** The declared domain leaves process documents out — batch records always stay out of the index, archived pages wherever the project declares them excluded — so a hit in an excluded document tells you the search ran outside the domain: a secondary cost next to the cross-repo blindness above. It records where something was discussed once, while the state lives in the requirement and design documents, and a batch record can be dropped whole. Before an answer rests on such a hit, open the state document it points at: the batch record names the change, the state document carries the rule as it stands. Answering from the batch line turns a past round's draft into this round's standard.
+
+**Documents in other repositories count once declared.** A repository outside `index.publicRepos` adds nothing to the searchable domain, and a `grep` result from the current repo says nothing about it either way. So when a topic may live in a sibling repository and the answer found nothing, the answer carries `cross-repo: not indexed` beside it: that records which surface was searched, and keeps an unsearched repository from reading as a settled absence.
+```
+
+**落点表（实施席逐处执行）**：
+
+| # | 坐标 | 动作 |
+|---|---|---|
+| L1 | `thincoder-core/prompts/common.md:154` 之后 / `:155` 之前 | 插入 B1（`###` 标题 + 五段 · 前后各一空行）⇒ **+12 行 / +2,917 字符**（= 11 行内容 2,905 字符 + 12 个换行） |
+| L2 | `common.md:13-21`（先查档节）· `:152-153`（探索顺序两行）· `:166-191`（工具路由表）· `:178` | **零改**（K2：格言体与表行各守其形；分界句在 B1 首段末句一次说清） |
+| L3 | `thincoder-core/tool-docs/doc_search.md` | **零改**（工具描述面不属本批；F4 的缺口由 B1 P2 的 why 承载） |
+| L4 | `persona-engineering.md` · `discipline-engineering.md` · 其余 14 档 · `PROJECT-MANIFEST.json` · 产品代码 · 需求档 | **零改**（实施席不改 · K1 · K3） |
+
+**对照表 · 与既有条款逐句对照（结论 = 零矛盾）**：
+
+| 既有句 | 它管什么 | 本节管什么 | 为何不矛盾 |
+|---|---|---|---|
+| `common.md:13-21` FR38「Check the docs before you ask」 | 提问之前：意图问人、事实查档；`A doc answers facts; intent gets asked` | 查文档时用哪个工具、覆盖什么面 | **相邻两轴**：同一节首行已把 `doc_search` 列进「先查档」清单；本节是那张清单的**执行形**（用谁查）。B1 首段末句显式分界 |
+| `discipline-engineering.md:42` FR39 三问（`none found: <which surfaces were checked>`） | 落笔前交答案：现成件在 ∥ 查无 | `doc_search` 空之后才 `grep`，「查无」要携面 | **同形不同题**：FR39 的 `none found:` 判「没查 vs 查无」；本节只把「哪个工具查的」写进同一个短语（`doc_search: none found`）——短语形态同源，记录面各一 |
+| `common.md:152-153` 探索顺序 | 从结构到意图到细节的顺序 | 文档面的工具边界 | **互补**：顺序句说「先 repo_outline 再 doc_search 再 code_search」；本节说这几步各覆盖什么。A 逐字零改 |
+| `common.md:166-191` 工具路由表 `:178` 行 | 工具择一（`doc_search` 用途 ∥ `grep` 的 bash 反面） | 两个搜索工具的选择判据 | **两轴**：表管「用工具还是用 bash」；本节管「两个工具各答哪类问题」。表零改（K2） |
+| `common.md`「Doc vs process」节 ∥「Batch record」节 | 状态住需求 / 设计档；过程住批次档，可整档删 | `grep` 命中过程档 = 线索不是结论 | **本节是那条纪律的执行形**：过程档可整档删 ⇒ 拿它当依据的那条依据会消失；B1 P4 复述「状态住状态档 · 批次档可整档删」= **关键锚点重复**（D-PS41 先例：各层须能独立阅读——删掉该句，P4 的「开它指向的状态档」就没有理由）；机制详述仍只住那两节 |
+| `common.md:131-136` ∥ `:138-150` 联网面两子节（`Search tool priority` ∥ `When online verification is required`；同属 `## Tool discipline` `:130-164`） | 联网搜索：工具优先级 ∥ 何时必查 | 文档搜索：发现 vs 定位 | **同族第三张**：`## Tool discipline` 的搜索工具选择面，联网两张、文档面一张 |
+| `common.md`「Evidence discipline」节 | 断言须 `file:line` 或 `unverified` | 跨仓未声明 ⇒ 携 `cross-repo: not indexed` | 同向：都在给「我没看到」和「那里没有」分野；本节把分野落到检索面 |
+| `thincoder-core/tool-docs/doc_search.md` 正文 | 工具自述（用途 / 返回形态） | 检索面覆盖与不覆盖什么 | **工具描述面零改**（F4）：提示词面自带 why，读者不必依赖工具自述；两处不构成同一机制的两份描述 |
+| `PROJECT-MANIFEST.json` `index.publicRepos = []` · `index.excludePaths` · `declaration.mjs:121-144`（面⑥） | 索引域与过程档排除的**实现** | 同一机制的**读者面**说明 | **实现 = 事实源，本节 = 读者面**：B1 P2 只写「声明域（多仓）vs 一个路径（默认本仓）」，P4 再写过程档在域外（次因）；段序列判据不复制 |
+
+**用例表（正常 / 边界 / 错误）**：
+
+| 编号 | 场景 | 输入 / 动作 | 期望 |
+|---|---|---|---|
+| C1 | 正常 · 发现式 | 「有没有关于离线队列的既有规范？」 | 首查 `doc_search`；命中设计档 ⇒ 直接引该节 |
+| C2 | 正常 · 定位式 | 已知 `WRITE.md`，要 `write` 工具的实现行 | `grep` 直用，不先 `doc_search` |
+| C3 | 边界 · `doc_search` 空 + `grep` 命中 | 术语只在批次档里出现过 | 答案携 `doc_search: none found`，并标明命中来自批次档 ⇒ 线索 |
+| C4 | 边界 · 两工具都空 | 新话题，确无既有档 | 答案 = `doc_search: none found` + 已查面清单；可按三问判「已查无」 |
+| C5 | 边界 · 命中 `_archive` | `grep` 命中 `**/_archive/**` 的旧设计 | 回状态档核；状态档无此规则 ⇒ 按「已废」处置，不引旧档 |
+| C6 | 边界 · 跨仓未声明 | 话题可能住兄弟仓，答案为空 | 携 `cross-repo: not indexed`；不得把「grep 没扫到」写成「项目没有」 |
+| C7 | 错误 · 用 grep 做发现（跨仓输入） | 话题不住本仓，开局 `grep -rn "<术语>" .` | 判结构性失明：`grep` 只拿到 cwd 一个路径，兄弟仓不在其内；应改走 `doc_search`，空则携 `cross-repo: not indexed` |
+| C8 | 错误 · 兜底不声明 | 答案只写「没找到」，未写 `doc_search: none found` | 判「没查」——与「查过且没有」不可区分（与 FR39 同一判法） |
+| C9 | 错误 · 拿批次档当口径 | 答案引批次档 §1 结论为现行规则 | 判 C4 反例：过程档可整档删 ⇒ 须回状态档；状态档无 ⇒ 记「已查无」 |
+| C10 | 边界 · 工具名 | `doc_search` 在读者环境不可用 | 按工具表择替代并声明「doc_search 不可用」；本条不设硬编工具名兜底（同 `:149` 判法） |
+| C11 | 错误 · 把自己没看到当成没有 | 本仓 `grep` 空结果 ⇒ 答「项目里没有这条规则」 | 判 C7 同形：跨仓可能未排除；答案须携 `cross-repo: not indexed`，不得把空结果升格为结论 |
+
+**受影响文件（现行 = 本席 `node` 实读 · 2026-10-22；Δ = 本节逐字块实算）**：
+
+| 文件 | 现行 | Δ → 改后 |
+|---|---|---|
+| `thincoder-core/prompts/common.md` | 292 行 / 46,256 字符 | L1：**+12 行 / +2,917 字符** ⇒ 304 行 / 49,173 |
+| `docs/core/design/PROMPT-SYSTEM.md` | 本节写入前实读行数 / 字符数见批档 §2 | 本节 = 新增内容，读数随写入 |
+| 其余提示词 15 档 · `tool-docs/**` · `PROJECT-MANIFEST.json` · `thincoder-core/**` 产品代码 · `scripts/**` · 需求档 | — | **±0**（实施席面；需求档 `:885` 1 行断言更正 = 父侧笔，行数不变） |
+
+**验收（A1–A10 · 回指 §13.19 五条 + 批次验收 ①–⑤）**：
+
+| # | 验收 | 判法 / 读数 |
+|---|---|---|
+| A1 | 需求 ① 两分法 | `common.md` 内 `finding a document vs locating a line`（标题）· `**Discovery**` · `**Locating**` · `which repository holds it` 各 1 次 |
+| A2 | 需求 ② 无命中要说 | `doc_search: none found` 恰 1 次；`An unstated fallback reads to the next person as` 1 次 |
+| A3 | 需求 ③ 命中判线索 | `a lead, not a finding` 1 次；`batch records always stay out of the index` 1 次（批次档 · `declaration.mjs:144` 面⑥ 无条件）；`archived pages wherever the project declares them excluded` 1 次（归档页 · 项目 `index.excludePaths` 声明，缺省 `[]` · `manifest-schema.mjs:63`）；`turns a past round's draft into this round's standard` 1 次。路径字面量不判：B1 写跨项目成立的语义陈述，`docs/batches` 是本仓 manifest 值（`PROJECT-MANIFEST.json:23`），写死路径在别的项目为假 |
+| A4 | 需求 ④ 跨仓 | `cross-repo: not indexed` 恰 1 次；`index.publicRepos` 2 次；`adds nothing to the searchable domain` 1 次 |
+| A5 | 携 why（机制差写清 · 主轴 = 检索面） | `searches a declared domain` · `the one you hand it, the current repository by default` · `Other repos on this machine` · `structural limit across repositories` · `secondary cost next to the cross-repo blindness` 各 1 次；`whole tree` **零命中**（「扫全树」不得作为 grep 的主缺陷——两向各报 `node` 子串读数） |
+| A6 | 无禁令腔 | B1 扫 `never\|do not\|don't\|must not\|may not\|forbidden` ⇒ **0**（本席预扫 0，`execute` 实测） |
+| A7 | 零文档引用 · 机检 | `node scripts/prompt-refs-check.mjs` ⇒ 命中 0（基线 69 档 / 463 档 / 0）；B1 无 `.md` / 无 `§N` ⇒ J1/J2/J3 零对象；`doc_check(mode:"gate")` ⇒ PASS |
+| A8 | 与 FR38 / FR39 零冲突 | `common.md:13-21` 与 `discipline-engineering.md:42` **逐字零改**（git diff 零）；B1 首段末句 `decides when to look; this subsection decides which tool looks` 1 次 |
+| A9 | 计数连带（D3） | `common.md` `##` 节数 **20 ⇒ 20** · 标题节点 **25 ⇒ 26** · h3 **5 ⇒ 6**（`node` 实读）；需求档 `### 2.3` 标题「common.md 20 节」（`:64`）零改——大纲按 `##` 登记 |
+| A10 | 需求验收 ② 前半（声明 `publicRepos` 后 `doc_search` 能命中兄弟仓） | **本批不可验**——阻塞于 FR41 ⑤ 未裁（`ENGINEERING-MODE-V2.md:883`）；本批只验「未声明」分支（A4） |
+
+**体量读数（无帽 · 只读数）**：`common.md` 现状 = 292 行 / 46,256 字符；B1 = 2,915 字符 / 11 行；改后 = 304 行 / 49,173 字符（+6.31%）。提示词面基线 = 69 档 / 代码面 463 档 / 命中 0。
+
+**边界（本批不做）**：不改 `doc_search` 检索语义 · 不改既有排除规则（`declaration.mjs:121-144` 面⑥ 已正确）· 不改 `thincoder-core/tool-docs/doc_search.md` · **不改 `PROJECT-MANIFEST.json`**（需求第 5 条 = 配置面由用户裁，本批未裁 ⇒ B1 P5 按「未声明」边界写；待裁项见本节「上抛项」）
+· 不禁 `grep`（定位式照用）· 不新增脚本 / CI 步 / 机判门 · 不改 `common.md:13-21` ∥ `:152-153` ∥ 工具路由表 · 不改 FR38 三条 ∥ FR39 三问。
+
+**需求档本批改写 1 行（父侧笔 · 实施席面之外）**：需求档 `ENGINEERING-MODE-V2.md:885` 经父侧在本批评审轮改写 1 行，现文断言「不带档类——实读 `thincoder-core/memory/docs.mjs:236-238`」，行数不变；L4 ∥ 受影响文件表的「零改 / ±0」= **实施席面**口径（实施席零写需求档）。
+
+**关键决策**：
+
+| # | 决策 | 理由 |
+|---|---|---|
+| K1 | 落 `common.md` 同层新增 `###`（`## Tool discipline` 内 · `### Codebase exploration order` 之后） | 受众 = 两模式 + 全子代理 ⇒ 公共层恒第二位唯一全覆盖（同 D-PS36 / §6.42 K1）；`###` = 零 `##` 节计数连带（同 D-PS39 / D-PS40 判例）；同节已装联网面两张搜索选择子节，文档面正是缺的第三张 |
+| K2 | `### Codebase exploration order` 正文**逐字零改**，新节紧随其下 | 那两行是「从哪起手」的记忆锚；把机制差塞进去即毁其形（§6.41 K2 的反向处置：整行替换只在同一机制时成立，这里是两条互补句） |
+| K3 | 工具路由表**零改** | 表是工具→用途的索引，`Not` 列管的是 bash-vs-tool；本节管两工具分工。加注 = 一个单元格承载一段 why，读不出来的理由 |
+| K4 | 双语字面：英文面 `doc_search: none found` / `cross-repo: not indexed`；中文记录面 `doc_search 已查无：` / `跨仓未纳入索引：` | 提示词面英文（全档同语），批档 / 台账 / 回复面中文；两形一词表（同 §6.41 K3 三形处置的镜像） |
+| K5 | 主轴 = **检索面之差**（声明域、多仓 vs 一个路径、默认本仓），不写「禁止 grep 做发现」 | 用户令「知其然知其所以然」+ 10:06 裁「问题不是扫全树，是会忽略跨仓文本」：结构性失明本身就是理由；裸禁令不给读者判断新场合的能力（同 D-PS42 ①） |
+| K6 | 「看不见」写成 **`unless your command already carries their absolute paths`**，不写「绝对查不到」 | 实读语义（`grep` 工具面 `path` 参数缺省 = cwd）：命令里带绝对路径就能读到兄弟仓副本 ⇒ 绝对化措辞为假；限定句同时把代价链讲准：模型**没有仓清单**，因而拿不到那条路径（10:06 原话「除非你已知绝对路径，否则完全不可见」） |
+
+**先例 ∥ 偏离**：先例 = 本档 §6.41 / §6.42（逐字英文文本 + 落点表 + 对照表 + 用例表 + 验收 + 体量读数）∥ D-PS39 / D-PS40（`###` 子节、零 `##` 连带）∥ D-PS41（同族事实跨层各点一次）。
+**对齐** = 同形制；why 在正文内；`###` 级新增；机判沿用 `prompt-refs-check` 与 `doc_check`。
+**偏离** = ① 首次在 `## Tool discipline` 内以「新增 `###`」而非「既有节内增列」落一条搜索选择规则——既有两张子节各自是 `###`，本条与它们同级才成族（`###` 级新增的先例已在 D-PS39 / D-PS40）。
+② 首次给「检索面」写正向判据（什么是发现、什么是定位），既有条款只有顺序与工具用途。③ 首次把「检索面」立为主轴，过程档在域外为次因——需求原验收 ① 只要求「两分法 + 已查无 + 线索」三句，主轴的依据 = 用户原话「grep的问题不是扫全树，是会忽略跨仓文本」；同时保留「路径已带绝对路径则可读」的限定句（K6），不把「看不见」写成绝对化。
+
+**勘察证据行（本席直读 · 2026-10-22）**：
+
+- `common.md:13-21`（Check the docs before you ask）· `:43-48`（Evidence discipline）· `:251-259`（Batch record）· `:260-265`（Doc vs process）。
+- `common.md:130-164`（`## Tool discipline` 起止，下接 `:166` `## Tool routing`）· `:131-136`（Search tool priority）· `:138-150`（When online verification is required · `:149` 无硬编工具名句）。
+- `common.md:152-153`（Codebase exploration order 两行）· `:155-158`（Parallel call principles）· `:160-164`（Steering your own context）· `:166-191`（工具路由表 · `:178` doc_search 行）。
+- `thincoder-core/tool-docs/doc_search.md` 全句（一句正文，无声明域 / 无排除 / 无跨仓）· `thincoder-core/tool-docs/grep.md:7` ∥ `thincoder-core/tools/search.mjs:93`（`path` 缺省 = cwd）⇒ B1 P2「一个路径」有据。
+- `thincoder-core/declaration.mjs:81`（`index.publicRepos` 投影）· `:266-277`（`declaredPublicRoots`）· `:133-149`（`isExcludedRelPath`：面⑥ 段序列 + 面① 前缀）。
+- `thincoder-core/memory/code-search.mjs:19-25`（`searchOrigins` = 项目 origin ∪ 声明公共仓）· `thincoder-core/memory/docs.mjs:28-32`（`docSync` 逐声明根同步）· `:112-131`（`docSearch` 一次调用按 origin 集过滤）⇒ B1 P2「声明域 · 一次提问」有据。
+- `thincoder-core/memory/docs.mjs:236-238`（命中形 = `path > heading` + 行段 + relevance）· `thincoder-core/memory/code-index.mjs:203`（`language` = markdown / text / rst / asciidoc）⇒ 命中**不带档类**，「命中携档类」句无源，已删。
+- `common.md` 实读 = 292 行 / 46,256 字符 / 标题 25（`##` 20 · `###` 5）——`node` 实读。需求档 `docs/core/requirements/PROMPT-SYSTEM.md:64` `### 2.3 公共层（… common.md 20 节）`。
+- `node scripts/prompt-refs-check.mjs` 零参读数 = 提示词面 69 档 · 代码面 463 档 · 命中 0。
+- `PROJECT-MANIFEST.json:61` `index.publicRepos = []` · `:57-60` `index.excludePaths` 含两处 `_archive` · `:23` `docRoot.batches = docs/batches`。
+- 本档 §6.41 ∥ §6.42（形制与相邻节）· 需求档 §13.16（FR38，`:809-822`）∥ §13.17（FR39，`:826-843`）∥ §13.19（FR41，`:864-887`）· 本批批次档 §1。
+- 工作目录内无独立公共源文档仓（`index.publicRepos = []`）——已查，无相关。
+
+**UI / 交互决策**：无界面面——本条只改模型可见提示词文本。
+
+**上抛项（待裁）**：FR41 ⑤ = `index.publicRepos` 是否声明（`ENGINEERING-MODE-V2.md:883`）——配置面，用户未裁；`PROJECT-MANIFEST.json` 零改，B1 P5 按「未声明」边界写。解除条件 = 用户裁定：声明 ⇒ 另开配置面批次补声明，并补验 A10；不声明 ⇒ A10 保持不可验。本项由父侧落台账。
+
 ## 7. 关键决策记录
 
 | # | 决策 | 理由 |
@@ -2562,6 +2723,7 @@ B3 — `discipline-engineering.md`：`- **Assertions ride behavior, not prose**`
 | D-PS40 | **上下文自掌舵 = 落 `common.md`「工具观」节内新增 `###` 子节**（`### 上下文自掌舵`——查（含距压缩线）∥ 自压携 focus · 可取回 ∥ 到压缩线自动压缩 = 兜底非收工令）；**EN 按本节设计于实施轮落笔**；零 `##` 块计数连带（标题节点 23 ⇒ 24） | 用户 2026-10-16 23:57 逐字批准；受众 = 两模式主会话主面 + 全角色（③）⇒ 公共层恒第二位；`###` = 零 `##` 连带（同 D-PS39）；被否 = 新增 `##` 节（块计数连带 + 需求档节表锁定）∥ 两模式纪律档分落（跨模式同文 = 双份零收益——D-PS36 判据）∥ 人格层（内容非身份 / 边界） |
 | D-PS41 | **异步并发认知与 `wait_for` 判断 = 三档四处既有节内增列 / 就地改写**（① `common.md`「并行调用原则」+2 行〔引擎全异步高并发 + 派出后两种走法〕∥ ② `common.md`「工具路由」+2 行〔`wait_for` 等无送达通道的状态；等报告 = 阻塞且只拿到 settle 信号〕∥ ③ `discipline-engineering.md` `:206` 整行扩写〔并发是常态；攥着逐枚等 = 把并行排成串行〕∥ ④ `persona-engineering.md`「并行委派与多任务」+1 bullet〔父侧等待姿势〕）；**零 `##` 块计数连带 ∥ 零标题节点连带**；**EN 按本节设计于实施轮落笔** | 受众分层：① ② 公共层（恒第二位 = 两模式 + 全部子代理共读）∥ ③ 工程纪律层（该模式怎么干活）∥ ④ 父侧写权独属行为；**同一事实三层各点一次 = 关键锚点重复**（先例 = D-PS7「本地只加出口边界句 + 最短动作锚」——各层须能独立阅读：删任一层的句子，该层读者即缺句）；被否 = 只落公共层（层内自足性丢失）∥ 新增 `##` 节（块计数连带 + 公共层节表受需求档锁定） |
 | D-PS42 | **禁类写法改因面三条**：① **不硬编因果**——「可改因」的唯一依据 = 原句（或同段邻句）已带原因（准入①），其次才是机制档有可核坐标（准入②，须给坐标；给不出不得走②）；两道都不成立 ⇒ 归「约定」或「需裁」，不补理由。② **标题命名轴 = 该块赖以成立的机制或裁决**，不按服从强度命名。③ **体量只作读数、不设帽**（2026-10-21 用户裁：提示词无预算；§6.11 的 ≤8,000 帽属工具描述面） | ① 用户 2026-10-17 23:46 令 + 「给约定编一个原因比禁令更坏」（假理由会被拿去推断没见过的场合）；② §6.32「标题命名轴」一句可判；③ 提示词逐请求注入 ⇒ 字节即成本，相对帽随档体量自适（本批基线 262,499 字符，上限 +7,875）；被否 = 绝对帽（各档体量差 30 倍，同一帽会同时过松与过紧） |
+| D-PS43 | **文档检索路由（FR41）= `common.md`「工具纪律」节内新增 `###` 子节**（`### Document search — finding a document vs locating a line`——发现式 ⇒ `doc_search` 首查 ∥ 定位式 ⇒ `grep` 照用；**why 主轴 = 声明域（多仓）vs 一个路径（默认本仓）⇒ 跨仓结构性失明**，过程档在域外 = 次因〔用户 2026-10-22 10:06 裁「问题不是扫全树，是会忽略跨仓文本」〕；两处落笔字面：`doc_search: none found` ∥ `cross-repo: not indexed`）；**EN 按 §6.43 于实施轮落笔**；零 `##` 节计数连带（20 ⇒ 20）；标题节点 25 ⇒ 26 | 受众 = 两模式 + 全子代理 ⇒ 公共层恒第二位（同 D-PS36）；`###` = 零 `##` 连带（同 D-PS39 ∥ D-PS40）；同节已装联网面两张搜索选择子节、文档面缺位（§6.43 落点判断表）；被否 = 改 `### Codebase exploration order` 正文（毁 2 行记忆锚）∥ 工具路由表加注（单元格装不下 why） |
 
 ## 8. 提示词承载（单源 · M9 落点）
 

@@ -11,8 +11,8 @@
  *    同档同键集去重、读到零未知键清该档 memo）——非拒定性零变。
  *  - validateManifest(obj) → { ok, errors, missingKeys, unknownKeys }：枚举 / version 数值 /
  *    docRoot 子键值形态（串 | 数组 | null（本面无——KD-M1-37），F7）——**纯函数、零 fs**；不落盘。
- *  - 三族声明键（`codePaths` / `index.{codeExtensions,docExtensions,publicRepos}` / `advisor.{docMap,standardsDoc}`——
- *    KD-M1-31 / M1-32）：缺键补默认；形态错 = 档非法（fail-closed，与 docRoot 子键同款）；
+ *  - 两族声明键（`codePaths` / `index.{codeExtensions,docExtensions,publicRepos}`——KD-M1-31 / M1-32）：
+ *    缺键补默认；形态错 = 档非法（fail-closed，与 docRoot 子键同款）；
  *    读向 = `declaration.mjs`（2026-10-01 自 `conventions.mjs` 迁出——经其转口可达）经 `readManifest` /
  *    `manifestFilePath` 投影（单向——KD-M1-33）；`index.publicRepos` 绝对根集 = `declaredPublicRoots`（§6.15）。
  *  - isValidDocRootValue(value) / docRootPaths(value, cwd)（F7 判据单源 KD-M1-8）：值形态谓词
@@ -35,7 +35,7 @@
  *    落盘）；仅 writer === 'main' 落盘（fail-closed 缺省拒）。
  *
  * N1 零依赖：仅 node:fs / node:path + 标准库 JSON.parse——无第三方解析器、无 node:sqlite。
- * N3 可迁移：本模块不硬编码任何本仓路径（docRoot / checkConfig 由被开发项目声明）。
+ * N3 可迁移：本模块不硬编码任何本仓路径（docRoot 由被开发项目声明；机检参数不在 manifest 面——住引擎内置常量）。
  */
 import { readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path"
@@ -277,7 +277,7 @@ export function writeManifest(cwd, manifest, { writer = "subagent" } = {}) {
 }
 
 /**
- * 初始化 = 写默认八键档（模块设计 §2.2）：只提供机制，不包交互问答（问答归壳面）。
+ * 初始化 = 写默认五键档（模块设计 §2.2）：只提供机制，不包交互问答（问答归壳面）。
  * 落盘走同一写门（内部 writeManifest(cwd, DEFAULT_MANIFEST, { writer })）——与 AC-M1-5
  * 同一闸，无第二条写路径（KD-M1-4 / 评审 #12）。
  * @returns {object} 写入的默认 manifest

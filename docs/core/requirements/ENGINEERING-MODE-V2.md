@@ -9,7 +9,7 @@
  · 用计数器 / 上限替代「有结论 + 停下上报」 · 把纪律句机械化成机检 · 以「拦截」代替「让正确的路更好走」。核心承诺三条：① 代码必须先有**被评审过的设计**；② 评审对象**由任务定义**、不靠遍历猜测；③ 评审循环在**实现者内部闭环**（不依赖父代理持有凭证）。
 >
 > **与普通模式的唯一差别 = 流程强度**（反向锚 = `NORMAL-MODE.md` §5.1）：工程模式 = **强流程**（约束靠结构实现）；普通模式 = **纪律驱动**（无结构约束）。工程模式的**结构化约束点**（流程里绕不过的关口）= **写权凭证**（designToken）· **设计先过评审再写码** · **批次档 /
- 任务书必备**（四项核心 + 第五项按角色 + `round`（eng 角色）+ `batchDoc` 体检）· **`verify` 收尾门** · 需求 / 设计 / 测试三档逐条可机判。共享面 = 三观（`PHILOSOPHY.md`）· 公共层提示词 · 方法论判据（`METHODOLOGY.md`）· 工具面——**差别只在流程强度，不在「要不要认真」**。
+ 任务书必备**（四项核心 + 第五项按角色 + `round`（eng 角色）+ `batchDoc` 体检）· **`verify` 收尾门** · 需求 / 设计 / 测试三档逐条可机判。共享面 = 三观（`PHILOSOPHY.md`）· 公共层提示词 · 方法论判据（`docs/core/requirements/METHODOLOGY.md`）· 工具面——**差别只在流程强度，不在「要不要认真」**。
 > 细节单源 = 本档 §13 继承机制与 `ENGINEERING-MODE-V2-SPEC-*` 系列（D2——本段只承「总体定义」一职，不重述机制）。
 
 ## 1. 定位与灵魂
@@ -221,7 +221,7 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 |---|---|---|
 | 项目状态档 | `PROJECT-MANIFEST.json`（固定） | — |
 | 项目需求 | `PROJECT-REQUIREMENTS`（固定名 + `.md` 扩展名） | — |
-| 架构设计 | `ARCHITECTURE.md`（固定） | — |
+| 架构设计 | `docs/core/design/ARCHITECTURE.md`（固定） | — |
 | 功能规格 | `spec-<模块名>.md` | 模块名代入 `user-mgmt` |
 | 模块设计 | `design-<模块名>.md` | 模块名代入 `user-mgmt` |
 | 批次档 | `<YYYY-MM-DD>-<topic>.md` | 日期 2026-09-17 · 主题 `engine-mode-v2-arch` |
@@ -297,7 +297,7 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 
 ### 7.2 角色 A · 主 agent（对话面 · 唯一）
 
-> **提示词落点**：`persona-engineering.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
+> **提示词落点**：`thincoder-core/prompts/persona-engineering.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
 
 **职责**：
 - 需求讨论 + 登记
@@ -331,7 +331,7 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 
 ### 7.3 角色 B · eng-designer（设计文档唯一作者）
 
-> **提示词落点**：`persona-eng-designer.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
+> **提示词落点**：`thincoder-core/prompts/persona-eng-designer.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
 
 **职责**：
 - 核对主 agent 写的 Function Spec 合规（五要素齐：模块目标 / 功能点 / 边界 / 验收 / 依赖，具体到可设计），不合规打回（§7.6 互锁）——**先验料，料不对打回，不白勘察**
@@ -367,7 +367,7 @@ v2 把纪律从「文字」变成「机器」——**能靠结构拦的，就不
 
 ### 7.4 角色 C · eng-coder（实现唯一执行者）
 
-> **提示词落点**：`persona-eng-coder.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
+> **提示词落点**：`thincoder-core/prompts/persona-eng-coder.md`——角色定义见 `docs/core/requirements/PROMPT-SYSTEM.md` §2.2 人格层（本角色 = 交叉引用回本节）。
 
 **身份**：被授权的实现者——父代理交任务书（批次档 §2）+ 设计 token，设计档是权威规格；你的角色是实现。
 
@@ -540,12 +540,12 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 | 档 | 判定 | 合并回（语义对应，逐份核对） |
 |---|---|---|
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-LEDGER.md` | 反向退役 | `LEDGER.md` + `LEDGER-SELF-CONTAINED.md` |
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-BATCH-SEGMENT.md` | 反向退役 | `BATCH-RECORD.md` |
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-WRITE-GATE.md` | 反向退役 | `WRITE.md` + `ENG-TOKEN-BINDING.md` |
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-DELEGATION.md` | 反向退役 | `AGENT-LOOP-SUBAGENT.md` |
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-REVIEW-CREDENTIAL.md` | 反向退役 | `DESIGN-TOKEN-SETTLEMENT.md` + `ADVISOR-GUARDS.md` |
-| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-MACHINE-CHECK.md` | 反向退役 | `DOC-DISCIPLINE.md` + `DOC-CODE-RECONCILE.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-LEDGER.md` | 反向退役 | `docs/core/design/LEDGER.md` + `docs/core/design/LEDGER-SELF-CONTAINED.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-BATCH-SEGMENT.md` | 反向退役 | `docs/core/design/BATCH-RECORD.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-WRITE-GATE.md` | 反向退役 | `docs/core/design/WRITE.md` + `ENG-TOKEN-BINDING.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-DELEGATION.md` | 反向退役 | `docs/core/design/AGENT-LOOP-SUBAGENT.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-REVIEW-CREDENTIAL.md` | 反向退役 | `DESIGN-TOKEN-SETTLEMENT.md` + `docs/core/design/ADVISOR-GUARDS.md` |
+| `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-MACHINE-CHECK.md` | 反向退役 | `docs/core/design/DOC-DISCIPLINE.md` + `docs/core/design/DOC-CODE-RECONCILE.md` |
 | `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-PROMPT-PIPELINE.md` | 反向退役 | `PROMPT-SYSTEM.md` |
 | `docs/core/design/_archive/modules/ENGINEERING-MODE-V2-MODULE-TEST-DISCIPLINE.md` | 反向退役 | `TESTING.md` |
 | `docs/core/requirements/_archive/ENGINEERING-MODE.md` | 退役 | v2 架构设计替代 |
@@ -554,17 +554,17 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 | 档 | 判定 | 去向 |
 |---|---|---|
-| `LEDGER.md` | 不退 | 就地更新 = M2 台账设计 |
-| `LEDGER-SELF-CONTAINED.md` | 不退 | 就地更新 = M2 各仓自持 |
-| `BATCH-RECORD.md` | 不退 | 就地更新 = M3 批次档六段 |
-| `WRITE.md` | 不退 | 就地更新 = M4 写门 |
+| `docs/core/design/LEDGER.md` | 不退 | 就地更新 = M2 台账设计 |
+| `docs/core/design/LEDGER-SELF-CONTAINED.md` | 不退 | 就地更新 = M2 各仓自持 |
+| `docs/core/design/BATCH-RECORD.md` | 不退 | 就地更新 = M3 批次档六段 |
+| `docs/core/design/WRITE.md` | 不退 | 就地更新 = M4 写门 |
 | `ENG-TOKEN-BINDING.md` | 不退 | 就地更新 = M6 凭证绑定 |
-| `AGENT-LOOP-SUBAGENT.md` | 不退 | 就地更新 = M5 委派 |
+| `docs/core/design/AGENT-LOOP-SUBAGENT.md` | 不退 | 就地更新 = M5 委派 |
 | `AGENT-LOOP.md` | 不退 | agent 运行时主循环——只更新委派/调度子节 |
-| `ADVISOR-GUARDS.md` | 不退 | 就地更新 = M6 评审门禁 |
+| `docs/core/design/ADVISOR-GUARDS.md` | 不退 | 就地更新 = M6 评审门禁 |
 | `DESIGN-TOKEN-SETTLEMENT.md` | 不退 | 就地更新 = M6 凭证结算 |
-| `DOC-DISCIPLINE.md` | 不退 | 就地更新 = M8 机检 |
-| `DOC-CODE-RECONCILE.md` | 不退 | 就地更新 = M8 对账 |
+| `docs/core/design/DOC-DISCIPLINE.md` | 不退 | 就地更新 = M8 机检 |
+| `docs/core/design/DOC-CODE-RECONCILE.md` | 不退 | 就地更新 = M8 对账 |
 | `PROMPT-SYSTEM.md` | 不退 | 就地更新 = M9 提示词 |
 | `TESTING.md` | 不退 | 就地更新 = M10 测试纪律 |
 
@@ -605,12 +605,12 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 | D4 | **指针纪律** | 指针形态 = **`档名` §节名 ·「条名」**（**章节 / 条名优先，禁行号引**——行号随编辑必烂：往被引档插一行，全部按行号的引用当场失效〔2026-10-16 实证：一夜插行即连坏三处〕；**新建引用一律按此形**）。**射程 = 指针**（指向另一份档的某章 / 某条）：**实施坐标**（代码 / 工具面的定位坐标）· **盘点 as-of 读数**（记「此刻在哪」的实测行）· **评审证据引文**（引本轮 read 的行内容）各归其面，不在本条射程内；禁相对指针（「见上 / 见该节」）。**存量收正 = 分期执行**；**完成判据 = 自标面（需求 / 设计 / 提示词）的行号形引用归零** |
 | D5 | **冻结窗口** | 评审在途不改被审文档（改了 = 评审对象已变 → stale，token 不签发） |
 | D6 | **回读核对** | 任何写入后回读核实再报完成 |
-| D7 | **变更留痕 + 核销同步** | 每批核销跑核销同步清单（批次档 §6）：角色表 / 状态行 / 计数 / 指针 / 待办勾销（**含前批遗留核对**——条目已完成而挂靠批档未收口 ⇒ 兜底核销路径 = `design/BATCH-RECORD.md` §5.2）/ **修正轮落地前置** / **搁置清单回核** / **暂缓批复核**（无暂缓批记「无」一行）/ **用户文档面同拍**（触及用户可感能力 ⇒ 逐面对照；无涉记「无」一行——口径 = `design/BATCH-RECORD.md` §5.3）/ 台账可见面 |
+| D7 | **变更留痕 + 核销同步** | 每批核销跑核销同步清单（批次档 §6）：角色表 / 状态行 / 计数 / 指针 / 待办勾销（**含前批遗留核对**——条目已完成而挂靠批档未收口 ⇒ 兜底核销路径 = `docs/core/design/BATCH-RECORD.md` §5.2）/ **修正轮落地前置** / **搁置清单回核** / **暂缓批复核**（无暂缓批记「无」一行）/ **用户文档面同拍**（触及用户可感能力 ⇒ 逐面对照；无涉记「无」一行——口径 = `docs/core/design/BATCH-RECORD.md` §5.3）/ 台账可见面 |
 | D8 | **失效表达必删** | 规范面（功能点 / AC / 判据句 / 纪律句 / 边界 / 现状陈述）内失效的表达（被判否 / 对象消失 / 被取代）⇒ **删除**——不留 `~~划改~~` / 不写「原记 X ⇒ 收正 Y」/ 不留「已作废」挂尸；历史归**记录面**（**变更记录段 / 不并项与历史沿革 已废除**——规范档只写终态；历史去向 = git 提交）（2026-10-02 同步——`docs/core/design/DOC-DISCIPLINE.md` D8 块） |
 | D9 | **知其然知其所以然** | 更新 / 新增规范文本（提示词 ∥ 文档 ∥ 批档 ∥ 台账证据行）须携 why——**改前知依据**（先有来源：用户原话 / 实证 / 评审——禁无据动刀）· **内容携 why**（要求之外写清因果 / 教训 / 先例——讲道理式）· **why 来源可核**（禁即兴编理由——来源可指认）；**从简**（短说平铺——不堆装饰、不逐句配理由）（2026-10-07 同步——`docs/core/design/DOC-DISCIPLINE.md` D9 块） |
 
 机械校验最小集（V1–V6：段引用可解析 / 计数与列表一致 / 批次档 §3 轮次行 / 跨仓形态合规 / 文档锚一致性 / 编号引用可解析）——判据与引擎见 `design/DOC-DISCIPLINE.md`（v2 机检单引擎 = §7）；校验铁律 = `npm test` 可跑 · 零假阳才常驻（阈值 = 0，违规一律阻断）· 不得靠自然语言理解。
-**文档检查机制** = 见 `DOC-CHECK.md`（三个触发点 · 本轮改过的档全文检查 · 命中即拒绝交付 · 不挂账 · 拿不准上抛用户）。
+**文档检查机制** = 见 `docs/core/requirements/DOC-CHECK.md`（三个触发点 · 本轮改过的档全文检查 · 命中即拒绝交付 · 不挂账 · 拿不准上抛用户）。
 
 
 ### 13.2 VSC 端镜像（FR23）
@@ -627,7 +627,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 - **数字单源**：解析/计数/老化/阈值一处实现，机检器与两端显示面共用口径。
 - **零噪音与降级**：无可动作 → 零输出；台账不可读/坏档 → 降级不崩；headless 零新增输出；台账档只读。
 
-设计见 `design/LEDGER.md`（v2 SQLite 数据源——§7 可见面接口）。
+设计见 `docs/core/design/LEDGER.md`（v2 SQLite 数据源——§7 可见面接口）。
 
 ### 13.4 文档体系各仓自持（FR25）
 
@@ -650,7 +650,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 **非功能性**：N1 零假阳（机检新规则对本仓合法内容零命中）· N2 fail-closed · N3 可分步（存量迁移允许分期——每期有明确触发条件与逐档清单）· N4 否决在案（不得以「另有他档」为由放宽指针射程）。**两轴并列**：本节管**条目与归属**（轴一）；文档正文引用对端产品文档按既有 V1 边界规范（轴二）。
 
-设计见 `design/LEDGER-SELF-CONTAINED.md`（L4 判据 + 形态合规 V4）。
+设计见 `docs/core/design/LEDGER-SELF-CONTAINED.md`（L4 判据 + 形态合规 V4）。
 
 ### 13.5 变更面分流（FR27）
 
@@ -668,11 +668,11 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 - **界**：一批 = 一个交付目标 + 一组同批条目 + 一份批次档；交付目标变更 / 阶段跨越 / 条目集变更 ⇒ 另起新批新档。
 - **护栏·长度**：单档 >1000 行 = 越界信号 ⇒ 另起新批。
 - **护栏·轮次**：§5 修正轮上限 5 轮（触顶 ⇒ 本批自然边界）；§3 设计评审无轮次上限——触达停止判据（持续拒绝 >3 轮）⇒ 停下上报。
-- **闭合/退役**：§6 收口 ⇒ 状态行「已收口 <日期>」+ 整档冻结（不回改；冻结档不迁移不删）；v2 机械兑底 = batch close/append 冻结拒写（`design/BATCH-RECORD.md` §4.9/§4.13）。
+- **闭合/退役**：§6 收口 ⇒ 状态行「已收口 <日期>」+ 整档冻结（不回改；冻结档不迁移不删）；v2 机械兑底 = batch close/append 冻结拒写（`docs/core/design/BATCH-RECORD.md` §4.9/§4.13）。
 - **收口前置·链完整性（用户 2026-10-18 18:47 裁定）**：`close` 与 `status → 已收口` 走**同一道**前置——§2 / §3 / §4 / §6 各段须有内容，或该段在 §1 以 `> 不适用：§N —— <理由>` 声明（仅 §2/§3/§4 可声明；**§6 不可声明**，收口段必须带验证内容；§5 段号豁免）。判空口径 = 段体内每行皆属「空行 / 标题行 / 状态行 / 模板占位 / 声明行」即判空（**「标题在、正文零行」须判空**）。不满足 ⇒ 拒并点名缺段。理由：无此前置时，链未跑完仍可标收口并永久冻结——缺口补不进、错标改不回。
 - **重开路径（同上裁定）**：已收口档允许 `status → 进行中`，须携非空 `note` 作重开理由；工具在 §1 **段尾追加**一行 `**重开记录**：<日期> · 原收口 <旧日期> · 理由 = <note> · 操作者 = 主 agent`（只追加不改写正文，状态行单行改写；正文历史保留）。重开只恢复可写、**不冒充链已跑**——再次收口仍过链完整性门。
 - **接续**：新批 §1 顶部前情指针 `前情 = docs/batches/<旧档> §N（已收口 <日期>）`。
-- **护栏·暂缓复核**：暂缓（≠ 冻结）批必落**机读标记**（状态行 note 位携「暂缓 · 复核条件」句、值仍「进行中」；无标记不可枚举 ⇒ 违例）；复核 = 会话启动 ∕ 条件事件（报告 ∕ 交付入档、批收口、用户裁定）跑扫描、逐条对复核条件——满足 ⇒ 复启；对象消失 ⇒ 定去留（批档 §6 记「暂缓批复核」一行——无暂缓批记「无」；`design/BATCH-RECORD.md` §5.1 L8 ∕ D-BR24）。
+- **护栏·暂缓复核**：暂缓（≠ 冻结）批必落**机读标记**（状态行 note 位携「暂缓 · 复核条件」句、值仍「进行中」；无标记不可枚举 ⇒ 违例）；复核 = 会话启动 ∕ 条件事件（报告 ∕ 交付入档、批收口、用户裁定）跑扫描、逐条对复核条件——满足 ⇒ 复启；对象消失 ⇒ 定去留（批档 §6 记「暂缓批复核」一行——无暂缓批记「无」；`docs/core/design/BATCH-RECORD.md` §5.1 L8 ∕ D-BR24）。
 
 ### 13.7 父侧轮次与提交纪律（FR29）
 
@@ -696,9 +696,9 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 - ④ **发现新债**（停下上报产物 / 评审发现 / 文档漂移）⇒ **当日入账**，`trigger` 必填；
 - ⑤ **上抛事项**（子代理 / 评审 / 停下上报递到父侧）⇒ **当场裁定**——能收正的**同轮收正**；不能收正的**当日入账**（`trigger` + 到期条件——落 `evidence`）；**禁止只留在报告散文或「待裁」清单里**（到期条件**非枚举文本**，落字段 = `evidence`）。
 
-- **落点**：`prompts/persona-engineering.md` 台账节——**不落 `discipline-engineering.md`**（该档 eng-coder / eng-designer 也读，而台账写权仅主 agent，写入＝误导子代理）。
+- **落点**：`thincoder-core/prompts/persona-engineering.md` 台账节——**不落 `thincoder-core/prompts/discipline-engineering.md`**（该档 eng-coder / eng-designer 也读，而台账写权仅主 agent，写入＝误导子代理）。
 - **边界**：不为此加机械门（承 2026-09-18「为臆想的失败逐点加限制」= 反模式之裁）· 不重写攒批工作流本体（只补「时机」）· 普通模式暂不写「何时推进 / 核销」（**普通模式无结构强制链**——核销语义不同）· 子代理不教写账动作。
-- **验收**：① 文档面可机检——`prompts/persona-engineering.md` 含「事件 → 动作」**五行**判据 · 提示词面（`thincoder-core/prompts/`）语义一致（M9 单向机检已裁撤 ⇒ 收口核对兜底）· 新增行无超宽（≤300 字符）；② 行为面（**观察项，非机检**）——下一批的生命周期里，推进 / 核销 / 入账由模型**自主**完成，无需用户推动。
+- **验收**：① 文档面可机检——`thincoder-core/prompts/persona-engineering.md` 含「事件 → 动作」**五行**判据 · 提示词面（`thincoder-core/prompts/`）语义一致（M9 单向机检已裁撤 ⇒ 收口核对兜底）· 新增行无超宽（≤300 字符）；② 行为面（**观察项，非机检**）——下一批的生命周期里，推进 / 核销 / 入账由模型**自主**完成，无需用户推动。
 
 ### 13.9 工程模式 plan 面排除（FR31）
 
@@ -738,7 +738,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 **需求（三条）**：
 
 1. **必填清单显性化**：工程主人格提示词的任务书参数清单把 `designToken` 写成 eng-coder spawn 的必带项——**omitted = refused**，与 `batchDoc` / `round` 同形；并给取值路径（`design-slots` 行的 `designToken=` 逐字复制）。
-2. **工具说明同形**：`tool-docs/subagent.md` 的任务书段与 subagent 工具的 schema 描述，把令牌缺失 / 不匹配的后果写成 **spawn 被拒**（不再写成「子代理不能修改文件」）。
+2. **工具说明同形**：`thincoder-core/tool-docs/subagent.md` 的任务书段与 subagent 工具的 schema 描述，把令牌缺失 / 不匹配的后果写成 **spawn 被拒**（不再写成「子代理不能修改文件」）。
 3. **报错三态**：门把「未传 `designToken`」「值与槽值不等」「已过期」分成三条互异的错误句；未传句点名参数并给 `design-slots` 取值路径；三句都不回显令牌值。
 
 - **不变量（不做）**：不改令牌签发 / TTL / 消费 · 不改 depth>0 子通道的 schema 裁剪 · 不改普通模式 · 不改评审链 · **自动补全（缺参且有活槽时工具层代取）不进本批——需用户单独裁定**。
@@ -757,13 +757,13 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 - **为什么（依据可指认）**：用户原话「用户向你表达的需求，会随着上下文的压缩而灭失，如果没有及时的留下需求文档，代码为什么是这样就没了依据」；需求档是「为什么」的唯一耐久载体；文档写反比漏更坏——它会变成后续实施的依据。
 - **不变量（不做）**：不改压缩机制（阈值 / 摘要指令）· 不写「压缩前」动作 · 不改台账 schema · 不改普通模式（另裁）· 不改批次档六段结构 · 不新增机械门。
-- **验收**：① 提示词含「同轮落笔」句（触发 = 决定做出当轮；写盘位置 = 需求档 ∥ 批次档 §1 清单），子串机判；② 含「压缩后重锚」句（触发 = 压缩标记 / 回执；动作 = 回读 §1 清单 + 台账），子串机判；③ 含「未落盘决定 = 台账行」句及核销条件，子串机判；④ 三句均携 why、无禁令腔（新增段禁令词扫描 0）；⑤ `node scripts/prompt-refs-check.mjs` 命中 0；提示词⑥ 与既有条款逐句对照无矛盾（`persona-engineering.md` 的「记录决定可免确认」许可 ∥「欠账入清单」∥ 台账生命周期 ∥ `common.md` 上下文自掌舵），对照结论记入批次档。
-- **落点**：提示词 = `thincoder-core/prompts/persona-engineering.md`（身份 / 确认门附近，由设计定）∥ `thincoder-core/prompts/discipline-engineering.md`（基本流程的需求步）；`common.md` 是否同落由设计给理由（跨模式判据）；具体分句由设计定。
+- **验收**：① 提示词含「同轮落笔」句（触发 = 决定做出当轮；写盘位置 = 需求档 ∥ 批次档 §1 清单），子串机判；② 含「压缩后重锚」句（触发 = 压缩标记 / 回执；动作 = 回读 §1 清单 + 台账），子串机判；③ 含「未落盘决定 = 台账行」句及核销条件，子串机判；④ 三句均携 why、无禁令腔（新增段禁令词扫描 0）；⑤ `node scripts/prompt-refs-check.mjs` 命中 0；提示词⑥ 与既有条款逐句对照无矛盾（`thincoder-core/prompts/persona-engineering.md` 的「记录决定可免确认」许可 ∥「欠账入清单」∥ 台账生命周期 ∥ `thincoder-core/prompts/common.md` 上下文自掌舵），对照结论记入批次档。
+- **落点**：提示词 = `thincoder-core/prompts/persona-engineering.md`（身份 / 确认门附近，由设计定）∥ `thincoder-core/prompts/discipline-engineering.md`（基本流程的需求步）；`thincoder-core/prompts/common.md` 是否同落由设计给理由（跨模式判据）；具体分句由设计定。
 
 ### 13.13 任务书陈旧口径：§2 只引不抄 + 设计变更传播 + 收口对账（FR35）
 
 **背景**：用户报告（2026-10-19 23:13）：`D:\repos` 较早批（`20261019-console-case-doc-views`）§2 写「自建表四张 → 五张」并进 C3；后一批（`20261019-console-docs-from-source`）加 `doc_all` 镜像改六张，前批 §2 未随动——照前批 §2 收口，C3 的等值断言会与设计对不上。
-提示词缺口四处：任务书两源并列无优先级（`persona-engineering.md:162`）· 单一判据源只约束派单不约束 §2（`:168`）· D7 收口清单无 §2↔设计对账（`discipline-engineering.md:188-189`）· 三链同源检查只在设计轮返工前跑一次（`persona-eng-designer.md:82-84`）。
+提示词缺口四处：任务书两源并列无优先级（`thincoder-core/prompts/persona-engineering.md:162`）· 单一判据源只约束派单不约束 §2（`:168`）· D7 收口清单无 §2↔设计对账（`thincoder-core/prompts/discipline-engineering.md:188-189`）· 三链同源检查只在设计轮返工前跑一次（`thincoder-core/prompts/persona-eng-designer.md:82-84`）。
 
 **需求（三条）**：
 
@@ -778,7 +778,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 ### 13.14 整批令覆盖批准门：批内全链自动跑完（FR36）
 
-**背景**：用户 2026-10-19 23:29 裁定「这条纪律有问题啊！应该是要能够自动跑完的」，23:30「如果这个规则进了提示词，应该要改正」。被推翻的条文 = `persona-engineering.md:14`（`The go-ahead does not exempt the approval gate … "authorized to fire" is not "approved"`），出处 = `2026-10-17-prompt-firing-rights` B1（「整批令不豁免批准门」）。新口径：整批令覆盖批准门。
+**背景**：用户 2026-10-19 23:29 裁定「这条纪律有问题啊！应该是要能够自动跑完的」，23:30「如果这个规则进了提示词，应该要改正」。被推翻的条文 = `thincoder-core/prompts/persona-engineering.md:14`（`The go-ahead does not exempt the approval gate … "authorized to fire" is not "approved"`），出处 = `2026-10-17-prompt-firing-rights` B1（「整批令不豁免批准门」）。新口径：整批令覆盖批准门。
 
 **需求（三条）**：
 
@@ -793,13 +793,13 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 ### 13.15 派单纪律补硬（文件重叠 ≠ 扣住 / 改落点）+ FR36 残句收口（FR37）
 
-**背景**：`D:\repos` slot 4（2026-10-19）两次手工排队——① 15:19 exec 批因与 `#28` 共享文件而「等 `#28`」；② 16:28 为并行让 designer 把设计写进批档 §2.7、绕开被冻的设计档。它自己引用过 `persona-engineering.md:229` 的规则，仍两次绕开，直到用户「文件冲突调度器自会排队，你加什么戏？」。
-另一项：`persona-engineering.md:40` 的「anything past the approval gate has no approval behind it」在整批令覆盖批准门（FR36）后字面不成立（台账 `#1716`）。
+**背景**：`D:\repos` slot 4（2026-10-19）两次手工排队——① 15:19 exec 批因与 `#28` 共享文件而「等 `#28`」；② 16:28 为并行让 designer 把设计写进批档 §2.7、绕开被冻的设计档。它自己引用过 `thincoder-core/prompts/persona-engineering.md:229` 的规则，仍两次绕开，直到用户「文件冲突调度器自会排队，你加什么戏？」。
+另一项：`thincoder-core/prompts/persona-engineering.md:40` 的「anything past the approval gate has no approval behind it」在整批令覆盖批准门（FR36）后字面不成立（台账 `#1716`）。
 
 **需求（两条）**：
 
 1. **派单纪律补硬**：提示词派单节补三句 + 一句自检——① 感知到的文件重叠不是扣住 spawn 或改落点的理由（声明 `files` 直接派）；② `queued` 是正常准入回执，不是失败信号；③ 串行编辑造成的行号漂移是内容问题，用文本锚点 / `dependsOn` 解，不用等待解；④ 派单前自检「我是因为文件重叠在等或改落点吗？是 ⇒ 声明 `files` 直接派」。
-2. **FR36 残句收口**：`persona-engineering.md:40` 加作用域（批内已由整批令授权），或改成不依赖「批准门」字面的判据句（默认值只在已确认范围内取）；设计档 §6.38 对照表补一行覆盖该句。
+2. **FR36 残句收口**：`thincoder-core/prompts/persona-engineering.md:40` 加作用域（批内已由整批令授权），或改成不依赖「批准门」字面的判据句（默认值只在已确认范围内取）；设计档 §6.38 对照表补一行覆盖该句。
 
 - **为什么（依据可指认）**：两次绕开都发生在「共享文件」出现的那一刻；规则存在但未点名该失效模式，决定点没有可对撞的句子——用户原话「文件冲突调度器自会排队，你加什么戏？」。
 - **不变量（不做）**：不改调度器本体 · 不改 `files` / `dependsOn` 语义 · 不改台账 · 不改普通模式 · 不新增机械门 · 不改 FR36 四停相。
@@ -810,17 +810,17 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 **背景**：`d:\repos` 会话 `.3`（2026-10-20 实读）：助手消息 1,910 / 用户消息 230 / `question` 工具 **4 次**（全是设计成形后的确认：08:06 列形 · 08:07 列存留 · 14:49「设计 §8 改成…可以吗」），助手消息以问号结尾 51 条（2.7%）。
 业务规则由用户给出（05:00「航次/船/收款方/付款方/费用科目这些都是前置条件」），源头三次由用户纠正（09:19「你问的是 v1，我却一直在查 v2」· 12:10「我搞错源了」· 13:52「拿字节数当业务判断」）。
-提示词缺口三处：`discipline-engineering.md:30` 只有动词「discuss」无机制；`:37` 完成判据含自判逃生口「or answers no longer change the requirements」；`common.md:15` 的成本过滤被读成「先别问」。
+提示词缺口三处：`thincoder-core/prompts/discipline-engineering.md:30` 只有动词「discuss」无机制；`:37` 完成判据含自判逃生口「or answers no longer change the requirements」；`thincoder-core/prompts/common.md:15` 的成本过滤被读成「先别问」。
 
 **需求（三条）**：
 
-1. **需求必须问出来**（`discipline-engineering.md:30` 补机制句）：新功能 / 新业务规则进入时，**设计开始前至少一轮「提问 → 用户回答」**；问题覆盖四类——**业务规则 · 边界 · 优先级 · 验收口径**；**读代码只能填事实，不能代替用户定规则**。
+1. **需求必须问出来**（`thincoder-core/prompts/discipline-engineering.md:30` 补机制句）：新功能 / 新业务规则进入时，**设计开始前至少一轮「提问 → 用户回答」**；问题覆盖四类——**业务规则 · 边界 · 优先级 · 验收口径**；**读代码只能填事实，不能代替用户定规则**。
 2. **堵掉自判逃生口**（`:37`）：需求完成判据改「**用户明确确认**（原话或点选）」；**删**「or answers no longer change the requirements」；未确认 ⇒ 不进设计，只出「待确认问题清单」。
-3. **`common.md` 加分界**（`:13-15` 段）：文档能答的是**事实**；**意图 / 规则 / 取舍**三类**必须问**，不受「会不会改变下一步」的成本过滤。
+3. **`thincoder-core/prompts/common.md` 加分界**（`:13-15` 段）：文档能答的是**事实**；**意图 / 规则 / 取舍**三类**必须问**，不受「会不会改变下一步」的成本过滤。
 
 - **为什么（依据可指认）**：230 条用户消息里 57 条以祈使句开头——用户在替它定需求；4 次 `question` 全在需求成形之后。讨论缺席不是模型懒，是提示词只写了动词没写机制，还留了自判口。
 - **不变量（不做）**：不改 `question` 工具语义 · 不改 persona 的不阻塞 / 默认值 / 四停相（执行面）· 不改评审 ∥ 实施面 · 不改数据前提面（另议）。
-- **验收**：① 三项在提示词面各 1 次（子串机判：设计前至少一轮提问且四类齐 · 需求完成 = 用户明确确认 · 「文档答事实 ∥ 意图规则取舍必须问」）；② 旧逃生口零残留（`answers no longer change the requirements` grep 0）；③ `node scripts/prompt-refs-check.mjs` 命中 0；④ 与 `common.md:13`「check the docs first」无矛盾（分界句在场）。
+- **验收**：① 三项在提示词面各 1 次（子串机判：设计前至少一轮提问且四类齐 · 需求完成 = 用户明确确认 · 「文档答事实 ∥ 意图规则取舍必须问」）；② 旧逃生口零残留（`answers no longer change the requirements` grep 0）；③ `node scripts/prompt-refs-check.mjs` 命中 0；④ 与 `thincoder-core/prompts/common.md:13`「check the docs first」无矛盾（分界句在场）。
 - **落点**：`thincoder-core/prompts/discipline-engineering.md`（`:30` / `:37`）∥ `thincoder-core/prompts/common.md`（`:13-15` 段）∥ 设计档 `PROMPT-SYSTEM.md` 新节（编号随设计）；具体分句由设计定。
 
 ### 13.17 落地前先答三问：现成的名字 ∥ 组件 ∥ 端点（重造轮子防御 · FR39）
@@ -830,16 +830,16 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 **需求**：
 
-1. **三问前置**（`discipline-engineering.md` 的「Closest-precedent survey」由「勘察」硬化成「先答三问」）：任何新落点（新名字 ∥ 新组件 ∥ 新端点 ∥ 新标签文字）动手前先答——① **这功能现在哪里有？**（实现坐标 ∥ 文档节）② **叫什么？**（现成名字，逐字）③ **谁在用？**（调用方 ∥ 消费方 ∥ 先例批次）。三问答得上 ⇒ **用现成的**（名字照抄、组件复用、端点直连）；答不上来（且写明查过哪些面）⇒ 才允许新建。
+1. **三问前置**（`thincoder-core/prompts/discipline-engineering.md` 的「Closest-precedent survey」由「勘察」硬化成「先答三问」）：任何新落点（新名字 ∥ 新组件 ∥ 新端点 ∥ 新标签文字）动手前先答——① **这功能现在哪里有？**（实现坐标 ∥ 文档节）② **叫什么？**（现成名字，逐字）③ **谁在用？**（调用方 ∥ 消费方 ∥ 先例批次）。三问答得上 ⇒ **用现成的**（名字照抄、组件复用、端点直连）；答不上来（且写明查过哪些面）⇒ 才允许新建。
 2. **答案要落盘**：设计档的新机制节 + 批次档 §1 的落点行，逐条带三问答案（现成坐标 ∥ 为什么不能用）；答不上来的写「已查无：<查过哪些面>」——与「没查」必须可区分。
 3. **一名一物是它的判据面**：同一机制出现第二个名字（如「案字段」对已有「jdata 字段」）即违规——三问的第 ② 问就是它的前置检查。
 4. **三问也在「笔」前（不只设计前）**：三次实例全是小改（行内展开 ∥ 筛选控件 ∥ 标签文字）——它们走轻通道 / 直改，**根本不过设计档**。故三问必须挂在**任何落点**上：轻通道笔写进批次档 §1 的该笔行；设计档的新机制节每条落点带一行。
 5. **「偏离」条款收窄**（同档 `:40` 的「an intended deviation ⇒ an explicit rationale」）：现有措辞给了自造的合法通道（「我已声明偏离」）。改为：偏离仅在**现成件不可复用**时成立，理由必须指名**能力/契约面的具体失败**；形态不同 / 更顺手 / 更好看 **不构成** 偏离理由。
 6. **设计评审加存在性判据**：新名字 / 新组件 / 新端点存在且设计未用、未说明为何不可用 ⇒ 评审计 🔴（不是仅「缺先例行」的🟡）。当下所有门都是**内部自洽门**（设计对需求、实现对设计），没有一道是**存在门**——三问就是把存在门装上去。
 
-- **为什么（依据可指认）**：三次重造都发生在「先动手、后查」的顺序上；`discipline-engineering.md:40` 的「closest-precedent survey」只有动词、没有「答出名字」的要求 ⇒ 可以「勘察过」却仍自造名字。
-- **不变量（不做）**：不改轻通道准入（细节面仍可直接改，但改前三问同样适用）· 不新增机械门 · 不改 `common.md` 的「先查档」分界（FR38）· 不改既有先例表的形态。
-- **验收**：① 提示词面含三问句（子串机判：三问齐 + 「答不上来再动手」）；② 设计档/批档 §1 的新落点行带答案或「已查无：<面清单>」（抽样 2 行机判）；③ 与 `discipline-engineering.md:40` 的先例勘察句无矛盾（后者保留、前者是其执行形）。
+- **为什么（依据可指认）**：三次重造都发生在「先动手、后查」的顺序上；`thincoder-core/prompts/discipline-engineering.md:40` 的「closest-precedent survey」只有动词、没有「答出名字」的要求 ⇒ 可以「勘察过」却仍自造名字。
+- **不变量（不做）**：不改轻通道准入（细节面仍可直接改，但改前三问同样适用）· 不新增机械门 · 不改 `thincoder-core/prompts/common.md` 的「先查档」分界（FR38）· 不改既有先例表的形态。
+- **验收**：① 提示词面含三问句（子串机判：三问齐 + 「答不上来再动手」）；② 设计档/批档 §1 的新落点行带答案或「已查无：<面清单>」（抽样 2 行机判）；③ 与 `thincoder-core/prompts/discipline-engineering.md:40` 的先例勘察句无矛盾（后者保留、前者是其执行形）。
 - **落点**：`thincoder-core/prompts/discipline-engineering.md`（`:40` 先例勘察句处 ∥ 新段）∥ 设计档 `PROMPT-SYSTEM.md` 新节（编号随设计）；具体分句由设计定。
 
 ### 13.18 业务门就是门：禁止兜底放过业务失败（兜底代码抑制 · FR40）
@@ -859,7 +859,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 
 - **为什么（依据可指认）**：兜底的诱因是「让程序怎么都能跑通」的优化目标——它把「跑通」当成正确；而业务系统的正确性恰恰是「不该通的不能通」。兜底把业务错误变成静默，错误也就失去了被发现的机会。
 - **不变量（不做）**：不禁用系统性重试/降级（限业务结果不变）· 不改既有安全/校验机制 · 不改渲染层占位与 i18n 缺键回落 · 不改普通模式的既有纪律。
-- **落点**：主落 `common.md`（跨角色通用层：全模式 + 全子代理都读，匹配「业务系统」范围）；`discipline-engineering.md` 是否同落一层（工程纪律面）由设计定；代码评审判据落 `advisor-round1.md`。**体量无帽**——2026-10-21 用户裁定「提示词无预算」，只作读数。具体分句由设计定。
+- **落点**：主落 `thincoder-core/prompts/common.md`（跨角色通用层：全模式 + 全子代理都读，匹配「业务系统」范围）；`thincoder-core/prompts/discipline-engineering.md` 是否同落一层（工程纪律面）由设计定；代码评审判据落 `thincoder-core/prompts/advisor-round1.md`。**体量无帽**——2026-10-21 用户裁定「提示词无预算」，只作读数。具体分句由设计定。
 
 ### 13.19 查文档走 doc_search：grep 不用于发现（文档检索路由 · FR41）
 
@@ -872,7 +872,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 | 1 | 批次档**早已排除在文档索引之外**——段序列 `docs/batches` 无条件排除；`_archive` 同样排除 | `thincoder-core/declaration.mjs:121-144`（面⑥）· `PROJECT-MANIFEST.json` `index.excludePaths` |
 | 2 | 所以「批次档旧信息污染」不是索引的锅——**是 grep 绕过了索引**，直接读原始档 | 同上；`grep` 工具面只管「搜文件内容」，无档类判据 |
 | 3 | 跨仓查不到 = 声明域为空：`index.publicRepos = []` ⇒ 其它仓的 docs 根本不在索引里 | `PROJECT-MANIFEST.json` `index.publicRepos` |
-| 4 | 提示词只说「探索顺序 repo_outline → doc_search → code_search」，**没有「文档检索禁用 grep 发现」这条**，工具路由表也只列了 doc_search 的用途 | `common.md`「Codebase exploration order」/ 工具路由表 |
+| 4 | 提示词只说「探索顺序 repo_outline → doc_search → code_search」，**没有「文档检索禁用 grep 发现」这条**，工具路由表也只列了 doc_search 的用途 | `thincoder-core/prompts/common.md`「Codebase exploration order」/ 工具路由表 |
 
 **需求**
 
@@ -897,11 +897,11 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 | # | 事实 | 证据 |
 |---|---|---|
 | 1 | `promptsLanding` 默认值 = `"thincoder-core/prompts"`，`initManifest` 整份照抄 DEFAULT_MANIFEST ⇒ **每个用户项目出生即带本产品内部路径** | `manifest-schema.mjs:53` · `manifest.mjs:286` |
-| 2 | `promptsLanding` **零 reader**（全仓 grep 只命中 schema 与 manifest 的通用键接线） | 同上；`MANIFEST.md:619` 已登记「核内未见读取方」 |
+| 2 | `promptsLanding` **零 reader**（全仓 grep 只命中 schema 与 manifest 的通用键接线） | 同上；`docs/core/design/MANIFEST.md:619` 已登记「核内未见读取方」 |
 | 3 | `checkConfig` 是 `doc_check` 的**参数来源**，且 `gate` 模式下「缺 `checkConfig`」直接**拒跑**（不产 PASS） | `doc-check/index.mjs:167-170` · `:29-38` |
 | 4 | 其余六键中 `version` · `phase` · `docRoot` · `codePaths` · `index` 只描述**用户项目自身**；`advisor` 例外（见第 6 行） | 逐键 reader 实读 |
 | 5 | 未知键**非拒**（`ok` 定性零变），`fillDefaults` 以 DEFAULT 为基 ⇒ 旧键在下次写盘自然消失 | `manifest-schema.mjs:92` · `:162-180` |
-| 6 | `advisor` 键 = **第二套文档指针**：`advisor.docMap` 声明优先、内建探测 `docs/README.md` → `docs/design/README.md` 兜底；`advisor.standardsDoc` 纯声明、无探测 —— 与 `docRoot` 声明的是同一件事（文档在哪），两处声明同一事实 | `advisor/project-context.mjs:141-147` · `:175-192` |
+| 6 | `advisor` 键 = **第二套文档指针**：该键**已退场**（FR42）：文档地图改由 `docRoot` 派生（两级探测：各声明根 `README.md` → 公共祖先 `README.md`；两级皆无 ⇒ 显式降级句），项目标准面恒降级 —— 与 `docRoot` 声明的是同一件事（文档在哪），两处声明同一事实 | `advisor/project-context.mjs:141-147` · `:175-192` |
 
 **需求**
 
@@ -913,7 +913,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
 4. **默认键集 = 五键**：`version` · `phase` · `docRoot` · `codePaths` · `index`（全部只描述用户项目自身）。
 5. **`doc_check` 的门语义随动**：参数不再取 manifest ⇒ 「缺 `checkConfig` ⇒ 拒跑」这条**删除**；`gate` 只判传入档、不再有「解析基线 = 全声明域」这一层（判定范围与解析范围**同一集合** = 传进来的档）；manifest 不可读时 manifest 工具自行报错，`doc_check` 不再因取参失败拒跑。
 6. **迁移无需脚本**：旧 manifest 里的三键按未知键处理（非拒），下次 `write` 经 `fillDefaults` 自然清除；不得为兼容保留「接受但忽略」的分支（那就是「留着误导」本身）。
-7. **连带计数与文档**：`MANIFEST.md` 的「八键」表述全改五键（键表 · 接口清单 · 写面白名单 · 计数 · 测试行）· `manifest` / `doc_check` 两个工具描述的参数说明同步改 · 评审注入面（`project-context.mjs` 的 `advisor.*` 读取）改为 `docRoot` 派生。
+7. **连带计数与文档**：`docs/core/design/MANIFEST.md` 的「八键」表述全改五键（键表 · 接口清单 · 写面白名单 · 计数 · 测试行）· `manifest` / `doc_check` 两个工具描述的参数说明同步改 · 评审注入面（`project-context.mjs` 的 `advisor.*` 读取）改为 `docRoot` 派生。
 
 - **为什么（依据可指认）**：manifest 是**这个项目**的状态声明（阶段 / 文档层 / 代码段 / 索引）。`promptsLanding` 描述产品源码；`checkConfig` 描述产品工具的参数；`advisor` 把「文档在哪」又说了一遍——`docRoot` 已经声明过。三处的共同毛病 = 替用户声明他自己没掌握的事实，或同一事实两处声明（D2），唯一效果是误导（读到的指针与索引/批次档用的不是一套）。
 - **不变量（不做）**：不改其余五键语义 · **不改两条判据本身**（anchors 可解析 ∥ 行宽 ≤300），只改**判哪些档**（调用方给，不扫全仓）· 不改 `docRoot` / `index` 消费面 · 不改评审两条判据（文档归属 ∥ 项目标准）的**判法**（只换参数来源）· 不加迁移脚本。
@@ -921,7 +921,7 @@ v1 三机检 = 必要内核 + 一大坨 thincoder 私有历史包袱（双引擎
   ② 新建项目 `init` 后 manifest 不含 `promptsLanding` / `checkConfig` / `advisor`（机判）；
   ③ `doc_check` 只判传入档：不传 `docs` 时报错要求显式清单，`report` 模式**不再有全仓扫描支**（机判：代码里 `scanDirs` 零消费）；
   ④ `doc_check` 在无 `checkConfig` 的 manifest 上照常判（不因缺键拒跑）；
-  ⑤ `MANIFEST.md` 内「八键」零命中、「五键」在位；
+  ⑤ `docs/core/design/MANIFEST.md` 内「八键」作为**现态表述**零命中（旧档夹具描述不计——如「旧格式档」类措辞）、「五键」在位；
   ⑥ 两个工具描述不含三键的参数说明；
   ⑦ 评审注入面在无 `advisor` 键时仍产出 Document Map（由 `docRoot` 派生）或明确降级句，不得静默跳过；
   ⑧ 本仓 696 条裸名指针改全路径后 gate 全绿（债务另批 `#1731`，本批只保证不新增）。

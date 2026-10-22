@@ -11,10 +11,9 @@
  *  - `write` ⇒ **点改**：读现档 → 设节点 → 落盘（`writeManifest` 内先 `validateManifest`——
  *              编辑结果非法 ⇒ 拒 + 盘零变）；**缺档 ⇒ 拒** + 引导 `init`（写不建档）。
  *
- * 写面白名单（判据单源 = `MANIFEST_SCHEMA`——钉死谓词）：`keys` 中**非** `nestedKeys` 父键者
- * （`version` / `phase` / `promptsLanding` / `codePaths` 整键）+ `nestedKeys` 子键
- * （`docRoot.*` / `checkConfig.*` / `index.*`（含 `publicRepos`）/ `advisor.*`）；**四族整键写
- * （传整个对象）⇒ 拒**；白名单外 ⇒ 拒（拼写保护——未知键写盘 = 静默死键，KD-M1-36 问题本体）。
+ * 写面白名单（判据单源 = `MANIFEST_SCHEMA`——钉死谓词）：**12 个可写节点** = `keys` 中**非** `nestedKeys`
+ * 父键者（`version` / `phase` / `codePaths` 整键）+ `nestedKeys` 子键（`docRoot.*` 五子键 / `index.*` 四子键）；
+ * **两族整键写（传整个对象）⇒ 拒**；白名单外 ⇒ 拒（拼写保护——未知键写盘 = 静默死键，KD-M1-36 问题本体）。
  * `value` 解析 = 同款口径 `settings.mjs` 的 `parseValue`（先 `JSON.parse`，失败取字面串；`"null"` ⇒ `null`
  * ——`docRoot.*` 的「本面无」，KD-M1-37）。
  *
@@ -51,8 +50,8 @@ function resolveTarget(args, ctx) {
 }
 
 /** 写面白名单谓词（**钉死**——设计 §2.10）：点分路径恰两形——
- *  ① 单段：`keys` ∩ ∉ `nestedKeys`（= `version` / `phase` / `promptsLanding` / `codePaths` 整键）；
- *  ② 双段：`nestedKeys[父]` 含子键（四族子键）；其余（四族整键写 / 未知键 / 更深路径）⇒ 拒。
+ *  ① 单段：`keys` ∩ ∉ `nestedKeys`（= `version` / `phase` / `codePaths` 整键）；
+ *  ② 双段：`nestedKeys[父]` 含子键（两族子键）；其余（两族整键写 / 未知键 / 更深路径）⇒ 拒。
  *  `Array.isArray` 守卫：原型链名（`__proto__` / `constructor` / `toString` 类）取到非数组 ⇒ 落拒面
  *  （不得 TypeError 直出——白名单外一律 `refused` 统一前缀）。 */
 function isWritableKey(key) {
@@ -123,7 +122,7 @@ export const manifestTool = {
     properties: {
       action: { type: "string", enum: ["read", "init", "write"], description: "read — current manifest + validation state (five-state anchor, never throws); init — create the default manifest when missing (refused when one already exists); write — point-edit one node (key + value) of an existing manifest" },
       target: { type: "string", description: "Explicit target directory — defaults to the session anchor; relative paths resolve against it. A workspace target (several projects below it) is refused with the full project list — pass the project root you mean." },
-      key: { type: "string", description: "(write) Dot path of the node to set — version / phase / promptsLanding / codePaths, or a sub-key of docRoot / checkConfig / index / advisor (e.g. docRoot.design / index.publicRepos / advisor.docMap); whole-object writes of those four families are refused", },
+      key: { type: "string", description: "(write) Dot path of the node to set — version / phase / codePaths, or a sub-key of docRoot / index (e.g. docRoot.design / index.publicRepos); whole-object writes of those two families are refused", },
       value: { type: "string", description: "(write) New value — parsed as JSON first (null / true / 5 / [\"a\"]), otherwise kept as a literal string; \"null\" is the explicit no-such-face for docRoot.<key>" },
     },
     required: ["action"],
@@ -169,7 +168,7 @@ export const manifestTool = {
     if (!key) throw new Error("manifest write: key is required (dot path, e.g. docRoot.design)")
     if (args?.value === undefined) throw new Error("manifest write: value is required (JSON-parsed first, otherwise a literal string)")
     if (!isWritableKey(key)) {
-      throw refuse("write", `key "${key}" is not writable — writable nodes: version / phase / promptsLanding / codePaths + sub-keys of docRoot / checkConfig / index / advisor (whole-object writes of the four families are refused)`)
+      throw refuse("write", `key "${key}" is not writable — writable nodes: version / phase / codePaths + sub-keys of docRoot / index (whole-object writes of the two families are refused)`)
     }
     let current
     try {

@@ -6,7 +6,7 @@
 
 ## 1. 定位与问题面
 
-工程模式是**面向任意项目的产品功能**，但早期实现把本产品自研仓的约定（文档地图、`METHODOLOGY.md`、`docs/design/<TOPIC>.md` 树形状、`^src/` 判据、自指检查脚本）当成了普适事实，在用户项目上产生三类**静默失效**（用户不可见、不可修）：
+工程模式是**面向任意项目的产品功能**，但早期实现把本产品自研仓的约定（文档地图、`docs/core/requirements/METHODOLOGY.md`、`docs/design/<TOPIC>.md` 树形状、`^src/` 判据、自指检查脚本）当成了普适事实，在用户项目上产生三类**静默失效**（用户不可见、不可修）：
 
 | # | 失效类 | 现象 |
 |---|---|---|
@@ -14,7 +14,7 @@
 | 2 | **门禁静默绕过** | 嵌套布局下 `packages/foo/src/*.md` 被当文档，绕过设计门禁 |
 | 3 | **索引静默为空** | 非 git 项目代码 / 文档索引全空；白名单外扩展名不可检索 |
 
-另有一枚活 bug（已修）：`/eng` 门禁要求 `METHODOLOGY.md`，而「从模板创建」指向已不存在的模板——选项必炸。
+另有一枚活 bug（已修）：`/eng` 门禁要求 `docs/core/requirements/METHODOLOGY.md`，而「从模板创建」指向已不存在的模板——选项必炸。
 
 **本板块的机制目标**：上述每一类都改为**有判据、可声明、缺失即显式降级**，且判据**只有一份实现**。
 
@@ -27,8 +27,8 @@
 | 面 | 落点 | 状态 |
 |---|---|---|
 | 分类裁判 + 声明装载 | 分类裁判 = `thincoder-core/conventions.mjs`（`classifyPath:136` · `isCodePath:146` · `isDocPath:152` · `isTempPath:53` · `isAuxPath:163`）；声明装载 = `thincoder-core/declaration.mjs`（`loadProjectDeclaration:149` · `clearDeclarationCache:124` · `DEFAULT_DECLARATION:100`——经 `conventions.mjs` 转口可达）；档级行数 = `conventions.mjs` **172** 行 ∥ `declaration.mjs` **173** 行 | 在位 |
-| 默认判据（数据常量） | `thincoder-core/manifest.mjs` `DEFAULT_MANIFEST.codePaths` = `["src"]`（**单源**——裁判档经 `DEFAULT_DECLARATION` 取用；`MANIFEST.md` §2.4 KD-M1-31） | 在位 |
-| 声明装载载体 | `PROJECT-MANIFEST.json` 三族键（`codePaths` / `index.*` / `advisor.*`——schema 权威 = `MANIFEST.md` §2.2） | 在位 |
+| 默认判据（数据常量） | `thincoder-core/manifest.mjs` `DEFAULT_MANIFEST.codePaths` = `["src"]`（**单源**——裁判档经 `DEFAULT_DECLARATION` 取用；`docs/core/design/MANIFEST.md` §2.4 KD-M1-31） | 在位 |
+| 声明装载载体 | `PROJECT-MANIFEST.json` 两族键（`codePaths` / `index.*`——schema 权威 = `docs/core/design/MANIFEST.md` §2.2） | 在位 |
 | 父侧设计门禁 | `thincoder-core/agent/dispatch.mjs:94-125`（辖域 = 目标所属项目（`declarationForTarget`——F11）；保守拦截 = 非串 ∥ 空串；缺省放行面 = aux ∥ state——§3.2 / §3.9） | 换源 |
 | 设计评审文档门禁 | `thincoder-core/agent-tools/advisor.mjs:119` | 换源 |
 | 变更集判据 | `thincoder-core/advisor/repos.mjs:118`（`hasCodeMutations`）· `:128`（`isDocOnlyChange`） | 换源 |
@@ -42,19 +42,18 @@
 
 ## 3. 接口契约
 
-### 3.1 项目声明面 —— `PROJECT-MANIFEST.json` 三族键
+### 3.1 项目声明面 —— `PROJECT-MANIFEST.json` 两族键
 
-声明载体 = 项目 manifest 本体（`PROJECT-MANIFEST.json`——**单一项目声明档**）。键名 / 形态 / 缺省 / 校验 = schema 权威 `MANIFEST.md` §2.2 + §2.4 KD-M1-31/M1-32（本档只给**声明语义**与消费面）：
+声明载体 = 项目 manifest 本体（`PROJECT-MANIFEST.json`——**单一项目声明档**）。键名 / 形态 / 缺省 / 校验 = schema 权威 `docs/core/design/MANIFEST.md` §2.2 + §2.4 KD-M1-31/M1-32（本档只给**声明语义**与消费面）：
 
 | 族 | 键 | 声明语义（本机制面） |
 |---|---|---|
 | 分类 | `codePaths` | 路径**段名**数组（任意深度匹配）；声明即**替换**默认（缺省 `["src"]`——非并集）；空数组 = 明确「无段名代码面」（兜底分类仍在） |
 | 索引 | `index.codeExtensions` / `index.docExtensions` | 对内置扩展名表的**追加**（并集，只增不减） |
-| 评审注入 | `advisor.docMap` / `advisor.standardsDoc` | 项目根相对**文件路径**（单指针）；空串 = 未声明（走探测 / 降级句） |
 
 - `codePaths` 兼作**辅助面缺省的收回面**（F9 · §3.2）：列入 `test` / `tests` / `scripts` / `.thincoder/tmp` 同段序列 ⇒ 代码段优先命中，判 code（门禁恢复）。
-- `docMap` 指向的文件读不到 ⇒ 降级句（§3.4）；未声明 `docMap` 时保留既有探测（`docs/README.md` → `docs/design/README.md`）。
-- 解析 / 归一（段名 trim + 分隔符归一 + 去重；扩展名小写 + 点号前缀 + 去重；指针 trim）落 `loadProjectDeclaration`（§3.2 行 1）；**schema 校验不在此层**（形态错 = manifest 非法——§4 D16）。
+- 文档地图**由 `docRoot` 派生**（两级探测：① 各声明根下的 `README.md`，按 `docRoot.design` → `requirements` → `specs` → `modules` → `batches` 声明序；② 全部声明根的**公共祖先**下的 `README.md`）；两级皆无 ⇒ 降级句（§3.4）。机制单源 = `docs/core/design/MANIFEST.md` §2.11。
+- 解析 / 归一（段名 trim + 分隔符归一 + 去重；扩展名小写 + 点号前缀 + 去重）落 `loadProjectDeclaration`（§3.2 行 1）；**schema 校验不在此层**（形态错 = manifest 非法——§4 D16）。
 - `declared` 标志 = **任一族偏离缺省**——判据 = **值比较**（与缺省值等值 ⇒ 假；显式写入但值 = 缺省照判假，不按键存在性）；门禁 hint 据它决定是否给声明指路（§3.4）。
 - **`index.publicRepos` 入判补登**：本键非空 ⇒ 亦入 `declared` 判（值比较——与 `index.excludePaths` 同款；实读 `thincoder-core/declaration.mjs:85` `publicRepos.length > 0`）。
 - **声明载体唯一**：`.thincoder/conventions.json` 不在读面（内容零解析）；该档在场 ⇒ 一行可见告警 + 日志事件（`declaration:retired-file`），读数与无档逐条等值——裁决 = §4 D15。
@@ -66,17 +65,17 @@
 
 | # | 落点 | 语义 |
 |---|---|---|
-| 1 | `thincoder-core/declaration.mjs:149` `loadProjectDeclaration(cwd)`（经 `conventions.mjs` 转口） | 经 `readManifest` / `manifestFilePath` 读 manifest → 投影三族键 → 归一为声明对象（按**档路径**缓存；含 `root`——声明对象形状）；缺档 ⇒ 默认（静默）；非法 / 读错 ⇒ 默认 + `console.warn` + 日志事件 |
+| 1 | `thincoder-core/declaration.mjs:149` `loadProjectDeclaration(cwd)`（经 `conventions.mjs` 转口） | 经 `readManifest` / `manifestFilePath` 读 manifest → 投影两族键 → 归一为声明对象（按**档路径**缓存；含 `root`——声明对象形状）；缺档 ⇒ 默认（静默）；非法 / 读错 ⇒ 默认 + `console.warn` + 日志事件 |
 | 2 | `thincoder-core/declaration.mjs:124` `clearDeclarationCache()`（经 `conventions.mjs` 转口） | 缓存清理（测试 seam） |
 | 3 | `thincoder-core/conventions.mjs:136` `classifyPath(p, conv)` | 分类裁判（唯一实现；`/` 与 `\`、绝对与相对路径均接受；五值 = `code` / `doc` / `temp` / `aux` / `state`（state = 项目状态档——§3.8）；段匹配面 = 项目根相对面——上条） |
 | 4 | `thincoder-core/conventions.mjs:146` / `:152` / `:53` `isCodePath` / `isDocPath` / `isTempPath` | 三分类谓词（`isDocPath` / `isTempPath` 为独立谓词、非 `classifyPath` 派生——沿既有口径；内部与面判链的共用关系见下「单一实现面」条） |
 | 5 | `thincoder-core/conventions.mjs:163` `isAuxPath`（F9 新增） | 辅助面谓词（`classifyPath === "aux"`——父侧门缺省放行面）；生产面读 aux 一律经 `classifyPath`（本谓词消费方 = 用例 · 可读性） |
-| 6 | `thincoder-core/declaration.mjs:100` `DEFAULT_DECLARATION`（经 `conventions.mjs` 转口） | 全默认声明对象（= 无档 / 档不可用时的回退面；由 `DEFAULT_MANIFEST` 三族默认值构造——默认值单源；`root = null` = 根未知 ⇒ 面不可判） |
+| 6 | `thincoder-core/declaration.mjs:100` `DEFAULT_DECLARATION`（经 `conventions.mjs` 转口） | 全默认声明对象（= 无档 / 档不可用时的回退面；由 `DEFAULT_MANIFEST` 两族默认值构造——默认值单源；`root = null` = 根未知 ⇒ 面不可判） |
 | 7 | `thincoder-core/conventions.mjs`（新增） `isStatePath(p, conv)` | 项目状态档谓词（`classifyPath === "state"`——门禁豁免面可读性 / 用例；生产门经 `isCodePath` 派生消费） |
 | 8 | `thincoder-core/declaration.mjs` `declarationForTarget(targetAbs)`（经 `conventions.mjs` 转口；F11 新增 · `declaration.mjs:230`） | **辖域单点**：目标**绝对路径** ⇒ 沿祖先链取最近带档目录（`owningProject`——nearest wins ∕ 纯 fs ∕ 发现梯不参与）⇒ 该项目的声明对象（行 1 同载）；祖先链无档 ⇒ `null` = **出辖**（不在任何 manifest 树内——父侧门不判不拦）。相对形由消费面按会话 cwd 先解析（判据 = 目标所属项目，非会话 cwd——§3.9） |
 
-**声明对象形状（全体落点共用）**：`{ declared, codePaths, index, advisor, root }`——`root` = 该声明所属**项目根绝对路径**（`dirname(manifestFilePath(cwd))`——段匹配面所依，见下「段匹配面」条）。
-`declared` = 三族任一偏离缺省（**值比较**——`root` 非声明值，不入此判；§3.1；门禁 hint 据它决定是否指路）；`codePaths` = 归一后段名数组 · `index` = `{ codeExtensions, docExtensions }` · `advisor` = `{ docMap, standardsDoc }`。
+**声明对象形状（全体落点共用）**：`{ declared, codePaths, index, root }`——`root` = 该声明所属**项目根绝对路径**（`dirname(manifestFilePath(cwd))`——段匹配面所依，见下「段匹配面」条）。
+`declared` = 两族任一偏离缺省（**值比较**——`root` 非声明值，不入此判；§3.1；门禁 hint 据它决定是否指路）；`codePaths` = 归一后段名数组 · `index` = `{ codeExtensions, docExtensions }`。
 `DEFAULT_DECLARATION` 与声明面返回**同形**（全缺省 ⇒ `declared:false`；`DEFAULT_DECLARATION.root = null` = 根未知）。
 
 **分类语义**（默认约定，可被声明覆盖；F9 辅助面）：
@@ -121,8 +120,8 @@
 
 | 面 | 缺失场景 | 可见化通道 |
 |---|---|---|
-| 文档地图 | 探测 + 声明皆无 | 评审消息显式降级句（`project-context.mjs` 注入）+ 评审要求自查声明局限 |
-| 项目标准 | 未声明 | 评审消息显式降级句（同上） |
+| 文档地图 | 两级探测皆无（`docRoot` 派生） | 评审消息显式降级句（`project-context.mjs` 注入）+ 评审要求自查声明局限 |
+| 项目标准 | 恒降级（无声明面——`advisor.standardsDoc` 已退场） | 评审消息显式降级句（同上） |
 | 设计门禁 | 未声明约定（默认判据命中——目标所属项目） | 拒绝 hint 说明判据来源 + 声明指路 = **所属项目** manifest 路径（`manifestFilePath(conv.root)`；§3.9） |
 | 退役声明档 | 旧档 `.thincoder/conventions.json` 在场（内容零解析） | 一行 `console.warn` + 日志事件 `declaration:retired-file`（读数与无档等值——§3.1）；落点 = `loadProjectDeclaration` 内 · 基准 = `manifestFilePath` 项目根 · 频次 = 每缓存一次 |
 | 索引扩展名 | 文件扩展名未列入 | 结果 `unlistedExts` + `/reindex` 提示行 + 日志事件 |
@@ -144,7 +143,7 @@
 | 面 | VSC 落点 | 差异注 |
 |---|---|---|
 | 分类裁判（唯一实现） | `thincoder-vscode/src/conventions.mjs:76`（`classifyPath`）· `:85`（`isCodePath`）· `:91`（`isDocPath`）· `:194`（装载面）——分类裁判现体 = `thincoder-core/conventions.mjs`；装载面现体 = `loadProjectDeclaration`（住 `thincoder-core/declaration.mjs`——经 `conventions.mjs` 转口可达） | 与核面同语义——统一方向见 `docs/core/design/CORE-UNIFICATION.md` |
-| 声明面 | `PROJECT-MANIFEST.json` 三族键（与 CLI 同档同 schema：`codePaths` / `index.*Extensions` / `advisor.{docMap,standardsDoc}`；声明语义 = §3.1） | VSC 侧亦不建本仓自用声明（默认判据对本仓即正确——与 CLI 同口径） |
+| 声明面 | `PROJECT-MANIFEST.json` 两族键（与 CLI 同档同 schema：`codePaths` / `index.*Extensions`；声明语义 = §3.1） | VSC 侧亦不建本仓自用声明（默认判据对本仓即正确——与 CLI 同口径） |
 | 父侧设计门禁 | 判定经共享谓词 | CLI 对位 = `thincoder-core/agent/dispatch.mjs:204` |
 | 设计评审文档门禁 | `thincoder-vscode/src/agent-tools/advisor.mjs:219`–`:228`（`isDocPath`——`docs/` 前缀判据已退役） | 拒绝文案 = 产品约定指路（逐字本体住产品代码，本档不复制——D2） |
 | 变更集判据 | `thincoder-vscode/src/agent/run-helpers.mjs:15`（`hasCodeMutations` 取核转口——端侧无自有消费点）；VSC 端 verify / 陈旧判定无本地实现（`thincoder-vscode/src/agent-tools/index.mjs:8` = 核登记册转口——核单源） | 谓词全部换源 `@thincoder/core/conventions.mjs`、不设 re-export（单一裁判纪律两端同构） |
@@ -217,10 +216,10 @@
 | # | 决策 | 理由 |
 |---|---|---|
 | D1 | **组件式 `src` 路径段 + 声明面 + 降级提示** 为代码 / 文档判据 | 嵌套布局不漏判、非 src 布局偏保守且可声明修正、单一权威；否决纯扩展名（`src/prompts/<x>.md` 仍漏判）· 纯声明制（无声明项目不可用，破坏四步流程） |
-| D2 | 声明面载体 = **`PROJECT-MANIFEST.json` 三族键**（`codePaths` / `index.*Extensions` / `advisor.{docMap,standardsDoc}`——产品既有项目声明档，单点 / 机器可读 / 可缓存 / 可测） | 用户裁定「必须的功能并入 project-manifest，**不要同时保留二者**」= 单一项目声明档；manifest 的档位 / 项目归属已单源（`MANIFEST.md` §2.2）⇒ 声明归属随项目归属同判据。 |
+| D2 | 声明面载体 = **`PROJECT-MANIFEST.json` 两族键**（`codePaths` / `index.*Extensions`——产品既有项目声明档，单点 / 机器可读 / 可缓存 / 可测） | 用户裁定「必须的功能并入 project-manifest，**不要同时保留二者**」= 单一项目声明档；`advisor` 键退场后文档地图由 `docRoot` 派生（机制单源 = `docs/core/design/MANIFEST.md` §2.11）；manifest 的档位 / 项目归属已单源（`docs/core/design/MANIFEST.md` §2.2）⇒ 声明归属随项目归属同判据。 |
 | D3 | 非 git 索引 = **walk 回退**（跳过规则与 git 路径同源 + 上限护栏） | 索引仍可用；否决仅可见降级（用户仍不可检索）· 要求用户先 `git init`（把产品机制强加给用户项目） |
 | D4 | 扩展名 = **内置表扩充 + 声明追加 + 未列入可见** | 默认覆盖主流语言、任意扩展可声明、跳过可感知；否决全文本索引（噪声 / 成本 / 分类失真——登记为远期候选）· 仅可见化（`.fs` / `.dart` 等仍不可检索） |
-| D5 | 文档地图 / 标准文档 = **既有探测保留 + 声明键覆盖 + 缺失显式降级** | 通用且本仓零感；否决删探测只认声明（常见项目要声明才注入——无谓摩擦）· 扩充路径猜测（硬编码更多特例） |
+| D5 | 文档地图 = **`docRoot` 派生两级探测 + 缺失显式降级**；标准文档 = **恒显式降级句**（无声明面） | 通用且本仓零感；否决删探测只认声明（常见项目要声明才注入——无谓摩擦）· 扩充路径猜测（硬编码更多特例）· 保留第二套指针键（同一事实两处声明——D2；机制单源 = `docs/core/design/MANIFEST.md` §2.11） |
 | D6 | 提示词通用化 = **通用化 + 「本产品自研仓 = X」示例标注** | 用户项目不建形状、自研仓保留可操作性；否决全删本仓引用（自研会话可操作性下降）· 运行时条件分支（提示词是静态文本——不可实现） |
 | D7 | `/eng` = **去门禁、无前提切换** | 工程模式本不依赖任何文件；否决改判「项目自述可用性」（无谓前提）· 回填方法论模板（与本仓 METHODOLOGY 已退役相抵） |
 | D8 | `messages.mjs` 拆分 = 抽 `thincoder-core/advisor/project-context.mjs` | 兑现既有拆分登记（触发条件「再度增厚」成立）；否决不拆直接增厚（违反已登记触发） |
@@ -228,10 +227,10 @@
 | D10 | **三值闭集扩为四值：新增 `aux`**（辅助面）；aux 规则置于 temp / doc **之后**、兜底之前 | 最小差分性质：既有分类逐条不变，唯「曾落兜底 code」的 `test` / `tests` / `scripts` / `.thincoder/tmp` 路径改判 aux——既有用例零改全绿的机制保证（N1）。 |
 | D11 | **消费面差分 = 接受并登记**（§3.7 逐面核销），本轮不改任何消费面判据 | 分类单源 + 「相关性」归各消费面自持：`isCodePath` 一以贯之，差分即「aux = 非产品代码」的直接推论；逐面登记 + 消解路径在册（§3.7），避免「静默改行为」 |
 | D12 | **提示词面同步 = 必带**（测试入父侧可直改类目） | 分类与分流背离即触发「授权判据 ≠ 绕过门禁 ⇒ 停下上报」纪律（`thincoder-core/prompts/discipline-engineering.md` §Change-face routing「Authorization criterion ≠ gate bypass」 + `docs/core/design/ENG-TOKEN-BINDING.md:152` AC-M4-5）——结构一致性要求闭口；内容依据 = 机制文档，落笔 = eng-coder 独笔 |
-| D13 | 三族键**并入 manifest schema**（顶层平级键 + 缺省值入 `DEFAULT_MANIFEST`）——键名 / 形态 / 缺省**逐字承前**；`docRoot`（文档层根集合）与 `advisor.docMap`（地图文件单指针）**并存** | 迁移 = 逐字抄写（用户项目零改名零改形）；schema 侧落形 / 默认 / 校验 / 结构不对称理由 = `MANIFEST.md` §2.4 KD-M1-31（本档不复述）。 |
-| D14 | 读面 = `conventions.mjs` 新增 `loadProjectDeclaration(cwd)`（投影三族键 + 归一 + 冻结 + 按档路径缓存），装载经 `manifest.mjs` 的 `readManifest` / `manifestFilePath` **单源** | 装载方向**单向**（`conventions.mjs` → `manifest.mjs`；反向零出边——本模块保持叶子零项目依赖）；两模块**同属模式无关面**（全模式消费）⇒ 耦合非模式耦合。 |
+| D13 | 两族键**并入 manifest schema**（顶层平级键 + 缺省值入 `DEFAULT_MANIFEST`）——键名 / 形态 / 缺省**逐字承前** | 迁移 = 逐字抄写（用户项目零改名零改形）；schema 侧落形 / 默认 / 校验理由 = `docs/core/design/MANIFEST.md` §2.4 KD-M1-31（本档不复述）。 |
+| D14 | 读面 = `conventions.mjs` 新增 `loadProjectDeclaration(cwd)`（投影两族键 + 归一 + 冻结 + 按档路径缓存），装载经 `manifest.mjs` 的 `readManifest` / `manifestFilePath` **单源** | 装载方向**单向**（`conventions.mjs` → `manifest.mjs`；反向零出边——本模块保持叶子零项目依赖）；两模块**同属模式无关面**（全模式消费）⇒ 耦合非模式耦合。 |
 | D15 | **退役全链**：`CONVENTIONS_REL_PATH` / `loadConventions` / `DEFAULT_CONVENTIONS` / `clearConventionsCache` / 逐键类型校验全删——无兼容读、无弃用期并行；旧档在场 = **一行可见告警**（`console.warn` + `logEvent('declaration:retired-file')`）+ 存在性检查（`existsSync`——**内容零解析**、零回退） | 用户逐字「不要同时保留二者」；告警 = 可迁移纪律（静默停用 = 哨兵失效不可见——本档问题本体），非机制（零读零回退）。 |
-| D16 | 三族键**形态错 = MANIFEST 非法**（`validateManifest` 出 `errors`，fail-closed）；消费面（分类 / 索引 / 注入）遇档不可用 ⇒ **三族逐条回默认 + 可见**（缺档静默；非法 / 读错加 `console.warn` + 日志事件） | 与 `docRoot` 子键同款（`MANIFEST.md` KD-M1-7：静默跳过 = 静默失踪）；两层各归其位：档面 fail-closed（工程入口 / 翻转面既有语义零改）、运行面不崩不静默（N2）。 |
+| D16 | 两族键**形态错 = MANIFEST 非法**（`validateManifest` 出 `errors`，fail-closed）；消费面（分类 / 索引）遇档不可用 ⇒ **两族逐条回默认 + 可见**（缺档静默；非法 / 读错加 `console.warn` + 日志事件） | 与 `docRoot` 子键同款（`docs/core/design/MANIFEST.md` KD-M1-7：静默跳过 = 静默失踪）；两层各归其位：档面 fail-closed（工程入口 / 翻转面既有语义零改）、运行面不崩不静默（N2）。 |
 | D17 | **段匹配面 = 项目根相对面**：面判（根之下 = 剩余段 / 根外 · 根未知 · 含跳段 = 不可判）；面不可判 ⇒ 辅助面不命中（收 fail-open 边）、代码段回落全段（拦截面不缩） | 判据 = 路径在**项目内的位置**——根之上的机器布局不参与；单一实现（段匹配只此一处，消费面零改）；登记候选「仅项目根之下参与段匹配」逐字落地。 |
 | D18 | **项目根随声明对象下发**（`conv.root`）；分类裁判从 `conv` 取根 | 根解析单源（`manifestFilePath` 系——KD-M1-18；消费面不重写根式）；消费面零签名改动（父侧门档 499 行贴 500 硬限 ⇒ 零改是硬要求）。 |
 | D19 | **四值闭集扩为五值：新增 `state`**（项目状态档——`PROJECT-MANIFEST.json` ∥ `.thincoder/conventions.json`）；规则置于 aux 之后、兜底之前 | 最小差分（同 D10 论证）：唯「曾落兜底 code」的两形改判；工程模式内项目状态档无合规写径（对侧实测 + 本仓维护义务同卡）。**改点 = 分类器本体**（D9 同一判据：门内定向谓词 ⇒ 判据双源——否决）。 |
@@ -241,15 +240,15 @@
 ## 5. 测试
 
 
-> **声明载体换源用例**：既有面**同号收正**（同题断言对象换 = `PROJECT-MANIFEST.json` 三族键；CLI T-01 / T-03 / T-04 / T-05 / T-09 · VSC T-V01 / T-V03 / T-V04 / T-V05）。
-> 新增用例（核心面 T56–T58 落点 = `MANIFEST.md` §3.2）：
+> **声明载体换源用例**：既有面**同号收正**（同题断言对象换 = `PROJECT-MANIFEST.json` 两族键；CLI T-01 / T-03 / T-04 / T-05 / T-09 · VSC T-V01 / T-V03 / T-V04 / T-V05）。
+> 新增用例（核心面 T56–T58 落点 = `docs/core/design/MANIFEST.md` §3.2）：
 
 | 用例 | 面 | 断言（判据线） |
 |---|---|---|
 | T-29 | 分类·核 | 无档逐条等值：`loadProjectDeclaration` 输出 deepEqual `DEFAULT_DECLARATION` + 四值读数 |
 | T-30 | 分类·核 | 旧档在场：内容零生效 + 一行告警（哨兵未生效判定）+ **基准断言**（旧档落项目根、cwd 深于项目根 ⇒ 仍命中——基准 = `manifestFilePath`） |
 | T-31 | 分类·核 | 档非法 / 形态错 ⇒ 默认 + warn + 不抛 |
-| T-32 | 注入·核 | manifest `advisor.docMap` / `standardsDoc` 声明生效（返回声明路径） |
+| T-32 | 注入·核 | 文档地图由 `docRoot` 派生（两级探测三态）——判据与用例 = `docs/core/design/MANIFEST.md` AC-48 / T83（本档不复制） |
 | T-V25 | 分类·VSC | 同判：无档逐条等值 |
 | T-V26 | 分类·VSC | 旧档在场同判：零生效 + 告警 + 基准断言（同 T-30） |
 

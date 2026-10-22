@@ -16,8 +16,8 @@
  * 判据零变：本档不新增判据——只决定「判谁」与「何时强制」；判据与裁定串由产品引擎
  * `doc-check/index.mjs` 产出（判据源唯一）。引擎版本前置同源 = `doc-check/version.mjs`。
  *
- * 两条边界（设计与实测同口径）：① **批档自身不入范围**（载体不是判据对象；声明域已排除 `batches`，
- * 传入只产「跳过域外」行 = 假检查）；② **本轮提交面不在工具面**——`<批起 sha>` 只有父侧掌握，
+ * 两条边界（设计与实测同口径）：① **批档自身不入范围**（载体不是判据对象——判它只会把载体的行宽记成本批欠账）；
+ * ② **本轮提交面不在工具面**——`<批起 sha>` 只有父侧掌握，
  * ② 的写入集只认触达账 + 回执明示「基 sha 未定」，提交面由父侧协议清单兜（不静默）。
  */
 import { execFileSync } from "node:child_process"
@@ -123,7 +123,7 @@ function evaluate({ abs, cwd, agent, scope, clock }) {
   try { read = readManifest(root) } catch (e) {
     return errorState(`DOC-CHECK GATE: ERROR（manifest 不可读 —— ${e?.message ?? String(e)}）`)
   }
-  // 适用面（声明面驱动）：无 manifest ⇒ 不适用 + 回执明示；**不是豁免清单**——判据参数来自 checkConfig。
+  // 适用面（声明面驱动）：无 manifest ⇒ 不适用 + 回执明示；**不是豁免清单**——判据参数 = 引擎内置常量。
   if (!read.ok && read.reason === "missing") {
     return { state: "not-applicable", first: null, report: "[doc-check gate] 未跑（本项目无声明面）", hitLines: [], noteLines: [], range: emptyRange("none") }
   }
@@ -135,7 +135,7 @@ function evaluate({ abs, cwd, agent, scope, clock }) {
   }
 
   // 范围（判谁）：writer = 写者触达账；close = 本批笔域集（触达账）∪ git 面。
-  // 批档自身不入范围（载体不是判据对象；声明域已排除 batches ⇒ 传入只产「跳过域外」行 = 假检查）。
+  // 批档自身不入范围（载体不是判据对象——判它只会把载体的行宽记成本批欠账）。
   const selfKey = pathKey(resolve(abs))
   const touched = docPaths(agent?._touchedFiles, base).filter((p) => pathKey(p) !== selfKey)
   const git = close ? gitSurface(root) : { ok: false, base: root, files: [] }
@@ -143,7 +143,6 @@ function evaluate({ abs, cwd, agent, scope, clock }) {
   const docs = close ? [...new Set([...touched, ...gitDocs])] : touched
   const basis = close ? (git.ok ? "touched+git" : "touched（git 面不可得）") : "touched"
   const res = runDocCheck(root, { mode: "gate", docs, docsSource: close ? "explicit" : "session" })
-  if (res.error) return { state: "error", first: firstVerdictLine(res.report), report: res.report, hitLines: [], noteLines: [], range: { count: res.checkFiles.length, k: 0, foreign: 0, basis } }
 
   const { aligned, entries } = hitEntries(res, root)
   const ownKeys = new Set(touched.map(pathKey))

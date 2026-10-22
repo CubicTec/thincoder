@@ -22,32 +22,6 @@
     "modules": "docs/core/design/modules",
     "batches": "docs/batches"
   },
-  "promptsLanding": "thincoder-core/prompts",
-  "checkConfig": {
-    "scanDirs": [
-      "docs"
-    ],
-    "lineWidth": 300,
-    "widthExemptZones": [
-      "变更记录",
-      "历史沿革"
-    ],
-    "anchors": {
-      "domain": "docs",
-      "exclude": [
-        "_archive",
-        "batches",
-        "TODO.md",
-        "TODO-archive.md"
-      ],
-      "roots": [
-        "thincoder-core/prompts",
-        "thincoder-core/tool-docs",
-        "thincoder-core"
-      ]
-    },
-    "exemptions": []
-  },
   "codePaths": [
     "src"
   ],
@@ -59,9 +33,5 @@
       "docs/core/requirements/_archive"
     ],
     "publicRepos": []
-  },
-  "advisor": {
-    "docMap": "",
-    "standardsDoc": ""
   }
 }

@@ -7,17 +7,15 @@
  * · 档不在盘 ⇒ `档缺`；带节指示 ∧ 节不在盘 ⇒ `节缺`。
  *
  * 抽取面：逐行扫；fenced 块整块跳过；可执行行（`isExecutableLine`）整行跳过（命令保字面）。
- * 解析序：① 仓根相对 → ② 域根相对（`scanDirs` 逐根）→ ③ 引用方档所在目录相对 →
- *   ③b 节缺的同板块回退（③ 命中档无该节：同板块同 basename 候选恰一含该节 ⇒ 解析到它；
- *   0 ⇒ `节缺`（目标 = ③ 命中档，止步 ④）；≥2 ⇒ 多义报告面）→
- *   ④ 域内唯一 basename 索引（同名 ≥2 ⇒ **不判**，列报告面 = 终结）→ ⑤ 声明解析根相对（`anchors.roots` 逐根，按声明序）。
- * 节在盘：目标档内存在标题行，其标题编号（标题文本去 `^#{1,6}\s` 后的首个 `\d+(?:\.\d+)*`）= 指针节号。
- * 残余登记（fail-open 方向——归评审核验面）：裸档名在域内多义 ⇒ 不判；未闭合围栏 ⇒ 至档尾免；
- *   指针行的坐标尾不入判、同行的档 token 照判。
+ * 解析序**两级**：① 仓根相对全路径 → ② 引用方档所在目录相对。零命中 ⇒ `档缺`。
+ *   **裸名不跨目录解析**：跨目录解析须先建全域目录索引——为认出一个裸名而重建索引，等于把全仓扫描请回来；
+ *   写全路径后解析零索引，逐档判就是全部（与 D4 实现坐标口径一致）。
+ * 节在盘：**只读解析命中的那一档**（点查，不遍历）——目标档内存在标题行，其标题编号
+ *   （标题文本去 `^#{1,6}\s` 后的首个 `\d+(?:\.\d+)*`）= 指针节号。
+ * 残余登记（fail-open 方向——归评审核验面）：未闭合围栏 ⇒ 至档尾免；指针行的坐标尾不入判、同行的档 token 照判。
  */
 import { readFileSync, statSync } from "node:fs"
 import { basename, dirname, resolve } from "node:path"
-import { anchorRootError } from "../manifest-schema.mjs"
 import { fenceMark, isExecutableLine } from "./width.mjs"
 
 /** 文档指针 token：`(目录段/)*名.md` + 可选行号坐标尾 + 可选节指示（`§` + 编号）。
@@ -39,9 +37,6 @@ const PLACEHOLDER_STEMS = new Set([
 /** 文件存在性（目录 / 读错 ⇒ false）。 */
 function isFile(p) { try { return statSync(p).isFile() } catch { return false } }
 
-/** 目录存在性（文件 / 读错 ⇒ false）。 */
-function isDir(p) { try { return statSync(p).isDirectory() } catch { return false } }
-
 /** 标题编号（标题文本去 `^#{1,6}\s` 后的首个 `\d+(?:\.\d+)*`）；非标题行 ⇒ null。 */
 function headingNumber(line) {
   const m = /^#{1,6}\s+/.exec(line)
@@ -58,87 +53,28 @@ function sectionOnDisk(path, num) {
   return false
 }
 
-/** 同板块键（③b 的板块定义）：按路径分隔符切段后逐段比对，取 `docs` 段之后那一段（`docs/<板块>/…` 的 `<板块>`）。
- *  切段而非 `docs/` 子串判——win32 上路径用 `\`，子串判恒 false（口径单源 = `DOC-DISCIPLINE.md` §3.20「段判定式（写死）」）。
- *  多个 `docs` 段取最后一个（项目根自身可能含 `docs` 段）；`docs` 段后不足「板块 + 档名」两段 ⇒ 无板块 ⇒ null（不入集）。 */
-function boardOf(p) {
-  const segs = String(p).split(/[\\/]+/)
-  const i = segs.lastIndexOf("docs")
-  return i >= 0 && i + 2 < segs.length ? segs[i + 1] : null
-}
-
-/** ③b 的候选：④ 索引中 basename 与 token 逐字相同（与 ④ 同键）∧ 与 ③ 命中档同板块 ∧ 含该节者，按路径序。
- *  候选集不看 `roots`（⑤ 的声明根不参与 ③b）；ref 无板块 ⇒ 候选集空（退化为 ③ 原行为）。 */
-function sectionFallback(refPath, token, num, index) {
-  const board = boardOf(refPath)
-  if (board === null) return []
-  return (index.get(basename(token)) ?? [])
-    .filter((c) => boardOf(c) === board && sectionOnDisk(c, num))
-    .sort()
-}
-
-/** 档解析（判据 ① 的解析序 ①–⑤）：命中 ⇒ `{ ok, path }`；同名 ≥2 ⇒ `{ ambiguous, candidates }`；零命中 ⇒ `{ ok:false }`。
+/** 档解析（判据 ① 的解析序两级）：命中 ⇒ `{ ok, path }`；零命中 ⇒ `{ ok:false }`。
  *  行号坐标尾（`:N`）不参与档解析——token 只取 `.md` 段（抽取面已剥离坐标尾与节指示）。
- *  `num` = 指针节号（`§` 后编号；无节指示 ⇒ null）——③ 的命中档无该节时走 ③b 回退。
- *  `roots` = 声明解析根（已按值形 ∧ 根在盘过滤）——第 ⑤ 步，口径单源 = `DOC-DISCIPLINE.md` §3.20 判据 ①。 */
-function resolveDoc(token, refFile, base, scanDirs, index, roots, num) {
+ *  `num` = 指针节号（`§` 后编号；无节指示 ⇒ null）——仅用于判定节在盘，不参与档解析。 */
+function resolveDoc(token, refFile, base) {
   const p1 = resolve(base, token)
-  if (isFile(p1)) return { ok: true, path: p1 } // ① 仓根相对
-  for (const d of scanDirs) { const p = resolve(base, d, token); if (isFile(p)) return { ok: true, path: p } } // ② 域根相对
-  const p3 = resolve(dirname(refFile), token)
-  if (isFile(p3)) { // ③ 引用方档所在目录相对
-    if (num === null || sectionOnDisk(p3, num)) return { ok: true, path: p3 }
-    // ③b 节缺的同板块回退（口径单源 = `DOC-DISCIPLINE.md` §3.20「节缺的同板块回退（解析序 ③b）」）
-    const fb = sectionFallback(p3, token, num, index)
-    if (fb.length === 1) return { ok: true, path: fb[0] } // 恰一含该节 ⇒ 解析到它
-    if (fb.length > 1) return { ambiguous: true, candidates: fb } // ≥2 ⇒ 多义报告面
-    return { ok: true, path: p3 } // 0 ⇒ 节缺，目标 = ③ 命中档（止步，不落 ④）
-  }
-  const cands = index.get(basename(token)) ?? [] // ④ 域内唯一 basename 索引
-  if (cands.length === 1) return { ok: true, path: cands[0] }
-  if (cands.length > 1) return { ambiguous: true, candidates: cands } // ④ 多义 ⇒ 终结，不进 ⑤
-  for (const r of roots) { const p = resolve(base, r, token); if (isFile(p)) return { ok: true, path: p } } // ⑤ 声明解析根相对
+  if (isFile(p1)) return { ok: true, path: p1 } // ① 仓根相对全路径
+  const p2 = resolve(dirname(refFile), token)
+  if (isFile(p2)) return { ok: true, path: p2 } // ② 引用方档所在目录相对
   return { ok: false }
 }
 
-/** 声明解析根逐元素归类（口径单源 = `DOC-DISCIPLINE.md` §3.20 判据 ① 解析序 ⑤）：
- *  `usable` = 参与解析的根（声明序）；`gaps` = 报告面（不作判）。缺键 ⇒ 本步零效（不产报告行）。 */
-function classifyRoots(base, roots) {
-  const out = { usable: [], gaps: [] }
-  if (roots === undefined) return out
-  if (!Array.isArray(roots)) { out.gaps.push({ kind: "invalid", root: roots, reason: "非字符串数组" }); return out }
-  for (const r of roots) {
-    const why = anchorRootError(r)
-    if (why) { out.gaps.push({ kind: "invalid", root: r, reason: why }); continue }
-    if (!isDir(resolve(base, r))) { out.gaps.push({ kind: "missing", root: r }); continue }
-    out.usable.push(r)
-  }
-  return out
-}
-
 /**
- * 锚判据主行程：域内逐档逐行抽取 + 解析 + 节在盘判定。
- * @param {string} root 项目根（判据参数已由调用方自 `checkConfig` 读出）
- * @param {{scanDirs?:string[], files?:string[], checkFiles?:string[], roots?:string[]}} o `files` = 域内 `.md` 全集（单源 = `scanDomain`）；
- *   `checkFiles` = **被判集**（gate 的范围收窄面——缺省 ⇒ `files`）：索引仍按 `files` 建（解析基线不缩），
- *   只把「抽哪几档的行」收窄——否则改过的档引用未改档会假报 `档缺`（假阳即机制失效）；
- *   `roots` = 声明解析根原值（值形 ∥ 根在盘的门归本函数——报告面逐元素弃用 / 列缺位）。
- * @returns {{hits:Array, reports:Array, rootGaps:Array}} hits = 命中（`档缺` / `节缺`）；reports = 报告面（多义——不作判）；
- *   rootGaps = 报告面（解析根弃用 ∥ 缺位——不作判）
+ * 锚判据主行程：传入档逐档逐行抽取 + 解析 + 节在盘判定。
+ * @param {string} root 项目根（解析序 ① 的基准）
+ * @param {{files?:string[]}} o `files` = **判定集兼解析集**（调用方传入的档清单——判定范围 = 解析范围，
+ *   无目录遍历、无全域索引：清单外的档既不判也不参与解析）
+ * @returns {{hits:Array}} hits = 命中（`档缺` / `节缺`）
  */
-export function checkAnchors(root, { scanDirs = [], files = [], checkFiles, roots } = {}) {
+export function checkAnchors(root, { files = [] } = {}) {
   const base = resolve(root)
-  const dirs = Array.isArray(scanDirs) ? scanDirs : []
-  const { usable, gaps } = classifyRoots(base, roots)
-  const index = new Map()
-  for (const f of files) {
-    const k = basename(f)
-    if (!index.has(k)) index.set(k, [])
-    index.get(k).push(f)
-  }
   const hits = []
-  const reports = []
-  for (const f of checkFiles ?? files) {
+  for (const f of files) {
     let text = ""
     try { text = readFileSync(f, "utf8") } catch { continue }
     const re = new RegExp(ANCHOR_RE.source, "g") // 每档一份实例（零共享 lastIndex 状态）
@@ -160,12 +96,11 @@ export function checkAnchors(root, { scanDirs = [], files = [], checkFiles, root
         const stem = bn.replace(/\.md$/, "")
         // 类名 ∥ 占位符两免：抽取面不把它们当指针（判据 = DOC-DISCIPLINE §3.20 ① 的「档 token」定义面）
         if (FILENAME_CLASSES.has(bn) || stem.length <= 1 || PLACEHOLDER_STEMS.has(stem)) continue
-        const r = resolveDoc(token, f, base, dirs, index, usable, num)
-        if (r.ambiguous) { reports.push({ file: f, line: i + 1, token, candidates: r.candidates }); continue }
+        const r = resolveDoc(token, f, base)
         if (!r.ok) { hits.push({ file: f, line: i + 1, token, clazz: "档缺" }); continue }
         if (num !== null && !sectionOnDisk(r.path, num)) hits.push({ file: f, line: i + 1, token, clazz: "节缺", section: num, target: r.path })
       }
     })
   }
-  return { hits, reports, rootGaps: gaps }
+  return { hits }
 }

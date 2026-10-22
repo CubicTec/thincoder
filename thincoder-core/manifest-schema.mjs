@@ -1,7 +1,7 @@
 /**
  * manifest-schema.mjs — **校验 ∕ 默认值族**出档（2026-09-29 structure-split-2 · 台账 #620）：自 `manifest.mjs`
  * 全量迁出——`isValidDocRootValue`（docRoot 子键值形态判据）·
- * `DEFAULT_MANIFEST`（默认八键）· `MANIFEST_SCHEMA`（判据单源）· 元素层谓词一件 · `validateManifest` ·
+ * `DEFAULT_MANIFEST`（默认五键）· `MANIFEST_SCHEMA`（判据单源）· 元素层谓词一件 · `validateManifest` ·
  * `fillDefaults`；**结构拆分零语义**（面不变 ∕ 判据不变，只换宿主档；切点 ∕ 缝单源 =
  * 批档 `docs/batches/2026-09-29-structure-split-2.md` §2.2-C）。
  *
@@ -25,21 +25,8 @@ export function isValidDocRootValue(value) {
   return value.every((p) => typeof p === "string" && p.trim() !== "")
 }
 
-/** `checkConfig.anchors.roots` **单元素值形判据**（判据单源——解析根 = 相对项目根的目录）：
- *  合法 ⇒ `null`；非法 ⇒ 理由句（非空字符串 ∥ 相对路径 ∥ 无 `..` 越界段）。
- *  消费面两处：产品引擎 `doc-check/anchors.mjs`（报告态逐元素弃用）∥ `doc-check/index.mjs`
- *  （gate 面 `configError` 拒，fail-closed）。
- * @param {unknown} value 解析根元素
- * @returns {string|null}
- */
-export function anchorRootError(value) {
-  if (typeof value !== "string" || value.trim() === "") return "元素须为非空字符串"
-  if (/^(?:[A-Za-z]:[\\/]|[\\/])/.test(value)) return "元素须为相对项目根的路径（不得为绝对路径）"
-  if (value.split(/[\\/]/).includes("..")) return "元素不得含 `..` 越界段"
-  return null
-}
-
-/** 默认八键（架构 §2.3 E1 五键 + 三族声明键——KD-M1-31）——整档初始化的写源与缺键 fallback 的补源。 */
+/** 默认五键——整档初始化的写源与缺键 fallback 的补源；每一键描述的都是这个用户项目自身
+ *  （阶段 / 文档层 / 代码段 / 索引），产品内部布局与工具参数不住这里。 */
 export const DEFAULT_MANIFEST = Object.freeze({
   version: 1,
   phase: "initial-dev",
@@ -50,18 +37,9 @@ export const DEFAULT_MANIFEST = Object.freeze({
     modules: "docs/design/modules",
     batches: "docs/batches",
   }),
-  promptsLanding: "thincoder-core/prompts",
-  checkConfig: Object.freeze({
-    scanDirs: Object.freeze(["docs"]),
-    lineWidth: 300,
-    widthExemptZones: Object.freeze([]),
-    anchors: Object.freeze({ domain: "docs", exclude: Object.freeze(["_archive", "batches"]), roots: Object.freeze([]) }),
-    exemptions: Object.freeze([]),
-  }),
   // 项目声明三族（2026-09-27 声明载体唯一化批并入——键名 / 形态逐字承前；来源档已退役）。
   codePaths: Object.freeze(["src"]),
   index: Object.freeze({ codeExtensions: Object.freeze([]), docExtensions: Object.freeze([]), excludePaths: Object.freeze([]), publicRepos: Object.freeze([]) }),
-  advisor: Object.freeze({ docMap: "", standardsDoc: "" }),
 })
 
 /** 校验判据（模块设计 §2.2）——枚举 / 键存在（fallback 用）；判据单源（KD-M1-4）。 */
@@ -73,9 +51,7 @@ export const MANIFEST_SCHEMA = Object.freeze({
   keys: Object.freeze(Object.keys(DEFAULT_MANIFEST)),
   nestedKeys: Object.freeze({
     docRoot: Object.freeze(Object.keys(DEFAULT_MANIFEST.docRoot)),
-    checkConfig: Object.freeze(Object.keys(DEFAULT_MANIFEST.checkConfig)),
     index: Object.freeze(Object.keys(DEFAULT_MANIFEST.index)),
-    advisor: Object.freeze(Object.keys(DEFAULT_MANIFEST.advisor)),
   }),
 })
 
@@ -89,7 +65,7 @@ function isNonEmptyStringArray(v) {
  * 形状校验（模块设计 §2.2）——枚举 / version 数值恒做；**纯函数、零 fs**（原 `{ cwd }`
  * 指针分支已随字段整链裁撤——KD-M1-5 墓志）；不落盘。键存在性入 missingKeys（非拒）：
  * 缺键 = 便利 fallback（补默认值），不是错（与整档缺失两分——KD-M1-2）。
- * 未知键（#802 / KD-M1-36）：顶层 + 四嵌套层产 `unknownKeys`（非拒——ok 定性零变；产线恰 =
+ * 未知键（#802 / KD-M1-36）：顶层 + 两嵌套层产 `unknownKeys`（非拒——ok 定性零变；产线恰 =
  * fillDefaults 丢弃面；嵌套键用点形路径——同 missingKeys 口径）。
  * @param {object} obj 待校验 manifest 对象
  * @returns {{ok:boolean, errors:string[], missingKeys:string[], unknownKeys:string[]}}
@@ -100,7 +76,7 @@ export function validateManifest(obj) {
   if (obj === null || typeof obj !== "object" || Array.isArray(obj)) {
     return { ok: false, errors: ["manifest 顶层必须是 JSON 对象"], missingKeys, unknownKeys: [] }
   }
-  // #802（KD-M1-36——未知键可见化）：顶层 + 四嵌套层逐键对照（非拒——ok 定性零变；嵌套键点形）。
+  // #802（KD-M1-36——未知键可见化）：顶层 + 两嵌套层逐键对照（非拒——ok 定性零变；嵌套键点形）。
   const unknownKeys = []
   for (const key of Object.keys(obj)) if (!MANIFEST_SCHEMA.keys.includes(key)) unknownKeys.push(key)
   for (const [nested, subkeys] of Object.entries(MANIFEST_SCHEMA.nestedKeys)) {
@@ -129,7 +105,6 @@ export function validateManifest(obj) {
   // `index.excludePaths`（§6.14 面①）：**数组层** fail-closed（非数组 ⇒ 拒）；元素层宽容——空 ∕ 非串
   // 元素由归一剔除（L-①-1 夹具 `["./openclaw/","refs",""]` ⇒ `["openclaw","refs"]`）；`index.publicRepos`（§6.15）同款。
   const strArrErr = (key, v) => { if (!isNonEmptyStringArray(v)) errors.push(`${key} 值形态非法：${JSON.stringify(v)}（须为非空字符串数组——KD-M1-32）`) }
-  const strErr = (key, v) => { if (typeof v !== "string") errors.push(`${key} 值形态非法：${JSON.stringify(v)}（须为字符串——KD-M1-32）`) }
   const objErr = (key, v) => (v === null || typeof v !== "object" || Array.isArray(v)
     ? `${key} 值形态非法：${JSON.stringify(v)}（须为对象——KD-M1-32）` : null)
   if (obj.codePaths !== undefined) strArrErr("codePaths", obj.codePaths)
@@ -144,9 +119,6 @@ export function validateManifest(obj) {
       errors.push(`index.publicRepos 值形态非法：${JSON.stringify(obj.index.publicRepos)}（须为数组——非数组 fail-closed；空 ∕ 非串元素由归一剔除）`)
     }
   }
-  const advBad = obj.advisor === undefined ? null : objErr("advisor", obj.advisor)
-  if (advBad) errors.push(advBad)
-  else if (obj.advisor !== undefined) for (const k of ["docMap", "standardsDoc"]) if (obj.advisor[k] !== undefined) strErr(`advisor.${k}`, obj.advisor[k])
   if (obj.phase !== undefined && !MANIFEST_SCHEMA.enum.phase.includes(obj.phase)) {
     errors.push(`phase 取值非法："${obj.phase}"（允许：${MANIFEST_SCHEMA.enum.phase.join(" | ")}）`)
   }
@@ -156,7 +128,7 @@ export function validateManifest(obj) {
   return { ok: errors.length === 0, errors, missingKeys, unknownKeys }
 }
 
-/** 缺键补默认值（module 设计 §2.2 管线）：顶层缺键补默认、嵌套键（docRoot/checkConfig/index/advisor）
+/** 缺键补默认值（module 设计 §2.2 管线）：顶层缺键补默认、嵌套键（docRoot/index）
  *  子键补默认（与整键缺同语义）；不覆写既有值。深拷贝默认源（structuredClone）——冻结常量永不外泄引用。
  *  三族键的非对象值**原样透传**（不洗白——再校验拒，KD-M1-32）。 */
 export function fillDefaults(obj) {
@@ -167,7 +139,7 @@ export function fillDefaults(obj) {
     if (def !== null && typeof def === "object" && !Array.isArray(def)) {
       const src = obj[key]
       if (src === null || typeof src !== "object" || Array.isArray(src)) {
-        if (key === "index" || key === "advisor") out[key] = src // 形态错 → 透传（再校验拒）；docRoot/checkConfig 保持默认
+        if (key === "index") out[key] = src // 形态错 → 透传（再校验拒）；docRoot 保持默认
         continue
       }
       for (const sub of Object.keys(def)) {

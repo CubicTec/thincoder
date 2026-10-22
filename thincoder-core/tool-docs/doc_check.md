@@ -11,6 +11,18 @@ What it checks — exactly two criteria, both built into the engine:
   indicator is given the target file must carry a heading numbered with it (`节缺` when it does not). Line-number coordinates
   (`<doc>:12`) are not section references and are not judged as such. Files inside fenced code blocks and executable lines
   (command / pattern code spans) are skipped whole.
+
+~~~text
+  **Operand names.** Six names count as operands rather than documents: the model writes them, or reads a file by that name. On
+  the prompt face (`thincoder-core/prompts/**`) they are stripped from a line before extraction. On other faces four of the six are
+  exempt as file-name classes — `AGENTS.md`, `SKILL.md`, `.thincoder/advisor.md`, `project_rules.md` — while `README.md` and
+  `MANIFEST.md` are still judged as pointers. The six:
+
+  ```text
+  AGENTS.md  SKILL.md  README.md  MANIFEST.md  .thincoder/advisor.md  project_rules.md
+  ```
+~~~
+
 - Line width — a line whose character count (CJK counts as 1) exceeds the built-in threshold, unless it is a table row, inside a
   fenced code block, an executable line, a quote-block line, or inside an exempt zone.
 

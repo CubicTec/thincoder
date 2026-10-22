@@ -851,7 +851,7 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 | ④ | 阈值 | **300**（不变） |
 | ⑤ | 一处单源 | 本节 = 唯一权威；产品档位 `thincoder-core/doc-check/width.mjs`（§3.20 条目 S）的**默认值 / 域 / 豁免谓词**照它跑；手跑入口（`scripts/doc-check.mjs`）的**汇总只报这一条口径**——口径行 = `FAIL(行宽): N 行超 300 字符` ∥ `OK(行宽)`；**权威读数 = 实施轮首跑**（本节不预载） |
 
-**判据句（可机验）**：单行**字符数 > 300** ∧ **非表格行** ∧ **非 fenced 块内** ∧ **非可执行行** ∧ **非连续引文** ∧ **非区带内** ⇒ **命中**（入 FAIL 集）；域 = 上表 ②（区带豁免 = 第五独立类——§3.15）。
+**判据句（可机验）**：单行**字符数 > 300** ∧ **非表格行** ∧ **非 fenced 块内** ∧ **非可执行行** ∧ **非连续引文** ∧ **非区带内** ⇒ **命中**（入 FAIL 集）；域 = 上表 ②（区带豁免 = 第五独立类——§3.15）；**提示词面照判，无面级豁免**——两判据同取传入清单（依据 = 需求 `docs/core/requirements/ENGINEERING-MODE-V2.md` §13.23：用户 2026-10-22 12:23「提示词面更需要」）。
 
 **豁免谓词（单源指向——本节不复述实现）**：
 
@@ -889,7 +889,7 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 **尺寸档登记**：`scripts/doc-check-width.mjs` 6 行（再出口缝 · 零逻辑——§3.20 条目 S）∥ 产品档位 `thincoder-core/doc-check/width.mjs` 131 行——两者均远低于 500 建议线、单档单责 ⇒ **不拆**（触发 = 再度增厚；登记口径承 §3.15）。
 
-**边界（本条不做）**：不折存量超宽行（存量清账 = 另步）；不改锚检查；不重开基线通道；豁免类集与区带名集均闭集（扩 = 设计 + 评审另批）；不改提示词面。
+**边界（本条不做）**：不折存量超宽行（存量清账 = 另步）；不改锚检查；不重开基线通道；豁免类集与区带名集均闭集（扩 = 设计 + 评审另批）；不改提示词档正文。
 
 **用例表（编号 `DD-66`–`DD-68`，承 §3.16 用例表序）**：
 
@@ -1013,14 +1013,34 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 
 **解析面（实装口径）**：两级解析 = 仓根相对全路径 ∥ 同目录；`§N` 点查不遍历。实现面 = `thincoder-core/doc-check/anchors.mjs` 的 `resolveDoc`（两级——实施轮落）。
 
-**抽取面两免（类名 ∥ 占位——三处假阳复核后的定形）**
+**抽取面三免（类名 ∥ 占位 ∥ 操作数——假阳复核后的定形）**
 
-- **判据句**：档 token 抽取前两免，均**不抽**（不判、不入报告面）——
+- **判据句**：档 token 抽取前**三**免，均**不抽**（不判、不入报告面）——
   ① **类名**（basename 落 `FILENAME_CLASSES` 闭集：`agents.md` · `claude.md` · `skill.md` · `project_rules.md` · `changelog.md` · `agent.md` · `advisor.md` · `todo.md` · `todo-archive.md`）；
-  ② **占位**（词干长度 ≤ 1 ∥ 词干落 `PLACEHOLDER_STEMS` 闭集：`x` · `a` · `b` · `file` · `out` · `foo` · `bar` · `example` · `sample` · `name` · `path`）。
+  ② **占位**（词干长度 ≤ 1 ∥ 词干落 `PLACEHOLDER_STEMS` 闭集：`x` · `a` · `b` · `file` · `out` · `foo` · `bar` · `example` · `sample` · `name` · `path`）；
+  ③ **操作数**（**提示词面**先整串删六个 CANON 操作数再抽：`AGENTS.md` · `SKILL.md` · `README.md` · `MANIFEST.md` · `.thincoder/advisor.md` · `project_rules.md`）。
 - **为什么**：这些名字在文档里指「会读哪些文件」的**操作数**或示例形，不指某个仓内档；同族判据 = `PROMPT-SYSTEM.md` §6.6 判保留面（引，不重述）。
-- **不放宽**：两免是**闭集**，错名照报——错名 `commn` + `.md` 不落两类 ⇒ `档缺`（夹具实测）。
-- **实现单源**：`thincoder-core/doc-check/anchors.mjs:27`–`:35` 的两个常量表；判据句住本节。
+- **③ 的作用面（只此一面）**：剥除面 = `thincoder-core/prompts/**`（实现 = `anchors.mjs` 的 `OPERAND_FACE`）。`docs/` 面与 `tool-docs/**` 的同名 token 仍按指针判——
+  `AGENTS.md` / `SKILL.md` / `.thincoder/advisor.md` / `project_rules.md` 四名另有 ① 类名免接住，`README.md` / `MANIFEST.md` 两名在非提示词面照报。
+- **面界差（登记差异 · 不扩面）**：剥除面窄于 `PROMPT-SYSTEM.md` §6.6 的「提示词面」定义（`prompts/**` + `tool-docs/**`）。裁定 = **接受差异**，理由三条：
+  ① 剥除面是锚判自己的面判据，§6.6 的 J 族域是提示词引用判据的域——同一棵树不等于同一判据；② 现盘 `tool-docs/**` 六名裸名 2 处（`thincoder-core/tool-docs/advisor.md` 第 3 行 · `thincoder-core/tool-docs/verify.md` 第 1 行），basename 均落 ① 类名免，锚判 0 命中（实读 2026-10-22）；
+  ③ 扩面 = 产品代码改动 + 判据面变更，须独立批。**解除条件**：`tool-docs/**` 出现任一操作数裸名落入判集（真实假阳）⇒ 扩面（`OPERAND_FACE` 加面），由产品代码批承接。
+- **不放宽**：三免是**闭集**，错名照报——错名 `commn` + `.md` 不落三类 ⇒ `档缺`（夹具实测）。
+- **实现单源**：`thincoder-core/doc-check/anchors.mjs`（as-of 2026-10-22）——`FILENAME_CLASSES` `:28`–`:31` · `PLACEHOLDER_STEMS` `:34`–`:36` · `CANON_OPERANDS` `:45`–`:48` · `stripCanonOperands` `:51`–`:55` · `OPERAND_FACE` `:60`–`:61` · 剥除接线 `:118` · 逐 token 跳过 `:126`；判据句住本节。
+- **模型可见契约（`thincoder-core/tool-docs/doc_check.md` · 逐字目标形 · 落笔 = eng-coder）**：落点 = 该档 `Anchors —` 起首 bullet 之末（`…are skipped whole.` 之后续写）。
+  **六名以围栏字面列表给出**：未扩面时六名行内裸写会让该档自己落一条 `MANIFEST.md` `档缺`（见上「面界差」）。
+
+~~~text
+  **Operand names.** Six names count as operands rather than documents: the model writes them, or reads a file by that name. On
+  the prompt face (`thincoder-core/prompts/**`) they are stripped from a line before extraction. On other faces four of the six are
+  exempt as file-name classes — `AGENTS.md`, `SKILL.md`, `.thincoder/advisor.md`, `project_rules.md` — while `README.md` and
+  `MANIFEST.md` are still judged as pointers. The six:
+
+  ```text
+  AGENTS.md  SKILL.md  README.md  MANIFEST.md  .thincoder/advisor.md  project_rules.md
+  ```
+~~~
+
 - **仓根 AGENTS.md 三档不另立索引**：类名免已接住该名；产品码 `.md` 引用须写仓根相对全路径（两级解析 ①）——不立 basename 索引。
 
 **节缺不回退（两级解析的确定面）**
@@ -1032,7 +1052,7 @@ node -e "const fs=require('fs');let n=0;fs.readdirSync('.',{recursive:true}).for
 **复算方式（读数住记录面，本节只给判法）**
 
 - **判法**：命中以**锚**（`档缺` / `节缺`）∥ **行宽**（超宽行）两面计、逐条计入；**多义报告面不作判**。复算 = `doc_check`（report ∥ gate 同一引擎）。读数环境须为新进程——陈旧引擎在报告面首行加注记。
-- **归一算术**：两免是**抽取面闭集**（`anchors.mjs:27`–`:35` 两张表 + `:133` 逐 token 跳过）⇒ 落闭集的名字**构造上不入判**；判「某批假阳还在不在」只看现盘命中数（＝锚 + 行宽）。
+- **归一算术**：三免是**抽取面闭集**（`anchors.mjs` 三表 + `stripCanonOperands` 剥除 + 逐 token 跳过——坐标见上「实现单源」）⇒ 落闭集的名字**构造上不入判**；判「某批假阳还在不在」只看现盘命中数（＝锚 + 行宽）。
 - **反证（不放宽）**：错名 `commn` + `.md` 不落任一闭集 ⇒ 报 `档缺`；夹具落系统临时域（零落仓）。
 - **点查复现形**：临时域内两档——引用档以同目录裸名引其一（无该节）⇒ `节缺`（目标 = 同目录该档）；以仓根全路径引含该节者 ⇒ 零命中。
 

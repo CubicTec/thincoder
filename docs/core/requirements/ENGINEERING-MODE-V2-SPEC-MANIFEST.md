@@ -31,7 +31,7 @@
    - **建**：缺档 ⇒ 建默认档（`initManifest`；默认档 = `DEFAULT_MANIFEST`）；
    - **写**：**全键族**可改——`version` / `phase` / `docRoot.*` / `promptsLanding` / `checkConfig.*` / `codePaths` / `index.*`（含 `publicRepos`——「标记引用公共仓」）/ `advisor.*`；落盘前经 `validateManifest`（非法 ⇒ 拒 + 盘零变，fail-closed 照旧）；
    - **目标面**：显式目标目录参数（缺省 = 会话锚 / 按用点解析语义——歧义不猜、多候选列报）；
-   - **权限面**：工具只挂**主 agent**（沿写门不变）；子代理两道防线不动（工具不在其装配 + `files` 域拒）。
+   - **权限面**：写面（`init` / `write`）只挂**主 agent**（沿写门不变）；读面（`read`）子代理另有**只读变体**（同名工具、`action` 枚举只剩 `read`，写动作 schema 级不可达 + execute 入口再拒一次）。子代理写面两道防线不动（写动作不在其装配 + `files` 域拒）。
 
 ## ③ 边界（不做什么）
 
@@ -54,7 +54,7 @@
 | AC-M1-9 | 项目声明三族键（`codePaths` / `index.*Extensions` / `advisor.*`）：形态非法 ⇒ 档非法（fail-closed）+ 消费面逐族回默认 + 可见；退役档（`.thincoder/conventions.json`）在场 ⇒ 零生效 + 一行告警（零并存） | 判据逐条 = 设计 `docs/core/design/MANIFEST.md` §3.1 AC-31–AC-34 ∕ §3.2 T56–T58 |
 | AC-M1-10 | agent 工具面·读写往返（全键）：对样例项目读（含校验态）→ 各键族逐键写 → 回读逐键相等；缺档 ⇒ 建档 → 回读 `ok` | 工具调用往返 → 逐键 diff |
 | AC-M1-11 | agent 工具面·fail-closed：非法值写 ⇒ 拒（报明）+ 盘零变；缺档读 ⇒ 报明（不砖死） | 构造非法/缺档 → 期望拒/报明 ∧ 文件逐字节未变 |
-| AC-M1-12 | agent 工具面·权限面：子代理工具面不可达（未装配 + 写门拒）；主 agent 写 ⇒ 放行 | 子代理实调 → 拒；主 agent 实调 → 过 |
+| AC-M1-12 | agent 工具面·权限面：子代理**写面**不可达（写动作未装配 + 写门拒）；子代理**读面** = 只读变体（`action` 枚举 `[\"read\"]`）；主 agent 写 ⇒ 放行 | 子代理实调 → 拒；主 agent 实调 → 过 |
 
 ## ⑤ 依赖
 

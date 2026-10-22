@@ -19,7 +19,7 @@
 | [1] 人格层 | 「你是谁」：模式 / 角色的身份与边界宣言 | 每人格一份（主会话按模式、子代理按角色） |
 | [2] 公共层 | 两模式共用的协作基础（语言 / 人机分工 / 确认门 / 合同纪律） | 恒一份（恒第二位） |
 | [3] 纪律层 | 「怎么干活」：本模式的工作流程 / 行为规则 / 工具观 | 每模式一份 |
-| [4] 子代理层 | 子代理专用边界与上行通道（`subagent-base.md`——**仅子代理场景装配**） | 恒一份 |
+| [4] 子代理层 | 子代理专用边界与上行通道（`thincoder-core/prompts/subagent-base.md`——**仅子代理场景装配**） | 恒一份 |
 
 独立于主装配链的**特殊模块**：consult（会诊）、advisor（评审）——自含基底、独立注入（§2.6）。
 
@@ -29,25 +29,25 @@
 
 | 文件 | 内容大纲 |
 |---|---|
-| persona-engineering.md | **交叉引用**——主 agent 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.2（职责 / 红线 / 完成判据） |
-| persona-eng-designer.md | **交叉引用**——eng-designer 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.3 |
-| persona-eng-coder.md | **交叉引用**——eng-coder 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.4 |
-| persona-normal.md | ① 身份宣言（coding agent——全项目代码所有者）② 能力边界（直接写码 / 全工具）③ 协作立场（人定方向拍板，我干活） |
-| persona-explore.md | ① 身份：只读侦察 ② 权限边界（只读 / 不碰用户——现由运行时机械承载）③ 报告义务（必列找了什么 / 没找到什么） |
-| persona-coder.md | ① 身份：受控写码实现者 ② 权限边界（写门控）③ 报告义务 |
-| persona-plan.md | ① 身份：只读规划 ② 权限边界（只读）③ 报告义务（歧义带回主会话裁决） |
+| `thincoder-core/prompts/persona-engineering.md` | **交叉引用**——主 agent 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.2（职责 / 红线 / 完成判据） |
+| `thincoder-core/prompts/persona-eng-designer.md` | **交叉引用**——eng-designer 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.3 |
+| `thincoder-core/prompts/persona-eng-coder.md` | **交叉引用**——eng-coder 定义见 v2 需求 `ENGINEERING-MODE-V2.md` §7.4 |
+| `thincoder-core/prompts/persona-normal.md` | ① 身份宣言（coding agent——全项目代码所有者）② 能力边界（直接写码 / 全工具）③ 协作立场（人定方向拍板，我干活） |
+| `thincoder-core/prompts/persona-explore.md` | ① 身份：只读侦察 ② 权限边界（只读 / 不碰用户——现由运行时机械承载）③ 报告义务（必列找了什么 / 没找到什么） |
+| `thincoder-core/prompts/persona-coder.md` | ① 身份：受控写码实现者 ② 权限边界（写门控）③ 报告义务 |
+| `thincoder-core/prompts/persona-plan.md` | ① 身份：只读规划 ② 权限边界（只读）③ 报告义务（歧义带回主会话裁决） |
 
 > **主会话「在途提问」模式**（借 busy 队列的边界送达——非阻塞软转向通道）。
 > **目标**：主 agent 在长执行（子代理在飞 / 长链条）中不必二选一「阻塞等人」或「闷头跑完」——问题随正文流发出 + 给默认值继续推进；用户在忙期提交（排队），消费 = **步边界 pickup（主——当前一步结束后即以普通 user 消息生效，不打断在飞工具）** / 回合尾兜底 / 挂起窗消费；校正自下一步生效（2026-09-24 收正——承该批机制升级）。
-> **功能点**：① 双档主会话人格（`persona-engineering.md` + `persona-normal.md`）写入该段：触发条件（长执行 ∧ 有可先行默认值）+ 一句式模板 + 收到 steer 即校正；
+> **功能点**：① 双档主会话人格（`thincoder-core/prompts/persona-engineering.md` + `thincoder-core/prompts/persona-normal.md`）写入该段：触发条件（长执行 ∧ 有可先行默认值）+ 一句式模板 + 收到 steer 即校正；
 > ② 通道分界：硬门（新范围 / 口径裁决 / 不可带默认前行）⇒ `question` 工具（阻塞）或停下上报；软转向 ⇒ 在途提问（非阻塞）；例行确认门仍走纯文本（现行零变）；
 > ③ 纪律：一次一问（与 `question` 工具 ONE-question 同源）· 不重复索要已授权范围 · 默认先行不空转；④ `thincoder-core/tool-docs/question.md` 补两通道分界一句（落点与 TOOLS 面协同——设计裁定）。
-> **边界（不做）**：busy 队列机制本身零动（本项不改造队列；机制口径 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8——2026-09-24 已落：多槽（容量 8）+ 合并消费（R15 恢复）+ 步边界 pickup）· 不新增工具 · 不替代确认门硬门 · 子代理无此通道（子代理上行 = `notify_parent` 决策级通道——正典见 `prompts/subagent-base.md`）。
+> **边界（不做）**：busy 队列机制本身零动（本项不改造队列；机制口径 = `docs/core/design/AGENT-LOOP-ASYNC-POOL.md` §6.8——2026-09-24 已落：多槽（容量 8）+ 合并消费（R15 恢复）+ 步边界 pickup）· 不新增工具 · 不替代确认门硬门 · 子代理无此通道（子代理上行 = `notify_parent` 决策级通道——正典见 `thincoder-core/prompts/subagent-base.md`）。
 > **验收**：① 该段在 `thincoder-core/prompts/`（工程 / 普通两模式）在位；② 零文档引用（两界机检族）· 机检净增 0；③ 三包全绿。
 > **依赖**：F16 busy 队列（TUI 板块——边界送达 / 挂起窗输入优先）；`thincoder-core/tool-docs/question.md` 既有使用纪律；persona-engineering 锚点 = `ENGINEERING-MODE-V2.md` §7.2。**实现序**：待批。
 
 > **目标**：主 agent **处置时的「做还是记」判断**入人格层——能当场做的一次性小形态项**不进池**（池 = 真债），池面陈年条目在处置前**先 triage**（已落地 ⇒ 追认核销；前提消失 / 重复 ⇒ 废弃）。
-> **功能点**：① 人格档（`persona-engineering.md`，唯一副本 = 英文运行面）「派发与收尾纪律 / Dispatch & close discipline」节**既有节内增列一行**（`欠账入清单` / *Debts go on the list* 邻位）；
+> **功能点**：① 人格档（`thincoder-core/prompts/persona-engineering.md`，唯一副本 = 英文运行面）「派发与收尾纪律 / Dispatch & close discipline」节**既有节内增列一行**（`欠账入清单` / *Debts go on the list* 邻位）；
 > ② **连带项**：双面台账节生命周期 ② 陈旧半句（`ledger_close` 只认现态「待核销」）定点收正；
 > ③ 零文档引用（两界原则）；④ 零 `##` 块计数连带（T-CL1 无涉）。
 > **边界（不做）**：不加机械门 · 不改台账机制本体（写命令 / 状态机面 = 同批 #332 另落）· 不落公共层 / 纪律层（子代理非受众——台账写权仅主 agent）· 不重述攒批工作流。
@@ -61,9 +61,9 @@
 > **验收**：双面该三行在位且逐字稿全等（一次性比对）∥ `prompt-refs-check` 零命中 ∥ 机检净增 0。
 > **依赖**：无。**实现序**：已落。
 
-### 2.3 公共层（两模式共用协作基础——common.md 20 节）
+### 2.3 公共层（两模式共用协作基础——`thincoder-core/prompts/common.md` 21 节）
 
-> common.md = **恒第二位装配**，紧跟人格槽之后；两模式 + 全子代理角色共用。内容大纲（每节管什么，正文见 common.md）：
+> `thincoder-core/prompts/common.md` = **恒第二位装配**，紧跟人格槽之后；两模式 + 全子代理角色共用。内容大纲（每节管什么，正文见 `thincoder-core/prompts/common.md`）：
 
 | # | 节 | 管什么（一句话） |
 |---|---|---|
@@ -85,18 +85,21 @@
 | 16 | 工作结构常识（板 → 域 → 档） | 三层制的并发隔离原则：why 段（并行写冲突因果——两个任务改同一批文件 ⇒ 互踩；分域 ⇒ 隔离；三层方能足够低）+ 判域口径（总是一起动 ⇒ 同一份档；从不同时动 ⇒ 分开写）+ 四条规矩（域 = 并发隔离单位 ∥ 域目录从第一天立 ∥ 拆分恒落域内 ∥ 码档同拍）|
 | 17 | 产品常识（Product common sense） | **配置项必须有配置界面**：任何配置项默认同批给出界面写面（载入期项标注「重启生效」）；确不应给界面的，须显式说明理由并经用户裁——「它一直是配置文件项」不构成例外；界面提示文案不得把用户指向界面里不存在的入口 |
 | 18 | 安全纪律（Security discipline） | **对待安全的顺序与方式**——先能用、后安全 ∥ 威胁模型源于运行事实 ∥ 挡路的防护先让路 ∥ 失效防护 = 负资产 ∥ 安全项不默认立（五条**逐条携 why**——未来的 agent 照理由在未见场面自推）|
+| 19 | 问之前先查文档 | 提问前先在文档里找答案（`doc_search` ∥ 需求档 ∥ 设计档 ∥ 代码 ∥ 项目地图）——文档是「已问过、已答过」的地方，再问等于让人把同一件事答两遍 |
+| 20 | 动手前先查文档 | 动手之前先看这件事现在怎么做（接口 / 约定 / 早先的决定）：代码只记形状，理由与后果在文档里；不查就动手结构上是盲改。文档沉默时照做并说清查过什么 |
+| 21 | 系统接口 + 产物归属 | 见各节（本表按节序，编号以 `thincoder-core/prompts/common.md` 现档 `##` 顺序为准） |
 
 
 > **目标**：**主链各角色**（两模式 + 五个子代理角色 explore / plan / coder / eng-coder / eng-designer）从常识面即可知批次档全图；
 > **advisor / consult 属特殊模块**（自含装配、不入主链，见 §2.6）——其批次档知识走自身档 + §3 落档纪律。
-> **缘起**：批次档此前**按角色分头讲**（主 agent 在 `persona-engineering.md` · eng-designer 在 `persona-eng-designer.md` · eng-coder 在 `persona-eng-coder.md` · 评审在 `advisor-{design,round2,round3}.md` · 纪律层在 `discipline-engineering.md`）——**常识面只间接提及**；
-> 且**「§1–§6 地图与段语义」无任何提示词侧单一出处**。**边界**：带地图 + 指向结构权威 `design/BATCH-RECORD.md`（D2——不重述机制全文）· 不重述 D1 写权全文（纪律层已有）· 不写台账字段含义（第 13 节面）· **不加机械门**。
-> **验收**：① `common.md` 第 14 节在位（六段行全 + 五要素句齐）；② **连带计数（D3）**：本表标题 + `thincoder-cli/test/prompts-dual-source.test.mjs` T-CL1（13 → 14）；③ 机检净增 0 + 三包全绿；④ 提示词与机制档语义等价。**落点**：`thincoder-core/prompts/common.md`（唯一副本）。
+> **缘起**：批次档此前**按角色分头讲**（主 agent 在 `thincoder-core/prompts/persona-engineering.md` · eng-designer 在 `thincoder-core/prompts/persona-eng-designer.md` · eng-coder 在 `thincoder-core/prompts/persona-eng-coder.md` · 评审在 `advisor-{design,round2,round3}.md` · 纪律层在 `thincoder-core/prompts/discipline-engineering.md`）——**常识面只间接提及**；
+> 且**「§1–§6 地图与段语义」无任何提示词侧单一出处**。**边界**：带地图 + 指向结构权威 `docs/core/design/BATCH-RECORD.md`（D2——不重述机制全文）· 不重述 D1 写权全文（纪律层已有）· 不写台账字段含义（第 13 节面）· **不加机械门**。
+> **验收**：① `thincoder-core/prompts/common.md` 第 14 节在位（六段行全 + 五要素句齐）；② **连带计数（D3）**：本表标题 + `thincoder-cli/test/prompts-dual-source.test.mjs` T-CL1（13 → 14）；③ 机检净增 0 + 三包全绿；④ 提示词与机制档语义等价。**落点**：`thincoder-core/prompts/common.md`（唯一副本）。
 
 > **破坏性命令行为红线**。**目标**：任何代理（主 / 子 · 两模式）运行期不得自构造破坏性命令；**行为纪律面，不加机械门**（承 2026-09-18「到处加机械限制是拙劣做法」之裁）。
 > **五条**：① **删除类动词红线**（禁自构造 `rm` / `rmdir` / `del` / `rd` / `Remove-Item` 等——删除只走既有工具面 `delete` / `git rm` 或极窄白名单）② **诊断只读**（存在性检查只准 `dir` / `ls` / `where` / `type` 类；**禁夹带写 / 删动词、禁自贴「no-op」标签**）。
 > ③ **禁静默掩盖**（破坏性 / 写类命令**禁** `2>nul` 吞错、**禁** `&`〔非 `&&`〕串联）④ **不可逆前置确认**（主会话停下问用户 / 子代理走上行 `ask`）⑤ **边界**（不改 `bash` 语义 · 不加机械门 · 不新增节）。
-> **落点**：`common.md` **§10 工具路由面**（全角色恒装配 · 恒读）；节数不变 ⇒ **无 T-CL1 计数连带**；落 `thincoder-core/prompts/common.md`。**验收**：该条在位（node UTF-8 扫描）+ 机检净增 0 + 三包全绿。**实现序**：与 #106 共用落点文件 ⇒ 串行（#106 先落，本条紧随）。
+> **落点**：`thincoder-core/prompts/common.md` **§10 工具路由面**（全角色恒装配 · 恒读）；节数不变 ⇒ **无 T-CL1 计数连带**；落 `thincoder-core/prompts/common.md`。**验收**：该条在位（node UTF-8 扫描）+ 机检净增 0 + 三包全绿。**实现序**：与 #106 共用落点文件 ⇒ 串行（#106 先落，本条紧随）。
 
 > **面向用户的表述纪律**入提示词——说人话、少术语黑话。
 > **目标**：面向用户（子代理语境 = 面向父代理）的回复 / 汇报以「可读可复述」为标尺——项目内部术语 / 代号 / 行话不得**裸用**（出现时随文一句白话解释）；复杂机制先白话打底、再按需给精确坐标。缘起（现场）= 用户 17:5x 两次指出讲解满篇行话（「四十年老程序员都没听懂」）。
@@ -107,7 +110,7 @@
 
 > 多仓操作机制入提示词——两个带档目录并存成为常态后的写面 / 路由 / 自持纪律。
 > **目标**：任何代理在多仓并存工作区下——写面前先定目标仓（歧义列候选、绝不代选）；跨仓各自建档、各自开批；跨仓耦合只经接口（用户门），签入按仓各自；他仓发现物报用户路由、落它本仓。
-> **功能点（三层落点）**：① 公共层——`common.md` §14 增「多仓按仓各自」段（批档住本仓 / 跨仓建档被拒 = 正确行为 / 跨多仓任务 = 各仓分别建档、分别开批）；② 工程纪律层——`discipline-engineering.md` 自持节 item 5 删并 + 新增 6 项（序号 8–13：显式目标 / 仓 = git 仓 / 他仓享六段机制 / 他仓发现物 / 跨仓只经接口 / 分仓 = 例外）；③ 人格层——`persona-engineering.md` 1 行（操作一仓前无 manifest ⇒ 先就地建档）。（三档均落 `thincoder-core/prompts/`，coder 落笔。）
+> **功能点（三层落点）**：① 公共层——`thincoder-core/prompts/common.md` §14 增「多仓按仓各自」段（批档住本仓 / 跨仓建档被拒 = 正确行为 / 跨多仓任务 = 各仓分别建档、分别开批）；② 工程纪律层——`thincoder-core/prompts/discipline-engineering.md` 自持节 item 5 删并 + 新增 6 项（序号 8–13：显式目标 / 仓 = git 仓 / 他仓享六段机制 / 他仓发现物 / 跨仓只经接口 / 分仓 = 例外）；③ 人格层——`thincoder-core/prompts/persona-engineering.md` 1 行（操作一仓前无 manifest ⇒ 先就地建档）。（三档均落 `thincoder-core/prompts/`，coder 落笔。）
 > **边界（不做）**：不新建节（零 `##` 增）· 不加机械门 · 判据语义零改 · 不为「多仓」造协调机器。
 > **验收**：双面六档在位且围栏块逐行全等（一次性比对）∥ `prompt-refs-check` 零命中 ∥ `##` = 14/14/8/8/16/17 不变 ∥ CN 新行 ≤300。
 > **依赖**：无。**实现序**：已入批。
@@ -128,7 +131,7 @@
 > **目标**：任何代理（两模式 + 全角色）在创建 / 重组工作结构（代码树 ∥ 文档树）时即知**三层制**并**知其所以然**——`板 → 域 → 档`；域 = 并发隔离单位；**三层方能将并行写冲突降到足够低**。
 > **功能点（四条）**：① **域 = 并发隔离单位**（并行批次各动各域）；② **域目录从第一天就立**（哪怕单档）；③ **拆分恒落域内**（新档进同域目录——零跨域动 ∥ 零路径重排）；④ **代码树与文档树同拍**（模块镜像）。
 > **写法**：**讲道理式**——讲清「为什么」（并行写冲突的因果），让 agent 知其所以然；非光规范句。
-> **落点**：公共层 `common.md`（**拟新增节**或并入既有节——设计轮定；现 common.md 14 节）；既有同族条 = 工程纪律层 `discipline-engineering.md`「按域分界（创建即留并行面）」（EN `:103` ∥ CN `:101`）——升层后该条**收窄 ∥ 回指**（D2 防重述）随设计轮定。计数连带（D3）随落定。
+> **落点**：公共层 `thincoder-core/prompts/common.md`（**拟新增节**或并入既有节——设计轮定；现 `thincoder-core/prompts/common.md` 14 节）；既有同族条 = 工程纪律层 `thincoder-core/prompts/discipline-engineering.md`「按域分界（创建即留并行面）」（EN `:103` ∥ CN `:101`）——升层后该条**收窄 ∥ 回指**（D2 防重述）随设计轮定。计数连带（D3）随落定。
 > **边界（不做）**：不新造机制 ∥ 不加机械门 ∥ 不重述既有条。
 > **验收**：双面（模板 + 运行期）该节在位 + 语义等价 + `prompt-refs-check` 零命中 + 计数连带同步。
 > **依赖**：无。**实现序**：待批。
@@ -139,10 +142,10 @@
 
 | 文件 | 权威源 | 内容 |
 |---|---|---|
-| discipline-engineering.md（工程模式纪律） | **交叉引用**——工程机制档 `docs/core/requirements/ENGINEERING-MODE-V2.md`（§8 规则架构 + §13 继承机制） | 不重述（D2——机制档改这里跟着改，重述即分叉） |
-| discipline-normal.md（普通模式纪律） | **自身 = 权威**（普通纪律无独立机制档） | 内容大纲见下表 |
+| `thincoder-core/prompts/discipline-engineering.md`（工程模式纪律） | **交叉引用**——工程机制档 `docs/core/requirements/ENGINEERING-MODE-V2.md`（§8 规则架构 + §13 继承机制） | 不重述（D2——机制档改这里跟着改，重述即分叉） |
+| `thincoder-core/prompts/discipline-normal.md`（普通模式纪律） | **自身 = 权威**（普通纪律无独立机制档） | 内容大纲见下表 |
 
-discipline-normal.md 内容大纲（每节管什么）：
+`thincoder-core/prompts/discipline-normal.md` 内容大纲（每节管什么）：
 
 | 组 | 管什么（一句话） |
 |---|---|
@@ -172,7 +175,7 @@ discipline-normal.md 内容大纲（每节管什么）：
 > **验收**：提示词侧同条落；每条携 why；逐字稿在册。**落点档/节 = 设计轮定**（上游三观档如需同拍——设计轮提出、用户裁）。
 > **设计期跨仓文档勘察**——三句文本。
 > **目标**：设计席开工前先查工作目录树内的公共源文档（尤其独立文档仓）——「查没查」在链上可见，设计不再无视跨仓文档。
-> **功能点（三句——逐句落点）**：① 设计席义务句（开工前先查 + 勘察证据行落设计档）——`discipline-engineering.md`「基本流程·设计」步 + `persona-eng-designer.md` §项 1 扩条；② 派单规范句（任务书带公共源坐标，没有就明写「已查无」）——`persona-engineering.md` 派单节；③ 评审检查句（评审标准第 10 条：勘察证据行核查）——`advisor-design.md`。四档均落 `thincoder-core/prompts/` 同名档（coder 落笔）。
+> **功能点（三句——逐句落点）**：① 设计席义务句（开工前先查 + 勘察证据行落设计档）——`thincoder-core/prompts/discipline-engineering.md`「基本流程·设计」步 + `thincoder-core/prompts/persona-eng-designer.md` §项 1 扩条；② 派单规范句（任务书带公共源坐标，没有就明写「已查无」）——`thincoder-core/prompts/persona-engineering.md` 派单节；③ 评审检查句（评审标准第 10 条：勘察证据行核查）——`thincoder-core/prompts/advisor-design.md`。四档均落 `thincoder-core/prompts/` 同名档（coder 落笔）。
 > **边界（不做）**：注入（给设计子代理推文档——`setup.mjs` depth-0 门）= 下一块石头（假死教训在册，零触）；写侧零工程（各仓档住各仓）。
 > **验收**：四档提示词（`thincoder-core/prompts/`）该句在位且逐字稿全等（一次性比对）；验证窗 = 下一个真实设计轮核「设计档是否携勘察证据行」。
 > **依赖**：无。
@@ -184,34 +187,34 @@ discipline-normal.md 内容大纲（每节管什么）：
 
 | 槽位 | 文件名 |
 |---|---|
-| [1] 人格层·工程 | persona-engineering.md |
-| [1] 人格层·普通 | persona-normal.md |
+| [1] 人格层·工程 | `thincoder-core/prompts/persona-engineering.md` |
+| [1] 人格层·普通 | `thincoder-core/prompts/persona-normal.md` |
 | [1] 人格层·角色 | persona-{role}.md（explore / coder / plan / eng-coder / eng-designer 各一） |
-| [2] 公共层 | common.md |
-| [3] 纪律层·工程 | discipline-engineering.md |
-| [3] 纪律层·普通 | discipline-normal.md |
-| [4] 子代理层 | subagent-base.md（仅子代理场景） |
-| 特殊模块 | consult-base.md / advisor-design.md / advisor-round{1,2,3}.md（自含） |
+| [2] 公共层 | `thincoder-core/prompts/common.md` |
+| [3] 纪律层·工程 | `thincoder-core/prompts/discipline-engineering.md` |
+| [3] 纪律层·普通 | `thincoder-core/prompts/discipline-normal.md` |
+| [4] 子代理层 | `thincoder-core/prompts/subagent-base.md`（仅子代理场景） |
+| 特殊模块 | `thincoder-core/prompts/consult-base.md` / `thincoder-core/prompts/advisor-design.md` / advisor-round{1,2,3}.md（自含） |
 
 文件清单总数：主链 **11 文件**（人格 7 + 公共 1 + 纪律 2 + **子代理层 1**），特殊模块 5 件计入则 **16**；不含 AGENTS.md（项目层）。
 
 ### 2.6 装配逻辑（四槽固定序 + 矩阵 + 降级链）
 
-**四槽位固定序**：`[1] 人格层 → [2] 公共层 → [3] 纪律层 → [4] 子代理层（subagent-base.md——仅子代理场景装配）`——每槽至多一份；未命中跳过；**人格先行 · 公共恒二 · 同槽不重复 · 同槽复用**；**AGENTS.md（项目层）与 skills 清单 = 槽位外尾块**（无编号 · 链末追加）。
+**四槽位固定序**：`[1] 人格层 → [2] 公共层 → [3] 纪律层 → [4] 子代理层（`thincoder-core/prompts/subagent-base.md`——仅子代理场景装配）`——每槽至多一份；未命中跳过；**人格先行 · 公共恒二 · 同槽不重复 · 同槽复用**；**AGENTS.md（项目层）与 skills 清单 = 槽位外尾块**（无编号 · 链末追加）。
 
 **装配矩阵（目标态）**：
 
 | 场景 | 装配链 |
 |---|---|
-| 主会话·工程 | persona-engineering.md → common.md → discipline-engineering.md → AGENTS + skills |
-| 主会话·普通 | persona-normal.md → common.md → discipline-normal.md → AGENTS + skills |
-| 子代理·eng-coder | persona-eng-coder.md → common.md → discipline-engineering.md → subagent-base.md → AGENTS |
-| 子代理·eng-designer | persona-eng-designer.md → common.md → discipline-engineering.md → subagent-base.md → AGENTS |
-| 子代理·explore | persona-explore.md → common.md → discipline-normal.md → subagent-base.md → AGENTS |
-| 子代理·coder | persona-coder.md → common.md → discipline-normal.md → subagent-base.md → AGENTS |
-| 子代理·plan | persona-plan.md → common.md → discipline-normal.md → subagent-base.md → AGENTS |
-| 特殊·consult | consult-base.md（自含——不入主链） |
-| 特殊·advisor | advisor-design.md / advisor-round{N}.md（自含——不入主链） |
+| 主会话·工程 | `thincoder-core/prompts/persona-engineering.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-engineering.md` → AGENTS + skills |
+| 主会话·普通 | `thincoder-core/prompts/persona-normal.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-normal.md` → AGENTS + skills |
+| 子代理·eng-coder | `thincoder-core/prompts/persona-eng-coder.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-engineering.md` → `thincoder-core/prompts/subagent-base.md` → AGENTS |
+| 子代理·eng-designer | `thincoder-core/prompts/persona-eng-designer.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-engineering.md` → `thincoder-core/prompts/subagent-base.md` → AGENTS |
+| 子代理·explore | `thincoder-core/prompts/persona-explore.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-normal.md` → `thincoder-core/prompts/subagent-base.md` → AGENTS |
+| 子代理·coder | `thincoder-core/prompts/persona-coder.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-normal.md` → `thincoder-core/prompts/subagent-base.md` → AGENTS |
+| 子代理·plan | `thincoder-core/prompts/persona-plan.md` → `thincoder-core/prompts/common.md` → `thincoder-core/prompts/discipline-normal.md` → `thincoder-core/prompts/subagent-base.md` → AGENTS |
+| 特殊·consult | `thincoder-core/prompts/consult-base.md`（自含——不入主链） |
+| 特殊·advisor | `thincoder-core/prompts/advisor-design.md` / advisor-round{N}.md（自含——不入主链） |
 
 **降级链**：人格/纪律/公共文件缺失 → 该槽空缺 + 醒目警告（**不 fallback** 其他槽位）；AGENTS.md 缺失 → 项目层跳过（无警告）；特殊模块基底缺失 → 不可用报错。装配实现事实（整文件拼接 / 零段落级解析）→ 设计层 `PROMPT-SYSTEM.md` §6.2（不复制）。
 

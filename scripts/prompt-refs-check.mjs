@@ -18,6 +18,7 @@
 import { readFileSync, readdirSync } from "node:fs"
 import { dirname, join, relative, extname } from "node:path"
 import { fileURLToPath } from "node:url"
+import { CANON_OPERANDS, stripCanonOperands } from "../thincoder-core/doc-check/anchors.mjs"
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, "..")
@@ -30,21 +31,18 @@ const CODE_EXTS = [".mjs", ".js", ".cjs"]
 
 // ── 判据三式（PROMPT-SYSTEM.md §6.6 逐字契约面 · 2026-09-29 重建——勿改语义）──────
 const J1_RE = /[A-Z][A-Z0-9-]{2,}\.md/g
-const J1_WHITELIST = new Set(["AGENTS.md", "SKILL.md", "README.md", "MANIFEST.md"])
+// J1 白名单 = 判保留面操作数族（与 J3 豁免**同一张表** = `CANON_OPERANDS` 六名；后二名小写永不命中 J1_RE，
+// 列全只为「三面逐字一致」结构性成立——本档不再持第二份手写名单）。
+const J1_WHITELIST = new Set(CANON_OPERANDS)
 const J2_RE = /§\s*(?:\d{2,}(?![\d\\.])|\d+\.\d)/g
 const J3_RE = /[a-z][a-z0-9-]*\.md/g
 // J3 豁免 = CANON 操作数族（与 J1 白名单同构）：逐行先整串删除再扫。
-const J3_CANON_OPERANDS = [
-  "AGENTS.md", "SKILL.md", "README.md", "MANIFEST.md",
-  ".thincoder/advisor.md", "project_rules.md",
-]
-
-/** J3 豁免：逐行先整串删除 CANON 操作数再扫（PROMPT-SYSTEM.md §6.6 契约面） */
-export function stripCanonOperands(line) {
-  let out = line
-  for (const s of J3_CANON_OPERANDS) out = out.split(s).join("")
-  return out
-}
+// 表与剥除函数的**定义单源** = `thincoder-core/doc-check/anchors.mjs`（`CANON_OPERANDS` / `stripCanonOperands`）——
+// 本档只 import、不复制（同一张表两处消费：本档 J3 豁免 ∥ 锚判的提示词面裁剪）。反方向不成立：
+// 引擎对 `scripts/**` 的 import 点 = 0（`docs/core/design/DOC-DISCIPLINE.md` A-DD29 ⑤），且本档是零参主程序，
+// 被 import 即整轮扫描执行。导出面保留（`stripCanonOperands` 在本档导出史与 API 契约在册）：仓内现无消费点——
+// 需要它的一律从定义单源取。
+export { stripCanonOperands }
 
 /** 域内列档（相对仓根 · 正斜杠 · 排除目录按段匹配；缺目录 ⇒ 空集——域防呆在下游） */
 function listFiles(dirs, exts, excl) {

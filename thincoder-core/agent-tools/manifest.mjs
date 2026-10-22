@@ -30,6 +30,11 @@
  * 缓存失效（#1367 面⑦）：写档成功（init ∥ write——全部成功路径）⇒ `clearDeclarationCache()`——
  * 「补档即回归」进程内即时（声明 ∥ 范围缓存同清）；失败路径不清（盘零变 ⇒ 缓存照旧）；
  * 手工改档 ⇒ 重启生效（零文件侦听）。
+ *
+ * 只读变体（`manifestReadTool`——2026-10-22 · 台账 #1738）：子代理面同名 `manifest`，`action` 枚举只剩
+ * `read`（schema 级不可达 = 权限面第一道）+ execute 入口机械拒绝（第二道，providers 不强制 schema enum）；
+ * `readAction` 的 `canInit=false` 让缺档 / 无项目两态的引导行不指 `init`。全量工具 `manifestTool` 零改
+ * （`readonly: false` = 动作级分类面，只读性归 `dispatch-gates` 的 `read` 判定）。
  */
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
@@ -89,8 +94,10 @@ function workspaceReason(target, candidates) {
 }
 
 /** read 动作（五态报明——**不抛**）：`state=` 稳定锚 + 各态附行（ok 细节面 / missing 引导 /
- *  workspace 下辖项目全列 / invalid 错误行）。 */
-function readAction(target) {
+ *  workspace 下辖项目全列 / invalid 错误行）。
+ *  `canInit`（缺省 `true` ⇒ depth-0 输出逐字零变）：`false` 时 `missing` / `no-project` 的引导行不指
+ *  `init`——子代理面无该动作，指向不可达动作会把模型送进必然失败的调用。 */
+function readAction(target, { canInit = true } = {}) {
   const view = projectView(target)
   const lines = [`state=${view.state}`]
   if (view.path) lines.push(`path=${view.path}`)
@@ -101,9 +108,13 @@ function readAction(target) {
     if (m.unknownKeys?.length) lines.push(`unknownKeys=${m.unknownKeys.join(", ")}`)
     if (m.errors?.length) lines.push(`errors=${m.errors.join("；")}`)
   } else if (view.state === "missing") {
-    lines.push(`hint: run manifest action=init to create the default manifest here`)
+    lines.push(canInit
+      ? "hint: run manifest action=init to create the default manifest here"
+      : "hint: no manifest here — report it; creating one is a main-agent action")
   } else if (view.state === "no-project") {
-    lines.push(`hint: no project on the ancestor chain and none below — manifest action=init can create one at the target`)
+    lines.push(canInit
+      ? "hint: no project on the ancestor chain and none below — manifest action=init can create one at the target"
+      : "hint: no project on the ancestor chain and none below — report it; creating one is a main-agent action")
   } else if (view.state === "workspace") {
     lines.push(`projects (${(view.candidates ?? []).length}):`)
     for (const c of view.candidates ?? []) lines.push(`- ${c}`)
@@ -195,5 +206,27 @@ export const manifestTool = {
     }
     clearDeclarationCache() // 写成功：声明 ∥ 范围逐字随动（进程内——失败路径不清）
     return `manifest write: set ${key} = ${JSON.stringify(value)}\npath=${file}`
+  },
+}
+
+/** 子代理只读变体（同名 `manifest`——action 枚举只剩 `read`）：init / write schema 级不可达（权限面第一道）；
+ *  execute 入口再做一次机械拒绝（providers 不强制 schema enum——第二道）。 */
+export const manifestReadTool = {
+  name: "manifest",
+  description: DESC("manifest-read"),
+  parameters: {
+    type: "object",
+    properties: {
+      action: { type: "string", enum: ["read"], description: "read — current manifest + validation state (five-state anchor, never throws)" },
+      target: { type: "string", description: "Explicit target directory — defaults to the session anchor; relative paths resolve against it. A workspace target (several projects below it) is reported with the full project list — pass the project root you mean." },
+    },
+    required: ["action"],
+  },
+  readonly: true,
+  async execute(args, ctx) {
+    if (args?.action !== "read") {
+      throw new Error(`manifest read: refused — this read-only variant exposes only action=read (got ${JSON.stringify(args?.action)})`)
+    }
+    return readAction(resolveTarget(args, ctx), { canInit: false })
   },
 }

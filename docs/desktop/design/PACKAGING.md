@@ -42,7 +42,7 @@
 
 ### 2.2 构建序列（发布窗内）
 
-1. **物化**：`node scripts/materialize-deps.mjs`——两核包 junction ⇒ 真目录（**源树实拷**：`../thincoder-core` ∥ `../thincoder-render-core` 直读；排 `test/**` ∥ `.thincoder/**`；`core` 携 `prompts/` 16 + `tool-docs/` 52）；`prepackage` = 自动前置（`npm run package` 一条链自足）
+1. **物化**：`node scripts/materialize-deps.mjs`——两核包 junction ⇒ 真目录（**源树实拷**：`../thincoder-core` ∥ `../thincoder-render-core` 直读；排 `test/**` ∥ `.thincoder/**`；`core` 携 `prompts/` 16 + `tool-docs/` 54）；`prepackage` = 自动前置（`npm run package` 一条链自足）
 2. **打包 + 校验**：`ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ npm run package`（`postpackage` 自动跑 check-dist——闸；**产物面 = 安装包 + `.blockmap` + `latest.yml`**（update-info——§2.8.2）∥ `resources/app-update.yml` 随包）
 3. **恢复 dev 链**（收窗）：自愈已入链（`postpackage` 第三腿 = `node ../scripts/dev-link.mjs --force --win32-only`——win32 面；构建机 Linux 本机 no-op）；手跑 = 复判 ∥ 兜底：`node scripts/dev-link.mjs --check` = 0（终态判据）
 

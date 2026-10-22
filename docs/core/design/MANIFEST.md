@@ -192,11 +192,11 @@
 | 48 | `thincoder-core/manifest-schema.mjs` | **181**（2026-10-22 实测） | 修改 | `validateManifest` 增未知键产线（两层级——顶层 + 四嵌套层照 `nestedKeys`；非拒——KD-M1-36）+ 头注契约行同步 | ≤ +16 |
 | 49 | `thincoder-core/manifest.mjs` | **272** | 修改 | `readManifest` 返回面 + `unknownKeys` + 读面一行告警（`console.warn` + `logEvent`；同档同键集去重 Map）+ import 行 | ≤ +28 |
 | 50 | `thincoder-core/agent-tools/manifest.mjs` | 0 | 新增 | `manifestTool`——三动作 `read` / `init` / `write`（点改 ∥ 写面白名单 = 全键族 ∥ 目标面复用 `projectView` ∥ `projectRootView`；描述 `DESC("manifest")`——详 §2.10） | ≈ +170（上界 ≤260） |
-| 51 | `thincoder-core/agent-tools.mjs` | 29 | 修改 | 登记册 +1 导出行（`manifestTool`——邻 `engTool` `:15`；注册面单一（F1）∥ 探针可枚举照旧） | ≤ +2 |
+| 51 | `thincoder-core/agent-tools.mjs` | 29（as-of 本批） | 修改 | 登记册 +1 导出行（`manifestTool`——邻 `engTool` `:15`；注册面单一（F1）∥ 探针可枚举照旧）——**现行读数** 32 行（§2.10.1 受影响文件行 2） | ≤ +2 |
 | 52 | `thincoder-core/agent/family-tools.mjs` | 204（2026-10-22 实测） | 修改 | depth-0 段挂载全量变体（动态 import 名面 `:29` + `depthOnly` 表——两模式同挂）；depth>0 五段挂只读变体（§2.10.1） | ≤ +12 |
 | 53 | `thincoder-core/agent/dispatch-gates.mjs` | 143 | 修改 | `isSubagentReadonlyAction` +`manifest` `read` 只读格（`init` / `write` 侧效门——`:75` 邻位） | ≤ +5 |
 | 54 | `thincoder-core/tool-docs/manifest.md`（已落） | 0 | 新增 | 工具描述档（DESC 单解析面；单档 ≤8,000 字符预算——`scripts/tool-schema-size.mjs:72`） | ≈ +1.2k 字符 |
-| 55 | `thincoder-vscode/scripts/check-vsix.mjs` | 100 | 修改 | `EXPECT["tool-docs"]` **50**（VSC 打包口径——描述档 +1 ∧ 既有漂移收正 +1；`:37`） | ±1 |
+| 55 | `thincoder-vscode/scripts/check-vsix.mjs` | 100（as-of 本批） | 修改 | `EXPECT["tool-docs"]` **50**（as-of 本批：48 + 描述档 1 + 既有漂移收正 1；`:37`）——**现行读数**见 §2.10.1 受影响文件行 6 = 53 ⇒ 54 | ±1 |
 | 56 | 单元测试档（manifest-agent-tool） | 0 | 新增 | 单元测试档（T63–T73 对应用例——不进集成测试树） | 新增 |
 
 > 说明：**行数 = 读盘实测（`\n` 计数）**。
@@ -599,7 +599,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 - 挂载 = `thincoder-core/agent/family-tools.mjs` **depth-0 段**（`depthOnly` 表 `:141-149`——`ledgerTool` `:145` 后；动态 import 名面 `:29`）：**两模式同挂**（需求未设模式门——写门对任何会话生效，同 `spawn-gates.mjs:79-86` 口径）；
   子代理各段（eng-coder / eng-designer / coder / consult / 兜底）挂**只读变体**（`manifestReadTool`——`action` 枚举只剩 `read`，`init` / `write` schema 级不可达 = 权限面第一道；判据 / 挂载行 = §2.10.1）。CLI / VSC / desktop 同表自动（核单源装配——调用点 `thincoder-core/agent/setup.mjs:183`；VSC 经核 `prepareRun` 同调）。
 - 分类面 = `thincoder-core/agent/dispatch-gates.mjs` `isSubagentReadonlyAction` 补一格：`manifest` `read` ⇒ 只读类（planMode 放行 / 免审批——先例 = settings `:73-78`）；`init` / `write` 保持侧效门（审批不绕过）。
-- 描述档 = `thincoder-core/tool-docs/manifest.md`（已落——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:72`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` 48 ⇒ **50**（描述档 +1 ∧ 既有漂移收正——仓内侧现盘实读 49 档）。
+- 描述档 = `thincoder-core/tool-docs/manifest.md`（已落——单档 ≤8,000 字符预算：`scripts/tool-schema-size.mjs:72`）；VSC 打包口径随拍 = `thincoder-vscode/scripts/check-vsix.mjs:37` `EXPECT["tool-docs"]` **50**（as-of manifest-agent-tool 批：48 + 描述档 1 + 既有漂移收正 1，当时现盘实读 49 档；**现行读数**见 §2.10.1 受影响文件行 6 = 53 ⇒ 54）。
 - 二道防线**零改**（`spawn-gates.mjs` `MANIFEST_BASENAME` 分支 `:104-106`——子代理 `files` 域拒照旧）。
 
 **报告面（KD-M1-40——判定 = 随动，零改）**：工具写盘 = 盘面变化 ⇒ 情境行经既有 ③b mtime 门控于下回合采纳（`thincoder-core/agent/setup-reminders.mjs:122-140` `refreshManifest`——KD-M1-17 零改）；**不新增**「工具写后同步内存值」通道——`agent.manifest` 写点保持两处（钩子附着 ∥ ③b 采纳；第二值源否）；且工具目标可为**非锚项目**——直写内存值会把非锚项目状态错当锚项目状态（违 §2.9 D「注入物 = 会话锚项目」）。
@@ -700,7 +700,7 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 **边界（本块不做）**：不改键面语义 / 不改写门（fail-closed）/ 不改 manifest 结构 / 不新增字段 / 不改校验器判据（需求块边界逐字）；**不动机制代码**（`thincoder-core/agent-tools/manifest.mjs` / `manifest-schema.mjs` 等零改）；**不做节级条件装配机制**（新机制——另批另裁）；编修需求档 = 父侧笔。
 
 **先例与勘察**：先例 = `settings` 工具描述形（`thincoder-core/tool-docs/settings.md`；需求面 `docs/core/requirements/SETTINGS-TOOL.md` N-ST6「描述纪律」）——对齐其形、偏离其粒度（KD-M1-45）。
-**勘察行（查过的公共源 ∥ 结论）**：① 本仓工作目录内——`thincoder-core/tool-docs/*.md`（52 档）实读 ⇒ **无「描述档承载全键目录」先例**（`thincoder-core/tool-docs/settings.md` 只给两例类型口径）；② 键语义单源 = 本档 §2.2——在位；③ 工作目录外公共源（`D:\ref\` 参考系）= **未勘察**（出本仓工作目录——按声明读；本批未查）。
+**勘察行（查过的公共源 ∥ 结论）**：① 本仓工作目录内——`thincoder-core/tool-docs/*.md`（当时 52 档；现盘 54——见 §2.10.1 受影响文件行 6）实读 ⇒ **无「描述档承载全键目录」先例**（`thincoder-core/tool-docs/settings.md` 只给两例类型口径）；② 键语义单源 = 本档 §2.2——在位；③ 工作目录外公共源（`D:\ref\` 参考系）= **未勘察**（出本仓工作目录——按声明读；本批未查）。
 **归属（判据 7）**：文档地图 = `docs/README.md`（在位）——本批五档均在既有档内就地扩（描述档末段 ∥ 「项目状态档」节尾 ∥ 本档 §2.10 尾 ∥ `PROMPT-SYSTEM.md` §6.11 表内 +1 行），零新建档 / 零新建节。
 
 
@@ -718,7 +718,15 @@ resolveEngineeringManifest(cwd, { writer = "subagent", init = true })
 **目标**
 
 - 新增只读变体 `manifestReadTool`：同名 `manifest`，`action` 枚举 = `["read"]`，参数只剩 `target`，`readonly: true`。
-- 描述单源 = 新描述档（`thincoder-core/tool-docs/` 下 `manifest-read`——`DESC("manifest-read")` 解析，`thincoder-core/tools/shared.mjs:19`）；全文逐字见下。
+- 描述单源 = 新描述档 `thincoder-core/tool-docs/manifest-read`（`DESC("manifest-read")` 解析——`thincoder-core/tools/shared.mjs:19` `export const DESC = (name) => loadToolDoc(name)`）；全文逐字见下。
+- **`DESC(name)` 的 `name` = 描述档名，不是工具名**：`thincoder-core/prompt-files.mjs:59-61` `loadToolDoc(name)` 读 `join(TOOL_DOCS_DIR, `${name}.md`)`。两变体同名 `manifest`、描述各写一份——两档全名逐字如下（子代理面一档由实施轮新建）：
+
+  ```text
+  thincoder-core/tool-docs/manifest.md        主 agent 面（DESC("manifest")）——已落
+  thincoder-core/tool-docs/manifest-read.md   子代理面（DESC("manifest-read")）——实施轮新建
+  ```
+
+  `manifest-read` 只作描述档名，不作工具名出现在任何装配面上。
 - 登记册双导出：`thincoder-core/agent-tools.mjs:16` 改为 `export { manifestTool, manifestReadTool }`；VSC 登记册 `export *` 随动（`thincoder-vscode/src/agent-tools/index.mjs:8`），端侧零改。
 - 主 agent 描述档首句随正：子代理有只读变体，`init` / `write` 仍只归主 agent。
 - `readAction` 增参 `{ canInit = true }`：`false` 时 `missing` / `no-project` 的引导行不指 `init`——子代理 schema 无该动作，指向不可达动作会把模型送进必然失败的调用；缺省 `true` ⇒ depth-0 输出逐字零变。
@@ -810,22 +818,23 @@ const { planTool, subagentTool, taskTool, skillTool, goalTool, verifyTool, recen
 | 1 | `thincoder-core/agent-tools/manifest.mjs` | 产品 | eng-coder | 200 行 | 新增 `manifestReadTool` 导出 · `readAction` 增 `canInit` | 头注 + `readAction`（`:93`）+ 文件尾 | ≤ +35 行 |
 | 2 | `thincoder-core/agent-tools.mjs` | 产品（登记册） | eng-coder | 32 行 | `:16` 改双导出 | `:16` | 0（同行改） |
 | 3 | `thincoder-core/agent/family-tools.mjs` | 产品（装配） | eng-coder | 204 行 | `:29` 解构 + 五段挂载（`:185` / `:187` / `:189` / `:190` / `:191`）+ `:183-184` 注释 | 同左 | ≤ +4 行 |
-| 4 | `thincoder-core/tool-docs/` 新增描述档（`manifest-read`） | 产品（描述档） | eng-coder | 0 | 新建 · 全文 = 上方逐字块 | — | 新档（≤1,500 字符） |
+| 4 | `thincoder-core/tool-docs/manifest-read`（全名 + `.md` 见上方「描述单源」逐字块） | 产品（描述档） | eng-coder | 0 | 新建 · 全文 = 上方逐字块 | — | 新档（≤1,500 字符） |
 | 5 | `thincoder-core/tool-docs/manifest.md` | 产品（描述档） | eng-coder | 30 行 / 3,759 字符 | 首句改：子代理有只读变体 | `:1` | ≤ +80 字符 |
-| 6 | `thincoder-vscode/scripts/check-vsix.mjs` | 工程工具面 | eng-coder | 101 行 | `EXPECT["tool-docs"]` 53 ⇒ **54**（盘上 53 档 + 新档 1） | `:37` | 0（数值改） |
-| 7 | `docs/core/design/MANIFEST.md` | 文档（设计档） | eng-designer | 984 → **1,127**（2026-10-22 实测） | 本块 + `:56` / `:600` / `:196` 收正 + AC-42 | 同左 | **实测 +143**（预算 ≤+70，超帽 73：工具定义 / 描述全文 / 挂载行三段逐字块——验收②的硬要求） |
-| 8 | 单元测试档（本批一次性——实施轮新建，收口即删） | 测试 | eng-coder | 0 | 装配五段 + 只读 schema + execute 门 + 提示行 | — | 新建 |
+| 6 | `thincoder-vscode/scripts/check-vsix.mjs` | 工程工具面 | eng-coder | 101 行 | `EXPECT["tool-docs"]` 53 ⇒ **54**（盘上 53 档 + 新档 1；as-of 2026-10-22 设计轮——实施轮落盘前复读一次） | `:37` | 0（数值改） |
+| 7 | `docs/core/design/MANIFEST.md` | 文档（设计档） | eng-designer | 984 → **1,145**（2026-10-22 实测——`split("\n")` 读数；LF = 1,144） | 本块 + `:56` / `:600` / `:196` 收正 + AC-42 + **§3.2 用例表 T68 行预期收正** | 同左 | **实测 +161**（预算 ≤+70，超帽 91：工具定义 / 描述全文 / 挂载行三段逐字块——验收②的硬要求） |
+| 8 | `docs/core/design/TOOLS.md` | 文档（设计档） | — | **无需改** | 判据（三面逐条）：① 工具名不变——`manifest` 一名两变体，`TOOLS.md:142` 元工具清单按工具名计 ⇒ 计数与逐字零变；② `TOOLS.md:222` §6.7 要旨行「project-manifest 全键读写出口（三动作 `read` / `init` / `write`——点改 ∥ 全键族白名单 ∥ depth-0 两模式同挂）」对**全量变体**逐条仍真，且该行未断言「子代理不可见」⇒ 无需收正；③ 只读变体的逐面契约 = 本档 §2.10.1（要旨行是摘要、不是契约面——摘要不随每个新增变体扩写） | — | 0 |
+| 9 | 单元测试档（本批一次性——实施轮新建，收口即删） | 测试 | eng-coder | 0 | 装配五段 + 只读 schema + `readonly` 位 + execute 门 + 三态 diff + 提示行。**一次性之由** = 项目测试纪律（单元测试档 = 改动期反馈回路，收口即删、零保留）；**代价明写**：AC-M1-12 收口后**无**常设回归位——长期守卫落在集成场景树（前端入口；本块是核内 schema / 装配面，无该入口）与实施轮每次触及 `family-tools.mjs` 时的装配断言重跑；不新建常设测试档（新设常设档 = 新机制，出本块边界） | — | 新建 |
 
 **验收对照（回指本批任务书；实施轮可机判）**
 
 | # | 验收条 | 核法 |
 |---|---|---|
-| AC-R1 | **schema 窄化**：子代理五段各含恰一 `manifest`，`action` 枚举 = `["read"]`、无 `key` / `value`；`depth:0` 两模式仍为全量变体（三枚举） | `assembleFamilyTools` 五格 + depth-0 两格夹具断言 |
+| AC-R1 | **schema 窄化 + 只读位**：子代理五段各含恰一 `manifest`，`action` 枚举 = `["read"]`、无 `key` / `value`；`depth:0` 两模式仍为全量变体（三枚举）；只读变体 `readonly === true`——消费面四门逐门点名：`thincoder-core/agent/dispatch.mjs:61`（planMode 门 `!tool.readonly`）/ `:177`（审批门 `tool.readonly || …` ⇒ 免审批）/ `thincoder-core/agent/record-results.mjs:98`（变更记账 `!tool.readonly && …`）/ `thincoder-core/agent/helpers.mjs:375`（只读角色过滤 `tools.filter((t) => t.readonly)`） | `assembleFamilyTools` 五格 + depth-0 两格夹具断言 + `manifestReadTool.readonly === true` 断言 |
 | AC-R2 | **写面机械不可达**：只读变体实调 `{action:"init"}` / `{action:"write"}` ⇒ 抛 `manifest read: refused — …`，盘 sha256 逐字节不变 | 直调 + sha256 前后对比 |
-| AC-R3 | **读面等价**：`read` 五态输出与全量变体逐字一致（同一 `readAction`）；只读面 `missing` / `no-project` 提示行零 `action=init` 字样 | 同一夹具双调 diff + 提示行断言 |
+| AC-R3 | **读面等价（三态逐字 + 两态 hint 分叉）**：`read` 的 `ok` / `invalid` / `workspace` 三态输出与全量变体逐字一致（同一 `readAction`）；`missing` / `no-project` 两态**仅 hint 行不同**——只读面该行零 `action=init` 字样（逐字见本块「`readAction` 的改动」两条），余行仍逐字一致 | 同一夹具双调 diff：三态全等断言 + 两态按行 diff（差异行集 = `{hint}`）+ hint 行断言 |
 | AC-R4 | **描述单源**：`manifestReadTool.description` 与描述档逐字节相等；主 agent 描述档首句零 `subagents can neither see nor write`，且明「子代理有只读变体」 | 源码面读判（DESC 解析）+ 字符串断言 |
 | AC-R5 | **写面零改**：`manifestTool` 三动作 / 白名单 / `writer: "main"` / spawn `files` 二道防线 / `docRoot` 解析单点零 diff | 源码面零 diff 断言 + AC-5 / AC-18 既有用例零改全绿 |
-| AC-R6 | **上下文与包面**：新描述档 ≤1,500 字符（机制硬限单档 ≤8,000 内）；`tool-schema-size` 枚举含读变体；`check-vsix` EXPECT tool-docs = 盘上档数（54） | 字符计数 + 两读数相等 |
+| AC-R6 | **上下文与包面 + 同名双导出可机判**：新描述档 `thincoder-core/tool-docs/manifest-read.md` ≤1,500 字符（机制硬限单档 ≤8,000 内）；`check-vsix` EXPECT tool-docs = 盘上档数（54）；枚举读数出现**两条** `manifest`（不是一条）——`scripts/tool-schema-size.mjs:35-41` 按**导出名**枚举（`Object.entries(meta)`），`manifestTool` / `manifestReadTool` 两名 ⇒ 两行同 `name: "manifest"` | 字符计数 + `node scripts/tool-schema-size.mjs --json` 的 `manifest` 行数 = 2 断言 + 两读数相等 |
 
 本批（设计轮）自身验收 = ① 本节落位；② 工具定义 / 描述全文 / 挂载行逐字在上；③ 写面判据四条（上表）；④ `doc_check` PASS；⑤ 本轮零改代码（触及面仅本档）。
 
@@ -840,11 +849,22 @@ const { planTool, subagentTool, taskTool, skillTool, goalTool, verifyTool, recen
 **边界（本块不做）**：不放开 `init` / `write` 给子代理；不改写门 / 白名单 / 校验器 / 二道防线 / `docRoot` 解析单点；不动提示词档（提示词改用 `manifest read` = 另批）；不新增工具名；不做批量读 / 不扫全盘。
 
 **先例与勘察**：先例 = `ledgerReadTool`（`thincoder-core/ledger-tools.mjs:300`——同名单对象 · schema 窄化 · depth>0 全段）；对齐其形；偏离一处 = 读变体经登记册双导出（ledger 直取 `ledger.mjs` 是因静态链避 `node:sqlite`；manifest 链零 sqlite ⇒ 入登记册可让子代理描述档进 `tool-schema-size` 预算读数）。
+
+**同名双导出的影响面勘察（本仓首例——以「工具名」为键的消费面逐个点名）**：
+
+- **按工具名建表**（唯一会塌缩的面）= `thincoder-core/agent/setup.mjs:232` `const toolByName = new Map(tools.map((t) => [t.name, t]))`；读者 = `thincoder-core/agent/dispatch.mjs:45` `toolByName.get(toolCall.name)`。
+  同名 ⇒ Map 内塌缩为**后写者**；**本批不触发**——两变体互斥装配（`thincoder-core/agent/family-tools.mjs:144` `const depthOnly = depth === 0` 单分支），任何一次装配里 `manifest` 恰一名。
+- **按导出名枚举**（探针）= `scripts/tool-schema-size.mjs:35-41`（`const meta = await import(at("agent-tools.mjs"))` → `Object.entries(meta)`）⇒ 取导出名、不取工具名 ⇒ 两变体各成一行、不塌缩；读数 = 两条 `name: "manifest"`（AC-R6 机判）。
+- **`export *` 转口** = `thincoder-vscode/src/agent-tools/index.mjs:8` `export * from "@thincoder/core/agent-tools.mjs"` ⇒ 两名皆转出，端侧零改。
+- **按名取只读性** = `thincoder-server/src/agent/chat-env-tools.mjs:161` `return toolOf[name]?.readonly === true` ⇒ 该表 = 八件环境工具（同档 `:118-127`），**不含 `manifest`** ⇒ 按名取值恒 `false`，本批零影响。
+  - 两变体的 `readonly` 位（`thincoder-core/agent-tools/manifest.mjs` 实读）：只读变体 `readonly: true`（`:225`）；全量变体 `readonly: false`（`:141`——动作级分类：`read` 归只读类，`init` / `write` 保持侧效门）。
+  - **不得**给全量变体加 `readonly: true`：`thincoder-core/agent/dispatch.mjs:177` 按 `tool.readonly || …` 免审批 ⇒ `init` / `write` 会被放行。
+- **结论**：仓内无一处要求「全仓 `manifest` 一名唯一」；唯一会塌缩的 `toolByName` 在两变体互斥装配下零影响 ⇒ 同名双导出成立。
 **勘察行**：
 - ① `thincoder-core/tool-docs/manifest.md` / `thincoder-core/agent/family-tools.mjs` / `thincoder-core/agent-tools/manifest.mjs` 实读；
 - ② `thincoder-core/agent/dispatch-gates.mjs:82-83` 实读——`manifest read` 已判只读类，本批零改；
 - ③ `thincoder-vscode/src/agent-tools/index.mjs:8` 实读——`export *` 随动；
-- ④ `thincoder-vscode/scripts/check-vsix.mjs:37` 实读——EXPECT tool-docs = 53，盘上实测 53 档；
+- ④ `thincoder-vscode/scripts/check-vsix.mjs:37` 实读——EXPECT tool-docs = 54，盘上实测 54 档（2026-10-22 复查）；
 - ⑤ 工作目录外公共源未勘察（本批不依赖外部源）。
 
 ### 2.11 用户 manifest 只声明「这个项目」：五键键族（FR42 · 用户 2026-10-22 10:19-10:24 · 回指规格 = `docs/core/requirements/ENGINEERING-MODE-V2.md` §13.20 `:891`）
@@ -1117,7 +1137,7 @@ const { planTool, subagentTool, taskTool, skillTool, goalTool, verifyTool, recen
 | T65 | 正常 / 边界：`init` 三格 + 不覆盖 | ① 梯②（裸仓无档）② 梯④（容器 + 恰一裸仓）③ 梯⑤（空目录——落点 = target 自身）④ 已带档 | ①②③ 生成 `DEFAULT_MANIFEST`（落点 = 裸仓 / 裸仓 / target）；④ 拒（`refused`）+ sha256 零变（AC-40 / AC-41④） |
 | T66 | 正常：`write` 点改逐键族 | 六面各 ≥1 例（`version` / `phase` / `docRoot.design`（含 `null`）/ `codePaths` / `index.codeExtensions` / `index.publicRepos`） | 每例：档更新 + 回读**已知键**相等 + 非目标**已知**键逐字零变（**未知键丢 / 缺键补默认 = `readManifest` 回写收敛语义**——KD-M1-11；AC-40） |
 | T67 | 错误：写 / 建拒面 | ① 非法值 ② 白名单外 key ③ 缺档 `write` ④ 工作区 ⑤ 无项目 `write` | 皆拒（`refused` 锚）+ 盘零变；③⑤ 引导 `init`；④ 候选全列（AC-41） |
-| T68 | 边界：装配 + 权限面 | ① `assembleFamilyTools` depth 0/1 × 模式两值 × 角色五格 ② 主 agent `init` / `write` 实调 | ① depth-0 两模式恰一 `manifest`；depth>0 全格零 ② 落盘成功（`writer:"main"`）；`{writer:'subagent'}` 直调 ⇒ 拒（AC-42） |
+| T68 | 边界：装配 + 权限面 | ① `assembleFamilyTools` depth 0/1 × 模式两值 × 角色五格 ② 主 agent `init` / `write` 实调 | ① depth-0 两模式恰一 `manifest`（全量变体）；depth>0 五段（eng-coder / eng-designer / coder / consult / 兜底）各含恰一 `manifest`（只读变体，`action` 枚举 = `["read"]`）② 落盘成功（`writer:"main"`）；`{writer:'subagent'}` 直调 ⇒ 拒（AC-42） |
 | T69 | 边界：报告面随动（KD-M1-40） | 工程会话（cwd = 临时项目根）+ `manifest write` 改 `phase`（锚项目；mtime 推进——夹具 `utimesSync` 兜底）→ 下回合 `pushManifestStateReminder` | 行 = 新值（③b 采纳）；同回合**内存值不即时变**（反证格）；非锚目标写入 ⇒ 行不变（对照格） |
 | T70 | 边界：**工具形·参数面** | `manifestTool` schema（登记册 `thincoder-core/agent-tools.mjs`） | `action ∈ {read,init,write}` 必填 ∧ `target` / `key` / `value` 可选——字段名 / 必填位逐项断言（AC-43①） |
 | T71 | 边界：**分类谓词**（只读格） | `readonlyActionOf(tool,"manifest",{action:"read"})` ∥ `{action:"write"}` ∥ `{action:"init"}` | `read` ⇒ `true`；`write` / `init` ⇒ `false`（侧效门）（AC-43②） |

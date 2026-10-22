@@ -1,4 +1,4 @@
-Read, initialize, or point-edit the project manifest (PROJECT-MANIFEST.json) — the project-level state file (version / phase / docRoot / codePaths / index). Attached to the main agent only; subagents can neither see nor write it.
+Read, initialize, or point-edit the project manifest (PROJECT-MANIFEST.json) — the project-level state file (version / phase / docRoot / codePaths / index). Attached to the main agent; subagents carry a read-only variant (action `read`) — init / write stay main-agent only.
 
 Actions:
 - read [target] — report the manifest state with a stable anchor `state=ok|missing|invalid|workspace|no-project`. The ok state prints the manifest JSON plus missingKeys / unknownKeys / errors rows (only when non-empty). Never throws — a missing manifest is reported, not refused.

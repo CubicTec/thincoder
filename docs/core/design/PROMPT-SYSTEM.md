@@ -14,9 +14,9 @@
 | 工具描述（运行期加载） | `thincoder-cli/src/tools/*.md`（实核空） | 同名（实核空）；**运行期面 = 核包 `thincoder-core/tool-docs/*.md`** |
 | 槽位加载面 | `src/prompt-overlays.mjs`（实核档不存在；装配面 = 核内单点 `thincoder-core/prompt-overlays.mjs`） | 同名（同路径对） |
 
-**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（53 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
+**核内落点**：`thincoder-core/prompts/`（16 档槽位）+ `thincoder-core/tool-docs/`（54 档工具描述）+ 单一解析面 `prompt-files.mjs`（落 `thincoder-core/`）——**核内唯一副本**（用户裁定 A7）。
 
-**核内只有运行期面** ✓——`thincoder-core/prompts/`（16）+ `thincoder-core/tool-docs/`（53）；`docs/` 下不建提示词档（单面制）。
+**核内只有运行期面** ✓——`thincoder-core/prompts/`（16）+ `thincoder-core/tool-docs/`（54）；`docs/` 下不建提示词档（单面制）。
 
 > 工具**实现面**（`src/tools/*.mjs`）的行本体住 `docs/core/design/TOOLS.md`；本档收**文本面**（槽位 / 描述）。
 
@@ -117,7 +117,7 @@
 ### 6.1 提示词承载与落笔分工（现行）
 
 - **提示词 = 产品代码面 ⇒ 单笔域 = eng-coder**（内容依据 = 机制文档）；无「中文设计面」一支；父侧改提示词 = 改产品代码，走 coder（判据 A，2026-10-18 23:01 裁定）。
-- **唯一副本** = `thincoder-core/prompts/`（16 档）+ `thincoder-core/tool-docs/`（53 档）——运行期加载面（承 F8）。
+- **唯一副本** = `thincoder-core/prompts/`（16 档）+ `thincoder-core/tool-docs/`（54 档）——运行期加载面（承 F8）。
 - **公共层（`thincoder-core/prompts/common.md`）节级结构** → 需求档 `docs/core/requirements/PROMPT-SYSTEM.md` §2.3（**逐节大纲**：每节管什么；正文在 `thincoder-core/prompts/common.md`）——**本档不复制**（D2）。
 - **行为纪律面的落点形态**：**既有节内增列**（不新增节 ⇒ 零 `##` 块计数连带）；应用实例 = 破坏性命令红线落 `thincoder-core/prompts/common.md` §10 尾部（→ §7 D-PS5）· 「不可裁决」自止点落 `thincoder-core/prompts/common.md` §8「上行通道」节内（→ §6.7 · §7 D-PS7）·
   **台账治理纪律落 `thincoder-core/prompts/persona-engineering.md`「派发与收尾纪律」节内**（→ §6.8 · §7 D-PS9）· **派单尺寸与任务书形态纪律落 `thincoder-core/prompts/persona-engineering.md`「实施委托结构化」节内**（→ §6.9 · §7 D-PS10）· **测试层级知识落两模式纪律档**（`thincoder-core/prompts/discipline-engineering.md`「测试纪律」节内 ∥ 
@@ -172,7 +172,7 @@
 
 ### 6.5 现状坐标
 
-- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（53 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
+- 运行期槽位 = `thincoder-core/prompts/*.md`（16 档）· 工具描述 = `thincoder-core/tool-docs/*.md`（54 档）；加载面 = `thincoder-core/prompt-files.mjs` + `thincoder-core/prompt-overlays.mjs`。
 - 唯一副本 = `thincoder-core/prompts/*.md`（16 档）。
 - **端侧装配面**：CLI = `thincoder-cli/bin/thincoder.mjs` 入口首步 `configurePromptInjections(CLI 表)` + `thincoder-cli/src/prompt-injections.mjs`；
   VSC = `thincoder-vscode/extension.mjs` `activate()` 首步 `configurePromptInjections(VSC 表)` + `thincoder-vscode/src/prompt-injections.mjs`；工具描述装载根两产品同指核 `loadToolDoc`（CORE-UNIFICATION §2.13.2 / §2.13.8）。
@@ -305,7 +305,7 @@
 
 ### 6.11 工具描述面：外置统一与预算
 
-**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（53 档——枚举工具 52 ∥ 目录档 53），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
+**机制**：全工具（内置 / 元工具 / 实例绑定族）描述文本 = **外置单源** `thincoder-core/tool-docs/*.md`（54 档——枚举工具 53 ∥ 目录档 54），经 `DESC()` → `loadToolDoc` 单一解析面加载（`thincoder-core/tools/shared.mjs:19` ∥ `prompt-files.mjs`）；装配期动态装饰（role 后缀 / 池列表 / eng-child 变体——`agent/family-tools.mjs`）留码面（非描述本体）；写作契约（六要素）→ `TOOLS.md` §6.9。
 
 **预算表（唯一权威处——本表；邻位只挂指针行 · D2）**：
 

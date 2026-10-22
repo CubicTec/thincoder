@@ -56,7 +56,7 @@ thincoder/                          ← 合并仓根（git 仓 · 默认分支 m
 │   │                               git-ext / web / ops / repomap / lsp / linter / execute / exec-run /
 │   │                               question / tree / write-path / shared /
 │   │                               glob-dialect / index）
-│   ├── tool-docs/                  工具描述面（模型可见文本——53 档）
+│   ├── tool-docs/                  工具描述面（模型可见文本——54 档）
 │   ├── prompts/                    槽位提示词唯一副本（16 档）
 │   ├── memory/                     三层记忆 + 代码 / 文档索引 + 嵌入（core / docs / code-sync / code-index /
 │   │                               schema / scan / file-walk / delete）

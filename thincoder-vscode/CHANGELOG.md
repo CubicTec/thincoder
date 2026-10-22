@@ -4,6 +4,12 @@ All notable changes to ThinCoder VS Code are documented here.
 
 ## [Unreleased]
 
+## [0.10.10] — 2026-10-22
+
+### Changed
+
+- **随核 0.10.10**：提示词面 16 档重写 + 子代理 `manifest` 只读面。本端代码零改。
+
 ## [0.10.9] — 2026-10-19
 
 ### Added

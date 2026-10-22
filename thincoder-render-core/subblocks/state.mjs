@@ -171,7 +171,10 @@ export function subBlocksReduce(list, patch, deps = {}) {
       // 冻结块不收 started——不半复活（与终态分支同形）
       if (!block || block.frozen) continue
       block.status = "running"
-      block.stateWord = null // stateWord 写点③：queued 头残留等待标注清掉（转 running——由 chunk 状态词接管）
+      // stateWord 写点③：**仅 queued → running 这道迁移**清一次（排队头残留的等待标注）；
+      // 重发的 started（挂起期心跳每 ~2s 补投）不得再清——否则标题每 2s 闪回裸 think 词
+      // （用户 2026-10-21 18:01 现象：`explore#1/Thinking…` 中间穿插 `Thinking…` 后又能恢复）。
+      if (block.queued) block.stateWord = null
       block.queued = false
       block.queueInfo = null // C-11②：started 后清排队信息
       // pool 标记语义: async 池条目 started 携 pool:true；同步 spawn 不带 → false。

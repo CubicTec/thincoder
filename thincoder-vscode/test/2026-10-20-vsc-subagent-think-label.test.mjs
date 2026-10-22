@@ -69,13 +69,13 @@ function toolPayload(extra = {}) {
 
 // ─── T-A33 嵌套 think：状态词零改写（CLI 对齐）──────────────────────────────
 
-test("T-A33 嵌套 think：状态词零改写（CLI 对齐）", () => {
-  // 无前置工具：think 不写状态词 ⇒ 缺省支裸 think 词
+test("T-A33 嵌套 think：无工具时带身份 ∥ 有工具时零改写", () => {
+  // 无前置工具：think 给缺省支带上干活者身份（`advisor#1/思考中…`）——名字不被吃掉
   const fresh = makeBlock()
   renderSubagentChunk(fresh, thinkPayload({ sub: "advisor#1" }))
-  assert.equal(fresh._subMeta.stateWord, null, "think 不写载体（CLI `currentTool` 只由工具 call 写）")
-  assert.ok(header(fresh).endsWith(` ${THINK}`), `无工具时 = 缺省裸 think 词；实际 = ${header(fresh)}`)
-  // 先嵌套工具行、后嵌套 think：标题保持「子代理名/最后工具」
+  assert.equal(fresh._subMeta.stateWord, `advisor#1/${THINK}`, "无前置工具 ⇒ 身份 + think 词")
+  assert.ok(header(fresh).endsWith(` advisor#1/${THINK}`), `头行带身份；实际 = ${header(fresh)}`)
+  // 先嵌套工具行、后嵌套 think：标题保持「子代理名/最后工具」（think 零改写）
   const block = makeBlock()
   renderSubagentChunk(block, toolPayload({
     tool: "read", cmd: "src/x.mjs", sub: "advisor#1", face: "tool", text: "advisor#1/read — src/x.mjs",
@@ -182,10 +182,10 @@ test("T-A37 两刷新路径同值（1 s 拍 ∥ 覆盖式重建——DOM-only �
 
 // ─── T-A38 多段嵌套 ────────────────────────────────────────────────────────
 
-test("T-A38 多段嵌套：工具行前缀逐字拼接 ∥ think 零改写", () => {
+test("T-A38 多段嵌套：工具行前缀逐字拼接 ∥ 无工具 think 带身份", () => {
   const block = makeBlock()
   renderSubagentChunk(block, thinkPayload({ sub: "advisor#1/explore#2" }))
-  assert.equal(block._subMeta.stateWord, null, "think 零改写（与嵌套深度无关）")
+  assert.equal(block._subMeta.stateWord, `advisor#1/explore#2/${THINK}`, "无工具时 = 多段前缀 + think 词")
   renderSubagentChunk(block, toolPayload({
     tool: "read", cmd: "src/x.mjs", sub: "advisor#1/explore#2", face: "tool",
     text: "advisor#1/explore#2/read — src/x.mjs",

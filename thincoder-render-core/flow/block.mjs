@@ -60,7 +60,7 @@ export function appendAdvisorChunk(block, kind, text, sub, meta) {
     line.className = "advisor-tool-line"
     if (face) line.dataset.face = face; if (tool) line.dataset.tool = tool
     if (subLabel) line.dataset.sub = subLabel
-    line.textContent = str
+    appendLineText(line, str, subLabel)
     content.appendChild(line)
     return
   }
@@ -76,9 +76,21 @@ export function appendAdvisorChunk(block, kind, text, sub, meta) {
     div.className = "advisor-text" + (k === "think" ? " advisor-think" : "")
     div.dataset.kind = k
     if (subLabel) div.dataset.sub = subLabel
-    div.textContent = str
+    appendLineText(div, str, subLabel)
     content.appendChild(div)
   }
+}
+
+/** 行内容写入：嵌套子代理行（`sub` 在场）⇒ 行首 dim 子标 `<sub> · ` + 正文；无子标行 ⇒ 纯文本。
+ *  子标形 = 2026-09-07 用户批准的「块内子标」（`explore#1 · read — …`）：块头 = 父的，身份挂行；
+ *  子标只影响首段，后续续写走 `appendIntoLastTextNode`（末子即正文文本节点）。 */
+function appendLineText(el, str, subLabel) {
+  if (!subLabel) { el.textContent = str; return }
+  const tag = document.createElement("span")
+  tag.className = "advisor-sub"
+  tag.textContent = `${subLabel} · `
+  el.appendChild(tag)
+  el.appendChild(document.createTextNode(str))
 }
 
 // ─── 消息块（user / assistant 帧 / 恢复面）──

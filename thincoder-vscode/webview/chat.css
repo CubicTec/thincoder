@@ -333,6 +333,7 @@
 }
 
 .advisor-think { opacity: 0.55; }
+.advisor-sub { opacity: 0.55; margin-right: 2px; }
 /* §5.6（渲染粒度对齐批）：tool 行携 RAW 拼接的输出（零分隔符）⇒ 输出自带换行结构无损还原 */
 .advisor-tool-line { color: var(--accent); opacity: 0.8; margin-top: 2px; white-space: pre-wrap; }
 

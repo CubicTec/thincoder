@@ -192,9 +192,10 @@ function updateStopButton(block) {
 
 /** Chunk-level state-word tracking（状态区取值源 = 闭枚举——`WEBVIEW.md` §5.2）：**写点恰一处**
  *  ——结构化工具行（`${name} — ${cmd ≤60}` / 工具名；嵌套 name = `sub/tool`，CLI
- *  `subagent-blocks.mjs:341` 同构）。**think / text / toolOutput 均不写**（think 支 = `return`）：
- *  思考期间状态区仍挂上一个工具行；无前置工具 ⇒ 读侧缺省支（`stateWord()` 的 `meta.stateWord ||
- *  W.thinking()`）给裸 think 词——CLI `currentTool` 语义逐条对齐（`subagent-blocks.mjs:308` / `:323`）。
+ *  `subagent-blocks.mjs:341` 同构）。**think 不改写已有状态词**（CLI：工具行不被思考顶掉，
+ *  `subagent-blocks.mjs:308` / `:323`）；**唯一例外** = 状态词还空且 `sub` 在场时，think 写入
+ *  `<sub>/<think 词>`——否则子代理刚起、先思考时标题只剩裸 think 词，名字被吃掉（用户 2026-10-20 16:32 ∥
+ *  2026-10-21 17:44 两次裁定）。
  *  **输出面永不入状态区**：`face === "toolOutput"` 的 chunk 与无结构化 `tool` 字段的旧形态
  *  一律不改写状态区（输出 / 结果只进块体行——CLI `currentTool` 语义 §14 C-11①）。 */
 export function noteChunk(block, kind, text, m) {
@@ -207,13 +208,23 @@ export function noteChunk(block, kind, text, m) {
       const name = (typeof m.sub === "string" && m.sub) ? `${m.sub}/${m.tool}` : m.tool
       const cmd = typeof m.cmd === "string" ? m.cmd.replace(/\s+/g, " ").trim() : ""
       meta.stateWord = cmd ? `${name} — ${cmd.length > 60 ? cmd.slice(0, 59) + "…" : cmd}` : name
+    } else if (m?.face === "toolOutput" && m?.tool === "advisor") {
+      // 顾问评审（子代理内部 `advisor` 工具）的产出以 **toolOutput** 回传（`advisor.mjs:237`
+      // `onOutput: ctx.onOutput` ⇒ `onToolOutput`），而输出面从不入状态词 ⇒ 顾问跑着的整段时间
+      // 标题停在裸 think 词（用户 2026-10-21 18:01 现象）。这里只写「它现在在跑 advisor」这个名字，
+      // 不写输出文本：名字 = 事实（本块正被 advisor 占用），输出仍只进块体行。
+      const who = (typeof m.sub === "string" && m.sub) ? `${m.sub}/` : ""
+      meta.stateWord = `${who}advisor`
     }
     refreshBlock(block)
   } else if (kind === "think") {
-    // CLI 对齐（2026-10-21 用户裁定 · 批 `2026-10-21-think-align-cli`）：think **不改写状态词**——
-    // CLI `subagent-blocks.mjs` 的 `currentTool` 只由工具 call 写、think / text 从不碰它
-    // （`:308` / `:323`）⇒ 思考期间标题仍挂「子代理名/最后工具」；无工具时由 `stateWord()` 缺省支给
-    // 裸 think 词。子代理身份不进块头状态词（父子两实体不同行——用户 2026-09-07 裁定）。
+    // think **不改写已有状态词**（CLI 对齐：`currentTool` 只由工具 call 写）。
+    // 唯一例外 = 还没有状态词时：由它带上当前干活的嵌套子代理身份（`explore#1/思考中…`）——
+    // 否则标题只剩思考词，子代理名被吃掉（用户 2026-10-20 16:32 ∥ 2026-10-21 17:44 两次裁定）。
+    if (meta.stateWord == null && typeof m?.sub === "string" && m.sub) {
+      meta.stateWord = `${m.sub}/${W.thinking()}`
+      refreshBlock(block)
+    }
     return
   }
 }

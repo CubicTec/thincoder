@@ -72,7 +72,7 @@
 | 3 | `thincoder-desktop/src/main/window.mjs` | **288**（`buildMenu` 读 `settingsSectionLabels` + 注入 `sections`） | 宿主菜单面 |
 | 4 | `thincoder-desktop/renderer/menu-actions.mjs` | **44**（+`openSettings` 分支；deps +1） | 动作落面 |
 | 5 | `thincoder-desktop/renderer/app.mjs` | **321**（deps.`openSettings` 注入——设置面临时双口（页 ∥ 弹窗）转接；本注触属性 = 装配接线（非结构性）——**≤500 ⇒ 免拆（500/800 口径更换批）**） | 装配面 |
-| 6 | 弹窗族（设置域） | `docs/desktop/design/SETTINGS.md` §1 **KD-68** ∥ §2.10（新档 `settings-modal.mjs` ∥ `settings-modal.css` + 改档五） | 设置域 |
+| 6 | 弹窗族（设置域） | `docs/desktop/design/SETTINGS.md` §1 **KD-68** ∥ §2.10（新档 `settings-modal.mjs` ∥ `settings-modal.css`——改档清单 §2.10 未列，故不记数） | 设置域 |
 | 7 | 单元测试档 | 设置菜单升级族（已建成 · 六用例——波 1 三 + 波 2 三） | 全批 |
 | 8 | 设计档 | 本档 §1 **KD-67** ∥ §2 批注 ∥ §3.3 本块 ∥ §4 该批块 ∥ §5 交叉行 ∥ §6 **DI**；`docs/desktop/design/SETTINGS.md`（§1 **KD-68** ∥ §2.10 ∥ §4 ∥ §5 ∥ §6）；`docs/desktop/design/IPC.md` §1 `ev:menu` 行（五 ⇒ 六 + `value` 携主二）+ §1「事件映射」`:52` ∥「载荷键集」`:88`（同拍收正）+ §2 菜单面段；`docs/desktop/design/{SHELL,UI}.md`；`docs/desktop/design/PROJECT.md` §2 登记行二 + §6.1 + §7 | 全批 |
 

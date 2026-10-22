@@ -169,6 +169,7 @@
   padding: 2px 0;
 }
 .advisor-think { opacity: 0.55; }
+.advisor-sub { opacity: 0.55; margin-right: 2px; }
 /* 工具行携 RAW 拼接的输出（零分隔符）⇒ 输出自带换行结构无损还原。 */
 .advisor-tool-line { color: var(--accent); opacity: 0.8; margin-top: 2px; white-space: pre-wrap; }
 /* 子代理块 ⏹ 停止控件（仅 running 显示 —— 核件 `updateStopButton` 门控）：块级 overlay 绝对定位在标题行右缘

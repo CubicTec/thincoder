@@ -1,7 +1,7 @@
 /**
  * suspensions.mjs — 待决门出档（批 8 §1.14 ③：宿主档触行数拉线拆分；档名实施舱定）。
  * 单源（原 `agent-host.mjs` 同名面逐字搬运）：① 两门 verdict 闭集 `ITEM_VERDICTS`（逐项 = `once` /
- * `always` 放行 · `reject` 拒绝）与 `BATCH_VERDICTS`（批门三值逐字 —— 核 `dispatch.mjs:281-289`）；
+ * `always` 放行 · `reject` 拒绝）与 `BATCH_VERDICTS`（批门三值逐字 —— 核 `executeToolCalls`）；
  * ② 待决表（挂起表 · 唯一持有点）与其**六操作** `askSingle` / `askBatch` / `askQuestion` / `askSecret` /
  * `denyGates` / `respond`（`createGates`）——表项形状 `promptId → { kind, shape?, key, resolve }`：`kind` 三值
  * （`approval` / `question` / **`secret`** —— SSH 会话批增凭据门）判出站通道与载荷族，`shape` 两值
@@ -16,7 +16,7 @@
 import { randomUUID } from "node:crypto"
 import { summarizeArgs } from "./agent-bridge.mjs"
 
-/** 两门 verdict 闭集：逐项 = `once` / `always` 放行 · `reject` 拒绝；批门 = 三值逐字（核 `dispatch.mjs:281-289`）。 */
+/** 两门 verdict 闭集：逐项 = `once` / `always` 放行 · `reject` 拒绝；批门 = 三值逐字（核 `executeToolCalls`）。 */
 export const ITEM_VERDICTS = Object.freeze(["once", "always", "reject"])
 export const BATCH_VERDICTS = Object.freeze(["approveAll", "deny", "oneByOne"])
 

@@ -3,11 +3,12 @@
  * 单一工具三操作（用户定形 F-CC5）：`stats`（感知 F-CC1）· `prune`（噪声清理 F-CC3）· `compact`（主动压缩 F-CC2，携 focus + 自动附任务/目标 + 可回查锚——裁令 A/D）。
  * 描述外置（tool-docs/context.md——#15 统一面：文本单点 = tool-docs，DESC 加载）；装配面 = 登记册 `agent-tools.mjs`（#83）+ `agent/family-tools.mjs` 的 depth-0 段（`depthOnly`）——两端自动同表；**depth>0 不给**（§6.16.6）。
  * 本档是压缩注记 / 轻推行 / 压缩回执的单源；prune 回执与延迟应用单源 = `context-prune.mjs`。
- * 机械面：`stats` 复用本回合阈值与 `historyPercent`；`prune` 复用 `token-window.mjs` 合格集，非 Responses 即时原位换内容，Responses 排队到工具结果全部确认后的下一边界；`compact` 只登记 `agent._pendingCompact`，由下一安全点消费（§6.16.2）。
+ * 机械面：`stats` 主口径 = 窗口占用 total / window，预算取 `requestBudget`；`prune` 复用 `token-window.mjs` 合格集，非 Responses 即时原位换内容，Responses 排队到工具结果全部确认后的下一边界；`compact` 只登记 `agent._pendingCompact`，由下一安全点消费（§6.16.2）。
  */
 import { contextUsage, estimateTokens, collectStaleToolOutputs, historyPercent } from "../token-window.mjs"
 import { COMPRESS_FAILURE_LIMIT } from "../context.mjs"
 import { requestContextPrune } from "../context-prune.mjs"
+import { requestBudget } from "../config.mjs"
 import { slotPath } from "../session-slots.mjs"
 // #15 描述外置：描述文本单点 = tool-docs/context.md（DESC 单解析面，缺档抛错语义不变）
 import { DESC } from "../tools/shared.mjs"
@@ -73,16 +74,38 @@ function statsReport(agent) {
     toolCount++
     toolOut += estimateTokens([m])
   }
-  const pct = Math.round((usage.total / usage.threshold) * 100)
+  const pct = Math.round((usage.total / usage.window) * 100) // 主口径 = 窗口占用（§6.16.4 首行定稿 / D-CC29）
   const toGo = Math.max(0, usage.threshold - usage.total) // 已越阈值 ⇒ 0（自动压缩将在下一安全点接手）
   const info = agent?._lastCompressInfo
   const compaction = !info ? "none"
     : info.mode === "summary" ? `last summary freed ${info.tokensFreed} tokens`
       : "last fallback truncation"
+  // Cache line (batch 2026-10-18-context-cache-visibility): the provider reports
+  // prompt_cache_hit/miss per response; the core now tallies them so the question
+  // "is the prefix cache actually helping?" is answered by a reading, not a guess.
+  const cacheHit = agent?._cacheHitTokens ?? 0
+  const cacheMiss = agent?._cacheMissTokens ?? 0
+  const cacheTurns = agent?._usageTurns ?? 0
+  const cacheTotal = cacheHit + cacheMiss
+  const cacheLine = cacheTurns === 0
+    ? "Cache: no provider usage readings yet (hit/miss arrive with the first response)"
+    : `Cache: hit ${cacheHit} · miss ${cacheMiss} tokens (${Math.round((cacheHit / cacheTotal) * 100)}% hit) across ${cacheTurns} response(s)`
   return [
-    `Context ≈${usage.total} tokens vs compaction threshold ${usage.threshold} (${pct}% — ${toGo} to go); window ${usage.window}`,
+    `Context ≈${usage.total} tokens (${pct}% of ${usage.window} window); compaction line ${usage.threshold} (${toGo} to the line)`,
+    // §6.16.4 字面单源（该行为唯一字面，逐字；预算面同源 requestBudget——不自算第二套）:
+    // window {window} ({spec|provider-override}) · max_tokens {maxTokens|not sent} ({explicit|spec|absent})
+    // · prompt {total} · to compaction line {threshold − total} · to window limit {limit − total}
+    // 两距离带符号（负 = 已越）；maxTokens 未发写 not sent、来源写 absent（该档守卫不覆盖——§6.17 射程）。
+    (() => {
+      const budget = requestBudget(agent?.provider)
+      const mt = budget.maxTokens === undefined ? "not sent" : String(budget.maxTokens)
+      return `Request budget: window ${budget.window} (${budget.windowSource}) · max_tokens ${mt} (${budget.maxTokensSource})`
+        + ` · prompt ${usage.total} · to compaction line ${usage.threshold - usage.total}`
+        + ` · to window limit ${budget.limit - usage.total}`
+    })(),
     `Segments ≈: system ${usage.system} · tools ${usage.tools} · history ${usage.history} (basis: ${usage.basis})`,
     `History: tool outputs ${toolOut} tokens in ${toolCount} msgs · prunable stale ${stale.tokens} tokens in ${stale.indexes.length} msgs · protected tail ${stale.tailCount} msgs`,
+    cacheLine,
     `Status line: context ${historyPercent(agent?.history ?? [], agent?.provider)}% (${usage.history} history estimate / ${usage.window} window)`,
     `Compaction so far: ${compaction} · failures ${agent?._compressFailures ?? 0}/${COMPRESS_FAILURE_LIMIT}`,
   ].join("\n")
@@ -90,8 +113,8 @@ function statsReport(agent) {
 
 /**
  * 可回查锚（父侧裁令 A · §6.16.7 两分支逐字）：回执尾段给出「压掉的可一步取回」的坐标与调用形。
- * 取回面 = `read_history` 既有 `path=`（**不新建通道**）；未绑定槽（会话首次保存前 / VSC 端面板槽
- * 不在 agent 上）⇒ `cwd:` 发现面（等效取回，已登记的端差）。
+ * 取回面 = `read_history` 既有 `path=`（**不新建通道**）；未绑定槽（会话首次保存前——CLI；VSC 恒绑定、不落本支——§6.16.7）
+ * ⇒ `cwd:` 发现面（等效取回——`cwd` 缺省时字面 `cwd:undefined` 的降级形，工具内不抛）。
  */
 function retrievabilityAnchor(agent) {
   const slot = agent?._slot

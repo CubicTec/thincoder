@@ -104,7 +104,7 @@ test("a context change in the compression lifecycle hook is rejected before netw
 
 test("advisor rebuilds its native context when request credentials change", async () => {
   const { createAdvisorResponsesContext } = await import("../advisor/responses-context.mjs")
-  const { responsesProfileBinding, responsesCredentialBinding } = await import("../provider/capabilities.mjs")
+  const { responsesProfileBinding, responsesCredentialBinding } = await import("../provider/responses-binding.mjs")
   const replay = createAdvisorResponsesContext({ ...provider, headers: { "x-account-fixture": "first" } })
   const messages = [{ role: "user", content: "Review" }, { role: "assistant", content: "Checked" }]
   replay.record({ responsesReplay: {

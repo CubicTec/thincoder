@@ -97,7 +97,7 @@ export function onToolOutput(state, ev) {
 
 /** `ev:tool-result`——按 `id` 定位后**重建**（`status` 收束 · `durationMs` = 现刻 − 起刻 · 丢 `startedAt`）；
  *  `status` 由载荷 `ok` 定（`ok === true` ⇒ `done`，否则 `error`）——判据串归宿主侧单源
- *  （`docs/desktop/design/IPC.md:34` 载荷定形 · 批档 §2.16⑪：本端不另立判据、不解析正文）；载荷缺该键 ⇒ 不判成功。 */
+ *  （`IPC.md` §1「主 → 渲染（事件推送）」 载荷定形 · 批档 §2.16⑪：本端不另立判据、不解析正文）；载荷缺该键 ⇒ 不判成功。 */
 export function onToolResult(state, ev, now) {
   if (!forActive(state, ev)) return state
   const blocks = state.blocks ?? []

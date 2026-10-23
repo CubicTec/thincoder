@@ -6,12 +6,14 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createAgent } from "../agent.mjs"
 import { buildSpawnChild } from "../agent-tools/subagent-spawn.mjs"
+import { PLAIN_TASK_BOOK_MIN } from "../agent-tools/spawn-gates.mjs"
 import { refreshAgentModelInfo } from "../agent/model-info.mjs"
 import { callModelTurn } from "../agent/chat-call.mjs"
-import { attachResponsesSession } from "../responses-session.mjs"
+import { attachResponsesSession } from "../session-responses.mjs"
 import { buildBody } from "../provider/responses-request.mjs"
 import { recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const originalFetch = globalThis.fetch, originalNow = Date.now
 const roots = []
@@ -37,9 +39,9 @@ const response = (text) => new Response(`data: ${JSON.stringify({ type: "respons
 beforeEach(() => {
   _clearModelInfoForTest()
   globalThis.fetch = async () => { throw new Error("No real network in child effort tests") }
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     return { profileId, signal, accessToken: "fixture-only", release() {} }
-  } })
+  } }))
 })
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -59,7 +61,7 @@ function spawn({ model = "gpt-6-luna", effort = "ultra", wantAsync = false } = {
     agent: Object.freeze({ autoThink: false, subagentAutoThink: true }), traces: Object.freeze({ enabled: false }) })
   const parent = createAgent({ provider, config, cwd, tools: [] })
   const { child } = buildSpawnChild(parent, { agent: parent, depth: 0, callbacks: {} },
-    { model, task: user[0].content }, "explore", wantAsync, [], [], null)
+    { ...PLAIN_TASK_BOOK_MIN, model, goal: user[0].content }, "explore", wantAsync, [], [], null)
   child.history = structuredClone(user)
   attachResponsesSession(child, join(cwd, "child.json"))
   return { parent, child }

@@ -3,7 +3,9 @@ import assert from "node:assert/strict"
 import { parseModelInfo, recordModelCatalog, modelInfoFor, hasFreshModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { listModelCatalog, ensureProviderModelInfo } from "../provider/list-models.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 import { providerSpec, specForModel } from "../model-specs.mjs"
+import { requestBudget } from "../config.mjs"
 
 const originalFetch = globalThis.fetch
 const originalNow = Date.now
@@ -16,10 +18,10 @@ const rows = (slug, info) => [{ id: slug, slug, spec: parseModelInfo(info) }]
 const json = (data) => new Response(JSON.stringify(data), { headers: { "content-type": "application/json" } })
 function mockAuth() {
   const acquired = [], released = []
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     acquired.push(profileId)
     return { profileId, accessToken: "synthetic-test-token", signal, release() { released.push(profileId) } }
-  } })
+  } }))
   return { acquired, released }
 }
 afterEach(() => {
@@ -95,6 +97,11 @@ test("provider spec layers catalog metadata then manual context without changing
   assert.deepEqual(spec.reasoningEffortEnum, ["low"])
   assert.equal(spec.defaultReasoningEffort, "low")
   assert.equal(spec.maxOutput, 128000)
+  assert.equal(requestBudget(p).window, 272000)
+  assert.equal(requestBudget(p).windowSource, "catalog")
+  assert.equal(requestBudget(p).limit, 144000)
+  assert.equal(requestBudget(p).maxTokens, undefined)
+  assert.equal(requestBudget({ ...p, context: 200 }).windowSource, "provider-override")
   assert.equal(providerSpec({ ...p, context: "200" }).context, 204800)
   assert.equal(providerSpec({ ...p, context: 200 }).contextSource, "config")
   assert.equal(providerSpec({ ...p, context: "invalid" }).contextSource, "catalog")
@@ -104,6 +111,7 @@ test("provider spec layers catalog metadata then manual context without changing
   assert.equal(providerSpec(p).specSource, "catalog")
   assert.equal(providerSpec(p).contextSource, undefined)
   assert.equal(providerSpec(p).context, 1050000)
+  assert.equal(requestBudget(p).windowSource, "spec")
   recordModelCatalog(p, rows(p.model, { supported_reasoning_levels: [{ effort: "low" }] }))
   assert.equal(providerSpec(p).defaultReasoningEffort, undefined)
 })

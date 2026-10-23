@@ -202,9 +202,9 @@ export function _resetAdmissionForTest() { _admission.clear(); _probeImpl = null
 export async function probeChannelModels(name, provider) {
   if (_probeImpl) return _probeImpl(name, provider)
   try {
-    const models = await listModels(provider)
+    const catalog = await listModelCatalog(provider)
     recordAdmission(name, { ok: true })
-    return { ok: true, models }
+    return { ok: true, models: catalog.map((m) => m.id), catalog }
   } catch (e) {
     const error = channelUnavailableMessage(e)
     recordAdmission(name, { ok: false, reason: error, failure: classifyProbeFailure(e) })

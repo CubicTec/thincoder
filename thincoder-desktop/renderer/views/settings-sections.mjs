@@ -1,6 +1,6 @@
 /**
  * settings-sections.mjs — 设置面段体档（批 9 · 批档 §2.12–§2.13；自 `renderer/views/settings.mjs` 拆出
- * —— 300 行层拆分，零语义变化）：模型段体 + 拆档族 re-export 面（渠道 / agent / 工具 / env / models /
+ * —— 300 行层拆分，零语义变化）：模型辅助面（`modelIdOf` / `modelHeadNode` / `modelChoicesTree`——向导步 2 与 agent 段候选面共用）+ 拆档族 re-export 面（渠道 / agent / 工具 / env / models /
  * MCP —— 各段体自立出档，本档 re-export ⇒ 分派面零改）。
  *   - 渠道族（行族 + 段体）随 D37 设置面样式收正批（2026-10-02 · 台账 #812）出档
  *     `renderer/views/settings-sections-providers.mjs`（**先拆后改** · 越层消解 —— 本档 309 ⇒ 回线）；
@@ -93,9 +93,4 @@ function modelRowNode(row, model, handlers) {
       children: [t("settings.model.use")],
     }],
   }
-}
-
-/** 模型段体：当前读数 + 候选行（**向导不经本函数**）。 */
-export function modelBody(section, handlers) {
-  return [modelHeadNode(section), ...modelChoicesTree(section, handlers)]
 }

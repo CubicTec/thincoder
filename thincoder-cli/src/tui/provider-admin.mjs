@@ -1,7 +1,7 @@
 /**
  * provider-admin.mjs — 渠道管理四流 + 级联清理出档（structure-split-2 · 2026-09-29）：自
- * `model-picker.mjs` 迁出〔原 `:309-471`（probeChannelFlow ∥ addProviderFlow ∥ removeProviderFlow ∥
- * setKeyFlow ∥ setProviderKey ∥ setContextFlow）+ `:476-499`（cascadeRemoveProvider）〕——
+ * `model-picker.mjs` 迁出〔probeChannelFlow ∥ addProviderFlow ∥ removeProviderFlow ∥
+ * setKeyFlow ∥ setProviderKey ∥ setContextFlow + cascadeRemoveProvider〕——
  * 结构拆分零语义（面不变 ∕ 判据不变，只换宿主档）；切点 ∕ 缝单源 = 批档
  * `docs/batches/2026-09-29-structure-split-2.md` §2.2-A。
  *
@@ -15,7 +15,7 @@
  * 2026-10-07 三端对齐批（#1027）：添加流两支 +走 proxy 问句（写同一键 `providers[].proxy`）；
  * 三端探针目标构造收敛核 `probeTargetOf`（③′）。
  */
-import { PROVIDER_PRESETS as PRESETS, providerSpec } from "@thincoder/core/config.mjs"
+import { PROVIDER_PRESETS as PRESETS, providerSpec, resolveCompactThreshold } from "@thincoder/core/config.mjs"
 import { hasKey } from "@thincoder/core/model-ref.mjs"
 import { probeTargetOf } from "@thincoder/core/provider-flows.mjs"
 import { probeChannelModels } from "./model-catalog.mjs"
@@ -216,9 +216,9 @@ export function createProviderAdmin(ctx) {
     if (se.name === agent.activeProvider) {
       if (newCtx === undefined) delete agent.provider.context
       else agent.provider.context = newCtx
+      // §6.17：窗口覆盖后 auto 派生线跟手——只刷新显示面 compactThresholdResolved，显式键永不被改写
       if (agent.config?.agent?.compactThresholdAuto) {
-        const { resolveCompactThreshold } = await import("@thincoder/core/config.mjs")
-        agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+        agent.config.agent.compactThresholdResolved = resolveCompactThreshold(null, agent.provider).value
       }
     }
     pushLine(target.context !== undefined

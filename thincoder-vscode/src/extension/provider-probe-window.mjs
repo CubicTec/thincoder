@@ -9,7 +9,7 @@
 
 import { buildProvider, providerLabel } from "./presets.mjs"
 import { listModelCatalog, channelUnavailableMessage, recordAdmission } from "@thincoder/core/provider/list-models.mjs"
-import { specForModel, effortEnumForModel } from "../specs.mjs"
+import { specForModel, effortEnumForModel, providerSpec } from "../specs.mjs"
 import { hostBusy, probeFailureOf } from "./loop-sampler.mjs"
 
 // ─── 渠道准入探针批次：在飞去重 + 有界重试 + 窗口终止（F-W19 · `SETTINGS.md` §2.12）───
@@ -72,9 +72,12 @@ async function _probeChannelInto(w, name) {
     try { return JSON.stringify(await buildProvider(name)) === JSON.stringify(prov) } catch { return false }
   }
   const row = (id) => {
-    const spec = specForModel(id)
-    const r = effortEnumForModel(id) // I7（#677）：未在册名回退全档（对齐 CLI `cmd-think.mjs:19` 托底）
-    return { id, label: id, provider: name, group: providerLabel(name), reasoning: r, effortDefault: spec.reasoningEffortDefault || null }
+    const spec = providerSpec({ ...prov, model: id })
+    // Account defaults come from core. Native non-OAuth menu defaults remain a host concern.
+    const subscription = prov.auth?.type === "chatgpt_oauth"
+    const r = subscription ? (spec.reasoningEffortEnum ?? []) : effortEnumForModel(id)
+    const effortDefault = subscription ? spec.defaultReasoningEffort : specForModel(id).reasoningEffortDefault
+    return { id, label: id, provider: name, group: providerLabel(name), reasoning: r, effortDefault: effortDefault || null }
   }
   try {
     const catalog = await listModelCatalog(prov)

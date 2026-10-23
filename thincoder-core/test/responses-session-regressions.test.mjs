@@ -6,11 +6,11 @@ import { mkdtempSync, readFileSync, writeFileSync, readdirSync, rmSync, existsSy
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import {
-  attachResponsesSession, ensureResponsesSession, responsesSessionPath, persistResponsesSession,
-  prepareResponsesContext, stageResponsesReplay, commitResponsesReplay, runResponsesToolTransaction,
-  acknowledgeResponsesToolTransaction, checkpointResponsesHistory, resetResponsesSession,
-  moveResponsesSession, unlinkResponsesSession,
-} from "../responses-session.mjs"
+  attachResponsesSession, responsesSessionPath, persistResponsesSession, commitResponsesReplay,
+  runResponsesToolTransaction, acknowledgeResponsesToolTransaction, checkpointResponsesHistory,
+  resetResponsesSession, moveResponsesSession, unlinkResponsesSession,
+} from "../session-responses.mjs"
+import { ensureResponsesSession, prepareResponsesContext, stageResponsesReplay } from "../agent/responses-context.mjs"
 import { _setSessionsDirForTest, _resetSessionsDirForTest } from "../session-slots.mjs"
 
 const roots = []

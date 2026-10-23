@@ -48,7 +48,7 @@ function errorNode(block, key, handlers, withLabel, canRetry) {
     children.push({
       tag: "details",
       props: { class: "error-details" },
-      // `summary` 字面 = 核横幅同字面（`thincoder-render-core/flow/block.mjs:138` —— 核 / VSC 两源无此词键）
+      // `summary` 字面 = 核横幅同字面（核 `renderErrorBanner` —— 核 / VSC 两源无此词键）
       children: [{ tag: "summary", props: {}, children: ["Details"] }, { tag: "pre", props: {}, children: [block.techInfo] }],
     })
   }

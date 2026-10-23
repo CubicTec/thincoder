@@ -23,11 +23,11 @@
  * 拟定 —— 行面名 ∕ 值分列，组成式与 VSC `settings.indexDbSize` 整行模板不同）∥ `settings.indexOriginCounts`（值逐字同
  * VSC 同名键）；
  * ⑧ **核件搜索面（R6 · 桌面功能对位批）**：核 `search.mjs` 取词五键（占位 ∕ 上一跳 ∕ 下一跳 ∕ 关闭 ∕ 无匹配）
- * —— 键名与两语值皆 VSC `locales/{en,zh}.json:254-258` 逐字。
+ * —— 键名与两语值皆 VSC `locales/{en,zh}.json` 的 `search.placeholder` ∕ `search.prev` ∕ `search.next` ∕ `search.close` ∕ `search.noMatch` 五键逐字。
  * ⑨ **状态文本段 index 两形（R4 · 桌面功能对位批）**：`renderer/views/statusline-segments.mjs` 取词（index kind 两相位
- * —— 表外四 kind 与压缩四态 = 核字典经 `t()` 投影直取，零新键）；键名与两语值皆 VSC `locales/{en,zh}.json:218-219` 逐字。
+ * —— 表外四 kind 与压缩四态 = 核字典经 `t()` 投影直取，零新键）；键名与两语值皆 VSC `locales/{en,zh}.json` 的 `status.indexScan` ∕ `status.indexProgress` 两键逐字。
  * ⑩ **目标徽标可及名（R5 · 桌面功能对位批）**：`renderer/views/statusline.mjs` 取词（状态行**非段位元素** 🎯 ——
- * 字形直出零键；本键 = `aria-label`）；en 逐字 = VSC `status-bar.js:24` aria-label 字面〔VSC 未本地化〕· zh 本端拟定；
+ * 字形直出零键；本键 = `aria-label`）；en 逐字 = VSC `renderStatusBar` aria-label 字面〔VSC 未本地化〕· zh 本端拟定；
  * 目标卡体内文词 = 核卡直取（`panel.goalDesc` / `goal.objective` 已住建档 ⑥ · `goal.criteria` = 核字典投影直取，零新键）。
  * ⑪ **设置补充族（R7 · 桌面功能对位批）**：env 段（proxy ∕ shell —— `views/settings-sections-env.mjs`）· tools 段两键行
  * （embedding ∕ websearch —— `views/settings-sections-tools.mjs`）· MCP 展开面（`views/settings-sections.mjs`）·
@@ -101,13 +101,13 @@ export const VIEWS_DICT = Object.freeze({
     "settings.agent.consultTurns": "Turn limit",
     "settings.agent.consultTimeoutMs": "Timeout (minutes)",
     "settings.agent.advisorEffort": "Review effort",
-    // ── ⑤ 会话控制面（会话模型轮 R13 —— 键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/en.json:2-7` 同名键）──
+    // ── ⑤ 会话控制面（会话模型轮 R13 —— 键名与两语值皆 VSC 逐字：`en.json` 的 `session.title` 等同名键）──
     "session.title": "Session",
     "session.empty": "No sessions",
     "session.rename": "Rename",
     "session.delete": "Delete",
     "session.deleteConfirm": "Delete session \"${title}\"? This cannot be undone.",
-    // #637（受占切换警告半幅——非失败面：核受占 = 切换成立 + 次存 fork；值沿 U-E 核定 ∕ CLI `cmd-session.mjs:119` 语义）
+    // #637（受占切换警告半幅——非失败面：核受占 = 切换成立 + 次存 fork；值沿 U-E 核定 ∕ CLI `handleSessionCommand` 语义）
     "session.occupied": "This session is in use by another live process — continuing will create a new copy on the next save.",
     // R9 · #486 失败面可见性（四键 —— 本端拟定；消费面 = `renderer/session-wire.mjs` toast；`renameFailed` = #556 增；`deleteFailed` = #578③ 增）
     "session.openFailed": "Could not open the session (${reason})",
@@ -138,23 +138,23 @@ export const VIEWS_DICT = Object.freeze({
     "settings.indexBuilding": "Building…",
     "settings.indexBuilt": "✓ Index built: ${files} files, ${chunks} chunks",
     "settings.indexNotBuilt": "Index not built. Vector search is inactive.",
-    // B10 W2 · S12：embedding key 缺态词（值逐字同 VSC `locales/en.json:178`）
+    // B10 W2 · S12：embedding key 缺态词（值逐字同 VSC `locales/en.json` 的 `settings.mcp.testing`）
     "settings.indexNoKey": "No embedding API key configured.",
     // ── P1 两读两键（#697 · KD-69 —— 消费面 = `views/settings-sections-tools.mjs`）：`indexDbSizeLabel` = 本端
     //    拟定（·名键，同族先例 `settings.*Label`；值面 ≠ VSC 同名键 `settings.indexDbSize` 整行模板）；
     //    `indexOriginCounts` = 计数片段（两语值逐字同 VSC `locales` 同名键——VSC 行首 origin 前缀在其渲染面拼装）──
     "settings.indexDbSizeLabel": "Database size",
     "settings.indexOriginCounts": "code ${code} · doc ${doc}",
-    // ── ⑧ 核件搜索面（R6 —— 核 `search.mjs` 取词键；键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/en.json:254-258`）──
+    // ── ⑧ 核件搜索面（R6 —— 核 `search.mjs` 取词键；键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/en.json`）──
     "search.placeholder": "Search messages…",
     "search.prev": "Previous match",
     "search.next": "Next match",
     "search.close": "Close search",
     "search.noMatch": "No matches",
-    // ── ⑨ 状态文本段 index 两形（R4 · 桌面功能对位批 —— 键名与值皆 VSC `locales/en.json:218-219` 逐字）──
+    // ── ⑨ 状态文本段 index 两形（R4 · 桌面功能对位批 —— 键名与值皆 VSC `locales/en.json` 逐字）──
     "status.indexScan": "Indexing: scanning ${n} files…",
     "status.indexProgress": "Indexing: ${done}/${total}…",
-    // ── ⑩ 目标徽标可及名（R5 · 桌面功能对位批 —— en 逐字 = VSC `status-bar.js:24` aria-label 字面；zh 本端拟定）──
+    // ── ⑩ 目标徽标可及名（R5 · 桌面功能对位批 —— en 逐字 = VSC `renderStatusBar` aria-label 字面；zh 本端拟定）──
     "status.goal": "Goal panel",
     // ── ⑪ 设置补充族（R7 · 桌面功能对位批 —— 键名同形者值逐字同 VSC `locales/en.json` 同名键）──
     "settings.section.env": "Environment",
@@ -204,8 +204,9 @@ export const VIEWS_DICT = Object.freeze({
     "settings.inherit": "Inherit",
     "settings.effortLabel": "Effort",
     "settings.agent.autoThink": "Auto-think (classify task difficulty per turn)",
-    // #1420 注入开关（PROMPT-SYSTEM.md §6.24——值逐字同 VSC `locales/en.json` 同名键）
-    "settings.injectDocs": "Document injection (project instructions + relevant docs)",
+    // #1420 #1465 注入开关（PROMPT-SYSTEM.md §6.24 §6.27——值逐字同 VSC `locales/en.json` 同名键）
+    "settings.injectProjectRules": "Project instruction injection (AGENTS.md / project_rules.md)",
+    "settings.injectDocs": "Document injection (automatic relevant-doc recall)",
     "settings.injectMemories": "Memory injection (recall from previous sessions)",
     // ── ⑫ B10 W3 设置余面族（MCP 编辑 ∕ 重连 · 子代理模型槽 · guard 开关 —— S8–S11 ∕ S14）──
     // MCP 表单结构化九键 + 两钮 = VSC `settings.mcp.*` 同名键逐字；重连两词 ∕ slotAuthority 拒写词 = 本端拟定。
@@ -251,7 +252,7 @@ export const VIEWS_DICT = Object.freeze({
     "welcome.text": "选择一个 provider 并填入 API key，即可开始使用。",
     "welcome.textConfigured": "就此工作区提问——agent 可以读取文件、运行命令、修改代码。",
     "welcome.shortcuts": "输入 @ 引用文件 · Enter 发送 · Shift+Enter 换行",
-    // 排队期「待发送块」（逐字 = CLI `render-conversation.mjs:370-371` / `:383`）
+    // 排队期「待发送块」（逐字 = CLI `buildConvLines`）
     "chat.pending.single": "⏳ 待发送 · 不打断当前执行，自动发送",
     "chat.pending.multi": "⏳ 待发送 · ${count} 条消息（不打断当前执行，合并发送）",
     "chat.pending.more": "… [该条共 ${lines} 行——发送后完整显示]",
@@ -291,13 +292,13 @@ export const VIEWS_DICT = Object.freeze({
     "settings.agent.consultTurns": "轮数上限",
     "settings.agent.consultTimeoutMs": "超时（分钟）",
     "settings.agent.advisorEffort": "审查强度",
-    // ── ⑤ 会话控制面（会话模型轮 R13 —— 键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/zh.json:2-7` 同名键）──
+    // ── ⑤ 会话控制面（会话模型轮 R13 —— 键名与两语值皆 VSC 逐字：`zh.json` 的 `session.title` 等同名键）──
     "session.title": "会话",
     "session.empty": "暂无会话",
     "session.rename": "重命名",
     "session.delete": "删除",
     "session.deleteConfirm": "确定删除会话 \"${title}\"？此操作不可恢复。",
-    // #637（受占切换警告半幅——非失败面：核受占 = 切换成立 + 次存 fork；值沿 U-E 核定 ∕ CLI `cmd-session.mjs:119` 语义）
+    // #637（受占切换警告半幅——非失败面：核受占 = 切换成立 + 次存 fork；值沿 U-E 核定 ∕ CLI `handleSessionCommand` 语义）
     "session.occupied": "该会话正被另一活进程使用——继续将在下次保存时创建新副本。",
     // R9 · #486 失败面可见性（四键 —— 本端拟定；消费面 = `renderer/session-wire.mjs` toast；`renameFailed` = #556 增；`deleteFailed` = #578③ 增）
     "session.openFailed": "会话打开失败（${reason}）",
@@ -328,20 +329,20 @@ export const VIEWS_DICT = Object.freeze({
     "settings.indexBuilding": "构建中…",
     "settings.indexBuilt": "✓ 索引已构建：${files} 个文件，${chunks} 个块",
     "settings.indexNotBuilt": "索引未构建，向量搜索未启用。",
-    // B10 W2 · S12：embedding key 缺态词（值逐字同 VSC `locales/zh.json:178`）
+    // B10 W2 · S12：embedding key 缺态词（值逐字同 VSC `locales/zh.json` 的 `settings.mcp.testing`）
     "settings.indexNoKey": "未配置 embedding API key。",
     // ── P1 两读两键（#697 · KD-69 —— 消费面 = `views/settings-sections-tools.mjs`）：`indexDbSizeLabel` = 本端
     //    拟定（·名键，同族先例 `settings.*Label`；值面 ≠ VSC 同名键 `settings.indexDbSize` 整行模板）；
     //    `indexOriginCounts` = 计数片段（两语值逐字同 VSC `locales` 同名键——VSC 行首 origin 前缀在其渲染面拼装）──
     "settings.indexDbSizeLabel": "库大小",
     "settings.indexOriginCounts": "代码 ${code} · 文档 ${doc}",
-    // ── ⑧ 核件搜索面（R6 —— 核 `search.mjs` 取词键；键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/zh.json:254-258`）──
+    // ── ⑧ 核件搜索面（R6 —— 核 `search.mjs` 取词键；键名与两语值皆 VSC 逐字：`thincoder-vscode/locales/zh.json`）──
     "search.placeholder": "搜索消息…",
     "search.prev": "上一个匹配",
     "search.next": "下一个匹配",
     "search.close": "关闭搜索",
     "search.noMatch": "无匹配",
-    // ── ⑨ 状态文本段 index 两形（R4 · 桌面功能对位批 —— 键名与值皆 VSC `locales/zh.json:218-219` 逐字）──
+    // ── ⑨ 状态文本段 index 两形（R4 · 桌面功能对位批 —— 键名与值皆 VSC `locales/zh.json` 逐字）──
     "status.indexScan": "索引：扫描 ${n} 文件…",
     "status.indexProgress": "索引：${done}/${total}…",
     // ── ⑩ 目标徽标可及名（R5 · 桌面功能对位批 —— 同键两语同拍）──
@@ -394,8 +395,9 @@ export const VIEWS_DICT = Object.freeze({
     "settings.inherit": "继承",
     "settings.effortLabel": "推理强度",
     "settings.agent.autoThink": "自动思考（按回合分类任务难度）",
-    // #1420 注入开关（同上——值逐字同 VSC `locales/zh.json` 同名键）
-    "settings.injectDocs": "文档注入（项目指令文件 + 相关文档）",
+    // #1420 #1465 注入开关（同上——值逐字同 VSC `locales/zh.json` 同名键）
+    "settings.injectProjectRules": "项目指令注入（AGENTS.md / project_rules.md）",
+    "settings.injectDocs": "文档注入（相关文档自动检索）",
     "settings.injectMemories": "记忆注入（往期相关记忆召回）",
     // ── ⑫ B10 W3 设置余面族（同上）──
     "settings.mcp.edit": "编辑",

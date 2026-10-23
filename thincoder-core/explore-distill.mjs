@@ -13,7 +13,7 @@
 import { chat } from "./provider/index.mjs"
 import { providerSpec } from "./model-specs.mjs"
 import { thinkOffPath } from "./think-off.mjs"
-import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./session-responses.mjs"
 import { captureContextRewrite } from "./context-rewrite.mjs"
 import { requireCompletedResponse } from "./provider/errors.mjs"
 import { buildCompressMessages } from "./compress-form.mjs"

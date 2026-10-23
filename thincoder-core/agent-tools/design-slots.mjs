@@ -1,16 +1,14 @@
 /**
  * design-slots.mjs — design-token 槽位清点 + 消费核（2026-10-07 批 ledger-tool · 台账 #927 并入）。
- * 设计单源 = `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md` §10（F-SL1 清点面 / F-SL2 批量消费）。
+ * 设计单源 = `docs/core/design/DESIGN-TOKEN-SETTLEMENT.md` §9（F-SL1 清点面 / F-SL2 批量消费）。
  *
  * 面一 `executeDesignSlotsAction`（`subagent` action `design-slots`——只读）：
  *   数据源 = 槽文件权威表（`readEngTokensFromSlot`——无 TTL 过滤原样）∪ 内存 Map（并集去重，
  *   冲突以槽为准——D-S3 同源）；**零写**（不 reconcile 回写、不落盘）。列表面 = 逐槽一行
- *   （designId ∥ live/expired ∥ ageDays ∥ expiresAt ∥ 批；龄序 = 最老在前）+ 计数尾行；
- *   「批」= `_advisorRuns` 按 designId 命中 run 的 `docSetKey` 中 `batches/` 段档取 basename
+ *   （designId ∥ live/expired ∥ ageDays ∥ expiresAt ∥ 批 ∥ designToken（末位，恒携）；龄序 = 最老在前）
+ *   + 计数尾行；「批」= `_advisorRuns` 按 designId 命中 run 的 `docSetKey` 中 `batches/` 段档取 basename
  *   （KD-SL2——零新存储；不可得 ⇒ `—`）。
- *   回收读口（2026-10-14 批 design-token-recovery · 台账 #1384——设计单源 = 设计档 §10 F-SL1 扩展）：
- *   `designId` 过滤单槽 ∥ `reveal:true`（必携 designId）单槽揭值——掩蔽 = 只揭活槽；缺省两参 = 现行
- *   清点面逐字零变；零写同前。
+ *   `designId` 过滤单槽（trim 精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）；缺省 = 现行清点面逐字零变；零写同前。
  * 面二 `executeConsumeDesignAction`（`subagent` action `consume-design` 消费核——自
  *   `subagent-spawn.mjs` 迁入）：选择器恰一（`designId` ∥ `designIds` ∥ `expired` ∥
  *   `olderThanDays`——KD-SL3 fail-closed 不猜）；目标集 = 并集视图按选择器解析 → 逐枚移出
@@ -83,21 +81,12 @@ function slotFacts(agent, designId, token, now, ttlMs) {
 /** 龄序比较（最老在前——剩余有效期升序；不可判龄（畸形串）排尾——不冒充最老）。 */
 const byOldest = (a, b) => (b.ageDays ?? -Infinity) - (a.ageDays ?? -Infinity)
 
-/** 口面「活」判据（回收读口掩蔽口径——2026-10-14）：格式合法 ∧ 未过期——与列表 `status` 判据
- *  （`tokenExpired` 单源）不同（畸形槽列表记 live、口面照掩蔽——设计档 §10 掩蔽口径）。 */
-const liveSlot = (e) => e.expiresAt !== null && !e.expired
-
-/** 回收行（reveal 命中活槽时随槽行输出——值原样入 spawn 门）：门禁校验 = 严格相等。 */
-const RECOVERY_LINE = "design-slots: pass designId + designToken verbatim to the eng-coder spawn — the gate checks exact equality."
-
 /**
  * `subagent` action `design-slots`（F-SL1——只读清点面）：工程模式父侧限定（与 consume-design
  * 同门）。输出 = 行文本（逐槽行 + 计数尾行）；字段 / 序 / 降级标记 = 契约，行内措辞 = 实现面。
  * 分类 = 只读（planMode 放行 / 免审批 / digest 放行——谓词在 `agent/dispatch-gates.mjs`）。
- * 回收读口扩展（2026-10-14 批 design-token-recovery · 台账 #1384——设计单源 = 设计档 §10
- * F-SL1 扩展）：`designId` 过滤单槽（trim 精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）∥
- * `reveal:true`（必携 designId）单槽揭值——掩蔽 = 只揭活槽（格式合法 ∧ 未过期）；两参皆缺 =
- * 现行清点面逐字零变；零写（不 reconcile / 不落盘）。
+ * `designId` 过滤单槽（trim 精确匹配；空串视同缺省；未知 ⇒ 拒 + 列在场 id）；
+ * 缺省 = 全量清点（不改变行契约——令牌列恒携）；零写（不 reconcile / 不落盘）。
  */
 export function executeDesignSlotsAction(args, ctx) {
   const parent = ctx?.agent
@@ -108,17 +97,9 @@ export function executeDesignSlotsAction(args, ctx) {
   const ttlMs = effectiveTokenTtlMs(parent)
   const entries = [...unionSlots(parent)].map(([id, t]) => slotFacts(parent, id, t, now, ttlMs))
   entries.sort(byOldest)
-  // 回收读口参数面（fail-closed——不猜）：`reveal` 仅 boolean（仅字面 true 揭值）；`designId`
-  // trim 后精确匹配、空串视同缺省；`reveal:true` 必携 designId（一次一槽——不吐批量凭据）。
-  const revealArg = args?.reveal
-  if (revealArg !== undefined && revealArg !== null && typeof revealArg !== "boolean") {
-    throw new Error(`design-slots: reveal must be a boolean (got ${JSON.stringify(revealArg)}) — only the literal true reveals a token value; no guessing.`)
-  }
+  // 参数面（fail-closed——不猜）：`designId` trim 后精确匹配、空串视同缺省；未知 ⇒ 拒 + 列在场 id。
   const rawId = args?.designId
   const designId = rawId === undefined || rawId === null ? "" : String(rawId).trim()
-  if (revealArg === true && !designId) {
-    throw new Error("design-slots: reveal:true requires the designId parameter — one slot at a time (no bulk dump).")
-  }
   let selected = entries
   if (designId) {
     selected = entries.filter((e) => e.designId === designId)
@@ -127,14 +108,7 @@ export function executeDesignSlotsAction(args, ctx) {
       throw new Error(`design-slots: unknown designId ${JSON.stringify(designId)} — no slot holds this id (held design ids: ${held}).`)
     }
   }
-  const reveal = revealArg === true
-  const lines = selected.flatMap((e) => {
-    const base = `- designId=${e.designId} status=${e.expired ? "expired" : "live"} ageDays=${e.ageDays === null ? "—" : e.ageDays.toFixed(1)} expiresAt=${e.expiresAt === null ? "—" : new Date(e.expiresAt).toISOString()} batch=${e.batch}`
-    if (!reveal) return [base]
-    if (liveSlot(e)) return [`${base} designToken=${e.token}`, RECOVERY_LINE]
-    // 掩蔽（如实注因）：过期 / 畸形槽在任何门禁都过不了——揭值零收益（设计档 §10 掩蔽口径）
-    return [`${base} designToken=— (${e.expiresAt === null ? "malformed" : "expired"} — masked; passes no gate)`]
-  })
+  const lines = selected.map((e) => `- designId=${e.designId} status=${e.expired ? "expired" : "live"} ageDays=${e.ageDays === null ? "—" : e.ageDays.toFixed(1)} expiresAt=${e.expiresAt === null ? "—" : new Date(e.expiresAt).toISOString()} batch=${e.batch} designToken=${e.expiresAt === null ? "—" : e.token}`)
   const live = selected.filter((e) => !e.expired).length
   lines.push(`design-slots: ${selected.length} slot(s) — ${live} live / ${selected.length - live} expired${designId ? " (filtered by designId)" : ""}`)
   return lines.join("\n")

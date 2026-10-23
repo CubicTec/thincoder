@@ -5,6 +5,7 @@ import { compressIfNeeded, compressFallback } from "../context.mjs"
 import { pruneStaleToolOutputs, shrinkOversized } from "../context-degrade.mjs"
 import { summarizeRunExplorations } from "../explore-distill.mjs"
 import { requireCompletedResponse } from "../provider/errors.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const provider = { name: "auxiliary-test", format: "responses", baseURL: "https://api.openai.com/v1", apiKey: "fixture-only", model: "test-model", stateful: false, builtinTools: false }
 const frame = (event) => `data: ${JSON.stringify(event)}\n\n`
@@ -146,9 +147,9 @@ test("ChatGPT auto-think omits its internal output cap and still requires comple
   const { classifyAndApply } = await import("../auto-think.mjs")
   const { _setAuthServiceForTest } = await import("../provider/auth-context.mjs")
   const fetch = globalThis.fetch; let body; let released = 0
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     return { profileId, signal, accessToken: "fixture-only", release() { released++ } }
-  } })
+  } }))
   globalThis.fetch = async (_url, opts) => { body = JSON.parse(opts.body); return fakeResponse(completed, "high") }
   try {
     const agent = agentFor(userHistory()); delete agent.provider.apiKey
@@ -225,7 +226,7 @@ test("history rewrites checkpoint durable tool history only after successful aux
   const { mkdtempSync, readFileSync, rmSync } = await import("node:fs")
   const { tmpdir } = await import("node:os")
   const { join } = await import("node:path")
-  const { attachResponsesSession, persistResponsesSession, checkpointResponsesHistory, responsesSessionPath } = await import("../responses-session.mjs")
+  const { attachResponsesSession, persistResponsesSession, checkpointResponsesHistory, responsesSessionPath } = await import("../session-responses.mjs")
   const directory = mkdtempSync(join(tmpdir(), "aux-checkpoint-")); const fetch = globalThis.fetch
   try {
     for (const kind of ["compact", "distill"]) {

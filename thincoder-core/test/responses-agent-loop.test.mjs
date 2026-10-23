@@ -6,7 +6,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createAgent } from "../agent.mjs"
 import { runTurnLoop } from "../agent/turn-loop.mjs"
-import { _setAuthServiceForTest, clearInferenceStatus } from "../provider/auth-context.mjs"
+import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 import { _setSessionsDirForTest, _resetSessionsDirForTest } from "../session-slots.mjs"
 
 const originalFetch = globalThis.fetch
@@ -35,7 +36,6 @@ function sse(events) {
 afterEach(() => {
   globalThis.fetch = originalFetch
   _setAuthServiceForTest(null)
-  clearInferenceStatus(profile)
   _resetSessionsDirForTest()
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true })
 })
@@ -46,10 +46,10 @@ function fixture() {
   writeFileSync(join(cwd, "sample.txt"), "Fixture file content: café")
   _setSessionsDirForTest(join(root, "sessions"))
   const observed = { requests: [], streamed: [], toolCalls: [], toolResults: [], executions: 0, releases: 0 }
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     assert.equal(profileId, profile)
     return { profileId, signal, accessToken: token, release() { observed.releases++ } }
-  } })
+  } }))
   const read = { name: "read", readonly: true, async execute(args, ctx) {
     observed.executions++
     assert.equal(ctx.agent, agent)

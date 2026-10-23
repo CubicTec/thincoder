@@ -17,6 +17,7 @@
  */
 import { chmodSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { spawn } from "node:child_process"
+import { homedir } from "node:os"
 import { fileURLToPath } from "node:url"
 import { configDir } from "../config.mjs"
 import { makeDecoder, sanitizeOutput } from "../tools/shared.mjs"
@@ -28,6 +29,8 @@ export const SSH_SETTLE_MS = 800
 export const SSH_TIMEOUT_MS = 10_000
 /** 单次返回帽（§6.22 ⑥）：保尾 + 截断注记；全量恒在 log。 */
 export const SSH_RETURN_CAP = 8000
+/** 保活缺省（§6.22 ④：`ServerAliveInterval=30`；测试态时间缝按 ms 传入后换算）。 */
+export const SSH_KEEPALIVE_MS = 30_000
 /** 秘密环境变量名（§6.22 ②「秘密传递」行）。 */
 export const SECRET_ENV = "TC_SSH_SECRET"
 /** 内存缓冲保留量（仅覆盖返回帽；全量恒在 log）。 */
@@ -81,18 +84,28 @@ export function buildSshEnv({ wrapper, secret }) {
   return nodeChildEnv(env)
 }
 
+/** `~` 展开（`identityFile` 记录 / 参数——`~/.ssh/id_ed25519` 同式；非 `~` 开头原样）。 */
+function expandHome(file) {
+  const raw = String(file ?? "")
+  if (!/^~(?=$|[\\/])/.test(raw)) return raw
+  return `${homedir()}${raw.slice(1)}`
+}
+
 /** 会话命令形（§6.22 ⑤）：`-tt` 强制远端 PTY + 保活三件 + 单提示；`port`/`user` 未给 ⇒ 不下发。
+ *  `identityFile` 显式给出 / 记录有值 ⇒ `-i <路径>`（追加候选身份，不夺本机配置与 agent 的既有尝试序列）。
  *  预探 = `NumberOfPasswordPrompts=0`（password ∥ keyboard-interactive 两径同被短路——
  *  `sshconnect2.c` `userauth_passwd` / `userauth_kbdint` 两处同判 `attempt++ >= n`；私钥口令提示
  *  亦被短路：`load_identity_file` 循环 `i <= number_of_password_prompts`）；带密 = 1（单提示）。 */
-export function buildSshArgs({ host, user, port, probe }) {
+export function buildSshArgs({ host, user, port, probe, identityFile = null, keepAliveMs = SSH_KEEPALIVE_MS }) {
+  const keepAliveS = Math.max(1, Math.round((Number(keepAliveMs) || SSH_KEEPALIVE_MS) / 1000))
   return [
     "-tt",
     "-o", "ConnectTimeout=10",
-    "-o", "ServerAliveInterval=30",
+    "-o", `ServerAliveInterval=${keepAliveS}`,
     "-o", "ServerAliveCountMax=4",
     "-o", `NumberOfPasswordPrompts=${probe ? 0 : 1}`,
     ...(port ? ["-p", String(port)] : []),
+    ...(identityFile ? ["-i", expandHome(identityFile)] : []),
     user ? `${user}@${host}` : host,
   ]
 }
@@ -184,10 +197,10 @@ export function attachChild(entry, child) {
 
 /** 起跑一条 ssh（探连 ∥ 带密会话同径）。重起（探连 → 带密会话）⇒ 判定面复位：exitInfo ∥
  *  spawnError 属**上一次**进程（残留会让新连接的成功判定被误读成「已退出」）。 */
-export function spawnSession(entry, { user, port, secret }) {
+export function spawnSession(entry, { user, port, secret, identityFile = null, keepAliveMs = SSH_KEEPALIVE_MS }) {
   entry.exitInfo = null
   entry.spawnError = null
-  const child = spawn(sshBinary(), [...sshArgPrefix(), ...buildSshArgs({ host: entry.host, user, port, probe: secret == null })], {
+  const child = spawn(sshBinary(), [...sshArgPrefix(), ...buildSshArgs({ host: entry.host, user, port, probe: secret == null, identityFile, keepAliveMs })], {
     stdio: ["pipe", "pipe", "pipe"],
     windowsHide: true,
     detached: process.platform !== "win32",

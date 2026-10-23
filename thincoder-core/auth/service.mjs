@@ -11,6 +11,7 @@ import { authError, abortError, checkSignal, safeAuthError } from './errors.mjs'
 const cleanLabel = value => String(value || 'ChatGPT account').replace(/[\x00-\x1f\x7f]/g, '').slice(0, 120)
 const usageLimitError = () => authError('subscription_sharing_usage_limit_exceeded', 'ChatGPT plan usage is paused. Check ChatGPT Settings → Usage, then explicitly resume or select the account.', { state: 'usage_limited' })
 const absent = () => authError('chatgpt_signed_out', 'Sign in to the selected ChatGPT account first.', { state: 'signed_out' })
+const INFERENCE_STATUSES = new Set(['completed', 'failed', 'incomplete', 'interrupted', 'transport_error', 'usage_limited'])
 
 function assertCredentialBinding(profile, credentials) {
   if (!credentials || ['issuer', 'subject', 'clientId', 'hostId', 'sessionId'].some(key => !profile[key] || credentials[key] !== profile[key])) {
@@ -31,7 +32,7 @@ async function abortable(promise, signal) {
   } finally { signal.removeEventListener('abort', onAbort) }
 }
 
-/** One authority per local host, shared by CLI, VS Code and Desktop main process. */
+/** Account lifecycle owner for one client process; shared storage coordinates local clients. */
 export class AuthService extends EventEmitter {
   constructor({ store, root, fetch, now = Date.now, requestTimeoutMs, pollIntervalMs = 250 } = {}) {
     super()
@@ -45,7 +46,8 @@ export class AuthService extends EventEmitter {
     this.controllers = new Map()
     this.states = new Map()
     this.stateVersions = new Map()
-    this.outcomes = new Map()
+    this.inferences = new Map()
+    this.inferencePauses = new Map()
     this.lifecycle = new AbortController()
   }
 
@@ -92,7 +94,7 @@ export class AuthService extends EventEmitter {
         }
         this.cancelProfile(profiles.activeProfileId)
         this.cancelProfile(profileId)
-        this.states.delete(profileId); this.stateVersions.delete(profileId); this.outcomes.delete(profileId)
+        this.states.delete(profileId); this.stateVersions.delete(profileId); this.clearInferenceStatus(profileId)
         if (this.registrationRetry?.clientId === clientId) this.registrationRetry = null
         status = { profileId, label: record.label, email: record.email, clientId, state: record.state,
           planAuthorized: hasPlanScope(credentials.scopes), paused: false, usageLimited: false, active: true, lastInference: null }
@@ -126,9 +128,11 @@ export class AuthService extends EventEmitter {
     if (credentials?.refreshPending && state !== 'refreshing') state = 'reauth_required'
     if (profile.state === 'signed_out') state = 'signed_out'
     if (authorizing) state = 'authorizing'
+    const inference = this.getInferenceStatus(id)
+    if (inference?.status === 'usage_limited' && inference.sharedPauseSaved !== true) state = 'usage_limited'
     return { profileId: id, label: profile.label, email: profile.email, clientId: profile.clientId, state,
       planAuthorized: profile.state !== 'signed_out' && bound && hasPlanScope(credentials.scopes), paused: profile.paused === true, usageLimited: profile.usageLimited === true, active: profiles.activeProfileId === id,
-      lastInference: this.outcomes.get(id)?.lastInference || null }
+      lastInference: inference }
   }
 
   async listProfiles() {
@@ -159,6 +163,7 @@ export class AuthService extends EventEmitter {
       }
     })
     if (this.states.get(profileId) === 'usage_limited') this.states.delete(profileId)
+    this.clearInferenceStatus(profileId)
     this.emit('profileChanged', { profileId })
     return this.getStatus(profileId)
   }
@@ -189,6 +194,7 @@ export class AuthService extends EventEmitter {
       await this.store.write('profiles.json', profiles)
     })
     if (this.states.get(profileId) === 'usage_limited') this.states.delete(profileId)
+    this.clearInferenceStatus(profileId)
     this.emit('profileChanged', { profileId })
     return this.getStatus(profileId)
   }
@@ -221,6 +227,7 @@ export class AuthService extends EventEmitter {
 
   async refresh(profileId) {
     checkSignal(this.lifecycle.signal)
+    this.assertInferenceAvailable(profileId)
     if (this.refreshes.has(profileId)) return this.refreshes.get(profileId)
     const promise = this.store.withLock(profileId, async () => {
       // Another process may have rotated the token while this process waited.
@@ -248,6 +255,7 @@ export class AuthService extends EventEmitter {
         const latest = await this.store.readProfiles()
         const current = latest.profiles.find(p => p.profileId === profileId)
         if (!current || current.sessionId !== profile.sessionId || current.state === 'signed_out') throw absent()
+        this.assertInferenceAvailable(profileId)
         if (current.paused) throw authError('profile_paused', 'ChatGPT plan access is disabled for this saved account.')
         if (current.usageLimited) throw usageLimitError()
         if (current.state === 'reauth_required') throw authError('reauth_required', 'Sign in to this ChatGPT account again.', { state: 'reauth_required' })
@@ -289,6 +297,7 @@ export class AuthService extends EventEmitter {
     await this.store.init()
     const profiles = await this.store.readProfiles()
     const id = profileId || profiles.activeProfileId
+    this.assertInferenceAvailable(id)
     const profile = profiles.profiles.find(p => p.profileId === id)
     if (!profile || profile.state === 'signed_out') throw absent()
     if (profile.state === 'reauth_required') throw authError('reauth_required', 'Sign in to this ChatGPT account again.', { state: 'reauth_required' })
@@ -344,11 +353,46 @@ export class AuthService extends EventEmitter {
     } catch (error) { release(); throw safeAuthError(error) }
   }
 
-  /** Record only sanitized outcome metadata; never prompts, bodies, headers or credentials. */
-  recordOutcome(profileId, { state, lastInference } = {}) {
-    if (['ready', 'reauth_required', 'temporarily_unavailable'].includes(state)) { this.states.set(profileId, state); this.stateVersions.delete(profileId) }
-    if (lastInference === 'completed') this.outcomes.set(profileId, { lastInference: { status: 'completed', at: new Date(this.now()).toISOString() } })
-    if (state === 'usage_limited') return this.recordUsageLimit(profileId)
+  getInferenceStatus(profileId) {
+    const inference = this.inferences.get(profileId)
+    return inference ? { ...inference } : null
+  }
+
+  clearInferenceStatus(profileId) { this.inferences.delete(profileId) }
+
+  /** A pause that could not reach shared storage stays closed in this service. */
+  assertInferenceAvailable(profileId) {
+    const inference = this.inferences.get(profileId)
+    if (inference?.status === 'usage_limited' && inference.sharedPauseSaved !== true) throw usageLimitError()
+  }
+
+  /** One account outcome owner; transport callers supply only safe attribution fields. */
+  async recordInference(profileId, { status = 'failed', model, requestId } = {}) {
+    const previous = this.inferences.get(profileId)
+    if (previous?.status === 'usage_limited' && previous.sharedPauseSaved !== true) {
+      await this.inferencePauses.get(profileId)
+      return // A late success cannot erase an unsaved pause; explicit recovery clears it.
+    }
+    const inference = {
+      status: INFERENCE_STATUSES.has(status) ? status : 'failed', at: this.now(),
+      ...(typeof model === 'string' ? { model } : {}),
+      ...(typeof requestId === 'string' ? { requestId } : {}),
+      ...(status === 'usage_limited' ? { sharedPauseSaved: false } : {}),
+    }
+    this.inferences.set(profileId, inference)
+    if (status !== 'usage_limited') return
+    const operation = (async () => {
+      try {
+        await this.recordUsageLimit(profileId)
+        inference.sharedPauseSaved = true
+      } catch {
+        throw authError('subscription_sharing_usage_limit_exceeded',
+          'ChatGPT usage is paused in this process, but its shared pause could not be saved. Check credential storage before resuming another client.',
+          { state: 'usage_limited' })
+      }
+    })()
+    this.inferencePauses.set(profileId, operation)
+    try { await operation } finally { if (this.inferencePauses.get(profileId) === operation) this.inferencePauses.delete(profileId) }
   }
 
   async logout(profileId) {
@@ -388,7 +432,7 @@ export class AuthService extends EventEmitter {
         }
       } finally { await this.store.removeCredential(id) }
     })
-    this.states.delete(id); this.stateVersions.delete(id); this.outcomes.delete(id)
+    this.states.delete(id); this.stateVersions.delete(id); this.clearInferenceStatus(id)
     this.emit('logout', { profileId: id, remoteRevoked })
     return { profileId: id, localSignedOut: true, remoteRevoked }
   }

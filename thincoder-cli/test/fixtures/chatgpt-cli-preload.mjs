@@ -1,12 +1,16 @@
 /** Synthetic transport for the real CLI executable integration test only. */
 import assert from "node:assert/strict"
 import { writeFileSync } from "node:fs"
-import { _setAuthServiceForTest } from "@thincoder/core/provider/auth-context.mjs"
+import { AuthService, setAuthService } from "@thincoder/core/auth/service.mjs"
 
-_setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+// Keep real account inference state; only credentials and network are synthetic.
+const authService = new AuthService({ store: {}, fetch() { throw new Error("Unexpected authentication network access") } })
+authService.getAuthContext = async (profileId, { signal }) => {
   assert.equal(profileId, "cli-fixture-profile")
+  authService.assertInferenceAvailable(profileId)
   return { profileId, signal, accessToken: "synthetic-cli-token", release() {} }
-} })
+}
+setAuthService(authService)
 const requests = []
 const catalogRequests = []
 const saveReport = () => writeFileSync(process.env.THINCODER_TEST_REPORT, JSON.stringify({ requests, catalogRequests }), { mode: 0o600 })

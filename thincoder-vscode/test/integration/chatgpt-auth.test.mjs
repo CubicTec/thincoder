@@ -79,7 +79,7 @@ test("VS Code shares host auth state, preserves config references, and refuses r
 })
 
 const { pushAuthStatus } = await import("../../src/extension/panel-auth.mjs")
-const { fullStatus, lastModelsPayload } = await import("../../src/extension/settings.mjs")
+const { fullStatus, lastModelsPayload, lastPushedPrefs } = await import("../../src/extension/settings.mjs")
 const { _probeWindow, _probeBatch, endProbeWindow, _resetProbeWindowsForTest } = await import("../../src/extension/provider-probe-window.mjs")
 const { _setAuthServiceForTest } = await import("@thincoder/core/provider/auth-context.mjs")
 const { admissionOf, _resetAdmissionForTest } = await import("@thincoder/core/provider/list-models.mjs")
@@ -109,6 +109,16 @@ async function withCatalog(run) {
 }
 const catalogResponse = (slug) => new Response(JSON.stringify({ models: [{ slug, display_name: `Label ${slug}`, visibility: "list" }] }), { status: 200 })
 
+test("VS Code candidate effort and default come from the selected account catalog", async () => withCatalog(async ({ panel }) => {
+  globalThis.fetch = async () => new Response(JSON.stringify({ models: [{ slug: "gpt-6.1-sol", display_name: "Account Sol", visibility: "list",
+    supported_reasoning_levels: [{ effort: "low" }, { effort: "ultra" }], default_reasoning_level: "low", multi_agent_reasoning_effort: "low" }] }), { status: 200 })
+  await fullStatus(panel)
+  const row = lastModelsPayload()[0]
+  assert.equal(row.label, "Account Sol")
+  assert.deepEqual(row.reasoning, ["low", "ultra"])
+  assert.equal(row.effortDefault, "low")
+}))
+
 test("VS Code disabled subscription clears candidates and the session-restore catalog cache", async () => withCatalog(async ({ panel, messages }) => {
   globalThis.fetch = async () => catalogResponse("account-a-model")
   await fullStatus(panel)
@@ -117,6 +127,34 @@ test("VS Code disabled subscription clears candidates and the session-restore ca
   await fullStatus(panel)
   assert.deepEqual(messages.filter((m) => m.type === "models").at(-1).models, [])
   assert.deepEqual(lastModelsPayload(), [])
+}))
+
+test("VS Code configured subscription can list models before a default model is selected", async () => withCatalog(async ({ panel }) => {
+  persistRaw((raw) => { delete raw.defaultModel })
+  let requests = 0
+  globalThis.fetch = async () => { requests++; return catalogResponse("first-choice") }
+  await fullStatus(panel)
+  assert.equal(requests, 1)
+  assert.deepEqual(lastModelsPayload().map((m) => m.id), ["first-choice"])
+}))
+
+test("VS Code disabling an in-flight catalog clears rows and records the new empty push preferences", async () => withCatalog(async ({ panel, messages }) => {
+  const old = deferred(), started = deferred()
+  let requests = 0
+  globalThis.fetch = () => { requests++; started.resolve(); return old.promise }
+  const pending = fullStatus(panel, null, null, { provider: "openai-chatgpt", model: "old-choice" })
+  await started.promise
+  assert.equal(lastPushedPrefs(), "openai-chatgpt:old-choice")
+  persistRaw((raw) => { raw.providers[0].auth.enabled = false })
+  await fullStatus(panel, null, null, { provider: "openai-chatgpt", model: "session-choice" })
+  assert.equal(lastPushedPrefs(), "openai-chatgpt:session-choice")
+  assert.deepEqual(lastModelsPayload(), [])
+  assert.equal(requests, 1, "disabled account must not start another catalog request")
+  old.resolve(catalogResponse("stale-choice"))
+  await pending
+  assert.equal(lastPushedPrefs(), "openai-chatgpt:session-choice")
+  assert.deepEqual(lastModelsPayload(), [])
+  assert.ok(!messages.some((m) => m.type === "models" && m.models.some((row) => row.id === "stale-choice")))
 }))
 
 test("VS Code stale failed probe cannot overwrite admission after the account changes", async () => withCatalog(async ({ panel }) => {

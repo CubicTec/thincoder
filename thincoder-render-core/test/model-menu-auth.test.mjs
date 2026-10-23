@@ -49,6 +49,18 @@ test("new unselected catalog does not reuse a previous account's ephemeral choic
   } finally { f.dispose() }
 })
 
+test("restored account model keeps its label and uses its declared effort default when unset", () => {
+  const f = fixture()
+  try {
+    for (const off of ["none", "off"]) {
+      f.menu.applyModels({ models: [{ id: "catalog-slug", label: "Account model", provider: "chatgpt",
+        reasoning: [off, "low", "high"], effortDefault: "high" }], prefs: { provider: "chatgpt", model: "catalog-slug" } })
+      assert.equal(f.modelBtn.textContent, "Account model")
+      assert.equal(f.menu.selection().reasoning, "high", `${off} must not become an implicit saved preference`)
+    }
+  } finally { f.dispose() }
+})
+
 test("reasoning levels use the selected provider when model IDs are shared", () => {
   const f = fixture()
   try {

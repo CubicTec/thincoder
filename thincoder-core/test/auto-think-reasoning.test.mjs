@@ -6,19 +6,21 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { classifyAndApply } from "../auto-think.mjs"
 import { callModelTurn } from "../agent/chat-call.mjs"
-import { attachResponsesSession } from "../responses-session.mjs"
+import { attachResponsesSession } from "../session-responses.mjs"
 import { createAgent } from "../agent.mjs"
 import { buildSpawnChild } from "../agent-tools/subagent-spawn.mjs"
+import { PLAIN_TASK_BOOK_MIN } from "../agent-tools/spawn-gates.mjs"
 import { recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const originalFetch = globalThis.fetch
 beforeEach(() => {
   _clearModelInfoForTest()
   globalThis.fetch = async () => { throw new Error("No real network in auto-think tests") }
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     return { profileId, signal, accessToken: "fixture-only", release() {} }
-  } })
+  } }))
 })
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -161,7 +163,7 @@ test("a spawned child selects effort before its task request while the parent re
   source.config.agent = { autoThink: false, subagentAutoThink: true }
   const parent = createAgent({ ...source, cwd: dir, tools: [] })
   const { child } = buildSpawnChild(parent, { agent: parent, depth: 0, callbacks: {} },
-    { task: "Review a difficult concurrency bug." }, "explore", false, [], [], null)
+    { ...PLAIN_TASK_BOOK_MIN, goal: "Review a difficult concurrency bug." }, "explore", false, [], [], null)
   child.history = [{ role: "user", content: "Review a difficult concurrency bug." }]
   attachResponsesSession(child, join(dir, "child.json"))
   const requests = []

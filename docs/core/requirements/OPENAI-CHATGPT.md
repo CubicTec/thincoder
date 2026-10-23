@@ -2,7 +2,7 @@
 
 > 归属：core / 供应商与模型。设计：[OPENAI-CHATGPT](../design/OPENAI-CHATGPT.md)。
 > 上游判据：用户 2026-10-15 提供的 ThinGPTplan 实施方案；保留现有 ThinCoder agent 与计费选择。
-> 批次与验收：[2026-10-15-openai-chatgpt](../../batches/2026-10-15-openai-chatgpt.md)。
+> 历史实施与验收记录：[2026-10-15-openai-chatgpt](../../batches/2026-10-15-openai-chatgpt.md)。
 
 ## 范围
 
@@ -25,5 +25,6 @@ openai-chatgpt、openai-responses 预设；旧 openai 和其他供应商保持�
 
 ## 证据边界
 
-本批以合成凭据和模拟网络验收。真实合资格账户登录、推理、刷新及三端 GUI 验收未执行前，
-不得宣称生产可用。具体自动化执行读数与待验项目见批次档。
+合成凭据与模拟网络只能验证对应机制，不能代替真实合资格账户登录、推理和刷新。
+三端 GUI、Windows ACL 与安装包按实际平台分别验收；未执行的检查保留为未验证。
+代码检查、真实客户端验收和发布是独立结果，不得由任一项推断其余通过；执行读数记录在对应批次。

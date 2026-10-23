@@ -197,10 +197,13 @@ export function cascadeRemoveProvider(raw, name) {
 
 // ─── Provider 持久化面（§2.5 #177「纯持久化函数取一侧 + UI 壳按端注入」）───
 
-/** 写一个渠道的 key（整 providers[] 重写）。冲突 → CONFIG_CONFLICT_HINT；成功 null。 */
+/** 写一个渠道的 key（整 providers[] 重写）。渠道不在册 ⇒ `Provider "<name>" not found`（零写——#1179 假成功收正）；
+ *  冲突 → CONFIG_CONFLICT_HINT；成功 null。 */
 export function setProviderKey(name, key) {
-  const entry = loadRaw().providers?.find((p) => p?.name === name)
-  if (entry?.auth?.type === "chatgpt_oauth") return "Use Sign in with ChatGPT for this provider; API keys are not accepted"
+  const existing = loadRaw()
+  const entry = Array.isArray(existing.providers) ? existing.providers.find((p) => p?.name === name) : null
+  if (!entry) return `Provider "${name}" not found`
+  if (entry.auth?.type === "chatgpt_oauth") return "Use Sign in with ChatGPT for this provider; API keys are not accepted"
   const r = persistRaw((raw) => {
     raw.providers = Array.isArray(raw.providers) ? raw.providers : []
     const entry = raw.providers.find((p) => p?.name === name)
@@ -209,8 +212,10 @@ export function setProviderKey(name, key) {
   return conflictError(r)
 }
 
-/** 移除一个渠道的 key（保留渠道条目）。冲突提示同 setProviderKey。 */
+/** 移除一个渠道的 key（保留渠道条目）。渠道不在册 ⇒ `Provider "<name>" not found`（零写——#1179）；冲突提示同 setProviderKey。 */
 export function removeProviderKeyFromConfig(name) {
+  const existing = loadRaw()
+  if (!Array.isArray(existing.providers) || !existing.providers.some((p) => p && p.name === name)) return `Provider "${name}" not found`
   const r = persistRaw((raw) => {
     const entry = Array.isArray(raw.providers) ? raw.providers.find((p) => p?.name === name) : null
     if (entry) delete entry.apiKey

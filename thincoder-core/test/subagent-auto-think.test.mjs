@@ -8,7 +8,7 @@ import { createAgent } from "../agent.mjs"
 import { DEFAULTS, loadConfig, _setConfigPathForTest, _resetConfigPathForTest } from "../config.mjs"
 import { settingsTool } from "../agent-tools/settings.mjs"
 import { buildSpawnChild } from "../agent-tools/subagent-spawn.mjs"
-import { ENG_TASK_BOOK_MIN } from "../agent-tools/spawn-gates.mjs"
+import { ENG_TASK_BOOK_MIN, PLAIN_TASK_BOOK_MIN } from "../agent-tools/spawn-gates.mjs"
 import { generateDesignToken } from "../agent-tools/design-token.mjs"
 
 const roots = []
@@ -79,9 +79,8 @@ function spawnFixture(root, role, autoThink, subagentAutoThink, wantAsync) {
     agent: Object.freeze({ autoThink, engineering: false, subagentTurns: 17,
       ...(subagentAutoThink === undefined ? {} : { subagentAutoThink }) }), memory: Object.freeze({}) })
   const parent = createAgent({ provider: parentProvider, config, cwd: root, tools: [] })
-  const args = { task: "Inspect the fixture." }
+  const args = { ...(role.startsWith("eng-") ? ENG_TASK_BOOK_MIN : PLAIN_TASK_BOOK_MIN), goal: "Inspect the fixture." }
   if (role.startsWith("eng-")) {
-    args.task = ENG_TASK_BOOK_MIN
     args.round = "initial"
     args.batchDoc = join(root, "batch.md")
     writeFileSync(args.batchDoc, "# Fixture batch\n")

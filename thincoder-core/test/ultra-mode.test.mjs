@@ -9,9 +9,10 @@ import { prepareRun } from "../agent/setup.mjs"
 import { callModelTurn } from "../agent/chat-call.mjs"
 import { beginRun } from "../agent/run-start.mjs"
 import { summarizeRunExplorations } from "../explore-distill.mjs"
-import { attachResponsesSession } from "../responses-session.mjs"
+import { attachResponsesSession } from "../session-responses.mjs"
 import { parseModelInfo, recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const originalFetch = globalThis.fetch
 const roots = []
@@ -22,9 +23,9 @@ const timeIndex = agent => agent.history.findLastIndex(m => m.content?.startsWit
 beforeEach(() => {
   _clearModelInfoForTest()
   globalThis.fetch = async () => { throw new Error("Ultra mode tests must not use real network") }
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     return { profileId, signal, accessToken: "fixture-only", release() {} }
-  } })
+  } }))
 })
 afterEach(() => {
   globalThis.fetch = originalFetch

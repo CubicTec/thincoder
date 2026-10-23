@@ -2,7 +2,7 @@
 import { pruneStaleToolOutputs } from "./context-degrade.mjs"
 import { PRUNE_MIN_TOKENS } from "./token-window.mjs"
 import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
-import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./session-responses.mjs"
 
 /** Immediate legacy-provider receipt; the deferred Responses path uses the same final report. */
 export function pruneReceipt(agent) {

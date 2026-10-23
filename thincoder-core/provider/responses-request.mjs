@@ -4,9 +4,11 @@
  * Existing API-key host chain behavior is retained behind narrow recovery rules.
  */
 import { createHash } from "node:crypto"
-import { providerSpec, isBailianHost } from "../config.mjs"
+import { providerSpec, isBailianHost, requestBudget } from "../config.mjs"
 import { thinkOffPath } from "../think-off.mjs"
-import { isChatGPTProvider, responsesProfileBinding, validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
+import { validateResponsesConfig, validateResponsesBody } from "./capabilities.mjs"
+import { isChatGptProvider } from "./auth-config.mjs"
+import { responsesProfileBinding } from "./responses-binding.mjs"
 import { resolveProviderSecrets } from "../env-ref.mjs"
 import { buildResponsesTools, encodeToolChoice } from "./responses-tools.mjs"
 import { requestItems } from "./responses-items.mjs"
@@ -105,11 +107,12 @@ export function normalizeUsage(usage) {
  */
 export function buildBody(provider, messages, tools, opts = {}) {
   validateResponsesConfig(provider, opts)
-  const siwc = isChatGPTProvider(provider)
+  const siwc = isChatGptProvider(provider)
   const toolMapping = buildResponsesTools(provider, tools)
   const { instructions: extracted, items } = requestItems(provider, messages, toolMapping, opts.responsesContext)
   const toolsFlat = toolMapping.tools.length ? toolMapping.tools : undefined
   const spec = providerSpec(provider)
+  const budget = requestBudget(provider, spec)
   const warnings = []
   const wantStateful = !siwc && provider.stateful !== false && opts.stateful !== false
   const hostStateful = isStatefulHost(provider.baseURL)
@@ -153,7 +156,8 @@ export function buildBody(provider, messages, tools, opts = {}) {
     ...(toolsFlat ? { tools: toolsFlat } : {}),
     // 显式才发（#907-D5）：仅 provider.maxTokens 显式设定时发送——spec.maxOutput 是规格侧
     // 保守猜测非渠道合同值，恒发 = 渠道口径漂移 400 风险；无显式值 ⇒ 服务端默认（模型上限兜底）。
-    ...(provider.maxTokens != null ? { max_output_tokens: provider.maxTokens } : {}),
+    // §6.17 发送面同源：requestBudget().maxTokens 未发 ⇒ undefined ⇒ 字段不落。
+    ...(budget.maxTokens !== undefined ? { max_output_tokens: budget.maxTokens } : {}),
   }
   // 内置工具声明追加（2026-08-31 用户拍板）：web_search 与本地 function 工具共存
   const builtin = siwc ? [] : builtinToolsFor(provider.baseURL, provider.builtinTools)

@@ -35,7 +35,7 @@ export function authRowHtml(name, auth) {
     ${held.notice ? `<div role="status">${escHtml(held.notice)}</div>` : ""}
   </div>`
 }
-export function bindAuthRows(onChange) {
+export function bindAuthRows(onChange, root = document) {
   const send = (name, action, extra = {}) => {
     if (action === "manage") { vscode.postMessage({ type: "authAction", name, action }); return }
     const held = accounts.get(name) ?? {}
@@ -43,24 +43,30 @@ export function bindAuthRows(onChange) {
     if (login && (held.pendingLogin || held.status?.authorizing)) return
     const requestId = ++requestSequence
     accounts.set(name, { ...held, requestId, ...(login ? { pendingLogin: true } : {}), notice: "" })
-    if (login) for (const button of document.querySelectorAll("[data-auth-action]")) {
+    if (login) for (const button of root.querySelectorAll("[data-auth-action]")) {
       if (button.dataset.authName === name && ["login", "loginNew"].includes(button.dataset.authAction)) button.disabled = true
     }
-    onChange?.() // make Cancel available before any asynchronous host status read
+    onChange?.(name) // make Cancel available before any asynchronous host status read
     vscode.postMessage({ type: "authAction", name, action, requestId, ...extra })
   }
-  for (const button of document.querySelectorAll("[data-auth-action]")) button.addEventListener("click", () => {
+  for (const button of root.querySelectorAll("[data-auth-action]")) button.addEventListener("click", () => {
     send(button.dataset.authName, button.dataset.authAction)
   })
-  for (const input of document.querySelectorAll("[data-auth-enable]")) input.addEventListener("change", () => send(input.dataset.authEnable, "enable", { enabled: input.checked }))
-  for (const select of document.querySelectorAll("[data-auth-select]")) select.addEventListener("change", () => { if (select.value) send(select.dataset.authSelect, "select", { profileId: select.value }) })
+  for (const input of root.querySelectorAll("[data-auth-enable]")) input.addEventListener("change", () => send(input.dataset.authEnable, "enable", { enabled: input.checked }))
+  for (const select of root.querySelectorAll("[data-auth-select]")) select.addEventListener("change", () => { if (select.value) send(select.dataset.authSelect, "select", { profileId: select.value }) })
 }
+/** False means a stale receipt was ignored, including its repaint. */
 export function updateAuthMessage(message) {
   const held = accounts.get(message.name) ?? {}
-  if (message.type === "authStatus") accounts.set(message.name, { ...held,
-    ...(message.status ? { status: message.status, profiles: message.profiles, pendingLogin: message.status.authorizing === true } : {}),
-    ...(message.error ? { pendingLogin: false, status: { ...held.status, authorizing: false, state: "temporarily_unavailable" }, notice: message.error } : {}) })
-  else if (message.requestId === undefined || message.requestId === held.requestId) accounts.set(message.name, { ...held,
-    ...(["login", "loginNew"].includes(message.action) ? { pendingLogin: false } : {}), notice: message.ok === false ? message.error
-    : message.remoteRevoked === false ? t("auth.revocationUnknown") : message.action === "cancel" ? t("auth.cancelled") : "" })
+  if (message.type === "authStatus") {
+    accounts.set(message.name, { ...held,
+      ...(message.status ? { status: message.status, profiles: message.profiles, pendingLogin: message.status.authorizing === true } : {}),
+      ...(message.error ? { pendingLogin: false, status: { ...held.status, authorizing: false, state: "temporarily_unavailable" }, notice: message.error } : {}) })
+  } else {
+    if (message.requestId !== undefined && message.requestId !== held.requestId) return false
+    accounts.set(message.name, { ...held,
+      ...(["login", "loginNew"].includes(message.action) ? { pendingLogin: false } : {}), notice: message.ok === false ? message.error
+      : message.remoteRevoked === false ? t("auth.revocationUnknown") : message.action === "cancel" ? t("auth.cancelled") : "" })
+  }
+  return true
 }

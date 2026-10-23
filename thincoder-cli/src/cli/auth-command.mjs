@@ -1,6 +1,15 @@
 /** Local SIWC commands; no tokens or authorization URLs are printed. */
 import { spawn } from "node:child_process"
-import { getAuthClient, authStatusText } from "@thincoder/core/auth/client.mjs"
+import { getAuthClient } from "@thincoder/core/auth/client.mjs"
+
+/** CLI evidence wording; the core exposes structured public account state only. */
+export function authStatusText(value) {
+  if (!value?.enabled) return "Experimental ChatGPT plan access is disabled"
+  if (!value?.profileId) return "Not signed in"
+  if (!value.planAuthorized) return `${value.label || value.profileId}: ${value.state === "signed_in_without_plan_scope" ? "signed in; plan use not authorized" : value.state}`
+  const last = value.lastInference?.status
+  return `${value.label || value.profileId}: ${value.state}; plan use authorized; ${last ? `last inference ${last}` : "inference not verified"}`
+}
 
 export function openSystemBrowser(url) {
   if (process.env.SSH_CONNECTION || process.env.SSH_TTY || process.env.REMOTE_CONTAINERS) {

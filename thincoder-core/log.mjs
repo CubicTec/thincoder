@@ -18,8 +18,8 @@
  *      → 整个字段丢弃；
  *   ② 内容只扫密钥形态（sk-xxx / Bearer xxx / key=… / token 值形等）→ 截断到形态之前
  *      ——宁可丢信息不漏密钥。
- *      token 值形（`uuid:epoch`——2026-10-14 design-token-recovery 批并入）：design-slots
- *      reveal 结果经 `tool:done` head 落盘时不落值（与 batch.mjs 凭据第三形同判据）。
+ *      token 值形（`uuid:epoch`——2026-10-14 批并入）：工具结果经 `tool:done` head 落盘
+ *      时在形态前截断、不落值（与 batch.mjs 凭据第三形同判据）。
  *   工具事件不记 args；URL 不入事件（llm/tool 事件从不携带 URL；err 文本经形态扫描）。
  * - 摘要截断（B 方案，2026-09-03 用户裁定）：截断处带 "…" 标记（截后仍 ≤上限）。
  * - 测试隔离：node --test 进程（NODE_TEST_CONTEXT）默认不写盘——防测试事件污染真实
@@ -154,6 +154,18 @@ export function redactSecret(fieldKey, value) {
   if (BLACKLIST_FIELDS.has(String(fieldKey).toLowerCase())) return "[REDACTED]"
   const hit = s.match(SECRET_FORM)
   return hit ? s.slice(0, hit.index) + "[redacted]" : s
+}
+
+/** 结构面遮蔽（#1432——tool-errors args 落痕前过同一链）：键级 ∥ 内容级复用 `redactSecret`；嵌套对象 ∥ 数组递归；
+ *  非串值仅在键名命中黑名单时整键遮蔽（否则原样 ∥ 递归）——「宁可丢信息不漏密钥」同判据。 */
+export function redactArgs(value) {
+  if (Array.isArray(value)) return value.map(redactArgs)
+  if (value && typeof value === "object") {
+    const out = {}
+    for (const [k, v] of Object.entries(value)) out[k] = typeof v === "string" || BLACKLIST_FIELDS.has(String(k).toLowerCase()) ? redactSecret(k, v) : redactArgs(v)
+    return out
+  }
+  return typeof value === "string" ? redactSecret("", value) : value
 }
 
 /** 内容级净化：密钥形态截断到形态前（②）；超长截断 + "…" 标记。 */

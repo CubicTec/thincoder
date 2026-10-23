@@ -20,7 +20,7 @@ registerHooks({ resolve(specifier, context, next) {
     export const providerSpec=p=>globalThis.__cliModelInfo.spec(p);
     export const specForModel=()=>({thinking:true,thinkApi:'effort',reasoningEffortEnum:['none','low']});
     export const specMatch=model=>{globalThis.__cliModelInfo.matchQueries.push(model);return {matched:model!=='hidden-model'}};
-    export const resolveCompactThreshold=(explicit,p)=>({value:explicit??Math.floor((providerSpec(p).context-providerSpec(p).maxOutput)*0.6),auto:explicit==null});
+    export const resolveCompactThreshold=(explicit,p)=>({value:explicit??Math.min(providerSpec(p).context-providerSpec(p).maxOutput,Math.floor(providerSpec(p).context*0.8)),auto:explicit==null});
     export const configPath='/fixture/config.json';
     export const loadConfig=()=>globalThis.__cliModelInfo.agent.config;`)
   if (specifier === "@thincoder/core/session.mjs" && fromCommand(parent)) return moduleOf(`
@@ -71,7 +71,7 @@ function fixture() {
   const provider = { name: "openai-chatgpt", model: "gpt-6-astra", baseURL: "https://fixture.invalid", format: "responses", auth: { type: "chatgpt_oauth", credentialRef: "account-a", enabled: true } }
   const agent = { provider, providers: [provider], activeProvider: provider.name, activeModel: provider.model,
     tools: [], tasks: [], history: [], cwd: "/fixture/project", _slot: 1,
-    config: { memory: { projectDir: null }, agent: { autoThink: false, compactThresholdAuto: true, compactThreshold: 57600 } } }
+    config: { memory: { projectDir: null }, agent: { autoThink: false, compactThresholdAuto: true, compactThresholdResolved: 57600 } } }
   const s = { agent, ready: new Set(), refreshes: [], matchQueries: [], writes: [], saved: [], slots: [], restored: null, menus: [], lines: [], fields: [], started: [],
     catalog: { context: 500000, maxOutput: 128000, reasoningEffortEnum: ["low", "medium", "high", "xhigh", "max"], defaultReasoningEffort: "medium", specSource: "catalog", contextSource: "catalog" },
     key: (p) => `${p.auth?.credentialRef ?? "api"}:${p.model}`,
@@ -127,7 +127,8 @@ test("/think ultra persists the local selection and reports the distinct model e
   assert.deepEqual(s.fields, [["openai-chatgpt", "reasoningEffort", "ultra"]])
   assert.ok(s.lines.includes("Thinking mode: Ultra (proactive subagents; model effort high)"))
   assert.equal(agent.provider.model, "gpt-6-astra")
-  assert.equal(agent.config.agent.compactThreshold, 57600)
+  assert.equal(agent.config.agent.compactThresholdResolved, 57600)
+  assert.equal(agent.config.agent.compactThreshold, undefined)
 })
 
 test("the Ultra menu item, receipt, and selected header explain the local mode", async () => {
@@ -260,7 +261,8 @@ test("/model uses fresh account tokens for the auto budget and persists the sele
   const { s, agent, ctx } = fixture()
   await createModelPicker(ctx).selectModel({ provider: "openai-chatgpt", model: "gpt-6.1-sol" })
   assert.deepEqual(s.refreshes, ["gpt-6.1-sol"])
-  assert.equal(agent.config.agent.compactThreshold, 223200)
+  assert.equal(agent.config.agent.compactThresholdResolved, 372000)
+  assert.equal(agent.config.agent.compactThreshold, undefined)
   assert.equal(agent.config.defaultModel, "openai-chatgpt:gpt-6.1-sol")
   assert.deepEqual(s.saved, ["gpt-6.1-sol"])
   assert.equal(s.writes[0].model, "gpt-6.1-sol")
@@ -324,7 +326,8 @@ test("TUI startup refreshes the restored model before showing its auto budget", 
   s.restored = { activeProvider: "openai-chatgpt", activeModel: "gpt-6.1-sol", history: [] }
   await tuiCommand({ exitSoon() { throw new Error("unexpected exit") } })
   assert.deepEqual(s.refreshes, ["gpt-6.1-sol"])
-  assert.equal(agent.config.agent.compactThreshold, 223200)
+  assert.equal(agent.config.agent.compactThresholdResolved, 372000)
+  assert.equal(agent.config.agent.compactThreshold, undefined)
   assert.equal(s.started.length, 1)
   assert.equal(s.started[0].opts.modelInfoWarning, undefined)
 })
@@ -334,8 +337,9 @@ test("TUI startup refreshes the auto budget even when the restored model is unch
   s.restored = { activeProvider: "openai-chatgpt", activeModel: "gpt-6-astra", history: [] }
   await tuiCommand({ exitSoon() { throw new Error("unexpected exit") } })
   assert.deepEqual(s.refreshes, ["gpt-6-astra"])
-  assert.equal(agent.config.agent.compactThreshold, 223200)
-  assert.equal(s.started[0].agent.config.agent.compactThreshold, 223200)
+  assert.equal(agent.config.agent.compactThresholdResolved, 372000)
+  assert.equal(agent.config.agent.compactThreshold, undefined)
+  assert.equal(s.started[0].agent.config.agent.compactThresholdResolved, 372000)
 })
 
 test("offline catalog failures are visible inside the started TUI and keep auth available", async () => {
@@ -356,7 +360,8 @@ test("switching a session refreshes its model and shows catalog failure after re
   ctx.showPicker = async () => ({ slot: 2 })
   await handleSessionCommand(ctx)
   assert.equal(agent.provider.model, "gpt-6.1-sol")
-  assert.equal(agent.config.agent.compactThreshold, 223200)
+  assert.equal(agent.config.agent.compactThresholdResolved, 372000)
+  assert.equal(agent.config.agent.compactThreshold, undefined)
   s.failRefresh = "catalog offline"
   await handleSessionCommand(ctx)
   assert.ok(ctx.state.lines.some(line => line.text.includes("Model information unavailable: catalog offline")))

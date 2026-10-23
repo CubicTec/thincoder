@@ -5,6 +5,7 @@ import { applySession, resetSessionState } from "../session-lifecycle.mjs"
 import { refreshAgentModelInfo } from "../agent/model-info.mjs"
 import { recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 import { buildBody } from "../provider/responses-request.mjs"
 import { resolveEnableThinking, providerSpec } from "../config.mjs"
 
@@ -26,9 +27,9 @@ const catalog = (model = fixtureModel, levels = ["low", "high"], defaultEffort =
   supported_reasoning_levels: levels.map((effort) => ({ effort })), default_reasoning_level: defaultEffort,
 }] }))
 function mockAuth() {
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     return { profileId, signal, accessToken: "synthetic-session-token", release() {} }
-  } })
+  } }))
 }
 function seed(p, model = fixtureModel) {
   recordModelCatalog(p, [{ id: model, slug: model, spec: {

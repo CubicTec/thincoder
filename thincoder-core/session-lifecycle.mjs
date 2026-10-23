@@ -1,4 +1,4 @@
-import { attachResponsesSession, resetResponsesSession } from "./responses-session.mjs"
+import { attachResponsesSession, resetResponsesSession } from "./session-responses.mjs"
 /**
  * session-lifecycle.mjs — 会话生命周期面（init-block 批 · F-MI7 拆分——`session.mjs` 500 行
  * 硬限；各函数语义原样外提，SESSION.md §6.10 D-2 / §6.12 / §6.11 注记随迁）：
@@ -19,6 +19,7 @@ import { attachResponsesSession, resetResponsesSession } from "./responses-sessi
  */
 
 import { existsSync } from "node:fs"
+// §6.17：auto 派生值只进显示面（compactThresholdResolved）——显式键 agent.compactThreshold 永不被改写
 import { resolveCompactThreshold } from "./config.mjs"
 // 槽面判据单源（#841 KD-841-2：槽渠道 key 门 + 模型面序——PROVIDER.md §6.22）。
 import { hasKey, resolveChannelModel, resolveProviderPlan } from "./model-ref.mjs"
@@ -42,11 +43,7 @@ import { scheduleSessionGC } from "./session-gc.mjs"
 import { restoreEngTokens } from "./token-ttl.mjs"
 import { clearPlanMode } from "./agent-tools/plan.mjs"
 import { bindRecordStore, unbindRecordStore, RECORD_WINDOW_MESSAGES } from "./session-store.mjs"
-// 会话级档位（§6.21 判据句 4）复用 off 形族与当前 provider 规格，不另设族别表。
-import { providerSpec } from "./model-specs.mjs"
-import { thinkOffShape, thinkOffPath } from "./think-off.mjs"
-import { isChatGptProvider } from "./provider/auth-config.mjs"
-import { hasFreshModelCatalog } from "./provider/model-info.mjs"
+import { restoreSessionEffort } from "./session-effort.mjs"
 
 /** 恢复决策包装（SESSION.md §6.12 启动钩子，2026-09-06）：本端恢复入口触发一次残留 GC——
  *  scheduleSessionGC 内部**启动窗外延迟拍**（`GC_PASS_DELAY_MS` = 3s）+ 每进程每前缀去重，
@@ -74,36 +71,6 @@ function stripTruncatedToolArgs(m) {
   return changed ? { ...m, tool_calls } : m
 }
 
-/** 会话档位施加单源：目录就绪后校验；有效非 none 档清除低优先级配置留下的 off 标记。 */
-function applySessionEffort(provider, effort) {
-  const spec = providerSpec(provider)
-  if (effort === "off") {
-    if (thinkOffPath(spec)) {
-      const shape = thinkOffShape(spec)
-      provider.thinking = shape
-      if (shape === null) provider.reasoningEffort = "none"
-    }
-  } else if (spec.reasoningEffortEnum?.includes(effort)) {
-    provider.reasoningEffort = effort
-    if (effort !== "none" && (provider.thinking === null || provider.thinking?.type === "disabled")) delete provider.thinking
-  }
-}
-
-const effortBinding = (provider) => JSON.stringify([
-  provider?.name, provider?.model, provider?.baseURL, provider?.auth,
-  provider?.thinking, provider?.reasoningEffort,
-])
-
-/** 成功装载后只消费一次；换会话、模型、账号或用户新改档都不能被旧恢复操作覆盖。 */
-export function applyPendingSessionEffort(agent) {
-  const pending = agent._pendingSessionEffort
-  if (!pending) return
-  delete agent._pendingSessionEffort
-  if (agent.provider === pending.provider && effortBinding(agent.provider) === pending.binding) {
-    applySessionEffort(agent.provider, pending.effort)
-  }
-}
-
 /** Apply loaded session data onto an agent object; returns true if the runtime composite
  *  was switched. 2026-08-31 会诊 F1：清空 _slot/_slotMtime 缓存——切换后下次保存重新认领。
  *
@@ -111,8 +78,8 @@ export function applyPendingSessionEffort(agent) {
  *  "三支"误读）：
  *  ① 槽 provider 存在 → provider/model 按槽值设（模型链 = 槽模型 → `defaultModel` 属本渠道 ⇒ 其模型段；
  *     两档皆无 ⇒ `null`——2026-10-09 清除批：原 `providers[].model` 回落退场；`defaultModel` 经
- *     `resolveProviderPlan` 参与模型面）+ 重算
- *     compactThreshold（auto 时——按恢复后模型）；
+ *     `resolveProviderPlan` 参与模型面）+ 刷新显示面
+ *     `compactThresholdResolved`（auto 时——按恢复后模型；显式键 `compactThreshold` 零改写）；
  *  ② 槽 provider 没了 → D-S3 保留——静默保持现状（config 有效则有效——两方都无效由调用侧
  *     复验 validateProvider 弹重选）。
  *  删旧支："activeModel==null 清 stale override 回渠道默认"——前提 = 渠道默认字段——已随
@@ -165,7 +132,7 @@ export function applySession(agent, data, opts = {}) {
   }
   // ENG-PLAN-EXCLUSION（FR31 ③ / KD10——恢复点①·CLI `applySession`）：工程模式 ⇒ planMode 恒
   // false（内存位 + 未注入的 plan 提示语）——防「工程纪律 × plan 只读」半状态随槽恢复复活。
-  // **槽不就地回写**：内存值在下一次 `saveSession` 随 `planMode` 字段自然收正（`session.mjs:128`）。
+  // **槽不就地回写**：内存值在下一次 `saveSession` 随 `planMode` 字段自然收正（`session.mjs`）。
   if (agent.config?.agent?.engineering === true) clearPlanMode(agent)
   if (data.advisor) {
     agent.config.advisor = { ...data.advisor }
@@ -219,20 +186,17 @@ export function applySession(agent, data, opts = {}) {
     agent.activeModel = slotModel
     agent.provider = { ...slotProvider }
     if (slotModel) agent.provider.model = slotModel
-    // 重算 compactThreshold（auto 时——阈值跟模型走；原在 bin 的 switched 分支——收拢本处）。
-    // 非串 model（外端脏载 / 手工档）⇒ 不重算（#638 后查表族恒 total，本门保留为同形防御——与
-    // 下方档位块同口径）；类型脏载不中断恢复。
+    // §6.17：恢复后 auto 派生线随槽模型跟手——只刷新显示面 compactThresholdResolved（显式键不写；
+    // 判定阈值本身由 setup.mjs 每 run 现算，不依赖本值）
     if (switched && agent.config?.agent?.compactThresholdAuto && typeof agent.provider.model === "string" && agent.provider.model) {
-      agent.config.agent.compactThreshold = resolveCompactThreshold(null, agent.provider).value
+      agent.config.agent.compactThresholdResolved = resolveCompactThreshold(null, agent.provider).value
     }
     // 会话级档位施加（§6.21 判据句 4——在模型合并支之后，以**合并后**的 `provider.model` 判 spec；
     // 三端共用本施加面）：`"off"` 记号 ⇒ 该模型有 off 路径才设关思考形（effort 族该形为 `null`
     // ⇒ 另置 `reasoningEffort: "none"`——§16.4 载荷门，单源 = `think-off.mjs`）；枚举字面 ⇒ 直置；
     // `null` / 缺键 / 表外串 ⇒ 不动（边界表第 1–3 行：老槽零行为变更，表外不静默改写）。
     if (data.effort != null) {
-      if (isChatGptProvider(agent.provider) && !hasFreshModelCatalog(agent.provider)) {
-        agent._pendingSessionEffort = { provider: agent.provider, binding: effortBinding(agent.provider), effort: data.effort }
-      } else applySessionEffort(agent.provider, data.effort)
+      restoreSessionEffort(agent, data.effort)
     }
     return switched
   }

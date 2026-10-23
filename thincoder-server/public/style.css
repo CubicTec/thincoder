@@ -84,7 +84,7 @@ h1, h2, h3, h4, h5, h6, th { font-weight: 400; } /* 零粗体（⑤——UA 700 
 .nav-item.active { background: var(--selected); color: var(--accent); } /* ① 选中/活动态（底 --selected ∥ 字 --accent） */
 .nav-bottom { margin-top: auto; display: flex; flex-direction: column; gap: var(--sp-3); padding: 0 var(--sp-3); }
 .nav-bottom .meta { font-size: var(--fs); color: var(--muted); min-height: 14px; }
-body > .content { margin-left: var(--nav-w); } /* 布局（底座：--nav-w = 侧栏宽 + 内容缩进）；`body >` 限定 = 核件消息泡类亦名 `content`（views-chat.mjs:284 `"bubble content"`）——裸 `.content` 会连它一并右推 200px（2026-10-12 走查实修） */
+body > .content { margin-left: var(--nav-w); } /* 布局（底座：--nav-w = 侧栏宽 + 内容缩进）；`body >` 限定 = 核件消息泡类亦名 `content`（`views-chat.mjs` `"bubble content"`）——裸 `.content` 会连它一并右推 200px（2026-10-12 走查实修） */
 main { max-width: 1100px; margin: 0; padding: var(--sp-7); }
 
 /* ── 主区（⑤ 字排：页题/卡题同号同重——h2/h3 = --text ∥ h4 = --muted；层级 = 结构通道）───────── */
@@ -376,3 +376,70 @@ dialog.modal.terminal-modal[open] { display: flex; flex-direction: column; } /* 
    本面新增两枚（工作区读数段 ∥ 四相引导块）——零新变量 ∥ 零新悬停规则 ── */
 .chat-ws { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); color: var(--muted); } /* 会话条·工作区读数（名 ∥ 盒态 ∥ 在线态） */
 .chat-guide { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-4); padding: var(--sp-6); background: var(--panel); border: var(--bw) solid var(--border); border-radius: var(--r-3); } /* 首次进入四相引导块（本页零 `.card` 面） */
+
+/* ── 成员面对话·三端对齐面（`webui/CHAT.md` §2.2 差异④⑨——member-face-parity 批；行账 = `webui/STYLE.md` §3）：
+   面族四组——① **钮可见性作用域覆写**（四模式钮 + 设置钮解锁）∥ ② 会话条自绘下拉（位标/标题/meta/✎/✕/📁）∥
+   ③ 卡族四件（核件三卡发射类名 + 页内秘密卡 + diff 弹窗）∥ ④ 子代理块（核件发射类名）。零新变量（全取底座既有）∥
+   零颜色字面量（add/del 取色通道，不立底色）∥ 零动画零过渡——面内悬停仅新增类（旧十二面名字串不出现）── */
+
+/* ① 钮可见性解隐藏（适配层开关 = 容器 `data-flags="live"`；仅本页容器命中——全局五 id 收窄规则零动）：
+   特征度 = `#toolbar[data-flags="live"]`（1 id + 1 attr） + `:is(#…)`（id）≻ 全局 `#id` 平形——核 `.ctrl-btn` 同值 `inline-flex` */
+#toolbar[data-flags="live"] :is(#auto-btn, #advisor-btn, #eng-btn, #plan-btn, #settings-btn) { display: inline-flex; }
+
+/* ② 会话条·自绘下拉（原 `<select>` 换壳——`views-me-chat-sessions.mjs`；行 = 位标 ∥ 标题 ∥ meta ∥ ✎ ∥ ✕） */
+.chat-drop { position: relative; flex: 1 1 260px; min-width: 200px; } /* 尺寸字面（非刻度面——同 `.chat-select` 先例） */
+.chat-drop-btn { display: flex; align-items: center; gap: var(--sp-3); width: 100%; padding: var(--sp-2) var(--sp-4); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.chat-drop-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-drop-list { position: absolute; z-index: 3; left: 0; right: 0; top: calc(100% + var(--sp-2)); max-height: 320px; overflow-y: auto; padding: var(--sp-2); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); } /* z-index 高于 `.chat-bar` 2（行内层） */
+.chat-item { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2) var(--sp-3); border-radius: var(--r-1); cursor: pointer; }
+.chat-item:hover { background: var(--hover); }
+.chat-item.active { background: var(--selected); }
+.chat-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-item-meta { max-width: 45%; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-item-input { flex: 1; min-width: 0; padding: var(--sp-1) var(--sp-3); border: var(--bw) solid var(--accent); border-radius: var(--r-1); background: var(--input-bg); color: var(--input-fg); font: inherit; }
+.chat-item-btn { padding: 0 var(--sp-1); border: none; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+.chat-item-btn:hover { color: var(--accent); }
+.chat-dot { color: var(--idle); }
+.chat-dot.run { color: var(--ok); }
+.chat-dot.wait { color: var(--warn); }
+.chat-ws-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.chat-ws-row { display: flex; justify-content: space-between; gap: var(--sp-4); padding: var(--sp-3) var(--sp-4); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.chat-ws-row:hover { background: var(--hover); }
+
+/* ③ 卡族（核件 `cards/{permission,question}.mjs` 发射类名 + 页内秘密卡 + `view-diff` 页内弹窗——`views-me-chat-cards.mjs`） */
+.permission-prompt, .question-card, .secret-card { margin: var(--sp-5) 0; padding: var(--sp-4) var(--sp-5); border: var(--bw) solid var(--warn-line); border-radius: var(--r-3); background: var(--warn-fill); }
+.secret-card { border-color: var(--accent); background: var(--panel); } /* 秘密卡 = 页内件（核无此卡）——底换中性面 */
+.permission-prompt-text, .question-text { margin-bottom: var(--sp-4); color: var(--warn-ink); overflow-wrap: anywhere; }
+.question-mark { margin-right: var(--sp-2); color: var(--accent); }
+.perm-owner { margin-bottom: var(--sp-2); color: var(--muted); }
+.question-options { display: flex; flex-direction: column; gap: var(--sp-2); }
+.question-option { padding: var(--sp-2) var(--sp-4); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.question-option:hover { background: var(--hover); }
+.question-input, .secret-input { width: 100%; margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-4); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--input-bg); color: var(--input-fg); font: inherit; }
+.secret-title { margin-bottom: var(--sp-2); color: var(--accent); }
+.secret-prompt { margin-bottom: var(--sp-4); color: var(--muted); }
+.secret-field { display: flex; flex-direction: column; gap: var(--sp-1); margin-bottom: var(--sp-3); }
+.permission-prompt-actions, .question-actions, .secret-actions { display: flex; gap: var(--sp-3); margin-top: var(--sp-4); }
+.perm-btn, .view-diff { padding: var(--sp-1) var(--sp-5); border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+.perm-btn.approve { border-color: var(--accent); color: var(--accent); }
+.perm-btn.deny { border-color: var(--danger); color: var(--danger); }
+.view-diff { display: inline-block; margin: var(--sp-2) 0; color: var(--accent); }
+.diff-preview { margin: var(--sp-3) 0; max-height: 420px; overflow: auto; border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--fill); font-family: var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.diff-header { padding: var(--sp-1) var(--sp-4); color: var(--muted); border-bottom: var(--bw) solid var(--border); }
+.diff-line { display: flex; gap: var(--sp-2); padding: 0 var(--sp-4); }
+.diff-prefix { color: var(--muted); }
+.diff-add { color: var(--ok); }
+.diff-del { color: var(--danger); }
+
+/* ④ 子代理块（核件 `subblocks/*` 发射类名——`views-me-chat-subs.mjs`；活动区 = 区尾出生 ∥ 归档入流） */
+.sub-activity { display: flex; flex-direction: column; gap: var(--sp-4); }
+.sub-activity:empty { display: none; }
+.advisor-block { position: relative; margin: var(--sp-4) 0; border: var(--bw) solid var(--border); border-radius: var(--r-2); background: var(--panel); }
+.advisor-block > summary { padding: var(--sp-2) var(--sp-4); color: var(--accent); cursor: pointer; }
+.advisor-content { padding: var(--sp-3) var(--sp-4); }
+.advisor-tool-line { color: var(--muted); font-family: var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.sub-desc { padding: var(--sp-2) var(--sp-4); color: var(--muted); border-bottom: var(--bw) solid var(--border); }
+.sub-tail { padding: var(--sp-2) var(--sp-4); color: var(--muted); font-family: var(--mono); }
+.sub-follow-btn { position: absolute; right: var(--sp-4); bottom: var(--sp-4); padding: 0 var(--sp-4); border: var(--bw) solid var(--border); border-radius: var(--r-3); background: var(--panel); color: var(--fg); font: inherit; cursor: pointer; }
+.sub-stop-btn { position: absolute; right: var(--sp-3); top: var(--sp-2); border: none; background: none; color: var(--muted); font: inherit; cursor: pointer; }
+.sub-stop-btn:hover { color: var(--danger); }

@@ -3,8 +3,8 @@ import assert from "node:assert/strict"
 import { mkdtempSync, readFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createAuthClient, publicAuthStatus, authStatusText } from "@thincoder/core/auth/client.mjs"
-import { authCommand, openSystemBrowser } from "../../src/cli/auth-command.mjs"
+import { createAuthClient, publicAuthStatus } from "@thincoder/core/auth/client.mjs"
+import { authCommand, openSystemBrowser, authStatusText } from "../../src/cli/auth-command.mjs"
 import { _setConfigPathForTest, _resetConfigPathForTest, addProviderEntry, persistRaw, loadRaw, resolveProviders, setProviderKey } from "@thincoder/core/config-io.mjs"
 
 function fixture({ scope = true, enabled = false } = {}) {
@@ -20,7 +20,7 @@ function fixture({ scope = true, enabled = false } = {}) {
     async logout(id) { calls.push(["logout", id]); profiles[0].state = "signed_out"; profiles[0].planAuthorized = false; return { localSignedOut: true, remoteRevoked: false, accessToken: "SECRET" } },
     async beginLogin(opts) { calls.push(["login", opts.profileId]); await opts.openBrowser("https://auth.openai.com/authorize?code=PRIVATE"); return { completion: Promise.resolve(profiles[0]), cancel() {} } },
   }
-  const client = createAuthClient({ service, read: () => raw, write: (mutate) => { mutate(raw); return { ok: true } }, inference: () => null })
+  const client = createAuthClient({ service, read: () => raw, write: (mutate) => { mutate(raw); return { ok: true } } })
   return { raw, calls, profiles, service, client }
 }
 
@@ -111,8 +111,8 @@ test("configuration round-trip preserves opt-in/reference and API-key provider i
 test("scope, configuration, usage limits and completed inference remain distinct evidence", () => {
   const ready = { profileId: "account-a", state: "ready", planAuthorized: true, accessToken: "SECRET" }
   assert.equal(publicAuthStatus(ready).lastInference, null)
-  const completed = publicAuthStatus(ready, { status: "completed", at: 42, model: "slug", requestId: "private", token: "SECRET" })
+  const completed = publicAuthStatus({ ...ready, lastInference: { status: "completed", at: 42, model: "slug", requestId: "private", token: "SECRET" } })
   assert.deepEqual(completed.lastInference, { status: "completed", at: 42, model: "slug" })
-  assert.equal(publicAuthStatus(ready, { status: "usage_limited" }).state, "usage_limited")
-  assert.equal(publicAuthStatus(ready, { status: "usage_limited" }).lastInference, null)
+  assert.equal(publicAuthStatus({ ...ready, lastInference: { status: "usage_limited" } }).state, "usage_limited")
+  assert.equal(publicAuthStatus({ ...ready, lastInference: { status: "usage_limited" } }).lastInference, null)
 })

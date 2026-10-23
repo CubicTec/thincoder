@@ -8,8 +8,8 @@
  *     存在，且其 `version` 逐字等于仓内 `thincoder-core/package.json` 的 `version`。
  *   断言 F（渲染核含核 + 版本逐字相等 · R1）：vsix 内 `extension/node_modules/@thincoder/render-core/package.json`
  *     存在，且其 `version` 逐字等于仓内 `thincoder-render-core/package.json` 的 `version`。
- *   断言 D（提示词面完备性）：vsix 内同目录 `prompts/` 16 档 + `tool-docs/` 52 档——
- *     ① 档数硬等设计口径（16 / 52）；② 档名集合逐字等于仓内 `thincoder-core/` 同名目录；③ 各档内容 sha256 等于仓内同档。
+ *   断言 D（提示词面完备性）：vsix 内同目录 `prompts/` 16 档 + `tool-docs/` 54 档——
+ *     ① 档数硬等设计口径（16 / 54）；② 档名集合逐字等于仓内 `thincoder-core/` 同名目录；③ 各档内容 sha256 等于仓内同档。
  *
  *   断言 E（撞帽检查点接线 · 2026-09-26 · F9② / T6）：vsix 内 `extension/node_modules/@thincoder/core/agent-tools/checkpoint.mjs`
  *     存在，且同目录 `subagent-run.mjs` 含 `registerTurnCapCheckpoint` 接线——防「仓内已修、运行面仍旧」（实盘教训）。
@@ -34,8 +34,8 @@ const vsix = resolve(arg ?? join(ROOT, `${PKG.name}-${PKG.version}.vsix`))
 if (!existsSync(vsix)) { console.error(`✘ vsix 不存在：${vsix}（先 \`npm run package\`）`); process.exit(1) }
 const IN_VSIX = "extension/node_modules/@thincoder/core/"
 const IN_VSIX_RC = "extension/node_modules/@thincoder/render-core/"
-// #1436 added ssh.md in 22849e5b; retain fixed counts plus exact names and hashes.
-const EXPECT = { prompts: 16, "tool-docs": 52 }
+// doc_check.md and manifest-read.md extend the fixed set; names and hashes remain exact.
+const EXPECT = { prompts: 16, "tool-docs": 54 }
 const sha = (buf) => createHash("sha256").update(buf).digest("hex")
 
 const failures = []

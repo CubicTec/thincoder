@@ -4,7 +4,8 @@ import { proxyFetch } from "../proxy.mjs"
 import { rateGate, recordRate, estimateRequestTokens } from "./rate.mjs"
 import { buildBody, chainReplayCheckpoint } from "./responses-request.mjs"
 import { resolveProviderAuth } from "./auth-context.mjs"
-import { isChatGPTProvider, responsesProfileBinding, responsesCredentialBinding } from "./capabilities.mjs"
+import { isChatGptProvider } from "./auth-config.mjs"
+import { responsesProfileBinding, responsesCredentialBinding } from "./responses-binding.mjs"
 import { requestResponses } from "./responses-http.mjs"
 import { ProviderError } from "./errors.mjs"
 import { parseStream } from "./responses-stream.mjs"
@@ -42,7 +43,7 @@ export async function chat(provider, opts = {}, owner = provider) {
     try {
       response = await send({ ...built.body, ...(built.previousResponseId ? { previous_response_id: built.previousResponseId } : {}) })
     } catch (error) {
-      if (isChatGPTProvider(provider) || !built.previousResponseId || !isChainInvalidError(error)) throw error
+      if (isChatGptProvider(provider) || !built.previousResponseId || !isChainInvalidError(error)) throw error
       provider._responsesChain = null
       owner._responsesChain = null
       built = buildBody(provider, messages, opts.tools, opts)
@@ -51,13 +52,13 @@ export async function chat(provider, opts = {}, owner = provider) {
     const official = new URL(provider.baseURL).hostname === "api.openai.com"
     const result = await parseStream(response, { onToken, onReasoning, signal: requestSignal, provider, toolMapping: built.toolMapping,
       previousCallIds: built.fullInput.filter((item) => item.type === "function_call").map((item) => item.call_id),
-      allowResponseDone: !isChatGPTProvider(provider) && !official })
+      allowResponseDone: !isChatGptProvider(provider) && !official })
     recordRate(provider, estimated, result.usage)
     owner._responsesChain = result.terminalStatus === "completed" && built.newChain && result.responseId
       ? { ...built.newChain, ...chainReplayCheckpoint([...built.fullInput, ...result.outputItems]), id: result.responseId } : null
     result._warnings = [...built.warnings, ...(result._warnings ?? [])]
     result.profileBinding = responsesProfileBinding(provider)
-    result.billingSource = isChatGPTProvider(provider) ? "chatgpt_plan" : "api_key"
+    result.billingSource = isChatGptProvider(provider) ? "chatgpt_plan" : "api_key"
     if (result.terminalStatus === "completed") result.responsesReplay = {
       schemaVersion: 1, profileBinding: responsesProfileBinding(provider), modelBinding: provider.model,
       credentialBinding: responsesCredentialBinding(provider),

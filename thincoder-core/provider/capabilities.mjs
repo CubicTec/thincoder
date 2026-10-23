@@ -2,8 +2,7 @@
  * Source: https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations
  * This snapshot is an internal policy, not an API version or request header. */
 import { ProviderError } from "./errors.mjs"
-import { createHash } from "node:crypto"
-import { resolveProviderSecrets } from "../env-ref.mjs"
+import { isChatGptProvider } from "./auth-config.mjs"
 
 export const SIWC_POLICY = "siwc-2026-10-15"
 export const SIWC_UNSUPPORTED_FIELDS = Object.freeze([
@@ -11,14 +10,6 @@ export const SIWC_UNSUPPORTED_FIELDS = Object.freeze([
   "moderation", "multi_agent", "prompt", "prompt_cache_retention", "safety_identifier",
   "temperature", "top_logprobs", "top_p", "truncation", "user", "previous_response_id",
 ])
-export const isChatGPTProvider = (provider) => provider?.auth?.type === "chatgpt_oauth"
-export const responsesProfileBinding = (provider) => isChatGPTProvider(provider)
-  ? provider.auth.credentialRef : `api_key:${provider.name ?? provider.baseURL}`
-export function responsesCredentialBinding(provider) {
-  if (isChatGPTProvider(provider)) return responsesProfileBinding(provider)
-  const resolved = resolveProviderSecrets(provider)
-  return createHash("sha256").update(JSON.stringify({ apiKey: resolved.apiKey, headers: resolved.headers })).digest("hex")
-}
 
 export function capabilityError(provider, param, message) {
   return new ProviderError(provider, message, {
@@ -29,7 +20,7 @@ export function capabilityError(provider, param, message) {
 
 /** Reject explicit unsupported configuration before acquiring credentials or sending. */
 export function validateResponsesConfig(provider, opts = {}) {
-  if (!isChatGPTProvider(provider)) return
+  if (!isChatGptProvider(provider)) return
   for (const field of SIWC_UNSUPPORTED_FIELDS) {
     if (provider[field] !== undefined || opts[field] !== undefined) {
       throw capabilityError(provider, field, `${field} is unsupported for ChatGPT plan HTTP Responses`)
@@ -45,7 +36,7 @@ export function validateResponsesConfig(provider, opts = {}) {
 }
 
 export function validateResponsesBody(provider, body) {
-  if (!isChatGPTProvider(provider)) return
+  if (!isChatGptProvider(provider)) return
   for (const field of SIWC_UNSUPPORTED_FIELDS) {
     if (Object.hasOwn(body, field)) throw capabilityError(provider, field, `Unsupported Responses field: ${field}`)
   }

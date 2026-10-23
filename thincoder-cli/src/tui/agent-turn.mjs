@@ -16,6 +16,7 @@
  */
 import { runAgent } from "@thincoder/core/agent.mjs"
 import { saveSession } from "@thincoder/core/session.mjs"
+import { t } from "@thincoder/core/i18n.mjs" // 回合停止行词面单源（SESSION.md §6.26）：键 status.stopped
 import { continueDecision } from "@thincoder/core/agent/continue-decision.mjs" // #677 · I10 续跑判定单源（#127 ④ 双写退役）
 import { ansi, C } from "./ansi.mjs"
 import { buildToolCallbacks, sweepToolBlocks } from "./tool-events.mjs"
@@ -218,7 +219,7 @@ async function runAgentTurnBody(ctx, text, opts) {
             const h = agent.history
             while (h?.length > 0 && String(h.at(-1)?.content ?? "") === "[User interrupt: undefined]") h.pop()
           }
-          pushLine("[stopped]", C.warn)
+          pushLine(t("status.stopped"), C.warn)
           // #448② KD-6「显式撤销」：Ctrl+C 全停（`{ abortTrigger: "stop" }`——key-handler 二按语义）
           // ⇒ 落粘滞位：链尾闩不重武装（链头复位后新链恢复——见 `timerRearmBlocked`）。
           if (reason?.abortTrigger === "stop") state._timerRearmRevoked = true
@@ -262,7 +263,7 @@ async function runAgentTurnBody(ctx, text, opts) {
         }
         // decision === "error"：其余异常 —— provider 失败面（X8 原语义）——
         // X8（2026-09-20 端差·显示面消差批）：provider 失败面 = 友好首行（判据同 VSC
-        // panel-turn-loop.mjs:152-153：原文首行 + URL 脱敏）+ 诊断两行（Provider/Model）+ Retry
+        // panel-turn-loop.mjs：原文首行 + URL 脱敏）+ 诊断两行（Provider/Model）+ Retry
         // 询问（复用 permission 机制——同意 ⇒ 重建 controller + resume 重入，与 ContinueError
         // 同法；拒绝 ⇒ 现状 break，[error] 行保留）。
         const rawMsg = error?.message || String(error)

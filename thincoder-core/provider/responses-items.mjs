@@ -1,7 +1,7 @@
 /** Responses input codec and native replay schema. UI messages are not protocol state. */
 import { ProviderError } from "./errors.mjs"
 import { wireFunctionIdentity } from "./responses-tools.mjs"
-import { responsesProfileBinding, responsesCredentialBinding } from "./capabilities.mjs"
+import { responsesProfileBinding, responsesCredentialBinding } from "./responses-binding.mjs"
 
 const pick = (item, fields) => Object.fromEntries(fields.filter((k) => item[k] !== undefined).map((k) => [k, structuredClone(item[k])]))
 const invalid = (provider, message, param = "input") => new ProviderError(provider, message, { code: "invalid_responses_context", param, stage: "configuration", retryClass: "never" })

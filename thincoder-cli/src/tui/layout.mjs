@@ -14,7 +14,7 @@
 import { layoutInput, wrapText } from "./render.mjs"
 import { QUESTION_CUSTOM } from "./interaction.mjs"
 import { renderSubagentPanel } from "./subagent-panel.mjs"
-import { askMaskActive, maskEcho } from "./ask-steps.mjs"
+import { askMaskActive, maskEcho, maskSurfacePresent } from "./ask-steps.mjs"
 // SSH 凭据窗掩码判据（SSH-SESSION 批 §6.22 ⑧——回显变换 maskEcho 共用，判据各面自持）
 import { secretMaskActive } from "./secret-prompt.mjs"
 
@@ -59,9 +59,13 @@ export function computeLayout(state, { cols, rows }) {
   // password 步——回显每字符 `•`（显示层变换；提交值 = `state.input` 原值不动）。单源 = ask-steps.mjs。
   // SSH 凭据窗（SSH-SESSION 批 §6.22 ⑧）：当前字段 masked ⇒ 同一显示层变换。
   const maskActive = askMaskActive(state) || secretMaskActive(state)
-  const inputBuf = state.search ? [...state.search.query]
+  // #1437（TUI.md §4 掩码守卫·显示面同归）：掩码三面在场（含搜索框已开时弹出）⇒ 输入框内容
+  // 归掩码面——搜索面让位（判据单源 = ask-steps.mjs `maskSurfacePresent`；框题侧同判据 =
+  // render-frame.mjs `inputBoxStyle`；键路由侧 = key-handler-search.mjs——键归谁、面显谁）。
+  const searchFace = state.search != null && !maskSurfacePresent(state)
+  const inputBuf = searchFace ? [...state.search.query]
     : (ip ? ip.chars : (maskActive ? maskEcho(state.input) : state.input))
-  const inputCursor = state.search ? inputBuf.length : (ip ? Math.max(0, Math.min(ip.cursor ?? inputBuf.length, inputBuf.length)) : state.cursor)
+  const inputCursor = searchFace ? inputBuf.length : (ip ? Math.max(0, Math.min(ip.cursor ?? inputBuf.length, inputBuf.length)) : state.cursor)
   const inputLayout = layoutInput(inputBuf, inputCursor, inputW)
   let inputOffset = 0
   if (inputLayout.lines.length > MAX_INPUT_LINES) {

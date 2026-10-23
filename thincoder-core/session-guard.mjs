@@ -1,4 +1,4 @@
-import { moveResponsesSession } from "./responses-session.mjs"
+import { moveResponsesSession } from "./session-responses.mjs"
 /**
  * session-guard.mjs — F2 轮转守卫（2026-08-31 会诊 F2 🔴；2026-09-08 DESIGN-TOKEN-
  * SETTLEMENT D1 自 session-slots.mjs 提取——session-slots 再越 500 行硬限，本守卫约 41

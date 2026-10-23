@@ -218,15 +218,17 @@ export function buildToolCallbacks(deps) {
           // ③ subKey undefined 非错误（老回调/测试直调——成功路径未知工具）→ 不冻结
           //    任何块（CLI-ACTIVITY-DEBLOAT F-2 收窄：finishSubTask 恒 no-op——无 key
           //    无从精确归属，宁可 no-op 不误冻；块由回合尾 freezeAllSubTasks 兜底清场）。
-          // SYNC-CANCEL（R6）：⏹ 折叠报告带 STOPPED_MARK——块冻结标 stopped 而非 done
-          // （lastError 注记 + 事件定格——兜底竞态窗口的 dispatch 精确冻路径）
-          const lastError = result.includes(TURN_CAP_MARK) ? "turn cap reached — work may be partial" : result.includes(STOPPED_MARK) ? "stopped by user — work may be partial" : null
+          // SYNC-CANCEL（R6）∥ #1175（car2 批 · SESSION.md §6.26）：折叠报告带 TURN_CAP_MARK /
+          // STOPPED_MARK ⇒ **非错终结**——写面 done + `note`（文本 = 锚常量族原文；与 VSC
+          // `syncNoteOf` 同串同判——真异常不走本径）；块冻结标 done 走精确 key 通道
+          // （事件定格——兜底竞态窗口的 dispatch 精确冻路径）
+          const note = result.includes(TURN_CAP_MARK) ? "turn cap reached — work may be partial" : result.includes(STOPPED_MARK) ? "stopped by user — work may be partial" : null
           const hasSubKey = subKey !== undefined && subKey !== null && subKey !== ""
           if (hasSubKey) {
-            finishSubTaskKey(state, String(subKey), lastError)
+            finishSubTaskKey(state, String(subKey), note)
             freezeDoneSubTasks(state)
           } else if (!isSpawnErrorResult(result)) {
-            finishSubTask(state, SUBAGENT_ROLES, lastError)
+            finishSubTask(state, SUBAGENT_ROLES, note)
             freezeDoneSubTasks(state)
           }
           // CLI-ACTIVITY-DEBLOAT F-1 (2026-09-10): the conversation-stream report
@@ -247,12 +249,12 @@ export function buildToolCallbacks(deps) {
           // 失败/老回调无 subKey → 不冻结任何块（F-2 收窄——finishSubTask 恒 no-op，
           // 块由回合尾 freezeAllSubTasks 兜底清场）。
           // SYNC-CANCEL（R6）：同上——escalate 路径同款扩展（sync escalate 无 registry——
-          // 恒不折叠——扩展仅口径一致——零行为变化）
-          const lastError = result.includes(TURN_CAP_MARK) ? "turn cap reached — work may be partial" : result.includes(STOPPED_MARK) ? "stopped by user — work may be partial" : null
+          // 恒不折叠——扩展仅口径一致——零行为变化；#1175：同落 note 通道）
+          const note = result.includes(TURN_CAP_MARK) ? "turn cap reached — work may be partial" : result.includes(STOPPED_MARK) ? "stopped by user — work may be partial" : null
           if (subKey !== undefined && subKey !== null && subKey !== "") {
-            finishSubTaskKey(state, String(subKey), lastError)
+            finishSubTaskKey(state, String(subKey), note)
           } else {
-            finishSubTask(state, ["escalate"], lastError)
+            finishSubTask(state, ["escalate"], note)
           }
           freezeDoneSubTasks(state)
         }

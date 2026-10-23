@@ -4,8 +4,8 @@
  * - `run(input)` serializes prompts through a per-session FIFO promise chain
  *   (concurrent prompts queue; each runs after the previous turn's end_turn).
  * - `cancel()` aborts the in-flight turn via a REAL AbortController — the
- *   provider layer composes `AbortSignal.any([signal, timeout])` (core.mjs:280,
- *   anthropic.mjs:67, google.mjs:98), which requires a real AbortSignal; a
+ *   provider layer composes `AbortSignal.any([signal, timeout])` (core.mjs,
+ *   anthropic.mjs, google.mjs), which requires a real AbortSignal; a
  *   plain object would throw TypeError on every LLM call.
  * - The controller is rebuilt after every turn, so one cancel only affects the
  *   in-flight turn; the next queued prompt starts with a clean signal.

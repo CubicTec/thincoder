@@ -7,14 +7,17 @@
  * - 池：`_sshSessions`（照 `bash-async.mjs` 池先例——载体经 `carrierField` 吸收）；帽 `SSH_SESSION_MAX = 4`
  *   条存活会话；超限**显式拒**（零静默关旧）。
  * - 连接（预探路——父侧 2026-10-14 裁定 A）：探连 = **全会话形** + `NumberOfPasswordPrompts=0`；探连成功
- *   ⇒ **该连接直接升格为会话**（密钥机全程恰 1 次连接）；认证类失败 ⇒ 终止探连 → 弹凭据窗 → **单次**
- *   带密会话（`NumberOfPasswordPrompts=1`）；指纹 / 不可达 / 连接超时 ⇒ **弹窗之前硬停**（E3 语义）。
+ *   ⇒ **该连接直接升格为会话**（密钥机全程恰 1 次连接）；认证类失败 ⇒ 终止探连 → **先读保存件**（⑪
+ *   命中 ⇒ 直接带密会话，零窗）→ 无 / 不可用 ⇒ 弹凭据窗 → **单次**带密会话（`NumberOfPasswordPrompts=1`）；
+ *   指纹 / 不可达 / 连接超时 ⇒ **弹窗之前硬停**（E3 语义）。
+ * - 保存面（用户裁定 A+B · 台账 #1602）：⑩ 身份面（`identityFile` / `auth` 随 ⑨ 记录）∥ ⑪ 保存件读写 /
+ *   解密 / `lastUsedAt` / fail-soft / 窗内勾选 ⇒ 单点 `agent-tools/ssh-vault.mjs`；⑫ `credentials` / `forget`。
  * - 生命周期：闲置 600 s 自动关（digest 注记）· `close` = stdin 结束 → 1.5 s 宽限 → 杀树 · 回合中断存活
  *   （F2 豁免）· 会话中止逐条杀 + 清池（`agent-tools/async-discard.mjs` `SSH_SPEC`）· depth>0 排除
  *   （`agent/helpers.mjs` `SUBAGENT_TOOL_EXCLUSIONS`）。
- * 模块图：→ ssh-transport.mjs（运行面）· agent/helpers.mjs（轮转清理）· tools/process-tree.mjs（树杀）·
- * context.mjs（pushReal）· async-settle.mjs（池 ∥ 载体 ∥ 墓碑 ∥ 控制器链）· subagent-scheduler.mjs
- * （取号 ∥ 令牌 ∥ 入池守卫）——叶子向、无环。
+ * 模块图：→ ssh-transport.mjs（运行面）· ssh-vault.mjs（保存件单点）· agent/helpers.mjs（轮转清理）·
+ * tools/process-tree.mjs（树杀）· context.mjs（pushReal）· async-settle.mjs（池 ∥ 载体 ∥ 墓碑 ∥ 控制器链）·
+ * subagent-scheduler.mjs（取号 ∥ 令牌 ∥ 入池守卫）——叶子向、无环。
  */
 import { createWriteStream, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
@@ -27,10 +30,11 @@ import {
 } from "./async-settle.mjs"
 import { assertPoolKeyFree, consumeSubagentToken, nextSubagentId } from "./subagent-scheduler.mjs"
 import {
-  SSH_RETURN_CAP, SSH_SETTLE_MS, SSH_TIMEOUT_MS, bodyText, capText, classifyFailure, createMask, drain,
+  SSH_KEEPALIVE_MS, SSH_RETURN_CAP, SSH_SETTLE_MS, SSH_TIMEOUT_MS, bodyText, capText, classifyFailure, createMask, drain,
   failureText, idLabel, settleNote, sshConfigDir, spawnSession, statusLine, unlinkAskpass, waitSettled,
   writeAskpassWrapper,
 } from "./ssh-transport.mjs"
+import { askCredential, deleteEntry, hostKey, resolveSecret, saveEntry, touchEntry, vaultAvailable } from "./ssh-vault.mjs"
 
 /** 并存活会话帽（照 `BG_TASK_MAX` 族）。超限显式拒。 */
 export const SSH_SESSION_MAX = 4
@@ -42,10 +46,16 @@ const CLOSE_GRACE_MS = 1500
 /** 非密预填档（§6.22 ⑨）：`configDir/ssh-hosts.json`——白名单字段，密码零字段。 */
 const HOSTS_FILE = "ssh-hosts.json"
 
-/** 测试缝（闲置窗缩短——生产从不调用）。 */
-let _idleMs = null
-export function _setSshIdleMsForTest(ms) { _idleMs = ms }
-const idleMs = () => _idleMs ?? SSH_IDLE_MS
+/** 测试态时间缝（B3 ∥ S2 ∥ S4 判据落形——§6.22 ④）：闲置 `idleMs` ∥ 保活 `keepAliveMs`；
+ *  缺省取常量、传值 `??` 回落、`finally` 复位（`_resetSshTimeoutsForTest`）；**不进用户参数面**。 */
+let _timeouts = { idleMs: null, keepAliveMs: null }
+export function _setSshTimeoutsForTest({ idleMs, keepAliveMs } = {}) {
+  if (idleMs !== undefined) _timeouts.idleMs = idleMs ?? null
+  if (keepAliveMs !== undefined) _timeouts.keepAliveMs = keepAliveMs ?? null
+}
+export function _resetSshTimeoutsForTest() { _timeouts = { idleMs: null, keepAliveMs: null } }
+const idleMs = () => _timeouts.idleMs ?? SSH_IDLE_MS
+const keepAliveMs = () => _timeouts.keepAliveMs ?? SSH_KEEPALIVE_MS
 const toolResultsDir = () => join(sshConfigDir(), "tool-results")
 
 /** 池（写侧：父字段优先 / 借用 history 载体——`ensureBgPool` 同式）。 */
@@ -155,8 +165,6 @@ export function killSshTree(entry) {
 // ─── 非密预填档（§6.22 ⑨）──────────────────────────────────────────────────
 
 const hostsFile = () => join(sshConfigDir(), HOSTS_FILE)
-/** 读键 = `host[:port]`（缺省 22）。 */
-const hostKey = (host, port) => (port && Number(port) !== 22 ? `${host}:${port}` : String(host))
 
 function lookupHostRecord(host, port) {
   try {
@@ -166,15 +174,20 @@ function lookupHostRecord(host, port) {
   } catch { return null }
 }
 
-/** 写入 = **认证成功后**；白名单 = 非密字段（host / port / user / lastUsedAt——密码零字段）。 */
-function saveHostRecord(host, port, user) {
-  if (!user) return
+/** 写入 = **认证成功后**；白名单 = 非密字段（host / port / user / lastUsedAt / `identityFile` / `auth`——
+ *  密码零字段；⑩ 身份面）。无 `user` 但有 `identityFile` 时也写（身份面复用不依赖 user 预填）。 */
+function saveHostRecord(host, port, user, { identity = null, auth = null } = {}) {
+  if (!user && !identity) return
   try {
     mkdirSync(sshConfigDir(), { recursive: true })
     let all = {}
     try { all = JSON.parse(readFileSync(hostsFile(), "utf8")) ?? {} } catch { all = {} }
     if (typeof all !== "object" || all === null) all = {}
-    all[hostKey(host, port)] = { host, port: Number(port) || 22, user, lastUsedAt: new Date().toISOString() }
+    all[hostKey(host, port)] = {
+      host, port: Number(port) || 22, user: user ?? null, lastUsedAt: new Date().toISOString(),
+      ...(identity ? { identityFile: identity } : {}),
+      ...(auth ? { auth } : {}),
+    }
     writeFileSync(hostsFile(), JSON.stringify(all, null, 2), "utf8")
   } catch { /* 预填 = 增益面——写失败不进连接语义 */ }
 }
@@ -182,10 +195,12 @@ function saveHostRecord(host, port, user) {
 // ─── 动作（工具面薄接线消费）────────────────────────────────────────────────
 
 /**
- * 连接（§6.22 ⑤ + 裁定 A 预探路）：探连 ⇒ 升格 ∥ 认证失败 ⇒ 凭据窗 ⇒ 单次带密会话。
+ * 连接（§6.22 ⑤ + 裁定 A 预探路 + 保存面）：探连 ⇒ 升格 ∥ 认证失败 ⇒ **先读保存件**（命中 ⇒ 带密
+ * 会话零窗）⇒ 无 / 不可用 / 被拒 ⇒ 凭据窗（窗内可勾选保存）⇒ 单次带密会话。
+ * 优先级铁序（⑩）：保存件**恒不先于探连**——密钥可用 ⇒ 保存件零读取（S6/N6/B7）。
  * @returns {{ text?: string, error?: string }}
  */
-export async function connectSsh(parent, ctx, { host, user, port, label, promptPattern } = {}) {
+export async function connectSsh(parent, ctx, { host, user, port, label, promptPattern, identityFile } = {}) {
   if (!parent) return { error: "no agent context — ssh sessions need a session-level pool (depth-0 only)" }
   if (typeof host !== "string" || !host.trim()) return { error: "connect requires host" }
   const pool = sshPool(parent)
@@ -201,8 +216,9 @@ export async function connectSsh(parent, ctx, { host, user, port, label, promptP
     try { promptRe = new RegExp(String(promptPattern)) } catch (e) { return { error: `promptPattern is not a valid regex: ${e.message}` } }
   }
   const record = lookupHostRecord(host, port)
-  const effectiveUser = user || record?.user || null
+  const effectiveUser = user || record?.user || null // 判定序：connect 参数 → ⑨ 记录 → 皆缺视同无
   const userFromRecord = !user && record?.user ? record.user : null
+  const identity = identityFile || record?.identityFile || null // ⑩：参数 → ⑨ 记录
   const id = nextSubagentId(parent)
   consumeSubagentToken(parent, id, "ssh connect", "ssh")
   await cleanupOldToolResults(toolResultsDir())
@@ -222,25 +238,37 @@ export async function connectSsh(parent, ctx, { host, user, port, label, promptP
     const reason = await waitSettled(entry, { signal: ctx?.signal ?? null })
     return { reason, waitedMs: Date.now() - t0 }
   }
-  /** 升格为会话（探连成功 ∥ 带密会话成功同径）。 */
-  const promote = (reason, waitedMs) => {
+  /** 起跑（探连 ∥ 带密会话同径；`-i` 两径同带——追加候选身份，不夺既有尝试序列）。
+   *  每次起跑前清该轮缓冲：分类 / 沉降只看**本次连接**的输出（探连错误的残渣不得误判下一次尝试）。 */
+  const spawn = (sessionUser, secret) => {
+    entry.buf = ""
+    entry.bufDropped = false
+    return spawnSession(entry, { user: sessionUser, port, secret, identityFile: identity, keepAliveMs: keepAliveMs() })
+  }
+  /** 升格为会话（探连成功 ∥ 带密会话成功同径）；⑩ 身份面（auth）随 ⑨ 记录回写。 */
+  const promote = (reason, waitedMs, { auth = "key", extra = [] } = {}) => {
     entry.state = "ready"
     entry.lastActivityAt = Date.now()
     armIdle(entry)
-    saveHostRecord(entry.host, entry.port, entry.user)
+    saveHostRecord(entry.host, entry.port, entry.user, { identity, auth })
     const { text, dropped } = drain(entry)
     const notes = [
       `— connected (${settleNote(entry, reason, waitedMs)})`,
       `log: ${entry.logPath}`,
       userFromRecord ? `user "${userFromRecord}" came from the local ssh-hosts record` : "",
+      ...extra,
       dropped ? "in-memory buffer overflowed — full output in the log" : "",
     ].filter(Boolean)
     return { text: `${statusLine(entry)}\n${bodyText(capText(text, SSH_RETURN_CAP, entry))}\n${notes.join("; ")}` }
   }
+  /** 认证类失败分类（spawn 错误 ∥ 输出判据——两径同式）。 */
+  const classify = () => (entry.spawnError
+    ? { kind: "spawn", message: `ssh client not available (${entry.spawnError}) — install system OpenSSH or check PATH` }
+    : classifyFailure(entry.buf))
   try {
     assertPoolKeyFree(pool, id, "ssh")
     pool.set(String(id), entry)
-    spawnSession(entry, { user: effectiveUser, port, secret: null }) // 探连：全会话形 + NumberOfPasswordPrompts=0
+    spawn(effectiveUser, null) // 探连：全会话形 + NumberOfPasswordPrompts=0（不读保存件——铁序）
     let { reason, waitedMs } = await settle()
     // 「已就绪」判据要求进程尚在（静默窗与退出同刻的竞争面——升格一条死连接不成立）。
     if ((reason === "prompt" || reason === "silence") && entry.exitInfo) reason = "exited"
@@ -252,20 +280,54 @@ export async function connectSsh(parent, ctx, { host, user, port, label, promptP
       hardClose(entry, "closed", "consumed")
       return { error: `ssh connect did not settle within ${SSH_TIMEOUT_MS}ms (${entry.host}) — the connection is closed; retry or increase the wait` }
     }
+    let auth = "key"
+    const flowNotes = []
     if (reason === "exited") {
-      const cls = entry.spawnError
-        ? { kind: "spawn", message: `ssh client not available (${entry.spawnError}) — install system OpenSSH or check PATH` }
-        : classifyFailure(entry.buf)
+      const cls = classify()
       if (!cls || cls.kind !== "auth") {
         const text = failureText(entry, cls)
         hardClose(entry, "closed", "connect-failed") // 杀树收尾（finalize 只出池——活子进程会成无句柄悬挂）
         return { error: text }
       }
-      // 认证类失败 ⇒ 凭据窗（值只走回调返回路 + 子进程环境——NS4：零入参 ∥ 零入结果 ∥ 零落盘）。
-      const input = await askCredential(ctx, { host, user: effectiveUser, port, sessionId: id })
+      // 认证类失败 ⇒ **先读保存件**（⑪；有效 user 判定序缺 ⇒ 零消费零删除——直接落窗）。
+      let saved = null
+      let failNote = ""
+      if (effectiveUser) {
+        const got = await resolveSecret(host, port, effectiveUser)
+        if (got.state === "ok") saved = got
+        else if (got.state === "damaged") failNote = "the saved-credential store is damaged — it was left untouched"
+        else if (got.state === "undecryptable") failNote = "the saved credential could not be decrypted — the entry was kept"
+        else if (got.state === "unavailable") failNote = "saved credentials are not available on this platform"
+        // missing ⇒ 静默（正常首连态）
+      }
+      if (saved) {
+        entry.user = effectiveUser
+        entry.mask.add(saved.value) // 遮蔽先注册后写入（回显面零泄）
+        spawn(entry.user, saved.value) // 带密会话（PP=1）——命中保存件 ⇒ 零窗
+        ;({ reason, waitedMs } = await settle())
+        if ((reason === "prompt" || reason === "silence") && entry.exitInfo) reason = "exited"
+        if (reason === "prompt" || reason === "silence") {
+          touchEntry(host, port) // lastUsedAt = 复用成功时更新（写失败 = 增益面静默）
+          return promote(reason, waitedMs, { auth: "password", extra: ["saved credential used (no credential window)"] })
+        }
+        const clsSaved = classify()
+        // 只有**本次进程正常退出且为认证类**才算「服务端拒绝」；超时 / 中断 / 不可达 ⇒ 条目保留、硬停。
+        if (reason !== "exited" || clsSaved?.kind !== "auth") {
+          const text = failureText(entry, clsSaved ?? { message: "authentication rejected" }, " — the session was not established")
+          hardClose(entry, "closed", "connect-failed")
+          return { error: text }
+        }
+        // 条目被服务端拒 ⇒ 删该条目（拒绝即值已失效——避免每次重试旧值）+ 回落窗；删失败时注记如实。
+        const del = deleteEntry(host, port)
+        failNote = del.ok
+          ? "the saved credential was rejected by the server — the entry was deleted"
+          : "the saved credential was rejected by the server — the store could not be updated (the entry may still be there)"
+      }
+      // 凭据窗（值只走回调返回路 + 子进程环境——NS4：零入参 ∥ 零入结果 ∥ 零落盘）。
+      const input = await askCredential(ctx, { host, user: effectiveUser, port, sessionId: id, offerSave: vaultAvailable() })
       if (!input) {
         hardClose(entry, "closed", "consumed")
-        return { error: `ssh connect to ${entry.host} cancelled — no credential was provided (no connection was attempted with one)` }
+        return { error: `ssh connect to ${entry.host} cancelled — no credential was provided (no connection was attempted with one)${failNote ? ` (${failNote}; the credential window was shown)` : ""}` }
       }
       if (!String(input.password ?? "").length) {
         hardClose(entry, "closed", "consumed")
@@ -273,7 +335,7 @@ export async function connectSsh(parent, ctx, { host, user, port, label, promptP
       }
       entry.user = input.user || effectiveUser || null
       entry.mask.add(input.password) // 遮蔽先注册后写入（回显面零泄）
-      spawnSession(entry, { user: entry.user, port, secret: input.password }) // 单次带密会话（PP=1）
+      spawn(entry.user, input.password) // 单次带密会话（PP=1）
       ;({ reason, waitedMs } = await settle())
       if ((reason === "prompt" || reason === "silence") && entry.exitInfo) reason = "exited"
       if (reason !== "prompt" && reason !== "silence") {
@@ -283,44 +345,25 @@ export async function connectSsh(parent, ctx, { host, user, port, label, promptP
         hardClose(entry, "closed", "connect-failed")
         return { error: text }
       }
+      // 认证成功后才写（opt-in——严格布尔；写失败不影响连接：增益面语义）
+      if (input.save === true && entry.user) {
+        const savedRes = await saveEntry(host, port, { user: entry.user, value: input.password })
+        flowNotes.push(savedRes.ok
+          ? "the credential was saved for this host (encrypted with this Windows user account)"
+          : "the credential could not be saved (the connection is unaffected)")
+      } else if (input.save === true) {
+        flowNotes.push("the credential was not saved (no login user was given for this host)")
+      }
+      if (failNote) flowNotes.unshift(`${failNote}; the credential window was shown`)
+      auth = "password"
     }
-    return promote(reason, waitedMs)
+    return promote(reason, waitedMs, { auth, extra: flowNotes })
   } catch (e) {
     hardClose(entry, "closed", "connect-failed") // 异常径同走杀树（子进程可能仍在飞）
     return { error: e?.noUi ? `Error: ${e.message}` : `ssh connect failed: ${e?.message ?? String(e)}` }
   } finally {
     entry._notify = null
   }
-}
-
-/** 凭据窗（§6.22 ⑧）：无 UI ⇒ 可读错（不挂起、不静默——`question.mjs` 无 UI 抛例同旨）；词面 = i18n 键。
- *  端侧回调自身拒绝（CLI `refuseSecretInput()` 形：抛可读句）⇒ 同族直出（`noUi` 标记 = 失败句不另加前缀）。 */
-async function askCredential(ctx, { host, user, port, sessionId }) {
-  if (typeof ctx?.onSecretInput !== "function") {
-    const err = new Error(t("ssh.no_ui"))
-    err.noUi = true // 可读句直出（catch 面不另加前缀——失败句单源 = 核字典）
-    throw err
-  }
-  let res
-  try {
-    res = await ctx.onSecretInput({
-      kind: "ssh-credential",
-      sessionId: sessionId != null ? `ssh#${sessionId}` : null,
-      host, user: user ?? null, port: port ?? null,
-      fields: [
-        { name: "user", masked: false, required: false, prefill: user ?? "" },
-        { name: "password", masked: true, required: true, prefill: "" },
-      ],
-      keys: { title: "ssh.credentialTitle", prompt: "ssh.credentialPrompt" },
-    })
-  } catch (e) {
-    // 端侧拒绝（无交互面 / 载荷成形外）⇒ 同族可读句直出（不裹「connect failed」前缀）。
-    const err = new Error(e?.message ?? String(e))
-    err.noUi = true
-    throw err
-  }
-  if (!res || typeof res !== "object") return null
-  return res
 }
 
 /** 缓冲溢出注记（三动作同式——丢弃面显式化；全量恒在 log）。 */
@@ -437,3 +480,7 @@ export function listSsh(parent) {
 // 常量转口（工具面 / 测试档经本档取——机制档不重复导出）。
 export { SSH_SETTLE_MS, SSH_TIMEOUT_MS, SSH_RETURN_CAP }
 export { _setSshBinaryForTest, _setSshConfigDirForTest } from "./ssh-transport.mjs"
+
+// 保存凭据管理面（§6.22 ⑫）：`credentials` / `forget` 实体 = `ssh-vault.mjs`（核单点——本档只转口；
+// 拆档由 = 机制档触 500 顾问线，§6.22 落点表候选拆分）。
+export { credentialsSsh, forgetSsh } from "./ssh-vault.mjs"

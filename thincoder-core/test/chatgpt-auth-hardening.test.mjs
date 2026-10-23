@@ -4,9 +4,10 @@ import { AuthService } from '../auth/service.mjs'
 import { createAuthClient, getAuthClient, publicAuthStatus } from '../auth/client.mjs'
 import { setAuthService } from '../auth/service.mjs'
 import { listModelCatalog } from '../provider/list-models.mjs'
-import { _setAuthServiceForTest, clearInferenceStatus } from '../provider/auth-context.mjs'
+import { _setAuthServiceForTest } from '../provider/auth-context.mjs'
 import { OidcClient, SCOPES, TOKEN } from '../auth/oidc.mjs'
 import { fixture, body, claims, discovery, jwt } from './fixtures/chatgpt-auth.mjs'
+import { providerAuthStub } from './fixtures/provider-auth.mjs'
 
 const gate = () => {
   let resolve, reject
@@ -202,9 +203,9 @@ test('model catalog quota stays attributed to the account that sent the request'
   const entered = gate(), resume = gate(), paused = []
   const original = globalThis.fetch
   const provider = { name: 'openai-chatgpt', baseURL: 'https://api.openai.com/v1', format: 'responses', auth: { type: 'chatgpt_oauth', enabled: true, credentialRef: 'account-old' } }
-  _setAuthServiceForTest({ async getAuthContext(id) { return { profileId: id, accessToken: 'synthetic-token', release() {} } }, async recordUsageLimit(id) { paused.push(id) } })
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(id) { return { profileId: id, accessToken: 'synthetic-token', release() {} } }, async recordUsageLimit(id) { paused.push(id) } }))
   globalThis.fetch = async () => { entered.resolve(); await resume.promise; return body({ error: { code: 'subscription_sharing_usage_limit_exceeded' } }, 429) }
-  t.after(() => { globalThis.fetch = original; _setAuthServiceForTest(null); clearInferenceStatus('account-old'); clearInferenceStatus('account-new') })
+  t.after(() => { globalThis.fetch = original; _setAuthServiceForTest(null) })
   const request = listModelCatalog(provider)
   await entered.promise
   provider.auth.credentialRef = 'account-new'
@@ -214,9 +215,9 @@ test('model catalog quota stays attributed to the account that sent the request'
 })
 
 test('auth client singleton follows an explicitly replaced service authority', t => {
-  setAuthService({ dispose() {}, async listProfiles() { return [{ profileId: 'first' }] } })
+  setAuthService(providerAuthStub({ async listProfiles() { return [{ profileId: 'first' }] } }))
   const first = getAuthClient()
-  setAuthService({ dispose() {}, async listProfiles() { return [{ profileId: 'second' }] } })
+  setAuthService(providerAuthStub({ async listProfiles() { return [{ profileId: 'second' }] } }))
   t.after(() => setAuthService(undefined))
   assert.notEqual(getAuthClient(), first)
   return getAuthClient().list().then(profiles => assert.equal(profiles[0].profileId, 'second'))
@@ -247,7 +248,7 @@ test('corrupt host records never silently create a new host registration', async
 })
 
 test('public inference timestamps cannot smuggle arbitrary nested metadata', () => {
-  const status = publicAuthStatus({ profileId: 'account' }, { status: 'completed', at: { token: 'SECRET' }, model: 'fixture' })
+  const status = publicAuthStatus({ profileId: 'account', lastInference: { status: 'completed', at: { token: 'SECRET' }, model: 'fixture' } })
   assert.equal(status.lastInference.at, null)
   assert.equal(JSON.stringify(status).includes('SECRET'), false)
 })

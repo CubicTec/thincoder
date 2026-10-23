@@ -85,6 +85,7 @@ test("Desktop host opens system browser and IPC returns no OAuth credentials or 
     assert.equal(loadRaw().providers[0].auth.credentialRef, "account-a")
     const { CHANNELS } = createRequire(import.meta.url)("../../src/preload/preload.cjs")
     assert.ok(CHANNELS.includes("auth:action"))
+    assert.ok(CHANNELS.includes("team:rotate"), "OAuth actions must coexist with the upstream team rotation bridge")
   } finally { _resetConfigPathForTest(); rmSync(dir, { recursive: true, force: true }) }
 })
 
@@ -105,17 +106,46 @@ test("Desktop first-run subscription setup saves without a key and opens account
   } finally { globalThis.FormData = OldFormData }
 })
 
+test("Desktop account catalog uses the shared admission probe and provider-aware capabilities", async () => {
+  const { modelCatalog, modelList } = await import("../../src/main/settings.mjs")
+  const { _setAuthServiceForTest } = await import("@thincoder/core/provider/auth-context.mjs")
+  const { admissionOf, _resetAdmissionForTest, recordAdmission, probeChannelModels } = await import("@thincoder/core/provider/list-models.mjs")
+  const dir = mkdtempSync(join(tmpdir(), "desktop-account-catalog-")), previousFetch = globalThis.fetch
+  _setConfigPathForTest(join(dir, "config.json"))
+  addProviderEntry({ preset: "openai-chatgpt" })
+  persistRaw((raw) => { raw.providers[0].auth = { type: "chatgpt_oauth", enabled: true, credentialRef: "catalog-account" } })
+  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) { return { profileId, signal, accessToken: "SYNTHETIC", release() {} } } })
+  globalThis.fetch = async () => new Response(JSON.stringify({ models: [{ slug: "gpt-6-luna", display_name: "Account Luna", visibility: "list",
+    supported_reasoning_levels: [{ effort: "low" }, { effort: "high" }], default_reasoning_level: "high" }] }), { status: 200 })
+  try {
+    recordAdmission("openai-chatgpt", { ok: false, reason: "old failure" })
+    const catalog = await modelCatalog()
+    assert.equal(admissionOf("openai-chatgpt").ok, true)
+    assert.deepEqual(catalog.models[0], { provider: "openai-chatgpt", id: "gpt-6-luna", label: "Account Luna", effortEnum: ["low", "high"], thinkOff: false, effortDefault: "high" })
+    assert.deepEqual((await modelList({ provider: "openai-chatgpt" })).models[0], { id: "gpt-6-luna", label: "Account Luna", effortEnum: ["low", "high"], thinkOff: false, effortDefault: "high" })
+    const probe = await probeChannelModels("openai-chatgpt", loadRaw().providers[0])
+    assert.deepEqual(probe.models, ["gpt-6-luna"])
+    assert.equal(probe.catalog[0].displayName, "Account Luna")
+    globalThis.fetch = async () => { throw new Error("offline") }
+    const failed = await modelCatalog()
+    assert.equal(admissionOf("openai-chatgpt").ok, false)
+    assert.equal(admissionOf("openai-chatgpt").reason, failed.unavailable[0].reason)
+  } finally { globalThis.fetch = previousFetch; _setAuthServiceForTest(null); _resetAdmissionForTest(); _resetConfigPathForTest(); rmSync(dir, { recursive: true, force: true }) }
+})
+
 test("Desktop composer keeps subscription display order and needs explicit catalog retry", async () => {
   const { createComposerSync } = await import("../../renderer/composer-sync.mjs")
   let state = {}, requests = 0, delayed = 0
   const pushed = []
   const sync = createComposerSync({ store: { get: () => state, set: (s) => { state = s } }, push: (m) => pushed.push(m),
-    call: async () => { requests++; return { ok: true, automaticRetry: false, models: [{ provider: "openai-chatgpt", id: "z-slug", label: "First model" }, { provider: "openai-chatgpt", id: "a-slug", label: "Second model" }], unavailable: [{ provider: "api", reason: "offline" }] } },
+    call: async () => { requests++; return { ok: true, automaticRetry: false, models: [{ provider: "openai-chatgpt", id: "z-slug", label: "First model", effortEnum: ["low", "high"], effortDefault: "high" }, { provider: "openai-chatgpt", id: "a-slug", label: "Second model" }], unavailable: [{ provider: "api", reason: "offline" }] } },
     delay: async () => { delayed++ } })
   sync.refreshCandidates()
   await new Promise((resolve) => setImmediate(resolve))
   assert.equal(requests, 1); assert.equal(delayed, 0)
   assert.deepEqual(pushed[0].models.map((m) => [m.id, m.label]), [["z-slug", "First model"], ["a-slug", "Second model"]])
+  assert.equal(pushed[0].models[0].effortDefault, "high")
+  assert.equal(Object.hasOwn(pushed[0].models[1], "effortDefault"), false)
   sync.refreshCandidates()
   await new Promise((resolve) => setImmediate(resolve))
   assert.equal(requests, 2)

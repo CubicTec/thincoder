@@ -2,7 +2,7 @@
 import { ensureProviderModelInfo } from "../provider/list-models.mjs"
 import { modelInfoFor } from "../provider/model-info.mjs"
 import { providerSpec } from "../model-specs.mjs"
-import { applyPendingSessionEffort } from "../session-lifecycle.mjs"
+import { applyPendingSessionEffort } from "../session-effort.mjs"
 
 const effortBinding = (provider) => JSON.stringify([
   provider?.format, provider?.name, provider?.model, provider?.baseURL, provider?.auth,

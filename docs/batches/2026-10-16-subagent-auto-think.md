@@ -4,7 +4,7 @@
 
 让本地 ThinCoder 的 `gpt-6.1-sol` 子代理根据任务自动选档；主代理设置保持独立。仅扩展既有 Auto 分类与 spawn 配置，不实现 Ultra、不发布 npm 包。
 
-需求与设计权威：`docs/core/requirements/AGENT-LOOP.md` §4.19、`docs/core/design/AGENT-LOOP.md` §6.19、`docs/core/design/CONFIG.md` §6.5。
+需求与设计权威：`docs/core/requirements/AGENT-LOOP.md` §4.19、`docs/core/design/AGENT-LOOP.md` §6.19、`docs/core/design/CONFIG.md` §6.6。
 
 ## 受影响文件
 

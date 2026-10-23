@@ -200,12 +200,15 @@ export function parseImageRef(raw) {
   return { image: text, tag: "latest" }
 }
 
-/** 删除形（§3 KD-SV-95：`ref` = 镜像 id 或 `名:标签`——字符集 `[A-Za-z0-9][A-Za-z0-9._:/@-]*`，禁空白/`?`/`#`/`%`；含 `/`/`:` 故走请求体）。 */
+/** 删除形（§3 KD-SV-95：`ref` = 镜像 id 或 `名:标签`——字符集 `[A-Za-z0-9][A-Za-z0-9._:/@-]*`，禁空白/`?`/`#`/`%`；含 `/`/`:` 故走请求体）。
+ *  **段级边界（#1271）**：单点 `.`、`/`、`:` 许可（正常形零回归）；按 `/` 拆段含 `..` ⇒ 抛（`ref` 直入引擎删除路径——失败零外呼，路由转 400 人话）。
+ *  拉取径 `parseImageRef` 同族**未加固**（走 query 非 path——射程外）。 */
 export function normalizeImageRef(raw) {
   const text = typeof raw === "string" ? raw.trim() : ""
   if (text === "") throw new Error("镜像引用不可为空（ref = 镜像 id 或 名:标签）")
   if (text.length > IMAGE_REF_MAX) throw new Error(`镜像引用超长（≤ ${IMAGE_REF_MAX} 字符；实长 ${text.length}）`)
   if (!/^[A-Za-z0-9][A-Za-z0-9._:/@-]*$/.test(text)) throw new Error(`镜像引用形非法（禁空白 ∥ ? ∥ # ∥ % ∥ 首字符须字母/数字）：${text}`)
+  if (text.split("/").includes("..")) throw new Error(`镜像引用禁 .. 段（形 = 镜像 id 或 名:标签）：${text}`)
   return text
 }
 

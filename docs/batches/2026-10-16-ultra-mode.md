@@ -1,5 +1,7 @@
 # Astra Ultra 本地接入（2026-10-16）
 
+> 历史实施与验证记录。下文“中文权威面”描述当时布局；现行行为要求归 [AGENT-LOOP §6.20](../core/design/AGENT-LOOP.md#620-ultra-本地主动协作2026-10-16)，运行期正文唯一位于 `thincoder-core/prompts/ultra-mode.md`。
+
 用户要求 ThinCoder 支持 Astra Ultra，并说明此前为何只到 max。
 此前只接入普通 Responses 推理档位，账号目录中的 Ultra 被过滤。本批补齐本地主动委派语义，
 保留 ThinCoder 现有子代理工具与调度方式。

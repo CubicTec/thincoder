@@ -5,7 +5,7 @@
  *
  * 行形（单源 = `docs/desktop/design/PROJECT.md` §2 KD-66 ∥ `docs/desktop/design/UI.md` §1
  * 「本批注（设置面样式收正 · D37 · 2026-10-02）」项 2；值源 = VSC 实读
- * `thincoder-vscode/webview/settings-providers.js:178-193`）：
+ * `updateProviderStatus`）：
  *  ① **两行卡**（`[data-provider]` 行根纵排）：**主行**（`.settings-row-main`）= 名 + 钥面（masked ∥ 未设词）+
  *     当前标 + 动作簇（修改 ∥ ✕ 删钥 ∥ 校验 ∥ 移除名 —— 四件全保留、序恒定 = 现盘序）；**副行**（`.settings-row-sub`）
  *     = `baseURL`（2026-10-09 清除批：渠道条目不携模型——原 `模型 · baseURL` 两段式收为单段）+ 不可用标 + 行尾代理开关；**第三行**（条件）=
@@ -71,7 +71,7 @@ function subLineWord(row) {
 /** 副行节点：串（省略中段）+ 不可用标 + 行尾代理开关（编辑态由调用面抽去代理件；三段皆空 ⇒ 零节点）。
  *  **S3 分档（#673 · 2026-09-29 —— 消）**：`failure === "hostBusy"` ⇒ 状态词「宿主繁忙」（≠ 渠道故障词）+
  *  **抑制渠道故障句**（载体为宿主忙，不得渲渠道故障文案 —— 载具 = `data-failure` 机检锚 + 词键分档；
- *  判据同 VSC `webview/settings-providers.js:189 ∕ :192`；单源 = `docs/vsc/design/SETTINGS.md` §2.12 展示面分档）。 */
+ *  判据同 VSC `updateProviderStatus`；单源 = `docs/vsc/design/SETTINGS.md` §2.12 展示面分档）。 */
 function subRowNode(row, handlers, editing) {
   const unavailable = row?.available === false
   const hostBusy = unavailable && row?.failure === "hostBusy"

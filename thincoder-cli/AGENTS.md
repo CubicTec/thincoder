@@ -9,7 +9,8 @@ LLMs via OpenAI-compatible protocol, flagship models from DeepSeek / Kimi / GLM 
 
 **需求基线**：需求层 `docs/core/requirements/` + 设计层 `docs/core/design/`（需求档 = **主 agent 产物**；设计档 = **eng-designer 产物**——写稿权唯一；需求讨论/登记在会话面）+ 用户对话。需求与设计**分目录**（2026-09-10 文档重组批——规范见 `docs/README.md`）——存量需求内容仍在各设计档内，拆分按**新老划断**（碰到哪迁哪）；评审/开发时以两层文档 + 对话背景为参照。
 
-文档分两层：需求 `docs/core/requirements/`、设计+测试 `docs/core/design/`（规范与地图见 `docs/README.md`）。主流程：[`PHILOSOPHY.md`](../docs/core/requirements/PHILOSOPHY.md)（三观）→ prompts（`docs/core/design/prompts/` 人格/公共/纪律三层提示词中文正本——双面见下「提示词双面」条；项目方法论骨干已入纪律层槽位文件，无独立 METHODOLOGY 注入体）。其余文档按主题分粗类：架构与模块 / 评审与工程模式 / 多模型协作 / 上下文管理 / TUI 与客户端 / 需求与规划 / 参考分析。
+文档分两层：需求 `docs/core/requirements/`、设计+测试 `docs/core/design/`（规范与地图见 `docs/README.md`）。主流程：[`PHILOSOPHY.md`](../docs/core/requirements/PHILOSOPHY.md)（三观）→ 中文机制文档 → `thincoder-core/prompts/`（提示词唯一运行期副本，见下「提示词单源」条；项目方法论骨干已入纪律层槽位文件，无独立 METHODOLOGY 注入体）。
+其余文档按主题分粗类：架构与模块 / 评审与工程模式 / 多模型协作 / 上下文管理 / TUI 与客户端 / 需求与规划 / 参考分析。
 
 **逐档权威地图 = [`docs/README.md`](../docs/README.md)**（板块 → 文档映射 + 归档标注 + 归属规则）——AGENTS.md 不逐档裸列（2026-09-08 结构债批 5：曾 28 档裸名清单与 README 地图重复 = 双源漂移——8 档归档后悬空随删消解）——写/改文档前先查地图。
 
@@ -18,7 +19,7 @@ LLMs via OpenAI-compatible protocol, flagship models from DeepSeek / Kimi / GLM 
 - **Zero third-party npm runtime dependencies**: only `node:` standard library (storage via `node:sqlite`, TUI via bare ANSI) and the in-repo core `@thincoder/core` — the one declared dependency. For new features, first ask whether the standard library can do it; if not, raise for discussion.
 - No TypeScript, no build/bundling step.
 - Every change must be verified by running it — no "written but never run" code.
-- **提示词双面（2026-09-17 消端差收正）**：本产品提示词 = `docs/core/design/prompts/*.md`（仓根中文正本——**中文审核面**——内容权威）→ 翻译生成 `thincoder-core/prompts/*.md`（**英文运行面**——国外模型运行用；生成 = 翻译，不是 cp）。提示词面**无端差注入锚**（已全消——正文自足、文档地图统一 `docs/README.md`）；仅工具面 2 锚（bash/question 端差异）保留至工具面 review。
+- **提示词单源**：按 `docs/core/design/DOC-SYSTEM.md` P4 与 `PROMPT-SYSTEM.md` §8，提示词是产品代码，唯一副本为 `thincoder-core/prompts/*.md`；中文机制文档承载规则与理由，`docs/` 不另存提示词正文。规则变更先更新机制文档，再修改英文运行期正文。提示词面**无端差注入锚**（正文自足、文档地图统一 `docs/README.md`）；仅工具面 2 锚（bash/question 端差异）保留。
 - **改动面反查（工程工具约定）**：实施轮开工前跑本仓反查脚本 `scripts/doc-impact.mjs`（文档影响面；基准 = 上一批收口点）——其输出的设计/需求档建议一并录入本批「受影响文件」表。
 
 ## Key Conventions

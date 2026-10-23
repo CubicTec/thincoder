@@ -11,6 +11,9 @@ import { compressIfNeeded, compressFallback, COMPRESS_FAILURE_LIMIT } from "../c
 import { RESPONSES_HISTORY_BOUNDARY_ERROR } from "../responses-history-guard.mjs"
 import { CONTEXT_HISTORY_CHANGED } from "../context-rewrite.mjs"
 import { applyPendingContextPrune } from "../context-prune.mjs"
+// §6.17/D-CC32 溢出守卫（兜底，非主修）：预算面单源 requestBudget ∥ 再估面 contextUsage（与压缩判定同一函数）
+import { requestBudget } from "../config.mjs"
+import { contextUsage } from "../token-window.mjs"
 import { ensureAutoReminder, injectEngineeringReminder, ContinueError, snapshotGuard } from "./helpers.mjs"
 import { pushManifestStateReminder } from "./setup-reminders.mjs"
 import { cleanupConsultSessions } from "../agent-tools/consult.mjs"
@@ -88,6 +91,16 @@ export async function runCompactionCheck(agent, ctx) {
   // 其余全同（同 splitHistory / 同尾部预算 / 同摘要链 / 同回注 / 同基线失效）。
   const pending = agent._pendingCompact
   agent._pendingCompact = null
+  // 成功记账（§6.17：成功记账段抽局部——阈值面与守卫面共用同一段，零复制）
+  const bookkeepCompaction = () => {
+    agent._compressFailures = 0
+    agent._planReminderAtLen = 0 // After compression history shrinks, reset cadence so reminders resume
+    recentCallSigs.length = 0 // After compression history is rebuilt, reset stall detection counter
+    // Completion info (CONTEXT-COMPACTION §7 D-C2): { mode, tokensFreed, elapsedMs } —
+    // the TUI panel renders it; callers that ignore the arg keep prior onCompress semantics.
+    callbacks.onCompress?.(agent._lastCompressInfo ?? {})
+    ensureAutoReminder(agent)
+  }
   try {
     let compacted = await compressIfNeeded(
       agent, threshold, callbacks,
@@ -100,15 +113,7 @@ export async function runCompactionCheck(agent, ctx) {
       agent.history.push({ role: "user", content: compactNoopNote(), transient: true })
       compacted = await compressIfNeeded(agent, threshold, callbacks, compactionOverhead, signal)
     }
-    if (compacted) {
-      agent._compressFailures = 0
-      agent._planReminderAtLen = 0 // After compression history shrinks, reset cadence so reminders resume
-      recentCallSigs.length = 0 // After compression history is rebuilt, reset stall detection counter
-      // Completion info (CONTEXT-COMPACTION §7 D-C2): { mode, tokensFreed, elapsedMs } —
-      // the TUI panel renders it; callers that ignore the arg keep prior onCompress semantics.
-      callbacks.onCompress?.(agent._lastCompressInfo ?? {})
-      ensureAutoReminder(agent)
-    }
+    if (compacted) bookkeepCompaction()
   } catch (compressError) {
     if ([RESPONSES_HISTORY_BOUNDARY_ERROR, CONTEXT_HISTORY_CHANGED].includes(compressError?.code)) throw compressError
     // AbortError must not be swallowed: user cancellation must propagate
@@ -125,6 +130,35 @@ export async function runCompactionCheck(agent, ctx) {
     if (agent._compressFailures >= COMPRESS_FAILURE_LIMIT) {
       agent._compressFailures = 0
       if (compressFallback(agent)) callbacks.onCompress?.(agent._lastCompressInfo ?? {})
+    }
+  }
+
+  // 溢出守卫（CONTEXT-COMPACTION.md §6.17 / D-CC32——兜底，非主修；本缝 = catch 闭合后、返回前）。
+  // 判据 = maxTokensSource !== "absent" ∧ prompt 估算 > limit（limit = window − reserve，恒为数）。
+  // **判据不用 maxTokens**：未发时为 undefined ⇒ NaN ⇒ 守卫静默失效（§6.17）；absent 档客户端未预留
+  // ⇒ 守卫不覆盖（服务端 400 兜——把规格 maxOutput 当实发判会让 doubao 三行永久发不出去）。
+  // 真 ⇒ 以 force 强制压缩一次（先压再判）；再估仍超 ⇒ 抛三实数、回合请求零发。不截断、不静默削输出。
+  const budget = requestBudget(agent.provider)
+  if (budget.maxTokensSource !== "absent") {
+    let usage = contextUsage(agent, compactionOverhead)
+    if (usage.total > budget.limit) {
+      const compacted = await compressIfNeeded(
+        agent, threshold, callbacks, { ...compactionOverhead, force: true }, signal,
+      )
+      if (compacted) bookkeepCompaction()
+      usage = contextUsage(agent, compactionOverhead)
+      if (usage.total > budget.limit) {
+        const remedy = budget.limit < 0
+          ? `max_tokens ${budget.maxTokens} alone exceeds the window — lower provider.maxTokens or switch to a larger-window model`
+          : "reduce the conversation (/compact or prune) before retrying"
+        const overflow = new Error(
+          `context overflow: prompt ~${usage.total} tokens + max_tokens ${budget.maxTokens} > window ${budget.window}` +
+          ` (limit ${budget.limit}) — forced compaction ran but the prompt still exceeds the window; ${remedy}`,
+        )
+        overflow.kind = "context_overflow"
+        overflow.retryable = false
+        throw overflow
+      }
     }
   }
 }

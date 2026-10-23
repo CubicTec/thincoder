@@ -1,6 +1,6 @@
 /** A review owns ephemeral native Responses replay, independent of the main session. */
 import { createHash } from "node:crypto"
-import { responsesProfileBinding, responsesCredentialBinding } from "../provider/capabilities.mjs"
+import { responsesProfileBinding, responsesCredentialBinding } from "../provider/responses-binding.mjs"
 import { stripLocalMessageFields } from "../escape.mjs"
 
 const digest = (history) => createHash("sha256").update(JSON.stringify(stripLocalMessageFields(history))).digest("hex")

@@ -5,13 +5,15 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { chat, createProvider } from "../provider/core.mjs"
 import { listModelCatalog, listModels } from "../provider/list-models.mjs"
-import { resolveProviderAuth, _setAuthServiceForTest, getInferenceStatus, clearInferenceStatus } from "../provider/auth-context.mjs"
+import { resolveProviderAuth, _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 import { normalizeProviderAuth } from "../provider/auth-config.mjs"
 import { resolveProviderPlan } from "../model-ref.mjs"
 import { presetToEntry, PROVIDER_PRESETS } from "../config-presets.mjs"
 import { generateTitle } from "../generate-title.mjs"
 import { redactSecret } from "../log.mjs"
-import { attachResponsesSession, prepareResponsesContext, stageResponsesReplay, runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from "../responses-session.mjs"
+import { attachResponsesSession, runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from "../session-responses.mjs"
+import { prepareResponsesContext, stageResponsesReplay } from "../agent/responses-context.mjs"
 import { pushReal } from "../context-push.mjs"
 
 const originalFetch = globalThis.fetch
@@ -20,17 +22,16 @@ const roots = []
 const temp = () => { const dir = mkdtempSync(join(tmpdir(), "thincoder-responses-")); roots.push(dir); return dir }
 const mocks = () => {
   let acquired = 0, released = 0
-  _setAuthServiceForTest({ async getAuthContext(id, { signal }) {
+  const service = providerAuthStub({ async getAuthContext(id, { signal }) {
     acquired++
     return { profileId: id, accessToken: "synthetic-test-token", signal, release() { released++ } }
   } })
-  return { counts: () => ({ acquired, released }) }
+  _setAuthServiceForTest(service)
+  return { service, counts: () => ({ acquired, released }) }
 }
 afterEach(() => {
   globalThis.fetch = originalFetch
   _setAuthServiceForTest(null)
-  clearInferenceStatus("profile-a")
-  clearInferenceStatus("profile-b")
   for (const path of roots.splice(0)) rmSync(path, { recursive: true, force: true })
 })
 const json = (data) => new Response(JSON.stringify(data), { headers: { "content-type": "application/json" } })
@@ -114,7 +115,7 @@ test("API Responses title uses streaming Responses, never Chat Completions", asy
 })
 
 test("mocked two-turn function exchange persists native reasoning/phase across restart", async () => {
-  mocks()
+  const mock = mocks()
   const p = provider()
   const agent = { provider: p, history: [{ role: "user", content: "Read it" }] }
   const slot = join(temp(), "slot.json.1")
@@ -153,7 +154,7 @@ test("mocked two-turn function exchange persists native reasoning/phase across r
   assert.equal(bodies[1].input.find((i) => i.type === "reasoning").encrypted_content, "opaque-test")
   assert.equal(bodies[1].input.at(-1).type, "function_call_output")
   assert.equal(second.outputItems.at(-1).phase, "final_answer")
-  assert.equal(getInferenceStatus("profile-a").status, "completed")
+  assert.equal(mock.service.getInferenceStatus("profile-a").status, "completed")
   assert.ok(!readFileSync(`${slot}.responses.json`, "utf8").includes("synthetic-test-token"))
 })
 
@@ -202,13 +203,13 @@ test("OAuth diagnostic keys and callback parameters are redacted", () => {
 
 test("usage-limit admission awaits shared pause and catalog uses the same gate", async () => {
   let pauses = 0
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     if (pauses) throw Object.assign(new Error("Usage paused"), { code: "subscription_sharing_usage_limit_exceeded" })
     return { profileId, signal, accessToken: "synthetic-test-token", release() {} }
   }, async recordUsageLimit(profileId) {
     await Promise.resolve()
     assert.equal(profileId, "profile-a"); pauses++
-  } })
+  } }))
   globalThis.fetch = async () => new Response(JSON.stringify({ error: { code: "subscription_sharing_usage_limit_exceeded", message: "Limit" } }), { status: 429 })
   await assert.rejects(listModels(provider()), { code: "subscription_sharing_usage_limit_exceeded" })
   assert.equal(pauses, 1)
@@ -219,10 +220,10 @@ test("usage-limit admission awaits shared pause and catalog uses the same gate",
 
 test("failed shared usage pause remains locally blocked without leaking storage errors", async () => {
   let acquisitions = 0
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     acquisitions++
     return { profileId, signal, accessToken: "synthetic-test-token", release() {} }
-  }, async recordUsageLimit() { throw new Error("sensitive-storage-diagnostic") } })
+  }, async recordUsageLimit() { throw new Error("sensitive-storage-diagnostic") } }))
   globalThis.fetch = async () => new Response(JSON.stringify({ error: { code: "subscription_sharing_usage_limit_exceeded", message: "Limit" } }), { status: 429 })
   await assert.rejects(chat(provider(), { messages: [{ role: "user", content: "hi" }] }), error => {
     assert.equal(error.code, "subscription_sharing_usage_limit_exceeded")

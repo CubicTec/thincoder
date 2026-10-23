@@ -9,7 +9,7 @@ import { contextTool } from "../agent-tools/context.mjs"
 import { executeToolCalls } from "../agent/dispatch.mjs"
 import { recordToolResults } from "../agent/record-results.mjs"
 import { runCompactionCheck } from "../agent/run-stages.mjs"
-import { attachResponsesSession, runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from "../responses-session.mjs"
+import { attachResponsesSession, runResponsesToolTransaction, acknowledgeResponsesToolTransaction } from "../session-responses.mjs"
 
 const originalData = "x".repeat(12000)
 const call = (id, action) => ({ id, name: "context", arguments: JSON.stringify({ action }) })

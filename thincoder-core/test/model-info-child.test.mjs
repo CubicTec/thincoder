@@ -9,11 +9,13 @@ import { assembleAgent } from "../agent/assemble.mjs"
 import { refreshAgentModelInfo } from "../agent/model-info.mjs"
 import { ensureChildApiKey } from "../agent/spawn-child.mjs"
 import { buildSpawnChild } from "../agent-tools/subagent-spawn.mjs"
+import { PLAIN_TASK_BOOK_MIN } from "../agent-tools/spawn-gates.mjs"
 import { resolveChildProvider } from "../agent-tools/subagent-async.mjs"
 import { executeEscalateAction } from "../agent-tools/subagent-actions.mjs"
 import { consultStartTool } from "../agent-tools/consult.mjs"
 import { recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const originalFetch = globalThis.fetch
 const roots = []
@@ -27,7 +29,7 @@ const names = (agent) => agent.tools.map((tool) => tool.name)
 beforeEach(() => {
   _clearModelInfoForTest()
   globalThis.fetch = async () => { throw new Error("Child model tests must not use the network") }
-  _setAuthServiceForTest({ async getAuthContext() { throw new Error("Fresh fixtures must not acquire credentials") } })
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext() { throw new Error("Fresh fixtures must not acquire credentials") } }))
 })
 afterEach(() => {
   globalThis.fetch = originalFetch
@@ -59,7 +61,7 @@ async function parentFixture({ excluded = false, readonly = true } = {}) {
 
 function spawn(parent, role = "explore") {
   return buildSpawnChild(parent, { agent: parent, depth: 0, callbacks: {} },
-    { task: "Inspect the image fixture.", model: "vision-child" }, role, false, [], [], null).child
+    { ...PLAIN_TASK_BOOK_MIN, goal: "Inspect the image fixture.", model: "vision-child" }, role, false, [], [], null).child
 }
 
 test("createAgent retains its approved image candidate across capability changes", async () => {

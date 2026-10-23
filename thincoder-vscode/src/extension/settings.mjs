@@ -43,6 +43,7 @@ export function loadAgentSettings() {
     compactThreshold: a?.compactThreshold ?? null, // null = auto（本端面板显示口径）
     verifyGuard: a?.verifyGuard ?? d.verifyGuard,
     autoThink: a?.autoThink ?? d.autoThink,
+    injectProjectRules: a?.injectProjectRules ?? d.injectProjectRules, // #1465（§6.27）：① 项目指令注入独立键
     injectDocs: a?.injectDocs ?? d.injectDocs, // #1420：注入开关（默认 true——判据 `!== false`）
     injectMemories: a?.injectMemories ?? d.injectMemories,
     engineering: a?.engineering ?? d.engineering,
@@ -164,13 +165,12 @@ export function agentSettings(session) {
     compactThreshold: s.compactThreshold, // null = auto
     verifyGuard: s.verifyGuard,
     autoThink: s.autoThink, // #17：读链补环（loadAgentSettings 已载；此前 push 快照未携）
+    injectProjectRules: s.injectProjectRules, // #1465：读链补环（loadAgentSettings 已载）
     injectDocs: s.injectDocs, // #1420：读链补环（loadAgentSettings 已载）
     injectMemories: s.injectMemories,
     engineering: slotData?.engineering ?? s.engineering,
     consultTurns: s.consultTurns,
     consultTimeoutMs: s.consultTimeoutMs,
-    // MODEL-MERGE-SESSION：defaultModel 顶层键（新会话起点）——面板「默认模型」项读写
-    defaultModel: loadRaw().defaultModel ?? null,
     // Guard chain: slot value when the session ever set it (explicit false ≠ unset — an
     // explicit session OFF must not fall through to a config ON, see eng-session.test.mjs),
     // then the config flag coerced to boolean.
@@ -397,6 +397,7 @@ export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOve
   // Configuration changes (including another client's account selection) create
   // a new catalog generation. Empty/disabled configurations must clear old rows.
   const w = _probeWindow(panel, JSON.stringify(resolveProviders().providers))
+  // A configured account still needs its catalog when no default model is selected.
   const names = providerNames().filter((n) => s.providers[n]?.configured)
   /** 载荷装配 + 投递（首拍与重试成功拍共用——§2.12 ②）。 */
   const flush = () => {
@@ -420,9 +421,15 @@ export async function fullStatus(panel, workspaceState, pushSessionsFn, prefsOve
     pushSessionsFn?.()
   }
   if (w.models.size === 0) {
+    const prefs = prefsOverride ?? loadModelPrefs(workspaceState)
     _lastModelsPayload = []
-    panel?.webview.postMessage({ type: "models", models: [], prefs: prefsOverride ?? loadModelPrefs(workspaceState) })
+    // The empty generation is a real push too: keep the boot-echo guard in sync.
+    _lastPushedPrefs = typeof prefs?.provider === "string" && prefs.provider && typeof prefs?.model === "string" && prefs.model
+      ? `${prefs.provider}:${prefs.model}`
+      : null
+    panel?.webview.postMessage({ type: "models", models: [], prefs })
   }
+  if (names.length === 0) return
   await _probeBatch(w, names)
   flush()
   // 有界重试链 fire-and-forget（打开拍不得被子秒级重试拖住）；链内全兜底，绝不向外抛。

@@ -43,7 +43,7 @@ import { carrierField, getAsyncPool, tombstoneOf } from "./async-settle.mjs"
  *  大小写不敏感（todo.md/changelog.md 精确——路径任意层含 docs/、根、.thincoder/）——
  *  命中 → throw（fail-closed——先于调度器准入——无排队残留——错误即工具结果）；
  *  提示列出全部违规条目——英文模板逐字定稿（AGENT-LOOP-SUBAGENT.md §6.9「父侧文件拦截（R26）」）。
- *  M5 F6（2026-09-17）：黑名单随同迁入 spawn-gates.mjs（rejectEngineeringFilePaths——族 = ledger.db / CHANGELOG + scripts/**；老台账 md 族随 M2 退役）——本函数只留调用（错误文案逐字保留）。 */
+ *  M5 F6（2026-09-17——2026-10-15 口径随正）：黑名单随同迁入 spawn-gates.mjs（rejectEngineeringFilePaths——族 = 过程档（CHANGELOG）+ 工程工具面（`scripts/*`——层级锚定：仅仓根与直接子层；目录名在深层不携带 face 信息）；老台账 md 族随 M2 退役）——本函数只留调用（错误文案逐字保留）。 */
 export function normalizeFileList(files, cwd) {
   const out = []
   for (const f of Array.isArray(files) ? files : []) {
@@ -57,10 +57,10 @@ export function normalizeFileList(files, cwd) {
     }
     if (!out.includes(abs)) out.push(abs)
   }
-  // M5 F6（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2）：scripts/** + 过程档拦截——
+  // M5 F6（ENGINEERING-MODE-V2-MODULE-DELEGATION §2.2——2026-10-15 口径随正）：`scripts/*`（仅仓根/直接子层）+ 过程档拦截——
   // 谓词本体落 spawn-gates.mjs（rejectEngineeringFilePaths 收集全部违规 + 抛合并错误）；
   // 循环内目录声明先行（错误序不变——目录错误先于过程档错误）。父侧维护文件
-  // basename 族（ledger.db / CHANGELOG）随同迁入谓词——错误文案逐字保留。
+  // basename 族（CHANGELOG——`ledger.db` 随 M2 退役）随同迁入谓词——错误文案逐字保留。
   if (files !== undefined && files !== null) rejectEngineeringFilePaths(files)
   return out
 }

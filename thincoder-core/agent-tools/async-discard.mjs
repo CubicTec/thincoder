@@ -24,12 +24,12 @@
  *
  * 判据口径（D-AD6）：两接线点**均不传 `ctx`** ⇒ 实走 controller 支（`parentAborted(null, entry)`）
  * ——与对侧有效判据同判（对侧传入的 `ctx` 为死参）；`ctx` 保留为签名备用面（直调用例 / 对侧收敛）。
- * 「controller 已中止 = 条目真死」由 `bindChildController` 单点保证（`async-settle.mjs:88-98`
+ * 「controller 已中止 = 条目真死」由 `bindChildController` 单点保证（`async-settle.mjs` 的 `bindChildController`
  * 双路：基信号已中止 ⇒ 立即 abort；未来中止 ⇒ 带活监听逐链传播；interrupt 不逐链）。
  *
  * 动作序（§6.20.3）：每条目 = 写 `discarded` 墓碑（**载体吸收单点** `writeTombstone`——父对象无
  * 自有 `_asyncTombstones` 而 `history` 有 ⇒ 借用同一 Map，不另建分叉）→ 出池 → 队列剔除（存活
- * 条目 `position` 重编号——与 cancel 出队 `subagent-async.mjs:190` 同式；ED-4 后 advisor 族
+ * 条目 `position` 重编号——与 cancel 出队 `subagent-async.mjs` 的 `cancelAsyncSubagent` 同式；ED-4 后 advisor 族
  * 同样剔除其独立队列 `_asyncAdvisorQueue`）→ 汇总；整批（有丢弃才发生）= **一次** `pushReal`
  * 模型可见提醒（user 角色——escapeXml 转义插值）+ **一条** `ev:discarded`（零丢弃 ⇒ 零注入、
  * 零事件）。
@@ -50,7 +50,7 @@ import { killBgTree } from "./bash-async.mjs"
 // 批 ssh-session：SSH 会话族杀单点经 `ssh-session.mjs` 落面。
 import { killSshTree } from "./ssh-session.mjs"
 
-/** 提醒模板（verbatim 同源 = 对侧 `async-discard.mjs:37-44`；测试断关键子串，不逐行断）。 */
+/** 提醒模板（verbatim 同源 = 对侧实现；测试断关键子串，不逐行断）。 */
 const subagentReminderText = (n, list) =>
   `[System reminder: ${n} background subagent(s) were discarded by the user's Stop — their reports will NOT arrive: ${list}. ` +
   "Partial changes from discarded children stay unmerged/unaudited; re-spawn if the work is still needed.]"
@@ -132,7 +132,7 @@ function discardRole(parent, spec, ctx) {
   return out
 }
 
-/** subagent 族 spec（对侧 `:90-96` 同形；队列剔除 = 本族 `_asyncQueue`——queueKey 参数化面）。 */
+/** subagent 族 spec（对侧实现同形；队列剔除 = 本族 `_asyncQueue`——queueKey 参数化面）。 */
 const SUBAGENT_SPEC = {
   pool: "subagent",
   describe: (entry) => ({ id: entry.id, role: entry.role, wasStatus: entry.status === "queued" ? "queued" : "running" }),
@@ -142,7 +142,7 @@ const SUBAGENT_SPEC = {
   pruneQueue: (parent, ids) => pruneQueue(parent, ids, "_asyncQueue"),
 }
 
-/** 评审族 spec（对侧 `:99-105` 同形；ED-4 后含排队面：wasStatus 读条目 status——queued →
+/** 评审族 spec（对侧实现同形；ED-4 后含排队面：wasStatus 读条目 status——queued →
  *  "(was queued — never started)"；队列剔除 = 评审独立队列 `_asyncAdvisorQueue`）。 */
 const ADVISOR_SPEC = {
   pool: "advisor",

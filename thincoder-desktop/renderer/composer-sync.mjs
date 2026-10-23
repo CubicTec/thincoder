@@ -109,9 +109,9 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     return { tag: "div", props: { class: "composer-notice", "data-notice": "provider-fallback" }, children: [word] }
   }
 
-  /** 候选行投影（全渠扇出行 `{ provider, id, effortEnum, thinkOff }` ⇒ 核件面形 —— VSC `provider-probe-window.mjs:64-67`
+  /** 候选行投影（全渠扇出行 `{ provider, id, effortEnum, thinkOff }` ⇒ 核件面形 —— VSC `provider-probe-window.mjs`
    *  同形）：`reasoning` 值域 = 端两判据（§2.2 A9）—— `thinkOff` 真 ⇒ 首项 `none`（核件「关闭」档），余项 =
-   *  `effortEnum` 去空去重；`effortDefault` 端无读数 ⇒ 键缺席（核件中性档显示「—」，禁假造）；`id` 缺 ⇒ `null`（弃项）。 */
+   *  `effortEnum` 去空去重；`effortDefault` 仅透传在册默认档，缺省则键缺席；`id` 缺 ⇒ `null`（弃项）。 */
   function modelRowOf(row, provider) {
     const levels = []
     if (row?.thinkOff === true) levels.push(REASONING_NONE)
@@ -121,7 +121,8 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
     }
     const id = typeof row?.id === "string" ? row.id : ""
     if (id === "") return null
-    return { id, label: row.label || id, provider, group: provider, reasoning: levels }
+    return { id, label: row.label || id, provider, group: provider, reasoning: levels,
+      ...(levels.includes(row.effortDefault) ? { effortDefault: row.effortDefault } : {}) }
   }
 
   /** 现值供给（核件 `models` 推送的 `prefs` 件）：端会话元 `{ provider, model, effort }` ⇒ 核件形 `{ model, provider,
@@ -143,7 +144,7 @@ export function createComposerSync({ store, activeKey, call, push, pushSubs, wir
   const state = {
     /** 忙态（P23 判据单源 = `views/chrome.mjs` `busyOf`）+ **挂起窗**（收正轮 · ③）：位标含 `running` ⇒ `running`；
      *  本键挂起窗活跃（`ev:susp` 置位标）⇒ `susp`；余 ⇒ `idle`。核件忙态门谓词 = 非 `idle` ⇒ `susp` 期两信息钮禁用
-     *  （防旧快照覆写 —— VSC `chat-panel.mjs:55-59` `_turnState` 三值同域；`loading.js` 两钮显隐仍只认 `running`）。 */
+     *  （防旧快照覆写 —— VSC `ChatPanel` `_turnState` 三值同域；`loading.js` 两钮显隐仍只认 `running`）。 */
     turnState: () => {
       const held = store.get()
       const key = held?.activeSession ?? null

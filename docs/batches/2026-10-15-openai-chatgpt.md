@@ -71,7 +71,7 @@ GitHub 创建提交重写了元数据/ID，但最终 tree 与本地一致；没�
 行数报告仍有既有漂移；新增模块对旧模块行数也有报告差异，不伪称已经清掉仓库文档债。
 仓库文档要求的 scripts/doc-impact.mjs 在基线不存在（MODULE_NOT_FOUND），因此按调用图与 git diff 反查影响面。
 
-宽历史集复现：
+历史复现命令（对应 2026-10-15 基线；这些批次测试已随上游清理退役，不作为当前入口）：
 
 ```sh
 node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
@@ -82,6 +82,10 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 宽集执行前手动补齐 server 的本地 core/render-core symlink（现有 dev-link 仅覆盖三个本地客户端）。
 此批不扩大为修复所有退休批次测试。已更新受本功能直接影响的预设数量、env consumer、format 文案与异步 providerList 断言。
 
+上游同步后，当前 ChatGPT 回归入口为 `thincoder-core/test/chatgpt-*.test.mjs`、
+`thincoder-cli/test/integration/chatgpt-auth.test.mjs` 与 `thincoder-desktop/test/integration/chatgpt-*.test.mjs`；
+桌面槽恢复准入由 `chatgpt-session-restore.test.mjs` 的真实宿主流程覆盖。旧批次测试不在当前 runner 清单中。
+
 ## 5. 未执行与发布门
 
 真实 ChatGPT 资格/scope/推理/刷新、三端真实 GUI、Windows ACL 实机、VSIX、Electron 平台安装包、core Node22 最低版本均未验收。
@@ -90,7 +94,7 @@ node --test docs/batches/*provider*.test.mjs docs/batches/*responses*.test.mjs \
 
 ## 6. 受影响文件
 
-以下由实际 diff 生成，按提交映射可还原每个 PR 的范围。
+以下为本批历史 diff 清单，按提交映射可还原每个 PR 的范围；其中三个旧批次测试已随上游清理退役。
 - `docs/README.md`
 - `docs/RELEASE.md`
 - `docs/TODO.md`

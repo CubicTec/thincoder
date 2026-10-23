@@ -7,7 +7,7 @@
  *  - `projectDictionary(locale)` = **VSC 字典投影**：核常量 → VSC `locales/*.json` 的扁平
  *    字典形态（VSC 的 `i18n.mjs` `t()` 壳在 S2 接线时并入本投影，壳内零文案）。
  *
- * 契约（CORE-UNIFICATION §2.12.2 第 12 行 · 输出文案类）：**机器消费面冻结**——本表键值
+ * 契约（CORE-UNIFICATION §2.12.2「输出文案类」）：**机器消费面冻结**——本表键值
  * 与现 VSC `locales/{en,zh}.json` 逐字一致（已锁定串不得改）；人读文案后续变更须登记 +
  * CHANGELOG（S2 落地物）。`${name}` = 插值占位（两端同约定）。
  *
@@ -60,6 +60,11 @@ export const CORE_MESSAGES = Object.freeze({
   "sub.cancelled": { en: "cancelled", zh: "已取消" },
   "sub.awaitingDigest": { en: "done · awaiting digestion", zh: "已完成 · 等待消化" },
   "sub.queueSlot": { en: "queued · position ${n} (slot full)", zh: "排队中 · 位置 ${n}（槽满等位）" },
+  // #1507 补四键（核字典缺键——值形与宿主同形：desktop `renderer/i18n.mjs:197-200` ∥ VSC `locales/{en,zh}.json`）
+  "sub.async": { en: "async", zh: "异步" },
+  "sub.sync": { en: "sync", zh: "同步" },
+  "sub.waiting": { en: "waiting", zh: "等待中" },
+  "sub.awaitingApproval": { en: "Awaiting approval: ${tool}", zh: "等待审批: ${tool}" },
   // ── 会诊状态词 ──
   "consult.answered": { en: "answered", zh: "已回复" },
   "consult.terminated": { en: "terminated", zh: "已终止" },
@@ -84,6 +89,8 @@ export const CORE_MESSAGES = Object.freeze({
   "ssh.field.user": { en: "Username", zh: "用户名" },
   "ssh.field.password": { en: "Password", zh: "密码" },
   "ssh.field.secret": { en: "Secret", zh: "密文" },
+  // 保存面（用户裁定 A+B · 台账 #1602 · §6.22 ⑪）：窗内勾选标签（三端 `ssh.field.<name>` 投影自动命中）
+  "ssh.field.save": { en: "Save credential (encrypted, this user account)", zh: "保存凭据（加密，本机用户账户）" },
   // 无 UI 失败句（E6；三端投影单源）：en 侧 = CLI 端 `SECRET_NO_UI_TEXT` 逐字（端常量收正为核键）。
   "ssh.no_ui": { en: "ssh credential input requires an interactive UI (none in this context) - use key-based auth or ssh-agent", zh: "ssh 凭据输入需要交互界面（当前场合没有）——请改用密钥认证或 ssh-agent" },
 })

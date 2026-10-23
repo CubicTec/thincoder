@@ -16,6 +16,7 @@ import { summarizeRunExplorations } from "../explore-distill.mjs"
 import { buildBody } from "../provider/responses-request.mjs"
 import { recordModelCatalog, _clearModelInfoForTest } from "../provider/model-info.mjs"
 import { _setAuthServiceForTest } from "../provider/auth-context.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const originalFetch = globalThis.fetch
 const roots = []
@@ -25,9 +26,9 @@ const imagePart = { type: "image_url", image_url: { url: "data:image/png;base64,
 beforeEach(() => {
   _clearModelInfoForTest()
   globalThis.fetch = async () => { throw new Error("Runtime specification tests must not use the network") }
-  _setAuthServiceForTest({ async getAuthContext() {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext() {
     throw new Error("Fresh catalog fixtures must not acquire credentials")
-  } })
+  } }))
 })
 
 afterEach(() => {
@@ -64,7 +65,7 @@ test("prepareRun follows catalog window changes without mutating config shared b
   const p = provider()
   const childProvider = { ...p, model: "account-child-fixture" }
   const sharedConfig = Object.freeze({ agent: Object.freeze({
-    compactThreshold: 12_000, compactThresholdAuto: true, injectDocs: false, injectMemories: false,
+    compactThresholdResolved: 12_000, compactThresholdAuto: true, injectDocs: false, injectMemories: false,
   }) })
   const parent = agentFor(p, sharedConfig)
   const child = agentFor(childProvider, sharedConfig)
@@ -72,17 +73,19 @@ test("prepareRun follows catalog window changes without mutating config shared b
     [p.model]: { context: 128_000 },
     [childProvider.model]: { context: 96_000 },
   })
-  // The output reservation for these unknown models is the conservative 32K default.
-  assert.equal((await prepare(parent)).threshold, 57_600)
+  // The 32K output reservation bounds the first/child windows; the enlarged
+  // parent window reaches the 80% ratio instead. The loaded estimate stays untouched.
+  assert.equal((await prepare(parent)).threshold, 96_000)
 
   catalog(p, {
     [p.model]: { context: 256_000 },
     [childProvider.model]: { context: 96_000 },
   })
-  assert.equal((await prepare(parent)).threshold, 134_400)
-  assert.equal((await prepare(child)).threshold, 38_400)
+  assert.equal((await prepare(parent)).threshold, 204_800)
+  assert.equal((await prepare(child)).threshold, 64_000)
   assert.equal(parent.config, child.config)
-  assert.equal(sharedConfig.agent.compactThreshold, 12_000)
+  assert.equal(sharedConfig.agent.compactThreshold, undefined)
+  assert.equal(sharedConfig.agent.compactThresholdResolved, 12_000)
   assert.equal(sharedConfig.agent.compactThresholdAuto, true)
 })
 
@@ -211,10 +214,10 @@ test("internal compaction and exploration summaries preserve the account effort 
   } })
   const bodies = []
   let releases = 0
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     assert.equal(profileId, p.auth.credentialRef)
     return { profileId, signal, accessToken: "fixture-token-only", release() { releases++ } }
-  } })
+  } }))
   globalThis.fetch = async (url, options) => {
     assert.equal(url, "https://api.openai.com/v1/responses")
     assert.equal(options.headers.Authorization, "Bearer fixture-token-only")

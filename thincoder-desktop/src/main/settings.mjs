@@ -14,7 +14,7 @@ import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs
  * = `settings-env.mjs`；tools 族（embedding ∕ websearch key 读写）= `settings-tools.mjs`。
  *
  * 纪律（批档 §2.3/§2.5）：
- * - **写面唯一执行体** = 核 `writeConfigAtomic`（`thincoder-core/config-io.mjs:59`，
+ * - **写面唯一执行体** = 核 `writeConfigAtomic`（
  *   内含 mtime 冲突护栏 → 回执 `{ ok:false, reason:"mtime-conflict" }` + `.bak-{ts}`）；
  *   端侧**零自写盘**（不 fs.writeFile）。
  * - **畸形档不吞**：核 `loadRaw` 抛 ⇒ 本档零 catch ⇒ invoke 拒绝直传（渲染面落 error 档）。
@@ -22,15 +22,15 @@ import { hasProviderCredentials } from "@thincoder/core/provider/auth-config.mjs
  *   （`isSensitiveKey` / `_checkKnownKeyValue`），端侧不另立白名单、不另立类型副本。
  * - `settings:agent` **不经 agent 工具**（主进程直读写配置——批档 §2.3 写面条款）。
  * - **端侧零族别自判**（`docs/desktop/design/PROJECT.md` §2 KD-18）：`model:list` 逐项
- *   `{ id, effortEnum, thinkOff }` 两判据直取核**导出面**（`specForModel` / `thinkOffPath`）——
+ *   档位与默认值直取核**导出面**（`providerSpec` / `thinkOffPath`）——
  *   端侧零解析模型名、零族别表副本。
  */
 import { loadConfig } from "@thincoder/core/config.mjs"
 import { _configPath, resolveProviders, writeConfigAtomic } from "@thincoder/core/config-io.mjs"
 import { SUPPORTED_LOCALES, normalizeLocale, projectDictionary } from "@thincoder/core/i18n.mjs"
-import { channelUnavailableMessage, probeChannelModels, listModelCatalog } from "@thincoder/core/provider/list-models.mjs"
+import { channelUnavailableMessage, probeChannelModels } from "@thincoder/core/provider/list-models.mjs"
 import { probeTargetOf } from "@thincoder/core/provider-flows.mjs"
-import { specForModel } from "@thincoder/core/model-specs.mjs"
+import { specForModel, providerSpec } from "@thincoder/core/model-specs.mjs"
 import { thinkOffPath, applyAdvisorEffort } from "@thincoder/core/think-off.mjs"
 import { _checkKnownKeyValue } from "@thincoder/core/agent-tools/settings.mjs"
 import { readIndexCounts } from "./index-status.mjs"
@@ -88,32 +88,25 @@ export function modelsFace(config) {
 }
 
 /**
- * 逐模型档位投影（`docs/desktop/design/PROJECT.md` §2 KD-18 端侧零族别自判）：`{ id, effortEnum,
- * thinkOff }` 三键闭集逐项——两判据单源 = 核 `specForModel(id).reasoningEffortEnum`
- * （`thincoder-core/model-specs.mjs:287`）与 `thinkOffPath(spec)`（`thincoder-core/think-off.mjs:22`）。
+ * 逐模型档位投影（`docs/desktop/design/PROJECT.md` §2 KD-18 端侧零族别自判）：
+ * 判据单源 = 核 `providerSpec`（当前账户目录 + 静态规格）与 `thinkOffPath`。
+ * 目录提供默认档时透传 `effortDefault`，缺省时不造端侧默认值。
  * 未声明枚举 ⇒ `[]`（键恒在，渲染面免守卫——先例 = VSC 空枚举零渲染）；未登记模型 ⇒ 空枚举 +
  * 默认规格判据（核 `DEFAULT_SPEC` 非 effort 族 ⇒ off 可达）。
  */
-const modelEntry = (id) => {
-  const spec = specForModel(id)
-  return { id, effortEnum: spec.reasoningEffortEnum ?? [], thinkOff: thinkOffPath(spec) }
+const modelEntry = (id, provider) => {
+  const spec = providerSpec({ ...provider, model: id })
+  return { id, effortEnum: spec.reasoningEffortEnum ?? [], thinkOff: thinkOffPath(spec),
+    ...(spec.defaultReasoningEffort ? { effortDefault: spec.defaultReasoningEffort } : {}) }
 }
 
 /** 渠条目持密钥判据（全渠扇出前的**渠滤**单点）—— 对位 VSC `isProviderConfigured` 的 `resolveKey` 口径
- *  （`presets.mjs:97-99`：key **非空白**）；纯空白 key 边缘档与 `provider:list` 行面 `hasKey`（`length > 0`）
+ *  （key **非空白**）；纯空白 key 边缘档与 `provider:list` 行面 `hasKey`（`length > 0`）
  *  不同判 —— 本批渠滤以 VSC 对位为准。 */
 const hasKeyOf = hasProviderCredentials
 
-async function probeCatalog(provider) {
-  if (provider.auth?.type !== "chatgpt_oauth") return probeChannelModels(provider.name, probeTargetOf(provider))
-  try {
-    const catalog = await listModelCatalog(probeTargetOf(provider))
-    return { ok: true, models: catalog.map((m) => m.id), labels: Object.fromEntries(catalog.map((m) => [m.id, m.displayName])) }
-  } catch (error) { return { ok: false, error: error.message } }
-}
-
 /**
- * `model:catalog`（无载荷）⇒ `{ ok:true, models:[{ provider, id, effortEnum, thinkOff }], unavailable:[{ provider, reason }] }`
+ * `model:catalog`（无载荷）⇒ `{ ok:true, models:[{ provider, id, label, effortEnum, thinkOff, effortDefault? }], unavailable:[{ provider, reason }] }`
  * —— **全渠扇出**（模型菜单全渠扇出批）：逐 `hasKey` 渠（配置序）`Promise.allSettled` 并发探一次
  * `GET /models`（核单源 `probeChannelModels` + `probeTargetOf` —— 代理 ∕ 落账同径），逐模型经 `modelEntry`
  * 投影 + 渠名注入。失败渠 ⇒ **零行** + `unavailable` 项（`reason` = 核 `channelUnavailableMessage`
@@ -124,7 +117,7 @@ async function probeCatalog(provider) {
 export async function modelCatalog() {
   const configured = resolveProviders().providers.filter((p) => hasKeyOf(p))
   const settled = await Promise.allSettled(
-    configured.map((entry) => probeCatalog(entry)),
+    configured.map((entry) => probeChannelModels(entry.name, probeTargetOf(entry))),
   )
   const models = []
   const unavailable = []
@@ -133,7 +126,8 @@ export async function modelCatalog() {
     // 探针语义 = 绝不抛出（核单源）；rejected 只可能来自注入缝 —— 仍落诊断项，不假成功。
     const result = outcome.status === "fulfilled" ? outcome.value : { ok: false, error: channelUnavailableMessage(outcome.reason) }
     if (result?.ok === true) {
-      for (const id of Array.isArray(result.models) ? result.models : []) models.push({ provider: entry.name, ...modelEntry(id), label: result.labels?.[id] || id })
+      const labels = new Map((result.catalog ?? []).map((m) => [m.id, m.displayName]))
+      for (const id of Array.isArray(result.models) ? result.models : []) models.push({ provider: entry.name, ...modelEntry(id, entry), label: labels.get(id) || id })
     } else {
       unavailable.push({ provider: entry.name, reason: result?.error, retryable: entry.auth?.type !== "chatgpt_oauth" })
     }
@@ -145,9 +139,9 @@ export async function modelCatalog() {
 
 /**
  * `model:list(payload)` ⇒ `{ ok, models }` ∥ `{ ok:false, models:[], reason }`——`payload.provider`
- * = provider **名**；`models` = 该渠探针结果逐项经 `modelEntry` 投影为 `{ id, effortEnum, thinkOff }`
+ * = provider **名**；`models` = 该渠探针结果逐项经 `modelEntry` 投影，账户默认档以可选 `effortDefault` 透传。
  * （候选面 = 元素形；渲染面零自判）。**探针径对齐**（全渠扇出批 · U1）：核 `probeChannelModels` +
- * `probeTargetOf` —— 与 `model:catalog` 单源同径（过代理 ∕ 落账），**回执行逐字零变**。
+ * `probeTargetOf` —— 与 `model:catalog` 单源同径（过代理 ∕ 落账）。
  * 失败 reason = 探针回携的核 `channelUnavailableMessage` 长句（状态码 / 错误摘要的中文直传）；
  * 渠道不存在（无该 provider）⇒ 同面构造错误后直传（端侧零自写文案分支以外的话术）。
  */
@@ -157,9 +151,10 @@ export async function modelList(payload) {
   if (!provider) {
     return { ok: false, models: [], reason: channelUnavailableMessage(new Error(`provider not found: ${name}`)) }
   }
-  const probe = await probeCatalog(provider)
+  const probe = await probeChannelModels(provider.name, probeTargetOf(provider))
   if (probe.ok !== true) return { ok: false, models: [], reason: probe.error }
-  return { ok: true, models: (Array.isArray(probe.models) ? probe.models : []).map((id) => ({ ...modelEntry(id), label: probe.labels?.[id] || id })) }
+  const labels = new Map((probe.catalog ?? []).map((m) => [m.id, m.displayName]))
+  return { ok: true, models: (Array.isArray(probe.models) ? probe.models : []).map((id) => ({ ...modelEntry(id, provider), label: labels.get(id) || id })) }
 }
 
 /** **S11**：advisor 推理档写键（三态写语义经核 `applyAdvisorEffort`——本档只做 spec 解引用）。 */
@@ -167,7 +162,7 @@ const ADVISOR_EFFORT_PATH = "agent.advisor.reasoningEffort"
 
 /** advisor 推理档的 spec 取形模型（S11 收正 · 顾问评审 🟡2）：与渲染面候选面同源同序——
  *  `advisor.model` ⇒ 该值；再缺 ⇒ `defaultModel` 模型段（父解析模型单档）；无 ⇒ `""`。
- *  对位核运行期 `resolveAdvisorProvider`（`thincoder-core/advisor/run.mjs:26-56`：cfg.model > 父解析模型单档
+ *  对位核运行期 `resolveAdvisorProvider`（cfg.model > 父解析模型单档
  *  —— **2026-10-09 清除批**：原「渠道 model」分支随渠道单值模型退场，链上该分支删）
  *  —— 判据 = 写后投影恒等 ∕ 族别 off 形真有效（旧式 `advisor.model ?? ""` 在无覆写时落 DEFAULT_SPEC ⇒
  *  effort 族主模型下写 `{type:"disabled"}` ⇒ 核档自注「关思考静默失效」）。 */
@@ -182,7 +177,7 @@ function advisorSpecModel(disk) {
 /**
  * `index:status`（无入参）⇒ `{ ok, status }`（R2 · 桌面功能对位批）：状态读数**装配** —— 计数 = 核只读
  * 出口（转口 `index-status.mjs`，**端侧零 SQL ∕ 零表名**）；`hasEmbedder` = 配置面判据（`embedding.apiKey`
- * 在场 —— 同 `thincoder-core/agent/assemble.mjs:76` 装配判据）；`built` = 本项目 code + doc 文件数 > 0（核出口 `indexed`
+ * 在场 —— 同 `assembleAgent` 装配判据）；`built` = 本项目 code + doc 文件数 > 0（核出口 `indexed`
  * 同源）。**P1 两键（KD-69）**：`dbBytes` ∥ `origins` 随 `counts` 透传（设置面两读行消费）。
  * 无本项目 ⇒ 零计数（读数仍成回执 —— 「未建」态非错误；跨项目读全库不授权）。
  */
@@ -200,7 +195,7 @@ export function indexStatus({ dir = null } = {}) {
 }
 
 /**
- * defaultModel 写后探（S3 · M9 同律 —— 先例 = VSC `settings-panel-write.mjs:186` → `:43-57`）：复合串
+ * defaultModel 写后探（S3 · M9 同律 —— 先例 = VSC `saveShellSettingsFromPanel` → `vscPersistRaw`）：复合串
  * provider 段 ⇒ 对彼渠 fire-and-forget 探一次（探针绝不阻断写面）。**动态解引用**（`providers.mjs` 反向取
  * 本档值面 ⇒ 静态 import 成环；沿 `settings-env.mjs` 转口先例）；空串 ∕ 无模型段 ⇒ 零探。
  * 该点与另两径（加渠道 ∕ 改钥）同探（`probeAfterWrite` —— 核落账 `admissionOf` 供行面读数）。

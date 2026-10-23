@@ -5,7 +5,8 @@ import { chat } from '../provider/responses.mjs'
 import { chat as providerChat } from '../provider/core.mjs'
 import { buildBody } from '../provider/responses-request.mjs'
 import { parseStream } from '../provider/responses-stream.mjs'
-import { stageResponsesReplay, commitResponsesReplay, prepareResponsesContext } from '../responses-session.mjs'
+import { commitResponsesReplay } from '../session-responses.mjs'
+import { stageResponsesReplay, prepareResponsesContext } from '../agent/responses-context.mjs'
 
 const originalFetch = globalThis.fetch
 afterEach(() => { globalThis.fetch = originalFetch })
@@ -129,13 +130,15 @@ test('an interrupt raised by terminal-only text prevents completed tool release'
 })
 
 test('same-tick account changes cannot split request credentials from inference attribution', async () => {
-  const { _setAuthServiceForTest, clearInferenceStatus, getInferenceStatus } = await import('../provider/auth-context.mjs')
+  const { _setAuthServiceForTest } = await import('../provider/auth-context.mjs')
+  const { providerAuthStub } = await import('./fixtures/provider-auth.mjs')
   const used = [], paused = []
   const p = { ...provider(), apiKey: undefined, auth: { type: 'chatgpt_oauth', enabled: true, credentialRef: 'race-account-old' } }
-  _setAuthServiceForTest({
+  const service = providerAuthStub({
     async getAuthContext(profileId, { signal }) { used.push(profileId); return { profileId, accessToken: 'fixture-only', signal, release() {} } },
     async recordUsageLimit(profileId) { paused.push(profileId) },
   })
+  _setAuthServiceForTest(service)
   globalThis.fetch = async () => new Response(JSON.stringify({ error: { code: 'subscription_sharing_usage_limit_exceeded', message: 'Fixture limit' } }), { status: 429 })
   try {
     const pending = providerChat(p, { messages: user, tools, logCtx: { traces: false } })
@@ -143,11 +146,10 @@ test('same-tick account changes cannot split request credentials from inference 
     await assert.rejects(pending, { code: 'subscription_sharing_usage_limit_exceeded' })
     assert.deepEqual(used, ['race-account-old'])
     assert.deepEqual(paused, ['race-account-old'])
-    assert.equal(getInferenceStatus('race-account-old').status, 'usage_limited')
-    assert.equal(getInferenceStatus('race-account-new'), null)
+    assert.equal(service.getInferenceStatus('race-account-old').status, 'usage_limited')
+    assert.equal(service.getInferenceStatus('race-account-new'), null)
   } finally {
     _setAuthServiceForTest(null)
-    clearInferenceStatus('race-account-old'); clearInferenceStatus('race-account-new')
   }
 })
 

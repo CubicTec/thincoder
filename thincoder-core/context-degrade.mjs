@@ -7,7 +7,7 @@
  */
 import { collectStaleToolOutputs } from "./token-window.mjs"
 import { assertResponsesHistoryBoundary } from "./responses-history-guard.mjs"
-import { checkpointResponsesHistory, persistResponsesSession } from "./responses-session.mjs"
+import { checkpointResponsesHistory, persistResponsesSession } from "./session-responses.mjs"
 
 /** prune stub 逐字（§6.16.3）：只给「已清理 + 原长度 + 重跑路径」——prune 是**删**不是摘要，不声称可复原。 */
 const pruneStub = (chars) => `[pruned: stale tool output dropped (${chars} chars) — re-run the tool if you need it again.]`

@@ -1,11 +1,11 @@
 /** Explicit local ↔ wire function identity table. Never infer identity by splitting dots. */
 import { createHash } from "node:crypto"
 import { ProviderError } from "./errors.mjs"
-import { isChatGPTProvider } from "./capabilities.mjs"
+import { isChatGptProvider } from "./auth-config.mjs"
 
 export function wireFunctionIdentity(provider, local) {
   const name = /^[a-zA-Z0-9_-]{1,64}$/.test(local) ? local : `fn_${createHash("sha256").update(String(local)).digest("hex").slice(0, 32)}`
-  return { name, ...(isChatGPTProvider(provider) ? { namespace: "thincoder" } : {}) }
+  return { name, ...(isChatGptProvider(provider) ? { namespace: "thincoder" } : {}) }
 }
 
 function validateStrictSchema(schema, provider, path = "parameters") {
@@ -23,7 +23,7 @@ function validateStrictSchema(schema, provider, path = "parameters") {
 }
 
 export function buildResponsesTools(provider, tools = []) {
-  const namespace = isChatGPTProvider(provider) ? "thincoder" : null
+  const namespace = isChatGptProvider(provider) ? "thincoder" : null
   const byLocal = new Map()
   const byWire = new Map()
   const definitions = []

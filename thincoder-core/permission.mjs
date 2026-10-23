@@ -14,6 +14,7 @@
  */
 import { createInterface } from "node:readline"
 import { lastPageUrl } from "./browser/session.mjs"
+import { composeTaskBookBrief } from "./agent-tools/spawn-gates.mjs"
 
 /** CLI tool arg summary (truncated long JSON) */
 export function summarize(toolArgs) {
@@ -34,7 +35,7 @@ export function formatPermission(name, args) {
     return `${args.path}\n${oldLines}\n  ↓\n${newLines}`
   }
   if (base === "delete") return `${args.path}${args.force ? "（force：跟踪文件也删）" : ""}`
-  if (base === "subagent") return cap(args.task ?? "", 500)
+  if (base === "subagent") return cap(composeTaskBookBrief(args, args.role) || args.task || "", 500)
   if (base === "memory") {
     // §6 action-routed preview: put shows content, batch delete/clear show the gate args
     const action = String(args.action ?? "")
@@ -86,6 +87,11 @@ export function formatPermission(name, args) {
     }
     if (action === "send") return `${sid} — 将发送：\n${cap(String(args.data ?? ""), 500)}`
     if (action === "secret_input") return `${sid} — 将发送：••••••（携密——值不回显）${args.label ? `（${args.label}）` : ""}`
+    if (action === "forget") {
+      // ⑫ 删除面：明示目标主机（无值——保存件不含可展示的凭据值）
+      const target = args.host ? `${args.host}${args.port ? `:${args.port}` : ""}` : "(missing host)"
+      return cap(`${target} — 删除已保存的 ssh 凭据`, 300)
+    }
     if (action === "close") return `${sid} — 关闭会话`
     return cap(`${action} ${sid}`, 300)
   }

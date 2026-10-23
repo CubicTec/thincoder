@@ -47,9 +47,11 @@ Nested paths work the same way (`@thincoder/core/git/checkpoint.mjs`, `@thincode
 | Agent loop, subagents | `agent.mjs` · `agent/` · `agent-tools/` |
 | Advisor review, consultation, escalate | `advisor/` · `agent-tools/consult.mjs` · `agent-tools/escalate-async.mjs` |
 | Provider layer (streaming, thinking mapping, retries, rate gate) | `provider/` |
+| Account authentication, credential lifecycle and shared client adapter | `auth/` — [authentication design](../docs/core/design/OPENAI-CHATGPT.md) |
+| Account model catalog and effective model specifications | `provider/model-info.mjs` · `model-specs.mjs` — [model specifications](../docs/core/design/MODEL-SPECS.md) |
 | Memory, embedding, code/doc indexes | `memory.mjs` · `memory/` · `embedding.mjs` |
 | Built-in tools | `tools/` |
-| Sessions | `session.mjs` · `session-*.mjs` |
+| Sessions, native Responses replay and tool transactions | `session.mjs` · `session-*.mjs` (including `session-responses.mjs`) — [session design](../docs/core/design/SESSION.md) |
 | MCP client | `mcp.mjs` · `mcp/` |
 | Git, checkpoints, team-memory sync | `git/` |
 | Ledger, traces | `ledger.mjs` · `traces/` |
@@ -82,7 +84,10 @@ Per-release notes and artifacts: `CHANGELOG.md` in this package and the [GitHub 
 The core lives in `thincoder-core/` of the ThinCoder repository; bug reports and questions go to the
 repository issue tracker. Two conventions shape every change: pure ESM `.mjs` with no build step, and
 zero third-party dependencies — if the Node.js standard library can do it, no third-party package is
-allowed. `npm test` runs the test entry (`node test/run.mjs`); after the 2026-09-28 full reset the test manifest is empty (zero tests = green — collection self-checks still run). Unit tests live as batch-local files under `docs/batches/` in the repository — current state: `docs/core/design/TESTING.md` §2.3. It runs again on release through `prepublishOnly`.
+allowed. `npm test` runs the single entry `node test/run.mjs`, which collects `test/*.test.mjs` and rejects
+nested test files that this single-level glob would miss. The suite includes authentication, Responses replay,
+session recovery and other core regressions; test organization is described in
+[TESTING](../docs/core/design/TESTING.md) §10. It runs again on release through `prepublishOnly`.
 Mechanism design documents live in the repository under `docs/core/design/`.
 
 ## License

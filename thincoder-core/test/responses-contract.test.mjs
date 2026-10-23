@@ -7,6 +7,7 @@ import { SIWC_UNSUPPORTED_FIELDS } from "../provider/capabilities.mjs"
 import { responsesError } from "../provider/errors.mjs"
 import { requestResponses } from "../provider/responses-http.mjs"
 import { _rateHooks } from "../provider/rate.mjs"
+import { providerAuthStub } from "./fixtures/provider-auth.mjs"
 
 const api = { name: "openai-responses", model: "test-model", apiKey: "fixture-api-key", baseURL: "https://api.openai.com/v1", builtinTools: false }
 const plan = { name: "openai-chatgpt", model: "test-model", baseURL: api.baseURL, format: "responses", auth: { type: "chatgpt_oauth", credentialRef: "fixture-profile" } }
@@ -188,10 +189,10 @@ test("Request-scoped OAuth two-round tool replay releases credentials and never 
   const { _setAuthServiceForTest } = await import("../provider/auth-context.mjs")
   const active = { ...plan, auth: { ...plan.auth, enabled: true } }
   const fetch = globalThis.fetch; const requests = []; let releases = 0; let authCalls = 0
-  _setAuthServiceForTest({ async getAuthContext(profileId, { signal }) {
+  _setAuthServiceForTest(providerAuthStub({ async getAuthContext(profileId, { signal }) {
     authCalls++
     return { profileId, signal, accessToken: "fixture-oauth-token", release() { releases++ } }
-  } })
+  } }))
   globalThis.fetch = async (url, opts) => {
     requests.push({ url, opts, body: JSON.parse(opts.body) })
     return new Response(frame(completed(requests.length === 1 ? [reasoning, call] : [assistant])), { headers: { "content-type": "text/event-stream", "x-request-id": "req_transport" } })

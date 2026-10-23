@@ -121,7 +121,7 @@ function onApproval(state, ev) {
 /** 回合尾判据**单源**（三径 = §2.16②/④ + 批 A 修正轮 —— `docs/desktop/design/RENDERER.md` §1.1「回合尾三径」条）：
  *  吃**两通道形**：`ev:activity` ∧ `fields` 键**不在场** ∧ `event ∈ {done, stopped}` ∥ `ev:error`（该通道**单义** = 宿主回合结算
  *  〔错误径〕—— 工具级错误不经本通道 ⇒ 全收）∥ 余 ⇒ 假；值面 `onActivity` / `onError` 与订阅面（回合尾 ⇒ 标题刷新 · 输入区 flush）同用。
- *  判据按**键在场**判（设计字面 = `IPC.md:31`「`fields` 键在场 ⇒ 内联形」）：内联形 `fields` 值可为 `null`（核 ⟦ev⟧ 段无分隔符）或串 ⇒ 零回合尾。 */
+ *  判据按**键在场**判（设计字面 = `IPC.md` §1「`fields` 键在场 ⇒ 内联形」）：内联形 `fields` 值可为 `null`（核 ⟦ev⟧ 段无分隔符）或串 ⇒ 零回合尾。 */
 export function isTurnTail(ev) {
   const channel = ev?.channel
   if (channel === "ev:error") return true
@@ -147,7 +147,7 @@ function withStopMark(state, key) {
  *  ③ 无 `fields` ∧ `isTurnTail` ⇒ **唯一回合尾**（去 `running` + 置 `done`；`stopped` 兼摘本键提问项 + 清本键 `approval` 位 ——
  *  中断径各门按取消结算 ⇒ 卡随事件面出场；`done` 径不摘 —— `docs/desktop/design/RENDERER.md` §1.1）；
  *  **`turnBreak` 形（「对齐第三批」项 7）** = 宿主接核 `onTurnEnd` 的子回合边界：**清游标**（尾块追加态收束 ⇒
- *  下片文本起新块 —— VSC `streaming.js:71-88` 复位语义）；**非回合尾**（三径判据不含本形）· 键门同块面诸写者；
+ *  下片文本起新块 —— VSC `onTurnBreak` 复位语义）；**非回合尾**（三径判据不含本形）· 键门同块面诸写者；
  *  **`stopped` 兼两事（「对齐第三批」项 5 / 6）**：未结算工具块清扫（`interrupted`）+ 停止痕切片写（任意键 ——
  *  痕面非块面，不设键门）；
  *  **回合尾三径皆兼游标清点**（#459 ① 族 —— 尾块追加态结束 ⇒ 游标不得常驻；**键门同 `onError` / `onToolCall`** ——
@@ -184,7 +184,7 @@ function onActivity(state, ev, now) {
   // 回合尾 `stopped`：两待答族同清（提问卡 ∥ **凭据弹窗** —— 门侧按取消结算（`suspensions.mjs` `denyGates`），
   // 端面项随终局出场；清码判据 = 全族皆清）。
   const tail = ev.event === "stopped" ? clearSecret(clearQuestion(state, ev.key), ev.key) : state
-  // R5（#522①）：会话中止 ⇒ **本键表复位**（VSC `streaming.js:156` 同义 —— `aborted && !suspended`）：
+  // R5（#522①）：会话中止 ⇒ **本键表复位**（VSC `streaming.js` 同义 —— `aborted && !suspended`）：
   // 回合尾 `stopped` ∧ 本键非挂起（挂起窗内回合尾不动池 —— children 持会话信号）⇒ 池子随回合死。
   const reset = ev.event === "stopped" && state.susp?.[ev.key]?.active !== true ? resetSubBlocks(tail, ev.key) : tail
   const swept = ev.event === "stopped" && forActive(state, ev) ? sweepRunningTools(reset) : reset
@@ -257,7 +257,7 @@ export function openSession(state, key) {
   const next = key == null ? null : String(key)
   const cleared = next === null ? { badges: state.tabBadges ?? {}, changed: false } : badgeStamps(state.tabBadges ?? {}, next, "done", false)
   if (next === state.activeSession && !cleared.changed) return state
-  // R5（#522① · 清屏径）：键变 ⇒ **复位新键表**（VSC `clearMessages` ⇒ `resetActivity` 同义 —— `chat-messages.js:120`）：
+  // R5（#522① · 清屏径）：键变 ⇒ **复位新键表**（VSC `clearMessages` ⇒ `resetActivity` 同义 —— `chat-messages.js`）：
   // 历史会话重现不留旧代行账（活块由 2s 存活投影自愈重投）；同键重开（零键变）不复位。
   const swapped = next !== null && next !== state.activeSession ? resetSubBlocks(state, next) : state
   const base = cleared.changed

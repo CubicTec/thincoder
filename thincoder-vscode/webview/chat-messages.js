@@ -1,5 +1,5 @@
 import { updateAuthMessage } from "./settings-auth.js"
-import { renderProvidersCard } from "./settings-providers.js"
+import { renderAuthRow } from "./settings-providers.js"
 /**
  * chat-messages.js — host → webview 消息分发循环（2026-09-22 structure-debt §2.4 · #163）：
  * 自 chat.js 迁出 `window.addEventListener("message", …)` 整块（switch 分发单表）——块体逐字
@@ -17,6 +17,7 @@ import { setLoading, applyBusyLock } from "./loading.js"
 import { appendToolOutput } from "../node_modules/@thincoder/render-core/flow/stream.mjs"
 import { setStrings, t } from "./i18n.js"
 import { applyI18nToDOM } from "./i18n-dom.js"
+import { composer } from "./input.js"
 import { onToken, onReasoning, onTurnBreak, finish, subagentChunk } from "./streaming.js"
 import { resetActivity, applySubagentApproval } from "./activity.js"
 import { renderStatusBar, handleUsageMessage } from "./status-bar.js"
@@ -34,13 +35,13 @@ import { clearStatusText, handleStatusText, showCompressStatus, showDigestStatus
 import { showAtDropdown } from "./autocomplete.js"
 // #875（协议 §3.2 行 23）：视图偏好三键应用面（`uiPrefs` 消息——autoFollow ∥ activityMaxHeight ∥ activityTailLines）
 import { applyUiPrefs } from "./ui-prefs.js"
-// C-B2-6 细则⑦（queue-visible 批 2026-09-24）：排队「待发送」标记面（逐条标记 / 消费即清 / 多批合泡）
-import { applyBusyQueued } from "./queued-mark.js"
+// C-B2-6 细则⑦（queue-band 批 2026-10-20）：待发送带（输入区上沿派生面——带面重绘 / 消费出块）
+import { applyBusyQueued, clearPendingBand } from "./pending-band.js"
 // #1053（协议 §3.2 行 25）：密钥行保存受理回执消费位（`providerKeySaved` → 恢复静态行 + 闪徽标）
 import { onProviderKeySaved } from "./settings-providers.js"
 // B1（团队卡——B1 批）：态推送 + 两回执消费位（`teamStatus` / `teamLoginResult` / `teamLogoutResult`
 // ——形 ∥ 语义单源 = `SETTINGS.md` §2.20；回执码 → 词 = `settings-team.js` 内两表）
-import { updateTeamStatus, onTeamLoginResult, onTeamLogoutResult } from "./settings-team.js"
+import { updateTeamStatus, onTeamLoginResult, onTeamLogoutResult, onTeamRotateResult } from "./settings-team.js"
 
 /** 停滞轻显形重置点（WEBVIEW.md §4.7——2026-09-29 批 stall-indicator · 语义单源 = `docs/cli/design/TUI.md` §7.7）：
  *  三类可见输出事件命中 ⇒ 静默起算置现刻（① 流式 = `token` ∕ `reasoning`；② 工具面 = `toolCall` ∕ `toolOutput` ∕
@@ -53,23 +54,23 @@ const markOutput = () => { S._lastOutputAt = Date.now() }
  *            notifyAgentSettingsRefreshed: Function, updateWebsearchSettings: Function,
  *            updateTestProviderResult: Function, updateShellCandidates: Function,
  *            updateProxySettings: Function, updateProxyTestResult: Function, showSettingsError: Function,
- *            openSettings: Function, dismissLoadingScreenOnce: Function, _loadingTimeout: any }} deps */
+ *            dismissLoadingScreenOnce: Function, _loadingTimeout: any }} deps */
 export function initMessageLoop(deps) {
   const {
     renderMcpList, updateMcpTools, updateMcpTestResult, updateIndexStatus, updateProviderStatus,
     updateAgentSettings, notifyAgentSettingsRefreshed, updateWebsearchSettings, updateTestProviderResult,
     updateShellCandidates, updateProxySettings, updateProxyTestResult, showSettingsError,
-    openSettings, dismissLoadingScreenOnce, _loadingTimeout,
+    dismissLoadingScreenOnce, _loadingTimeout,
   } = deps
   window.addEventListener("message", (e) => {
     const m = e.data
     switch (m.type) {
-      case "i18n":           setStrings(m.strings); applyI18nToDOM(); break
+      case "i18n":           setStrings(m.strings); applyI18nToDOM(); composer.applyWords(); break
       case "userMessage":      addUser(ctx, m.text, m.timestamp, m.idx); break
       case "token":            markOutput(); clearStatusText(); onToken(m.text); break
       case "reasoning":        markOutput(); clearStatusText(); onReasoning(m.text); break
       case "turnBreak":        onTurnBreak(); break
-      // X2（显示面消差批 §2.1）：advisor 卡头携轮次标签 + 状态行字面 = CLI `tool-events.mjs:145`
+      // X2（显示面消差批 §2.1）：advisor 卡头携轮次标签 + 状态行字面 = CLI `buildToolCallbacks`
       // 逐字（`advisor review (round N · model)`）；无 round 字段（非 advisor / 旧载荷）⇒ 逐字节同修前。
       // 注：`round` 仅 advisor 载荷携（宿主 `advisorMeta`）⇒ 以标签非空分派，**不写工具名字面比较**
       // （该形会被 `protocol-coverage` 提取器当消息判别式——§12 表机检）。
@@ -110,8 +111,8 @@ export function initMessageLoop(deps) {
       // 无工作区守卫（2026-09-21 批 · `PROJECT-SWITCHER.md` §4.1）：host 守卫态镜像 ⇒
       // 占位符第三态（拒发出口守卫单源 = send.js）
       case "workspaceGuard":   S._workspaceRequired = m.active === true; applyBusyLock(); break
-      // C-B2-6 细则①⑦（busy-injection fix 轮 2026-09-22 · queue-visible 批 2026-09-24）：host 队列快照
-      // （`busyQueued { pending, count, items, text, merged }`）⇒ 镜像（守卫判据源）+「待发送」气泡面
+      // C-B2-6 细则①⑦（queue-band 批 2026-10-20）：host 队列快照（`busyQueued { pending, count, items, merged? }`）
+      // ⇒ 镜像（守卫判据源）+ 待发送带重绘 + `merged` 消费出块（流内恰一枚）
       case "busyQueued":       applyBusyQueued(ctx, S, m); break
       case "complete":         clearStatusText(); finish(); break
       case "aborted":          clearStatusText(); finish(true); break
@@ -131,6 +132,7 @@ export function initMessageLoop(deps) {
         ctx.currentBubble = null; ctx.currentBlock = null; ctx.currentTools = []; ctx.currentRaw = ""; ctx.currentReasoning = null; ctx.currentReasoningRaw = ""
         S._digestBoundary = null; S._statusText = null; S._turnFrame = null; resetActivity()
         clearPanels() // #642：会话切换 ∕ 载入清面板态（重置点归位——回合起点不再清；跨会话零残留）
+        clearPendingBand() // C-B2-6 ⑦：带面复位（空带——随握手 / 下一次快照重建）
         ctx._hasOlder = false
         ctx._nextIdx = 0
         S._loadingOlder = false
@@ -150,13 +152,13 @@ export function initMessageLoop(deps) {
       case "project":          handleProjectMessage(m); break
       case "models":           handleModelsMessage(m); break
       case "authStatus":
-      case "authResult": updateAuthMessage(m); renderProvidersCard(); break
+      case "authResult": if (updateAuthMessage(m)) renderAuthRow(m.name); break
       case "providerStatus":
         S._lastProviderStatus = m.status || {}
         updateProviderStatus(S._lastProviderStatus)
         ctx._keyOk = m.keyOk === true // keyOk := 非 invalid 类（宿主核态派生——#841；WEBVIEW.md §4.8）
-        // #841 三态横幅（state 单判据直映射）+ 动作钮出口 = openSettings（设置面默认模型段）
-        showBanner(ctx, S._lastProviderStatus.providerState ?? null, openSettings)
+        // #841 三态横幅（state 单判据直映射）+ 动作钮开径 = 会话级模型菜单（模型钮同径——KD-80 ⑤）
+        showBanner(ctx, S._lastProviderStatus.providerState ?? null, () => document.getElementById("model-btn")?.click())
         clearTimeout(_loadingTimeout); dismissLoadingScreenOnce() // 启动加载画面移除（握手四件最后一环到达——2026-09-21）
         maybeShowWelcome(S._lastProviderStatus, m.keyOk)
         updateWelcomeStatus(ctx) // keyOk 到达可能晚于 showWelcome（初始渲染）——刷新欢迎条文案态
@@ -172,6 +174,7 @@ export function initMessageLoop(deps) {
       case "teamStatus": updateTeamStatus(m); break
       case "teamLoginResult": onTeamLoginResult(m); onWelcomeTeamLoginResult(m); break
       case "teamLogoutResult": onTeamLogoutResult(m); break
+      case "teamRotateResult": onTeamRotateResult(m); break
       case "autoApprove":      handleAutoApprove(m); break
       case "agentSettings":    handleAgentSettings(m, updateAgentSettings); notifyAgentSettingsRefreshed(); break
       // #875（协议 §3.2 行 23 · `WEBVIEW.md` §5.8）：视图偏好三键——应用 = `ui-prefs.js`
@@ -273,7 +276,7 @@ export function initMessageLoop(deps) {
         // Subagent/consultant content streams into an activity-region block
         // (§13/§14 — activity.js ensureBlock). Advisor has no webview consumer
         // (VSC-DEBT D-2: no host emitter — the advisor family merged into the
-        // subagent container; src/agent.mjs:79).
+        // subagent container; `src/agent.mjs`).
         if (m.name?.startsWith("sub:")) { markOutput(); subagentChunk(m) }
         break
     }

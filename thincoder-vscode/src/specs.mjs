@@ -42,7 +42,8 @@ const EFFORT_DEFAULT_PREFIXES = [
 ]
 
 function effortDefaultFor(model) {
-  const m = (model ?? "").toLowerCase()
+  // 非串 model（外端脏载 ∕ 手工档）归一等价空串——与核 `lookupSpec` 同法（#638 查表全性；#1177 收口——清账轮 3 轻通道笔）
+  const m = (typeof model === "string" ? model : "").toLowerCase()
   const scan = (s) => {
     let best = null
     for (const [prefix, value] of EFFORT_DEFAULT_PREFIXES) {
@@ -66,7 +67,7 @@ export function specForModel(model) {
 
 /** Effort 枚举面单源（I7 · #677）：在册枚举 ⇒ 原样；思考开关族（无枚举 ∧ `thinking` 在场）⇒
  *  `["enabled"]` 单档（§16.6-⑴ 零变）；其余（未在册 ∕ 无能力位名）⇒ 回退全档 `["high","max"]`
- *  （对齐 CLI `cmd-think.mjs:19` 托底形——「VSC 档位空」端差消）。 */
+ *  （对齐 CLI `handleThinkCommand` 托底形——「VSC 档位空」端差消）。 */
 export function effortEnumForModel(model) {
   const s = specForModel(model)
   return s.reasoningEffortEnum || (s.thinking ? ["enabled"] : ["high", "max"])
@@ -84,8 +85,8 @@ export function ctxPercentForModel(promptTokens, provider) {
 
 /**
  * Context usage pair — CLI-parity ruler (显示面消差批 M2 ∕ I16a): numerator = core
- * `estimateTokens(history)`, the SAME estimate the CLI status line renders (`thincoder-cli/src/tui/
- * render-frame.mjs:388-389` over the `render-loop.mjs:89-91` ctxCache —— 分子分母两端同源),
+ * `estimateTokens(history)`, the SAME estimate the CLI status line renders (
+ * `inputBoxStyle` over the `createRenderLoop` ctxCache —— 分子分母两端同源),
  * denominator = the provider-aware window (`providerSpec(provider).context`). The provider-reported
  * `prompt_tokens` numerator (ctxPercentForModel above) double-reported: one session showed two
  * percentages under the same `context X%` label (端差 M2). `pct` = null when the estimate is 0；
